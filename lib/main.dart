@@ -18,13 +18,13 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   Uint8List bytes = Uint8List(0);
-  TextEditingController _outputController;
+  TextEditingController _outputPubkey;
   TextEditingController _outputAmount;
 
   @override
   initState() {
     super.initState();
-    this._outputController = new TextEditingController();
+    this._outputPubkey = new TextEditingController();
     this._outputAmount = new TextEditingController();
   }
 
@@ -43,7 +43,7 @@ class _MyAppState extends State<MyApp> {
                       children: <Widget>[
                         SizedBox(height: 20),
                         TextField(
-                          controller: this._outputController,
+                          controller: this._outputPubkey,
                           maxLines: 2,
                           decoration: InputDecoration(
                             prefixIcon: Icon(Icons.wrap_text),
@@ -120,14 +120,13 @@ class _MyAppState extends State<MyApp> {
       print('nothing return.');
     } else {
       print("Debug: " + barcode);
-      this._outputController.text = "";
+      this._outputPubkey.text = "";
       this._outputAmount.text = "";
-      var myAmount = await getHistory(barcode.toString());
-      this._outputController.text = barcode;
-      print(myAmount.toString());
-      this._outputAmount.text = myAmount.toString();
-
-      // _getAmount(barcode);
+      // final udValue = await getUD();
+      final myBalance = await getBalance(barcode.toString());
+      this._outputPubkey.text = barcode;
+      print(myBalance.toString());
+      this._outputAmount.text = myBalance.toString();
     }
   }
 

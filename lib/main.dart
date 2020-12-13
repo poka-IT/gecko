@@ -19,17 +19,30 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   Uint8List bytes = Uint8List(0);
   TextEditingController _outputPubkey;
-  TextEditingController _outputAmount;
+  TextEditingController _outputBalance;
+  TextEditingController _outputHistory;
 
   @override
   initState() {
     super.initState();
     this._outputPubkey = new TextEditingController();
-    this._outputAmount = new TextEditingController();
+    this._outputBalance = new TextEditingController();
+    this._outputHistory = new TextEditingController();
   }
 
   @override
   Widget build(BuildContext context) {
+    // final List<String> names = <String>[
+    //   'Aby',
+    //   'Aish',
+    //   'Ayan',
+    //   'Ben',
+    //   'Bob',
+    //   'Charlie',
+    //   'Cook',
+    //   'Carline'
+    // ];
+    // final List<int> msgCount = <int>[2, 0, 10, 6, 52, 4, 0, 2];
     return MaterialApp(
       home: Scaffold(
           backgroundColor: Colors.grey[300],
@@ -43,32 +56,66 @@ class _MyAppState extends State<MyApp> {
                       children: <Widget>[
                         SizedBox(height: 20),
                         TextField(
-                          controller: this._outputPubkey,
-                          maxLines: 2,
-                          decoration: InputDecoration(
-                            prefixIcon: Icon(Icons.wrap_text),
-                            helperText: 'Clé publique scanné',
-                            hintText: 'Clé publique scanné',
-                            hintStyle: TextStyle(fontSize: 15),
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 7, vertical: 15),
-                          ),
-                        ),
+                            enabled: false,
+                            controller: this._outputPubkey,
+                            maxLines: 1,
+                            decoration: InputDecoration(
+                              hintText: 'Clé publique scanné',
+                              hintStyle: TextStyle(fontSize: 15),
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 7, vertical: 15),
+                            ),
+                            style: TextStyle(
+                                fontSize: 15.0,
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold)),
                         TextField(
-                          controller: this._outputAmount,
-                          maxLines: 2,
-                          decoration: InputDecoration(
-                            prefixIcon: Icon(Icons.wrap_text),
-                            helperText: 'Solde du compte scanné',
-                            hintText: 'Solde du compte scanné',
-                            hintStyle: TextStyle(fontSize: 15),
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 7, vertical: 15),
-                          ),
-                        ),
+                            enabled: false,
+                            controller: this._outputBalance,
+                            maxLines: 1,
+                            textAlign: TextAlign.center,
+                            decoration: InputDecoration(
+                              hintText: 'Solde du compte scanné',
+                              hintStyle: TextStyle(fontSize: 15),
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 7, vertical: 15),
+                            ),
+                            style:
+                                TextStyle(fontSize: 18.0, color: Colors.black)),
+                        TextField(
+                            enabled: false,
+                            controller: this._outputHistory,
+                            maxLines: null,
+                            keyboardType: TextInputType.multiline,
+                            decoration: InputDecoration(
+                              prefixIcon: Icon(Icons.wrap_text),
+                              hintText: 'Historique du compte scanné',
+                              hintStyle: TextStyle(fontSize: 15),
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 7, vertical: 15),
+                            ),
+                            style: TextStyle(
+                                fontSize: 14.0,
+                                height: 1.5,
+                                color: Colors.black)),
                         SizedBox(height: 20),
                         this._buttonGroup(),
                         SizedBox(height: 70),
+                        // Expanded(
+                        //     child: ListView.builder(
+                        //         padding: const EdgeInsets.all(8),
+                        //         itemCount: names.length,
+                        //         itemBuilder: (BuildContext context, int index) {
+                        //           return Container(
+                        //             height: 50,
+                        //             margin: EdgeInsets.all(2),
+                        //             child: Center(
+                        //                 child: Text(
+                        //               '${names[index]} (${msgCount[index]})',
+                        //               style: TextStyle(fontSize: 18),
+                        //             )),
+                        //           );
+                        //         }))
                       ],
                     ),
                   ),
@@ -121,12 +168,38 @@ class _MyAppState extends State<MyApp> {
     } else {
       print("Debug: " + barcode);
       this._outputPubkey.text = "";
-      this._outputAmount.text = "";
+      this._outputBalance.text = "";
+      this._outputHistory.text = "";
       // final udValue = await getUD();
       final myBalance = await getBalance(barcode.toString());
+      final myHistory = await getHistory(barcode.toString());
       this._outputPubkey.text = barcode;
-      print(myBalance.toString());
-      this._outputAmount.text = myBalance.toString();
+      this._outputBalance.text = myBalance.toString() + " Ḡ1";
+
+      String historyBloc = "";
+      var j = 0;
+      for (var i in myHistory) {
+        print(i);
+        var date = i[0];
+        date = DateTime.fromMillisecondsSinceEpoch(date * 1000);
+        final issuer = i[1];
+        final amount = i[2];
+        // final amountUD = i[3];
+        final comment = i[4];
+        historyBloc += date.toString() +
+            " | " +
+            issuer.toString() +
+            " | " +
+            amount.toString() +
+            " | " +
+            comment.toString() +
+            "\n---\n";
+        j++;
+        if (j >= 10) {
+          break;
+        }
+      }
+      this._outputHistory.text = historyBloc;
     }
   }
 

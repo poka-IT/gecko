@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 // import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
+import 'package:intl/intl.dart';
+// import 'package:flutter_html_view';
 import 'api.dart';
 
 void main() {
@@ -59,6 +61,7 @@ class _MyAppState extends State<MyApp> {
                             enabled: false,
                             controller: this._outputPubkey,
                             maxLines: 1,
+                            textAlign: TextAlign.center,
                             decoration: InputDecoration(
                               hintText: 'Clé publique scanné',
                               hintStyle: TextStyle(fontSize: 15),
@@ -81,7 +84,7 @@ class _MyAppState extends State<MyApp> {
                                   horizontal: 7, vertical: 15),
                             ),
                             style:
-                                TextStyle(fontSize: 18.0, color: Colors.black)),
+                                TextStyle(fontSize: 30.0, color: Colors.black)),
                         TextField(
                             enabled: false,
                             controller: this._outputHistory,
@@ -95,7 +98,7 @@ class _MyAppState extends State<MyApp> {
                                   horizontal: 7, vertical: 15),
                             ),
                             style: TextStyle(
-                                fontSize: 14.0,
+                                fontSize: 13.0,
                                 height: 1.5,
                                 color: Colors.black)),
                         SizedBox(height: 20),
@@ -171,27 +174,33 @@ class _MyAppState extends State<MyApp> {
       this._outputBalance.text = "";
       this._outputHistory.text = "";
       // final udValue = await getUD();
-      final myBalance = await getBalance(barcode.toString());
-      final myHistory = await getHistory(barcode.toString());
       this._outputPubkey.text = barcode;
-      this._outputBalance.text = myBalance.toString() + " Ḡ1";
+      final myBalance = await getBalance(barcode.toString());
+      this._outputBalance.text = myBalance.toString() + " Ğ1";
+
+      final myHistory = await getHistory(barcode.toString());
+      if (myHistory == false) {
+        return false;
+      }
 
       String historyBloc = "";
       var j = 0;
       for (var i in myHistory) {
-        print(i);
-        var date = i[0];
-        date = DateTime.fromMillisecondsSinceEpoch(date * 1000);
+        // print(i);
+        var dateBrut = i[0];
+        dateBrut = DateTime.fromMillisecondsSinceEpoch(dateBrut * 1000);
+        final DateFormat formatter = DateFormat('dd-MM-yy - H:M');
+        final String date = formatter.format(dateBrut);
         final issuer = i[1];
         final amount = i[2];
         // final amountUD = i[3];
         final comment = i[4];
         historyBloc += date.toString() +
-            " | " +
+            " \n " +
             issuer.toString() +
-            " | " +
+            " \n " +
             amount.toString() +
-            " | " +
+            " Ğ1\n " +
             comment.toString() +
             "\n---\n";
         j++;

@@ -57,7 +57,7 @@ Future getBalance(String pubkey) async {
 Future getHistory(String pubkey) async {
   print(pubkey);
   var query = """{
-        transactionsHistory(pubkey: "$pubkey") {
+        txsHistoryBc(pubkeyOrScript: "$pubkey") {
             received {
                 writtenTime
                 issuers
@@ -74,7 +74,14 @@ Future getHistory(String pubkey) async {
   final res = await buildQ(query);
 
   // Parse history
-  var result = res.data["transactionsHistory"]["received"];
+  var result;
+  try {
+    result = res.data["txsHistoryBc"]["received"];
+  } catch (e) {
+    print("DEBUG: " + e.toString());
+    print(res.data);
+    return false;
+  }
   var i = 0;
   // String outPubkey;
   var trans = [];

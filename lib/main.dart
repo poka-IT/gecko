@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 // import 'package:image_gallery_saver/image_gallery_saver.dart';
@@ -8,6 +9,7 @@ import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:intl/intl.dart';
 // import 'package:flutter_html_view';
 import 'api.dart';
+import "package:dio/dio.dart";
 
 void main() {
   runApp(MyApp());
@@ -30,21 +32,15 @@ class _MyAppState extends State<MyApp> {
     this._outputPubkey = new TextEditingController();
     this._outputBalance = new TextEditingController();
     this._outputHistory = new TextEditingController();
+    // checkNode().then((result) {
+    //   setState(() {
+    //     _result = result;
+    //   });
+    // });
   }
 
   @override
   Widget build(BuildContext context) {
-    // final List<String> names = <String>[
-    //   'Aby',
-    //   'Aish',
-    //   'Ayan',
-    //   'Ben',
-    //   'Bob',
-    //   'Charlie',
-    //   'Cook',
-    //   'Carline'
-    // ];
-    // final List<int> msgCount = <int>[2, 0, 10, 6, 52, 4, 0, 2];
     return MaterialApp(
       home: Scaffold(
           backgroundColor: Colors.grey[300],
@@ -163,13 +159,17 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
+  Future checkNode() async {
+    final response = await Dio().post(graphqlEndpoint);
+    return response;
+  }
+
   Future _scan() async {
     await Permission.camera.request();
     String barcode = await scanner.scan();
     if (barcode == null) {
       print('nothing return.');
     } else {
-      print("Debug: " + barcode);
       this._outputPubkey.text = "";
       this._outputBalance.text = "";
       this._outputHistory.text = "";
@@ -183,10 +183,9 @@ class _MyAppState extends State<MyApp> {
         return false;
       }
 
-      String historyBloc = "";
+      String historyBC = "";
       var j = 0;
-      for (var i in myHistory) {
-        // print(i);
+      for (var i in myHistory[0]) {
         var dateBrut = i[0];
         dateBrut = DateTime.fromMillisecondsSinceEpoch(dateBrut * 1000);
         final DateFormat formatter = DateFormat('dd-MM-yy - H:M');
@@ -195,7 +194,7 @@ class _MyAppState extends State<MyApp> {
         final amount = i[2];
         // final amountUD = i[3];
         final comment = i[4];
-        historyBloc += date.toString() +
+        historyBC += date.toString() +
             " \n " +
             issuer.toString() +
             " \n " +
@@ -208,7 +207,37 @@ class _MyAppState extends State<MyApp> {
           break;
         }
       }
-      this._outputHistory.text = historyBloc;
+
+      String historyMP = "";
+      j = 0;
+      for (var i in myHistory[1]) {
+        if (i == null) {
+          break;
+        }
+        var dateBrut = "Now";
+        final issuer = i[1];
+        final amount = i[2];
+        // final amountUD = i[3];
+        final comment = i[4];
+        historyMP += "EN COURS DE RECEPTION\n" +
+            dateBrut.toString() +
+            " \n " +
+            issuer.toString() +
+            " \n " +
+            amount.toString() +
+            " Ğ1\n " +
+            comment.toString() +
+            "\n---\n";
+      }
+
+      var history;
+      // print(historyMP.toString());
+      if (historyMP == "") {
+        history = historyBC;
+      } else {
+        history = historyMP + '\n' + historyBC;
+      }
+      this._outputHistory.text = history;
     }
   }
 

@@ -42,141 +42,120 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-          backgroundColor: Colors.grey[300],
-          body: Builder(
-            builder: (BuildContext context) {
-              return ListView(
-                children: <Widget>[
-                  Container(
-                    color: Colors.white,
-                    child: Column(
-                      children: <Widget>[
-                        SizedBox(height: 20),
-                        TextField(
-                            // enabled: false,
-                            onChanged: (text) {
-                              print("Clé tappé: $text");
-                              isPubkey(text);
-                            },
-                            controller: this._outputPubkey,
-                            maxLines: 1,
-                            textAlign: TextAlign.center,
-                            decoration: InputDecoration(
-                              hintText:
-                                  'Tappez/Collez une clé publique, ou scannez',
-                              hintStyle: TextStyle(fontSize: 15),
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 7, vertical: 15),
-                              border: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              errorBorder: InputBorder.none,
-                              disabledBorder: InputBorder.none,
-                            ),
-                            style: TextStyle(
-                                fontSize: 15.0,
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold)),
-                        TextField(
-                            // Affichage balance
-                            enabled: false,
-                            controller: this._outputBalance,
-                            maxLines: 1,
-                            textAlign: TextAlign.center,
-                            decoration: InputDecoration(
-                              hintText: '',
-                              hintStyle: TextStyle(fontSize: 15),
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 7, vertical: 15),
-                              focusedBorder: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              errorBorder: InputBorder.none,
-                              disabledBorder: InputBorder.none,
-                            ),
-                            style:
-                                TextStyle(fontSize: 30.0, color: Colors.black)),
-                        TextField(
-                            // Affichage history
-                            enabled: false,
-                            controller: this._outputHistory,
-                            maxLines: null,
-                            keyboardType: TextInputType.multiline,
-                            decoration: InputDecoration(
-                              prefixIcon: Icon(Icons.wrap_text),
-                              hintText: '',
-                              hintStyle: TextStyle(fontSize: 15),
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 7, vertical: 15),
-                              focusedBorder: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              errorBorder: InputBorder.none,
-                              disabledBorder: InputBorder.none,
-                            ),
-                            style: TextStyle(
-                                fontSize: 13.0,
-                                height: 1.5,
-                                color: Colors.black)),
-                        SizedBox(height: 20),
-                        this._buttonGroup(),
-                        SizedBox(height: 70),
-                        // Expanded(
-                        //     child: ListView.builder(
-                        //         padding: const EdgeInsets.all(8),
-                        //         itemCount: names.length,
-                        //         itemBuilder: (BuildContext context, int index) {
-                        //           return Container(
-                        //             height: 50,
-                        //             margin: EdgeInsets.all(2),
-                        //             child: Center(
-                        //                 child: Text(
-                        //               '${names[index]} (${msgCount[index]})',
-                        //               style: TextStyle(fontSize: 18),
-                        //             )),
-                        //           );
-                        //         }))
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
-          )
-          // floatingActionButton: FloatingActionButton(
-          //   onPressed: () => _scanBytes(),
-          //   tooltip: 'Prennez une photo',
-          //   child: const Icon(Icons.camera_alt),
-          // ),
-          ),
-    );
-  }
-
-  Widget _buttonGroup() {
-    return Row(
-      children: <Widget>[
-        Expanded(
-          flex: 1,
-          child: SizedBox(
-            height: 120,
-            child: InkWell(
-              onTap: _scan,
-              child: Card(
-                child: Column(
+        home: Scaffold(
+            backgroundColor: Colors.grey[300],
+            body: Builder(
+              builder: (BuildContext context) {
+                return ListView(
                   children: <Widget>[
-                    Expanded(
-                      flex: 2,
-                      child: Image.asset('images/scanner.png'),
+                    Container(
+                      color: Colors.white,
+                      child: Column(
+                        children: <Widget>[
+                          SizedBox(height: 20),
+                          TextField(
+                              // enabled: false,
+                              onChanged: (text) {
+                                print("Clé tappé: $text");
+                                isPubkey(text);
+                              },
+                              controller: this._outputPubkey,
+                              maxLines: 1,
+                              textAlign: TextAlign.center,
+                              decoration: InputDecoration(
+                                hintText:
+                                    'Tappez/Collez une clé publique, ou scannez',
+                                hintStyle: TextStyle(fontSize: 15),
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 7, vertical: 15),
+                                border: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                errorBorder: InputBorder.none,
+                                disabledBorder: InputBorder.none,
+                              ),
+                              style: TextStyle(
+                                  fontSize: 15.0,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold)),
+                          TextField(
+                              // Affichage balance
+                              enabled: false,
+                              controller: this._outputBalance,
+                              maxLines: 1,
+                              textAlign: TextAlign.center,
+                              decoration: InputDecoration(
+                                hintText: '',
+                                hintStyle: TextStyle(fontSize: 15),
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 7, vertical: 15),
+                                focusedBorder: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                errorBorder: InputBorder.none,
+                                disabledBorder: InputBorder.none,
+                              ),
+                              style: TextStyle(
+                                  fontSize: 30.0, color: Colors.black)),
+                          TextField(
+                              // Affichage history
+                              enabled: false,
+                              controller: this._outputHistory,
+                              maxLines: null,
+                              keyboardType: TextInputType.multiline,
+                              decoration: InputDecoration(
+                                prefixIcon: Icon(Icons.wrap_text),
+                                hintText: '',
+                                hintStyle: TextStyle(fontSize: 15),
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 7, vertical: 15),
+                                focusedBorder: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                errorBorder: InputBorder.none,
+                                disabledBorder: InputBorder.none,
+                              ),
+                              style: TextStyle(
+                                  fontSize: 13.0,
+                                  height: 1.5,
+                                  color: Colors.black)),
+                          SizedBox(height: 20),
+                          SizedBox(height: 70),
+                          // Expanded(
+                          //     child: ListView.builder(
+                          //         padding: const EdgeInsets.all(8),
+                          //         itemCount: names.length,
+                          //         itemBuilder: (BuildContext context, int index) {
+                          //           return Container(
+                          //             height: 50,
+                          //             margin: EdgeInsets.all(2),
+                          //             child: Center(
+                          //                 child: Text(
+                          //               '${names[index]} (${msgCount[index]})',
+                          //               style: TextStyle(fontSize: 18),
+                          //             )),
+                          //           );
+                          //         }))
+                        ],
+                      ),
                     ),
-                    Divider(height: 20),
-                    Expanded(flex: 1, child: Text("Scanner")),
                   ],
+                );
+              },
+            ),
+            floatingActionButton: Container(
+              height: 80.0,
+              width: 80.0,
+              child: FittedBox(
+                child: FloatingActionButton(
+                  onPressed: () => _scan(),
+                  // label: Text('Scanner'),
+                  child: Container(
+                      height: 40.0,
+                      width: 40.0,
+                      child: Image.asset('images/scanner.png')),
+                  backgroundColor: Color.fromARGB(500, 204, 255, 255),
                 ),
               ),
-            ),
-          ),
-        ),
-      ],
-    );
+            )));
   }
 
   Future checkNode() async {
@@ -188,8 +167,10 @@ class _MyAppState extends State<MyApp> {
   Future _scan() async {
     await Permission.camera.request();
     String barcode = await scanner.scan();
-    this._outputPubkey.text = "";
-    isPubkey(barcode);
+    // this._outputPubkey.text = "";
+    if (barcode != null) {
+      isPubkey(barcode);
+    }
     return barcode;
   }
 

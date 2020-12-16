@@ -80,7 +80,7 @@ Future getBalance(String pubkey) async {
 // Get history
 Future getHistory(String pubkey) async {
   print(pubkey);
-  var number = 3;
+  var number = 20;
   var query = """{
         txsHistoryBc(
             pubkeyOrScript: "$pubkey"

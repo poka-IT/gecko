@@ -258,15 +258,14 @@ class _MyAppState extends State<MyApp> {
         final amount = i[2];
         // final amountUD = i[3];
         final comment = i[4];
-        historyMP += "EN COURS DE RECEPTION\n" +
-            dateBrut.toString() +
+        historyMP += dateBrut.toString() +
             " \n " +
             issuer.toString() +
             " \n " +
             amount.toString() +
             " Ğ1\n " +
             comment.toString() +
-            "\n---\n";
+            "\n------------------\n";
       }
 
       var history;
@@ -274,7 +273,8 @@ class _MyAppState extends State<MyApp> {
       if (historyMP == "") {
         history = historyBC;
       } else {
-        history = historyMP + '\n' + historyBC;
+        history =
+            "EN COURS DE TRAITEMENT\n" + historyMP + "VALIDÉ\n" + historyBC;
       }
       this._outputHistory.text = history;
     }

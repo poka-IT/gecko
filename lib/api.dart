@@ -111,7 +111,7 @@ Future getHistory(String pubkey) async {
                 outputs
                 writtenTime
             }
-            receiving {
+            sending {
                 currency
                 issuers
                 comment
@@ -142,41 +142,44 @@ Future getHistory(String pubkey) async {
   final currentBase = res.data['currentUd']['base'];
   final currentUD = res.data['currentUd']['amount'] / 100;
 
-  // Get tx received
+  // Get tx blockchain
   for (final trans in resBC) {
-    // var direction = transBC[i]['direction'];
+    var direction = trans['direction'];
+
     print(trans);
     final transaction = trans['node'];
     var output = transaction['outputs'][0];
-    // outPubkey = output.split("SIG(")[1].replaceAll(')', '');
+
     print("DEBUG1 " + transaction['writtenTime'].toString());
     transBC.add(i);
     transBC[i] = [];
     transBC[i].add(transaction['writtenTime']);
-    transBC[i].add(transaction['issuers'][0]);
     var amountBrut = int.parse(output.split(':')[0]);
     final base = int.parse(output.split(':')[1]);
     final applyBase = base - currentBase;
     final amount = amountBrut * pow(10, applyBase) / 100;
-    transBC[i].add(amount);
-    final amountUD = amount / currentUD;
-    transBC[i].add(amountUD.toStringAsFixed(2));
+    var amountUD = amount / currentUD;
+    if (direction == "RECEIVED") {
+      transBC[i].add(transaction['issuers'][0]);
+      transBC[i].add(amount);
+      transBC[i].add(amountUD.toStringAsFixed(2));
+    } else if (direction == "SENT") {
+      final outPubkey = output.split("SIG(")[1].replaceAll(')', '');
+      transBC[i].add(outPubkey);
+      transBC[i].add(-amount);
+      transBC[i].add(amountUD.toStringAsFixed(2));
+    }
     transBC[i].add(transaction['comment']);
     transBC[i].add(base);
 
     i++;
   }
 
-  // Get tx receving
+  // Get tx mempool
   var transMP = [];
   i = 0;
-
-  print('DEBUG2');
-  print(resMP);
-
   for (var transaction in resMP['receiving']) {
     if (transMP == null) {
-      print("DEBUG3 " + resMP.toString());
       break;
     }
     var output = transaction['outputs'][0];
@@ -190,6 +193,32 @@ Future getHistory(String pubkey) async {
     final applyBase = base - currentBase;
     final amount = amountBrut * pow(10, applyBase) / 100;
     transMP[i].add(amount);
+    final amountUD = amount / currentUD;
+    transMP[i].add(amountUD.toStringAsFixed(2));
+    transMP[i].add(transaction['comment']);
+    transMP[i].add(base);
+    transMP[i].add(outPubkey);
+
+    i++;
+  }
+
+  transMP = [];
+  i = 0;
+  for (var transaction in resMP['sending']) {
+    if (transMP == null) {
+      break;
+    }
+    var output = transaction['outputs'][0];
+    var outPubkey = output.split("SIG(")[1].replaceAll(')', '');
+    transMP.add(i);
+    transMP[i] = [];
+    transMP[i].add(transaction['writtenTime']);
+    transMP[i].add(transaction['issuers'][0]);
+    var amountBrut = int.parse(output.split(':')[0]);
+    final base = int.parse(output.split(':')[1]);
+    final applyBase = base - currentBase;
+    final amount = amountBrut * pow(10, applyBase) / 100;
+    transMP[i].add(-amount);
     final amountUD = amount / currentUD;
     transMP[i].add(amountUD.toStringAsFixed(2));
     transMP[i].add(transaction['comment']);

@@ -54,44 +54,64 @@ class _MyAppState extends State<MyApp> {
                       children: <Widget>[
                         SizedBox(height: 20),
                         TextField(
-                            enabled: false,
+                            // enabled: false,
+                            onChanged: (text) {
+                              print("Clé tappé: $text");
+                              isPubkey(text);
+                            },
                             controller: this._outputPubkey,
                             maxLines: 1,
                             textAlign: TextAlign.center,
                             decoration: InputDecoration(
-                              hintText: 'Clé publique scanné',
+                              hintText:
+                                  'Tappez/Collez une clé publique, ou scannez',
                               hintStyle: TextStyle(fontSize: 15),
                               contentPadding: EdgeInsets.symmetric(
                                   horizontal: 7, vertical: 15),
+                              border: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              errorBorder: InputBorder.none,
+                              disabledBorder: InputBorder.none,
                             ),
                             style: TextStyle(
                                 fontSize: 15.0,
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold)),
                         TextField(
+                            // Affichage balance
                             enabled: false,
                             controller: this._outputBalance,
                             maxLines: 1,
                             textAlign: TextAlign.center,
                             decoration: InputDecoration(
-                              hintText: 'Solde du compte scanné',
+                              hintText: '',
                               hintStyle: TextStyle(fontSize: 15),
                               contentPadding: EdgeInsets.symmetric(
                                   horizontal: 7, vertical: 15),
+                              focusedBorder: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              errorBorder: InputBorder.none,
+                              disabledBorder: InputBorder.none,
                             ),
                             style:
                                 TextStyle(fontSize: 30.0, color: Colors.black)),
                         TextField(
+                            // Affichage history
                             enabled: false,
                             controller: this._outputHistory,
                             maxLines: null,
                             keyboardType: TextInputType.multiline,
                             decoration: InputDecoration(
                               prefixIcon: Icon(Icons.wrap_text),
-                              hintText: 'Historique du compte scanné',
+                              hintText: '',
                               hintStyle: TextStyle(fontSize: 15),
                               contentPadding: EdgeInsets.symmetric(
                                   horizontal: 7, vertical: 15),
+                              focusedBorder: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              errorBorder: InputBorder.none,
+                              disabledBorder: InputBorder.none,
                             ),
                             style: TextStyle(
                                 fontSize: 13.0,
@@ -161,30 +181,54 @@ class _MyAppState extends State<MyApp> {
 
   Future checkNode() async {
     final response = await Dio().post(graphqlEndpoint);
+    showHistory(response);
     return response;
   }
 
   Future _scan() async {
     await Permission.camera.request();
     String barcode = await scanner.scan();
-    if (barcode == null) {
+    this._outputPubkey.text = "";
+    isPubkey(barcode);
+    return barcode;
+  }
+
+  Future isPubkey(pubkey) async {
+    // final validCharacters = RegExp(r'^[a-zA-Z0-9]+$');
+    RegExp regExp = new RegExp(
+      r'^[a-zA-Z0-9]+$',
+      caseSensitive: false,
+      multiLine: false,
+    );
+
+    if (regExp.hasMatch(pubkey) == true &&
+        pubkey.length > 42 &&
+        pubkey.length < 45) {
+      print("C'est une pubkey !!!");
+      print(pubkey.length);
+      showHistory(pubkey);
+    }
+  }
+
+  Future showHistory(pubkey) async {
+    // String pubkey = await _scan();
+    if (pubkey == null) {
       print('nothing return.');
     } else {
       this._outputPubkey.text = "";
       this._outputBalance.text = "";
       this._outputHistory.text = "";
       // final udValue = await getUD();
-      this._outputPubkey.text = barcode;
-      final myBalance = await getBalance(barcode.toString());
+      this._outputPubkey.text = pubkey;
+      final myBalance = await getBalance(pubkey.toString());
       this._outputBalance.text = myBalance.toString() + " Ğ1";
 
-      final myHistory = await getHistory(barcode.toString());
+      final myHistory = await getHistory(pubkey.toString());
       if (myHistory == false) {
         return false;
       }
 
       String historyBC = "";
-      var j = 0;
       for (var i in myHistory[0]) {
         var dateBrut = i[0];
         dateBrut = DateTime.fromMillisecondsSinceEpoch(dateBrut * 1000);
@@ -202,14 +246,9 @@ class _MyAppState extends State<MyApp> {
             " Ğ1\n " +
             comment.toString() +
             "\n---\n";
-        j++;
-        if (j >= 10) {
-          break;
-        }
       }
 
       String historyMP = "";
-      j = 0;
       for (var i in myHistory[1]) {
         if (i == null) {
           break;

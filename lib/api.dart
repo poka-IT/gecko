@@ -80,22 +80,44 @@ Future getBalance(String pubkey) async {
 // Get history
 Future getHistory(String pubkey) async {
   print(pubkey);
+  var number = 3;
   var query = """{
-        txsHistoryBc(pubkeyOrScript: "$pubkey") {
-          received {
-            writtenTime
-            issuers
-            outputs
-            comment
-          }
+        txsHistoryBc(
+            pubkeyOrScript: "$pubkey"
+            pagination: { pageSize: $number, ord: DESC }
+        ) {
+            both {
+                pageInfo {
+                    hasPreviousPage
+                    hasNextPage
+                }
+                edges {
+                    direction
+                    node {
+                        currency
+                        issuers
+                        outputs
+                        comment
+                        writtenTime
+                    }
+                }
+            }
         }
         txsHistoryMp(pubkey: "$pubkey") {
-          receiving {
-            writtenTime
-            issuers
-            outputs
-            comment
-          }
+            receiving {
+                currency
+                issuers
+                comment
+                outputs
+                writtenTime
+            }
+            receiving {
+                currency
+                issuers
+                comment
+                outputs
+                writtenTime
+            }
         }
         currentUd {
           amount
@@ -107,12 +129,11 @@ Future getHistory(String pubkey) async {
 
   // Parse history
   var resBC, resMP;
+  print(res.toString());
   try {
-    resBC = res.data["txsHistoryBc"]["received"];
-    resMP = res.data["txsHistoryMp"]["receiving"];
+    resBC = res.data["txsHistoryBc"]['both']['edges'];
+    resMP = res.data["txsHistoryMp"];
   } catch (e) {
-    print("DEBUG: " + e.toString());
-    print(res.data);
     return false;
   }
   var i = 0;
@@ -122,13 +143,17 @@ Future getHistory(String pubkey) async {
   final currentUD = res.data['currentUd']['amount'] / 100;
 
   // Get tx received
-  for (var bloc in resBC) {
-    var output = bloc['outputs'][0];
+  for (final trans in resBC) {
+    // var direction = transBC[i]['direction'];
+    print(trans);
+    final transaction = trans['node'];
+    var output = transaction['outputs'][0];
     // outPubkey = output.split("SIG(")[1].replaceAll(')', '');
+    print("DEBUG1 " + transaction['writtenTime'].toString());
     transBC.add(i);
     transBC[i] = [];
-    transBC[i].add(bloc['writtenTime']);
-    transBC[i].add(bloc['issuers'][0]);
+    transBC[i].add(transaction['writtenTime']);
+    transBC[i].add(transaction['issuers'][0]);
     var amountBrut = int.parse(output.split(':')[0]);
     final base = int.parse(output.split(':')[1]);
     final applyBase = base - currentBase;
@@ -136,7 +161,7 @@ Future getHistory(String pubkey) async {
     transBC[i].add(amount);
     final amountUD = amount / currentUD;
     transBC[i].add(amountUD.toStringAsFixed(2));
-    transBC[i].add(bloc['comment']);
+    transBC[i].add(transaction['comment']);
     transBC[i].add(base);
 
     i++;
@@ -146,17 +171,20 @@ Future getHistory(String pubkey) async {
   var transMP = [];
   i = 0;
 
-  for (var bloc in resMP) {
+  print('DEBUG2');
+  print(resMP);
+
+  for (var transaction in resMP['receiving']) {
     if (transMP == null) {
-      print("DEBUG:: " + resMP.toString());
+      print("DEBUG3 " + resMP.toString());
       break;
     }
-    var output = bloc['outputs'][0];
+    var output = transaction['outputs'][0];
     var outPubkey = output.split("SIG(")[1].replaceAll(')', '');
     transMP.add(i);
     transMP[i] = [];
-    transMP[i].add(bloc['writtenTime']);
-    transMP[i].add(bloc['issuers'][0]);
+    transMP[i].add(transaction['writtenTime']);
+    transMP[i].add(transaction['issuers'][0]);
     var amountBrut = int.parse(output.split(':')[0]);
     final base = int.parse(output.split(':')[1]);
     final applyBase = base - currentBase;
@@ -164,7 +192,7 @@ Future getHistory(String pubkey) async {
     transMP[i].add(amount);
     final amountUD = amount / currentUD;
     transMP[i].add(amountUD.toStringAsFixed(2));
-    transMP[i].add(bloc['comment']);
+    transMP[i].add(transaction['comment']);
     transMP[i].add(base);
     transMP[i].add(outPubkey);
 

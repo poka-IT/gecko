@@ -1,9 +1,11 @@
 #!/bin/bash
 
+[[ -z $1 ]] && echo "Please choose a version." && exit 1
+
 flutter build apk --split-per-abi
 
-APPNAME = "gecko"
-VERSION="dev1"
+APPNAME="gecko"
+VERSION="$1"
 ori_app="app.apk"
 
 if [[ -d $HOME/Téléchargements ]]; then
@@ -14,6 +16,7 @@ else
     DL="/tmp"
 fi
 
-mv build/app/outputs/flutter-apk/$ori_app "$DL/gecko-$VERSION" && echo "L'app se trouve ici: $DL/${APPNAME}-${VERSION}.apk" || exit 1
+appPath="$DL/${APPNAME}-${VERSION}.apk"
+mv build/app/outputs/flutter-apk/$ori_app "$appPath" && echo "$appPath" || exit 1
 
 exit 0

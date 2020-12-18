@@ -11,6 +11,8 @@ import 'package:intl/intl.dart';
 import 'api.dart';
 import "package:dio/dio.dart";
 
+List<String> litems = ["1", "2", "Third", "4"];
+
 void main() {
   runApp(MyApp());
 }
@@ -96,7 +98,9 @@ class _MyAppState extends State<MyApp> {
                               ),
                               style: TextStyle(
                                   fontSize: 30.0, color: Colors.black)),
+
                           TextField(
+
                               // Affichage history
                               enabled: false,
                               controller: this._outputHistory,
@@ -137,6 +141,11 @@ class _MyAppState extends State<MyApp> {
                         ],
                       ),
                     ),
+                    // new ListView.builder(
+                    //     itemCount: litems.length,
+                    //     itemBuilder: (BuildContext ctxt, int index) {
+                    //       return new Text(litems[index]);
+                    //     })
                   ],
                 );
               },
@@ -270,4 +279,5 @@ class _MyAppState extends State<MyApp> {
   //     print("Veuillez renseigner une clé publique");
   //   }
   // }
+
 }

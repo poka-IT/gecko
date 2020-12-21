@@ -1,8 +1,8 @@
 const String getMyRepositories = r'''
-  query ($pubkey: String!, $number: Int!) {
+  query ($pubkey: String!, $number: Int!, $cursor: String) {
         txsHistoryBc(
             pubkeyOrScript: $pubkey
-            pagination: { pageSize: $number, ord: DESC }
+            pagination: { pageSize: $number, ord: DESC, cursor: $cursor }
         ) {
             both {
                 pageInfo {

@@ -180,6 +180,8 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
                               if (_scrollController.position.pixels ==
                                   _scrollController.position.maxScrollExtent) {
                                 if (!result.loading) {
+                                  print('B');
+                                  print(opts);
                                   fetchMore(opts);
                                 }
                               }

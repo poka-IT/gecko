@@ -4,17 +4,16 @@ import 'dart:typed_data';
 import 'dart:ui';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
-import 'package:intl/intl.dart';
 import 'api.dart';
 import "package:dio/dio.dart";
-import 'ui/history_list_view.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'query.dart';
 
 /// Integrates a list of articles with [ListPreferencesScreen].
 class HistoryListScreen extends StatefulWidget {
   @override
   _HistoryListScreenState createState() => _HistoryListScreenState();
 }
-
 
 // class HistoryListScreen extends StatefulWidget {
 //   // GeckoHome({Key key, this.title}) : super(key: key);
@@ -37,14 +36,15 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
   Uint8List bytes = Uint8List(0);
   TextEditingController _outputPubkey;
   TextEditingController _outputBalance;
-  TextEditingController _outputHistory;
+  final nRepositories = 20;
+  var pubkey = '';
+  ScrollController _scrollController = new ScrollController();
 
   @override
   initState() {
     super.initState();
     this._outputPubkey = new TextEditingController();
     this._outputBalance = new TextEditingController();
-    this._outputHistory = new TextEditingController();
     // checkNode().then((result) {
     //   setState(() {
     //     _result = result;
@@ -54,10 +54,14 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // final pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU';
+
+    // var pubkey = '';
+    print('Build state : ' + pubkey);
     return MaterialApp(
         home: Scaffold(
             backgroundColor: Colors.grey[300],
-            body: SafeArea(
+            body: Container(
               child: Column(
                 children: <Widget>[
                   SizedBox(height: 20),
@@ -65,6 +69,7 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
                       // enabled: false,
                       onChanged: (text) {
                         print("Clé tappé: $text");
+                        // pubkey = text;
                         isPubkey(text);
                       },
                       controller: this._outputPubkey,
@@ -103,9 +108,164 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
                       ),
                       style: TextStyle(fontSize: 30.0, color: Colors.black)),
                   Expanded(
-                      child: HistoryListView(
-          repository: Provider.of<Repository>(context)
-                          ))
+                      child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.max,
+                    children: <Widget>[
+                      Query(
+                        options: QueryOptions(
+                          documentNode: gql(getMyRepositories),
+                          variables: <String, dynamic>{
+                            'pubkey': pubkey, // this._outputPubkey,
+                            'number': nRepositories,
+                            // set cursor to null so as to start at the beginning
+                            // 'cursor': 10
+                          },
+                        ),
+                        builder: (QueryResult result,
+                            {refetch, FetchMore fetchMore}) {
+                          if (result.loading && result.data == null) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+
+                          if (result.hasException) {
+                            return Text(
+                                '\nErrors: \n  ' + result.exception.toString());
+                          }
+
+                          if (result.data == null &&
+                              result.exception.toString() == null) {
+                            return const Text(
+                                'Both data and errors are null, this is a known bug after refactoring, you might forget to set Github token');
+                          }
+
+                          final List<dynamic> blockchainTX =
+                              (result.data['txsHistoryBc']['both']['edges']
+                                  as List<dynamic>);
+
+                          // final List<dynamic> mempoolTX =
+                          //     (result.data['txsHistoryBc']['both']['edges']
+                          //         as List<dynamic>);
+
+                          final Map pageInfo =
+                              result.data['txsHistoryBc']['both']['pageInfo'];
+                          final String fetchMoreCursor = pageInfo['endCursor'];
+
+                          FetchMoreOptions opts = FetchMoreOptions(
+                            variables: {'cursor': fetchMoreCursor},
+                            updateQuery:
+                                (previousResultData, fetchMoreResultData) {
+                              // this is where you combine your previous data and response
+                              // in this case, we want to display previous repos plus next repos
+                              // so, we combine data in both into a single list of repos
+                              final List<dynamic> repos = [
+                                ...previousResultData['txsHistoryBc']['both']
+                                    ['edges'] as List<dynamic>,
+                                ...fetchMoreResultData['txsHistoryBc']['both']
+                                    ['edges'] as List<dynamic>
+                              ];
+
+                              fetchMoreResultData['txsHistoryBc']['both']
+                                  ['edges'] = repos;
+
+                              return fetchMoreResultData;
+                            },
+                          );
+
+                          _scrollController
+                            ..addListener(() {
+                              if (_scrollController.position.pixels ==
+                                  _scrollController.position.maxScrollExtent) {
+                                if (!result.loading) {
+                                  fetchMore(opts);
+                                }
+                              }
+                            });
+
+                          List transBC = parseHistory(blockchainTX);
+                          // parseHistory(mempoolTX);
+
+                          return Expanded(
+                            child: ListView(
+                              controller: _scrollController,
+                              children: <Widget>[
+                                for (var repository in transBC)
+                                  Card(
+                                    // 1
+                                    elevation: 2.0,
+                                    // 2
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(3.0)),
+                                    // 3
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      // 4
+                                      child: Column(
+                                        children: <Widget>[
+                                          SizedBox(
+                                            height: 8.0,
+                                          ),
+                                          Text(
+                                            // Date
+                                            repository[1].toString(),
+                                            style: TextStyle(
+                                              fontSize: 12.0,
+                                              fontWeight: FontWeight.w300,
+                                            ),
+                                          ),
+                                          Text(
+                                            // Issuer
+                                            repository[2],
+                                            style: TextStyle(
+                                              fontSize: 13.0,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          Text(
+                                            // Amount
+                                            repository[3].toString(),
+                                            style: TextStyle(
+                                              fontSize: 15.0,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          // Text(
+                                          //   // amountUD
+                                          //   repository[4].toString(),
+                                          //   style: TextStyle(
+                                          //     fontSize: 12.0,
+                                          //     fontWeight: FontWeight.w500,
+                                          //   ),
+                                          // ),
+                                          Text(
+                                            // Comment
+                                            repository[5].toString(),
+                                            style: TextStyle(
+                                              fontSize: 12.0,
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                if (result.loading)
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      CircularProgressIndicator(),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  )),
                 ],
               ),
             ),
@@ -126,43 +286,6 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
             )));
   }
 
-  Widget buildTranscationCard(Transaction transaction) {
-    return Card(
-      // 1
-      elevation: 2.0,
-      // 2
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-      // 3
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        // 4
-        child: Column(
-          children: <Widget>[
-            // 5
-            SizedBox(
-              height: 14.0,
-            ),
-            // 6
-            Text(
-              transaction.pubkey,
-              style: TextStyle(
-                fontSize: 20.0,
-                fontWeight: FontWeight.w700,
-                fontFamily: "Palatino",
-              ),
-            ),
-            Text(transaction.date,
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.w700,
-                  fontFamily: "Palatino",
-                ))
-          ],
-        ),
-      ),
-    );
-  }
-
   Future checkNode() async {
     final response = await Dio().post(graphqlEndpoint);
     showHistory(response);
@@ -179,7 +302,7 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
     return barcode;
   }
 
-  Future isPubkey(pubkey) async {
+  String isPubkey(pubkey) {
     // final validCharacters = RegExp(r'^[a-zA-Z0-9]+$');
     RegExp regExp = new RegExp(
       r'^[a-zA-Z0-9]+$',
@@ -191,9 +314,24 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
         pubkey.length > 42 &&
         pubkey.length < 45) {
       print("C'est une pubkey !!!");
-      print(pubkey.length);
       showHistory(pubkey);
+
+      setState(({pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'}) {
+        pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU';
+      });
+
+      // return pubkey;
+
+      // print(pubkey);
+      // setState(({pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'}) {
+      //   pubkey = pubkey;
+      //   print('setState : ' + pubkey);
+      // });
+    } else {
+      // return '';
     }
+
+    return '';
   }
 
   Future showHistory(pubkey) async {
@@ -203,7 +341,6 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
     } else {
       this._outputPubkey.text = "";
       this._outputBalance.text = "";
-      this._outputHistory.text = "";
       // final udValue = await getUD();
       this._outputPubkey.text = pubkey;
       final myBalance = await getBalance(pubkey.toString());
@@ -221,92 +358,4 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
   //   }
   // }
 
-}
-
-class Transaction {
-  String pubkey;
-  String date;
-
-  Transaction(this.pubkey, this.date);
-
-  // TODO: Build this list !!!!
-  // static List<Transaction> samples = List<Transaction> getHistory(pubkey.toString());
-
-  Future buildHistory() async {
-    final myHistory = await getHistory(pubkey.toString());
-    if (myHistory == false) {
-      return false;
-    }
-
-    String historyBC = "";
-    for (var i in myHistory[0]) {
-      var dateBrut = i[0];
-      dateBrut = DateTime.fromMillisecondsSinceEpoch(dateBrut * 1000);
-      final DateFormat formatter = DateFormat('dd-MM-yy - H:M');
-      final String date = formatter.format(dateBrut);
-      final issuer = i[1];
-      final amount = i[2];
-      // final amountUD = i[3];
-      final comment = i[4];
-      historyBC += date.toString() +
-          " \n " +
-          issuer.toString() +
-          " \n " +
-          amount.toString() +
-          " Ğ1\n " +
-          comment.toString() +
-          "\n---\n";
-    }
-
-    String historyMP = "";
-    for (var i in myHistory[1]) {
-      if (i == null) {
-        break;
-      }
-      var dateBrut = "Now";
-      final issuer = i[1];
-      final amount = i[2];
-      // final amountUD = i[3];
-      final comment = i[4];
-      historyMP += dateBrut.toString() +
-          " \n " +
-          issuer.toString() +
-          " \n " +
-          amount.toString() +
-          " Ğ1\n " +
-          comment.toString() +
-          "\n------------------\n";
-    }
-
-    var history;
-    // print(historyMP.toString());
-    if (historyMP == "") {
-      history = historyBC;
-    } else {
-      history = "EN COURS DE TRAITEMENT\n" + historyMP + "VALIDÉ\n" + historyBC;
-    }
-    // this._outputHistory.text = history;
-
-  List<Transaction> samples = List<Transaction> 
-
-    return myHistory[0];
-  }
-
-  // static List<Transaction> samples = buildHistory();
-
-  var list = json
-      .decode(response.body)['results']
-      .map((data) => Model.fromJson(data))
-      .toList();
-
-  // static List<Transaction> samples = [
-  //   Transaction(
-  //     "Spaghetti and Meatballs",
-  //     "assets/2126711929_ef763de2b3_w.jpg",
-  //   ),
-  //   Transaction(
-  //     "Tomato Soup",
-  //     "assets/27729023535_a57606c1be.jpg",
-  //   )
-  // ];
 }

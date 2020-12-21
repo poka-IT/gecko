@@ -8,6 +8,8 @@ const String getMyRepositories = r'''
                 pageInfo {
                     hasPreviousPage
                     hasNextPage
+                    startCursor
+                    endCursor
                 }
                 edges {
                     direction

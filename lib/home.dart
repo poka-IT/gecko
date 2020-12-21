@@ -70,7 +70,7 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
                       onChanged: (text) {
                         print("Clé tappé: $text");
                         // pubkey = text;
-                        isPubkey(text);
+                        pubkey = isPubkey(text);
                       },
                       controller: this._outputPubkey,
                       maxLines: 1,
@@ -116,10 +116,11 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
                         options: QueryOptions(
                           documentNode: gql(getMyRepositories),
                           variables: <String, dynamic>{
-                            'pubkey': pubkey, // this._outputPubkey,
+                            'pubkey':
+                                'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU', // pubkey,
                             'number': nRepositories,
                             // set cursor to null so as to start at the beginning
-                            // 'cursor': 10
+                            // 'cursor': 0
                           },
                         ),
                         builder: (QueryResult result,
@@ -169,7 +170,7 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
 
                               fetchMoreResultData['txsHistoryBc']['both']
                                   ['edges'] = repos;
-
+                              print('A: ' + fetchMoreCursor + ' B');
                               return fetchMoreResultData;
                             },
                           );
@@ -316,11 +317,9 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
       print("C'est une pubkey !!!");
       showHistory(pubkey);
 
-      setState(({pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'}) {
-        pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU';
-      });
+      // setState(() {});
 
-      // return pubkey;
+      return pubkey;
 
       // print(pubkey);
       // setState(({pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'}) {
@@ -328,10 +327,8 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
       //   print('setState : ' + pubkey);
       // });
     } else {
-      // return '';
+      return '';
     }
-
-    return '';
   }
 
   Future showHistory(pubkey) async {

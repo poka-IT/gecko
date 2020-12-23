@@ -1,4 +1,4 @@
-const String getMyRepositories = r'''
+const String getHistory = r'''
   query ($pubkey: String!, $number: Int!, $cursor: String) {
         txsHistoryBc(
             pubkeyOrScript: $pubkey
@@ -44,4 +44,12 @@ const String getMyRepositories = r'''
           base
       }
   }
+  ''';
+
+const String getxBalance = r'''
+  query ($pubkey: String!) {
+    balance(script: "$pubkey") {
+      amount
+      base
+    }
   ''';

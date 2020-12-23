@@ -296,7 +296,7 @@ List parseHistory(txs) {
     i++;
   }
 
-  transBC.sort((b, a) => Comparable.compare(a[0], b[0]));
+  // transBC.sort((b, a) => Comparable.compare(a[0], b[0]));
 
   return transBC;
 }

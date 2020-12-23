@@ -9,35 +9,19 @@ import "package:dio/dio.dart";
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'query.dart';
 
-/// Integrates a list of articles with [ListPreferencesScreen].
+//ignore: must_be_immutable
 class HistoryListScreen extends StatefulWidget {
   @override
   _HistoryListScreenState createState() => _HistoryListScreenState();
 }
 
-// class HistoryListScreen extends StatefulWidget {
-//   // GeckoHome({Key key, this.title}) : super(key: key);
-//   // final String title;
-
-//   const HistoryListScreen({
-//     @required this.repository,
-// final String title,
-//     Key key,
-//   })  : assert(repository != null),
-//         super(key: key);
-
-//   final Repository repository;
-
-//   @override
-//   _GeckoHomeState createState() => _GeckoHomeState();
-// }
-
 class _HistoryListScreenState extends State<HistoryListScreen> {
   Uint8List bytes = Uint8List(0);
   TextEditingController _outputPubkey;
   TextEditingController _outputBalance;
-  final nRepositories = 20;
+  final nRepositories = 3;
   var pubkey = '';
+  var titi = 'totooooooop';
   ScrollController _scrollController = new ScrollController();
 
   @override
@@ -54,10 +38,11 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // final pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU';
+    pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU';
 
     // var pubkey = '';
     print('Build state : ' + pubkey);
+    print(titi);
     return MaterialApp(
         home: Scaffold(
             backgroundColor: Colors.grey[300],
@@ -68,9 +53,10 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
                   TextField(
                       // enabled: false,
                       onChanged: (text) {
-                        print("Clé tappé: $text");
-                        // pubkey = text;
-                        pubkey = isPubkey(text);
+                        print("Clé tappxé: $text");
+                        pubkey = text;
+                        // pubkey =
+                        isPubkey(text);
                       },
                       controller: this._outputPubkey,
                       maxLines: 1,
@@ -114,10 +100,9 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
                     children: <Widget>[
                       Query(
                         options: QueryOptions(
-                          documentNode: gql(getMyRepositories),
+                          documentNode: gql(getHistory),
                           variables: <String, dynamic>{
-                            'pubkey':
-                                'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU', // pubkey,
+                            'pubkey': pubkey, // pubkey,
                             'number': nRepositories,
                             // set cursor to null so as to start at the beginning
                             // 'cursor': 0
@@ -138,8 +123,7 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
 
                           if (result.data == null &&
                               result.exception.toString() == null) {
-                            return const Text(
-                                'Both data and errors are null, this is a known bug after refactoring, you might forget to set Github token');
+                            return const Text('Both data and errors are null');
                           }
 
                           final List<dynamic> blockchainTX =
@@ -152,7 +136,9 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
 
                           final Map pageInfo =
                               result.data['txsHistoryBc']['both']['pageInfo'];
-                          final String fetchMoreCursor = pageInfo['endCursor'];
+
+                          final String fetchMoreCursor =
+                              pageInfo['endCursor'] ?? 'cest null...';
 
                           FetchMoreOptions opts = FetchMoreOptions(
                             variables: {'cursor': fetchMoreCursor},
@@ -170,7 +156,9 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
 
                               fetchMoreResultData['txsHistoryBc']['both']
                                   ['edges'] = repos;
-                              print('A: ' + fetchMoreCursor + ' B');
+                              print('DEBUG NULL OPTION: ');
+                              print(fetchMoreResultData);
+                              print(fetchMoreCursor);
                               return fetchMoreResultData;
                             },
                           );
@@ -180,13 +168,15 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
                               if (_scrollController.position.pixels ==
                                   _scrollController.position.maxScrollExtent) {
                                 if (!result.loading) {
-                                  print('B');
-                                  print(opts);
+                                  print('DEBUG NULL scrollController: ' +
+                                      fetchMoreCursor);
                                   fetchMore(opts);
                                 }
                               }
                             });
 
+                          print(
+                              'DEBUG blockchainTX: ' + blockchainTX.toString());
                           List transBC = parseHistory(blockchainTX);
                           // parseHistory(mempoolTX);
 
@@ -204,7 +194,7 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
                                             BorderRadius.circular(3.0)),
                                     // 3
                                     child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
+                                      padding: const EdgeInsets.all(100.0),
                                       // 4
                                       child: Column(
                                         children: <Widget>[
@@ -278,7 +268,6 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
               child: FittedBox(
                 child: FloatingActionButton(
                   onPressed: () => _scan(),
-                  // label: Text('Scanner'),
                   child: Container(
                       height: 40.0,
                       width: 40.0,
@@ -319,15 +308,16 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
       print("C'est une pubkey !!!");
       showHistory(pubkey);
 
-      // setState(() {});
+      // var tata = _scrollController;
+
+      // setState(() {
+      //   print('setPubkey: ' + pubkey);
+      //   pubkey = pubkey;
+      //   // fetchMoreCursor = fetchMoreCursor;
+      //   titi = 'lourd';
+      // });
 
       return pubkey;
-
-      // print(pubkey);
-      // setState(({pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'}) {
-      //   pubkey = pubkey;
-      //   print('setState : ' + pubkey);
-      // });
     } else {
       return '';
     }

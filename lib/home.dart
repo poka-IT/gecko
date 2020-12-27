@@ -100,17 +100,17 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
                     children: <Widget>[
                       Query(
                         options: QueryOptions(
-                          documentNode: gql(getHistory),
+                          document: gql(getHistory),
                           variables: <String, dynamic>{
                             'pubkey': pubkey, // pubkey,
                             'number': nRepositories,
                             // set cursor to null so as to start at the beginning
-                            // 'cursor': 0
+                            // 'cursor': null
                           },
                         ),
                         builder: (QueryResult result,
                             {refetch, FetchMore fetchMore}) {
-                          if (result.loading && result.data == null) {
+                          if (result.isLoading && result.data == null) {
                             return const Center(
                               child: CircularProgressIndicator(),
                             );
@@ -167,7 +167,7 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
                             ..addListener(() {
                               if (_scrollController.position.pixels ==
                                   _scrollController.position.maxScrollExtent) {
-                                if (!result.loading) {
+                                if (!result.isLoading) {
                                   print('DEBUG NULL scrollController: ' +
                                       fetchMoreCursor);
                                   fetchMore(opts);
@@ -245,7 +245,7 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
                                       ),
                                     ),
                                   ),
-                                if (result.loading)
+                                if (result.isLoading)
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: <Widget>[
@@ -310,12 +310,11 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
 
       // var tata = _scrollController;
 
-      // setState(() {
-      //   print('setPubkey: ' + pubkey);
-      //   pubkey = pubkey;
-      //   // fetchMoreCursor = fetchMoreCursor;
-      //   titi = 'lourd';
-      // });
+      setState(() {
+        print('setPubkey: ' + pubkey);
+        pubkey = pubkey;
+        // // fetchMoreCursor = fetchMoreCursor;
+      });
 
       return pubkey;
     } else {

@@ -13,12 +13,12 @@ class Gecko extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _httpLink = HttpLink(
-      uri: 'https://g1.librelois.fr/gva',
+      'https://g1.librelois.fr/gva',
     );
 
     final _client = ValueNotifier(
       GraphQLClient(
-        cache: InMemoryCache(),
+        cache: GraphQLCache(),
         link: _httpLink,
       ),
     );

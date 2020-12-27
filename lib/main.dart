@@ -10,9 +10,16 @@ import 'package:intl/intl.dart';
 // import 'package:flutter_html_view';
 import 'api.dart';
 import "package:dio/dio.dart";
+import 'package:sentry_flutter/sentry_flutter.dart';
 
-void main() {
-  runApp(MyApp());
+Future<void> main() async {
+  await SentryFlutter.init(
+    (options) {
+      options.dsn =
+          'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
+    },
+    appRunner: () => runApp(MyApp()),
+  );
 }
 
 class MyApp extends StatefulWidget {

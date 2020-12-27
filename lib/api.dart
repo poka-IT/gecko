@@ -4,6 +4,7 @@ import 'package:gql/language.dart' as gqlLang;
 import 'package:gql_dio_link/gql_dio_link.dart';
 import 'package:gql_exec/gql_exec.dart';
 import "package:gql_link/gql_link.dart";
+import 'package:sentry/sentry.dart' as sentry;
 
 // Configure node
 const graphqlEndpoint = "https://g1.librelois.fr/gva";
@@ -26,8 +27,12 @@ Future buildQ(query) async {
   try {
     client = dio.Dio();
     print(client);
-  } catch (e) {
+  } catch (e, stack) {
     print(e);
+    await sentry.Sentry.captureException(
+      e,
+      stackTrace: stack,
+    );
   }
   // final client = dio.Dio();
   Link link;
@@ -43,8 +48,12 @@ Future buildQ(query) async {
         ))
         .first;
     return res;
-  } catch (e) {
+  } catch (e, stack) {
     print("Erreur: Noeud injoingnable.");
+    await sentry.Sentry.captureException(
+      e,
+      stackTrace: stack,
+    );
     return 2;
   }
 }

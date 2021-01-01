@@ -7,7 +7,8 @@ import "package:gql_link/gql_link.dart";
 import 'package:intl/intl.dart';
 
 // Configure node
-const graphqlEndpoint = "https://g1.librelois.fr/gva";
+// const graphqlEndpoint = "https://g1.librelois.fr/gva";
+const graphqlEndpoint = 'http://127.0.0.1:10060/gva';
 
 // // Check node connection
 // Future getHttp() async {

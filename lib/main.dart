@@ -5,15 +5,16 @@ import 'package:flutter/material.dart';
 import 'home.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
-void main() {
-  runApp(Gecko());
-}
+void main() => runApp(Gecko());
 
 class Gecko extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _httpLink = HttpLink(
-      'https://g1.librelois.fr/gva',
+      'http://127.0.0.1:30901/gva',
+      // defaultHeaders: <String, String>{
+      //   'Content-Type': 'application/json',
+      // },
     );
 
     final _client = ValueNotifier(

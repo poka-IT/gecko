@@ -5,7 +5,7 @@ import 'dart:ui';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'api.dart';
-import "package:dio/dio.dart";
+// import "package:dio/dio.dart";
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'query.dart';
 
@@ -15,13 +15,14 @@ class HistoryListScreen extends StatefulWidget {
   _HistoryListScreenState createState() => _HistoryListScreenState();
 }
 
-class _HistoryListScreenState extends State<HistoryListScreen> {
+class _HistoryListScreenState extends State<HistoryListScreen>
+    with ChangeNotifier {
   Uint8List bytes = Uint8List(0);
   TextEditingController _outputPubkey;
   TextEditingController _outputBalance;
   final nRepositories = 3;
   var pubkey = '';
-  var titi = 'totooooooop';
+  bool isBuilding = true; // Just for debug
   ScrollController _scrollController = new ScrollController();
 
   @override
@@ -42,7 +43,7 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
 
     // var pubkey = '';
     print('Build state : ' + pubkey);
-    print(titi);
+    print('isBuilding: ' + isBuilding.toString());
     return MaterialApp(
         home: Scaffold(
             backgroundColor: Colors.grey[300],
@@ -278,11 +279,11 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
             )));
   }
 
-  Future checkNode() async {
-    final response = await Dio().post(graphqlEndpoint);
-    showHistory(response);
-    return response;
-  }
+  // Future checkNode() async {
+  //   final response = await Dio().post(graphqlEndpoint);
+  //   showHistory(response);
+  //   return response;
+  // }
 
   Future _scan() async {
     await Permission.camera.request();
@@ -309,6 +310,8 @@ class _HistoryListScreenState extends State<HistoryListScreen> {
       showHistory(pubkey);
 
       // var tata = _scrollController;
+
+      notifyListeners();
 
       setState(() {
         print('setPubkey: ' + pubkey);

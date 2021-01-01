@@ -4,263 +4,30 @@ import 'dart:typed_data';
 import 'dart:ui';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
-import 'api.dart';
-// import "package:dio/dio.dart";
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'api.dart';
 import 'query.dart';
 
 //ignore: must_be_immutable
-class HistoryListScreen extends StatefulWidget {
-  @override
-  _HistoryListScreenState createState() => _HistoryListScreenState();
-}
-
-class _HistoryListScreenState extends State<HistoryListScreen>
-    with ChangeNotifier {
+class HistoryListScreen extends StatelessWidget with ChangeNotifier {
   Uint8List bytes = Uint8List(0);
-  TextEditingController _outputPubkey;
-  TextEditingController _outputBalance;
+  final TextEditingController _outputPubkey = new TextEditingController();
   final nRepositories = 3;
-  var pubkey = '';
+  String pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'; // For debug
   bool isBuilding = true; // Just for debug
   ScrollController _scrollController = new ScrollController();
 
   @override
-  initState() {
-    super.initState();
-    this._outputPubkey = new TextEditingController();
-    this._outputBalance = new TextEditingController();
-    // checkNode().then((result) {
-    //   setState(() {
-    //     _result = result;
-    //   });
-    // });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU';
-
-    // var pubkey = '';
-    print('Build state : ' + pubkey);
+    print('Build pubkey : ' + pubkey);
+    print('Build this.pubkey : ' + this.pubkey);
     print('isBuilding: ' + isBuilding.toString());
     return MaterialApp(
         home: Scaffold(
             backgroundColor: Colors.grey[300],
-            body: Container(
+            body: SafeArea(
               child: Column(
-                children: <Widget>[
-                  SizedBox(height: 20),
-                  TextField(
-                      // enabled: false,
-                      onChanged: (text) {
-                        print("Clé tappxé: $text");
-                        pubkey = text;
-                        // pubkey =
-                        isPubkey(text);
-                      },
-                      controller: this._outputPubkey,
-                      maxLines: 1,
-                      textAlign: TextAlign.center,
-                      decoration: InputDecoration(
-                        hintText: 'Tappez/Collez une clé publique, ou scannez',
-                        hintStyle: TextStyle(fontSize: 15),
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: 7, vertical: 15),
-                        border: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        errorBorder: InputBorder.none,
-                        disabledBorder: InputBorder.none,
-                      ),
-                      style: TextStyle(
-                          fontSize: 15.0,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold)),
-                  TextField(
-                      // Affichage balance
-                      enabled: false,
-                      controller: this._outputBalance,
-                      maxLines: 1,
-                      textAlign: TextAlign.center,
-                      decoration: InputDecoration(
-                        hintText: '',
-                        hintStyle: TextStyle(fontSize: 15),
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: 7, vertical: 15),
-                        focusedBorder: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        errorBorder: InputBorder.none,
-                        disabledBorder: InputBorder.none,
-                      ),
-                      style: TextStyle(fontSize: 30.0, color: Colors.black)),
-                  Expanded(
-                      child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.max,
-                    children: <Widget>[
-                      Query(
-                        options: QueryOptions(
-                          document: gql(getHistory),
-                          variables: <String, dynamic>{
-                            'pubkey': pubkey, // pubkey,
-                            'number': nRepositories,
-                            // set cursor to null so as to start at the beginning
-                            // 'cursor': null
-                          },
-                        ),
-                        builder: (QueryResult result,
-                            {refetch, FetchMore fetchMore}) {
-                          if (result.isLoading && result.data == null) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-
-                          if (result.hasException) {
-                            return Text(
-                                '\nErrors: \n  ' + result.exception.toString());
-                          }
-
-                          if (result.data == null &&
-                              result.exception.toString() == null) {
-                            return const Text('Both data and errors are null');
-                          }
-
-                          final List<dynamic> blockchainTX =
-                              (result.data['txsHistoryBc']['both']['edges']
-                                  as List<dynamic>);
-
-                          // final List<dynamic> mempoolTX =
-                          //     (result.data['txsHistoryBc']['both']['edges']
-                          //         as List<dynamic>);
-
-                          final Map pageInfo =
-                              result.data['txsHistoryBc']['both']['pageInfo'];
-
-                          final String fetchMoreCursor =
-                              pageInfo['endCursor'] ?? 'cest null...';
-
-                          FetchMoreOptions opts = FetchMoreOptions(
-                            variables: {'cursor': fetchMoreCursor},
-                            updateQuery:
-                                (previousResultData, fetchMoreResultData) {
-                              // this is where you combine your previous data and response
-                              // in this case, we want to display previous repos plus next repos
-                              // so, we combine data in both into a single list of repos
-                              final List<dynamic> repos = [
-                                ...previousResultData['txsHistoryBc']['both']
-                                    ['edges'] as List<dynamic>,
-                                ...fetchMoreResultData['txsHistoryBc']['both']
-                                    ['edges'] as List<dynamic>
-                              ];
-
-                              fetchMoreResultData['txsHistoryBc']['both']
-                                  ['edges'] = repos;
-                              print('DEBUG NULL OPTION: ');
-                              print(fetchMoreResultData);
-                              print(fetchMoreCursor);
-                              return fetchMoreResultData;
-                            },
-                          );
-
-                          _scrollController
-                            ..addListener(() {
-                              if (_scrollController.position.pixels ==
-                                  _scrollController.position.maxScrollExtent) {
-                                if (!result.isLoading) {
-                                  print('DEBUG NULL scrollController: ' +
-                                      fetchMoreCursor);
-                                  fetchMore(opts);
-                                }
-                              }
-                            });
-
-                          print(
-                              'DEBUG blockchainTX: ' + blockchainTX.toString());
-                          List transBC = parseHistory(blockchainTX);
-                          // parseHistory(mempoolTX);
-
-                          return Expanded(
-                            child: ListView(
-                              controller: _scrollController,
-                              children: <Widget>[
-                                for (var repository in transBC)
-                                  Card(
-                                    // 1
-                                    elevation: 2.0,
-                                    // 2
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(3.0)),
-                                    // 3
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(100.0),
-                                      // 4
-                                      child: Column(
-                                        children: <Widget>[
-                                          SizedBox(
-                                            height: 8.0,
-                                          ),
-                                          Text(
-                                            // Date
-                                            repository[1].toString(),
-                                            style: TextStyle(
-                                              fontSize: 12.0,
-                                              fontWeight: FontWeight.w300,
-                                            ),
-                                          ),
-                                          Text(
-                                            // Issuer
-                                            repository[2],
-                                            style: TextStyle(
-                                              fontSize: 13.0,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          Text(
-                                            // Amount
-                                            repository[3].toString(),
-                                            style: TextStyle(
-                                              fontSize: 15.0,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          // Text(
-                                          //   // amountUD
-                                          //   repository[4].toString(),
-                                          //   style: TextStyle(
-                                          //     fontSize: 12.0,
-                                          //     fontWeight: FontWeight.w500,
-                                          //   ),
-                                          // ),
-                                          Text(
-                                            // Comment
-                                            repository[5].toString(),
-                                            style: TextStyle(
-                                              fontSize: 12.0,
-                                              fontWeight: FontWeight.w400,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                if (result.isLoading)
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      CircularProgressIndicator(),
-                                    ],
-                                  ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  )),
-                ],
+                children: masterHome,
               ),
             ),
             floatingActionButton: Container(
@@ -279,17 +46,125 @@ class _HistoryListScreenState extends State<HistoryListScreen>
             )));
   }
 
-  // Future checkNode() async {
-  //   final response = await Dio().post(graphqlEndpoint);
-  //   showHistory(response);
-  //   return response;
-  // }
+  List<Widget> get masterHome {
+    return <Widget>[
+      SizedBox(height: 20),
+      TextField(
+          onChanged: (text) {
+            print("Clé tappxé: $text");
+            this.pubkey = text;
+            isPubkey(text);
+          },
+          controller: this._outputPubkey,
+          maxLines: 1,
+          textAlign: TextAlign.center,
+          decoration: InputDecoration(
+            hintText: 'Tappez/Collez une clé publique, ou scannez',
+            hintStyle: TextStyle(fontSize: 15),
+            contentPadding: EdgeInsets.symmetric(horizontal: 7, vertical: 15),
+            border: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            errorBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+          ),
+          style: TextStyle(
+              fontSize: 15.0,
+              color: Colors.black,
+              fontWeight: FontWeight.bold)),
+      historyQuery(),
+    ];
+  }
+
+  Expanded historyQuery() {
+    return Expanded(
+        child: Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisSize: MainAxisSize.max,
+      children: <Widget>[
+        Query(
+          options: QueryOptions(
+            document: gql(getHistory),
+            variables: <String, dynamic>{
+              'pubkey': this.pubkey,
+              'number': nRepositories,
+              // set cursor to null so as to start at the beginning
+              'cursor': null
+            },
+          ),
+          builder: (QueryResult result, {refetch, FetchMore fetchMore}) {
+            if (result.isLoading && result.data == null) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+
+            if (result.hasException) {
+              return Text('\nErrors: \n  ' + result.exception.toString());
+            }
+
+            if (result.data == null && result.exception.toString() == null) {
+              return const Text('Both data and errors are null');
+            }
+
+            final List<dynamic> blockchainTX =
+                (result.data['txsHistoryBc']['both']['edges'] as List<dynamic>);
+
+            final Map pageInfo =
+                result.data['txsHistoryBc']['both']['pageInfo'];
+
+            final String fetchMoreCursor =
+                pageInfo['endCursor'] ?? 'cest null...';
+
+            FetchMoreOptions opts = FetchMoreOptions(
+              variables: {'cursor': fetchMoreCursor},
+              updateQuery: (previousResultData, fetchMoreResultData) {
+                final List<dynamic> repos = [
+                  ...previousResultData['txsHistoryBc']['both']['edges']
+                      as List<dynamic>,
+                  ...fetchMoreResultData['txsHistoryBc']['both']['edges']
+                      as List<dynamic>
+                ];
+
+                fetchMoreResultData['txsHistoryBc']['both']['edges'] = repos;
+                return fetchMoreResultData;
+              },
+            );
+
+            _scrollController
+              ..addListener(() {
+                if (_scrollController.position.pixels ==
+                    _scrollController.position.maxScrollExtent) {
+                  if (!result.isLoading) {
+                    print(
+                        "DEBUG H fetchMoreCursor in scrollController: $fetchMoreCursor");
+                    fetchMore(opts);
+                  }
+                }
+              });
+
+            print(
+                "###### DEBUG H Parse blockchainTX list. Cursor: $fetchMoreCursor ######");
+            List _transBC = parseHistory(blockchainTX);
+
+            return Expanded(
+              child: HistoryListView(
+                  scrollController: _scrollController,
+                  transBC: _transBC,
+                  historyData: result),
+            );
+          },
+        ),
+      ],
+    ));
+  }
 
   Future _scan() async {
     await Permission.camera.request();
     String barcode = await scanner.scan();
     // this._outputPubkey.text = "";
     if (barcode != null) {
+      this._outputPubkey.text = barcode;
       isPubkey(barcode);
     }
     return barcode;
@@ -307,46 +182,92 @@ class _HistoryListScreenState extends State<HistoryListScreen>
         pubkey.length > 42 &&
         pubkey.length < 45) {
       print("C'est une pubkey !!!");
-      showHistory(pubkey);
-
-      // var tata = _scrollController;
-
-      notifyListeners();
-
-      setState(() {
-        print('setPubkey: ' + pubkey);
-        pubkey = pubkey;
-        // // fetchMoreCursor = fetchMoreCursor;
-      });
 
       return pubkey;
-    } else {
-      return '';
     }
+
+    return '';
   }
+}
 
-  Future showHistory(pubkey) async {
-    // String pubkey = await _scan();
-    if (pubkey == null) {
-      print('nothing return.');
-    } else {
-      this._outputPubkey.text = "";
-      this._outputBalance.text = "";
-      // final udValue = await getUD();
-      this._outputPubkey.text = pubkey;
-      final myBalance = await getBalance(pubkey.toString());
-      this._outputBalance.text = myBalance.toString() + " Ğ1";
-    }
+class HistoryListView extends StatelessWidget {
+  const HistoryListView(
+      {Key key,
+      @required ScrollController scrollController,
+      @required this.transBC,
+      @required this.historyData})
+      : _scrollController = scrollController,
+        super(key: key);
+
+  final ScrollController _scrollController;
+  final List transBC;
+  final historyData;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      controller: _scrollController,
+      children: <Widget>[
+        for (var repository in transBC)
+          Card(
+            // 1
+            elevation: 2.0,
+            // 2
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(3.0)),
+            // 3
+            child: Padding(
+              padding: const EdgeInsets.all(100.0),
+              // 4
+              child: Column(
+                children: <Widget>[
+                  SizedBox(
+                    height: 8.0,
+                  ),
+                  Text(
+                    // Date
+                    repository[1].toString(),
+                    style: TextStyle(
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w300,
+                    ),
+                  ),
+                  Text(
+                    // Issuer
+                    repository[2],
+                    style: TextStyle(
+                      fontSize: 13.0,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    // Amount
+                    repository[3].toString(),
+                    style: TextStyle(
+                      fontSize: 15.0,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    // Comment
+                    repository[5].toString(),
+                    style: TextStyle(
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        if (historyData.isLoading)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              CircularProgressIndicator(),
+            ],
+          ),
+      ],
+    );
   }
-
-  // Future _generateBarCode(String inputCode) async {
-  //   if (inputCode != null && inputCode.isNotEmpty) {
-  //     // print("Résultat du scan: " + inputCode);
-  //     Uint8List result = await scanner.generateBarCode(inputCode);
-  //     this.setState(() => this.bytes = result);
-  //   } else {
-  //     print("Veuillez renseigner une clé publique");
-  //   }
-  // }
-
 }

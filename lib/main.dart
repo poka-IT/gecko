@@ -11,15 +11,13 @@ class Gecko extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _httpLink = HttpLink(
-      'http://127.0.0.1:30901/gva',
-      // defaultHeaders: <String, String>{
-      //   'Content-Type': 'application/json',
-      // },
+      // 'http://192.168.1.91:10060/gva',
+      'https://g1.librelois.fr/gva',
     );
 
     final _client = ValueNotifier(
       GraphQLClient(
-        cache: GraphQLCache(),
+        cache: GraphQLCache(store: null),
         link: _httpLink,
       ),
     );

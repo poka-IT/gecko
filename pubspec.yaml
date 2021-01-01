@@ -28,7 +28,6 @@ dependencies:
   permission_handler:
   image_gallery_saver:
   image_picker:
-  infinite_scroll_pagination: ^2.2.3
   graphql_flutter: ^4.0.0-beta.6 #^3.1.0
 
 

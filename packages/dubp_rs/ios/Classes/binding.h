@@ -161,21 +161,49 @@ extern "C"
 {
 #endif // __cplusplus
 
-  /**
- * Destroy the Tokio Runtime, and return 1 if everything is okay
- */
-  int32_t destroy_runtime(RuntimePtr runtime);
-
   int32_t error_message_utf8(char *buf, int32_t length);
 
   int32_t last_error_length(void);
 
-  int32_t load_page(RuntimePtr runtime, const char *url, DartPort port_id);
+  int32_t change_dewif_pin(int64_t port,
+                         const char *currency,
+                         const char *dewif,
+                         const char *old_pin,
+                         const char *new_pin);
 
-  /**
- * Setup a new Tokio Runtime and return a pointer to it so it could be used later to run tasks
- */
-  RuntimePtr setup_runtime(DartPostCObjectFnPtr post_cobject);
+  int32_t error_message_utf8(char *buf, int32_t length);
+
+  int32_t gen_dewif(int64_t port,
+                    const char *currency,
+                    uint32_t language,
+                    const char *mnemonic,
+                    const char *pin);
+
+  int32_t gen_mnemonic(int64_t port, uint32_t language);
+
+  int32_t gen_pin10(int64_t port);
+
+  int32_t gen_pin6(int64_t port);
+
+  int32_t gen_pin8(int64_t port);
+
+  int32_t get_dewif_pubkey(int64_t port, const char *currency, const char *dewif, const char *pin);
+
+  int32_t last_error_length(void);
+
+  int32_t mnemonic_to_pubkey(int64_t port, uint32_t language, const char *mnemonic_phrase);
+
+  int32_t sign(int64_t port,
+              const char *currency,
+              const char *dewif,
+              const char *pin,
+              const char *msg);
+
+  int32_t sign_several(int64_t port,
+                      const char *currency,
+                      const char *dewif,
+                      const char *pin,
+                      const char *msgs);
 
 #ifdef __cplusplus
 } // extern "C"

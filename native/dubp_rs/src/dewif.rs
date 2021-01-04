@@ -106,7 +106,7 @@ pub(super) fn sign_several(
     currency: &str,
     dewif: &str,
     pin: &str,
-    msgs: &str,
+    msgs: &[&str],
 ) -> Result<Vec<String>, DubpError> {
     let currency = parse_currency(currency)?;
     let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
@@ -118,7 +118,7 @@ pub(super) fn sign_several(
     if let Some(KeyPairEnum::Ed25519(keypair)) = keypairs.next() {
         let signator = keypair.generate_signator();
         Ok(msgs
-            .split("\n\t\n")
+            .iter()
             .map(|msg| signator.sign(msg.as_bytes()).to_base64())
             .collect())
     } else {

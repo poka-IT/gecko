@@ -204,17 +204,24 @@ pub extern "C" fn sign_several(
     currency: *const raw::c_char,
     dewif: *const raw::c_char,
     pin: *const raw::c_char,
-    msgs: *const raw::c_char,
+    msgs_len: usize,
+    msgs: *const *const raw::c_char,
 ) -> i32 {
     let currency = cstr!(currency);
     let dewif = cstr!(dewif);
     let pin = cstr!(pin);
-    let msgs = cstr!(msgs);
+
+    let msgs_slice: &[*const raw::c_char] = unsafe { std::slice::from_raw_parts(msgs, msgs_len) };
+    let mut vec = Vec::with_capacity(msgs_len);
+    for ptr_c_char in msgs_slice {
+        vec.push(cstr!(*ptr_c_char));
+    }
+
     Isolate::new(port).post(error!(dewif::sign_several(
         currency,
         dewif,
         &pin.to_ascii_uppercase(),
-        msgs
+        &vec
     )));
     1
 }

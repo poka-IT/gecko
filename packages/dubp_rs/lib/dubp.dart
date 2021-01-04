@@ -242,17 +242,28 @@ class DubpRust {
       List<String> messages}) {
     final completer = Completer<List<String>>();
     final sendPort = singleCompletePort<List<String>, List<String>>(completer);
+
     final res = native.sign_several(
       sendPort.nativePort,
       Utf8.toUtf8(currency),
       Utf8.toUtf8(dewif),
       Utf8.toUtf8(pin),
-      Utf8.toUtf8(messages.join('\n\t\n')),
+      messages.length,
+      _listStringToPtr(messages),
     );
     if (res != 1) {
       _throwError();
     }
     return completer.future;
+  }
+
+  static Pointer<Pointer<Utf8>> _listStringToPtr(List<String> list) {
+    final listUtf8 = list.map(Utf8.toUtf8).toList();
+    final Pointer<Pointer<Utf8>> ptr = allocate(count: listUtf8.length);
+    for (var i = 0; i < listUtf8.length; i++) {
+      ptr[i] = listUtf8[i];
+    }
+    return ptr;
   }
 
   static void _throwError() {

@@ -7,10 +7,16 @@ Flutter package that bind [dubp-rs-libs] Rust crates.
 ### Prerequisites
 
 * Android SDK
-* Android NDK
+* Android **N**DK (**Native** Development Kit)
 * Rust and cargo
 * Cargo plugin cargo-make: `cargo install cargo-make`
 * LLVM/Clang (see dedicated section below)
+
+You must indicate where the SDK and NDK are located via the `ANDROID_SDK_ROOT` and `ANDROID_NDK_HOME` environment variables.
+For example:
+
+    export ANDROID_SDK_ROOT="/home/user/dev/android_sdk"
+    export ANDROID_NDK_HOME="/home/user/dev/android_sdk/ndk/22.0.7026061"
 
 You will also need to add targets for all Android architectures:
 

@@ -2,6 +2,74 @@
 
 Flutter package that bind [dubp-rs-libs] Rust crates.
 
+## Setup
+
+### Prerequisites
+
+* Android SDK
+* Android NDK
+* Rust and cargo
+* Cargo plugin cargo-make: `cargo install cargo-make`
+* LLVM/Clang (see dedicated section below)
+
+You will also need to add targets for all Android architectures:
+
+```sh
+rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android
+```
+
+If you develop on mac, you can also add targets for iOS:
+
+```sh
+rustup target add aarch64-apple-ios x86_64-apple-ios
+```
+
+### LLVM/Clang
+
+The project use [`dart-bindgen`](https://github.com/sunshine-protocol/dart-bindgen) which requires LLVM/Clang. Install LLVM (10+) in the following way:
+
+#### ubuntu/linux
+
+1. Install libclangdev - `sudo apt-get install libclang-dev`.
+
+#### Windows
+
+1. Install Visual Studio with C++ development support.
+2. Install [LLVM](https://releases.llvm.org/download.html) or `winget install -e --id LLVM.LLVM`.
+
+#### MacOS
+
+1. Install Xcode.
+2. Install LLVM - `brew install llvm`.
+
+## Compile
+
+### For development
+
+**To reduce the compilation time of the Rust code** during your development, you can **compile only for the target corresponding to your android emulator**. Here is how to do it **depending on the architecture of your emulator**:
+
+* 32bit emulator (`x86`/`i686` architecture)
+
+```sh
+cargo make android-dev32
+```
+
+* 64bit emulator (`x86_64` architecture)
+
+```sh
+cargo make android-dev
+```
+
+### For release
+
+In the Root of the project simply run:
+
+```sh
+cargo make
+```
+
+WARNING: This will take a lot of time because the Rust code will have to be recompiled for each different architecture, 4 times for android and 2 times for iOS!
+
 ## Use
 
 You must execute this instruction at startup of your application:
@@ -15,7 +83,7 @@ DubpRust.setup();
 #### Function signature
 
 ```dart
-static Future<String> DubpRust.genMnemonic({Language language = Language.English});
+static Future<String> DubpRust.genMnemonic({Language language = Language.english});
 ```
 
 #### Usage example
@@ -24,10 +92,10 @@ static Future<String> DubpRust.genMnemonic({Language language = Language.English
 String mnemonic = await DubpRust.genMnemonic();
 ```
 
-You can choose a language (English by default):
+You can choose a language (english by default):
 
 ```dart
-String mnemonic = await DubpRust.genMnemonic(language: Language.French);
+String mnemonic = await DubpRust.genMnemonic(language: Language.french);
 ```
 
 ### Generate a wallet
@@ -37,20 +105,20 @@ String mnemonic = await DubpRust.genMnemonic(language: Language.French);
 ```dart
 static Future<NewWallet> genWalletFromMnemonic({
     String currency = "g1",
-    Language language = Language.English,
+    Language language = Language.english,
     String mnemonic,
-    PinLength pinLength = PinLength.Six
+    PinLength pinLength = PinLength.six
 });
 ```
 
-If the mnemonic is not in English, you must indicate the language of the mnemonic (necessary for the verification of its validity).
+If the mnemonic is not in english, you must indicate the language of the mnemonic (necessary for the verification of its validity).
 If the wallet to be generated is not dedicated to the Ğ1 currency, you must indicate the currency for which this wallet will be used.
 
 #### Usage example
 
 ```dart
 NewWallet new_wallet = await DubpRust.genWalletFromMnemonic(
-    language: Language.English,
+    language: Language.english,
     mnemonic: "tongue cute mail fossil great frozen same social weasel impact brush kind"
 );
 ```
@@ -59,9 +127,9 @@ You can choose a different length for the pin code (6 by default):
 
 ```dart
 NewWallet new_wallet = await DubpRust.genWalletFromMnemonic(
-    language: Language.English,
+    language: Language.english,
     mnemonic: "tongue cute mail fossil great frozen same social weasel impact brush kind",
-    pinLength: PinLength.Eight
+    pinLength: PinLength.eight
 );
 ```
 
@@ -101,7 +169,7 @@ static Future<NewWallet> changeDewifPin({
     String currency = "g1",
     String dewif,
     String oldPin,
-    PinLength newPinLength = PinLength.Six
+    PinLength newPinLength = PinLength.six
 });
 ```
 

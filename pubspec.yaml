@@ -23,6 +23,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  dubp:
+    path: packages/dubp_rs
   flutter_launcher_icons: "^0.8.0"
   qrscan: ^0.2.21
   permission_handler:

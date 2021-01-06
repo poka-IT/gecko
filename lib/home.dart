@@ -283,6 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (barcode != null) {
       this._outputPubkey.text = barcode;
       isPubkey(barcode);
+      onTabTapped(0);
     }
     return barcode;
   }

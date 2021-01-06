@@ -77,9 +77,6 @@ class _GenerateWalletScreen extends State<GenerateWalletScreen> {
       );
     }
 
-    // setState(() {
-    //   this._mnemonic.text = generatedMnemonic;
-    // });
     generateWallet(generatedMnemonic);
   }
 

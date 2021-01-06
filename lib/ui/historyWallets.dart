@@ -19,6 +19,10 @@ import 'package:truncate/truncate.dart';
 // }
 
 class HistoryListView extends StatelessWidget {
+  // const String({this.isPubkey});
+  // final PubkeyCallBack isPubkey;
+  // GlobalKey<MyState> _myKey = GlobalKey();
+
   const HistoryListView(
       {Key key,
       @required ScrollController scrollController,
@@ -55,12 +59,12 @@ class HistoryListView extends StatelessWidget {
                 leading: Text(repository[3].toString()),
                 title: Text(repository[1].toString() +
                     '\n' +
-                    truncate(repository[2].toString(), 17,
+                    truncate(repository[2], 17,
                         omission: "...", position: TruncatePosition.end)),
-                subtitle: Text(repository[5].toString()),
+                subtitle: Text(repository[5]),
                 dense: true,
                 // enabled: _act == 2,
-                onTap: () {/* TODO: Load this history */}),
+                onTap: () {/* TODO: Load this history: repository[2] */}),
           if (historyData.isLoading)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -80,3 +84,5 @@ class HistoryListView extends StatelessWidget {
     );
   }
 }
+
+// typedef PubkeyCallBack = void Function(String pubkey);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:gecko/ui/generateWallets.dart';
 import 'package:gecko/ui/historyWallets.dart';
@@ -75,7 +76,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_scrollListener);
@@ -274,10 +274,12 @@ class _HomeScreenState extends State<HomeScreen> {
       barcode = await scanner.scan();
     } catch (e, stack) {
       print(e);
-      await sentry.Sentry.captureException(
-        e,
-        stackTrace: stack,
-      );
+      if (kReleaseMode) {
+        await sentry.Sentry.captureException(
+          e,
+          stackTrace: stack,
+        );
+      }
     }
     // this._outputPubkey.text = "";
     if (barcode != null) {

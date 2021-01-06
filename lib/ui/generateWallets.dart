@@ -77,9 +77,9 @@ class _GenerateWalletScreen extends State<GenerateWalletScreen> {
       );
     }
 
-    setState(() {
-      this._mnemonic.text = generatedMnemonic;
-    });
+    // setState(() {
+    //   this._mnemonic.text = generatedMnemonic;
+    // });
     generateWallet(generatedMnemonic);
   }
 
@@ -97,6 +97,7 @@ class _GenerateWalletScreen extends State<GenerateWalletScreen> {
     }
 
     setState(() {
+      this._mnemonic.text = generatedMnemonic;
       this._pubkey.text = newWallet.publicKey;
       this._dewif.text = newWallet.dewif;
       this._pin.text = newWallet.pin;

@@ -46,7 +46,7 @@ const String getHistory = r'''
   }
   ''';
 
-const String getxBalance = r'''
+const String getBalance = r'''
   query ($pubkey: String!) {
     balance(script: "$pubkey") {
       amount

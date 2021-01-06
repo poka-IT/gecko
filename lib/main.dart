@@ -1,11 +1,20 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-// import 'package:image_gallery_saver/image_gallery_saver.dart';
-// import 'package:flutter_html_view';
 import 'home.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
-void main() => runApp(Gecko());
+// void main() => runApp(Gecko());
+
+Future<void> main() async {
+  await SentryFlutter.init(
+    (options) {
+      options.dsn =
+          'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
+    },
+    appRunner: () => runApp(Gecko()),
+  );
+}
 
 class Gecko extends StatelessWidget {
   @override
@@ -27,7 +36,7 @@ class Gecko extends StatelessWidget {
           ThemeData(primaryColor: Colors.blue[50], accentColor: Colors.black),
       home: GraphQLProvider(
         client: _client,
-        child: HistoryListScreen(),
+        child: HomeScreen(),
       ),
     );
   }

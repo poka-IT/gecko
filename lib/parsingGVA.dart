@@ -1,10 +1,6 @@
 import 'dart:math';
 import 'package:intl/intl.dart';
 
-// Configure node
-const graphqlEndpoint = "https://g1.librelois.fr/gva";
-// const graphqlEndpoint = 'http://192.168.1.91:10060/gva';
-
 List parseHistory(txs) {
   var transBC = [];
   int i = 0;
@@ -21,7 +17,7 @@ List parseHistory(txs) {
     transBC[i] = [];
     final dateBrut =
         DateTime.fromMillisecondsSinceEpoch(transaction['writtenTime'] * 1000);
-    final DateFormat formatter = DateFormat('dd-MM-yy - H:M');
+    final DateFormat formatter = DateFormat('dd-MM-yy - HH:mm');
     final date = formatter.format(dateBrut);
     transBC[i].add(transaction['writtenTime']);
     transBC[i].add(date);

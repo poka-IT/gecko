@@ -31,6 +31,9 @@ dependencies:
   image_gallery_saver:
   image_picker:
   graphql_flutter: ^4.0.0-beta.6 #^3.1.0
+  provider: ^4.3.2+3
+  truncate: ^2.1.2
+  sentry_flutter: ^4.0.1
 
 
 flutter_icons:

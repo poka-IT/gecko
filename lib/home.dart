@@ -1,21 +1,95 @@
 import 'package:flutter/material.dart';
+import 'package:qrscan/qrscan.dart' as scanner;
+import 'package:gecko/ui/generateWallets.dart';
+import 'package:gecko/ui/historyWallets.dart';
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'api.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'parsingGVA.dart';
 import 'query.dart';
+import 'package:sentry/sentry.dart' as sentry;
+
+// method to call from widget to fetchmore queries
+typedef FetchMore = dynamic Function(FetchMoreOptions options);
+
+typedef Refetch = Future<QueryResult> Function();
+
+typedef QueryBuilder = Widget Function(
+  QueryResult result, {
+  Refetch refetch,
+  FetchMore fetchMore,
+});
 
 //ignore: must_be_immutable
-class HistoryListScreen extends StatelessWidget with ChangeNotifier {
+class HomeScreen extends StatefulWidget {
+  // const HistoryListScreen({
+  //   final Key key,
+  //   @required this.options,
+  //   @required this.builder,
+  // }) : super(key: key);
+
+  // final QueryOptions options;
+  // final QueryBuilder builder;
+
+  HomeScreen({this.screens});
+
+  static const Tag = "HistoryListScreen";
+  final List<Widget> screens;
+
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _currentIndex = 0;
+  Widget currentScreen;
+
+  void onTabTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
   Uint8List bytes = Uint8List(0);
+
   final TextEditingController _outputPubkey = new TextEditingController();
-  final nRepositories = 3;
-  String pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'; // For debug
-  bool isBuilding = true; // Just for debug
+
+  final nRepositories = 20;
+
+  // String pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'; // For debug
+  String pubkey = '';
+  bool isBuilding = true;
   ScrollController _scrollController = new ScrollController();
+
+  _scrollListener() {
+    if (_scrollController.offset >=
+            _scrollController.position.maxScrollExtent &&
+        !_scrollController.position.outOfRange) {
+      setState(() {
+        print("reach the bottom");
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_scrollListener);
+
+    // _scrollController
+    //   ..addListener(() {
+    //     if (_scrollController.position.pixels ==
+    //         _scrollController.position.maxScrollExtent) {
+    //       // print(
+    //       //     "DEBUG H fetchMoreCursor in scrollController: $fetchMoreCursor");
+    //       fetchMore(opts);
+    //     }
+    //   });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,31 +98,52 @@ class HistoryListScreen extends StatelessWidget with ChangeNotifier {
     print('isBuilding: ' + isBuilding.toString());
     return MaterialApp(
         home: Scaffold(
-            backgroundColor: Colors.grey[300],
-            body: SafeArea(
-              child: Column(
-                children: masterHome,
-              ),
-            ),
-            floatingActionButton: Container(
-              height: 80.0,
-              width: 80.0,
-              child: FittedBox(
-                child: FloatingActionButton(
-                  onPressed: () => _scan(),
-                  child: Container(
-                      height: 40.0,
-                      width: 40.0,
-                      child: Image.asset('images/scanner.png')),
-                  backgroundColor: Color.fromARGB(500, 204, 255, 255),
-                ),
-              ),
-            )));
+      backgroundColor: Colors.grey[300],
+      body: SafeArea(
+        child: IndexedStack(
+          index: _currentIndex,
+          children: <Widget>[
+            historyScreen(),
+            GenerateWalletScreen(),
+            //  FriendsScreen()
+          ],
+        ),
+      ),
+      floatingActionButton: Container(
+        height: 80.0,
+        width: 80.0,
+        child: FittedBox(
+          child: FloatingActionButton(
+            onPressed: () => _scan(),
+            child: Container(
+                height: 40.0,
+                width: 40.0,
+                child: Image.asset('images/scanner.png')),
+            backgroundColor: Color.fromARGB(500, 204, 255, 255),
+          ),
+        ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        fixedColor: Colors.black,
+        type: BottomNavigationBarType.fixed,
+        onTap: onTabTapped,
+        currentIndex: _currentIndex,
+        items: [
+          BottomNavigationBarItem(
+            icon: new Icon(Icons.format_list_bulleted),
+            label: 'HOME',
+          ),
+          BottomNavigationBarItem(
+            icon: new Icon(Icons.settings),
+            label: 'GENERATE WALLET',
+          )
+        ],
+      ),
+    ));
   }
 
-  List<Widget> get masterHome {
-    return <Widget>[
-      SizedBox(height: 20),
+  Widget historyScreen() {
+    return Column(children: <Widget>[
       TextField(
           onChanged: (text) {
             print("Clé tappxé: $text");
@@ -73,7 +168,7 @@ class HistoryListScreen extends StatelessWidget with ChangeNotifier {
               color: Colors.black,
               fontWeight: FontWeight.bold)),
       historyQuery(),
-    ];
+    ]);
   }
 
   Expanded historyQuery() {
@@ -113,8 +208,7 @@ class HistoryListScreen extends StatelessWidget with ChangeNotifier {
             final Map pageInfo =
                 result.data['txsHistoryBc']['both']['pageInfo'];
 
-            final String fetchMoreCursor =
-                pageInfo['endCursor'] ?? 'cest null...';
+            final String fetchMoreCursor = pageInfo['endCursor'];
 
             FetchMoreOptions opts = FetchMoreOptions(
               variables: {'cursor': fetchMoreCursor},
@@ -131,17 +225,31 @@ class HistoryListScreen extends StatelessWidget with ChangeNotifier {
               },
             );
 
-            _scrollController
-              ..addListener(() {
-                if (_scrollController.position.pixels ==
-                    _scrollController.position.maxScrollExtent) {
-                  if (!result.isLoading) {
-                    print(
-                        "DEBUG H fetchMoreCursor in scrollController: $fetchMoreCursor");
-                    fetchMore(opts);
-                  }
-                }
-              });
+            // _scrollController
+            //   ..addListener(() {
+            //     if (_scrollController.position.pixels ==
+            //         _scrollController.position.maxScrollExtent) {
+            //       if (!result.isLoading) {
+            //         print(
+            //             "DEBUG H fetchMoreCursor in scrollController: $fetchMoreCursor");
+            //         fetchMore(opts);
+            //       }
+            //     }
+            //   });
+
+            // s/o : https://stackoverflow.com/questions/54065354/how-to-detect-scroll-position-of-listview-in-flutter/54188385#54188385
+            // new NotificationListener(
+            //   child: new ListView(
+            //     controller: _scrollController,
+            //   ),
+            //   onNotification: (t) {
+            //     if (t is ScrollEndNotification) {
+            //       fetchMore(opts);
+            //     }
+            //   },
+            // );
+
+            // fetchMore(opts);
 
             print(
                 "###### DEBUG H Parse blockchainTX list. Cursor: $fetchMoreCursor ######");
@@ -161,7 +269,16 @@ class HistoryListScreen extends StatelessWidget with ChangeNotifier {
 
   Future _scan() async {
     await Permission.camera.request();
-    String barcode = await scanner.scan();
+    String barcode;
+    try {
+      barcode = await scanner.scan();
+    } catch (e, stack) {
+      print(e);
+      await sentry.Sentry.captureException(
+        e,
+        stackTrace: stack,
+      );
+    }
     // this._outputPubkey.text = "";
     if (barcode != null) {
       this._outputPubkey.text = barcode;
@@ -183,91 +300,13 @@ class HistoryListScreen extends StatelessWidget with ChangeNotifier {
         pubkey.length < 45) {
       print("C'est une pubkey !!!");
 
+      setState(() {
+        this.pubkey = pubkey;
+      });
+
       return pubkey;
     }
 
     return '';
-  }
-}
-
-class HistoryListView extends StatelessWidget {
-  const HistoryListView(
-      {Key key,
-      @required ScrollController scrollController,
-      @required this.transBC,
-      @required this.historyData})
-      : _scrollController = scrollController,
-        super(key: key);
-
-  final ScrollController _scrollController;
-  final List transBC;
-  final historyData;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      controller: _scrollController,
-      children: <Widget>[
-        for (var repository in transBC)
-          Card(
-            // 1
-            elevation: 2.0,
-            // 2
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(3.0)),
-            // 3
-            child: Padding(
-              padding: const EdgeInsets.all(100.0),
-              // 4
-              child: Column(
-                children: <Widget>[
-                  SizedBox(
-                    height: 8.0,
-                  ),
-                  Text(
-                    // Date
-                    repository[1].toString(),
-                    style: TextStyle(
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w300,
-                    ),
-                  ),
-                  Text(
-                    // Issuer
-                    repository[2],
-                    style: TextStyle(
-                      fontSize: 13.0,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Text(
-                    // Amount
-                    repository[3].toString(),
-                    style: TextStyle(
-                      fontSize: 15.0,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Text(
-                    // Comment
-                    repository[5].toString(),
-                    style: TextStyle(
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        if (historyData.isLoading)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              CircularProgressIndicator(),
-            ],
-          ),
-      ],
-    );
   }
 }

@@ -218,8 +218,7 @@ class HistoryScreenState extends State<HistoryScreen> {
   }
 
   String isPubkey(pubkey) {
-    // final validCharacters = RegExp(r'^[a-zA-Z0-9]+$');
-    RegExp regExp = new RegExp(
+    final RegExp regExp = new RegExp(
       r'^[a-zA-Z0-9]+$',
       caseSensitive: false,
       multiLine: false,

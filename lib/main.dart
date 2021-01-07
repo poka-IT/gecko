@@ -9,7 +9,6 @@ import 'package:flutter/foundation.dart';
 
 Future<void> main() async {
   if (kReleaseMode) {
-    print('Release');
     await SentryFlutter.init(
       (options) {
         options.dsn =
@@ -18,7 +17,7 @@ Future<void> main() async {
       appRunner: () => runApp(Gecko()),
     );
   } else {
-    print('Debug');
+    print('Debug mode enabled: No sentry alerte');
     runApp(Gecko());
   }
 }

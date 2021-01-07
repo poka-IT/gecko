@@ -6,15 +6,6 @@ import 'package:gecko/ui/historyScreen.dart';
 
 //ignore: must_be_immutable
 class HomeScreen extends StatefulWidget {
-  // const HistoryListScreen({
-  //   final Key key,
-  //   @required this.options,
-  //   @required this.builder,
-  // }) : super(key: key);
-
-  // final QueryOptions options;
-  // final QueryBuilder builder;
-
   HomeScreen({this.screens});
   final List<Widget> screens;
 
@@ -49,7 +40,6 @@ class _HomeScreenState extends State<HomeScreen> {
               keyHistory: _keyHistory,
             ),
             GenerateWalletScreen(),
-            //  FriendsScreen()
           ],
         ),
       ),
@@ -58,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
         width: 80.0,
         child: FittedBox(
           child: FloatingActionButton(
-            onPressed: () => _keyHistory.currentState.scan(), // _scan(),
+            onPressed: () => _keyHistory.currentState.scan(),
             child: Container(
                 height: 40.0,
                 width: 40.0,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
-import 'package:gecko/ui/historyElements.dart';
+import 'package:gecko/ui/historyListBuilder.dart';
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui';
@@ -183,7 +183,7 @@ class HistoryScreenState extends State<HistoryScreen> {
             List _transBC = parseHistory(blockchainTX);
 
             return Expanded(
-              child: HistoryElements(
+              child: HistoryListBuilder(
                   scrollController: _scrollController,
                   transBC: _transBC,
                   historyData: result),

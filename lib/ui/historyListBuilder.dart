@@ -18,12 +18,12 @@ import 'package:truncate/truncate.dart';
 //   }
 // }
 
-class HistoryElements extends StatelessWidget {
+class HistoryListBuilder extends StatelessWidget {
   // const String({this.isPubkey});
   // final PubkeyCallBack isPubkey;
   // GlobalKey<MyState> _myKey = GlobalKey();
 
-  const HistoryElements(
+  const HistoryListBuilder(
       {Key key,
       @required ScrollController scrollController,
       @required this.transBC,

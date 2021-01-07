@@ -1,62 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
-import 'package:gecko/ui/generateWallets.dart';
-import 'package:gecko/ui/historyWallets.dart';
+import 'package:gecko/ui/historyElements.dart';
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'parsingGVA.dart';
-import 'query.dart';
+import 'package:gecko/parsingGVA.dart';
+import 'package:gecko/query.dart';
 import 'package:sentry/sentry.dart' as sentry;
 
-// method to call from widget to fetchmore queries
-typedef FetchMore = dynamic Function(FetchMoreOptions options);
-
-typedef Refetch = Future<QueryResult> Function();
-
-typedef QueryBuilder = Widget Function(
-  QueryResult result, {
-  Refetch refetch,
-  FetchMore fetchMore,
-});
-
 //ignore: must_be_immutable
-class HomeScreen extends StatefulWidget {
-  // const HistoryListScreen({
-  //   final Key key,
-  //   @required this.options,
-  //   @required this.builder,
-  // }) : super(key: key);
-
-  // final QueryOptions options;
-  // final QueryBuilder builder;
-
-  HomeScreen({this.screens});
-
-  static const Tag = "HistoryListScreen";
-  final List<Widget> screens;
+class HistoryScreen extends StatefulWidget {
+  const HistoryScreen({Key keyHistory}) : super(key: keyHistory);
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  State<StatefulWidget> createState() => HistoryScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 0;
+class HistoryScreenState extends State<HistoryScreen> {
+  int currentIndex = 0;
   Widget currentScreen;
 
   void onTabTapped(int index) {
     setState(() {
-      _currentIndex = index;
+      currentIndex = index;
     });
   }
 
   Uint8List bytes = Uint8List(0);
-
   final TextEditingController _outputPubkey = new TextEditingController();
-
   final nRepositories = 20;
 
   // String pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'; // For debug
@@ -96,53 +70,6 @@ class _HomeScreenState extends State<HomeScreen> {
     print('Build pubkey : ' + pubkey);
     print('Build this.pubkey : ' + this.pubkey);
     print('isBuilding: ' + isBuilding.toString());
-    return MaterialApp(
-        home: Scaffold(
-      backgroundColor: Colors.grey[300],
-      body: SafeArea(
-        child: IndexedStack(
-          index: _currentIndex,
-          children: <Widget>[
-            historyScreen(),
-            GenerateWalletScreen(),
-            //  FriendsScreen()
-          ],
-        ),
-      ),
-      floatingActionButton: Container(
-        height: 80.0,
-        width: 80.0,
-        child: FittedBox(
-          child: FloatingActionButton(
-            onPressed: () => _scan(),
-            child: Container(
-                height: 40.0,
-                width: 40.0,
-                child: Image.asset('images/scanner.png')),
-            backgroundColor: Color.fromARGB(500, 204, 255, 255),
-          ),
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        fixedColor: Colors.black,
-        type: BottomNavigationBarType.fixed,
-        onTap: onTabTapped,
-        currentIndex: _currentIndex,
-        items: [
-          BottomNavigationBarItem(
-            icon: new Icon(Icons.format_list_bulleted),
-            label: 'HOME',
-          ),
-          BottomNavigationBarItem(
-            icon: new Icon(Icons.settings),
-            label: 'GENERATE WALLET',
-          )
-        ],
-      ),
-    ));
-  }
-
-  Widget historyScreen() {
     return Column(children: <Widget>[
       TextField(
           onChanged: (text) {
@@ -256,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
             List _transBC = parseHistory(blockchainTX);
 
             return Expanded(
-              child: HistoryListView(
+              child: HistoryElements(
                   scrollController: _scrollController,
                   transBC: _transBC,
                   historyData: result),
@@ -267,7 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ));
   }
 
-  Future _scan() async {
+  Future scan() async {
     await Permission.camera.request();
     String barcode;
     try {

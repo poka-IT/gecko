@@ -52,6 +52,7 @@ class _MyWalletState extends State<MyWalletsScreen> {
           // _keyHistory.currentState.scan();
         },
       ),
+      SizedBox(height: 12),
       Form(
         key: formKey,
         child: Padding(

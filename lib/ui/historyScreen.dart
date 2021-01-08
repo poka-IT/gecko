@@ -1,15 +1,15 @@
+import 'package:gecko/parsingGVA.dart';
+import 'package:gecko/query.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
-import 'package:gecko/ui/historyListBuilder.dart';
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:gecko/parsingGVA.dart';
-import 'package:gecko/query.dart';
 import 'package:sentry/sentry.dart' as sentry;
+import 'package:truncate/truncate.dart';
 
 //ignore: must_be_immutable
 class HistoryScreen extends StatefulWidget {
@@ -33,8 +33,8 @@ class HistoryScreenState extends State<HistoryScreen> {
   final TextEditingController _outputPubkey = new TextEditingController();
   final nRepositories = 20;
 
-  // String pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'; // For debug
-  String pubkey = '';
+  String pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'; // For debug
+  // String pubkey = '';
   bool isBuilding = true;
   ScrollController _scrollController = new ScrollController();
 
@@ -183,11 +183,31 @@ class HistoryScreenState extends State<HistoryScreen> {
             List _transBC = parseHistory(blockchainTX);
 
             return Expanded(
-              child: HistoryListBuilder(
-                  scrollController: _scrollController,
-                  transBC: _transBC,
-                  historyData: result),
-            );
+                child: ListView(
+              controller: _scrollController,
+              children: <Widget>[
+                for (var repository in _transBC)
+                  ListTile(
+                      contentPadding: const EdgeInsets.all(5.0),
+                      leading: Text(repository[3].toString()),
+                      title: Text(repository[1].toString() +
+                          '\n' +
+                          truncate(repository[2], 17,
+                              omission: "...", position: TruncatePosition.end)),
+                      subtitle: Text(repository[5]),
+                      dense: true,
+                      onTap: () {
+                        isPubkey(repository[2]);
+                      }),
+                if (result.isLoading)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      CircularProgressIndicator(),
+                    ],
+                  ),
+              ],
+            ));
           },
         ),
       ],
@@ -231,6 +251,7 @@ class HistoryScreenState extends State<HistoryScreen> {
 
       setState(() {
         this.pubkey = pubkey;
+        this._outputPubkey.text = pubkey;
       });
 
       return pubkey;

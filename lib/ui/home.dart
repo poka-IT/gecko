@@ -12,18 +12,18 @@ class HomeScreen extends StatefulWidget {
   final List<Widget> screens;
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  HomeScreenState createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class HomeScreenState extends State<HomeScreen> {
   GlobalKey<HistoryScreenState> _keyHistory = GlobalKey();
 
-  int _currentIndex = 0;
+  int currentIndex = 0;
   Widget currentScreen;
 
   void onTabTapped(int index) {
     setState(() {
-      _currentIndex = index;
+      currentIndex = index;
     });
   }
 
@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.grey[300],
       body: SafeArea(
         child: IndexedStack(
-          index: _currentIndex,
+          index: currentIndex,
           children: <Widget>[
             HistoryScreen(
               keyHistory: _keyHistory,
@@ -51,7 +51,13 @@ class _HomeScreenState extends State<HomeScreen> {
         width: 80.0,
         child: FittedBox(
           child: FloatingActionButton(
-            onPressed: () => _keyHistory.currentState.scan(),
+            onPressed: () async {
+              final resultScan = await _keyHistory.currentState.scan();
+              print(resultScan);
+              if (resultScan != 'false') {
+                onTabTapped(0);
+              }
+            },
             child: Container(
                 height: 40.0,
                 width: 40.0,
@@ -64,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
         fixedColor: Colors.black,
         type: BottomNavigationBarType.fixed,
         onTap: onTabTapped,
-        currentIndex: _currentIndex,
+        currentIndex: currentIndex,
         items: [
           BottomNavigationBarItem(
             icon: new Icon(Icons.format_list_bulleted),

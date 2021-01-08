@@ -20,14 +20,7 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class HistoryScreenState extends State<HistoryScreen> {
-  int currentIndex = 0;
   Widget currentScreen;
-
-  void onTabTapped(int index) {
-    setState(() {
-      currentIndex = index;
-    });
-  }
 
   Uint8List bytes = Uint8List(0);
   final TextEditingController _outputPubkey = new TextEditingController();
@@ -235,12 +228,14 @@ class HistoryScreenState extends State<HistoryScreen> {
           stackTrace: stack,
         );
       }
+      return 'false';
     }
     // this._outputPubkey.text = "";
     if (barcode != null) {
       this._outputPubkey.text = barcode;
       isPubkey(barcode);
-      onTabTapped(0);
+    } else {
+      return 'false';
     }
     return barcode;
   }

@@ -190,9 +190,10 @@ class HistoryScreenState extends State<HistoryScreen> {
                 child: ListView(
               controller: _scrollController,
               children: <Widget>[
-                Text(balance.toString() + ' Ğ1',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 30.0, color: Colors.black)),
+                if (this.pubkey != '')
+                  Text(balance.toString() + ' Ğ1',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 30.0, color: Colors.black)),
                 for (var repository in _transBC)
                   ListTile(
                       contentPadding: const EdgeInsets.all(5.0),

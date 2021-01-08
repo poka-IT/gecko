@@ -33,8 +33,8 @@ class HistoryScreenState extends State<HistoryScreen> {
   final TextEditingController _outputPubkey = new TextEditingController();
   final nRepositories = 20;
 
-  String pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'; // For debug
-  // String pubkey = '';
+  // String pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'; // For debug
+  String pubkey = '';
   bool isBuilding = true;
   ScrollController _scrollController = new ScrollController();
 
@@ -72,6 +72,7 @@ class HistoryScreenState extends State<HistoryScreen> {
     print('isBuilding: ' + isBuilding.toString());
     return Column(children: <Widget>[
       TextField(
+          // Entrée de la pubkey
           onChanged: (text) {
             print("Clé tappxé: $text");
             this.pubkey = text;
@@ -98,7 +99,7 @@ class HistoryScreenState extends State<HistoryScreen> {
     ]);
   }
 
-  Expanded historyQuery() {
+  historyQuery() {
     return Expanded(
         child: Column(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -136,6 +137,8 @@ class HistoryScreenState extends State<HistoryScreen> {
                 result.data['txsHistoryBc']['both']['pageInfo'];
 
             final String fetchMoreCursor = pageInfo['endCursor'];
+
+            final num balance = result.data['balance']['amount'] / 100;
 
             FetchMoreOptions opts = FetchMoreOptions(
               variables: {'cursor': fetchMoreCursor},
@@ -182,10 +185,14 @@ class HistoryScreenState extends State<HistoryScreen> {
                 "###### DEBUG H Parse blockchainTX list. Cursor: $fetchMoreCursor ######");
             List _transBC = parseHistory(blockchainTX);
 
+            // Build history list
             return Expanded(
                 child: ListView(
               controller: _scrollController,
               children: <Widget>[
+                Text(balance.toString() + ' Ğ1',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 30.0, color: Colors.black)),
                 for (var repository in _transBC)
                   ListTile(
                       contentPadding: const EdgeInsets.all(5.0),
@@ -253,6 +260,10 @@ class HistoryScreenState extends State<HistoryScreen> {
         this.pubkey = pubkey;
         this._outputPubkey.text = pubkey;
       });
+
+      // setState(() {
+      //   this._outputBalance.text = balance.toString();
+      // });
 
       return pubkey;
     }

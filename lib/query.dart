@@ -38,17 +38,21 @@ const String getHistory = r'''
                 outputs
                 writtenTime
             }
-        }
-        currentUd {
-          amount
-          base
       }
+      currentUd {
+        amount
+        base
+      }
+      balance(script: $pubkey) {
+        amount
+        base
+    }
   }
   ''';
 
 const String getBalance = r'''
   query ($pubkey: String!) {
-    balance(script: "$pubkey") {
+    balance(script: $pubkey) {
       amount
       base
     }

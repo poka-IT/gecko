@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import 'dart:ui';
 
+import 'myWallets.dart';
+
 //ignore: must_be_immutable
 class HomeScreen extends StatefulWidget {
   HomeScreen({this.screens});
@@ -40,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
               keyHistory: _keyHistory,
             ),
             GenerateWalletScreen(),
+            MyWalletsScreen(),
           ],
         ),
       ),
@@ -65,11 +68,15 @@ class _HomeScreenState extends State<HomeScreen> {
         items: [
           BottomNavigationBarItem(
             icon: new Icon(Icons.format_list_bulleted),
-            label: 'HOME',
+            label: 'Accueil',
           ),
           BottomNavigationBarItem(
-            icon: new Icon(Icons.settings),
-            label: 'GENERATE WALLET',
+            icon: new Icon(Icons.person_add_alt_1_rounded),
+            label: 'Générer un wallet',
+          ),
+          BottomNavigationBarItem(
+            icon: new Icon(Icons.lock),
+            label: 'Mes wallets',
           )
         ],
       ),

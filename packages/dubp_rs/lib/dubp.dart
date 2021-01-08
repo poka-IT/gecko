@@ -54,45 +54,35 @@ class DubpRust {
   /// Generate a random mnemonic
   static Future<String> genMnemonic({Language language = Language.english}) {
     final completer = Completer<String>();
-    final sendPort = singleCompletePort<String, String>(completer);
-    final res = native.gen_mnemonic(
+    final sendPort =
+        singleCompletePort<String, List>(completer, callback: _handleErr);
+    native.gen_mnemonic(
       sendPort.nativePort,
       language.index,
     );
-    if (res != 1) {
-      _throwError();
-    }
     return completer.future;
   }
 
   static Future<String> _genPin(PinLength pinLength) {
     final completer = Completer<String>();
-    final sendPort = singleCompletePort<String, String>(completer);
+    final sendPort =
+        singleCompletePort<String, List>(completer, callback: _handleErr);
     switch (pinLength) {
       case PinLength.ten:
-        final res = native.gen_pin10(
+        native.gen_pin10(
           sendPort.nativePort,
         );
-        if (res != 1) {
-          DubpRust._throwError();
-        }
         break;
       case PinLength.eight:
-        final res = native.gen_pin8(
+        native.gen_pin8(
           sendPort.nativePort,
         );
-        if (res != 1) {
-          DubpRust._throwError();
-        }
         break;
       case PinLength.six:
       default:
-        final res = native.gen_pin6(
+        native.gen_pin6(
           sendPort.nativePort,
         );
-        if (res != 1) {
-          DubpRust._throwError();
-        }
         break;
     }
     return completer.future;
@@ -110,33 +100,29 @@ class DubpRust {
     String newDewif;
     {
       final completer = Completer<String>();
-      final sendPort = singleCompletePort<String, String>(completer);
-      final res = native.change_dewif_pin(
+      final sendPort =
+          singleCompletePort<String, List>(completer, callback: _handleErr);
+      native.change_dewif_pin(
         sendPort.nativePort,
         Utf8.toUtf8(currency),
         Utf8.toUtf8(dewif),
         Utf8.toUtf8(oldPin),
         Utf8.toUtf8(newPin),
       );
-      if (res != 1) {
-        DubpRust._throwError();
-      }
       newDewif = await completer.future;
     }
     // publicKey
     String publicKey;
     {
       final completer = Completer<String>();
-      final sendPort = singleCompletePort<String, String>(completer);
-      final res = native.get_dewif_pubkey(
+      final sendPort =
+          singleCompletePort<String, List>(completer, callback: _handleErr);
+      native.get_dewif_pubkey(
         sendPort.nativePort,
         Utf8.toUtf8(currency),
         Utf8.toUtf8(newDewif),
         Utf8.toUtf8(newPin),
       );
-      if (res != 1) {
-        _throwError();
-      }
       publicKey = await completer.future;
     }
 
@@ -161,32 +147,28 @@ class DubpRust {
     String publicKey;
     {
       final completer = Completer<String>();
-      final sendPort = singleCompletePort<String, String>(completer);
-      final res = native.mnemonic_to_pubkey(
+      final sendPort =
+          singleCompletePort<String, List>(completer, callback: _handleErr);
+      native.mnemonic_to_pubkey(
         sendPort.nativePort,
         language.index,
         Utf8.toUtf8(mnemonic),
       );
-      if (res != 1) {
-        DubpRust._throwError();
-      }
       publicKey = await completer.future;
     }
     // dewif
     String dewif;
     {
       final completer = Completer<String>();
-      final sendPort = singleCompletePort<String, String>(completer);
-      final res = native.gen_dewif(
+      final sendPort =
+          singleCompletePort<String, List>(completer, callback: _handleErr);
+      native.gen_dewif(
         sendPort.nativePort,
         Utf8.toUtf8(currency),
         language.index,
         Utf8.toUtf8(mnemonic),
         Utf8.toUtf8(pin),
       );
-      if (res != 1) {
-        DubpRust._throwError();
-      }
       dewif = await completer.future;
     }
     return Future.value(NewWallet._(dewif, pin, publicKey));
@@ -194,18 +176,16 @@ class DubpRust {
 
   /// Get pulblic key (in base 58) of `dewif` keypair.
   static Future<String> getDewifPublicKey(
-      {String currency = "g1", String dewif, String pin}) {
+      {String currency = "g1", String dewif, String pin}) async {
     final completer = Completer<String>();
-    final sendPort = singleCompletePort<String, String>(completer);
-    final res = native.get_dewif_pubkey(
+    final sendPort =
+        singleCompletePort<String, List>(completer, callback: _handleErr);
+    native.get_dewif_pubkey(
       sendPort.nativePort,
       Utf8.toUtf8(currency),
       Utf8.toUtf8(dewif),
       Utf8.toUtf8(pin),
     );
-    if (res != 1) {
-      _throwError();
-    }
     return completer.future;
   }
 
@@ -215,17 +195,15 @@ class DubpRust {
   static Future<String> sign(
       {String currency = "g1", String dewif, String pin, String message}) {
     final completer = Completer<String>();
-    final sendPort = singleCompletePort<String, String>(completer);
-    final res = native.sign(
+    final sendPort =
+        singleCompletePort<String, List>(completer, callback: _handleErr);
+    native.sign(
       sendPort.nativePort,
       Utf8.toUtf8(currency),
       Utf8.toUtf8(dewif),
       Utf8.toUtf8(pin),
       Utf8.toUtf8(message),
     );
-    if (res != 1) {
-      _throwError();
-    }
     return completer.future;
   }
 
@@ -241,9 +219,10 @@ class DubpRust {
       String pin,
       List<String> messages}) {
     final completer = Completer<List<String>>();
-    final sendPort = singleCompletePort<List<String>, List<String>>(completer);
+    final sendPort = singleCompletePort<List<String>, List>(completer,
+        callback: _handleErrList);
 
-    final res = native.sign_several(
+    native.sign_several(
       sendPort.nativePort,
       Utf8.toUtf8(currency),
       Utf8.toUtf8(dewif),
@@ -251,9 +230,7 @@ class DubpRust {
       messages.length,
       _listStringToPtr(messages),
     );
-    if (res != 1) {
-      _throwError();
-    }
+
     return completer.future;
   }
 
@@ -266,12 +243,25 @@ class DubpRust {
     return ptr;
   }
 
-  static void _throwError() {
-    final length = native.last_error_length();
-    final Pointer<Utf8> message = allocate(count: length);
-    native.error_message_utf8(message, length);
-    final error = Utf8.fromUtf8(message);
-    print(error);
-    throw error;
+  static String _handleErr(List res) {
+    final List<String> arr = res.cast();
+    if (arr.length == 1) {
+      return arr[0];
+    } else {
+      final error = arr[1];
+      print(error);
+      throw error;
+    }
+  }
+
+  static List<String> _handleErrList(List res) {
+    final List<String> arr = res.cast();
+    if (arr.isNotEmpty && arr[0].isEmpty) {
+      final error = arr[1];
+      print(error);
+      throw error;
+    } else {
+      return arr;
+    }
   }
 }

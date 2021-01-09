@@ -60,6 +60,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "23b62fc65de8e4e7f52534fb52b0f3ed04746ae267519eef2a83941e8085068b"
 
 [[package]]
+name = "async-oneshot"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "50f4770cbbff928c30a991de67fb3976f44d8e3e202f8c79ef91b47006e04904"
+dependencies = [
+ "futures-micro",
+]
+
+[[package]]
 name = "atty"
 version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -245,6 +254,8 @@ dependencies = [
  "cbindgen",
  "dart-bindgen",
  "dup-crypto",
+ "fast-threadpool",
+ "once_cell",
  "thiserror",
 ]
 
@@ -269,6 +280,32 @@ dependencies = [
  "zerocopy",
  "zeroize",
 ]
+
+[[package]]
+name = "fast-threadpool"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cccb66774e02743b4be61c19e09bf59de9058e9a7b4096040689003e7a901a3d"
+dependencies = [
+ "async-oneshot",
+ "flume",
+ "num_cpus",
+]
+
+[[package]]
+name = "flume"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0362ef9c4c1fa854ff95b4cb78045a86e810d804dc04937961988b45427104a9"
+dependencies = [
+ "spinning_top",
+]
+
+[[package]]
+name = "futures-micro"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "61e9325be55c5581082cd110294fa988c1f920bc573ec370ef201e33c469a95a"
 
 [[package]]
 name = "generic-array"
@@ -345,12 +382,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1482821306169ec4d07f6aca392a4681f66c75c9918aa49641a2595db64053cb"
 
 [[package]]
+name = "lock_api"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd96ffd135b2fd7b973ac026d28085defbe8983df057ced3eb4f2130b0831312"
+dependencies = [
+ "scopeguard",
+]
+
+[[package]]
 name = "log"
 version = "0.4.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4fabed175da42fed1fa0746b0ea71f412aa9d35e76e95e59b192c64b9dc2bf8b"
 dependencies = [
  "cfg-if 0.1.10",
+]
+
+[[package]]
+name = "num_cpus"
+version = "1.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "05499f3756671c15885fee9034446956fff3f243d6077b91e5767df161f766b3"
+dependencies = [
+ "hermit-abi",
+ "libc",
 ]
 
 [[package]]
@@ -467,6 +523,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "71d301d4193d031abdd79ff7e3dd721168a9572ef3fe51a1517aba235bd8f86e"
 
 [[package]]
+name = "scopeguard"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
+
+[[package]]
 name = "serde"
 version = "1.0.118"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -502,6 +564,15 @@ name = "spin"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
+
+[[package]]
+name = "spinning_top"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7e529d73e80d64b5f2631f9035113347c578a1c9c7774b83a2b880788459ab36"
+dependencies = [
+ "lock_api",
+]
 
 [[package]]
 name = "strsim"

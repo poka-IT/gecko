@@ -35,16 +35,11 @@ pub(super) fn gen_pin10() -> Result<String, DubpError> {
 }
 
 pub(super) fn change_pin(
-    currency: *const raw::c_char,
-    dewif: *const raw::c_char,
-    old_pin: *const raw::c_char,
-    new_pin: *const raw::c_char,
+    currency: &str,
+    dewif: &str,
+    old_pin: &str,
+    new_pin: &str,
 ) -> Result<String, DubpError> {
-    let currency = char_ptr_to_str(currency)?;
-    let dewif = char_ptr_to_str(dewif)?;
-    let old_pin = char_ptr_to_str(old_pin)?;
-    let new_pin = char_ptr_to_str(new_pin)?;
-
     let currency = parse_currency(currency)?;
     let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
@@ -62,15 +57,11 @@ pub(super) fn change_pin(
 }
 
 pub(super) fn gen_dewif(
-    currency: *const raw::c_char,
+    currency: &str,
     language: u32,
-    mnemonic: *const raw::c_char,
-    pin: *const raw::c_char,
+    mnemonic: &str,
+    pin: &str,
 ) -> Result<String, DubpError> {
-    let currency = char_ptr_to_str(currency)?;
-    let mnemonic = char_ptr_to_str(mnemonic)?;
-    let pin = char_ptr_to_str(pin)?;
-
     let currency = parse_currency(currency)?;
     let mnemonic = Mnemonic::from_phrase(mnemonic, u32_to_language(language)?)
         .map_err(|_| DubpError::WrongLanguage)?;
@@ -81,15 +72,7 @@ pub(super) fn gen_dewif(
     ))
 }
 
-pub(super) fn get_pubkey(
-    currency: *const raw::c_char,
-    dewif: *const raw::c_char,
-    pin: *const raw::c_char,
-) -> Result<String, DubpError> {
-    let currency = char_ptr_to_str(currency)?;
-    let dewif = char_ptr_to_str(dewif)?;
-    let pin = char_ptr_to_str(pin)?;
-
+pub(super) fn get_pubkey(currency: &str, dewif: &str, pin: &str) -> Result<String, DubpError> {
     let currency = parse_currency(currency)?;
     let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
@@ -104,17 +87,7 @@ pub(super) fn get_pubkey(
     }
 }
 
-pub(super) fn sign(
-    currency: *const raw::c_char,
-    dewif: *const raw::c_char,
-    pin: *const raw::c_char,
-    msg: *const raw::c_char,
-) -> Result<String, DubpError> {
-    let currency = char_ptr_to_str(currency)?;
-    let dewif = char_ptr_to_str(dewif)?;
-    let pin = char_ptr_to_str(pin)?;
-    let msg = char_ptr_to_str(msg)?;
-
+pub(super) fn sign(currency: &str, dewif: &str, pin: &str, msg: &str) -> Result<String, DubpError> {
     let currency = parse_currency(currency)?;
     let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
@@ -130,22 +103,11 @@ pub(super) fn sign(
 }
 
 pub(super) fn sign_several(
-    currency: *const raw::c_char,
-    dewif: *const raw::c_char,
-    pin: *const raw::c_char,
-    msgs_len: usize,
-    msgs: *const *const raw::c_char,
+    currency: &str,
+    dewif: &str,
+    pin: &str,
+    msgs: &[&str],
 ) -> Result<Vec<String>, DubpError> {
-    let currency = char_ptr_to_str(currency)?;
-    let dewif = char_ptr_to_str(dewif)?;
-    let pin = char_ptr_to_str(pin)?;
-
-    let msgs_slice: &[*const raw::c_char] = unsafe { std::slice::from_raw_parts(msgs, msgs_len) };
-    let mut msgs = Vec::with_capacity(msgs_len);
-    for ptr_c_char in msgs_slice {
-        msgs.push(char_ptr_to_str(*ptr_c_char)?);
-    }
-
     let currency = parse_currency(currency)?;
     let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),

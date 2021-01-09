@@ -21,12 +21,7 @@ pub(super) fn gen_mnemonic(language: u32) -> Result<String, DubpError> {
     Ok(mnemonic.phrase().to_owned())
 }
 
-pub(super) fn mnemonic_to_pubkey(
-    language: u32,
-    mnemonic: *const raw::c_char,
-) -> Result<String, DubpError> {
-    let mnemonic = char_ptr_to_str(mnemonic)?;
-
+pub(super) fn mnemonic_to_pubkey(language: u32, mnemonic: &str) -> Result<String, DubpError> {
     let mnemonic = Mnemonic::from_phrase(mnemonic, u32_to_language(language)?)
         .map_err(|_| DubpError::WrongLanguage)?;
     let seed = dup_crypto::mnemonic::mnemonic_to_seed(&mnemonic);

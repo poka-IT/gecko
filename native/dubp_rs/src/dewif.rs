@@ -38,8 +38,8 @@ pub(super) fn change_pin(
     currency: &str,
     dewif: &str,
     old_pin: &str,
-    new_pin: &str,
-) -> Result<String, DubpError> {
+    member_wallet: bool,
+) -> Result<Vec<String>, DubpError> {
     let currency = parse_currency(currency)?;
     let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
@@ -48,9 +48,15 @@ pub(super) fn change_pin(
     )
     .map_err(DubpError::DewifReadError)?;
     if let Some(KeyPairEnum::Ed25519(keypair)) = keypairs.next() {
-        Ok(dup_crypto::dewif::write_dewif_v1_content(
-            currency, &keypair, new_pin,
-        ))
+        let new_pin = if member_wallet {
+            gen_pin10()?
+        } else {
+            gen_pin6()?
+        };
+
+        let dewif = dup_crypto::dewif::write_dewif_v1_content(currency, &keypair, &new_pin);
+        let pubkey = keypair.public_key().to_base58();
+        Ok(vec![dewif, new_pin, pubkey])
     } else {
         Err(DubpError::DewifReadError(DewifReadError::CorruptedContent))
     }
@@ -60,20 +66,25 @@ pub(super) fn gen_dewif(
     currency: &str,
     language: u32,
     mnemonic: &str,
-    pin: &str,
-) -> Result<String, DubpError> {
+    member_wallet: bool,
+) -> Result<Vec<String>, DubpError> {
     let currency = parse_currency(currency)?;
     let mnemonic = Mnemonic::from_phrase(mnemonic, u32_to_language(language)?)
         .map_err(|_| DubpError::WrongLanguage)?;
     let seed = dup_crypto::mnemonic::mnemonic_to_seed(&mnemonic);
     let keypair = KeyPairFromSeed32Generator::generate(seed);
-    Ok(dup_crypto::dewif::write_dewif_v1_content(
-        currency, &keypair, pin,
-    ))
+
+    let pin = if member_wallet {
+        gen_pin10()?
+    } else {
+        gen_pin6()?
+    };
+    let dewif = dup_crypto::dewif::write_dewif_v1_content(currency, &keypair, &pin);
+    let pubkey = keypair.public_key().to_base58();
+    Ok(vec![dewif, pin, pubkey])
 }
 
-pub(super) fn get_pubkey(currency: &str, dewif: &str, pin: &str) -> Result<String, DubpError> {
-    let currency = parse_currency(currency)?;
+pub(super) fn get_pubkey(currency: Currency, dewif: &str, pin: &str) -> Result<String, DubpError> {
     let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
         dewif,
@@ -124,15 +135,6 @@ pub(super) fn sign_several(
     } else {
         Err(DubpError::DewifReadError(DewifReadError::CorruptedContent))
     }
-}
-
-fn parse_currency(currency: &str) -> Result<Currency, DubpError> {
-    let currency_code = match currency {
-        "g1" => G1_CURRENCY,
-        "g1-test" | "gt" => G1_TEST_CURRENCY,
-        _ => return Err(DubpError::UnknownCurrencyName),
-    };
-    Ok(Currency::from(currency_code))
 }
 
 fn gen_pin2_inner(mut i: u32, pin: &mut String) {

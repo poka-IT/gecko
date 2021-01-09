@@ -59,6 +59,15 @@ fn char_ptr_prt_to_vec_str<'a>(
     Ok(str_vec)
 }
 
+pub(crate) fn parse_currency(currency: &str) -> Result<Currency, DubpError> {
+    let currency_code = match currency {
+        "g1" => G1_CURRENCY,
+        "g1-test" | "gt" => G1_TEST_CURRENCY,
+        _ => return Err(DubpError::UnknownCurrencyName),
+    };
+    Ok(Currency::from(currency_code))
+}
+
 fn u32_to_language(i: u32) -> Result<Language, DubpError> {
     match i {
         0 => Ok(Language::English),
@@ -73,7 +82,7 @@ pub extern "C" fn change_dewif_pin(
     currency: *const raw::c_char,
     dewif: *const raw::c_char,
     old_pin: *const raw::c_char,
-    new_pin: *const raw::c_char,
+    member_wallet: u32,
 ) {
     exec_async(
         port,
@@ -81,10 +90,12 @@ pub extern "C" fn change_dewif_pin(
             let currency = char_ptr_to_str(currency)?;
             let dewif = char_ptr_to_str(dewif)?;
             let old_pin = char_ptr_to_str(old_pin)?;
-            let new_pin = char_ptr_to_str(new_pin)?;
-            Ok((currency, dewif, old_pin, new_pin))
+            let member_wallet = member_wallet != 0;
+            Ok((currency, dewif, old_pin, member_wallet))
         },
-        |(currency, dewif, old_pin, new_pin)| dewif::change_pin(currency, dewif, old_pin, new_pin),
+        |(currency, dewif, old_pin, member_wallet)| {
+            dewif::change_pin(currency, dewif, old_pin, member_wallet)
+        },
     )
 }
 
@@ -94,17 +105,19 @@ pub extern "C" fn gen_dewif(
     currency: *const raw::c_char,
     language: u32,
     mnemonic: *const raw::c_char,
-    pin: *const raw::c_char,
+    member_wallet: u32,
 ) {
     exec_async(
         port,
         || {
             let currency = char_ptr_to_str(currency)?;
             let mnemonic = char_ptr_to_str(mnemonic)?;
-            let pin = char_ptr_to_str(pin)?;
-            Ok((currency, language, mnemonic, pin))
+            let member_wallet = member_wallet != 0;
+            Ok((currency, language, mnemonic, member_wallet))
         },
-        |(currency, language, mnemonic, pin)| dewif::gen_dewif(currency, language, mnemonic, pin),
+        |(currency, language, mnemonic, member_wallet)| {
+            dewif::gen_dewif(currency, language, mnemonic, member_wallet)
+        },
     )
 }
 
@@ -138,7 +151,7 @@ pub extern "C" fn get_dewif_pubkey(
     exec_async(
         port,
         || {
-            let currency = char_ptr_to_str(currency)?;
+            let currency = parse_currency(char_ptr_to_str(currency)?)?;
             let dewif = char_ptr_to_str(dewif)?;
             let pin = char_ptr_to_str(pin)?;
             Ok((currency, dewif, pin))

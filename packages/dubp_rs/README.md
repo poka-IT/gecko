@@ -57,7 +57,7 @@ The project use [`dart-bindgen`](https://github.com/sunshine-protocol/dart-bindg
 * 32bit emulator (`x86`/`i686` architecture)
 
 ```sh
-cargo make android-dev32
+cargo bd
 ```
 
 * 64bit emulator (`x86_64` architecture)
@@ -71,7 +71,7 @@ cargo make android-dev
 In the Root of the project simply run:
 
 ```sh
-cargo make
+cargo br
 ```
 
 WARNING: This will take a lot of time because the Rust code will have to be recompiled for each different architecture, 4 times for android and 2 times for iOS!
@@ -113,7 +113,7 @@ static Future<NewWallet> genWalletFromMnemonic({
     String currency = "g1",
     Language language = Language.english,
     String mnemonic,
-    PinLength pinLength = PinLength.six
+    SecretCodeType secretCodeType = SecretCodeType.letters
 });
 ```
 
@@ -129,13 +129,13 @@ NewWallet new_wallet = await DubpRust.genWalletFromMnemonic(
 );
 ```
 
-You can choose a different length for the pin code (6 by default):
+You can choose a different secret code type:
 
 ```dart
 NewWallet new_wallet = await DubpRust.genWalletFromMnemonic(
     language: Language.english,
     mnemonic: "tongue cute mail fossil great frozen same social weasel impact brush kind",
-    pinLength: PinLength.eight
+    secretCodeType: SecretCodeType.digits
 );
 ```
 
@@ -164,9 +164,9 @@ String signature = await DubpRust.sign(
 );
 ```
 
-### Change pin code
+### Change secret code
 
-You can change the pin code that encrypts the [DEWIF].
+You can change the secret code that encrypts the [DEWIF].
 
 #### Function signature
 
@@ -175,7 +175,7 @@ static Future<NewWallet> changeDewifPin({
     String currency = "g1",
     String dewif,
     String oldPin,
-    PinLength newPinLength = PinLength.six
+    SecretCodeType secretCodeType = SecretCodeType.letters
 });
 ```
 
@@ -186,7 +186,7 @@ If the wallet is not dedicated to the Ğ1 currency, you must indicate the curren
 ```dart
 NewWallet new_wallet = await DubpRust.changeDewifPin(
     dewif: "AAAAARAAAAGfFDAs+jVZYkfhBlHZZ2fEQIvBqnG16g5+02cY18wSOjW0cUg2JV3SUTJYN2CrbQeRDwGazWnzSFBphchMmiL0",
-    oldPin: "CDJ4UB",
+    oldPin: "CDJAUB",
 );
 ```
 

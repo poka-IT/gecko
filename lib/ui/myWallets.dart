@@ -30,12 +30,13 @@ class _MyWalletState extends State<MyWalletsScreen> {
   bool hasError = false;
   String validPin = 'NO PIN';
   String currentText = "";
-  var pinColor = Colors.grey[300];
+  var pinColor = Color(0xffF9F9F1);
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
         child: Column(children: <Widget>[
+      SizedBox(height: 8),
       InkWell(
         child: TextField(
             enabled: false,
@@ -113,9 +114,9 @@ class _MyWalletState extends State<MyWalletsScreen> {
                 }
               },
               onChanged: (value) {
-                if (pinColor != Colors.grey[300]) {
+                if (pinColor != Color(0xffF9F9F1)) {
                   setState(() {
-                    pinColor = Colors.grey[300];
+                    pinColor = Color(0xffF9F9F1);
                   });
                 }
                 print(value);

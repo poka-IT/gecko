@@ -38,8 +38,17 @@ class Gecko extends StatelessWidget {
     );
     return MaterialApp(
       title: 'Ğecko',
-      theme:
-          ThemeData(primaryColor: Colors.blue[50], accentColor: Colors.black),
+      theme: ThemeData(
+        primaryColor: Color(0xffD28928),
+        accentColor: Color(0xffFFD68E),
+        textTheme: TextTheme(
+          bodyText1: TextStyle(),
+          bodyText2: TextStyle(),
+        ).apply(
+          bodyColor: Color(0xff855F2D),
+          // displayColor: Colors.blue,
+        ),
+      ),
       home: GraphQLProvider(
         client: _client,
         child: HomeScreen(),

@@ -31,9 +31,8 @@ class HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        home: Scaffold(
-      backgroundColor: Colors.grey[300],
+    return Scaffold(
+      backgroundColor: Color(0xffF9F9F1),
       body: SafeArea(
         child: IndexedStack(
           index: currentIndex,
@@ -62,12 +61,15 @@ class HomeScreenState extends State<HomeScreen> {
                 height: 40.0,
                 width: 40.0,
                 child: Image.asset('images/scanner.png')),
-            backgroundColor: Color.fromARGB(500, 204, 255, 255),
+            backgroundColor: Color(
+                0xffEFEFBF), //Color(0xffFFD68E), //Color.fromARGB(500, 204, 255, 255),
           ),
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        fixedColor: Colors.black,
+        backgroundColor: Color(0xffFFD68E),
+        fixedColor: Color(0xff855F2D),
+        unselectedItemColor: Color(0xffBD935C),
         type: BottomNavigationBarType.fixed,
         onTap: onTabTapped,
         currentIndex: currentIndex,
@@ -86,6 +88,6 @@ class HomeScreenState extends State<HomeScreen> {
           )
         ],
       ),
-    ));
+    );
   }
 }

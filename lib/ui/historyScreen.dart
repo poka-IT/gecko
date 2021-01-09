@@ -64,6 +64,7 @@ class HistoryScreenState extends State<HistoryScreen> {
     print('Build this.pubkey : ' + this.pubkey);
     print('isBuilding: ' + isBuilding.toString());
     return Column(children: <Widget>[
+      SizedBox(height: 8),
       TextField(
           // Entrée de la pubkey
           onChanged: (text) {
@@ -84,10 +85,7 @@ class HistoryScreenState extends State<HistoryScreen> {
             errorBorder: InputBorder.none,
             disabledBorder: InputBorder.none,
           ),
-          style: TextStyle(
-              fontSize: 15.0,
-              color: Colors.black,
-              fontWeight: FontWeight.bold)),
+          style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold)),
       historyQuery(),
     ]);
   }
@@ -186,7 +184,7 @@ class HistoryScreenState extends State<HistoryScreen> {
                 if (this.pubkey != '')
                   Text(balance.toString() + ' Ğ1',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 30.0, color: Colors.black)),
+                      style: TextStyle(fontSize: 30.0)),
                 for (var repository in _transBC)
                   ListTile(
                       contentPadding: const EdgeInsets.all(5.0),

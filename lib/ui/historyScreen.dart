@@ -77,7 +77,7 @@ class HistoryScreenState extends State<HistoryScreen> {
           textAlign: TextAlign.center,
           decoration: InputDecoration(
             hintText: 'Tappez/Collez une clé publique, ou scannez',
-            hintStyle: TextStyle(fontSize: 15),
+            hintStyle: TextStyle(fontSize: 14),
             contentPadding: EdgeInsets.symmetric(horizontal: 7, vertical: 15),
             border: InputBorder.none,
             focusedBorder: InputBorder.none,
@@ -85,7 +85,7 @@ class HistoryScreenState extends State<HistoryScreen> {
             errorBorder: InputBorder.none,
             disabledBorder: InputBorder.none,
           ),
-          style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold)),
+          style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)),
       historyQuery(),
     ]);
   }
@@ -129,7 +129,8 @@ class HistoryScreenState extends State<HistoryScreen> {
 
             final String fetchMoreCursor = pageInfo['endCursor'];
 
-            final num balance = result.data['balance']['amount'] / 100;
+            final num balance =
+                removeDecimalZero(result.data['balance']['amount'] / 100);
 
             FetchMoreOptions opts = FetchMoreOptions(
               variables: {'cursor': fetchMoreCursor},
@@ -181,19 +182,26 @@ class HistoryScreenState extends State<HistoryScreen> {
                 child: ListView(
               controller: _scrollController,
               children: <Widget>[
+                SizedBox(height: 7),
                 if (this.pubkey != '')
                   Text(balance.toString() + ' Ğ1',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 30.0)),
+                SizedBox(height: 12),
                 for (var repository in _transBC)
                   ListTile(
                       contentPadding: const EdgeInsets.all(5.0),
-                      leading: Text(repository[3].toString()),
-                      title: Text(repository[1].toString() +
-                          '\n' +
-                          truncate(repository[2], 17,
-                              omission: "...", position: TruncatePosition.end)),
-                      subtitle: Text(repository[5]),
+                      leading:
+                          Text(repository[3], style: TextStyle(fontSize: 14.0)),
+                      title: Text(
+                          repository[1].toString() +
+                              '\n' +
+                              truncate(repository[2], 17,
+                                  omission: "...",
+                                  position: TruncatePosition.end),
+                          style: TextStyle(fontSize: 14.0)),
+                      subtitle:
+                          Text(repository[5], style: TextStyle(fontSize: 14.0)),
                       dense: true,
                       onTap: () {
                         isPubkey(repository[2]);
@@ -263,5 +271,10 @@ class HistoryScreenState extends State<HistoryScreen> {
     }
 
     return '';
+  }
+
+  num removeDecimalZero(double n) {
+    String result = n.toStringAsFixed(n.truncateToDouble() == n ? 0 : 1);
+    return num.parse(result);
   }
 }

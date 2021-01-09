@@ -1,6 +1,11 @@
 import 'dart:math';
 import 'package:intl/intl.dart';
 
+num removeDecimalZero(double n) {
+  String result = n.toStringAsFixed(n.truncateToDouble() == n ? 0 : 1);
+  return num.parse(result);
+}
+
 List parseHistory(txs) {
   var transBC = [];
   int i = 0;
@@ -23,19 +28,20 @@ List parseHistory(txs) {
     transBC[i].add(date);
     print(
         "DEBUG date et comment: ${date.toString()} -- ${transaction['comment'].toString()}");
-    var amountBrut = int.parse(output.split(':')[0]);
+    int amountBrut = int.parse(output.split(':')[0]);
     final base = int.parse(output.split(':')[1]);
-    final applyBase = base - currentBase;
-    final amount = amountBrut * pow(10, applyBase) / 100;
-    var amountUD = amount / currentUD;
+    final int applyBase = base - currentBase;
+    final num amount = removeDecimalZero(amountBrut * pow(10, applyBase) / 100);
+    num amountUD = amount / currentUD;
+    int padNbr = 14 - amount.toString().length;
     if (direction == "RECEIVED") {
       transBC[i].add(transaction['issuers'][0]);
-      transBC[i].add(amount);
+      transBC[i].add('  ' + amount.toString().padRight(padNbr));
       transBC[i].add(amountUD.toStringAsFixed(2));
     } else if (direction == "SENT") {
       final outPubkey = output.split("SIG(")[1].replaceAll(')', '');
       transBC[i].add(outPubkey);
-      transBC[i].add(-amount);
+      transBC[i].add('  -' + amount.toString().padRight(padNbr - 1));
       transBC[i].add(amountUD.toStringAsFixed(2));
     }
     transBC[i].add(transaction['comment']);

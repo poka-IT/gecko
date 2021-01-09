@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dubp/dubp.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:sentry/sentry.dart' as sentry;
 import 'dart:io';
 import 'dart:async';
@@ -21,8 +22,14 @@ class _GenerateWalletState extends State<GenerateWalletScreen> {
   TextEditingController _pubkey = new TextEditingController();
   TextEditingController _pin = new TextEditingController();
   String generatedMnemonic;
+  bool walletIsGenerated = false;
   NewWallet actualWallet;
   final formKey = GlobalKey<FormState>();
+
+  bool hasError = false;
+  String validPin = 'NO PIN';
+  String currentText = "";
+  var pinColor = Colors.grey[300];
 
   @override
   Widget build(BuildContext context) {
@@ -95,23 +102,27 @@ class _GenerateWalletState extends State<GenerateWalletScreen> {
               alignment: Alignment.bottomCenter,
               child: new RaisedButton(
                   color: Color(0xffFFD68E),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return ValidStoreWalletScreen(
-                            generatedMnemonic: this.generatedMnemonic,
-                            generatedWallet:
-                                this.actualWallet); //, this.actualWallet);
-                      }),
-                    ).then((value) => setState(() {
-                          if (value) {
-                            _pin.clear();
-                            _mnemonicController.clear();
-                            _pubkey.clear();
-                          }
-                        }));
-                  },
+                  onPressed: walletIsGenerated
+                      ? () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) {
+                              return ValidStoreWalletScreen(
+                                  generatedMnemonic: this.generatedMnemonic,
+                                  generatedWallet: this.actualWallet);
+                            }),
+                          ).then((value) => setState(() {
+                                if (value) {
+                                  _pin.clear();
+                                  _mnemonicController.clear();
+                                  _pubkey.clear();
+                                  this.generatedMnemonic = null;
+                                  this.actualWallet = null;
+                                  this.walletIsGenerated = false;
+                                }
+                              }));
+                        }
+                      : null,
                   child: Text('Enregistrer ce wallet',
                       style: TextStyle(fontSize: 20))))),
       SizedBox(height: 15)
@@ -132,6 +143,7 @@ class _GenerateWalletState extends State<GenerateWalletScreen> {
       }
     }
     this.actualWallet = await generateWallet(this.generatedMnemonic);
+    this.walletIsGenerated = true;
     return this.generatedMnemonic;
   }
 
@@ -215,6 +227,75 @@ class _ValidStoreWalletScreen extends State<ValidStoreWalletScreen> {
               color: Color(0xffFFD68E),
               onPressed: () => storeWallet(widget.generatedWallet),
               child: Text('Confirmer', style: TextStyle(fontSize: 20))),
+          // Form(
+          //   child: Padding(
+          //       padding:
+          //           const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
+          //       child: PinCodeTextField(
+          //         appContext: context,
+          //         pastedTextStyle: TextStyle(
+          //           color: Colors.green.shade600,
+          //           fontWeight: FontWeight.bold,
+          //         ),
+          //         length: 6,
+          //         obscureText: false,
+          //         obscuringCharacter: '*',
+          //         animationType: AnimationType.fade,
+          //         validator: (v) {
+          //           if (v.length < 6) {
+          //             return "Votre code PIN fait 6 caractères";
+          //           } else {
+          //             return null;
+          //           }
+          //         },
+          //         pinTheme: PinTheme(
+          //           shape: PinCodeFieldShape.box,
+          //           borderRadius: BorderRadius.circular(5),
+          //           fieldHeight: 60,
+          //           fieldWidth: 50,
+          //           activeFillColor: hasError ? Colors.orange : Colors.white,
+          //         ),
+          //         cursorColor: Colors.black,
+          //         animationDuration: Duration(milliseconds: 300),
+          //         textStyle: TextStyle(fontSize: 20, height: 1.6),
+          //         backgroundColor: pinColor,
+          //         enableActiveFill: false,
+          //         errorAnimationController: errorController,
+          //         controller: _enterPin,
+          //         keyboardType: TextInputType.text,
+          //         boxShadows: [
+          //           BoxShadow(
+          //             offset: Offset(0, 1),
+          //             color: Colors.black12,
+          //             blurRadius: 10,
+          //           )
+          //         ],
+          //         onCompleted: (v) async {
+          //           print("Completed");
+          //           final resultWallet = await readLocalWallet(v.toUpperCase());
+          //           if (resultWallet == 'bad') {
+          //             errorController.add(ErrorAnimationType
+          //                 .shake); // Triggering error shake animation
+          //             setState(() {
+          //               hasError = true;
+          //               pinColor = Colors.red[200];
+          //             });
+          //           } else {
+          //             setState(() {
+          //               pinColor = Colors.green[200];
+          //             });
+          //           }
+          //         },
+          //         onChanged: (value) {
+          //           if (pinColor != Colors.grey[300]) {
+          //             setState(() {
+          //               pinColor = Colors.grey[300];
+          //             });
+          //           }
+          //           print(value);
+          //         },
+          //       )),
+          // )
         ]),
       ),
     );

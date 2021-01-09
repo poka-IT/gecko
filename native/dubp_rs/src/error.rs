@@ -22,6 +22,8 @@ pub(crate) enum DubpError {
     DewifReadError(DewifReadError),
     #[error("I/O error: {0}")]
     IoErr(io::Error),
+    #[error("Digits secret code forbid for member wallet")]
+    DigitsCodeForbidForMemberWallet,
     #[error("A given parameter is null")]
     NullParamErr,
     #[error("fail to generate random bytes")]

@@ -19,7 +19,7 @@ class NewWallet {
   /// DEWIF: Encrypted wallet
   String dewif;
 
-  /// Pin code
+  /// Secret code
   String pin;
 
   /// Public key
@@ -28,16 +28,13 @@ class NewWallet {
   NewWallet._(this.dewif, this.pin, this.publicKey);
 }
 
-/// Pin code length
-enum PinLength {
-  /// 6 characters
-  six,
+/// Secret code type
+enum SecretCodeType {
+  /// Digits
+  digits,
 
-  /// 8 characters
-  eight,
-
-  /// 10 characters
-  ten,
+  /// Letters
+  letters,
 }
 
 /// DUBP Rust utilities
@@ -63,21 +60,23 @@ class DubpRust {
     return completer.future;
   }
 
-  /// Change the pin code that encrypts the `dewif` keypair.
-  static Future<NewWallet> changeDewifPin(
-      {String currency = "g1",
-      String dewif,
-      String oldPin,
-      PinLength newPinLength = PinLength.six}) async {
+  /// Change the secret code that encrypts the `dewif` keypair.
+  static Future<NewWallet> changeDewifPin({
+    String currency = "g1",
+    String dewif,
+    String oldPin,
+    SecretCodeType secretCodeType = SecretCodeType.letters,
+  }) async {
     final completer = Completer<List<String>>();
     final sendPort = singleCompletePort<List<String>, List>(completer,
         callback: _handleErrList);
-    native.change_dewif_pin(
+    native.change_dewif_secret_code(
       sendPort.nativePort,
       Utf8.toUtf8(currency),
       Utf8.toUtf8(dewif),
       Utf8.toUtf8(oldPin),
       0,
+      secretCodeType.index,
     );
     List<String> newWallet = await completer.future;
 
@@ -91,11 +90,12 @@ class DubpRust {
   ///
   /// If the wallet to be generated is not dedicated to the Ğ1 currency, you
   /// must indicate the currency for which this wallet will be used.
-  static Future<NewWallet> genWalletFromMnemonic(
-      {String currency = "g1",
-      Language language = Language.english,
-      String mnemonic,
-      PinLength pinLength = PinLength.six}) async {
+  static Future<NewWallet> genWalletFromMnemonic({
+    String currency = "g1",
+    Language language = Language.english,
+    String mnemonic,
+    SecretCodeType secretCodeType = SecretCodeType.letters,
+  }) async {
     final completer = Completer<List<String>>();
     final sendPort = singleCompletePort<List<String>, List>(completer,
         callback: _handleErrList);
@@ -105,6 +105,7 @@ class DubpRust {
       language.index,
       Utf8.toUtf8(mnemonic),
       0,
+      secretCodeType.index,
     );
     List<String> newWallet = await completer.future;
 

@@ -15,48 +15,26 @@
 
 use crate::*;
 
-pub(super) fn gen_pin6() -> Result<String, DubpError> {
-    let i = dup_crypto::rand::gen_u32().map_err(|_| DubpError::RandErr)?;
-    Ok(gen_pin6_inner(i))
-}
-pub(super) fn gen_pin8() -> Result<String, DubpError> {
-    let i = dup_crypto::rand::gen_u32().map_err(|_| DubpError::RandErr)?;
-    let i2 = dup_crypto::rand::gen_u32().map_err(|_| DubpError::RandErr)?;
-    let mut pin = gen_pin6_inner(i);
-    gen_pin2_inner(i2, &mut pin);
-    Ok(pin)
-}
-pub(super) fn gen_pin10() -> Result<String, DubpError> {
-    let i = dup_crypto::rand::gen_u32().map_err(|_| DubpError::RandErr)?;
-    let i2 = dup_crypto::rand::gen_u32().map_err(|_| DubpError::RandErr)?;
-    let mut pin = gen_pin6_inner(i);
-    gen_pin4_inner(i2, &mut pin);
-    Ok(pin)
-}
-
-pub(super) fn change_pin(
+pub(super) fn change_secret_code(
     currency: &str,
     dewif: &str,
-    old_pin: &str,
+    old_secret_code: &str,
     member_wallet: bool,
+    secret_code_type: SecretCodeType,
 ) -> Result<Vec<String>, DubpError> {
     let currency = parse_currency(currency)?;
     let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
         dewif,
-        old_pin,
+        old_secret_code,
     )
     .map_err(DubpError::DewifReadError)?;
     if let Some(KeyPairEnum::Ed25519(keypair)) = keypairs.next() {
-        let new_pin = if member_wallet {
-            gen_pin10()?
-        } else {
-            gen_pin6()?
-        };
+        let new_secret_code = gen_secret_code(member_wallet, secret_code_type)?;
 
-        let dewif = dup_crypto::dewif::write_dewif_v1_content(currency, &keypair, &new_pin);
+        let dewif = dup_crypto::dewif::write_dewif_v1_content(currency, &keypair, &new_secret_code);
         let pubkey = keypair.public_key().to_base58();
-        Ok(vec![dewif, new_pin, pubkey])
+        Ok(vec![dewif, new_secret_code, pubkey])
     } else {
         Err(DubpError::DewifReadError(DewifReadError::CorruptedContent))
     }
@@ -64,24 +42,21 @@ pub(super) fn change_pin(
 
 pub(super) fn gen_dewif(
     currency: &str,
-    language: u32,
+    language: Language,
     mnemonic: &str,
     member_wallet: bool,
+    secret_code_type: SecretCodeType,
 ) -> Result<Vec<String>, DubpError> {
     let currency = parse_currency(currency)?;
-    let mnemonic = Mnemonic::from_phrase(mnemonic, u32_to_language(language)?)
-        .map_err(|_| DubpError::WrongLanguage)?;
+    let mnemonic =
+        Mnemonic::from_phrase(mnemonic, language).map_err(|_| DubpError::WrongLanguage)?;
     let seed = dup_crypto::mnemonic::mnemonic_to_seed(&mnemonic);
     let keypair = KeyPairFromSeed32Generator::generate(seed);
 
-    let pin = if member_wallet {
-        gen_pin10()?
-    } else {
-        gen_pin6()?
-    };
-    let dewif = dup_crypto::dewif::write_dewif_v1_content(currency, &keypair, &pin);
+    let secret_code = gen_secret_code(member_wallet, secret_code_type)?;
+    let dewif = dup_crypto::dewif::write_dewif_v1_content(currency, &keypair, &secret_code);
     let pubkey = keypair.public_key().to_base58();
-    Ok(vec![dewif, pin, pubkey])
+    Ok(vec![dewif, secret_code, pubkey])
 }
 
 pub(super) fn get_pubkey(currency: Currency, dewif: &str, pin: &str) -> Result<String, DubpError> {
@@ -134,85 +109,5 @@ pub(super) fn sign_several(
             .collect())
     } else {
         Err(DubpError::DewifReadError(DewifReadError::CorruptedContent))
-    }
-}
-
-fn gen_pin2_inner(mut i: u32, pin: &mut String) {
-    for _ in 0..2 {
-        pin.push(to_char(i));
-        i /= 35;
-    }
-}
-fn gen_pin4_inner(mut i: u32, pin: &mut String) {
-    for _ in 0..4 {
-        pin.push(to_char(i));
-        i /= 35;
-    }
-}
-fn gen_pin6_inner(mut i: u32) -> String {
-    let mut pin = String::new();
-
-    for _ in 0..6 {
-        pin.push(to_char(i));
-        i /= 35;
-    }
-
-    pin
-}
-
-fn to_char(i: u32) -> char {
-    match i % 35 {
-        0 => 'Z',
-        1 => '1',
-        2 => '2',
-        3 => '3',
-        4 => '4',
-        5 => '5',
-        6 => '6',
-        7 => '7',
-        8 => '8',
-        9 => '9',
-        10 => 'A',
-        11 => 'B',
-        12 => 'C',
-        13 => 'D',
-        14 => 'E',
-        15 => 'F',
-        16 => 'G',
-        17 => 'H',
-        18 => 'I',
-        19 => 'J',
-        20 => 'K',
-        21 => 'L',
-        22 => 'M',
-        23 => 'N',
-        24 => 'O',
-        25 => 'P',
-        26 => 'Q',
-        27 => 'R',
-        28 => 'S',
-        29 => 'T',
-        30 => 'U',
-        31 => 'V',
-        32 => 'W',
-        33 => 'X',
-        34 => 'Y',
-        _ => unreachable!(),
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_gen_pin_6() {
-        assert_eq!("ZZZZZZ", &gen_pin6_inner(0));
-        assert_eq!("YZZZZZ", &gen_pin6_inner(34));
-        assert_eq!("Z1ZZZZ", &gen_pin6_inner(35));
-        assert_eq!("ZZ1ZZZ", &gen_pin6_inner(1225));
-        assert_eq!("2Z1ZZZ", &gen_pin6_inner(1227));
-        assert_eq!("Z11ZZZ", &gen_pin6_inner(1260));
-        assert_eq!("111ZZZ", &gen_pin6_inner(1261));
     }
 }

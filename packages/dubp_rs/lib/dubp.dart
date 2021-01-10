@@ -19,7 +19,7 @@ class NewWallet {
   /// DEWIF: Encrypted wallet
   String dewif;
 
-  /// Pin code
+  /// Secret code
   String pin;
 
   /// Public key
@@ -28,16 +28,13 @@ class NewWallet {
   NewWallet._(this.dewif, this.pin, this.publicKey);
 }
 
-/// Pin code length
-enum PinLength {
-  /// 6 characters
-  six,
+/// Secret code type
+enum SecretCodeType {
+  /// Digits
+  digits,
 
-  /// 8 characters
-  eight,
-
-  /// 10 characters
-  ten,
+  /// Letters
+  letters,
 }
 
 /// DUBP Rust utilities
@@ -55,7 +52,7 @@ class DubpRust {
   static Future<String> genMnemonic({Language language = Language.english}) {
     final completer = Completer<String>();
     final sendPort =
-        singleCompletePort<String, List>(completer, callback: _handleErr);
+        singleCompletePort<String, String>(completer, callback: _handleErr);
     native.gen_mnemonic(
       sendPort.nativePort,
       language.index,
@@ -63,70 +60,27 @@ class DubpRust {
     return completer.future;
   }
 
-  static Future<String> _genPin(PinLength pinLength) {
-    final completer = Completer<String>();
-    final sendPort =
-        singleCompletePort<String, List>(completer, callback: _handleErr);
-    switch (pinLength) {
-      case PinLength.ten:
-        native.gen_pin10(
-          sendPort.nativePort,
-        );
-        break;
-      case PinLength.eight:
-        native.gen_pin8(
-          sendPort.nativePort,
-        );
-        break;
-      case PinLength.six:
-      default:
-        native.gen_pin6(
-          sendPort.nativePort,
-        );
-        break;
-    }
-    return completer.future;
-  }
+  /// Change the secret code that encrypts the `dewif` keypair.
+  static Future<NewWallet> changeDewifPin({
+    String currency = "g1",
+    String dewif,
+    String oldPin,
+    SecretCodeType secretCodeType = SecretCodeType.letters,
+  }) async {
+    final completer = Completer<List<String>>();
+    final sendPort = singleCompletePort<List<String>, List>(completer,
+        callback: _handleErrList);
+    native.change_dewif_secret_code(
+      sendPort.nativePort,
+      Utf8.toUtf8(currency),
+      Utf8.toUtf8(dewif),
+      Utf8.toUtf8(oldPin),
+      0,
+      secretCodeType.index,
+    );
+    List<String> newWallet = await completer.future;
 
-  /// Change the pin code that encrypts the `dewif` keypair.
-  static Future<NewWallet> changeDewifPin(
-      {String currency = "g1",
-      String dewif,
-      String oldPin,
-      PinLength newPinLength = PinLength.six}) async {
-    // pin
-    String newPin = await _genPin(newPinLength);
-    // dewif
-    String newDewif;
-    {
-      final completer = Completer<String>();
-      final sendPort =
-          singleCompletePort<String, List>(completer, callback: _handleErr);
-      native.change_dewif_pin(
-        sendPort.nativePort,
-        Utf8.toUtf8(currency),
-        Utf8.toUtf8(dewif),
-        Utf8.toUtf8(oldPin),
-        Utf8.toUtf8(newPin),
-      );
-      newDewif = await completer.future;
-    }
-    // publicKey
-    String publicKey;
-    {
-      final completer = Completer<String>();
-      final sendPort =
-          singleCompletePort<String, List>(completer, callback: _handleErr);
-      native.get_dewif_pubkey(
-        sendPort.nativePort,
-        Utf8.toUtf8(currency),
-        Utf8.toUtf8(newDewif),
-        Utf8.toUtf8(newPin),
-      );
-      publicKey = await completer.future;
-    }
-
-    return Future.value(NewWallet._(newDewif, newPin, publicKey));
+    return Future.value(NewWallet._(newWallet[0], newWallet[1], newWallet[2]));
   }
 
   /// Generate a wallet from a mnemonic phrase.
@@ -136,42 +90,26 @@ class DubpRust {
   ///
   /// If the wallet to be generated is not dedicated to the Ğ1 currency, you
   /// must indicate the currency for which this wallet will be used.
-  static Future<NewWallet> genWalletFromMnemonic(
-      {String currency = "g1",
-      Language language = Language.english,
-      String mnemonic,
-      PinLength pinLength = PinLength.six}) async {
-    // pin
-    String pin = await _genPin(pinLength);
-    // publicKey
-    String publicKey;
-    {
-      final completer = Completer<String>();
-      final sendPort =
-          singleCompletePort<String, List>(completer, callback: _handleErr);
-      native.mnemonic_to_pubkey(
-        sendPort.nativePort,
-        language.index,
-        Utf8.toUtf8(mnemonic),
-      );
-      publicKey = await completer.future;
-    }
-    // dewif
-    String dewif;
-    {
-      final completer = Completer<String>();
-      final sendPort =
-          singleCompletePort<String, List>(completer, callback: _handleErr);
-      native.gen_dewif(
-        sendPort.nativePort,
-        Utf8.toUtf8(currency),
-        language.index,
-        Utf8.toUtf8(mnemonic),
-        Utf8.toUtf8(pin),
-      );
-      dewif = await completer.future;
-    }
-    return Future.value(NewWallet._(dewif, pin, publicKey));
+  static Future<NewWallet> genWalletFromMnemonic({
+    String currency = "g1",
+    Language language = Language.english,
+    String mnemonic,
+    SecretCodeType secretCodeType = SecretCodeType.letters,
+  }) async {
+    final completer = Completer<List<String>>();
+    final sendPort = singleCompletePort<List<String>, List>(completer,
+        callback: _handleErrList);
+    native.gen_dewif(
+      sendPort.nativePort,
+      Utf8.toUtf8(currency),
+      language.index,
+      Utf8.toUtf8(mnemonic),
+      0,
+      secretCodeType.index,
+    );
+    List<String> newWallet = await completer.future;
+
+    return Future.value(NewWallet._(newWallet[0], newWallet[1], newWallet[2]));
   }
 
   /// Get pulblic key (in base 58) of `dewif` keypair.
@@ -179,7 +117,7 @@ class DubpRust {
       {String currency = "g1", String dewif, String pin}) async {
     final completer = Completer<String>();
     final sendPort =
-        singleCompletePort<String, List>(completer, callback: _handleErr);
+        singleCompletePort<String, String>(completer, callback: _handleErr);
     native.get_dewif_pubkey(
       sendPort.nativePort,
       Utf8.toUtf8(currency),
@@ -196,7 +134,7 @@ class DubpRust {
       {String currency = "g1", String dewif, String pin, String message}) {
     final completer = Completer<String>();
     final sendPort =
-        singleCompletePort<String, List>(completer, callback: _handleErr);
+        singleCompletePort<String, String>(completer, callback: _handleErr);
     native.sign(
       sendPort.nativePort,
       Utf8.toUtf8(currency),
@@ -243,21 +181,20 @@ class DubpRust {
     return ptr;
   }
 
-  static String _handleErr(List res) {
-    final List<String> arr = res.cast();
-    if (arr.length == 1) {
-      return arr[0];
-    } else {
-      final error = arr[1];
+  static String _handleErr(String res) {
+    if (res.startsWith('DUBP_RS_ERROR: ')) {
+      final error = res;
       print(error);
       throw error;
+    } else {
+      return res;
     }
   }
 
   static List<String> _handleErrList(List res) {
     final List<String> arr = res.cast();
-    if (arr.isNotEmpty && arr[0].isEmpty) {
-      final error = arr[1];
+    if (arr.isNotEmpty && arr[0].startsWith('DUBP_RS_ERROR: ')) {
+      final error = arr[0];
       print(error);
       throw error;
     } else {

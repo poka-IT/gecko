@@ -15,9 +15,17 @@
 
 #![allow(clippy::missing_safety_doc, clippy::not_unsafe_ptr_arg_deref)]
 
+mod r#async;
 mod dewif;
+mod error;
+mod inputs;
 mod mnemonic;
+mod secret_code;
 
+use crate::error::{DartRes, DubpError};
+use crate::inputs::*;
+use crate::r#async::exec_async;
+use crate::secret_code::gen_secret_code;
 use allo_isolate::{IntoDart, Isolate};
 use dup_crypto::{
     bases::b58::ToBase58,
@@ -28,84 +36,34 @@ use dup_crypto::{
     },
     mnemonic::{Language, Mnemonic, MnemonicType},
 };
+use fast_threadpool::{ThreadPool, ThreadPoolConfig, ThreadPoolSyncHandler};
+use once_cell::sync::Lazy;
 use std::{ffi::CStr, io, os::raw};
 use thiserror::Error;
 
-/// Dubp error
-#[derive(Debug, Error)]
-pub enum DubpError {
-    #[error("{0}")]
-    DewifReadError(DewifReadError),
-    #[error("I/O error: {0}")]
-    IoErr(io::Error),
-    #[error("A given parameter is null")]
-    NullParamErr,
-    #[error("fail to generate random bytes")]
-    RandErr,
-    #[error("Unknown currency name")]
-    UnknownCurrencyName,
-    #[error("Unknown language")]
-    UnknownLanguage,
-    #[error("{0}")]
-    Utf8Error(std::str::Utf8Error),
-    #[error("Wrong language")]
-    WrongLanguage,
-}
-
-impl From<io::Error> for DubpError {
-    fn from(e: io::Error) -> Self {
-        Self::IoErr(e)
-    }
-}
-
-struct DartRes(allo_isolate::ffi::DartCObject);
-impl IntoDart for DartRes {
-    fn into_dart(self) -> allo_isolate::ffi::DartCObject {
-        self.0.into_dart()
-    }
-}
-impl<E> From<Result<String, E>> for DartRes
-where
-    E: ToString,
-{
-    fn from(res: Result<String, E>) -> Self {
-        match res {
-            Ok(string) => Self(vec![string].into_dart()),
-            Err(e) => Self(vec![String::from("_"), e.to_string()].into_dart()),
-        }
-    }
-}
-impl<E> From<Result<Vec<String>, E>> for DartRes
-where
-    E: ToString,
-{
-    fn from(res: Result<Vec<String>, E>) -> Self {
-        match res {
-            Ok(vec_string) => Self(vec_string.into_dart()),
-            Err(e) => Self(vec![String::with_capacity(0), e.to_string()].into_dart()),
-        }
-    }
-}
-
-pub(crate) fn char_ptr_to_str<'a>(c_char_ptr: *const raw::c_char) -> Result<&'a str, DubpError> {
-    if c_char_ptr.is_null() {
-        Err(DubpError::NullParamErr)
-    } else {
-        unsafe { CStr::from_ptr(c_char_ptr).to_str() }.map_err(DubpError::Utf8Error)
-    }
-}
-
 #[no_mangle]
-pub extern "C" fn change_dewif_pin(
+pub extern "C" fn change_dewif_secret_code(
     port: i64,
     currency: *const raw::c_char,
     dewif: *const raw::c_char,
     old_pin: *const raw::c_char,
-    new_pin: *const raw::c_char,
+    member_wallet: u32,
+    secret_code_type: u32,
 ) {
-    Isolate::new(port).post(DartRes::from(dewif::change_pin(
-        currency, dewif, old_pin, new_pin,
-    )));
+    exec_async(
+        port,
+        || {
+            let currency = char_ptr_to_str(currency)?;
+            let dewif = char_ptr_to_str(dewif)?;
+            let old_pin = char_ptr_to_str(old_pin)?;
+            let member_wallet = member_wallet != 0;
+            let secret_code_type = SecretCodeType::from(secret_code_type);
+            Ok((currency, dewif, old_pin, member_wallet, secret_code_type))
+        },
+        |(currency, dewif, old_pin, member_wallet, secret_code_type)| {
+            dewif::change_secret_code(currency, dewif, old_pin, member_wallet, secret_code_type)
+        },
+    )
 }
 
 #[no_mangle]
@@ -114,31 +72,40 @@ pub extern "C" fn gen_dewif(
     currency: *const raw::c_char,
     language: u32,
     mnemonic: *const raw::c_char,
-    pin: *const raw::c_char,
+    member_wallet: u32,
+    secret_code_type: u32,
 ) {
-    Isolate::new(port).post(DartRes::from(dewif::gen_dewif(
-        currency, language, mnemonic, pin,
-    )));
+    exec_async(
+        port,
+        || {
+            let currency = char_ptr_to_str(currency)?;
+            let language = u32_to_language(language)?;
+            let mnemonic = char_ptr_to_str(mnemonic)?;
+            let member_wallet = member_wallet != 0;
+            let secret_code_type = SecretCodeType::from(secret_code_type);
+            Ok((
+                currency,
+                language,
+                mnemonic,
+                member_wallet,
+                secret_code_type,
+            ))
+        },
+        |(currency, language, mnemonic, member_wallet, secret_code_type)| {
+            dewif::gen_dewif(
+                currency,
+                language,
+                mnemonic,
+                member_wallet,
+                secret_code_type,
+            )
+        },
+    )
 }
 
 #[no_mangle]
 pub extern "C" fn gen_mnemonic(port: i64, language: u32) {
     Isolate::new(port).post(DartRes::from(mnemonic::gen_mnemonic(language)));
-}
-
-#[no_mangle]
-pub extern "C" fn gen_pin6(port: i64) {
-    Isolate::new(port).post(DartRes::from(dewif::gen_pin6()));
-}
-
-#[no_mangle]
-pub extern "C" fn gen_pin8(port: i64) {
-    Isolate::new(port).post(DartRes::from(dewif::gen_pin8()));
-}
-
-#[no_mangle]
-pub extern "C" fn gen_pin10(port: i64) {
-    Isolate::new(port).post(DartRes::from(dewif::gen_pin10()));
 }
 
 #[no_mangle]
@@ -148,7 +115,16 @@ pub extern "C" fn get_dewif_pubkey(
     dewif: *const raw::c_char,
     pin: *const raw::c_char,
 ) {
-    Isolate::new(port).post(DartRes::from(dewif::get_pubkey(currency, dewif, pin)));
+    exec_async(
+        port,
+        || {
+            let currency = parse_currency(char_ptr_to_str(currency)?)?;
+            let dewif = char_ptr_to_str(dewif)?;
+            let pin = char_ptr_to_str(pin)?;
+            Ok((currency, dewif, pin))
+        },
+        |(currency, dewif, pin)| dewif::get_pubkey(currency, dewif, pin),
+    )
 }
 
 #[no_mangle]
@@ -157,10 +133,14 @@ pub extern "C" fn mnemonic_to_pubkey(
     language: u32,
     mnemonic_phrase: *const raw::c_char,
 ) {
-    Isolate::new(port).post(DartRes::from(mnemonic::mnemonic_to_pubkey(
-        language,
-        mnemonic_phrase,
-    )));
+    exec_async(
+        port,
+        || {
+            let mnemonic_phrase = char_ptr_to_str(mnemonic_phrase)?;
+            Ok((language, mnemonic_phrase))
+        },
+        |(language, mnemonic_phrase)| mnemonic::mnemonic_to_pubkey(language, mnemonic_phrase),
+    )
 }
 
 #[no_mangle]
@@ -171,7 +151,17 @@ pub extern "C" fn sign(
     pin: *const raw::c_char,
     msg: *const raw::c_char,
 ) {
-    Isolate::new(port).post(DartRes::from(dewif::sign(currency, dewif, pin, msg)));
+    exec_async(
+        port,
+        || {
+            let currency = char_ptr_to_str(currency)?;
+            let dewif = char_ptr_to_str(dewif)?;
+            let pin = char_ptr_to_str(pin)?;
+            let msg = char_ptr_to_str(msg)?;
+            Ok((currency, dewif, pin, msg))
+        },
+        |(currency, dewif, pin, msg)| dewif::sign(currency, dewif, pin, msg),
+    )
 }
 
 #[no_mangle]
@@ -180,16 +170,18 @@ pub extern "C" fn sign_several(
     currency: *const raw::c_char,
     dewif: *const raw::c_char,
     pin: *const raw::c_char,
-    msgs_len: usize,
+    msgs_len: u32,
     msgs: *const *const raw::c_char,
 ) {
-    Isolate::new(port).post(dewif::sign_several(currency, dewif, pin, msgs_len, msgs));
-}
-
-fn u32_to_language(i: u32) -> Result<Language, DubpError> {
-    match i {
-        0 => Ok(Language::English),
-        1 => Ok(Language::French),
-        _ => Err(DubpError::UnknownLanguage),
-    }
+    exec_async(
+        port,
+        || {
+            let currency = char_ptr_to_str(currency)?;
+            let dewif = char_ptr_to_str(dewif)?;
+            let pin = char_ptr_to_str(pin)?;
+            let msgs = char_ptr_prt_to_vec_str(msgs, msgs_len)?;
+            Ok((currency, dewif, pin, msgs))
+        },
+        |(currency, dewif, pin, msgs)| dewif::sign_several(currency, dewif, pin, &msgs),
+    )
 }

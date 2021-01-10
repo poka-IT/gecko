@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import 'dart:ui';
 
-import 'myWallets.dart';
-
 //ignore: must_be_immutable
 class HomeScreen extends StatefulWidget {
   HomeScreen({this.screens});
@@ -41,29 +39,7 @@ class HomeScreenState extends State<HomeScreen> {
               keyHistory: _keyHistory,
             ),
             GenerateWalletScreen(),
-            MyWalletsScreen(),
           ],
-        ),
-      ),
-      floatingActionButton: Container(
-        height: 80.0,
-        width: 80.0,
-        child: FittedBox(
-          child: FloatingActionButton(
-            onPressed: () async {
-              final resultScan = await _keyHistory.currentState.scan();
-              print(resultScan);
-              if (resultScan != 'false') {
-                onTabTapped(0);
-              }
-            },
-            child: Container(
-                height: 40.0,
-                width: 40.0,
-                child: Image.asset('images/scanner.png')),
-            backgroundColor: Color(
-                0xffEFEFBF), //Color(0xffFFD68E), //Color.fromARGB(500, 204, 255, 255),
-          ),
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -75,16 +51,13 @@ class HomeScreenState extends State<HomeScreen> {
         currentIndex: currentIndex,
         items: [
           BottomNavigationBarItem(
-            icon: new Icon(Icons.format_list_bulleted),
+            icon: new Icon(Icons
+                .format_list_bulleted), //Icons.person_add_alt_1_rounded //Icons.lock
             label: 'Accueil',
           ),
           BottomNavigationBarItem(
-            icon: new Icon(Icons.person_add_alt_1_rounded),
-            label: 'Générer un wallet',
-          ),
-          BottomNavigationBarItem(
             icon: new Icon(Icons.lock),
-            label: 'Mes wallets',
+            label: 'Mes portefeuilles',
           )
         ],
       ),

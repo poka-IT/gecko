@@ -63,31 +63,55 @@ class HistoryScreenState extends State<HistoryScreen> {
     print('Build pubkey : ' + pubkey);
     print('Build this.pubkey : ' + this.pubkey);
     print('isBuilding: ' + isBuilding.toString());
-    return Column(children: <Widget>[
-      SizedBox(height: 8),
-      TextField(
-          // Entrée de la pubkey
-          onChanged: (text) {
-            print("Clé tappxé: $text");
-            this.pubkey = text;
-            isPubkey(text);
-          },
-          controller: this._outputPubkey,
-          maxLines: 1,
-          textAlign: TextAlign.center,
-          decoration: InputDecoration(
-            hintText: 'Tappez/Collez une clé publique, ou scannez',
-            hintStyle: TextStyle(fontSize: 14),
-            contentPadding: EdgeInsets.symmetric(horizontal: 7, vertical: 15),
-            border: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            errorBorder: InputBorder.none,
-            disabledBorder: InputBorder.none,
+    return Scaffold(
+        floatingActionButton: Container(
+          height: 80.0,
+          width: 80.0,
+          child: FittedBox(
+            child: FloatingActionButton(
+              heroTag: "buttonScan",
+              onPressed: () async {
+                await scan();
+                // print(resultScan);
+                // if (resultScan != 'false') {
+                //   onTabTapped(0);
+                // }
+              },
+              child: Container(
+                  height: 40.0,
+                  width: 40.0,
+                  child: Image.asset('images/scanner.png')),
+              backgroundColor: Color(
+                  0xffEFEFBF), //Color(0xffFFD68E), //Color.fromARGB(500, 204, 255, 255),
+            ),
           ),
-          style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)),
-      historyQuery(),
-    ]);
+        ),
+        body: Column(children: <Widget>[
+          SizedBox(height: 8),
+          TextField(
+              // Entrée de la pubkey
+              onChanged: (text) {
+                print("Clé tappxé: $text");
+                this.pubkey = text;
+                isPubkey(text);
+              },
+              controller: this._outputPubkey,
+              maxLines: 1,
+              textAlign: TextAlign.center,
+              decoration: InputDecoration(
+                hintText: 'Tappez/Collez une clé publique, ou scannez',
+                hintStyle: TextStyle(fontSize: 14),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 7, vertical: 15),
+                border: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
+              ),
+              style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)),
+          historyQuery(),
+        ]));
   }
 
   historyQuery() {

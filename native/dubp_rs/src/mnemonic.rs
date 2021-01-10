@@ -15,15 +15,15 @@
 
 use crate::*;
 
-pub(super) fn gen_mnemonic(language: u32) -> Result<String, DubpError> {
-    let mnemonic = Mnemonic::new(MnemonicType::Words12, u32_to_language(language)?)
-        .map_err(|_| DubpError::RandErr)?;
+pub(super) fn gen_mnemonic(language: Language) -> Result<String, DubpError> {
+    let mnemonic =
+        Mnemonic::new(MnemonicType::Words12, language).map_err(|_| DubpError::RandErr)?;
     Ok(mnemonic.phrase().to_owned())
 }
 
-pub(super) fn mnemonic_to_pubkey(language: u32, mnemonic: &str) -> Result<String, DubpError> {
-    let mnemonic = Mnemonic::from_phrase(mnemonic, u32_to_language(language)?)
-        .map_err(|_| DubpError::WrongLanguage)?;
+pub(super) fn mnemonic_to_pubkey(language: Language, mnemonic: &str) -> Result<String, DubpError> {
+    let mnemonic =
+        Mnemonic::from_phrase(mnemonic, language).map_err(|_| DubpError::WrongLanguage)?;
     let seed = dup_crypto::mnemonic::mnemonic_to_seed(&mnemonic);
     let keypair = KeyPairFromSeed32Generator::generate(seed);
     Ok(keypair.public_key().to_base58())

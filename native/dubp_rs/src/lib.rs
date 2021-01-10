@@ -105,7 +105,7 @@ pub extern "C" fn gen_dewif(
 
 #[no_mangle]
 pub extern "C" fn gen_mnemonic(port: i64, language: u32) {
-    Isolate::new(port).post(DartRes::from(mnemonic::gen_mnemonic(language)));
+    exec_async(port, || u32_to_language(language), mnemonic::gen_mnemonic)
 }
 
 #[no_mangle]
@@ -136,6 +136,7 @@ pub extern "C" fn mnemonic_to_pubkey(
     exec_async(
         port,
         || {
+            let language = u32_to_language(language)?;
             let mnemonic_phrase = char_ptr_to_str(mnemonic_phrase)?;
             Ok((language, mnemonic_phrase))
         },

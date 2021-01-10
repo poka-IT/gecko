@@ -19,6 +19,7 @@ mod r#async;
 mod dewif;
 mod error;
 mod inputs;
+mod legacy;
 mod mnemonic;
 mod secret_code;
 
@@ -146,6 +147,23 @@ pub extern "C" fn get_dewif_pubkey(
 }
 
 #[no_mangle]
+pub extern "C" fn get_legacy_pubkey(
+    port: i64,
+    salt: *const raw::c_char,
+    password: *const raw::c_char,
+) {
+    exec_async(
+        port,
+        || {
+            let salt = char_ptr_to_str(salt)?;
+            let password = char_ptr_to_str(password)?;
+            Ok((salt, password))
+        },
+        |(salt, password)| Ok::<_, DubpError>(legacy::get_pubkey(salt, password)),
+    )
+}
+
+#[no_mangle]
 pub extern "C" fn mnemonic_to_pubkey(
     port: i64,
     language: u32,
@@ -180,6 +198,25 @@ pub extern "C" fn sign(
             Ok((currency, dewif, pin, msg))
         },
         |(currency, dewif, pin, msg)| dewif::sign(currency, dewif, pin, msg),
+    )
+}
+
+#[no_mangle]
+pub extern "C" fn sign_legacy(
+    port: i64,
+    salt: *const raw::c_char,
+    password: *const raw::c_char,
+    msg: *const raw::c_char,
+) {
+    exec_async(
+        port,
+        || {
+            let salt = char_ptr_to_str(salt)?;
+            let password = char_ptr_to_str(password)?;
+            let msg = char_ptr_to_str(msg)?;
+            Ok((salt, password, msg))
+        },
+        |(salt, password, msg)| Ok::<_, DubpError>(legacy::sign(salt, password, msg)),
     )
 }
 

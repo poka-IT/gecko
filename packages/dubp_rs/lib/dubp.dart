@@ -120,7 +120,20 @@ class DubpRust {
     return Future.value(NewWallet._(newWallet[0], newWallet[1], newWallet[2]));
   }
 
-  /// Get pulblic key (in base 58) of `dewif` keypair.
+  /// Get public key (in base 58) of legacy wallet (password + salt)
+  static Future<String> getLegacyPublicKey({String password, String salt}) {
+    final completer = Completer<String>();
+    final sendPort =
+        singleCompletePort<String, String>(completer, callback: _handleErr);
+    native.get_legacy_pubkey(
+      sendPort.nativePort,
+      Utf8.toUtf8(password),
+      Utf8.toUtf8(salt),
+    );
+    return completer.future;
+  }
+
+  /// Get public key (in base 58) of `dewif` keypair.
   static Future<String> getDewifPublicKey(
       {String currency = "g1", String dewif, String pin}) async {
     final completer = Completer<String>();
@@ -148,6 +161,21 @@ class DubpRust {
       Utf8.toUtf8(currency),
       Utf8.toUtf8(dewif),
       Utf8.toUtf8(pin),
+      Utf8.toUtf8(message),
+    );
+    return completer.future;
+  }
+
+  /// Sign the message `message` with legacy wallet (password + salt)
+  static Future<String> signLegacy(
+      {String password, String salt, String message}) {
+    final completer = Completer<String>();
+    final sendPort =
+        singleCompletePort<String, String>(completer, callback: _handleErr);
+    native.sign_legacy(
+      sendPort.nativePort,
+      Utf8.toUtf8(password),
+      Utf8.toUtf8(salt),
       Utf8.toUtf8(message),
     );
     return completer.future;

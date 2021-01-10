@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ffi';
 import 'package:ffi/ffi.dart';
 import 'package:isolate/ports.dart';
+import "package:system_info/system_info.dart";
 
 import 'ffi.dart' as native;
 
@@ -45,7 +46,7 @@ class DubpRust {
   /// Must be called only once at the start of your application.
   static void setup() {
     native.store_dart_post_cobject(NativeApi.postCObject);
-    print("Dubp Setup Done");
+    print("DUBP_RS Setup Done");
   }
 
   /// Generate a random mnemonic
@@ -67,6 +68,8 @@ class DubpRust {
     String oldPin,
     SecretCodeType secretCodeType = SecretCodeType.letters,
   }) async {
+    int ram = SysInfo.getTotalPhysicalMemory();
+
     final completer = Completer<List<String>>();
     final sendPort = singleCompletePort<List<String>, List>(completer,
         callback: _handleErrList);
@@ -77,6 +80,7 @@ class DubpRust {
       Utf8.toUtf8(oldPin),
       0,
       secretCodeType.index,
+      ram,
     );
     List<String> newWallet = await completer.future;
 
@@ -96,6 +100,9 @@ class DubpRust {
     String mnemonic,
     SecretCodeType secretCodeType = SecretCodeType.letters,
   }) async {
+    int ram = SysInfo.getTotalPhysicalMemory();
+    print('ram=$ram');
+
     final completer = Completer<List<String>>();
     final sendPort = singleCompletePort<List<String>, List>(completer,
         callback: _handleErrList);
@@ -106,6 +113,7 @@ class DubpRust {
       Utf8.toUtf8(mnemonic),
       0,
       secretCodeType.index,
+      ram,
     );
     List<String> newWallet = await completer.future;
 

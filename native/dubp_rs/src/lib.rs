@@ -49,6 +49,7 @@ pub extern "C" fn change_dewif_secret_code(
     old_pin: *const raw::c_char,
     member_wallet: u32,
     secret_code_type: u32,
+    system_memory: i64,
 ) {
     exec_async(
         port,
@@ -58,10 +59,24 @@ pub extern "C" fn change_dewif_secret_code(
             let old_pin = char_ptr_to_str(old_pin)?;
             let member_wallet = member_wallet != 0;
             let secret_code_type = SecretCodeType::from(secret_code_type);
-            Ok((currency, dewif, old_pin, member_wallet, secret_code_type))
+            Ok((
+                currency,
+                dewif,
+                old_pin,
+                member_wallet,
+                secret_code_type,
+                system_memory,
+            ))
         },
-        |(currency, dewif, old_pin, member_wallet, secret_code_type)| {
-            dewif::change_secret_code(currency, dewif, old_pin, member_wallet, secret_code_type)
+        |(currency, dewif, old_pin, member_wallet, secret_code_type, system_memory)| {
+            dewif::change_secret_code(
+                currency,
+                dewif,
+                old_pin,
+                member_wallet,
+                secret_code_type,
+                system_memory,
+            )
         },
     )
 }
@@ -74,6 +89,7 @@ pub extern "C" fn gen_dewif(
     mnemonic: *const raw::c_char,
     member_wallet: u32,
     secret_code_type: u32,
+    system_memory: i64,
 ) {
     exec_async(
         port,
@@ -89,15 +105,17 @@ pub extern "C" fn gen_dewif(
                 mnemonic,
                 member_wallet,
                 secret_code_type,
+                system_memory,
             ))
         },
-        |(currency, language, mnemonic, member_wallet, secret_code_type)| {
+        |(currency, language, mnemonic, member_wallet, secret_code_type, system_memory)| {
             dewif::gen_dewif(
                 currency,
                 language,
                 mnemonic,
                 member_wallet,
                 secret_code_type,
+                system_memory,
             )
         },
     )

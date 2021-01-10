@@ -21,6 +21,7 @@ pub(super) fn change_secret_code(
     old_secret_code: &str,
     member_wallet: bool,
     secret_code_type: SecretCodeType,
+    system_memory: i64,
 ) -> Result<Vec<String>, DubpError> {
     let currency = parse_currency(currency)?;
     let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
@@ -30,9 +31,11 @@ pub(super) fn change_secret_code(
     )
     .map_err(DubpError::DewifReadError)?;
     if let Some(KeyPairEnum::Ed25519(keypair)) = keypairs.next() {
-        let new_secret_code = gen_secret_code(member_wallet, secret_code_type)?;
+        let log_n = log_n(system_memory);
+        let new_secret_code = gen_secret_code(member_wallet, secret_code_type, log_n)?;
 
-        let dewif = dup_crypto::dewif::write_dewif_v1_content(currency, &keypair, &new_secret_code);
+        let dewif =
+            dup_crypto::dewif::write_dewif_v3_content(currency, &keypair, log_n, &new_secret_code);
         let pubkey = keypair.public_key().to_base58();
         Ok(vec![dewif, new_secret_code, pubkey])
     } else {
@@ -46,6 +49,7 @@ pub(super) fn gen_dewif(
     mnemonic: &str,
     member_wallet: bool,
     secret_code_type: SecretCodeType,
+    system_memory: i64,
 ) -> Result<Vec<String>, DubpError> {
     let currency = parse_currency(currency)?;
     let mnemonic =
@@ -53,8 +57,9 @@ pub(super) fn gen_dewif(
     let seed = dup_crypto::mnemonic::mnemonic_to_seed(&mnemonic);
     let keypair = KeyPairFromSeed32Generator::generate(seed);
 
-    let secret_code = gen_secret_code(member_wallet, secret_code_type)?;
-    let dewif = dup_crypto::dewif::write_dewif_v1_content(currency, &keypair, &secret_code);
+    let log_n = log_n(system_memory);
+    let secret_code = gen_secret_code(member_wallet, secret_code_type, log_n)?;
+    let dewif = dup_crypto::dewif::write_dewif_v3_content(currency, &keypair, log_n, &secret_code);
     let pubkey = keypair.public_key().to_base58();
     Ok(vec![dewif, secret_code, pubkey])
 }
@@ -109,5 +114,13 @@ pub(super) fn sign_several(
             .collect())
     } else {
         Err(DubpError::DewifReadError(DewifReadError::CorruptedContent))
+    }
+}
+
+fn log_n(system_memory: i64) -> u8 {
+    if system_memory > 3_000_000_000 {
+        15
+    } else {
+        12
     }
 }

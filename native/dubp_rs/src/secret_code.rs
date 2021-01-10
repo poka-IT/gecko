@@ -18,11 +18,14 @@ use crate::*;
 pub(crate) fn gen_secret_code(
     member_wallet: bool,
     secret_code_type: SecretCodeType,
+    log_n: u8,
 ) -> Result<String, DubpError> {
     match secret_code_type {
         SecretCodeType::Digits => {
             if member_wallet {
                 Err(DubpError::DigitsCodeForbidForMemberWallet)
+            } else if log_n >= 15 {
+                gen_random_digits(7)
             } else {
                 gen_random_digits(8)
             }
@@ -30,6 +33,8 @@ pub(crate) fn gen_secret_code(
         SecretCodeType::Letters => {
             if member_wallet {
                 gen_random_letters(10)
+            } else if log_n >= 15 {
+                gen_random_letters(5)
             } else {
                 gen_random_letters(6)
             }

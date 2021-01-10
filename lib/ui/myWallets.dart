@@ -1,3 +1,4 @@
+import 'package:gecko/ui/generateWallets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dubp/dubp.dart';
@@ -8,20 +9,33 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class MyWalletsScreen extends StatefulWidget {
+  const MyWalletsScreen({Key keyWallets}) : super(key: keyWallets);
   @override
-  _MyWalletState createState() => _MyWalletState();
+  MyWalletState createState() => MyWalletState();
 }
 
-class _MyWalletState extends State<MyWalletsScreen> {
+class MyWalletState extends State<MyWalletsScreen> {
+  GlobalKey<GenerateWalletState> _keyGenWallet = GlobalKey();
   StreamController<ErrorAnimationType> errorController;
+  Directory appPath;
+  List _listWallets = [];
 
   void initState() {
     super.initState();
     errorController = StreamController<ErrorAnimationType>();
+    initAppDirectory();
     DubpRust.setup();
+    // initAppDirectory();
+    // _walletsList = await getAllWalletsNames();
     // HistoryScreen(
     //   keyHistory: _keyHistory,
     // );
+  }
+
+  void initAppDirectory() async {
+    appPath = await getApplicationDocumentsDirectory();
+    appPath = Directory('${appPath.path}/wallets');
+    _listWallets = getAllWalletsNames();
   }
 
   TextEditingController _pubkey = new TextEditingController();
@@ -34,9 +48,20 @@ class _MyWalletState extends State<MyWalletsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // final _walletsList = getAllWalletsNames();
     return SafeArea(
         child: Column(children: <Widget>[
       SizedBox(height: 8),
+      for (var repository in this._listWallets)
+        ListTile(
+            contentPadding: const EdgeInsets.all(5.0),
+            leading: Text(repository, style: TextStyle(fontSize: 14.0)),
+            title: Text(repository, style: TextStyle(fontSize: 14.0)),
+            subtitle: Text(repository, style: TextStyle(fontSize: 14.0)),
+            dense: true,
+            onTap: () {
+              openWalletOptions(repository);
+            }),
       InkWell(
         child: TextField(
             enabled: false,
@@ -160,6 +185,53 @@ class _MyWalletState extends State<MyWalletsScreen> {
     }
   }
 
+  //   Future<bool> checkIfWalletExist(_name) async {
+  //   final appPath = await _localPath;
+  //   final _walletFile = File('$appPath/$_name/wallet.dewif');
+
+  //   // deleteWallet();
+  //   print(_walletFile.path);
+  //   final isExist = await File(_walletFile.path).exists();
+  //   print('Wallet existe ? : ' + isExist.toString());
+  //   print('Is wallet generated ? : ' + walletIsGenerated.toString());
+  //   if (isExist == true) {
+  //     print('Un wallet existe !');
+  //     return true;
+  //   } else {
+  //     return false;
+  //   }
+  // }
+
+  List getAllWalletsNames() {
+    // final _appPath = await getApplicationDocumentsDirectory();
+    // List _listWallets = [];
+    // _listWallets.add('tortuuue');
+    this._listWallets.clear();
+    print(this.appPath);
+
+    this
+        .appPath
+        .list(recursive: false, followLinks: false)
+        .listen((FileSystemEntity entity) {
+      print(entity.path.split('/').last);
+      this._listWallets.add(entity.path.split('/').last);
+    });
+
+    return _listWallets;
+
+    // final _local = await _appPath.path.list().toList();
+  }
+
+  Future openWalletOptions(_name) async {
+    deleteWallet(_name);
+    // getAllWalletsNames();
+    // setState(() {});
+    // GenerateWalletScreen(keyGenWallet: _keyGenWallet);
+    // _keyGenWallet.currentState.setState(() {
+    //   getAllWalletsNames();
+    // });
+  }
+
   Future readLocalWallet(String _pin) async {
     // print(pin);
     try {
@@ -186,9 +258,20 @@ class _MyWalletState extends State<MyWalletsScreen> {
     }
   }
 
+  Future<int> deleteWallet(_name) async {
+    try {
+      final appPath = await _localPath;
+      final _walletFile = File('$appPath/wallets/$_name/wallet.dewif');
+
+      await _walletFile.delete();
+      return 0;
+    } catch (e) {
+      return 1;
+    }
+  }
+
   Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
-
     return directory.path;
   }
 

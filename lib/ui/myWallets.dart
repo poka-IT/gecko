@@ -9,7 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class MyWalletsScreen extends StatefulWidget {
-  const MyWalletsScreen({Key keyWallets}) : super(key: keyWallets);
+  const MyWalletsScreen({Key keyMyWallets}) : super(key: keyMyWallets);
   @override
   MyWalletState createState() => MyWalletState();
 }

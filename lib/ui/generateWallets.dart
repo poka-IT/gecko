@@ -14,7 +14,7 @@ class GenerateWalletScreen extends StatefulWidget {
 }
 
 class GenerateWalletState extends State<GenerateWalletScreen> {
-  GlobalKey<MyWalletState> _keyWallets = GlobalKey();
+  GlobalKey<MyWalletState> _keyMyWallets = GlobalKey();
   GlobalKey<ValidStoreWalletState> _keyValidWallets = GlobalKey();
   void initState() {
     super.initState();
@@ -102,7 +102,7 @@ class GenerateWalletState extends State<GenerateWalletScreen> {
                 if (fSnapshot.hasData)
                   return Visibility(
                       visible: fSnapshot.data,
-                      child: MyWalletsScreen(keyWallets: _keyWallets));
+                      child: MyWalletsScreen(keyMyWallets: _keyMyWallets));
                 return Center(child: CircularProgressIndicator());
               }),
           SizedBox(height: 8),
@@ -164,7 +164,7 @@ class GenerateWalletState extends State<GenerateWalletScreen> {
                       fontSize: 30.0,
                       color: Colors.black,
                       fontWeight: FontWeight.bold)),
-              SizedBox(height: 12),
+              SizedBox(height: 20),
               // Expanded(child: Align(alignment: Alignment.bottomCenter)),
               new RaisedButton(
                   color: Color(0xffFFD68E),
@@ -192,12 +192,12 @@ class GenerateWalletState extends State<GenerateWalletScreen> {
                                   // setState(() {});
                                   // getAllWalletsNames();
                                   // checkIfWalletExist('tata');
-                                  // _keyWallets.currentState.getAllWalletsNames();
+                                  // _keyMyWallets.currentState.getAllWalletsNames();
                                 }
                               }));
                         }
                       : null,
-                  child: Text('Enregistrer ce wallet',
+                  child: Text('Enregistrer ce portefeuille',
                       style: TextStyle(fontSize: 20))),
               SizedBox(height: 20)
             ]),
@@ -219,7 +219,8 @@ class GenerateWalletState extends State<GenerateWalletScreen> {
     final bool _isExist = await checkIfWalletExist('tata');
     print('The wallet exist in resetWalletState(): ' + _isExist.toString());
     // initState();
-    // _keyWallets.currentState.setState(() {});
+    // _keyMyWallets.currentState.setState(() {});
+    // _keyMyWallets.currentState.initAppDirectory();
     setState(() {
       // getAllWalletsNames();
       // this.walletIsGenerated = true;

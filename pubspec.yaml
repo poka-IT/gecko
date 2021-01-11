@@ -26,6 +26,7 @@ dependencies:
   sentry_flutter: ^4.0.1
   path_provider: ^1.6.24
   pin_code_fields: ^6.0.2
+  http: ^0.12.2
 
 
 flutter_icons:
@@ -44,3 +45,4 @@ flutter:
 
   assets:
     - images/
+    - config/

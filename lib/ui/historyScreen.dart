@@ -110,7 +110,7 @@ class HistoryScreenState extends State<HistoryScreen> {
                 disabledBorder: InputBorder.none,
               ),
               style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)),
-          historyQuery(),
+          if (this.pubkey != '') historyQuery(),
         ]));
   }
 
@@ -138,11 +138,18 @@ class HistoryScreenState extends State<HistoryScreen> {
             }
 
             if (result.hasException) {
-              return Text('\nErrors: \n  ' + result.exception.toString());
+              print('Error GVA: ' + result.exception.toString());
+              return Column(children: <Widget>[
+                SizedBox(height: 50),
+                Text(
+                  "Aucun noeud GVA valide n'a pu être trouvé.\nVeuillez réessayer ultérieurement.",
+                  style: TextStyle(fontSize: 17.0),
+                )
+              ]);
             }
 
             if (result.data == null && result.exception.toString() == null) {
-              return const Text('Both data and errors are null');
+              return const Text('Aucune donnée à afficher.');
             }
 
             final List<dynamic> blockchainTX =

@@ -22,7 +22,7 @@ T getRandomElement<T>(List<T> list) {
 }
 
 Future<String> getRandomEndpoint() async {
-  // TODO: Improve implemention of getRandomEndpoint() with JSON and error handling
+  // TODO: Improve implemention of getRandomEndpoint()
   // final _json = json.decode(await getJsonEndpoints());
   // print('JSON !! :');
   // print(_json);

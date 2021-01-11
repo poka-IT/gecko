@@ -6,9 +6,10 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter/foundation.dart';
 
 // void main() => runApp(Gecko());
+final bool enableSentry = true;
 
 Future<void> main() async {
-  if (kReleaseMode) {
+  if (kReleaseMode && enableSentry) {
     await SentryFlutter.init(
       (options) {
         options.dsn =

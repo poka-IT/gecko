@@ -2,7 +2,6 @@ import 'package:gecko/ui/myWallets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dubp/dubp.dart';
-import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:sentry/sentry.dart' as sentry;
 import 'dart:io';
 import 'dart:async';
@@ -16,6 +15,7 @@ class GenerateWalletScreen extends StatefulWidget {
 
 class GenerateWalletState extends State<GenerateWalletScreen> {
   GlobalKey<MyWalletState> _keyWallets = GlobalKey();
+  GlobalKey<ValidStoreWalletState> _keyValidWallets = GlobalKey();
   void initState() {
     super.initState();
     DubpRust.setup();
@@ -174,19 +174,25 @@ class GenerateWalletState extends State<GenerateWalletScreen> {
                             context,
                             MaterialPageRoute(builder: (context) {
                               return ValidStoreWalletScreen(
+                                  validationKey: _keyValidWallets,
                                   generatedMnemonic: this.generatedMnemonic,
                                   generatedWallet: this.actualWallet);
                             }),
                           ).then((value) => setState(() {
-                                print(
-                                    'TODO: Fix error null boolean ?'); //TODO: Fix error null boolean
-                                if (value) {
+                                if (value != null) {
+                                  print(
+                                      'TODO: Fix resetWalletState()'); //TODO: Fix resetWalletState()
                                   _pin.clear();
                                   _mnemonicController.clear();
                                   _pubkey.clear();
                                   this.generatedMnemonic = null;
                                   this.actualWallet = null;
                                   this.walletIsGenerated = false;
+                                  resetWalletState();
+                                  // setState(() {});
+                                  // getAllWalletsNames();
+                                  // checkIfWalletExist('tata');
+                                  // _keyWallets.currentState.getAllWalletsNames();
                                 }
                               }));
                         }
@@ -207,6 +213,17 @@ class GenerateWalletState extends State<GenerateWalletScreen> {
 //           )
           )
         ])));
+  }
+
+  Future resetWalletState() async {
+    final bool _isExist = await checkIfWalletExist('tata');
+    print('The wallet exist in resetWalletState(): ' + _isExist.toString());
+    // initState();
+    // _keyWallets.currentState.setState(() {});
+    setState(() {
+      // getAllWalletsNames();
+      // this.walletIsGenerated = true;
+    });
   }
 
   Future generateMnemonic() async {
@@ -259,15 +276,37 @@ class GenerateWalletState extends State<GenerateWalletScreen> {
 
     // deleteWallet();
     print(_walletFile.path);
-    final isExist = await File(_walletFile.path).exists();
+    final bool isExist = await File(_walletFile.path).exists();
     print('Wallet existe ? : ' + isExist.toString());
     print('Is wallet generated ? : ' + walletIsGenerated.toString());
-    if (isExist == true) {
+    if (isExist) {
       print('Un wallet existe !');
       return true;
     } else {
       return false;
     }
+  }
+
+  Future<List> getAllWalletsNames() async {
+    print('Je suis getAllWalletsNames() !!');
+    final _appPath = await getApplicationDocumentsDirectory();
+    // List _listWallets = [];
+    // _listWallets.add('tortuuue');
+    _keyValidWallets.currentState._listWallets
+        .clear(); //TODO: Fix: The getter '_listWallets' was called on null.
+    print(_appPath);
+    print('Je suis getAllWalletsNames() !! 2');
+
+    _appPath
+        .list(recursive: false, followLinks: false)
+        .listen((FileSystemEntity entity) {
+      print(entity.path.split('/').last);
+      _keyValidWallets.currentState._listWallets
+          .add(entity.path.split('/').last);
+    });
+
+    return _keyValidWallets.currentState._listWallets;
+    // final _local = await _appPath.path.list().toList();
   }
 
   Future importWallet() async {}
@@ -291,10 +330,11 @@ class ValidStoreWalletScreen extends StatefulWidget {
       : super(key: validationKey);
 
   @override
-  _ValidStoreWalletScreen createState() => _ValidStoreWalletScreen();
+  ValidStoreWalletState createState() => ValidStoreWalletState();
 }
 
-class _ValidStoreWalletScreen extends State<ValidStoreWalletScreen> {
+class ValidStoreWalletState extends State<ValidStoreWalletScreen> {
+  GlobalKey<ValidStoreWalletState> _keyValidWallets = GlobalKey();
   void initState() {
     super.initState();
     // DubpRust.setup();

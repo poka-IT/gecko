@@ -235,7 +235,7 @@ class MyWalletState extends State<MyWalletsScreen> {
   Future readLocalWallet(String _pin) async {
     // print(pin);
     try {
-      final file = await _localWallet;
+      final file = await _localWallet('tata');
       String _localDewif = await file.readAsString();
       String _localPubkey;
 
@@ -275,8 +275,8 @@ class MyWalletState extends State<MyWalletsScreen> {
     return directory.path;
   }
 
-  Future<File> get _localWallet async {
+  Future<File> _localWallet(_name) async {
     final path = await _localPath;
-    return File('$path/wallet.dewif');
+    return File('$path/wallets/$_name/wallet.dewif');
   }
 }

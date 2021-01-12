@@ -1,4 +1,4 @@
-import 'package:gecko/ui/generateWallets.dart';
+// import 'package:gecko/ui/generateWallets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dubp/dubp.dart';
@@ -15,7 +15,7 @@ class MyWalletsScreen extends StatefulWidget {
 }
 
 class MyWalletState extends State<MyWalletsScreen> {
-  GlobalKey<GenerateWalletState> _keyGenWallet = GlobalKey();
+  // GlobalKey<GenerateWalletState> _keyGenWallet = GlobalKey();
   StreamController<ErrorAnimationType> errorController;
   Directory appPath;
   List _listWallets = [];
@@ -25,6 +25,7 @@ class MyWalletState extends State<MyWalletsScreen> {
     errorController = StreamController<ErrorAnimationType>();
     initAppDirectory();
     DubpRust.setup();
+    // getAllWalletsNames();
     // initAppDirectory();
     // _walletsList = await getAllWalletsNames();
     // HistoryScreen(
@@ -235,7 +236,7 @@ class MyWalletState extends State<MyWalletsScreen> {
   Future readLocalWallet(String _pin) async {
     // print(pin);
     try {
-      final file = await _localWallet('tata');
+      final file = await _localWallet('MonWallet');
       String _localDewif = await file.readAsString();
       String _localPubkey;
 
@@ -263,9 +264,17 @@ class MyWalletState extends State<MyWalletsScreen> {
       final appPath = await _localPath;
       final _walletFile = File('$appPath/wallets/$_name/wallet.dewif');
 
-      await _walletFile.delete();
+      _walletFile.delete();
+      getAllWalletsNames();
+      setState(() {
+        // getAllWalletsNames();
+      });
       return 0;
     } catch (e) {
+      getAllWalletsNames();
+      setState(() {
+        // getAllWalletsNames();
+      });
       return 1;
     }
   }

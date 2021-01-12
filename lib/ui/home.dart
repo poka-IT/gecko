@@ -1,8 +1,8 @@
 import 'package:gecko/ui/historyScreen.dart';
-import 'package:gecko/ui/generateWallets.dart';
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import 'dart:ui';
+import 'package:gecko/ui/myWallets/walletsHome.dart';
 
 //ignore: must_be_immutable
 class HomeScreen extends StatefulWidget {
@@ -38,7 +38,7 @@ class HomeScreenState extends State<HomeScreen> {
             HistoryScreen(
               keyHistory: _keyHistory,
             ),
-            GenerateWalletScreen(),
+            WalletsHome(),
           ],
         ),
       ),

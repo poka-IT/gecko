@@ -28,13 +28,13 @@ Future<String> getRandomEndpoint() async {
   // print(_json);
   // final _list = _json[];
 
-  final _list = ['https://g1.librelois.fr/gva'];
-  final _endpoint = getRandomElement(_list);
+  final _listEndpoints = ['https://g1.librelois.fr/gva'];
+  final _endpoint = getRandomElement(_listEndpoints);
   print('ENDPOINT: ' + _endpoint);
 
   // http.post(_endpoint);
   final response = await http.post(_endpoint);
-  if (response.statusCode != 200) {
+  if (response.statusCode != 400) {
     print('Endpoint statutcode: ' + response.statusCode.toString());
     // _endpoint = getRandomElement(_list);
     return 'HS';
@@ -47,13 +47,13 @@ Future<void> main() async {
   String randomEndpoint; // = await getRandomEndpoint();
   int i = 0;
   do {
-    print(i);
     if (i >= 3) {
       print('NO VALID ENDPOINT FOUND !');
       break;
     }
     if (i != 0) {
-      await Future.delayed(Duration(milliseconds: 500));
+      print(i.toString() + ' ème essai de recherche de endpoint GVA.');
+      await Future.delayed(Duration(milliseconds: 300));
     }
     randomEndpoint = await getRandomEndpoint();
     i++;

@@ -27,6 +27,7 @@ dependencies:
   path_provider: ^1.6.24
   pin_code_fields: ^6.0.2
   http: ^0.12.2
+  super_tooltip: ^0.9.6
 
 
 flutter_icons:

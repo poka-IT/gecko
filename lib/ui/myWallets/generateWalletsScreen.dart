@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sentry/sentry.dart' as sentry;
 import 'package:dubp/dubp.dart';
+import 'package:super_tooltip/super_tooltip.dart';
 
 class GenerateWalletsScreen extends StatefulWidget {
   const GenerateWalletsScreen({Key keyGenWallet}) : super(key: keyGenWallet);
@@ -25,6 +26,7 @@ class GenerateWalletsState extends State<GenerateWalletsScreen> {
   String generatedMnemonic;
   bool walletIsGenerated = false;
   NewWallet actualWallet;
+  SuperTooltip tooltip;
   // final formKey = GlobalKey<FormState>();
 
   bool hasError = false;
@@ -55,12 +57,16 @@ class GenerateWalletsState extends State<GenerateWalletsScreen> {
         body: SafeArea(
           child: Column(children: <Widget>[
             SizedBox(height: 20),
-            Text(
-              'Clé publique:',
-              style: TextStyle(
-                  fontSize: 15.0,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w400),
+            Tooltip(
+              message:
+                  "C'est votre RIB en Ğ1, les gens l'utiliseront pour vous payer",
+              child: Text(
+                'Clé publique:',
+                style: TextStyle(
+                    fontSize: 15.0,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w400),
+              ),
             ),
             TextField(
                 enabled: false,
@@ -73,12 +79,16 @@ class GenerateWalletsState extends State<GenerateWalletsScreen> {
                     color: Colors.black,
                     fontWeight: FontWeight.bold)),
             SizedBox(height: 8),
-            Text(
-              'Phrase de restauration:',
-              style: TextStyle(
-                  fontSize: 15.0,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w400),
+            Tooltip(
+              message:
+                  "Notez et gardez cette phrase précieusement sur un papier, elle vous servira à restaurer votre portefeuille sur un autre appareil",
+              child: Text(
+                'Phrase de restauration:',
+                style: TextStyle(
+                    fontSize: 15.0,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w400),
+              ),
             ),
             TextField(
                 enabled: false,
@@ -93,23 +103,41 @@ class GenerateWalletsState extends State<GenerateWalletsScreen> {
                     color: Colors.black,
                     fontWeight: FontWeight.w400)),
             SizedBox(height: 8),
-            Text(
-              'Code secret:',
-              style: TextStyle(
-                  fontSize: 15.0,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w400),
-            ),
-            TextField(
-                enabled: false,
-                controller: this._pin,
-                maxLines: 1,
-                textAlign: TextAlign.center,
-                decoration: InputDecoration(),
+            Tooltip(
+              message:
+                  "Retenez bien votre code secret, il vous sera demandé à chaque paiement, ainsi que pour configurer votre portefeuille",
+              child: Text(
+                'Code secret:',
                 style: TextStyle(
-                    fontSize: 30.0,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold)),
+                    fontSize: 15.0,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w400),
+              ),
+            ),
+            Container(
+              child: Stack(
+                alignment: Alignment.centerRight,
+                children: <Widget>[
+                  TextField(
+                      enabled: false,
+                      controller: this._pin,
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(),
+                      style: TextStyle(
+                          fontSize: 30.0,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold)),
+                  IconButton(
+                    icon: Icon(Icons.replay),
+                    color: Color(0xffD28928),
+                    onPressed: () {
+                      changePinCode();
+                    },
+                  ),
+                ],
+              ),
+            ),
             SizedBox(height: 20),
             // Expanded(child: Align(alignment: Alignment.bottomCenter)),
             new ElevatedButton(
@@ -148,7 +176,7 @@ class GenerateWalletsState extends State<GenerateWalletsScreen> {
         ));
   }
 
-  Future generateMnemonic() async {
+  Future<String> generateMnemonic() async {
     try {
       this.generatedMnemonic =
           await DubpRust.genMnemonic(language: Language.french);
@@ -167,7 +195,7 @@ class GenerateWalletsState extends State<GenerateWalletsScreen> {
     return this.generatedMnemonic;
   }
 
-  Future generateWallet(generatedMnemonic) async {
+  Future<NewWallet> generateWallet(generatedMnemonic) async {
     try {
       this.actualWallet = await DubpRust.genWalletFromMnemonic(
           language: Language.french,
@@ -190,5 +218,16 @@ class GenerateWalletsState extends State<GenerateWalletsScreen> {
     });
 
     return actualWallet;
+  }
+
+  Future<void> changePinCode() async {
+    this.actualWallet = await DubpRust.changeDewifPin(
+      dewif: this.actualWallet.dewif,
+      oldPin: this.actualWallet.pin,
+    );
+
+    setState(() {
+      this._pin.text = actualWallet.pin;
+    });
   }
 }

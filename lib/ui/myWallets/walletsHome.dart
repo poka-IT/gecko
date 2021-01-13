@@ -28,6 +28,7 @@ class WalletsHomeState extends State<WalletsHome> {
   String generatedMnemonic;
   bool walletIsGenerated = false;
   NewWallet actualWallet;
+  String newWalletName;
 
   bool hasError = false;
   String validPin = 'NO PIN';
@@ -54,7 +55,10 @@ class WalletsHomeState extends State<WalletsHome> {
                             MaterialPageRoute(builder: (context) {
                               return GenerateWalletsScreen();
                             }),
-                          );
+                          ).then((value) => setState(() {
+                                this.newWalletName = value;
+                                checkIfWalletExist(value);
+                              }));
                         },
                         child: Container(
                             height: 40.0,
@@ -83,7 +87,10 @@ class WalletsHomeState extends State<WalletsHome> {
                           MaterialPageRoute(builder: (context) {
                             return GenerateWalletsScreen();
                           }),
-                        ),
+                        ).then((value) => setState(() {
+                              this.newWalletName = value;
+                              checkIfWalletExist(value);
+                            })),
                     child: Text('Générer un portefeuille',
                         style: TextStyle(fontSize: 20))),
                 SizedBox(height: 15),
@@ -121,6 +128,7 @@ class WalletsHomeState extends State<WalletsHome> {
   // }
 
   bool checkIfWalletExist(_name) {
+    print('Nom du wallet: ' + _name);
     if (this.appPath == null) {
       return false;
     }

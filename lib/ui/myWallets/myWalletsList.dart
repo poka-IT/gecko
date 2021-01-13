@@ -218,6 +218,8 @@ class MyWalletState extends State<MyWalletsScreen> {
       this._listWallets.add(entity.path.split('/').last);
     });
 
+    print('Mes wallets: ');
+    print(_listWallets);
     return _listWallets;
 
     // final _local = await _appPath.path.list().toList();
@@ -236,7 +238,7 @@ class MyWalletState extends State<MyWalletsScreen> {
   Future readLocalWallet(String _pin) async {
     // print(pin);
     try {
-      final file = await _localWallet('MonWallet');
+      final file = await _localWallet('this.walletName');
       String _localDewif = await file.readAsString();
       String _localPubkey;
 

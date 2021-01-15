@@ -116,7 +116,7 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
               // autofocus: true,
               inputFormatters: [
                 FilteringTextInputFormatter.allow(
-                    RegExp('[a-zA-Z|0-9|\\-|_| ]')),
+                    RegExp('[A-Za-z|0-9|\\-|_| ]')),
               ],
               // enabled: isAskedWordValid,
               controller: this.walletName,
@@ -191,15 +191,18 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
   void checkAskedWord(String value) {
     final runesAsked = _mnemonicController.text.split(' ')[nbrWord].runes;
     List<int> runesAskedUnaccent = [];
+    print(runesAsked);
+    print(value.runes);
     for (int i in runesAsked) {
-      if (i == 769) {
+      if (i == 768 || i == 769 || i == 770 || i == 771) {
         continue;
       } else {
         runesAskedUnaccent.add(i);
       }
     }
-    final String unaccentedAskedWord = utf8.decode(runesAskedUnaccent);
-    final String unaccentedInputWord = removeDiacritics(value);
+    final String unaccentedAskedWord =
+        utf8.decode(runesAskedUnaccent).toLowerCase();
+    final String unaccentedInputWord = removeDiacritics(value).toLowerCase();
 
     print("Is $unaccentedAskedWord equal to input $unaccentedInputWord ?");
     if (unaccentedAskedWord == unaccentedInputWord || value == 'triche') {

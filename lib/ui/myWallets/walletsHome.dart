@@ -128,7 +128,15 @@ class WalletsHomeState extends State<WalletsHome> {
     if (this.appPath == null) {
       return false;
     }
+
     var walletsFolder = new Directory("${this.appPath.path}/wallets/");
+
+    bool isWalletFolderExist = walletsFolder.existsSync();
+
+    if (!isWalletFolderExist) {
+      Directory(walletsFolder.path).createSync();
+    }
+
     List contents = walletsFolder.listSync();
     if (contents.length == 0) {
       print('No wallets detected');

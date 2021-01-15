@@ -4,6 +4,7 @@ import 'package:dubp/dubp.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
+import 'dart:convert' show utf8;
 
 class ConfirmStoreWallet extends StatefulWidget {
   final String generatedMnemonic;
@@ -163,19 +164,16 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
 
   Future storeWallet(_name) async {
     final appPath = await _localPath;
-    final walletFile = File('$appPath/wallets/$_name/wallet.dewif');
+    final Directory walletNameDirectory = Directory('$appPath/wallets/$_name');
+    final walletFile = File('${walletNameDirectory.path}/wallet.dewif');
 
-    if (await Directory('$appPath/wallets').exists() == false) {
-      new Directory('$appPath/wallets').createSync();
-    }
-
-    if (await Directory('$appPath/wallets/$_name').exists() == true) {
+    if (await walletNameDirectory.exists()) {
       print('Ce wallet existe déjà, impossible de le créer.');
       _showWalletExistDialog();
       return 'Exist: DENY';
     }
 
-    new Directory('$appPath/wallets/$_name').createSync();
+    walletNameDirectory.createSync();
     walletFile.writeAsString('${widget.generatedWallet.dewif}');
     _pin.clear();
 
@@ -190,11 +188,21 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
     return directory.path;
   }
 
-  void checkAskedWord(value) {
-    print(this._mnemonicController.text.split(' ')[nbrWord]);
-    print(value);
-    if (this._mnemonicController.text.split(' ')[nbrWord] == value ||
-        value == 'triche') {
+  void checkAskedWord(String value) {
+    final runesAsked = _mnemonicController.text.split(' ')[nbrWord].runes;
+    List<int> runesAskedUnaccent = [];
+    for (int i in runesAsked) {
+      if (i == 769) {
+        continue;
+      } else {
+        runesAskedUnaccent.add(i);
+      }
+    }
+    final String unaccentedAskedWord = utf8.decode(runesAskedUnaccent);
+    final String unaccentedInputWord = removeDiacritics(value);
+
+    print("Is $unaccentedAskedWord equal to input $unaccentedInputWord ?");
+    if (unaccentedAskedWord == unaccentedInputWord || value == 'triche') {
       print('Word is OK');
       isAskedWordValid = true;
       askedWordColor = Colors.green[600];
@@ -230,6 +238,19 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
         );
       },
     );
+  }
+
+  String removeDiacritics(String str) {
+    var withDia =
+        'ÀÁÂÃÄÅàáâãäåÒÓÔÕÕÖØòóôõöøÈÉÊËèéêëðÇçÐÌÍÎÏìíîïÙÚÛÜùúûüÑñŠšŸÿýŽž';
+    var withoutDia =
+        'AAAAAAaaaaaaOOOOOOOooooooEEEEeeeeeCcDIIIIiiiiUUUUuuuuNnSsYyyZz';
+
+    for (int i = 0; i < withDia.length; i++) {
+      str = str.replaceAll(withDia[i], withoutDia[i]);
+    }
+
+    return str;
   }
 
   int getRandomInt() {

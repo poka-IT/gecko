@@ -36,7 +36,11 @@ class WalletOptionsState extends State<WalletOptions> {
   Widget build(BuildContext context) {
     return Scaffold(
         resizeToAvoidBottomInset: false,
-        appBar: AppBar(),
+        appBar: AppBar(
+            title: SizedBox(
+          height: 25,
+          child: Text(widget.walletName),
+        )),
         body: Center(
             child: SafeArea(
                 child: Column(children: <Widget>[
@@ -212,12 +216,51 @@ class WalletOptionsState extends State<WalletOptions> {
       final _walletFile = Directory('$appPath/wallets/$_name');
       print('DELETE THAT ?: $_walletFile');
 
-      _walletFile.deleteSync(recursive: true);
-      Navigator.pop(context);
+      final bool _answer = await _confirmDeletingWallet();
+
+      if (_answer) {
+        _walletFile.deleteSync(recursive: true);
+        Navigator.pop(context);
+      }
       return 0;
     } catch (e) {
       return 1;
     }
+  }
+
+  Future<bool> _confirmDeletingWallet() async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: true, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+              'Êtes-vous sûr de vouloir supprimer le portefeuille ${widget.walletName} ?'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                    'Vous pourrez restaurer ce portefeuille à tout moment grace à votre phrase de restauration.'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text("Non"),
+              onPressed: () {
+                Navigator.pop(context, false);
+              },
+            ),
+            TextButton(
+              child: Text("Oui"),
+              onPressed: () {
+                Navigator.pop(context, true);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<String> get _localPath async {

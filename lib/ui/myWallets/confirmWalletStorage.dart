@@ -41,7 +41,11 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(),
+      appBar: AppBar(
+          title: SizedBox(
+        height: 25,
+        child: Text('Confirmez ce portefeuille'),
+      )),
       body: Center(
         child: Column(children: <Widget>[
           SizedBox(height: 15),
@@ -96,8 +100,8 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
           ),
           TextField(
               inputFormatters: [
-                new FilteringTextInputFormatter.allow(
-                    RegExp('[a-zA-Z|0-9|\\-|_]')),
+                FilteringTextInputFormatter.allow(
+                    RegExp('[a-zA-Z|0-9|\\-|_| ]')),
               ],
               enabled: isAskedWordValid,
               controller: this.walletName,
@@ -201,7 +205,7 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Approve'),
+              child: Text("J'ai compris"),
               onPressed: () {
                 Navigator.of(context).pop();
               },

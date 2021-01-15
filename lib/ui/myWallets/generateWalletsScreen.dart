@@ -37,7 +37,11 @@ class GenerateWalletsState extends State<GenerateWalletsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(),
+        appBar: AppBar(
+            title: SizedBox(
+          height: 25,
+          child: Text('Générer un portefeuille'),
+        )),
         floatingActionButton: Container(
             height: 80.0,
             width: 80.0,

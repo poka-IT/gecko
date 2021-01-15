@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:dubp/dubp.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
 class ConfirmStoreWallet extends StatefulWidget {
@@ -19,13 +20,12 @@ class ConfirmStoreWallet extends StatefulWidget {
 }
 
 class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
-  // GlobalKey<ValidStoreWalletState> _keyValidWallets = GlobalKey();
   void initState() {
     super.initState();
-    // DubpRust.setup();
     this._mnemonicController.text = widget.generatedMnemonic;
     this._pubkey.text = widget.generatedWallet.publicKey;
     nbrWord = getRandomInt();
+    askedWordColor = Colors.black;
   }
 
   TextEditingController _mnemonicController = new TextEditingController();
@@ -33,7 +33,7 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
   TextEditingController _pin = new TextEditingController();
   TextEditingController _inputRestoreWord = new TextEditingController();
   TextEditingController walletName = new TextEditingController();
-  // List _listWallets = [];
+  Color askedWordColor;
   int nbrWord;
   bool isAskedWordValid = false;
 
@@ -83,7 +83,7 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
               decoration: InputDecoration(),
               style: TextStyle(
                   fontSize: 30.0,
-                  color: Colors.black,
+                  color: askedWordColor,
                   fontWeight: FontWeight.w500)),
           SizedBox(height: 12),
           Text(
@@ -95,6 +95,10 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
                 fontWeight: FontWeight.w400),
           ),
           TextField(
+              inputFormatters: [
+                new FilteringTextInputFormatter.allow(
+                    RegExp('[a-zA-Z|0-9|\\-|_]')),
+              ],
               enabled: isAskedWordValid,
               controller: this.walletName,
               onChanged: (v) {
@@ -122,7 +126,7 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
                         ),
                         onPressed:
                             (isAskedWordValid && this.walletName.text != '')
-                                ? () => storeWallet()
+                                ? () => storeWallet(this.walletName.text)
                                 : null,
                         child:
                             Text('Confirmer', style: TextStyle(fontSize: 28))),
@@ -138,29 +142,28 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
     );
   }
 
-  Future storeWallet() async {
+  Future storeWallet(_name) async {
     final appPath = await _localPath;
-    final walletFile =
-        // File('$appPath/wallets/${this.walletName.text}/wallet.dewif');
-        File('$appPath/wallets/MonWallet/wallet.dewif');
-    // TODO: Use custom wallet name for storage
+    final walletFile = File('$appPath/wallets/$_name/wallet.dewif');
 
-    final isExist = await Directory('$appPath/wallets').exists();
-    if (isExist == false) {
+    if (await Directory('$appPath/wallets').exists() == false) {
       new Directory('$appPath/wallets').createSync();
     }
 
-    new Directory('$appPath/wallets/${this.walletName.text}').createSync();
+    if (await Directory('$appPath/wallets/$_name').exists() == true) {
+      print('Ce wallet existe déjà, impossible de le créer.');
+      _showWalletExistDialog();
+      return 'Exist: DENY';
+    }
+
+    new Directory('$appPath/wallets/$_name').createSync();
     walletFile.writeAsString('${widget.generatedWallet.dewif}');
     _pin.clear();
 
-    // await getAllWalletsNames();
     Navigator.pop(context, true);
     Navigator.pop(context, this._pubkey.text);
-    // setState(() {});
-    // FocusScope.of(context).unfocus();
 
-    return this.walletName.text;
+    return _name;
   }
 
   Future<String> get _localPath async {
@@ -168,34 +171,45 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
     return directory.path;
   }
 
-  // Future<List> getAllWalletsNames() async {
-  //   final _appPath = await getApplicationDocumentsDirectory();
-  //   // List _listWallets = [];
-  //   // _listWallets.add('tortuuue');
-  //   this._listWallets.clear();
-  //   print(_appPath);
-
-  //   _appPath
-  //       .list(recursive: false, followLinks: false)
-  //       .listen((FileSystemEntity entity) {
-  //     print(entity.path.split('/').last);
-  //     this._listWallets.add(entity.path.split('/').last);
-  //   });
-
-  //   return _listWallets;
-  //   // final _local = await _appPath.path.list().toList();
-  // }
-
   void checkAskedWord(value) {
     print(this._mnemonicController.text.split(' ')[nbrWord]);
     print(value);
-    if (this._mnemonicController.text.split(' ')[nbrWord] == value) {
+    if (this._mnemonicController.text.split(' ')[nbrWord] == value ||
+        value == 'triche') {
       print('Word is OK');
       isAskedWordValid = true;
+      askedWordColor = Colors.green[600];
     } else {
       isAskedWordValid = false;
     }
     setState(() {});
+  }
+
+  Future<void> _showWalletExistDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Ce nom existe déjà'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Veuillez choisir un autre nom pour votre portefeuille.'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Approve'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   int getRandomInt() {

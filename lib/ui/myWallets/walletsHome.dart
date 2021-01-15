@@ -41,8 +41,8 @@ class WalletsHomeState extends State<WalletsHome> {
     // getAppDirectory();
     return Scaffold(
         floatingActionButton: Visibility(
-            visible: (checkIfWalletExist(
-                'MonWallet')), //!checkIfWalletExist('MonWallet') &&
+            visible:
+                (checkIfWalletExist()), //!checkIfWalletExist('MonWallet') &&
             child: Container(
                 height: 80.0,
                 width: 80.0,
@@ -55,10 +55,7 @@ class WalletsHomeState extends State<WalletsHome> {
                             MaterialPageRoute(builder: (context) {
                               return GenerateWalletsScreen();
                             }),
-                          ).then((value) => setState(() {
-                                this.newWalletName = value;
-                                checkIfWalletExist(value);
-                              }));
+                          );
                         },
                         child: Container(
                             height: 40.0,
@@ -68,7 +65,7 @@ class WalletsHomeState extends State<WalletsHome> {
         body: SafeArea(
             child: Column(children: <Widget>[
           Visibility(
-              visible: (!checkIfWalletExist('MonWallet') && !walletIsGenerated),
+              visible: (!checkIfWalletExist() && !walletIsGenerated),
               child: Column(children: <Widget>[
                 SizedBox(height: 120),
                 Center(
@@ -89,7 +86,7 @@ class WalletsHomeState extends State<WalletsHome> {
                           }),
                         ).then((value) => setState(() {
                               this.newWalletName = value;
-                              checkIfWalletExist(value);
+                              checkIfWalletExist();
                             })),
                     child: Text('Générer un portefeuille',
                         style: TextStyle(fontSize: 20))),
@@ -110,8 +107,8 @@ class WalletsHomeState extends State<WalletsHome> {
                         style: TextStyle(fontSize: 20))),
               ])),
           Visibility(
-              visible: checkIfWalletExist('MonWallet'),
-              child: MyWalletsScreen(keyMyWallets: _keyWalletsHome))
+              visible: checkIfWalletExist(),
+              child: MyWalletsList(keyMyWallets: _keyWalletsHome))
         ])));
   }
 
@@ -127,22 +124,34 @@ class WalletsHomeState extends State<WalletsHome> {
   //   });
   // }
 
-  bool checkIfWalletExist(_name) {
-    print('Nom du wallet: ' + _name);
+  bool checkIfWalletExist() {
     if (this.appPath == null) {
       return false;
     }
-    final bool isExist =
-        File('${this.appPath.path}/wallets/$_name/wallet.dewif').existsSync();
-    print(this.appPath.path);
-    print('Wallet existe ? : ' + isExist.toString());
-    print('Is wallet generated ? : ' + walletIsGenerated.toString());
-    if (isExist) {
-      print('Un wallet existe !');
-      return true;
-    } else {
+    var walletsFolder = new Directory("${this.appPath.path}/wallets/");
+    List contents = walletsFolder.listSync();
+    if (contents.length == 0) {
+      print('No wallets detected');
       return false;
+    } else {
+      print('Some wallets have been detected:');
+      for (var _wallets in contents) {
+        print(_wallets);
+      }
+      return true;
     }
+
+    // final bool isExist =
+    //     File('${walletsFolder.path}/$name/wallet.dewif').existsSync();
+    // print(this.appPath.path);
+    // print('Wallet existe ? : ' + isExist.toString());
+    // print('Is wallet generated ? : ' + walletIsGenerated.toString());
+    // if (isExist) {
+    //   print('Un wallet existe !');
+    //   return true;
+    // } else {
+    //   return false;
+    // }
   }
 
   Future getAppDirectory() async {

@@ -55,7 +55,10 @@ class WalletsHomeState extends State<WalletsHome> {
                             MaterialPageRoute(builder: (context) {
                               return GenerateWalletsScreen();
                             }),
-                          );
+                          ).then((value) => setState(() {
+                                this.newWalletName = value;
+                                checkIfWalletExist();
+                              }));
                         },
                         child: Container(
                             height: 40.0,

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dubp/dubp.dart';
+import 'package:gecko/ui/myWallets/changePin.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:path_provider/path_provider.dart';
@@ -26,6 +27,7 @@ class WalletOptionsState extends State<WalletOptions> {
   String validPin = 'NO PIN';
   var pinColor = Color(0xffF9F9F1);
   bool isWalletUnlock = false;
+  var walletPin = '';
 
   Future<NewWallet> get badWallet => null;
 
@@ -82,7 +84,15 @@ class WalletOptionsState extends State<WalletOptions> {
                                   onPrimary: Colors.black, // foreground
                                 ),
                                 onPressed: () {
-                                  changePin(widget.walletName, '_pin');
+                                  // changePin(widget.walletName, this.walletPin);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) {
+                                      return ChangePinScreen(
+                                          walletName: widget.walletName,
+                                          oldPin: this.walletPin);
+                                    }),
+                                  );
                                 },
                                 child: Text('Changer mon code secret',
                                     style: TextStyle(fontSize: 20)))))),
@@ -187,6 +197,7 @@ class WalletOptionsState extends State<WalletOptions> {
                             pinColor = Colors.green[200];
                             // setState(() {});
                             // await Future.delayed(Duration(milliseconds: 50));
+                            this.walletPin = _pin.toUpperCase();
                             isWalletUnlock = true;
                             setState(() {});
                           }
@@ -262,25 +273,6 @@ class WalletOptionsState extends State<WalletOptions> {
         this._pubkey.clear();
       });
       return 'bad';
-    }
-  }
-
-  Future<NewWallet> changePin(_name, _oldPin) async {
-    try {
-      final appPath = await _localPath;
-      final _walletFile = Directory('$appPath/wallets/$_name');
-      final _dewif =
-          File(_walletFile.path + '/wallet.dewif').readAsLinesSync()[0];
-
-      final NewWallet _newWalletFile = await DubpRust.changeDewifPin(
-        dewif: _dewif,
-        oldPin: _oldPin,
-      );
-
-      return _newWalletFile;
-    } catch (e) {
-      print('Impossible de changer le code PIN.');
-      return badWallet;
     }
   }
 

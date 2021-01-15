@@ -25,11 +25,15 @@ class WalletOptionsState extends State<WalletOptions> {
   bool hasError = false;
   String validPin = 'NO PIN';
   var pinColor = Color(0xffF9F9F1);
+  bool isWalletUnlock = false;
+
+  Future<NewWallet> get badWallet => null;
 
   void initState() {
     super.initState();
     errorController = StreamController<ErrorAnimationType>();
     DubpRust.setup();
+    isWalletUnlock = false;
   }
 
   @override
@@ -44,109 +48,160 @@ class WalletOptionsState extends State<WalletOptions> {
         body: Center(
             child: SafeArea(
                 child: Column(children: <Widget>[
-          InkWell(
-            child: TextField(
-                enabled: false,
-                controller: this._pubkey,
-                maxLines: 1,
-                textAlign: TextAlign.center,
-                decoration: InputDecoration(),
-                style: TextStyle(
-                    fontSize: 14.0,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold)),
-            onTap: () {
-              // deleteWallet(widget.walletName);
-              // _keyHistory.currentState.scan();
-            },
-          ),
-          SizedBox(height: 12),
-          Form(
-            key: formKey,
-            child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
-                child: PinCodeTextField(
-                  appContext: context,
-                  pastedTextStyle: TextStyle(
-                    color: Colors.green.shade600,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  length: 6,
-                  obscureText: false,
-                  obscuringCharacter: '*',
-                  animationType: AnimationType.fade,
-                  validator: (v) {
-                    if (v.length < 6) {
-                      return "Votre code PIN fait 6 caractères";
-                    } else {
-                      return null;
-                    }
-                  },
-                  pinTheme: PinTheme(
-                    shape: PinCodeFieldShape.box,
-                    borderRadius: BorderRadius.circular(5),
-                    fieldHeight: 60,
-                    fieldWidth: 50,
-                    activeFillColor: hasError ? Colors.orange : Colors.white,
-                  ),
-                  cursorColor: Colors.black,
-                  animationDuration: Duration(milliseconds: 300),
-                  textStyle: TextStyle(fontSize: 20, height: 1.6),
-                  backgroundColor: pinColor,
-                  enableActiveFill: false,
-                  errorAnimationController: errorController,
-                  controller: _enterPin,
-                  keyboardType: TextInputType.text,
-                  boxShadows: [
-                    BoxShadow(
-                      offset: Offset(0, 1),
-                      color: Colors.black12,
-                      blurRadius: 10,
-                    )
-                  ],
-                  onCompleted: (v) async {
-                    print("Completed");
-                    final resultWallet = await readLocalWallet(v.toUpperCase());
-                    if (resultWallet == 'bad') {
-                      errorController.add(ErrorAnimationType
-                          .shake); // Triggering error shake animation
-                      setState(() {
-                        hasError = true;
-                        pinColor = Colors.red[200];
-                      });
-                    } else {
-                      setState(() {
-                        pinColor = Colors.green[200];
-                      });
-                    }
-                  },
-                  onChanged: (value) {
-                    if (pinColor != Color(0xffF9F9F1)) {
-                      setState(() {
-                        pinColor = Color(0xffF9F9F1);
-                      });
-                    }
-                    print(value);
-                  },
-                )),
-          ),
-          SizedBox(
-            height: 100,
-          ),
-          SizedBox(
-              height: 80,
-              child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    elevation: 2,
-                    primary: Colors.red, //Color(0xffFFD68E), // background
-                    onPrimary: Colors.black, // foreground
-                  ),
-                  onPressed: () {
-                    deleteWallet(widget.walletName);
-                  },
-                  child: Text('Supprimer ce portefeuille',
-                      style: TextStyle(fontSize: 25))))
+          Visibility(
+              visible: isWalletUnlock,
+              child: Expanded(
+                  child: Column(children: <Widget>[
+                SizedBox(height: 15),
+                Text(
+                  'Clé publique:',
+                  style: TextStyle(
+                      fontSize: 15.0,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w400),
+                ),
+                SizedBox(height: 15),
+                Text(
+                  this._pubkey.text,
+                  style: TextStyle(
+                      fontSize: 14.0,
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold),
+                ),
+                Expanded(
+                    child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: SizedBox(
+                            height: 50,
+                            width: 300,
+                            child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 5,
+                                  primary: Color(
+                                      0xffFFD68E), //Color(0xffFFD68E), // background
+                                  onPrimary: Colors.black, // foreground
+                                ),
+                                onPressed: () {
+                                  changePin(widget.walletName, '_pin');
+                                },
+                                child: Text('Changer mon code secret',
+                                    style: TextStyle(fontSize: 20)))))),
+                SizedBox(height: 30),
+                SizedBox(
+                    height: 50,
+                    width: 300,
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          elevation: 6,
+                          primary:
+                              Colors.red, //Color(0xffFFD68E), // background
+                          onPrimary: Colors.black, // foreground
+                        ),
+                        onPressed: () {
+                          deleteWallet(widget.walletName);
+                        },
+                        child: Text('Supprimer ce portefeuille',
+                            style: TextStyle(fontSize: 20)))),
+                SizedBox(height: 50),
+                Text(
+                  'Portefeuille déverrouillé',
+                  style: TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15),
+                ),
+                SizedBox(height: 10)
+              ]))),
+          Visibility(
+              visible: !isWalletUnlock,
+              child: Expanded(
+                  child: Column(children: <Widget>[
+                SizedBox(height: 80),
+                Text(
+                  'Veuillez tapper votre code secret pour dévérouiller votre portefeuille.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 15.0,
+                      color: Colors.black,
+                      fontWeight: FontWeight.w400),
+                ),
+                SizedBox(height: 50),
+                Form(
+                  key: formKey,
+                  child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 30),
+                      child: PinCodeTextField(
+                        autoFocus: true,
+                        appContext: context,
+                        pastedTextStyle: TextStyle(
+                          color: Colors.green.shade600,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        length: 6,
+                        obscureText: false,
+                        obscuringCharacter: '*',
+                        animationType: AnimationType.fade,
+                        validator: (v) {
+                          if (v.length < 6) {
+                            return "Votre code PIN fait 6 caractères";
+                          } else {
+                            return null;
+                          }
+                        },
+                        pinTheme: PinTheme(
+                          shape: PinCodeFieldShape.box,
+                          borderRadius: BorderRadius.circular(5),
+                          fieldHeight: 60,
+                          fieldWidth: 50,
+                          activeFillColor:
+                              hasError ? Colors.orange : Colors.white,
+                        ),
+                        cursorColor: Colors.black,
+                        animationDuration: Duration(milliseconds: 300),
+                        textStyle: TextStyle(fontSize: 20, height: 1.6),
+                        backgroundColor: pinColor,
+                        enableActiveFill: false,
+                        errorAnimationController: errorController,
+                        controller: _enterPin,
+                        keyboardType: TextInputType.text,
+                        boxShadows: [
+                          BoxShadow(
+                            offset: Offset(0, 1),
+                            color: Colors.black12,
+                            blurRadius: 10,
+                          )
+                        ],
+                        onCompleted: (_pin) async {
+                          print("Completed");
+                          final resultWallet =
+                              await readLocalWallet(_pin.toUpperCase());
+                          if (resultWallet == 'bad') {
+                            errorController.add(ErrorAnimationType
+                                .shake); // Triggering error shake animation
+                            setState(() {
+                              hasError = true;
+                              pinColor = Colors.red[200];
+                            });
+                          } else {
+                            pinColor = Colors.green[200];
+                            // setState(() {});
+                            // await Future.delayed(Duration(milliseconds: 50));
+                            isWalletUnlock = true;
+                            setState(() {});
+                          }
+                        },
+                        onChanged: (value) {
+                          if (pinColor != Color(0xffF9F9F1)) {
+                            setState(() {
+                              pinColor = Color(0xffF9F9F1);
+                            });
+                          }
+                          print(value);
+                        },
+                      )),
+                )
+              ]))),
         ]))));
   }
 
@@ -210,6 +265,25 @@ class WalletOptionsState extends State<WalletOptions> {
     }
   }
 
+  Future<NewWallet> changePin(_name, _oldPin) async {
+    try {
+      final appPath = await _localPath;
+      final _walletFile = Directory('$appPath/wallets/$_name');
+      final _dewif =
+          File(_walletFile.path + '/wallet.dewif').readAsLinesSync()[0];
+
+      final NewWallet _newWalletFile = await DubpRust.changeDewifPin(
+        dewif: _dewif,
+        oldPin: _oldPin,
+      );
+
+      return _newWalletFile;
+    } catch (e) {
+      print('Impossible de changer le code PIN.');
+      return badWallet;
+    }
+  }
+
   Future<int> deleteWallet(_name) async {
     try {
       final appPath = await _localPath;
@@ -235,7 +309,7 @@ class WalletOptionsState extends State<WalletOptions> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(
-              'Êtes-vous sûr de vouloir supprimer le portefeuille ${widget.walletName} ?'),
+              'Êtes-vous sûr de vouloir supprimer le portefeuille "${widget.walletName}" ?'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[

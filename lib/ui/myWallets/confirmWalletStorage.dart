@@ -28,11 +28,20 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
     askedWordColor = Colors.black;
   }
 
+  @override
+  void dispose() {
+    _wordFocus.dispose();
+    _walletNameFocus.dispose();
+    super.dispose();
+  }
+
   TextEditingController _mnemonicController = new TextEditingController();
   TextEditingController _pubkey = new TextEditingController();
   TextEditingController _pin = new TextEditingController();
   TextEditingController _inputRestoreWord = new TextEditingController();
   TextEditingController walletName = new TextEditingController();
+  FocusNode _wordFocus = FocusNode();
+  FocusNode _walletNameFocus = FocusNode();
   Color askedWordColor;
   int nbrWord;
   bool isAskedWordValid = false;
@@ -76,13 +85,16 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
                 color: Colors.grey[600],
                 fontWeight: FontWeight.w400),
           ),
-          TextField(
+          TextFormField(
+              focusNode: _wordFocus,
+              autofocus: true,
               enabled: !isAskedWordValid,
               controller: this._inputRestoreWord,
+              textInputAction: TextInputAction.next,
               onChanged: (value) {
                 checkAskedWord(value);
               },
-              maxLines: 2,
+              maxLines: 1,
               textAlign: TextAlign.center,
               decoration: InputDecoration(),
               style: TextStyle(
@@ -98,17 +110,20 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
                 color: Colors.grey[600],
                 fontWeight: FontWeight.w400),
           ),
-          TextField(
+          TextFormField(
+              focusNode: _walletNameFocus,
+              // autofocus: true,
               inputFormatters: [
                 FilteringTextInputFormatter.allow(
                     RegExp('[a-zA-Z|0-9|\\-|_| ]')),
               ],
-              enabled: isAskedWordValid,
+              // enabled: isAskedWordValid,
               controller: this.walletName,
+              textInputAction: TextInputAction.next,
               onChanged: (v) {
                 nameChanged();
               },
-              maxLines: 2,
+              maxLines: 1,
               textAlign: TextAlign.center,
               decoration: InputDecoration(),
               style: TextStyle(
@@ -183,6 +198,7 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
       print('Word is OK');
       isAskedWordValid = true;
       askedWordColor = Colors.green[600];
+      _walletNameFocus.nextFocus();
     } else {
       isAskedWordValid = false;
     }

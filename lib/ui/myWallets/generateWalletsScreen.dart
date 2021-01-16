@@ -39,7 +39,7 @@ class GenerateWalletsState extends State<GenerateWalletsScreen> {
     return Scaffold(
         appBar: AppBar(
             title: SizedBox(
-          height: 25,
+          height: 22,
           child: Text('Générer un portefeuille'),
         )),
         floatingActionButton: Container(
@@ -54,7 +54,10 @@ class GenerateWalletsState extends State<GenerateWalletsScreen> {
               //   onTabTapped(0);
               // }
               child: Container(
-                  height: 40.0, width: 40.0, child: Icon(Icons.replay)),
+                height: 40.0,
+                width: 40.0,
+                child: Icon(Icons.replay, color: Colors.grey[850]),
+              ),
               backgroundColor: Color(
                   0xffEFEFBF), //Color(0xffFFD68E), //Color.fromARGB(500, 204, 255, 255),
             ))),

@@ -93,8 +93,8 @@ class Gecko extends StatelessWidget {
     return MaterialApp(
       title: 'Ğecko',
       theme: ThemeData(
-        primaryColor: Color(0xffD28928),
-        accentColor: Color(0xffFFD68E),
+        primaryColor: Color(0xffFFD58D),
+        accentColor: Colors.grey[850],
         textTheme: TextTheme(
           bodyText1: TextStyle(),
           bodyText2: TextStyle(),

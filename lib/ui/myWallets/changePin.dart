@@ -36,7 +36,7 @@ class ChangePinScreenState extends State<ChangePinScreen> {
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
             title: SizedBox(
-          height: 25,
+          height: 22,
           child: Text(widget.walletName),
         )),
         body: Center(
@@ -44,7 +44,7 @@ class ChangePinScreenState extends State<ChangePinScreen> {
                 child: Column(children: <Widget>[
           SizedBox(height: 80),
           Text(
-            'Veuillez tapper votre code secret pour en générer un nouveau :',
+            'Choisissez un code secret autogénéré :',
             textAlign: TextAlign.center,
             style: TextStyle(
                 fontSize: 17.0,

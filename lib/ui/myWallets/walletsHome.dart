@@ -63,7 +63,8 @@ class WalletsHomeState extends State<WalletsHome> {
                         child: Container(
                             height: 40.0,
                             width: 40.0,
-                            child: Icon(Icons.person_add_alt_1_rounded)),
+                            child: Icon(Icons.person_add_alt_1_rounded,
+                                color: Colors.grey[850])),
                         backgroundColor: Color(0xffEFEFBF))))),
         body: SafeArea(
             child: Column(children: <Widget>[

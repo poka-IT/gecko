@@ -22,6 +22,7 @@ class WalletOptionsState extends State<WalletOptions> {
   Directory appPath;
   TextEditingController _pubkey = new TextEditingController();
   TextEditingController _enterPin = new TextEditingController();
+  TextEditingController _newWalletName = new TextEditingController();
   final formKey = GlobalKey<FormState>();
   bool hasError = false;
   String validPin = 'NO PIN';
@@ -44,7 +45,7 @@ class WalletOptionsState extends State<WalletOptions> {
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
             title: SizedBox(
-          height: 25,
+          height: 22,
           child: Text(widget.walletName),
         )),
         body: Center(
@@ -83,18 +84,11 @@ class WalletOptionsState extends State<WalletOptions> {
                                       0xffFFD68E), //Color(0xffFFD68E), // background
                                   onPrimary: Colors.black, // foreground
                                 ),
-                                onPressed: () {
-                                  // changePin(widget.walletName, this.walletPin);
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) {
-                                      return ChangePinScreen(
-                                          walletName: widget.walletName,
-                                          oldPin: this.walletPin);
+                                onPressed: () =>
+                                    _renameWalletAlerte().then((_) {
+                                      setState(() {});
                                     }),
-                                  );
-                                },
-                                child: Text('Changer mon code secret',
+                                child: Text('Renommer ce portefeuille',
                                     style: TextStyle(fontSize: 20)))))),
                 SizedBox(height: 30),
                 SizedBox(
@@ -102,13 +96,37 @@ class WalletOptionsState extends State<WalletOptions> {
                     width: 300,
                     child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          elevation: 6,
-                          primary:
-                              Colors.red, //Color(0xffFFD68E), // background
+                          elevation: 5,
+                          primary: Color(
+                              0xffFFD68E), //Color(0xffFFD68E), // background
                           onPrimary: Colors.black, // foreground
                         ),
                         onPressed: () {
-                          deleteWallet(widget.walletName);
+                          // changePin(widget.walletName, this.walletPin);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) {
+                              return ChangePinScreen(
+                                  walletName: widget.walletName,
+                                  oldPin: this.walletPin);
+                            }),
+                          );
+                        },
+                        child: Text('Changer mon code secret',
+                            style: TextStyle(fontSize: 20)))),
+                SizedBox(height: 30),
+                SizedBox(
+                    height: 50,
+                    width: 300,
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          elevation: 6,
+                          primary: Colors
+                              .redAccent, //Color(0xffFFD68E), // background
+                          onPrimary: Colors.black, // foreground
+                        ),
+                        onPressed: () {
+                          _deleteWallet(widget.walletName);
                         },
                         child: Text('Supprimer ce portefeuille',
                             style: TextStyle(fontSize: 20)))),
@@ -185,7 +203,7 @@ class WalletOptionsState extends State<WalletOptions> {
                         onCompleted: (_pin) async {
                           print("Completed");
                           final resultWallet =
-                              await readLocalWallet(_pin.toUpperCase());
+                              await _readLocalWallet(_pin.toUpperCase());
                           if (resultWallet == 'bad') {
                             errorController.add(ErrorAnimationType
                                 .shake); // Triggering error shake animation
@@ -216,7 +234,7 @@ class WalletOptionsState extends State<WalletOptions> {
         ]))));
   }
 
-  Future getPubkeyFromDewif(_dewif, _pin) async {
+  Future _getPubkeyFromDewif(_dewif, _pin) async {
     String _pubkey;
     RegExp regExp = new RegExp(
       r'^[A-Z0-9]+$',
@@ -250,14 +268,14 @@ class WalletOptionsState extends State<WalletOptions> {
     }
   }
 
-  Future readLocalWallet(String _pin) async {
+  Future _readLocalWallet(String _pin) async {
     // print(pin);
     try {
       final file = await _localWallet(widget.walletName);
       String _localDewif = await file.readAsString();
       String _localPubkey;
 
-      if ((_localPubkey = await getPubkeyFromDewif(_localDewif, _pin)) !=
+      if ((_localPubkey = await _getPubkeyFromDewif(_localDewif, _pin)) !=
           'false') {
         setState(() {
           this._pubkey.text = _localPubkey;
@@ -276,7 +294,54 @@ class WalletOptionsState extends State<WalletOptions> {
     }
   }
 
-  Future<int> deleteWallet(_name) async {
+  Future _renameWallet(_newName) async {
+    final appPath = await _localPath;
+    final _walletFile = Directory('$appPath/wallets/${widget.walletName}');
+
+    try {
+      _walletFile.rename('$appPath/wallets/$_newName');
+    } catch (e) {
+      print('ERREUR lors du renommage du wallet: $e');
+    }
+  }
+
+  Future<bool> _renameWalletAlerte() async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: true, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Choisissez un nouveau nom pour ce portefeuille'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                TextField(
+                    controller: this._newWalletName,
+                    maxLines: 1,
+                    textAlign: TextAlign.center,
+                    decoration: InputDecoration(),
+                    style: TextStyle(
+                        fontSize: 14.0,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text("Valider"),
+              onPressed: () {
+                _renameWallet(this._newWalletName.text);
+                Navigator.pop(context, true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<int> _deleteWallet(_name) async {
     try {
       final appPath = await _localPath;
       final _walletFile = Directory('$appPath/wallets/$_name');

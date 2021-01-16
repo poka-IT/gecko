@@ -53,7 +53,7 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
           title: SizedBox(
-        height: 25,
+        height: 22,
         child: Text('Confirmez ce portefeuille'),
       )),
       body: Center(

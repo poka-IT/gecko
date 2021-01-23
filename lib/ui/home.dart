@@ -15,8 +15,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends State<HomeScreen> {
-  GlobalKey<HistoryScreenState> _keyHistory = GlobalKey();
-
   int currentIndex = 0;
   Widget currentScreen;
   String appName;
@@ -101,9 +99,7 @@ class HomeScreenState extends State<HomeScreen> {
         child: IndexedStack(
           index: currentIndex,
           children: <Widget>[
-            HistoryScreen(
-              keyHistory: _keyHistory,
-            ),
+            HistoryScreen(),
             WalletsHome(),
           ],
         ),

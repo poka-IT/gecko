@@ -16,7 +16,6 @@ class GenerateWalletsState extends State<GenerateWalletsScreen> {
   // GlobalKey<ValidStoreWalletState> _keyValidWallets = GlobalKey();
   void initState() {
     super.initState();
-    DubpRust.setup();
     generateMnemonic();
   }
 

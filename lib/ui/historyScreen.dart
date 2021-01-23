@@ -1,25 +1,15 @@
 import 'package:gecko/parsingGVA.dart';
 import 'package:gecko/query.dart';
+import 'package:gecko/models/history.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:qrscan/qrscan.dart' as scanner;
-import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:sentry/sentry.dart' as sentry;
 import 'package:truncate/truncate.dart';
 
 //ignore: must_be_immutable
-class HistoryScreen extends StatefulWidget {
-  const HistoryScreen({Key keyHistory}) : super(key: keyHistory);
-
-  @override
-  State<StatefulWidget> createState() => HistoryScreenState();
-}
-
-class HistoryScreenState extends State<HistoryScreen> {
+class HistoryScreen extends StatelessWidget with ChangeNotifier {
   Widget currentScreen;
 
   Uint8List bytes = Uint8List(0);
@@ -29,33 +19,15 @@ class HistoryScreenState extends State<HistoryScreen> {
   // String pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'; // For debug
   String pubkey = '';
   bool isBuilding = true;
-  ScrollController _scrollController = new ScrollController();
 
-  _scrollListener() {
-    if (_scrollController.offset >=
-            _scrollController.position.maxScrollExtent &&
-        !_scrollController.position.outOfRange) {
-      setState(() {
-        print("reach the bottom");
-      });
+  HistoryProvider historyProvider = HistoryProvider();
+
+  scrollListener() {
+    if (historyProvider.scrollController.offset >=
+            historyProvider.scrollController.position.maxScrollExtent &&
+        !historyProvider.scrollController.position.outOfRange) {
+      notifyListeners();
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController = ScrollController();
-    _scrollController.addListener(_scrollListener);
-
-    // _scrollController
-    //   ..addListener(() {
-    //     if (_scrollController.position.pixels ==
-    //         _scrollController.position.maxScrollExtent) {
-    //       // print(
-    //       //     "DEBUG H fetchMoreCursor in scrollController: $fetchMoreCursor");
-    //       fetchMore(opts);
-    //     }
-    //   });
   }
 
   @override
@@ -63,6 +35,9 @@ class HistoryScreenState extends State<HistoryScreen> {
     print('Build pubkey : ' + pubkey);
     print('Build this.pubkey : ' + this.pubkey);
     print('isBuilding: ' + isBuilding.toString());
+    historyProvider.scrollController.addListener(scrollListener);
+    historyProvider.scrollController = ScrollController();
+
     return Scaffold(
         floatingActionButton: Container(
           height: 80.0,
@@ -71,7 +46,7 @@ class HistoryScreenState extends State<HistoryScreen> {
             child: FloatingActionButton(
               heroTag: "buttonScan",
               onPressed: () async {
-                await scan();
+                await historyProvider.scan();
                 // print(resultScan);
                 // if (resultScan != 'false') {
                 //   onTabTapped(0);
@@ -93,7 +68,7 @@ class HistoryScreenState extends State<HistoryScreen> {
               onChanged: (text) {
                 print("Clé tappxé: $text");
                 this.pubkey = text;
-                isPubkey(text);
+                historyProvider.isPubkey(text);
               },
               controller: this._outputPubkey,
               maxLines: 1,
@@ -211,7 +186,7 @@ class HistoryScreenState extends State<HistoryScreen> {
             // Build history list
             return Expanded(
                 child: ListView(
-              controller: _scrollController,
+              controller: historyProvider.scrollController,
               children: <Widget>[
                 SizedBox(height: 7),
                 if (this.pubkey != '')
@@ -235,7 +210,7 @@ class HistoryScreenState extends State<HistoryScreen> {
                           Text(repository[5], style: TextStyle(fontSize: 14.0)),
                       dense: true,
                       onTap: () {
-                        isPubkey(repository[2]);
+                        historyProvider.isPubkey(repository[2]);
                       }),
                 if (result.isLoading)
                   Row(
@@ -250,58 +225,6 @@ class HistoryScreenState extends State<HistoryScreen> {
         ),
       ],
     ));
-  }
-
-  Future scan() async {
-    await Permission.camera.request();
-    String barcode;
-    try {
-      barcode = await scanner.scan();
-    } catch (e, stack) {
-      print(e);
-      if (kReleaseMode) {
-        await sentry.Sentry.captureException(
-          e,
-          stackTrace: stack,
-        );
-      }
-      return 'false';
-    }
-    // this._outputPubkey.text = "";
-    if (barcode != null) {
-      this._outputPubkey.text = barcode;
-      isPubkey(barcode);
-    } else {
-      return 'false';
-    }
-    return barcode;
-  }
-
-  String isPubkey(pubkey) {
-    final RegExp regExp = new RegExp(
-      r'^[a-zA-Z0-9]+$',
-      caseSensitive: false,
-      multiLine: false,
-    );
-
-    if (regExp.hasMatch(pubkey) == true &&
-        pubkey.length > 42 &&
-        pubkey.length < 45) {
-      print("C'est une pubkey !!!");
-
-      setState(() {
-        this.pubkey = pubkey;
-        this._outputPubkey.text = pubkey;
-      });
-
-      // setState(() {
-      //   this._outputBalance.text = balance.toString();
-      // });
-
-      return pubkey;
-    }
-
-    return '';
   }
 
   num removeDecimalZero(double n) {

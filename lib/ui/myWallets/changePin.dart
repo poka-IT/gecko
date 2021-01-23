@@ -26,7 +26,6 @@ class ChangePinScreenState extends State<ChangePinScreen> {
 
   void initState() {
     super.initState();
-    DubpRust.setup();
     changePin(widget.walletName, widget.oldPin);
   }
 

@@ -35,7 +35,6 @@ class WalletOptionsState extends State<WalletOptions> {
   void initState() {
     super.initState();
     errorController = StreamController<ErrorAnimationType>();
-    DubpRust.setup();
     isWalletUnlock = false;
   }
 

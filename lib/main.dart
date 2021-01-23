@@ -1,7 +1,11 @@
+import 'package:dubp/dubp.dart';
+import 'package:gecko/models/history.dart';
+import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/ui/home.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -90,23 +94,41 @@ class Gecko extends StatelessWidget {
         link: _httpLink,
       ),
     );
-    return MaterialApp(
-      title: 'Ğecko',
-      theme: ThemeData(
-        primaryColor: Color(0xffFFD58D),
-        accentColor: Colors.grey[850],
-        textTheme: TextTheme(
-          bodyText1: TextStyle(),
-          bodyText2: TextStyle(),
-        ).apply(
-          bodyColor: Color(0xff855F2D),
-          // displayColor: Colors.blue,
-        ),
-      ),
-      home: GraphQLProvider(
-        client: _client,
-        child: HomeScreen(),
-      ),
-    );
+
+    DubpRust.setup();
+    return MultiProvider(
+        providers: [
+          // In this sample app, CatalogModel never changes, so a simple Provider
+          // is sufficient.
+          Provider(create: (context) => HistoryProvider()),
+          // CartModel is implemented as a ChangeNotifier, which calls for the use
+          // of ChangeNotifierProvider. Moreover, CartModel depends
+          // on CatalogModel, so a ProxyProvider is needed.
+          ChangeNotifierProxyProvider<HistoryProvider, MyWalletsProvider>(
+            create: (context) => MyWalletsProvider(),
+            update: (context, history, myWallets) {
+              cart.catalog = catalog;
+              return cart;
+            },
+          ),
+        ],
+        child: MaterialApp(
+          title: 'Ğecko',
+          theme: ThemeData(
+            primaryColor: Color(0xffFFD58D),
+            accentColor: Colors.grey[850],
+            textTheme: TextTheme(
+              bodyText1: TextStyle(),
+              bodyText2: TextStyle(),
+            ).apply(
+              bodyColor: Color(0xff855F2D),
+              // displayColor: Colors.blue,
+            ),
+          ),
+          home: GraphQLProvider(
+            client: _client,
+            child: HomeScreen(),
+          ),
+        ));
   }
 }

@@ -5,10 +5,13 @@ import 'package:sentry/sentry.dart' as sentry;
 import 'package:qrscan/qrscan.dart' as scanner;
 
 class HistoryProvider with ChangeNotifier {
-  final TextEditingController _outputPubkey = new TextEditingController();
   String pubkey = '';
+  HistoryProvider(this.pubkey);
+  final TextEditingController _outputPubkey = new TextEditingController();
+  // String pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'; // For debug
 
-  ScrollController scrollController = new ScrollController();
+  // FetchMoreOptions opts;
+  // ScrollController scrollController = new ScrollController();
 
   Future scan() async {
     await Permission.camera.request();
@@ -56,4 +59,13 @@ class HistoryProvider with ChangeNotifier {
 
     return '';
   }
+
+  // scrollListener() {
+  //   if (scrollController.offset >= scrollController.position.maxScrollExtent &&
+  //       !scrollController.position.outOfRange) {
+  //     print('On est en bas !!');
+  //     // fetchMore(opts);
+  //     notifyListeners();
+  //   }
+  // }
 }

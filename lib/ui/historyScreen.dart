@@ -3,41 +3,35 @@ import 'package:gecko/query.dart';
 import 'package:gecko/models/history.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'dart:typed_data';
 import 'dart:ui';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:truncate/truncate.dart';
 
 //ignore: must_be_immutable
 class HistoryScreen extends StatelessWidget with ChangeNotifier {
-  Widget currentScreen;
-
-  Uint8List bytes = Uint8List(0);
   final TextEditingController _outputPubkey = new TextEditingController();
+  ScrollController scrollController = new ScrollController();
   final nRepositories = 20;
+  HistoryProvider _historyProvider;
 
-  // String pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'; // For debug
-  String pubkey = '';
-  bool isBuilding = true;
-
-  HistoryProvider historyProvider = HistoryProvider();
-
-  scrollListener() {
-    if (historyProvider.scrollController.offset >=
-            historyProvider.scrollController.position.maxScrollExtent &&
-        !historyProvider.scrollController.position.outOfRange) {
-      notifyListeners();
-    }
-  }
+  FetchMore fetchMore;
+  FetchMoreOptions opts;
+  // scrollListener() {
+  //   if (scrollController.offset >= scrollController.position.maxScrollExtent &&
+  //       !scrollController.position.outOfRange) {
+  //     print('On est en bas !!');
+  //     print(opts.document);
+  //     fetchMore(opts);
+  //     notifyListeners();
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
-    print('Build pubkey : ' + pubkey);
-    print('Build this.pubkey : ' + this.pubkey);
-    print('isBuilding: ' + isBuilding.toString());
-    historyProvider.scrollController.addListener(scrollListener);
-    historyProvider.scrollController = ScrollController();
-
+    _historyProvider = Provider.of<HistoryProvider>(context);
+    print('Build pubkey : ' + _historyProvider.pubkey);
+    // scrollController.addListener(scrollListener);
     return Scaffold(
         floatingActionButton: Container(
           height: 80.0,
@@ -46,11 +40,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
             child: FloatingActionButton(
               heroTag: "buttonScan",
               onPressed: () async {
-                await historyProvider.scan();
-                // print(resultScan);
-                // if (resultScan != 'false') {
-                //   onTabTapped(0);
-                // }
+                await _historyProvider.scan();
               },
               child: Container(
                   height: 40.0,
@@ -67,8 +57,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
               // Entrée de la pubkey
               onChanged: (text) {
                 print("Clé tappxé: $text");
-                this.pubkey = text;
-                historyProvider.isPubkey(text);
+                _historyProvider.isPubkey(text);
               },
               controller: this._outputPubkey,
               maxLines: 1,
@@ -85,7 +74,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                 disabledBorder: InputBorder.none,
               ),
               style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)),
-          if (this.pubkey != '') historyQuery(),
+          if (_historyProvider.pubkey != '') historyQuery(),
         ]));
   }
 
@@ -99,13 +88,13 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
           options: QueryOptions(
             document: gql(getHistory),
             variables: <String, dynamic>{
-              'pubkey': this.pubkey,
+              'pubkey': _historyProvider.pubkey,
               'number': nRepositories,
               // set cursor to null so as to start at the beginning
               'cursor': null
             },
           ),
-          builder: (QueryResult result, {refetch, FetchMore fetchMore}) {
+          builder: (QueryResult result, {refetch, fetchMore}) {
             if (result.isLoading && result.data == null) {
               return const Center(
                 child: CircularProgressIndicator(),
@@ -138,7 +127,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
             final num balance =
                 removeDecimalZero(result.data['balance']['amount'] / 100);
 
-            FetchMoreOptions opts = FetchMoreOptions(
+            opts = FetchMoreOptions(
               variables: {'cursor': fetchMoreCursor},
               updateQuery: (previousResultData, fetchMoreResultData) {
                 final List<dynamic> repos = [
@@ -184,43 +173,57 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
             List _transBC = parseHistory(blockchainTX);
 
             // Build history list
-            return Expanded(
-                child: ListView(
-              controller: historyProvider.scrollController,
-              children: <Widget>[
-                SizedBox(height: 7),
-                if (this.pubkey != '')
-                  Text(balance.toString() + ' Ğ1',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 30.0)),
-                SizedBox(height: 12),
-                for (var repository in _transBC)
-                  ListTile(
-                      contentPadding: const EdgeInsets.all(5.0),
-                      leading:
-                          Text(repository[3], style: TextStyle(fontSize: 14.0)),
-                      title: Text(
-                          repository[1].toString() +
-                              '\n' +
-                              truncate(repository[2], 17,
-                                  omission: "...",
-                                  position: TruncatePosition.end),
-                          style: TextStyle(fontSize: 14.0)),
-                      subtitle:
-                          Text(repository[5], style: TextStyle(fontSize: 14.0)),
-                      dense: true,
-                      onTap: () {
-                        historyProvider.isPubkey(repository[2]);
-                      }),
-                if (result.isLoading)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      CircularProgressIndicator(),
-                    ],
-                  ),
-              ],
-            ));
+            return NotificationListener(
+                child: Expanded(
+                    child: ListView(
+                  controller: scrollController,
+                  children: <Widget>[
+                    SizedBox(height: 7),
+                    if (_historyProvider.pubkey != '')
+                      Text(balance.toString() + ' Ğ1',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 30.0)),
+                    SizedBox(height: 12),
+                    for (var repository in _transBC)
+                      ListTile(
+                          contentPadding: const EdgeInsets.all(5.0),
+                          leading: Text(repository[3],
+                              style: TextStyle(fontSize: 14.0)),
+                          title: Text(
+                              repository[1].toString() +
+                                  '\n' +
+                                  truncate(repository[2], 17,
+                                      omission: "...",
+                                      position: TruncatePosition.end),
+                              style: TextStyle(fontSize: 14.0)),
+                          subtitle: Text(repository[5],
+                              style: TextStyle(fontSize: 14.0)),
+                          dense: true,
+                          onTap: () {
+                            this._outputPubkey.text = repository[2];
+                            _historyProvider.isPubkey(repository[2]);
+                            // notifyListeners();
+                          }),
+                    if (result.isLoading)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          CircularProgressIndicator(),
+                        ],
+                      ),
+                  ],
+                )),
+                onNotification: (t) {
+                  // print(scrollController.position.pixels);
+                  // print(scrollController.position.maxScrollExtent);
+                  if (t is ScrollEndNotification &&
+                      scrollController.position.pixels >=
+                          scrollController.position.maxScrollExtent * 0.8) {
+                    fetchMore(opts);
+                    // notifyListeners();
+                  }
+                  return true;
+                });
           },
         ),
       ],

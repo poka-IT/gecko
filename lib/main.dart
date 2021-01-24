@@ -96,28 +96,36 @@ class Gecko extends StatelessWidget {
     );
 
     DubpRust.setup();
-    return MultiProvider(
-        providers: [
-          Provider(create: (context) => HistoryProvider()),
-          Provider(create: (context) => MyWalletsProvider()),
-        ],
-        child: MaterialApp(
-          title: 'Ğecko',
-          theme: ThemeData(
-            primaryColor: Color(0xffFFD58D),
-            accentColor: Colors.grey[850],
-            textTheme: TextTheme(
-              bodyText1: TextStyle(),
-              bodyText2: TextStyle(),
-            ).apply(
-              bodyColor: Color(0xff855F2D),
-              // displayColor: Colors.blue,
+    return
+        // MultiProvider(
+        //     providers: [
+        //       Provider(create: (context) => HistoryProvider()),
+        //       Provider(create: (context) => MyWalletsProvider()),
+        //     ],
+        //     child:
+        MaterialApp(
+            title: 'Ğecko',
+            theme: ThemeData(
+              primaryColor: Color(0xffFFD58D),
+              accentColor: Colors.grey[850],
+              textTheme: TextTheme(
+                bodyText1: TextStyle(),
+                bodyText2: TextStyle(),
+              ).apply(
+                bodyColor: Color(0xff855F2D),
+                // displayColor: Colors.blue,
+              ),
             ),
-          ),
-          home: GraphQLProvider(
-            client: _client,
-            child: HomeScreen(),
-          ),
-        ));
+            home: MultiProvider(
+              providers: [
+                // Provider(create: (context) => HistoryProvider()),
+                Provider(create: (context) => MyWalletsProvider()),
+                ChangeNotifierProvider(create: (_) => HistoryProvider(''))
+              ],
+              child: GraphQLProvider(
+                client: _client,
+                child: HomeScreen(),
+              ),
+            ));
   }
 }

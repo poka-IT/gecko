@@ -98,19 +98,8 @@ class Gecko extends StatelessWidget {
     DubpRust.setup();
     return MultiProvider(
         providers: [
-          // In this sample app, CatalogModel never changes, so a simple Provider
-          // is sufficient.
           Provider(create: (context) => HistoryProvider()),
-          // CartModel is implemented as a ChangeNotifier, which calls for the use
-          // of ChangeNotifierProvider. Moreover, CartModel depends
-          // on CatalogModel, so a ProxyProvider is needed.
-          ChangeNotifierProxyProvider<HistoryProvider, MyWalletsProvider>(
-            create: (context) => MyWalletsProvider(),
-            update: (context, history, myWallets) {
-              cart.catalog = catalog;
-              return cart;
-            },
-          ),
+          Provider(create: (context) => MyWalletsProvider()),
         ],
         child: MaterialApp(
           title: 'Ğecko',

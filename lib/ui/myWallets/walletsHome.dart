@@ -10,6 +10,7 @@ class WalletsHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     print('BUILD: WalletsHome');
+    myWalletProvider.checkIfWalletExist();
     myWalletProvider.listWallets = myWalletProvider.getAllWalletsNames();
 
     return Scaffold(

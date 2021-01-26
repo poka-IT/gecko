@@ -1,30 +1,11 @@
+import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/ui/myWallets/confirmWalletStorage.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:sentry/sentry.dart' as sentry;
-import 'package:dubp/dubp.dart';
+import 'package:provider/provider.dart';
 import 'package:super_tooltip/super_tooltip.dart';
 
-class GenerateWalletsScreen extends StatefulWidget {
-  const GenerateWalletsScreen({Key keyGenWallet}) : super(key: keyGenWallet);
-  @override
-  GenerateWalletsState createState() => GenerateWalletsState();
-}
-
-class GenerateWalletsState extends State<GenerateWalletsScreen> {
-  // GlobalKey<MyWalletState> _keyMyWallets = GlobalKey();
-  // GlobalKey<ValidStoreWalletState> _keyValidWallets = GlobalKey();
-  void initState() {
-    super.initState();
-    generateMnemonic();
-  }
-
-  TextEditingController _mnemonicController = new TextEditingController();
-  TextEditingController _pubkey = new TextEditingController();
-  TextEditingController _pin = new TextEditingController();
-  String generatedMnemonic;
-  bool walletIsGenerated = false;
-  NewWallet actualWallet;
+// ignore: must_be_immutable
+class GenerateWalletsScreen extends StatelessWidget {
   SuperTooltip tooltip;
   // final formKey = GlobalKey<FormState>();
 
@@ -35,6 +16,8 @@ class GenerateWalletsState extends State<GenerateWalletsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var _generateWalletProvider = Provider.of<GenerateWalletsProvider>(context);
+    _generateWalletProvider.generateMnemonic();
     return Scaffold(
         appBar: AppBar(
             title: SizedBox(
@@ -47,7 +30,7 @@ class GenerateWalletsState extends State<GenerateWalletsScreen> {
             child: FittedBox(
                 child: FloatingActionButton(
               heroTag: "buttonGenerateWallet",
-              onPressed: () => generateMnemonic(),
+              onPressed: () => _generateWalletProvider.generateMnemonic(),
               // print(resultScan);
               // if (resultScan != 'false') {
               //   onTabTapped(0);
@@ -76,7 +59,7 @@ class GenerateWalletsState extends State<GenerateWalletsScreen> {
             ),
             TextField(
                 enabled: false,
-                controller: this._pubkey,
+                controller: _generateWalletProvider.pubkey,
                 maxLines: 1,
                 textAlign: TextAlign.center,
                 decoration: InputDecoration(),
@@ -98,7 +81,7 @@ class GenerateWalletsState extends State<GenerateWalletsScreen> {
             ),
             TextField(
                 enabled: false,
-                controller: this._mnemonicController,
+                controller: _generateWalletProvider.mnemonicController,
                 maxLines: 3,
                 textAlign: TextAlign.center,
                 decoration: InputDecoration(
@@ -126,7 +109,7 @@ class GenerateWalletsState extends State<GenerateWalletsScreen> {
                 children: <Widget>[
                   TextField(
                       enabled: false,
-                      controller: this._pin,
+                      controller: _generateWalletProvider.pin,
                       maxLines: 1,
                       textAlign: TextAlign.center,
                       decoration: InputDecoration(),
@@ -138,7 +121,7 @@ class GenerateWalletsState extends State<GenerateWalletsScreen> {
                     icon: Icon(Icons.replay),
                     color: Color(0xffD28928),
                     onPressed: () {
-                      changePinCode();
+                      _generateWalletProvider.changePinCode();
                     },
                   ),
                 ],
@@ -151,15 +134,17 @@ class GenerateWalletsState extends State<GenerateWalletsScreen> {
                   primary: Color(0xffFFD68E), // background
                   onPrimary: Colors.black, // foreground
                 ),
-                onPressed: walletIsGenerated
+                onPressed: _generateWalletProvider.walletIsGenerated
                     ? () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) {
                             return ConfirmStoreWallet(
                                 // validationKey: _keyValidWallets,
-                                generatedMnemonic: this.generatedMnemonic,
-                                generatedWallet: this.actualWallet);
+                                generatedMnemonic:
+                                    _generateWalletProvider.generatedMnemonic,
+                                generatedWallet:
+                                    _generateWalletProvider.actualWallet);
                           }),
                         )
                             // .then((value) => setState(() {
@@ -180,60 +165,5 @@ class GenerateWalletsState extends State<GenerateWalletsScreen> {
             SizedBox(height: 20)
           ]),
         ));
-  }
-
-  Future<String> generateMnemonic() async {
-    try {
-      this.generatedMnemonic =
-          await DubpRust.genMnemonic(language: Language.french);
-      this.actualWallet = await generateWallet(this.generatedMnemonic);
-      this.walletIsGenerated = true;
-    } catch (e, stack) {
-      print(e);
-      if (kReleaseMode) {
-        await sentry.Sentry.captureException(
-          e,
-          stackTrace: stack,
-        );
-      }
-    }
-    // await checkIfWalletExist();
-    return this.generatedMnemonic;
-  }
-
-  Future<NewWallet> generateWallet(generatedMnemonic) async {
-    try {
-      this.actualWallet = await DubpRust.genWalletFromMnemonic(
-          language: Language.french,
-          mnemonic: generatedMnemonic,
-          secretCodeType: SecretCodeType.letters);
-    } catch (e, stack) {
-      print(e);
-      if (kReleaseMode) {
-        await sentry.Sentry.captureException(
-          e,
-          stackTrace: stack,
-        );
-      }
-    }
-
-    setState(() {
-      this._mnemonicController.text = generatedMnemonic;
-      this._pubkey.text = actualWallet.publicKey;
-      this._pin.text = actualWallet.pin;
-    });
-
-    return actualWallet;
-  }
-
-  Future<void> changePinCode() async {
-    this.actualWallet = await DubpRust.changeDewifPin(
-      dewif: this.actualWallet.dewif,
-      oldPin: this.actualWallet.pin,
-    );
-
-    setState(() {
-      this._pin.text = actualWallet.pin;
-    });
   }
 }

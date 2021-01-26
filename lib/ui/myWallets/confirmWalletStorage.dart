@@ -1,54 +1,37 @@
-import 'dart:io';
-import 'dart:math';
-import 'package:dubp/dubp.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:convert' show utf8;
+import 'package:gecko/models/generateWallets.dart';
+import 'package:provider/provider.dart';
 
-class ConfirmStoreWallet extends StatefulWidget {
-  final String generatedMnemonic;
-  final NewWallet generatedWallet;
+// ignore: must_be_immutable
+class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
+  ConfirmStoreWallet({
+    Key validationKey,
+    @required this.generatedMnemonic,
+    @required generatedWallet,
+  }) : super(key: validationKey);
 
-  ConfirmStoreWallet(
-      {Key validationKey,
-      @required this.generatedMnemonic,
-      @required this.generatedWallet})
-      : super(key: validationKey);
+  String generatedMnemonic;
 
-  @override
-  ConfirmStoreWalletState createState() => ConfirmStoreWalletState();
-}
-
-class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
-  void initState() {
-    super.initState();
-    this._mnemonicController.text = widget.generatedMnemonic;
-    this._pubkey.text = widget.generatedWallet.publicKey;
-    nbrWord = getRandomInt();
-    askedWordColor = Colors.black;
-  }
-
-  @override
-  void dispose() {
-    _wordFocus.dispose();
-    _walletNameFocus.dispose();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   _wordFocus.dispose();
+  //   _walletNameFocus.dispose();
+  //   super.dispose();
+  // }
 
   TextEditingController _mnemonicController = new TextEditingController();
   TextEditingController _pubkey = new TextEditingController();
-  TextEditingController _pin = new TextEditingController();
   TextEditingController _inputRestoreWord = new TextEditingController();
   TextEditingController walletName = new TextEditingController();
   FocusNode _wordFocus = FocusNode();
-  FocusNode _walletNameFocus = FocusNode();
-  Color askedWordColor;
-  int nbrWord;
-  bool isAskedWordValid = false;
 
   @override
   Widget build(BuildContext context) {
+    var _generateWalletProvider = Provider.of<GenerateWalletsProvider>(context);
+
+    this._mnemonicController.text = generatedMnemonic;
+    this._pubkey.text = _generateWalletProvider.generatedWallet.publicKey;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -79,7 +62,7 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
                   fontWeight: FontWeight.bold)),
           SizedBox(height: 12),
           Text(
-            'Quel est le ${nbrWord + 1}ème mot de votre phrase de restauration ?',
+            'Quel est le ${_generateWalletProvider.nbrWord + 1}ème mot de votre phrase de restauration ?',
             textAlign: TextAlign.center,
             style: TextStyle(
                 fontSize: 17.0,
@@ -89,18 +72,19 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
           TextFormField(
               focusNode: _wordFocus,
               autofocus: true,
-              enabled: !isAskedWordValid,
+              enabled: !_generateWalletProvider.isAskedWordValid,
               controller: this._inputRestoreWord,
               textInputAction: TextInputAction.next,
               onChanged: (value) {
-                checkAskedWord(value);
+                _generateWalletProvider.checkAskedWord(
+                    value, _mnemonicController.text);
               },
               maxLines: 1,
               textAlign: TextAlign.center,
               decoration: InputDecoration(),
               style: TextStyle(
                   fontSize: 30.0,
-                  color: askedWordColor,
+                  color: _generateWalletProvider.askedWordColor,
                   fontWeight: FontWeight.w500)),
           SizedBox(height: 12),
           Text(
@@ -112,7 +96,7 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
                 fontWeight: FontWeight.w400),
           ),
           TextFormField(
-              focusNode: _walletNameFocus,
+              focusNode: _generateWalletProvider.walletNameFocus,
               // autofocus: true,
               inputFormatters: [
                 FilteringTextInputFormatter.allow(
@@ -122,7 +106,7 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
               controller: this.walletName,
               textInputAction: TextInputAction.next,
               onChanged: (v) {
-                nameChanged();
+                _generateWalletProvider.nameChanged();
               },
               maxLines: 1,
               textAlign: TextAlign.center,
@@ -144,10 +128,11 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
                               .green[400], //Color(0xffFFD68E), // background
                           onPrimary: Colors.black, // foreground
                         ),
-                        onPressed:
-                            (isAskedWordValid && this.walletName.text != '')
-                                ? () => storeWallet(this.walletName.text)
-                                : null,
+                        onPressed: (_generateWalletProvider.isAskedWordValid &&
+                                this.walletName.text != '')
+                            ? () => _generateWalletProvider.storeWallet(
+                                walletName.text, _pubkey.text, context)
+                            : null,
                         child:
                             Text('Confirmer', style: TextStyle(fontSize: 28))),
                   ))),
@@ -160,108 +145,5 @@ class ConfirmStoreWalletState extends State<ConfirmStoreWallet> {
         ]),
       ),
     );
-  }
-
-  Future storeWallet(_name) async {
-    final appPath = await _localPath;
-    final Directory walletNameDirectory = Directory('$appPath/wallets/$_name');
-    final walletFile = File('${walletNameDirectory.path}/wallet.dewif');
-
-    if (await walletNameDirectory.exists()) {
-      print('Ce wallet existe déjà, impossible de le créer.');
-      _showWalletExistDialog();
-      return 'Exist: DENY';
-    }
-
-    walletNameDirectory.createSync();
-    walletFile.writeAsString('${widget.generatedWallet.dewif}');
-    _pin.clear();
-
-    Navigator.pop(context, true);
-    Navigator.pop(context, this._pubkey.text);
-
-    return _name;
-  }
-
-  Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
-    return directory.path;
-  }
-
-  void checkAskedWord(String value) {
-    final runesAsked = _mnemonicController.text.split(' ')[nbrWord].runes;
-    List<int> runesAskedUnaccent = [];
-    print(runesAsked);
-    print(value.runes);
-    for (int i in runesAsked) {
-      if (i == 768 || i == 769 || i == 770 || i == 771) {
-        continue;
-      } else {
-        runesAskedUnaccent.add(i);
-      }
-    }
-    final String unaccentedAskedWord =
-        utf8.decode(runesAskedUnaccent).toLowerCase();
-    final String unaccentedInputWord = removeDiacritics(value).toLowerCase();
-
-    print("Is $unaccentedAskedWord equal to input $unaccentedInputWord ?");
-    if (unaccentedAskedWord == unaccentedInputWord || value == 'triche') {
-      print('Word is OK');
-      isAskedWordValid = true;
-      askedWordColor = Colors.green[600];
-      _walletNameFocus.nextFocus();
-    } else {
-      isAskedWordValid = false;
-    }
-    setState(() {});
-  }
-
-  Future<void> _showWalletExistDialog() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Ce nom existe déjà'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('Veuillez choisir un autre nom pour votre portefeuille.'),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text("J'ai compris"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  String removeDiacritics(String str) {
-    var withDia =
-        'ÀÁÂÃÄÅàáâãäåÒÓÔÕÕÖØòóôõöøÈÉÊËèéêëðÇçÐÌÍÎÏìíîïÙÚÛÜùúûüÑñŠšŸÿýŽž';
-    var withoutDia =
-        'AAAAAAaaaaaaOOOOOOOooooooEEEEeeeeeCcDIIIIiiiiUUUUuuuuNnSsYyyZz';
-
-    for (int i = 0; i < withDia.length; i++) {
-      str = str.replaceAll(withDia[i], withoutDia[i]);
-    }
-
-    return str;
-  }
-
-  int getRandomInt() {
-    var rng = new Random();
-    return rng.nextInt(12);
-  }
-
-  void nameChanged() {
-    setState(() {});
   }
 }

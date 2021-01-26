@@ -2,17 +2,18 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:path_provider/path_provider.dart';
+import 'package:gecko/globals.dart';
 
 class MyWalletsProvider with ChangeNotifier {
-  Directory appPath;
+  // Directory appPath;
+  List listWallets = [];
 
   bool checkIfWalletExist() {
-    if (this.appPath == null) {
+    if (appPath == null) {
       return false;
     }
 
-    var walletsFolder = new Directory("${this.appPath.path}/wallets/");
+    var walletsFolder = new Directory("${appPath.path}/wallets/");
 
     bool isWalletFolderExist = walletsFolder.existsSync();
 
@@ -23,12 +24,14 @@ class MyWalletsProvider with ChangeNotifier {
     List contents = walletsFolder.listSync();
     if (contents.length == 0) {
       print('No wallets detected');
+      notifyListeners();
       return false;
     } else {
       print('Some wallets have been detected:');
       for (var _wallets in contents) {
         print(_wallets);
       }
+      notifyListeners();
       return true;
     }
 
@@ -45,10 +48,23 @@ class MyWalletsProvider with ChangeNotifier {
     // }
   }
 
-  Future getAppDirectory() async {
-    this.appPath = await getApplicationDocumentsDirectory();
-    notifyListeners();
-  }
-
   Future importWallet() async {}
+
+  List getAllWalletsNames() {
+    listWallets.clear();
+    print('1');
+    print(walletsDirectory.path);
+    print('2');
+
+    walletsDirectory
+        .listSync(recursive: false, followLinks: false)
+        .forEach((wallet) {
+      String _name = wallet.path.split('/').last;
+      print(_name);
+      listWallets.add(_name);
+    });
+    notifyListeners();
+
+    return listWallets;
+  }
 }

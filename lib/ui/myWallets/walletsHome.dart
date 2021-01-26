@@ -1,29 +1,20 @@
 import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/ui/myWallets/generateWalletsScreen.dart';
-import 'package:gecko/ui/myWallets/myWalletsList.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:dubp/dubp.dart';
+import 'package:gecko/ui/myWallets/walletOptions.dart';
 
-class WalletsHome extends StatelessWidget with ChangeNotifier {
-  MyWalletsProvider historyProvider = MyWalletsProvider();
-
-  String generatedMnemonic;
-  bool walletIsGenerated = false;
-  NewWallet actualWallet;
-  String newWalletName;
-
-  bool hasError = false;
-  String validPin = 'NO PIN';
-  String currentText = "";
-  var pinColor = Colors.grey[300];
+// ignore: must_be_immutable
+class WalletsHome extends StatelessWidget {
+  MyWalletsProvider myWalletProvider = MyWalletsProvider();
 
   @override
   Widget build(BuildContext context) {
-    historyProvider.getAppDirectory();
+    print('BUILD: WalletsHome');
+    myWalletProvider.listWallets = myWalletProvider.getAllWalletsNames();
+
     return Scaffold(
         floatingActionButton: Visibility(
-            visible: (historyProvider
+            visible: (myWalletProvider
                 .checkIfWalletExist()), //!checkIfWalletExist('MonWallet') &&
             child: Container(
                 height: 80.0,
@@ -48,8 +39,7 @@ class WalletsHome extends StatelessWidget with ChangeNotifier {
         body: SafeArea(
             child: Column(children: <Widget>[
           Visibility(
-              visible:
-                  (!historyProvider.checkIfWalletExist() && !walletIsGenerated),
+              visible: (!myWalletProvider.checkIfWalletExist()),
               child: Column(children: <Widget>[
                 SizedBox(height: 120),
                 Center(
@@ -83,13 +73,13 @@ class WalletsHome extends StatelessWidget with ChangeNotifier {
                       primary: Color(0xffFFD68E), // background
                       onPrimary: Colors.black, // foreground
                     ),
-                    onPressed: () => historyProvider.importWallet(),
+                    onPressed: () => myWalletProvider.importWallet(),
                     child: Text('Importer un portefeuille existant',
                         style: TextStyle(fontSize: 20))),
               ])),
           Visibility(
-              visible: historyProvider.checkIfWalletExist(),
-              child: MyWalletsList())
+              visible: myWalletProvider.checkIfWalletExist(),
+              child: myWalletsList(context))
         ])));
   }
 
@@ -105,4 +95,37 @@ class WalletsHome extends StatelessWidget with ChangeNotifier {
   //   });
   // }
 
+  myWalletsList(BuildContext context) {
+    return Column(children: <Widget>[
+      SizedBox(height: 8),
+      for (var repository in myWalletProvider.listWallets)
+        ListTile(
+          contentPadding: const EdgeInsets.all(5.0),
+          leading: Text(repository, style: TextStyle(fontSize: 14.0)),
+          title: Text(repository, style: TextStyle(fontSize: 14.0)),
+          subtitle: Text(repository, style: TextStyle(fontSize: 14.0)),
+          dense: true,
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) {
+              return WalletOptions(walletName: repository);
+            }));
+          },
+        ),
+      SizedBox(height: 20),
+      SizedBox(
+          width: 75.0,
+          height: 25.0,
+          child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                elevation: 2,
+                primary: Color(0xffFFD68E), //Color(0xffFFD68E), // background
+                onPrimary: Colors.black, // foreground
+              ),
+              onPressed: () {
+                myWalletProvider.listWallets =
+                    myWalletProvider.getAllWalletsNames();
+              },
+              child: Text('(Refresh)', style: TextStyle(fontSize: 10))))
+    ]);
+  }
 }

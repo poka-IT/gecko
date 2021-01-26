@@ -1,5 +1,8 @@
 import 'package:dubp/dubp.dart';
+import 'package:gecko/globals.dart';
+import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/models/history.dart';
+import 'package:gecko/models/home.dart';
 import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/ui/home.dart';
 import 'package:flutter/cupertino.dart';
@@ -8,10 +11,6 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
-// import 'package:flutter/services.dart' show rootBundle;
-import 'dart:math';
-// import 'dart:convert';
 
 final bool enableSentry = true;
 
@@ -19,35 +18,12 @@ final bool enableSentry = true;
 //   return rootBundle.loadString('config/gva_endpoints.json');
 // }
 
-T getRandomElement<T>(List<T> list) {
-  final random = new Random();
-  var i = random.nextInt(list.length);
-  return list[i];
-}
-
-Future<String> getRandomEndpoint() async {
-  // TODO: Improve implemention of getRandomEndpoint()
-  // final _json = json.decode(await getJsonEndpoints());
-  // print('JSON !! :');
-  // print(_json);
-  // final _list = _json[];
-
-  final _listEndpoints = ['https://g1.librelois.fr/gva'];
-  final _endpoint = getRandomElement(_listEndpoints);
-  print('ENDPOINT: ' + _endpoint);
-
-  // http.post(_endpoint);
-  final response = await http.post(_endpoint);
-  if (response.statusCode != 400) {
-    print('Endpoint statutcode: ' + response.statusCode.toString());
-    // _endpoint = getRandomElement(_list);
-    return 'HS';
-  }
-
-  return _endpoint;
-}
-
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  HomeProvider _homeProvider = HomeProvider();
+  await _homeProvider.getAppPath();
+  appVersion = await _homeProvider.getAppVersion();
+
   String randomEndpoint; // = await getRandomEndpoint();
   int i = 0;
   do {
@@ -59,7 +35,7 @@ Future<void> main() async {
       print(i.toString() + ' ème essai de recherche de endpoint GVA.');
       await Future.delayed(Duration(milliseconds: 300));
     }
-    randomEndpoint = await getRandomEndpoint();
+    randomEndpoint = await _homeProvider.getRandomEndpoint();
     i++;
   } while (randomEndpoint == 'HS');
 
@@ -73,16 +49,37 @@ Future<void> main() async {
     );
   } else {
     print('Debug mode enabled: No sentry alerte');
-    runApp(Gecko(randomEndpoint));
+
+    runApp(Gecko(
+      randomEndpoint,
+    ));
   }
 }
 
+// ignore: must_be_immutable
 class Gecko extends StatelessWidget {
   Gecko(this.randomEndpoint);
   final String randomEndpoint;
 
   @override
   Widget build(BuildContext context) {
+    // FutureBuilder<dynamic>(
+    //   future: getAppPath(), // async work
+    //   builder: (BuildContext context, AsyncSnapshot snapshot) {
+    //     // switch (snapshot.connectionState) {
+    //     //   case ConnectionState.waiting:
+    //     //     return Text('Loading....');
+    //     //   default:
+    //     //     if (snapshot.hasError)
+    //     //       return Text('Error: ${snapshot.error}');
+    //     //     else
+    //     //       return Text('Result: ${snapshot.data}');
+    //     // }
+
+    //     print('FutureBuilder: ' + appPath.path);
+    //     return;
+    //   },
+    // );
     final _httpLink = HttpLink(
       // 'http://192.168.1.91:10060/gva',
       randomEndpoint,
@@ -119,8 +116,11 @@ class Gecko extends StatelessWidget {
             home: MultiProvider(
               providers: [
                 // Provider(create: (context) => HistoryProvider()),
-                Provider(create: (context) => MyWalletsProvider()),
-                ChangeNotifierProvider(create: (_) => HistoryProvider(''))
+                // Provider(create: (context) => MyWalletsProvider()),
+                ChangeNotifierProvider(create: (_) => HomeProvider()),
+                ChangeNotifierProvider(create: (_) => HistoryProvider('')),
+                ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
+                ChangeNotifierProvider(create: (_) => GenerateWalletsProvider())
               ],
               child: GraphQLProvider(
                 client: _client,

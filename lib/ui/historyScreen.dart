@@ -8,28 +8,22 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:truncate/truncate.dart';
 
-//ignore: must_be_immutable
+// ignore: must_be_immutable
 class HistoryScreen extends StatelessWidget with ChangeNotifier {
-  final TextEditingController _outputPubkey = new TextEditingController();
-  ScrollController scrollController = new ScrollController();
+  final TextEditingController _outputPubkey = TextEditingController();
+  ScrollController scrollController = ScrollController();
   final nRepositories = 20;
   HistoryProvider _historyProvider;
+  bool isTheEnd = false;
+  List _transBC;
 
   FetchMore fetchMore;
   FetchMoreOptions opts;
-  // scrollListener() {
-  //   if (scrollController.offset >= scrollController.position.maxScrollExtent &&
-  //       !scrollController.position.outOfRange) {
-  //     print('On est en bas !!');
-  //     print(opts.document);
-  //     fetchMore(opts);
-  //     notifyListeners();
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
     _historyProvider = Provider.of<HistoryProvider>(context);
+    this._outputPubkey.text = _historyProvider.pubkey;
     print('Build pubkey : ' + _historyProvider.pubkey);
     // scrollController.addListener(scrollListener);
     return Scaffold(
@@ -90,7 +84,6 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
             variables: <String, dynamic>{
               'pubkey': _historyProvider.pubkey,
               'number': nRepositories,
-              // set cursor to null so as to start at the beginning
               'cursor': null
             },
           ),
@@ -127,50 +120,32 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
             final num balance =
                 removeDecimalZero(result.data['balance']['amount'] / 100);
 
-            opts = FetchMoreOptions(
-              variables: {'cursor': fetchMoreCursor},
-              updateQuery: (previousResultData, fetchMoreResultData) {
-                final List<dynamic> repos = [
-                  ...previousResultData['txsHistoryBc']['both']['edges']
-                      as List<dynamic>,
-                  ...fetchMoreResultData['txsHistoryBc']['both']['edges']
-                      as List<dynamic>
-                ];
+            if (fetchMoreCursor != null) {
+              opts = FetchMoreOptions(
+                variables: {'cursor': fetchMoreCursor},
+                updateQuery: (previousResultData, fetchMoreResultData) {
+                  final List<dynamic> repos = [
+                    ...previousResultData['txsHistoryBc']['both']['edges']
+                        as List<dynamic>,
+                    ...fetchMoreResultData['txsHistoryBc']['both']['edges']
+                        as List<dynamic>
+                  ];
 
-                fetchMoreResultData['txsHistoryBc']['both']['edges'] = repos;
-                return fetchMoreResultData;
-              },
-            );
-
-            // _scrollController
-            //   ..addListener(() {
-            //     if (_scrollController.position.pixels ==
-            //         _scrollController.position.maxScrollExtent) {
-            //       if (!result.isLoading) {
-            //         print(
-            //             "DEBUG H fetchMoreCursor in scrollController: $fetchMoreCursor");
-            //         fetchMore(opts);
-            //       }
-            //     }
-            //   });
-
-            // s/o : https://stackoverflow.com/questions/54065354/how-to-detect-scroll-position-of-listview-in-flutter/54188385#54188385
-            // new NotificationListener(
-            //   child: new ListView(
-            //     controller: _scrollController,
-            //   ),
-            //   onNotification: (t) {
-            //     if (t is ScrollEndNotification) {
-            //       fetchMore(opts);
-            //     }
-            //   },
-            // );
-
-            // fetchMore(opts);
+                  fetchMoreResultData['txsHistoryBc']['both']['edges'] = repos;
+                  return fetchMoreResultData;
+                },
+              );
+            }
 
             print(
                 "###### DEBUG H Parse blockchainTX list. Cursor: $fetchMoreCursor ######");
-            List _transBC = parseHistory(blockchainTX);
+            if (fetchMoreCursor != null) {
+              _transBC = parseHistory(blockchainTX);
+              isTheEnd = false;
+            } else {
+              print("###### DEBUG H - Début de l'historique");
+              isTheEnd = true;
+            }
 
             // Build history list
             return NotificationListener(
@@ -200,9 +175,8 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                               style: TextStyle(fontSize: 14.0)),
                           dense: true,
                           onTap: () {
-                            this._outputPubkey.text = repository[2];
+                            // this._outputPubkey.text = repository[2];
                             _historyProvider.isPubkey(repository[2]);
-                            // notifyListeners();
                           }),
                     if (result.isLoading)
                       Row(
@@ -211,16 +185,21 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                           CircularProgressIndicator(),
                         ],
                       ),
+                    if (isTheEnd)
+                      Column(children: <Widget>[
+                        SizedBox(height: 15),
+                        Text("Début de l'historique.",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 20)),
+                        SizedBox(height: 15)
+                      ])
                   ],
                 )),
                 onNotification: (t) {
-                  // print(scrollController.position.pixels);
-                  // print(scrollController.position.maxScrollExtent);
                   if (t is ScrollEndNotification &&
                       scrollController.position.pixels >=
                           scrollController.position.maxScrollExtent * 0.8) {
                     fetchMore(opts);
-                    // notifyListeners();
                   }
                   return true;
                 });

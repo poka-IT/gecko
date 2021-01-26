@@ -1,39 +1,21 @@
+import 'package:gecko/globals.dart';
+import 'package:gecko/models/home.dart';
 import 'package:gecko/ui/historyScreen.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:gecko/ui/myWallets/walletsHome.dart';
 import 'package:gecko/ui/settingsScreen.dart';
-import 'package:package_info/package_info.dart';
+import 'package:provider/provider.dart';
 
-//ignore: must_be_immutable
-class HomeScreen extends StatefulWidget {
-  HomeScreen({this.screens});
-  final List<Widget> screens;
+// ignore: must_be_immutable
+class HomeScreen extends StatelessWidget {
+  // HomeProvider _homeProvider = HomeProvider();
 
-  @override
-  HomeScreenState createState() => HomeScreenState();
-}
-
-class HomeScreenState extends State<HomeScreen> {
-  int currentIndex = 0;
-  Widget currentScreen;
-  String appName;
-  String version;
-  String buildNumber;
-
-  void initState() {
-    super.initState();
-    getAppVersion();
-  }
-
-  void onTabTapped(int index) {
-    setState(() {
-      currentIndex = index;
-    });
-  }
+  var currentTab = [HistoryScreen(), WalletsHome()];
 
   @override
   Widget build(BuildContext context) {
+    var _homeProvider = Provider.of<HomeProvider>(context);
     return Scaffold(
       drawer: Drawer(
         child: Column(
@@ -74,7 +56,7 @@ class HomeScreenState extends State<HomeScreen> {
             Container(
                 child: Align(
                     alignment: FractionalOffset.bottomCenter,
-                    child: Text('Ğecko v${this.version}+${this.buildNumber}'))),
+                    child: Text('Ğecko v$appVersion'))),
             SizedBox(height: 20)
           ],
         ),
@@ -95,22 +77,16 @@ class HomeScreenState extends State<HomeScreen> {
         backgroundColor: Color(0xffFFD58D),
       ),
       backgroundColor: Color(0xffF9F9F1),
-      body: SafeArea(
-        child: IndexedStack(
-          index: currentIndex,
-          children: <Widget>[
-            HistoryScreen(),
-            WalletsHome(),
-          ],
-        ),
-      ),
+      body: currentTab[_homeProvider.currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Color(0xffFFD58D),
         fixedColor: Colors.grey[850],
         unselectedItemColor: Color(0xffBD935C),
         type: BottomNavigationBarType.fixed,
-        onTap: onTabTapped,
-        currentIndex: currentIndex,
+        onTap: (index) {
+          _homeProvider.currentIndex = index;
+        },
+        currentIndex: _homeProvider.currentIndex,
         items: [
           BottomNavigationBarItem(
             icon: new Icon(Icons
@@ -124,15 +100,5 @@ class HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
-  }
-
-  Future getAppVersion() async {
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    this.appName = packageInfo.appName;
-    this.version = packageInfo.version;
-    this.buildNumber = packageInfo.buildNumber;
-    print(this.appName);
-
-    setState(() {});
   }
 }

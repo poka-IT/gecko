@@ -15,25 +15,17 @@ class HomeProvider with ChangeNotifier {
 
   set currentIndex(int index) {
     _currentIndex = index;
-    print('current index setter: ' + index.toString());
     notifyListeners();
   }
 
   Future getAppVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    String appName = packageInfo.appName;
     String version = packageInfo.version;
     String buildNumber = packageInfo.buildNumber;
-    print(appName);
 
     notifyListeners();
     return version + '+' + buildNumber;
   }
-
-  // void onTabTapped(int index) {
-  //   currentIndex = index;
-  //   notifyListeners();
-  // }
 
   Future<String> getRandomEndpoint() async {
     // TODO: Improve implemention of getRandomEndpoint()
@@ -50,7 +42,6 @@ class HomeProvider with ChangeNotifier {
     final response = await http.post(_endpoint);
     if (response.statusCode != 400) {
       print('Endpoint statutcode: ' + response.statusCode.toString());
-      // _endpoint = getRandomElement(_list);
       return 'HS';
     }
 
@@ -60,7 +51,6 @@ class HomeProvider with ChangeNotifier {
   Future getAppPath() async {
     appPath = await getApplicationDocumentsDirectory();
     walletsDirectory = Directory('${appPath.path}/wallets');
-    print('AAAAPPPATH: ' + appPath.path);
   }
 
   T getRandomElement<T>(List<T> list) {

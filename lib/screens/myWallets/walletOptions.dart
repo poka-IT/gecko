@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dubp/dubp.dart';
+import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/walletOptions.dart';
 import 'package:gecko/screens/myWallets/changePin.dart';
-import 'dart:io';
 import 'dart:async';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
@@ -15,11 +15,9 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
   String walletName;
 
   StreamController<ErrorAnimationType> errorController;
-  Directory appPath;
   TextEditingController _enterPin = new TextEditingController();
   final formKey = GlobalKey<FormState>();
   bool hasError = false;
-  String validPin = 'NO PIN';
   var pinColor = Color(0xffF9F9F1);
   var walletPin = '';
 
@@ -27,8 +25,11 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
 
   @override
   Widget build(BuildContext context) {
+    print("Build walletOptions");
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context);
     errorController = StreamController<ErrorAnimationType>();
     // _walletOptions.isWalletUnlock = false;
     return WillPopScope(
@@ -88,8 +89,16 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                                     onPressed: () => _walletOptions
                                             .renameWalletAlerte(
                                                 context, walletName)
-                                            .then((_) {
-                                          notifyListeners();
+                                            .then((_result) {
+                                          if (_result == true) {
+                                            WidgetsBinding.instance
+                                                .addPostFrameCallback((_) {
+                                              _myWalletProvider.listWallets =
+                                                  _myWalletProvider
+                                                      .getAllWalletsNames();
+                                              _myWalletProvider.rebuildWidget();
+                                            });
+                                          }
                                         }),
                                     child: Text('Renommer ce portefeuille',
                                         style: TextStyle(fontSize: 20)))))),
@@ -128,8 +137,14 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                                   .redAccent, //Color(0xffFFD68E), // background
                               onPrimary: Colors.black, // foreground
                             ),
-                            onPressed: () {
-                              _walletOptions.deleteWallet(context, walletName);
+                            onPressed: () async {
+                              await _walletOptions.deleteWallet(
+                                  context, walletName);
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                _myWalletProvider.listWallets =
+                                    _myWalletProvider.getAllWalletsNames();
+                                _myWalletProvider.rebuildWidget();
+                              });
                             },
                             child: Text('Supprimer ce portefeuille',
                                 style: TextStyle(fontSize: 20)))),

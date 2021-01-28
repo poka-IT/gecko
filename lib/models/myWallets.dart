@@ -26,10 +26,7 @@ class MyWalletsProvider with ChangeNotifier {
       print('No wallets detected');
       return false;
     } else {
-      print('Some wallets have been detected:');
-      for (var _wallets in contents) {
-        print(_wallets);
-      }
+      print('Some wallets have been detected.');
       return true;
     }
   }
@@ -38,9 +35,7 @@ class MyWalletsProvider with ChangeNotifier {
 
   List getAllWalletsNames() {
     listWallets.clear();
-    print('1');
     print(walletsDirectory.path);
-    print('2');
 
     walletsDirectory
         .listSync(recursive: false, followLinks: false)

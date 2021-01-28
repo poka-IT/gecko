@@ -1,4 +1,5 @@
 import 'package:gecko/models/myWallets.dart';
+import 'package:gecko/models/walletOptions.dart';
 import 'package:gecko/screens/myWallets/generateWallets.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/walletOptions.dart';
@@ -10,13 +11,16 @@ class WalletsHome extends StatelessWidget {
   Widget build(BuildContext context) {
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
+    WalletOptionsProvider _walletOptions =
+        Provider.of<WalletOptionsProvider>(context);
     print('BUILD: WalletsHome');
-    myWalletProvider.checkIfWalletExist();
+    _walletOptions.isWalletUnlock = false;
     myWalletProvider.listWallets = myWalletProvider.getAllWalletsNames();
+    final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
 
     return Scaffold(
         floatingActionButton: Visibility(
-            visible: (myWalletProvider.checkIfWalletExist()),
+            visible: (isWalletsExists),
             child: Container(
                 height: 80.0,
                 width: 80.0,
@@ -40,7 +44,7 @@ class WalletsHome extends StatelessWidget {
         body: SafeArea(
             child: Column(children: <Widget>[
           Visibility(
-              visible: (!myWalletProvider.checkIfWalletExist()),
+              visible: (!isWalletsExists),
               child: Column(children: <Widget>[
                 SizedBox(height: 120),
                 Center(
@@ -78,9 +82,7 @@ class WalletsHome extends StatelessWidget {
                     child: Text('Importer un portefeuille existant',
                         style: TextStyle(fontSize: 20))),
               ])),
-          Visibility(
-              visible: myWalletProvider.checkIfWalletExist(),
-              child: myWalletsList(context))
+          Visibility(visible: isWalletsExists, child: myWalletsList(context))
         ])));
   }
 

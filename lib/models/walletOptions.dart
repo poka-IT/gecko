@@ -51,6 +51,7 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Future readLocalWallet(String _name, String _pin) async {
+    isWalletUnlock = false;
     print('NOM: ' + _name);
     try {
       File _walletFile = File('${walletsDirectory.path}/$_name/wallet.dewif');
@@ -113,7 +114,8 @@ class WalletOptionsProvider with ChangeNotifier {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   _renameWallet(_walletName, this._newWalletName.text);
                 });
-                notifyListeners();
+                // notifyListeners();
+                Navigator.pop(context, true);
                 Navigator.pop(context, true);
               },
             ),
@@ -131,8 +133,7 @@ class WalletOptionsProvider with ChangeNotifier {
       final bool _answer = await _confirmDeletingWallet(context, _name);
 
       if (_answer) {
-        _walletFile.deleteSync(recursive: true);
-        isWalletUnlock = false;
+        await _walletFile.delete(recursive: true);
         Navigator.pop(context);
       }
       return 0;

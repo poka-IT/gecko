@@ -35,7 +35,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       return 'Exist: DENY';
     }
 
-    walletNameDirectory.createSync();
+    await walletNameDirectory.create();
     walletFile.writeAsString('${wallet.dewif}');
 
     Navigator.pop(context, true);

@@ -64,23 +64,6 @@ class Gecko extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // FutureBuilder<dynamic>(
-    //   future: getAppPath(), // async work
-    //   builder: (BuildContext context, AsyncSnapshot snapshot) {
-    //     // switch (snapshot.connectionState) {
-    //     //   case ConnectionState.waiting:
-    //     //     return Text('Loading....');
-    //     //   default:
-    //     //     if (snapshot.hasError)
-    //     //       return Text('Error: ${snapshot.error}');
-    //     //     else
-    //     //       return Text('Result: ${snapshot.data}');
-    //     // }
-
-    //     print('FutureBuilder: ' + appPath.path);
-    //     return;
-    //   },
-    // );
     final _httpLink = HttpLink(
       // 'http://192.168.1.91:10060/gva',
       randomEndpoint,
@@ -97,7 +80,6 @@ class Gecko extends StatelessWidget {
     return MultiProvider(
         providers: [
           // Provider(create: (context) => HistoryProvider()),
-          // Provider(create: (context) => MyWalletsProvider()),
           ChangeNotifierProvider(create: (_) => HomeProvider()),
           ChangeNotifierProvider(create: (_) => HistoryProvider('')),
           ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
@@ -116,7 +98,6 @@ class Gecko extends StatelessWidget {
                   bodyText2: TextStyle(),
                 ).apply(
                   bodyColor: Color(0xff855F2D),
-                  // displayColor: Colors.blue,
                 ),
               ),
               home: HomeScreen(),

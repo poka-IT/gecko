@@ -28,7 +28,6 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
         Provider.of<GenerateWalletsProvider>(context);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
-    print("JE BUILD !!!");
 
     this._mnemonicController.text = generatedMnemonic;
     this._pubkey.text = generatedWallet.publicKey;
@@ -142,8 +141,8 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                             onPressed: (_generateWalletProvider
                                         .isAskedWordValid &&
                                     this.walletName.text != '')
-                                ? () {
-                                    _generateWalletProvider.storeWallet(
+                                ? () async {
+                                    await _generateWalletProvider.storeWallet(
                                         generatedWallet,
                                         walletName.text,
                                         context);

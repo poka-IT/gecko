@@ -12,8 +12,12 @@ echo "Nom du build final: ${APPNAME}-${VERSION}+${BUILD}.apk"
 
 #flutter build apk --split-per-abi --build-name $VERSION --build-number $BUILD
 flutter clean
-flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64 --build-name $VERSION --build-number $BUILD
-
+if [[ $1 == "bundle" ]]; then
+	flutter build appbundle --release --target-platform android-arm,android-arm64 --build-name $VERSION --build-number $BUILD
+else
+#	flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64 --build-name $VERSION --build-number $BUILD
+	flutter build apk --release --build-name $VERSION --build-number $BUILD
+fi
 
 if [[ -d $HOME/Téléchargements ]]; then
     DL="$HOME/Téléchargements"

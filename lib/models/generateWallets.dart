@@ -8,21 +8,23 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart' as sentry;
 
 class GenerateWalletsProvider with ChangeNotifier {
-  NewWallet generatedWallet;
+  GenerateWalletsProvider();
+  // NewWallet generatedWallet;
+  NewWallet actualWallet;
+
   FocusNode walletNameFocus = FocusNode();
   Color askedWordColor = Colors.black;
   bool isAskedWordValid = false;
   int nbrWord;
 
   String generatedMnemonic;
-  bool walletIsGenerated = false;
-  NewWallet actualWallet;
+  bool walletIsGenerated = true;
 
   TextEditingController mnemonicController = TextEditingController();
   TextEditingController pubkey = TextEditingController();
   TextEditingController pin = TextEditingController();
 
-  Future storeWallet(_name, _pubkey, BuildContext context) async {
+  Future storeWallet(NewWallet wallet, _name, BuildContext context) async {
     final appPath = await _localPath;
     final Directory walletNameDirectory = Directory('$appPath/wallets/$_name');
     final walletFile = File('${walletNameDirectory.path}/wallet.dewif');
@@ -34,10 +36,11 @@ class GenerateWalletsProvider with ChangeNotifier {
     }
 
     walletNameDirectory.createSync();
-    walletFile.writeAsString('${generatedWallet.dewif}');
+    walletFile.writeAsString('${wallet.dewif}');
 
     Navigator.pop(context, true);
-    Navigator.pop(context, _pubkey.text);
+    Navigator.pop(context, wallet.publicKey);
+    // notifyListeners();
 
     return _name;
   }
@@ -48,7 +51,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   void checkAskedWord(String value, String _mnemo) {
-    nbrWord = getRandomInt();
+    // nbrWord = getRandomInt();
 
     final runesAsked = _mnemo.split(' ')[nbrWord].runes;
     List<int> runesAskedUnaccent = [];
@@ -71,10 +74,11 @@ class GenerateWalletsProvider with ChangeNotifier {
       isAskedWordValid = true;
       askedWordColor = Colors.green[600];
       walletNameFocus.nextFocus();
+      notifyListeners();
     } else {
       isAskedWordValid = false;
     }
-    notifyListeners();
+    // notifyListeners();
   }
 
   String removeDiacritics(String str) {
@@ -118,6 +122,8 @@ class GenerateWalletsProvider with ChangeNotifier {
               child: Text("J'ai compris"),
               onPressed: () {
                 Navigator.of(context).pop();
+                askedWordColor = Colors.green[500];
+                isAskedWordValid = true;
               },
             ),
           ],
@@ -128,10 +134,10 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   Future<String> generateMnemonic() async {
     try {
-      this.generatedMnemonic =
-          await DubpRust.genMnemonic(language: Language.french);
+      generatedMnemonic = await DubpRust.genMnemonic(language: Language.french);
       this.actualWallet = await generateWallet(this.generatedMnemonic);
-      this.walletIsGenerated = true;
+      walletIsGenerated = true;
+      // notifyListeners();
     } catch (e, stack) {
       print(e);
       if (kReleaseMode) {
@@ -142,7 +148,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       }
     }
     // await checkIfWalletExist();
-    return this.generatedMnemonic;
+    return generatedMnemonic;
   }
 
   Future<NewWallet> generateWallet(generatedMnemonic) async {
@@ -162,11 +168,11 @@ class GenerateWalletsProvider with ChangeNotifier {
     }
 
     mnemonicController.text = generatedMnemonic;
-    pubkey.text = actualWallet.publicKey;
-    pin.text = actualWallet.pin;
-    notifyListeners();
+    pubkey.text = this.actualWallet.publicKey;
+    pin.text = this.actualWallet.pin;
+    // notifyListeners();
 
-    return actualWallet;
+    return this.actualWallet;
   }
 
   Future<void> changePinCode() async {
@@ -175,7 +181,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       oldPin: this.actualWallet.pin,
     );
 
-    pin.text = actualWallet.pin;
-    notifyListeners();
+    pin.text = this.actualWallet.pin;
+    // notifyListeners();
   }
 }

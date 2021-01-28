@@ -2,21 +2,21 @@ import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/ui/myWallets/generateWalletsScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/ui/myWallets/walletOptions.dart';
+import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class WalletsHome extends StatelessWidget {
-  MyWalletsProvider myWalletProvider = MyWalletsProvider();
-
   @override
   Widget build(BuildContext context) {
+    MyWalletsProvider myWalletProvider =
+        Provider.of<MyWalletsProvider>(context);
     print('BUILD: WalletsHome');
     myWalletProvider.checkIfWalletExist();
     myWalletProvider.listWallets = myWalletProvider.getAllWalletsNames();
 
     return Scaffold(
         floatingActionButton: Visibility(
-            visible: (myWalletProvider
-                .checkIfWalletExist()), //!checkIfWalletExist('MonWallet') &&
+            visible: (myWalletProvider.checkIfWalletExist()),
             child: Container(
                 height: 80.0,
                 width: 80.0,
@@ -84,19 +84,9 @@ class WalletsHome extends StatelessWidget {
         ])));
   }
 
-  // Future resetWalletState() async {
-  //   final bool _isExist = await checkIfWalletExist('MonWallet');
-  //   print('The wallet exist in resetWalletState(): ' + _isExist.toString());
-  //   // initState();
-  //   // _keyMyWallets.currentState.setState(() {});
-  //   // _keyMyWallets.currentState.initAppDirectory();
-  //   setState(() {
-  //     // getAllWalletsNames();
-  //     // this.walletIsGenerated = true;
-  //   });
-  // }
-
   myWalletsList(BuildContext context) {
+    MyWalletsProvider myWalletProvider =
+        Provider.of<MyWalletsProvider>(context);
     return Column(children: <Widget>[
       SizedBox(height: 8),
       for (var repository in myWalletProvider.listWallets)
@@ -111,22 +101,7 @@ class WalletsHome extends StatelessWidget {
               return WalletOptions(walletName: repository);
             }));
           },
-        ),
-      SizedBox(height: 20),
-      SizedBox(
-          width: 75.0,
-          height: 25.0,
-          child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                elevation: 2,
-                primary: Color(0xffFFD68E), //Color(0xffFFD68E), // background
-                onPrimary: Colors.black, // foreground
-              ),
-              onPressed: () {
-                myWalletProvider.listWallets =
-                    myWalletProvider.getAllWalletsNames();
-              },
-              child: Text('(Refresh)', style: TextStyle(fontSize: 10))))
+        )
     ]);
   }
 }

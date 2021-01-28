@@ -9,8 +9,6 @@ import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class HomeScreen extends StatelessWidget {
-  // HomeProvider _homeProvider = HomeProvider();
-
   var currentTab = [HistoryScreen(), WalletsHome()];
 
   @override
@@ -89,8 +87,7 @@ class HomeScreen extends StatelessWidget {
         currentIndex: _homeProvider.currentIndex,
         items: [
           BottomNavigationBarItem(
-            icon: new Icon(Icons
-                .format_list_bulleted), //Icons.person_add_alt_1_rounded //Icons.lock
+            icon: new Icon(Icons.format_list_bulleted),
             label: 'Accueil',
           ),
           BottomNavigationBarItem(

@@ -7,8 +7,6 @@ import 'package:super_tooltip/super_tooltip.dart';
 // ignore: must_be_immutable
 class GenerateWalletsScreen extends StatelessWidget {
   SuperTooltip tooltip;
-  // final formKey = GlobalKey<FormState>();
-
   bool hasError = false;
   String validPin = 'NO PIN';
   String currentText = "";
@@ -16,8 +14,11 @@ class GenerateWalletsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var _generateWalletProvider = Provider.of<GenerateWalletsProvider>(context);
+    GenerateWalletsProvider _generateWalletProvider =
+        Provider.of<GenerateWalletsProvider>(context);
     _generateWalletProvider.generateMnemonic();
+    print('IS GENERATED ? : ' +
+        _generateWalletProvider.walletIsGenerated.toString());
     return Scaffold(
         appBar: AppBar(
             title: SizedBox(
@@ -31,10 +32,6 @@ class GenerateWalletsScreen extends StatelessWidget {
                 child: FloatingActionButton(
               heroTag: "buttonGenerateWallet",
               onPressed: () => _generateWalletProvider.generateMnemonic(),
-              // print(resultScan);
-              // if (resultScan != 'false') {
-              //   onTabTapped(0);
-              // }
               child: Container(
                 height: 40.0,
                 width: 40.0,
@@ -128,7 +125,6 @@ class GenerateWalletsScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 20),
-            // Expanded(child: Align(alignment: Alignment.bottomCenter)),
             new ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   primary: Color(0xffFFD68E), // background
@@ -136,28 +132,18 @@ class GenerateWalletsScreen extends StatelessWidget {
                 ),
                 onPressed: _generateWalletProvider.walletIsGenerated
                     ? () {
+                        _generateWalletProvider.nbrWord =
+                            _generateWalletProvider.getRandomInt();
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) {
                             return ConfirmStoreWallet(
-                                // validationKey: _keyValidWallets,
                                 generatedMnemonic:
                                     _generateWalletProvider.generatedMnemonic,
                                 generatedWallet:
                                     _generateWalletProvider.actualWallet);
                           }),
-                        )
-                            // .then((value) => setState(() {
-                            //       if (value != null) {
-                            //         _pin.clear();
-                            //         _mnemonicController.clear();
-                            //         _pubkey.clear();
-                            //         this.generatedMnemonic = null;
-                            //         this.actualWallet = null;
-                            //         this.walletIsGenerated = false;
-                            //       }
-                            //     }))
-                            ;
+                        );
                       }
                     : null,
                 child: Text('Enregistrer ce portefeuille',

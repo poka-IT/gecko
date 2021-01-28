@@ -3,9 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:provider/provider.dart';
 
 class MyWalletsProvider with ChangeNotifier {
-  // Directory appPath;
   List listWallets = [];
 
   bool checkIfWalletExist() {
@@ -24,28 +24,14 @@ class MyWalletsProvider with ChangeNotifier {
     List contents = walletsFolder.listSync();
     if (contents.length == 0) {
       print('No wallets detected');
-      notifyListeners();
       return false;
     } else {
       print('Some wallets have been detected:');
       for (var _wallets in contents) {
         print(_wallets);
       }
-      notifyListeners();
       return true;
     }
-
-    // final bool isExist =
-    //     File('${walletsFolder.path}/$name/wallet.dewif').existsSync();
-    // print(this.appPath.path);
-    // print('Wallet existe ? : ' + isExist.toString());
-    // print('Is wallet generated ? : ' + walletIsGenerated.toString());
-    // if (isExist) {
-    //   print('Un wallet existe !');
-    //   return true;
-    // } else {
-    //   return false;
-    // }
   }
 
   Future importWallet() async {}
@@ -63,8 +49,62 @@ class MyWalletsProvider with ChangeNotifier {
       print(_name);
       listWallets.add(_name);
     });
-    notifyListeners();
-
     return listWallets;
+  }
+
+  Future<int> deleteAllWallet(context) async {
+    try {
+      print('DELETE THAT ?: $walletsDirectory');
+
+      final bool _answer = await _confirmDeletingAllWallets(context);
+
+      if (_answer) {
+        walletsDirectory.deleteSync(recursive: true);
+        walletsDirectory.createSync();
+        Navigator.pop(context);
+      }
+      return 0;
+    } catch (e) {
+      return 1;
+    }
+  }
+
+  Future<bool> _confirmDeletingAllWallets(context) async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: true, // user must tap button!
+      builder: (BuildContext context) {
+        MyWalletsProvider _myWalletProvider =
+            Provider.of<MyWalletsProvider>(context);
+        return AlertDialog(
+          title: Text(
+              'Êtes-vous sûr de vouloir supprimer tous vos portefeuilles ?'),
+          content: SingleChildScrollView(child: Text('')),
+          actions: <Widget>[
+            TextButton(
+              child: Text("Non"),
+              onPressed: () {
+                Navigator.pop(context, false);
+              },
+            ),
+            TextButton(
+              child: Text("Oui"),
+              onPressed: () {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _myWalletProvider.listWallets =
+                      _myWalletProvider.getAllWalletsNames();
+                  _myWalletProvider.rebuildWidget();
+                });
+                Navigator.pop(context, true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void rebuildWidget() {
+    notifyListeners();
   }
 }

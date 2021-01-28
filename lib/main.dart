@@ -4,6 +4,7 @@ import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
 import 'package:gecko/models/myWallets.dart';
+import 'package:gecko/models/walletOptions.dart';
 import 'package:gecko/ui/home.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -93,39 +94,32 @@ class Gecko extends StatelessWidget {
     );
 
     DubpRust.setup();
-    return
-        // MultiProvider(
-        //     providers: [
-        //       Provider(create: (context) => HistoryProvider()),
-        //       Provider(create: (context) => MyWalletsProvider()),
-        //     ],
-        //     child:
-        MaterialApp(
-            title: 'Ğecko',
-            theme: ThemeData(
-              primaryColor: Color(0xffFFD58D),
-              accentColor: Colors.grey[850],
-              textTheme: TextTheme(
-                bodyText1: TextStyle(),
-                bodyText2: TextStyle(),
-              ).apply(
-                bodyColor: Color(0xff855F2D),
-                // displayColor: Colors.blue,
+    return MultiProvider(
+        providers: [
+          // Provider(create: (context) => HistoryProvider()),
+          // Provider(create: (context) => MyWalletsProvider()),
+          ChangeNotifierProvider(create: (_) => HomeProvider()),
+          ChangeNotifierProvider(create: (_) => HistoryProvider('')),
+          ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
+          ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
+          ChangeNotifierProvider(create: (_) => WalletOptionsProvider())
+        ],
+        child: GraphQLProvider(
+            client: _client,
+            child: MaterialApp(
+              title: 'Ğecko',
+              theme: ThemeData(
+                primaryColor: Color(0xffFFD58D),
+                accentColor: Colors.grey[850],
+                textTheme: TextTheme(
+                  bodyText1: TextStyle(),
+                  bodyText2: TextStyle(),
+                ).apply(
+                  bodyColor: Color(0xff855F2D),
+                  // displayColor: Colors.blue,
+                ),
               ),
-            ),
-            home: MultiProvider(
-              providers: [
-                // Provider(create: (context) => HistoryProvider()),
-                // Provider(create: (context) => MyWalletsProvider()),
-                ChangeNotifierProvider(create: (_) => HomeProvider()),
-                ChangeNotifierProvider(create: (_) => HistoryProvider('')),
-                ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
-                ChangeNotifierProvider(create: (_) => GenerateWalletsProvider())
-              ],
-              child: GraphQLProvider(
-                client: _client,
-                child: HomeScreen(),
-              ),
-            ));
+              home: HomeScreen(),
+            )));
   }
 }

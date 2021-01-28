@@ -1,6 +1,8 @@
+import 'package:dubp/dubp.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/models/generateWallets.dart';
+import 'package:gecko/models/myWallets.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
@@ -8,37 +10,42 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
   ConfirmStoreWallet({
     Key validationKey,
     @required this.generatedMnemonic,
-    @required generatedWallet,
+    @required this.generatedWallet,
   }) : super(key: validationKey);
 
   String generatedMnemonic;
+  NewWallet generatedWallet;
 
-  // @override
-  // void dispose() {
-  //   _wordFocus.dispose();
-  //   _walletNameFocus.dispose();
-  //   super.dispose();
-  // }
-
-  TextEditingController _mnemonicController = new TextEditingController();
-  TextEditingController _pubkey = new TextEditingController();
-  TextEditingController _inputRestoreWord = new TextEditingController();
-  TextEditingController walletName = new TextEditingController();
+  TextEditingController _mnemonicController = TextEditingController();
+  TextEditingController _pubkey = TextEditingController();
+  TextEditingController _inputRestoreWord = TextEditingController();
+  TextEditingController walletName = TextEditingController();
   FocusNode _wordFocus = FocusNode();
 
   @override
   Widget build(BuildContext context) {
-    var _generateWalletProvider = Provider.of<GenerateWalletsProvider>(context);
+    GenerateWalletsProvider _generateWalletProvider =
+        Provider.of<GenerateWalletsProvider>(context);
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context);
+    print("JE BUILD !!!");
 
     this._mnemonicController.text = generatedMnemonic;
-    this._pubkey.text = _generateWalletProvider.generatedWallet.publicKey;
+    this._pubkey.text = generatedWallet.publicKey;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
+          leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _generateWalletProvider.isAskedWordValid = false;
+                _generateWalletProvider.askedWordColor = Colors.black;
+              }),
           title: SizedBox(
-        height: 22,
-        child: Text('Confirmez ce portefeuille'),
-      )),
+            height: 22,
+            child: Text('Confirmez ce portefeuille'),
+          )),
       body: Center(
         child: Column(children: <Widget>[
           SizedBox(height: 15),
@@ -97,12 +104,10 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
           ),
           TextFormField(
               focusNode: _generateWalletProvider.walletNameFocus,
-              // autofocus: true,
               inputFormatters: [
                 FilteringTextInputFormatter.allow(
                     RegExp('[A-Za-z|0-9|\\-|_| ]')),
               ],
-              // enabled: isAskedWordValid,
               controller: this.walletName,
               textInputAction: TextInputAction.next,
               onChanged: (v) {
@@ -130,8 +135,20 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                         ),
                         onPressed: (_generateWalletProvider.isAskedWordValid &&
                                 this.walletName.text != '')
-                            ? () => _generateWalletProvider.storeWallet(
-                                walletName.text, _pubkey.text, context)
+                            ? () {
+                                _generateWalletProvider.storeWallet(
+                                    generatedWallet, walletName.text, context);
+                                _generateWalletProvider.isAskedWordValid =
+                                    false;
+                                _generateWalletProvider.askedWordColor =
+                                    Colors.black;
+                                WidgetsBinding.instance
+                                    .addPostFrameCallback((_) {
+                                  _myWalletProvider.listWallets =
+                                      _myWalletProvider.getAllWalletsNames();
+                                  _myWalletProvider.rebuildWidget();
+                                });
+                              }
                             : null,
                         child:
                             Text('Confirmer', style: TextStyle(fontSize: 28))),

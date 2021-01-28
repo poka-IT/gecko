@@ -1,42 +1,33 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dubp/dubp.dart';
+import 'package:gecko/models/walletOptions.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 
-class ChangePinScreen extends StatefulWidget {
-  const ChangePinScreen(
+// ignore: must_be_immutable
+class ChangePinScreen extends StatelessWidget with ChangeNotifier {
+  ChangePinScreen(
       {Key keyMyWallets, @required this.walletName, @required this.oldPin})
       : super(key: keyMyWallets);
-
   final String walletName;
   final oldPin;
-  @override
-  ChangePinScreenState createState() => ChangePinScreenState();
-}
-
-class ChangePinScreenState extends State<ChangePinScreen> {
   Directory appPath;
-  TextEditingController _newPin = new TextEditingController();
-  bool ischangedPin = false;
-  NewWallet newWalletFile;
-
-  Future<NewWallet> get badWallet => null;
-
-  void initState() {
-    super.initState();
-    changePin(widget.walletName, widget.oldPin);
-  }
+  NewWallet _newWalletFile;
 
   @override
   Widget build(BuildContext context) {
+    WalletOptionsProvider _walletOptions =
+        Provider.of<WalletOptionsProvider>(context);
+    _walletOptions.changePin(walletName, oldPin);
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
             title: SizedBox(
           height: 22,
-          child: Text(widget.walletName),
+          child: Text(walletName),
         )),
         body: Center(
             child: SafeArea(
@@ -57,7 +48,7 @@ class ChangePinScreenState extends State<ChangePinScreen> {
               children: <Widget>[
                 TextField(
                     enabled: true,
-                    controller: this._newPin,
+                    controller: _walletOptions.newPin,
                     maxLines: 1,
                     textAlign: TextAlign.center,
                     decoration: InputDecoration(),
@@ -68,8 +59,9 @@ class ChangePinScreenState extends State<ChangePinScreen> {
                 IconButton(
                   icon: Icon(Icons.replay),
                   color: Color(0xffD28928),
-                  onPressed: () {
-                    changePin(widget.walletName, widget.oldPin);
+                  onPressed: () async {
+                    _newWalletFile =
+                        await _walletOptions.changePin(walletName, oldPin);
                   },
                 ),
               ],
@@ -85,50 +77,10 @@ class ChangePinScreenState extends State<ChangePinScreen> {
                   primary: Colors.green[400], //Color(0xffFFD68E), // background
                   onPrimary: Colors.black, // foreground
                 ),
-                onPressed: (ischangedPin)
-                    ? () => storeWallet(widget.walletName)
-                    : null,
+                onPressed: () => _walletOptions.storeWallet(
+                    context, walletName, _newWalletFile),
                 child: Text('Confirmer', style: TextStyle(fontSize: 28))),
           )
         ]))));
-  }
-
-  Future<NewWallet> changePin(_name, _oldPin) async {
-    try {
-      final appPath = await _localPath;
-      final _walletFile = Directory('$appPath/wallets/$_name');
-      final _dewif =
-          File(_walletFile.path + '/wallet.dewif').readAsLinesSync()[0];
-
-      newWalletFile = await DubpRust.changeDewifPin(
-        dewif: _dewif,
-        oldPin: _oldPin,
-      );
-
-      _newPin.text = newWalletFile.pin;
-      ischangedPin = true;
-      setState(() {});
-      return newWalletFile;
-    } catch (e) {
-      print('Impossible de changer le code PIN.');
-      return badWallet;
-    }
-  }
-
-  Future storeWallet(_name) async {
-    final appPath = await _localPath;
-    final Directory walletNameDirectory = Directory('$appPath/wallets/$_name');
-    final walletFile = File('${walletNameDirectory.path}/wallet.dewif');
-
-    walletFile.writeAsString('${this.newWalletFile.dewif}');
-
-    Navigator.pop(context);
-
-    return _name;
-  }
-
-  Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
-    return directory.path;
   }
 }

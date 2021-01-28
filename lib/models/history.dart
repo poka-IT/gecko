@@ -10,9 +10,6 @@ class HistoryProvider with ChangeNotifier {
   final TextEditingController _outputPubkey = new TextEditingController();
   // String pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'; // For debug
 
-  // FetchMoreOptions opts;
-  // ScrollController scrollController = new ScrollController();
-
   Future scan() async {
     await Permission.camera.request();
     String barcode;
@@ -28,7 +25,6 @@ class HistoryProvider with ChangeNotifier {
       }
       return 'false';
     }
-    // this._outputPubkey.text = "";
     if (barcode != null) {
       this._outputPubkey.text = barcode;
       isPubkey(barcode);
@@ -59,13 +55,4 @@ class HistoryProvider with ChangeNotifier {
 
     return '';
   }
-
-  // scrollListener() {
-  //   if (scrollController.offset >= scrollController.position.maxScrollExtent &&
-  //       !scrollController.position.outOfRange) {
-  //     print('On est en bas !!');
-  //     // fetchMore(opts);
-  //     notifyListeners();
-  //   }
-  // }
 }

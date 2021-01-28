@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:dubp/dubp.dart';
 import 'package:gecko/models/walletOptions.dart';
 import 'dart:io';
-import 'dart:async';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable

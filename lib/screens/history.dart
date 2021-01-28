@@ -1,5 +1,5 @@
-import 'package:gecko/parsingGVA.dart';
-import 'package:gecko/query.dart';
+import 'package:gecko/models/parsingGVA.dart';
+import 'package:gecko/models/query.dart';
 import 'package:gecko/models/history.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';

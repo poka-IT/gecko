@@ -13,7 +13,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var _homeProvider = Provider.of<HomeProvider>(context);
+    HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
     return Scaffold(
       drawer: Drawer(
         child: Column(

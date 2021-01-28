@@ -12,7 +12,7 @@ echo "Nom du build final: ${APPNAME}-${VERSION}+${BUILD}.apk"
 
 #flutter build apk --split-per-abi --build-name $VERSION --build-number $BUILD
 flutter clean
-flutter build apk --split-per-abi --target-platform android-arm,android-arm64 --build-name $VERSION --build-number $BUILD
+flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64 --build-name $VERSION --build-number $BUILD
 
 
 if [[ -d $HOME/Téléchargements ]]; then

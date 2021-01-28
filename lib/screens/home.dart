@@ -1,10 +1,10 @@
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/home.dart';
-import 'package:gecko/ui/historyScreen.dart';
+import 'package:gecko/screens/history.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import 'package:gecko/ui/myWallets/walletsHome.dart';
-import 'package:gecko/ui/settingsScreen.dart';
+import 'package:gecko/screens/myWallets/walletsHome.dart';
+import 'package:gecko/screens/settings.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable

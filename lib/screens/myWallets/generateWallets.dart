@@ -1,5 +1,5 @@
 import 'package:gecko/models/generateWallets.dart';
-import 'package:gecko/ui/myWallets/confirmWalletStorage.dart';
+import 'package:gecko/screens/myWallets/confirmWalletStorage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:super_tooltip/super_tooltip.dart';

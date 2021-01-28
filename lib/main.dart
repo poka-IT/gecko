@@ -5,7 +5,7 @@ import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
 import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/walletOptions.dart';
-import 'package:gecko/ui/home.dart';
+import 'package:gecko/screens/home.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';

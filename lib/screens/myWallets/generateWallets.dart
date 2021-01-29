@@ -1,6 +1,7 @@
 import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/screens/myWallets/confirmWalletStorage.dart';
 import 'package:flutter/material.dart';
+import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 import 'package:super_tooltip/super_tooltip.dart';
 
@@ -11,6 +12,10 @@ class GenerateWalletsScreen extends StatelessWidget {
   String validPin = 'NO PIN';
   String currentText = "";
   var pinColor = Colors.grey[300];
+
+  GlobalKey _toolTipPubkey = GlobalKey();
+  GlobalKey _toolTipSentence = GlobalKey();
+  GlobalKey _toolTipSecret = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -43,17 +48,8 @@ class GenerateWalletsScreen extends StatelessWidget {
         body: SafeArea(
           child: Column(children: <Widget>[
             SizedBox(height: 20),
-            Tooltip(
-              message:
-                  "C'est votre RIB en Ğ1, les gens l'utiliseront pour vous payer",
-              child: Text(
-                'Clé publique:',
-                style: TextStyle(
-                    fontSize: 15.0,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w400),
-              ),
-            ),
+            toolTips(_toolTipPubkey, 'Clé publique:',
+                "C'est votre RIB en Ğ1, les gens l'utiliseront pour vous payer"),
             TextField(
                 enabled: false,
                 controller: _generateWalletProvider.pubkey,
@@ -65,17 +61,8 @@ class GenerateWalletsScreen extends StatelessWidget {
                     color: Colors.black,
                     fontWeight: FontWeight.bold)),
             SizedBox(height: 8),
-            Tooltip(
-              message:
-                  "Notez et gardez cette phrase précieusement sur un papier, elle vous servira à restaurer votre portefeuille sur un autre appareil",
-              child: Text(
-                'Phrase de restauration:',
-                style: TextStyle(
-                    fontSize: 15.0,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w400),
-              ),
-            ),
+            toolTips(_toolTipSentence, 'Phrase de restauration:',
+                "Notez et gardez cette phrase précieusement sur un papier, elle vous servira à restaurer votre portefeuille sur un autre appareil"),
             TextField(
                 enabled: false,
                 controller: _generateWalletProvider.mnemonicController,
@@ -89,17 +76,8 @@ class GenerateWalletsScreen extends StatelessWidget {
                     color: Colors.black,
                     fontWeight: FontWeight.w400)),
             SizedBox(height: 8),
-            Tooltip(
-              message:
-                  "Retenez bien votre code secret, il vous sera demandé à chaque paiement, ainsi que pour configurer votre portefeuille",
-              child: Text(
-                'Code secret:',
-                style: TextStyle(
-                    fontSize: 15.0,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w400),
-              ),
-            ),
+            toolTips(_toolTipSecret, 'Code secret:',
+                "Retenez bien votre code secret, il vous sera demandé à chaque paiement, ainsi que pour configurer votre portefeuille"),
             Container(
               child: Stack(
                 alignment: Alignment.centerRight,
@@ -148,8 +126,76 @@ class GenerateWalletsScreen extends StatelessWidget {
                     : null,
                 child: Text('Enregistrer ce portefeuille',
                     style: TextStyle(fontSize: 20))),
-            SizedBox(height: 20)
+            SizedBox(height: 20),
+            GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return PrintWallet(
+                          _generateWalletProvider.generatedMnemonic,
+                          _generateWalletProvider.actualWallet.publicKey);
+                    }),
+                  );
+                },
+                child: Icon(Icons.print))
           ]),
         ));
+  }
+
+  Widget toolTips(_key, _text, _message) {
+    return GestureDetector(
+        onTap: () {
+          final dynamic _toolTip = _key.currentState;
+          _toolTip.ensureTooltipVisible();
+        },
+        child: Tooltip(
+            padding: EdgeInsets.all(10),
+            key: _key,
+            showDuration: Duration(seconds: 5),
+            message: _message,
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Column(children: <Widget>[
+                    SizedBox(
+                        width: 30,
+                        height: 25,
+                        child: Icon(Icons.info_outline,
+                            size: 22, color: Color(0xffD28928))),
+                    SizedBox(height: 1)
+                  ]),
+                  Text(
+                    _text,
+                    style: TextStyle(
+                        fontSize: 15.0,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w400),
+                  ),
+                  SizedBox(width: 45)
+                ])));
+  }
+}
+
+// ignore: must_be_immutable
+class PrintWallet extends StatelessWidget {
+  PrintWallet(this.sentence, this.pubkey);
+
+  final String sentence;
+  final String pubkey;
+
+  @override
+  Widget build(BuildContext context) {
+    GenerateWalletsProvider _generateWalletProvider =
+        Provider.of<GenerateWalletsProvider>(context);
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Imprimer ce portefeuille')),
+        body: PdfPreview(
+          build: (format) =>
+              _generateWalletProvider.printWallet(sentence, pubkey),
+        ),
+      ),
+    );
   }
 }

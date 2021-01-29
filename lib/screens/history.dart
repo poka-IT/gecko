@@ -22,7 +22,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
 
   @override
   Widget build(BuildContext context) {
-    _historyProvider = Provider.of<HistoryProvider>(context);
+    HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
     this._outputPubkey.text = _historyProvider.pubkey;
     print('Build pubkey : ' + _historyProvider.pubkey);
     return Scaffold(

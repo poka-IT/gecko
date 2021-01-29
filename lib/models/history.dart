@@ -55,4 +55,8 @@ class HistoryProvider with ChangeNotifier {
 
     return '';
   }
+
+  // num getBalance(_pubkey) {
+  //   getBalance(_pubkey);
+  // }
 }

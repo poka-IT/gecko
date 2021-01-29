@@ -29,6 +29,7 @@ dependencies:
   http: ^0.12.2
   super_tooltip: ^0.9.6
   package_info: ^0.4.3+2
+  printing: ^4.0.0
 
 
 flutter_icons:
@@ -50,3 +51,4 @@ flutter:
     - config/
     - assets/icon/gecko_final.png
     - assets/
+    - assets/OpenSans-Regular.ttf

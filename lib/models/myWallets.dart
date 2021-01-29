@@ -6,7 +6,7 @@ import 'package:gecko/globals.dart';
 import 'package:provider/provider.dart';
 
 class MyWalletsProvider with ChangeNotifier {
-  List listWallets = [];
+  Map listWallets = Map();
 
   bool checkIfWalletExist() {
     if (appPath == null) {
@@ -33,16 +33,26 @@ class MyWalletsProvider with ChangeNotifier {
 
   Future importWallet() async {}
 
-  List getAllWalletsNames() {
-    listWallets.clear();
+  Map getAllWalletsNames() {
+    print(listWallets);
+    if (listWallets.isNotEmpty) {
+      listWallets.clear();
+    }
     print(walletsDirectory.path);
 
+    // int i = 0;
     walletsDirectory
         .listSync(recursive: false, followLinks: false)
         .forEach((wallet) {
       String _name = wallet.path.split('/').last;
-      print(_name);
-      listWallets.add(_name);
+      String _pubkey = File(wallet.path + '/pubkey').readAsLinesSync()[0];
+      print("$_name: $_pubkey");
+      listWallets[_name] = _pubkey;
+      // i++;
+
+      // for (var _wallets in listWallets) {
+      //   _wallets.pubkey =
+      // }
     });
     return listWallets;
   }

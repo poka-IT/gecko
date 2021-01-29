@@ -86,21 +86,36 @@ class WalletsHome extends StatelessWidget {
         ])));
   }
 
-  myWalletsList(BuildContext context) {
+  Widget myWalletsList(BuildContext context) {
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
+
+    // TODO: Show history of my wallets
+    // HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
+    // Map _balance = Map();
+
+    List _listWallets = [];
+    myWalletProvider.listWallets.forEach((_name, _pubkey) {
+      _listWallets.add(_name);
+      // _balance[_name] = _historyProvider.getBalance(_pubkey).toString();
+      print(_name + _pubkey);
+    });
+
     return Column(children: <Widget>[
       SizedBox(height: 8),
-      for (var repository in myWalletProvider.listWallets)
+      for (String _repository in _listWallets)
         ListTile(
           contentPadding: const EdgeInsets.all(5.0),
-          leading: Text(repository, style: TextStyle(fontSize: 14.0)),
-          title: Text(repository, style: TextStyle(fontSize: 14.0)),
-          subtitle: Text(repository, style: TextStyle(fontSize: 14.0)),
+          leading: Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: Text("0 Ğ1", style: TextStyle(fontSize: 14.0))),
+          title: Text(_repository, style: TextStyle(fontSize: 16.0)),
+          subtitle: Text(myWalletProvider.listWallets[_repository],
+              style: TextStyle(fontSize: 11.0)),
           dense: true,
           onTap: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) {
-              return WalletOptions(walletName: repository);
+              return WalletOptions(walletName: _repository);
             }));
           },
         )

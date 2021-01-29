@@ -155,29 +155,47 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                   children: <Widget>[
                     SizedBox(height: 7),
                     if (_historyProvider.pubkey != '')
-                      Text(balance.toString() + ' Ğ1',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 30.0)),
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(width: 32.0, height: 0.0),
+                            Text(balance.toString() + ' Ğ1',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontSize: 30.0)),
+                            Container(
+                                padding: const EdgeInsets.only(right: 80),
+                                child: Text("Payer")),
+                          ]),
                     SizedBox(height: 12),
                     for (var repository in _transBC)
-                      ListTile(
-                          contentPadding: const EdgeInsets.all(5.0),
-                          leading: Text(repository[3],
-                              style: TextStyle(fontSize: 14.0)),
-                          title: Text(
-                              repository[1].toString() +
-                                  '\n' +
-                                  truncate(repository[2], 17,
+                      Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: ListTile(
+                              contentPadding: const EdgeInsets.all(5.0),
+                              leading: Text(repository[1].toString(),
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey[800],
+                                      fontWeight: FontWeight.w700),
+                                  textAlign: TextAlign.center),
+                              title: Text(repository[5],
+                                  style: TextStyle(fontSize: 14.0),
+                                  textAlign: TextAlign.center),
+                              subtitle: Text(
+                                  truncate(repository[2], 20,
                                       omission: "...",
                                       position: TruncatePosition.end),
-                              style: TextStyle(fontSize: 14.0)),
-                          subtitle: Text(repository[5],
-                              style: TextStyle(fontSize: 14.0)),
-                          dense: true,
-                          onTap: () {
-                            // this._outputPubkey.text = repository[2];
-                            _historyProvider.isPubkey(repository[2]);
-                          }),
+                                  style: TextStyle(fontSize: 11.0),
+                                  textAlign: TextAlign.center),
+                              trailing: Text("${repository[3]} Ğ1",
+                                  style: TextStyle(fontSize: 14.0),
+                                  textAlign: TextAlign.justify),
+                              dense: true,
+                              isThreeLine: false,
+                              onTap: () {
+                                // this._outputPubkey.text = repository[2];
+                                _historyProvider.isPubkey(repository[2]);
+                              })),
                     if (result.isLoading)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -198,7 +216,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                 onNotification: (t) {
                   if (t is ScrollEndNotification &&
                       scrollController.position.pixels >=
-                          scrollController.position.maxScrollExtent * 0.8) {
+                          scrollController.position.maxScrollExtent * 0.7) {
                     fetchMore(opts);
                   }
                   return true;

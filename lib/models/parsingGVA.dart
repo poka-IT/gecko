@@ -22,7 +22,7 @@ List parseHistory(txs) {
     transBC[i] = [];
     final dateBrut =
         DateTime.fromMillisecondsSinceEpoch(transaction['writtenTime'] * 1000);
-    final DateFormat formatter = DateFormat('dd-MM-yy - HH:mm');
+    final DateFormat formatter = DateFormat('dd-MM-yy\nHH:mm');
     final date = formatter.format(dateBrut);
     transBC[i].add(transaction['writtenTime']);
     transBC[i].add(date);
@@ -33,15 +33,14 @@ List parseHistory(txs) {
     final int applyBase = base - currentBase;
     final num amount = removeDecimalZero(amountBrut * pow(10, applyBase) / 100);
     num amountUD = amount / currentUD;
-    int padNbr = 14 - amount.toString().length;
     if (direction == "RECEIVED") {
       transBC[i].add(transaction['issuers'][0]);
-      transBC[i].add('  ' + amount.toString().padRight(padNbr));
+      transBC[i].add(amount.toString());
       transBC[i].add(amountUD.toStringAsFixed(2));
     } else if (direction == "SENT") {
       final outPubkey = output.split("SIG(")[1].replaceAll(')', '');
       transBC[i].add(outPubkey);
-      transBC[i].add('  -' + amount.toString().padRight(padNbr - 1));
+      transBC[i].add(amount.toString());
       transBC[i].add(amountUD.toStringAsFixed(2));
     }
     transBC[i].add(transaction['comment']);

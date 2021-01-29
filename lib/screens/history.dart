@@ -13,7 +13,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
   final TextEditingController _outputPubkey = TextEditingController();
   ScrollController scrollController = ScrollController();
   final nRepositories = 20;
-  HistoryProvider _historyProvider;
+  // HistoryProvider _historyProvider;
   bool isTheEnd = false;
   List _transBC;
 
@@ -67,11 +67,12 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                 disabledBorder: InputBorder.none,
               ),
               style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)),
-          if (_historyProvider.pubkey != '') historyQuery(),
+          if (_historyProvider.pubkey != '') historyQuery(context),
         ]));
   }
 
-  historyQuery() {
+  historyQuery(context) {
+    HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
     return Expanded(
         child: Column(
       mainAxisAlignment: MainAxisAlignment.start,

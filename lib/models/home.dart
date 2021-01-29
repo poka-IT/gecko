@@ -51,6 +51,12 @@ class HomeProvider with ChangeNotifier {
   Future getAppPath() async {
     appPath = await getApplicationDocumentsDirectory();
     walletsDirectory = Directory('${appPath.path}/wallets');
+
+    bool isWalletFolderExist = await walletsDirectory.exists();
+
+    if (!isWalletFolderExist) {
+      await Directory(walletsDirectory.path).create();
+    }
   }
 
   T getRandomElement<T>(List<T> list) {

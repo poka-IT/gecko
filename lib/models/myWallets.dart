@@ -13,15 +13,7 @@ class MyWalletsProvider with ChangeNotifier {
       return false;
     }
 
-    var walletsFolder = new Directory("${appPath.path}/wallets/");
-
-    bool isWalletFolderExist = walletsFolder.existsSync();
-
-    if (!isWalletFolderExist) {
-      Directory(walletsFolder.path).createSync();
-    }
-
-    List contents = walletsFolder.listSync();
+    List contents = walletsDirectory.listSync();
     if (contents.length == 0) {
       print('No wallets detected');
       return false;
@@ -64,8 +56,8 @@ class MyWalletsProvider with ChangeNotifier {
       final bool _answer = await _confirmDeletingAllWallets(context);
 
       if (_answer) {
-        walletsDirectory.deleteSync(recursive: true);
-        walletsDirectory.createSync();
+        await walletsDirectory.delete(recursive: true);
+        await walletsDirectory.create();
         Navigator.pop(context);
       }
       return 0;

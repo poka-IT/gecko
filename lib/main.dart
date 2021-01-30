@@ -12,6 +12,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final bool enableSentry = true;
 
@@ -24,11 +25,12 @@ Future<void> main() async {
   HomeProvider _homeProvider = HomeProvider();
   await _homeProvider.getAppPath();
   appVersion = await _homeProvider.getAppVersion();
+  prefs = await SharedPreferences.getInstance();
 
   String randomEndpoint; // = await getRandomEndpoint();
   int i = 0;
   do {
-    if (i >= 3) {
+    if (i >= 5) {
       print('NO VALID ENDPOINT FOUND !');
       break;
     }

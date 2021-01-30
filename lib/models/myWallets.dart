@@ -37,7 +37,8 @@ class MyWalletsProvider with ChangeNotifier {
         .listSync(recursive: false, followLinks: false)
         .forEach((wallet) {
       String _name = wallet.path.split('/').last;
-      String _pubkey = File(wallet.path + '/pubkey').readAsLinesSync()[0];
+      List _pubkeyList = File(wallet.path + '/pubkey').readAsLinesSync();
+      String _pubkey = _pubkeyList[0];
       print("$_name: $_pubkey");
       listWallets[_name] = _pubkey;
       // i++;

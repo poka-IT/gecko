@@ -30,6 +30,7 @@ dependencies:
   super_tooltip: ^0.9.6
   package_info: ^0.4.3+2
   printing: ^4.0.0
+  shared_preferences: ^0.5.12+4
 
 
 flutter_icons:

@@ -42,8 +42,8 @@ class GenerateWalletsProvider with ChangeNotifier {
     }
 
     await walletNameDirectory.create();
-    walletFile.writeAsString('${wallet.dewif}');
-    walletPubkey.writeAsString('${wallet.publicKey}');
+    await walletFile.writeAsString('${wallet.dewif}');
+    await walletPubkey.writeAsString('${wallet.publicKey}');
 
     Navigator.pop(context, true);
     Navigator.pop(context, wallet.publicKey);

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sentry/sentry.dart' as sentry;
 import 'package:qrscan/qrscan.dart' as scanner;
@@ -10,6 +11,9 @@ class HistoryProvider with ChangeNotifier {
   String pubkey = '';
   HistoryProvider(this.pubkey);
   final TextEditingController _outputPubkey = new TextEditingController();
+  bool isTheEnd = false;
+  List transBC;
+
   // String pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'; // For debug
 
   Future scan() async {
@@ -103,6 +107,44 @@ class HistoryProvider with ChangeNotifier {
 
     // transBC.sort((b, a) => Comparable.compare(a[0], b[0]));
     return transBC;
+  }
+
+  FetchMoreOptions checkQueryResult(result, opts) {
+    final List<dynamic> blockchainTX =
+        (result.data['txsHistoryBc']['both']['edges'] as List<dynamic>);
+
+    final Map pageInfo = result.data['txsHistoryBc']['both']['pageInfo'];
+
+    final String fetchMoreCursor = pageInfo['endCursor'];
+
+    if (fetchMoreCursor != null) {
+      opts = FetchMoreOptions(
+        variables: {'cursor': fetchMoreCursor},
+        updateQuery: (previousResultData, fetchMoreResultData) {
+          final List<dynamic> repos = [
+            ...previousResultData['txsHistoryBc']['both']['edges']
+                as List<dynamic>,
+            ...fetchMoreResultData['txsHistoryBc']['both']['edges']
+                as List<dynamic>
+          ];
+
+          fetchMoreResultData['txsHistoryBc']['both']['edges'] = repos;
+          return fetchMoreResultData;
+        },
+      );
+    }
+
+    print(
+        "###### DEBUG H Parse blockchainTX list. Cursor: $fetchMoreCursor ######");
+    if (fetchMoreCursor != null) {
+      transBC = parseHistory(blockchainTX);
+      isTheEnd = false;
+    } else {
+      print("###### DEBUG H - Début de l'historique");
+      isTheEnd = true;
+    }
+
+    return opts;
   }
 
   void resetdHistory() {

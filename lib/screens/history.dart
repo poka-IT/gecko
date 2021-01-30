@@ -14,8 +14,6 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
   ScrollController scrollController = ScrollController();
   final nRepositories = 20;
   // HistoryProvider _historyProvider;
-  bool isTheEnd = false;
-  List _transBC;
   final _formKey = GlobalKey<FormState>();
   FocusNode _pubkeyFocus = FocusNode();
 
@@ -114,45 +112,10 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
               return const Text('Aucune donnée à afficher.');
             }
 
-            final List<dynamic> blockchainTX =
-                (result.data['txsHistoryBc']['both']['edges'] as List<dynamic>);
-
-            final Map pageInfo =
-                result.data['txsHistoryBc']['both']['pageInfo'];
-
-            final String fetchMoreCursor = pageInfo['endCursor'];
-
             final num balance = _historyProvider
                 .removeDecimalZero(result.data['balance']['amount'] / 100);
 
-            if (fetchMoreCursor != null) {
-              opts = FetchMoreOptions(
-                variables: {'cursor': fetchMoreCursor},
-                updateQuery: (previousResultData, fetchMoreResultData) {
-                  final List<dynamic> repos = [
-                    ...previousResultData['txsHistoryBc']['both']['edges']
-                        as List<dynamic>,
-                    ...fetchMoreResultData['txsHistoryBc']['both']['edges']
-                        as List<dynamic>
-                  ];
-
-                  fetchMoreResultData['txsHistoryBc']['both']['edges'] = repos;
-                  return fetchMoreResultData;
-                },
-              );
-            }
-
-            print(
-                "###### DEBUG H Parse blockchainTX list. Cursor: $fetchMoreCursor ######");
-            if (fetchMoreCursor != null) {
-              _transBC = _historyProvider.parseHistory(blockchainTX);
-              isTheEnd = false;
-            } else {
-              print("###### DEBUG H - Début de l'historique");
-              isTheEnd = true;
-            }
-
-            // _historyProvider.resetdHistory();
+            opts = _historyProvider.checkQueryResult(result, opts);
 
             // Build history list
             return NotificationListener(
@@ -191,7 +154,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                       indent: 0,
                       endIndent: 0,
                     ),
-                    _transBC == null
+                    _historyProvider.transBC == null
                         ? Text('Aucune transaction à afficher.')
                         : loopTransactions(context, result),
                   ],
@@ -214,7 +177,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
     HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
 
     return Column(children: <Widget>[
-      for (var repository in _transBC)
+      for (var repository in _historyProvider.transBC)
         Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: ListTile(
@@ -249,7 +212,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
             CircularProgressIndicator(),
           ],
         ),
-      if (isTheEnd)
+      if (_historyProvider.isTheEnd)
         Column(children: <Widget>[
           SizedBox(height: 15),
           Text("Début de l'historique.",

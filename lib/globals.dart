@@ -5,3 +5,4 @@ Directory appPath;
 Directory walletsDirectory;
 String appVersion;
 SharedPreferences prefs;
+String endPointGVA;

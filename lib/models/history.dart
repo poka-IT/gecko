@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/globals.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sentry/sentry.dart' as sentry;
@@ -14,6 +15,7 @@ class HistoryProvider with ChangeNotifier {
   final TextEditingController _outputPubkey = new TextEditingController();
   bool isTheEnd = false;
   List transBC;
+  bool isFirstBuild = true;
 
   Future scan() async {
     await Permission.camera.request();
@@ -142,6 +144,24 @@ class HistoryProvider with ChangeNotifier {
     }
 
     return opts;
+  }
+
+  snackNode(context) {
+    if (isFirstBuild) {
+      String _message;
+      print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+      print(endPointGVA);
+      if (endPointGVA == 'HS') {
+        _message =
+            "Aucun noeud Duniter disponible, veuillez réessayer ultérieurement";
+      } else {
+        _message = "Vous êtes connecté au noeud\n${endPointGVA.split('/')[2]}";
+      }
+      final snackBar =
+          SnackBar(content: Text(_message), duration: Duration(seconds: 2));
+      Scaffold.of(context).showSnackBar(snackBar);
+      isFirstBuild = false;
+    }
   }
 
   void resetdHistory() {

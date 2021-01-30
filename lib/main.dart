@@ -27,7 +27,7 @@ Future<void> main() async {
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
 
-  String randomEndpoint; // = await getRandomEndpoint();
+  String _randomEndpoint;
   int i = 0;
   do {
     if (i >= 5) {
@@ -38,9 +38,11 @@ Future<void> main() async {
       print(i.toString() + ' ème essai de recherche de endpoint GVA.');
       await Future.delayed(Duration(milliseconds: 300));
     }
-    randomEndpoint = await _homeProvider.getRandomEndpoint();
+    _randomEndpoint = await _homeProvider.getRandomEndpoint();
     i++;
-  } while (randomEndpoint == 'HS');
+  } while (_randomEndpoint == 'HS');
+
+  endPointGVA = _randomEndpoint;
 
   if (kReleaseMode && enableSentry) {
     await SentryFlutter.init(
@@ -48,13 +50,13 @@ Future<void> main() async {
         options.dsn =
             'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
       },
-      appRunner: () => runApp(Gecko(randomEndpoint)),
+      appRunner: () => runApp(Gecko(_randomEndpoint)),
     );
   } else {
     print('Debug mode enabled: No sentry alerte');
 
     runApp(Gecko(
-      randomEndpoint,
+      _randomEndpoint,
     ));
   }
 }

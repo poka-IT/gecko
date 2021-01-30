@@ -25,6 +25,10 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
     HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
     this._outputPubkey.text = _historyProvider.pubkey;
     print('Build pubkey : ' + _historyProvider.pubkey);
+    // _historyProvider.snackNode(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _historyProvider.snackNode(context);
+    });
     return Scaffold(
         floatingActionButton: Container(
           height: 80.0,

@@ -8,13 +8,12 @@ import 'dart:math';
 import 'package:intl/intl.dart';
 
 class HistoryProvider with ChangeNotifier {
+  // String pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'; // For debug
   String pubkey = '';
   HistoryProvider(this.pubkey);
   final TextEditingController _outputPubkey = new TextEditingController();
   bool isTheEnd = false;
   List transBC;
-
-  // String pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'; // For debug
 
   Future scan() async {
     await Permission.camera.request();
@@ -104,8 +103,6 @@ class HistoryProvider with ChangeNotifier {
 
       i++;
     }
-
-    // transBC.sort((b, a) => Comparable.compare(a[0], b[0]));
     return transBC;
   }
 

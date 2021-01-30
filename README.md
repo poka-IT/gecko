@@ -10,7 +10,7 @@ Work in progress.
 
 <div align="center">
 
-![Demo Gif](https://git.p2p.legal/axiom-team/gecko/raw/branch/master/assets/Demo-0.0.0+8.gif)
+![Demo Gif](https://git.p2p.legal/axiom-team/gecko/raw/branch/master/assets/Demo-0.0.1+0.gif)
 
 <br><br>
 

@@ -5,7 +5,10 @@ Pay with Ğ1.
 ## Getting Started
 
 Work in progress.
-<br><br><br>
+<br>
+-> https://forum.duniter.org/t/gecko-nouveau-client-de-paiements-1-sur-mobile-en-cours-de-developpement-dart-flutter/7857
+
+<br><br>
 
 
 <div align="center">

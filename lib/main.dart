@@ -1,5 +1,6 @@
 import 'package:dubp/dubp.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/cesiumPlus.dart';
 import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
@@ -24,6 +25,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   HomeProvider _homeProvider = HomeProvider();
   await _homeProvider.getAppPath();
+  await _homeProvider.createDefaultAvatar();
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
 
@@ -88,7 +90,8 @@ class Gecko extends StatelessWidget {
           ChangeNotifierProvider(create: (_) => HistoryProvider('')),
           ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
           ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
-          ChangeNotifierProvider(create: (_) => WalletOptionsProvider())
+          ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
+          ChangeNotifierProvider(create: (_) => CesiumPlusProvider())
         ],
         child: GraphQLProvider(
             client: _client,

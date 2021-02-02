@@ -12,7 +12,7 @@ class HistoryProvider with ChangeNotifier {
   // String pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'; // For debug
   String pubkey = '';
   HistoryProvider(this.pubkey);
-  final TextEditingController _outputPubkey = new TextEditingController();
+  final TextEditingController outputPubkey = new TextEditingController();
   bool isTheEnd = false;
   List transBC;
   bool isFirstBuild = true;
@@ -33,7 +33,7 @@ class HistoryProvider with ChangeNotifier {
       return 'false';
     }
     if (barcode != null) {
-      this._outputPubkey.text = barcode;
+      this.outputPubkey.text = barcode;
       isPubkey(barcode);
     } else {
       return 'false';
@@ -54,7 +54,7 @@ class HistoryProvider with ChangeNotifier {
       print("C'est une pubkey !!!");
 
       this.pubkey = pubkey;
-      this._outputPubkey.text = pubkey;
+      this.outputPubkey.text = pubkey;
       notifyListeners();
 
       return pubkey;
@@ -149,8 +149,6 @@ class HistoryProvider with ChangeNotifier {
   snackNode(context) {
     if (isFirstBuild) {
       String _message;
-      print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
-      print(endPointGVA);
       if (endPointGVA == 'HS') {
         _message =
             "Aucun noeud Duniter disponible, veuillez réessayer ultérieurement";
@@ -165,12 +163,12 @@ class HistoryProvider with ChangeNotifier {
   }
 
   void resetdHistory() {
-    this._outputPubkey.text = '';
+    this.outputPubkey.text = '';
     notifyListeners();
   }
 
   num removeDecimalZero(double n) {
-    String result = n.toStringAsFixed(n.truncateToDouble() == n ? 0 : 1);
+    String result = n.toStringAsFixed(n.truncateToDouble() == n ? 0 : 2);
     return num.parse(result);
   }
 

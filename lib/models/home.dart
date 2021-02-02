@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:package_info/package_info.dart';
@@ -60,6 +61,16 @@ class HomeProvider with ChangeNotifier {
 
     if (!isWalletFolderExist) {
       await Directory(walletsDirectory.path).create();
+    }
+  }
+
+  Future createDefaultAvatar() async {
+    File defaultAvatar = File(appPath.path + '/default_avatar.png');
+    final bool isAvatarExist = await defaultAvatar.exists();
+    if (!isAvatarExist) {
+      final byteData = await rootBundle.load('assets/icon_user.png');
+      await defaultAvatar.writeAsBytes(byteData.buffer
+          .asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
     }
   }
 

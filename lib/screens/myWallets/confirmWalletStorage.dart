@@ -49,7 +49,7 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                   }),
               title: SizedBox(
                 height: 22,
-                child: Text('Confirmez ce portefeuille'),
+                child: Text('Enregistrer ce portefeuille'),
               )),
           body: Center(
             child: Column(children: <Widget>[

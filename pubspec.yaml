@@ -5,7 +5,7 @@ description: A new Flutter project.
 # pub.dev using `pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 0.0.1+0
+version: 0.0.1+2
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -31,6 +31,7 @@ dependencies:
   package_info: ^0.4.3+2
   printing: ^4.0.0
   shared_preferences: ^0.5.12+4
+  sync_http: ^0.2.0
 
 
 flutter_icons:
@@ -53,3 +54,4 @@ flutter:
     - assets/icon/gecko_final.png
     - assets/
     - assets/OpenSans-Regular.ttf
+    - assets/icon_user.png

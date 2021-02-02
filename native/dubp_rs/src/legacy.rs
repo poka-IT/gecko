@@ -14,17 +14,19 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use crate::*;
+use dup_crypto::keys::ed25519::{KeyPairFromSaltedPasswordGenerator, SaltedPassword};
 
-pub(super) fn gen_mnemonic(language: Language) -> Result<String, DubpError> {
-    let mnemonic =
-        Mnemonic::new(MnemonicType::Words12, language).map_err(|_| DubpError::RandErr)?;
-    Ok(mnemonic.phrase().to_owned())
+pub(super) fn get_pubkey(salt: &str, password: &str) -> String {
+    KeyPairFromSaltedPasswordGenerator::with_default_parameters()
+        .generate(SaltedPassword::new(salt.to_owned(), password.to_owned()))
+        .public_key()
+        .to_base58()
 }
 
-pub(super) fn mnemonic_to_pubkey(language: Language, mnemonic: &str) -> Result<String, DubpError> {
-    let mnemonic =
-        Mnemonic::from_phrase(mnemonic, language).map_err(|_| DubpError::WrongLanguage)?;
-    let seed = dup_crypto::mnemonic::mnemonic_to_seed(&mnemonic);
-    let keypair = KeyPairFromSeed32Generator::generate(seed);
-    Ok(keypair.public_key().to_base58())
+pub(super) fn sign(salt: &str, password: &str, msg: &str) -> String {
+    KeyPairFromSaltedPasswordGenerator::with_default_parameters()
+        .generate(SaltedPassword::new(salt.to_owned(), password.to_owned()))
+        .generate_signator()
+        .sign(msg.as_bytes())
+        .to_base64()
 }

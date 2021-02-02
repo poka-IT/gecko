@@ -19,6 +19,7 @@ mod r#async;
 mod dewif;
 mod error;
 mod inputs;
+mod legacy;
 mod mnemonic;
 mod secret_code;
 
@@ -49,6 +50,7 @@ pub extern "C" fn change_dewif_secret_code(
     old_pin: *const raw::c_char,
     member_wallet: u32,
     secret_code_type: u32,
+    system_memory: i64,
 ) {
     exec_async(
         port,
@@ -58,10 +60,24 @@ pub extern "C" fn change_dewif_secret_code(
             let old_pin = char_ptr_to_str(old_pin)?;
             let member_wallet = member_wallet != 0;
             let secret_code_type = SecretCodeType::from(secret_code_type);
-            Ok((currency, dewif, old_pin, member_wallet, secret_code_type))
+            Ok((
+                currency,
+                dewif,
+                old_pin,
+                member_wallet,
+                secret_code_type,
+                system_memory,
+            ))
         },
-        |(currency, dewif, old_pin, member_wallet, secret_code_type)| {
-            dewif::change_secret_code(currency, dewif, old_pin, member_wallet, secret_code_type)
+        |(currency, dewif, old_pin, member_wallet, secret_code_type, system_memory)| {
+            dewif::change_secret_code(
+                currency,
+                dewif,
+                old_pin,
+                member_wallet,
+                secret_code_type,
+                system_memory,
+            )
         },
     )
 }
@@ -74,6 +90,7 @@ pub extern "C" fn gen_dewif(
     mnemonic: *const raw::c_char,
     member_wallet: u32,
     secret_code_type: u32,
+    system_memory: i64,
 ) {
     exec_async(
         port,
@@ -89,15 +106,17 @@ pub extern "C" fn gen_dewif(
                 mnemonic,
                 member_wallet,
                 secret_code_type,
+                system_memory,
             ))
         },
-        |(currency, language, mnemonic, member_wallet, secret_code_type)| {
+        |(currency, language, mnemonic, member_wallet, secret_code_type, system_memory)| {
             dewif::gen_dewif(
                 currency,
                 language,
                 mnemonic,
                 member_wallet,
                 secret_code_type,
+                system_memory,
             )
         },
     )
@@ -105,7 +124,7 @@ pub extern "C" fn gen_dewif(
 
 #[no_mangle]
 pub extern "C" fn gen_mnemonic(port: i64, language: u32) {
-    Isolate::new(port).post(DartRes::from(mnemonic::gen_mnemonic(language)));
+    exec_async(port, || u32_to_language(language), mnemonic::gen_mnemonic)
 }
 
 #[no_mangle]
@@ -128,6 +147,23 @@ pub extern "C" fn get_dewif_pubkey(
 }
 
 #[no_mangle]
+pub extern "C" fn get_legacy_pubkey(
+    port: i64,
+    salt: *const raw::c_char,
+    password: *const raw::c_char,
+) {
+    exec_async(
+        port,
+        || {
+            let salt = char_ptr_to_str(salt)?;
+            let password = char_ptr_to_str(password)?;
+            Ok((salt, password))
+        },
+        |(salt, password)| Ok::<_, DubpError>(legacy::get_pubkey(salt, password)),
+    )
+}
+
+#[no_mangle]
 pub extern "C" fn mnemonic_to_pubkey(
     port: i64,
     language: u32,
@@ -136,6 +172,7 @@ pub extern "C" fn mnemonic_to_pubkey(
     exec_async(
         port,
         || {
+            let language = u32_to_language(language)?;
             let mnemonic_phrase = char_ptr_to_str(mnemonic_phrase)?;
             Ok((language, mnemonic_phrase))
         },
@@ -161,6 +198,25 @@ pub extern "C" fn sign(
             Ok((currency, dewif, pin, msg))
         },
         |(currency, dewif, pin, msg)| dewif::sign(currency, dewif, pin, msg),
+    )
+}
+
+#[no_mangle]
+pub extern "C" fn sign_legacy(
+    port: i64,
+    salt: *const raw::c_char,
+    password: *const raw::c_char,
+    msg: *const raw::c_char,
+) {
+    exec_async(
+        port,
+        || {
+            let salt = char_ptr_to_str(salt)?;
+            let password = char_ptr_to_str(password)?;
+            let msg = char_ptr_to_str(msg)?;
+            Ok((salt, password, msg))
+        },
+        |(salt, password, msg)| Ok::<_, DubpError>(legacy::sign(salt, password, msg)),
     )
 }
 

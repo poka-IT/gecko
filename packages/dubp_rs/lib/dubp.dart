@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ffi';
 import 'package:ffi/ffi.dart';
 import 'package:isolate/ports.dart';
+import "package:system_info/system_info.dart";
 
 import 'ffi.dart' as native;
 
@@ -45,7 +46,7 @@ class DubpRust {
   /// Must be called only once at the start of your application.
   static void setup() {
     native.store_dart_post_cobject(NativeApi.postCObject);
-    print("Dubp Setup Done");
+    print("DUBP_RS Setup Done");
   }
 
   /// Generate a random mnemonic
@@ -67,6 +68,8 @@ class DubpRust {
     String oldPin,
     SecretCodeType secretCodeType = SecretCodeType.letters,
   }) async {
+    int ram = SysInfo.getTotalPhysicalMemory();
+
     final completer = Completer<List<String>>();
     final sendPort = singleCompletePort<List<String>, List>(completer,
         callback: _handleErrList);
@@ -77,6 +80,7 @@ class DubpRust {
       Utf8.toUtf8(oldPin),
       0,
       secretCodeType.index,
+      ram,
     );
     List<String> newWallet = await completer.future;
 
@@ -96,6 +100,9 @@ class DubpRust {
     String mnemonic,
     SecretCodeType secretCodeType = SecretCodeType.letters,
   }) async {
+    int ram = SysInfo.getTotalPhysicalMemory();
+    print('ram=$ram');
+
     final completer = Completer<List<String>>();
     final sendPort = singleCompletePort<List<String>, List>(completer,
         callback: _handleErrList);
@@ -106,13 +113,27 @@ class DubpRust {
       Utf8.toUtf8(mnemonic),
       0,
       secretCodeType.index,
+      ram,
     );
     List<String> newWallet = await completer.future;
 
     return Future.value(NewWallet._(newWallet[0], newWallet[1], newWallet[2]));
   }
 
-  /// Get pulblic key (in base 58) of `dewif` keypair.
+  /// Get public key (in base 58) of legacy wallet (password + salt)
+  static Future<String> getLegacyPublicKey({String password, String salt}) {
+    final completer = Completer<String>();
+    final sendPort =
+        singleCompletePort<String, String>(completer, callback: _handleErr);
+    native.get_legacy_pubkey(
+      sendPort.nativePort,
+      Utf8.toUtf8(password),
+      Utf8.toUtf8(salt),
+    );
+    return completer.future;
+  }
+
+  /// Get public key (in base 58) of `dewif` keypair.
   static Future<String> getDewifPublicKey(
       {String currency = "g1", String dewif, String pin}) async {
     final completer = Completer<String>();
@@ -140,6 +161,21 @@ class DubpRust {
       Utf8.toUtf8(currency),
       Utf8.toUtf8(dewif),
       Utf8.toUtf8(pin),
+      Utf8.toUtf8(message),
+    );
+    return completer.future;
+  }
+
+  /// Sign the message `message` with legacy wallet (password + salt)
+  static Future<String> signLegacy(
+      {String password, String salt, String message}) {
+    final completer = Completer<String>();
+    final sendPort =
+        singleCompletePort<String, String>(completer, callback: _handleErr);
+    native.sign_legacy(
+      sendPort.nativePort,
+      Utf8.toUtf8(password),
+      Utf8.toUtf8(salt),
       Utf8.toUtf8(message),
     );
     return completer.future;

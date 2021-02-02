@@ -35,10 +35,10 @@ class HomeProvider with ChangeNotifier {
     // print(_json);
     // final _list = _json[];
 
-    // final _listEndpoints = ['https://g1.librelois.fr/gva'];
     final _listEndpoints = [
       'https://g1.librelois.fr/gva',
-      'https://duniter-gva.axiom-team.fr/gva'
+      'https://duniter-gva.axiom-team.fr/gva',
+      'https://duniter-g1.p2p.legal/gva'
     ];
     final _endpoint = getRandomElement(_listEndpoints);
     print('ENDPOINT: ' + _endpoint);

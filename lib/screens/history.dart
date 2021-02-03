@@ -126,7 +126,8 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
             final num balance = _historyProvider
                 .removeDecimalZero(result.data['balance']['amount'] / 100);
 
-            opts = _historyProvider.checkQueryResult(result, opts);
+            opts = _historyProvider.checkQueryResult(
+                result, opts, _outputPubkey.text);
 
             // Build history list
             // _cesiumPlusProvider.cesiumName.text = "NAMEE";

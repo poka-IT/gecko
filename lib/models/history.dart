@@ -63,7 +63,9 @@ class HistoryProvider with ChangeNotifier {
     return '';
   }
 
-  List parseHistory(txs) {
+// Boris: JE6mkuzSpT3ePciCPRTpuMT9fqPUVVLJz2618d33p7tn
+
+  List parseHistory(txs, _pubkey) {
     var transBC = [];
     int i = 0;
 
@@ -73,7 +75,15 @@ class HistoryProvider with ChangeNotifier {
     for (final trans in txs) {
       var direction = trans['direction'];
       final transaction = trans['node'];
-      var output = transaction['outputs'][0];
+      var output;
+      for (String line in transaction['outputs']) {
+        if (line.contains(_pubkey)) {
+          output = line;
+        }
+      }
+      if (output == null) {
+        continue;
+      }
 
       transBC.add(i);
       transBC[i] = [];
@@ -108,7 +118,7 @@ class HistoryProvider with ChangeNotifier {
     return transBC;
   }
 
-  FetchMoreOptions checkQueryResult(result, opts) {
+  FetchMoreOptions checkQueryResult(result, opts, _pubkey) {
     final List<dynamic> blockchainTX =
         (result.data['txsHistoryBc']['both']['edges'] as List<dynamic>);
 
@@ -136,7 +146,7 @@ class HistoryProvider with ChangeNotifier {
     print(
         "###### DEBUG H Parse blockchainTX list. Cursor: $fetchMoreCursor ######");
     if (fetchMoreCursor != null) {
-      transBC = parseHistory(blockchainTX);
+      transBC = parseHistory(blockchainTX, _pubkey);
       isTheEnd = false;
     } else {
       print("###### DEBUG H - Début de l'historique");

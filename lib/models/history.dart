@@ -64,6 +64,7 @@ class HistoryProvider with ChangeNotifier {
   }
 
 // Boris: JE6mkuzSpT3ePciCPRTpuMT9fqPUVVLJz2618d33p7tn
+// Matograine portefeuille: 9p5nHsES6xujFR7pw2yGy4PLKKHgWsMvsDHaHF64Uj25
 
   List parseHistory(txs, _pubkey) {
     var transBC = [];
@@ -76,10 +77,14 @@ class HistoryProvider with ChangeNotifier {
       var direction = trans['direction'];
       final transaction = trans['node'];
       var output;
-      for (String line in transaction['outputs']) {
-        if (line.contains(_pubkey)) {
-          output = line;
+      if (direction == "RECEIVED") {
+        for (String line in transaction['outputs']) {
+          if (line.contains(_pubkey)) {
+            output = line;
+          }
         }
+      } else {
+        output = transaction['outputs'][0];
       }
       if (output == null) {
         continue;

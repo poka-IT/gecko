@@ -71,7 +71,6 @@ class Gecko extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _httpLink = HttpLink(
-      // 'http://192.168.1.91:10060/gva',
       randomEndpoint,
     );
 

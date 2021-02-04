@@ -67,6 +67,7 @@ class HistoryProvider with ChangeNotifier {
 // Matograine portefeuille: 9p5nHsES6xujFR7pw2yGy4PLKKHgWsMvsDHaHF64Uj25
 
   List parseHistory(txs, _pubkey) {
+    // print(txs);
     var transBC = [];
     int i = 0;
 

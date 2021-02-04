@@ -101,7 +101,9 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
               'cursor': null
             },
           ),
-          builder: (QueryResult result, {refetch, fetchMore}) {
+          builder: (QueryResult result, {fetchMore, refetch}) {
+            print("I'M HERE !");
+
             if (result.isLoading && result.data == null) {
               return const Center(
                 child: CircularProgressIndicator(),
@@ -130,7 +132,6 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                 result, opts, _outputPubkey.text);
 
             // Build history list
-            // _cesiumPlusProvider.cesiumName.text = "NAMEE";
             return NotificationListener(
                 child: Expanded(
                     child: ListView(

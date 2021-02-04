@@ -74,9 +74,9 @@ class CesiumPlusProvider with ChangeNotifier {
     if (responseJson['hits']['hits'].toString() == '[]') {
       return '';
     }
-    final bool avatarExist =
+    final bool _nameExist =
         responseJson['hits']['hits'][0]['_source'].containsKey("title");
-    if (!avatarExist) {
+    if (!_nameExist) {
       return '';
     }
     _name = responseJson['hits']['hits'][0]['_source']['title'];

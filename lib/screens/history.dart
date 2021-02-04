@@ -83,6 +83,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
   }
 
   historyQuery(context) {
+    print("I'M HERE 1");
     _pubkeyFocus.unfocus();
     HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
     CesiumPlusProvider _cesiumPlusProvider =
@@ -102,7 +103,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
             },
           ),
           builder: (QueryResult result, {fetchMore, refetch}) {
-            print("I'M HERE !");
+            print("I'M HERE 2 !");
 
             if (result.isLoading && result.data == null) {
               return const Center(

@@ -49,18 +49,6 @@ class DubpRust {
     print("DUBP_RS Setup Done");
   }
 
-  /// Generate a random mnemonic
-  static Future<String> genMnemonic({Language language = Language.english}) {
-    final completer = Completer<String>();
-    final sendPort =
-        singleCompletePort<String, String>(completer, callback: _handleErr);
-    native.gen_mnemonic(
-      sendPort.nativePort,
-      language.index,
-    );
-    return completer.future;
-  }
-
   /// Change the secret code that encrypts the `dewif` keypair.
   static Future<NewWallet> changeDewifPin({
     String currency = "g1",
@@ -86,6 +74,48 @@ class DubpRust {
 
     return Future.value(NewWallet._(newWallet[0], newWallet[1], newWallet[2]));
   }
+
+  /// Generate a random mnemonic
+  static Future<String> genMnemonic({Language language = Language.english}) {
+    final completer = Completer<String>();
+    final sendPort =
+        singleCompletePort<String, String>(completer, callback: _handleErr);
+    native.gen_mnemonic(
+      sendPort.nativePort,
+      language.index,
+    );
+    return completer.future;
+  }
+
+  /// Generate a wallet from a deprecated salt + password couple.
+  ///
+  /// This deprecated method must be used only for compatibility purpose !
+  static Future<NewWallet> genWalletFromDeprecatedSaltPassword({
+    String currency = "g1",
+    String salt,
+    String password,
+    SecretCodeType secretCodeType = SecretCodeType.letters,
+  }) async {
+    int ram = SysInfo.getTotalPhysicalMemory();
+    print('ram=$ram');
+
+    final completer = Completer<List<String>>();
+    final sendPort = singleCompletePort<List<String>, List>(completer,
+        callback: _handleErrList);
+    native.gen_dewif_from_legacy(
+      sendPort.nativePort,
+      Utf8.toUtf8(currency),
+      Utf8.toUtf8(salt),
+      Utf8.toUtf8(password),
+      0,
+      secretCodeType.index,
+      ram,
+    );
+    List<String> newWallet = await completer.future;
+
+    return Future.value(NewWallet._(newWallet[0], newWallet[1], newWallet[2]));
+  }
+
 
   /// Generate a wallet from a mnemonic phrase.
   ///
@@ -120,19 +150,6 @@ class DubpRust {
     return Future.value(NewWallet._(newWallet[0], newWallet[1], newWallet[2]));
   }
 
-  /// Get public key (in base 58) of legacy wallet (password + salt)
-  static Future<String> getLegacyPublicKey({String password, String salt}) {
-    final completer = Completer<String>();
-    final sendPort =
-        singleCompletePort<String, String>(completer, callback: _handleErr);
-    native.get_legacy_pubkey(
-      sendPort.nativePort,
-      Utf8.toUtf8(password),
-      Utf8.toUtf8(salt),
-    );
-    return completer.future;
-  }
-
   /// Get public key (in base 58) of `dewif` keypair.
   static Future<String> getDewifPublicKey(
       {String currency = "g1", String dewif, String pin}) async {
@@ -144,6 +161,21 @@ class DubpRust {
       Utf8.toUtf8(currency),
       Utf8.toUtf8(dewif),
       Utf8.toUtf8(pin),
+    );
+    return completer.future;
+  }
+
+  /// Get public key (in base 58) of legacy wallet (password + salt)
+  ///
+  /// This deprecated method must be used only for compatibility purpose !
+  static Future<String> getLegacyPublicKey({String password, String salt}) {
+    final completer = Completer<String>();
+    final sendPort =
+        singleCompletePort<String, String>(completer, callback: _handleErr);
+    native.get_legacy_pubkey(
+      sendPort.nativePort,
+      Utf8.toUtf8(password),
+      Utf8.toUtf8(salt),
     );
     return completer.future;
   }
@@ -167,6 +199,8 @@ class DubpRust {
   }
 
   /// Sign the message `message` with legacy wallet (password + salt)
+  ///
+  /// This deprecated method must be used only for compatibility purpose !
   static Future<String> signLegacy(
       {String password, String salt, String message}) {
     final completer = Completer<String>();

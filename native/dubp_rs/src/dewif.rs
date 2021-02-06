@@ -117,7 +117,7 @@ pub(super) fn sign_several(
     }
 }
 
-fn log_n(system_memory: i64) -> u8 {
+pub(crate) fn log_n(system_memory: i64) -> u8 {
     if system_memory > 3_000_000_000 {
         15
     } else {

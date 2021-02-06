@@ -28,6 +28,8 @@ Future<void> main() async {
   await _homeProvider.createDefaultAvatar();
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
+  final HiveStore _store =
+      await HiveStore.open(path: '${appPath.path}/gqlCache');
 
   String _randomEndpoint;
   int i = 0;
@@ -52,21 +54,20 @@ Future<void> main() async {
         options.dsn =
             'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
       },
-      appRunner: () => runApp(Gecko(_randomEndpoint)),
+      appRunner: () => runApp(Gecko(_randomEndpoint, _store)),
     );
   } else {
     print('Debug mode enabled: No sentry alerte');
 
-    runApp(Gecko(
-      _randomEndpoint,
-    ));
+    runApp(Gecko(_randomEndpoint, _store));
   }
 }
 
 // ignore: must_be_immutable
 class Gecko extends StatelessWidget {
-  Gecko(this.randomEndpoint);
+  Gecko(this.randomEndpoint, this._store);
   final String randomEndpoint;
+  final HiveStore _store;
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +77,7 @@ class Gecko extends StatelessWidget {
 
     final _client = ValueNotifier(
       GraphQLClient(
-        cache: GraphQLCache(store: null),
+        cache: GraphQLCache(store: _store),
         link: _httpLink,
       ),
     );

@@ -13,7 +13,6 @@ class WalletsHome extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context);
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
-    print('BUILD: WalletsHome');
     _walletOptions.isWalletUnlock = false;
     myWalletProvider.listWallets = myWalletProvider.getAllWalletsNames();
     final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
@@ -97,8 +96,6 @@ class WalletsHome extends StatelessWidget {
     List _listWallets = [];
     myWalletProvider.listWallets.forEach((_name, _pubkey) {
       _listWallets.add(_name);
-      // _balance[_name] = _historyProvider.getBalance(_pubkey).toString();
-      print(_name + _pubkey);
     });
 
     return Column(children: <Widget>[

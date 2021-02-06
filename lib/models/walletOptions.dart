@@ -52,7 +52,6 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Future readLocalWallet(String _name, String _pin) async {
     isWalletUnlock = false;
-    print('NOM: ' + _name);
     try {
       File _walletFile = File('${walletsDirectory.path}/$_name/wallet.dewif');
       String _localDewif = await _walletFile.readAsString();
@@ -204,9 +203,15 @@ class WalletOptionsProvider with ChangeNotifier {
     final walletFile = File('${walletNameDirectory.path}/wallet.dewif');
 
     walletFile.writeAsString('${_newWalletFile.dewif}');
-
     Navigator.pop(context);
-
     return _name;
+  }
+
+  snackCopyKey(context) {
+    final snackBar = SnackBar(
+        content:
+            Text("Cette clé publique a été copié dans votre presse-papier."),
+        duration: Duration(seconds: 2));
+    Scaffold.of(context).showSnackBar(snackBar);
   }
 }

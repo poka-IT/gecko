@@ -34,6 +34,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _historyProvider.snackNode(context);
     });
+
     return Scaffold(
         floatingActionButton: Container(
           height: 80.0,
@@ -78,16 +79,17 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                 disabledBorder: InputBorder.none,
               ),
               style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)),
-          if (_historyProvider.pubkey != '') historyQuery(context),
+          if (_historyProvider.pubkey != '')
+            historyQuery(context, _historyProvider),
         ]));
   }
 
-  historyQuery(context) {
-    print("I'M HERE 1");
+  Widget historyQuery(context, _historyProvider) {
     _pubkeyFocus.unfocus();
-    HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
+    // HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
     CesiumPlusProvider _cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context);
+    print("I'M HERE 1");
     return Expanded(
         child: Column(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -104,8 +106,10 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
           ),
           builder: (QueryResult result, {fetchMore, refetch}) {
             print("I'M HERE 2 !");
+            print(result.source.isEager);
 
             if (result.isLoading && result.data == null) {
+              print("I'M HERE 3 !");
               return const Center(
                 child: CircularProgressIndicator(),
               );

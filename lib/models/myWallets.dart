@@ -26,11 +26,9 @@ class MyWalletsProvider with ChangeNotifier {
   Future importWallet() async {}
 
   Map getAllWalletsNames() {
-    print(listWallets);
     if (listWallets.isNotEmpty) {
       listWallets.clear();
     }
-    print(walletsDirectory.path);
 
     // int i = 0;
     walletsDirectory
@@ -39,7 +37,6 @@ class MyWalletsProvider with ChangeNotifier {
       String _name = wallet.path.split('/').last;
       List _pubkeyList = File(wallet.path + '/pubkey').readAsLinesSync();
       String _pubkey = _pubkeyList[0];
-      print("$_name: $_pubkey");
       listWallets[_name] = _pubkey;
       // i++;
 

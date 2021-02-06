@@ -59,7 +59,8 @@ class GenerateWalletsScreen extends StatelessWidget {
                 style: TextStyle(
                     fontSize: 14.0,
                     color: Colors.black,
-                    fontWeight: FontWeight.bold)),
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Monospace')),
             SizedBox(height: 8),
             toolTips(_toolTipSentence, 'Phrase de restauration:',
                 "Notez et gardez cette phrase précieusement sur un papier, elle vous servira à restaurer votre portefeuille sur un autre appareil"),

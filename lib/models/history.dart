@@ -9,7 +9,6 @@ import 'dart:math';
 import 'package:intl/intl.dart';
 
 class HistoryProvider with ChangeNotifier {
-  // String pubkey = 'D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU'; // For debug
   String pubkey = '';
   HistoryProvider(this.pubkey);
   final TextEditingController outputPubkey = new TextEditingController();
@@ -63,8 +62,10 @@ class HistoryProvider with ChangeNotifier {
     return '';
   }
 
+// Pi: D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU         // For debug
 // Boris: JE6mkuzSpT3ePciCPRTpuMT9fqPUVVLJz2618d33p7tn
-// Matograine portefeuille: 9p5nHsES6xujFR7pw2yGy4PLKKHgWsMvsDHaHF64Uj25
+// Matograine portefeuille: 9p5nHsES6xujFR7pw2yGy4PLKKHgWsMvsDHaHF64Uj25.
+// Lion simone: 78jhpprYkMNF6i5kQPXfkAVBpd2aqcpieNsXTSW4c21f
 
   List parseHistory(txs, _pubkey) {
     // print(txs);
@@ -162,7 +163,7 @@ class HistoryProvider with ChangeNotifier {
     return opts;
   }
 
-  snackNode(context) {
+  void snackNode(context) {
     if (isFirstBuild) {
       String _message;
       if (endPointGVA == 'HS') {

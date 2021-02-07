@@ -16,6 +16,7 @@ class HistoryProvider with ChangeNotifier {
   List transBC;
   bool isFirstBuild = true;
   String fetchMoreCursor;
+  Map pageInfo;
 
   Future scan() async {
     await Permission.camera.request();
@@ -130,11 +131,11 @@ class HistoryProvider with ChangeNotifier {
     final List<dynamic> blockchainTX =
         (result.data['txsHistoryBc']['both']['edges'] as List<dynamic>);
 
-    final Map pageInfo = result.data['txsHistoryBc']['both']['pageInfo'];
+    pageInfo = result.data['txsHistoryBc']['both']['pageInfo'];
 
     fetchMoreCursor = pageInfo['endCursor'];
-    print(pageInfo['hasPreviousPage']);
-    print(pageInfo['hasNextPage']);
+    print('hasPreviousPage: ' + pageInfo['hasPreviousPage'].toString());
+    print('hasNextPage: ' + pageInfo['hasNextPage'].toString());
 
     if (fetchMoreCursor != null) {
       opts = FetchMoreOptions(

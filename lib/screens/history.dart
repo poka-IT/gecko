@@ -233,6 +233,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                       indent: 0,
                       endIndent: 0,
                     ),
+                    // !_historyProvider.pageInfo['hasPreviousPage'] //TODO: fix value of hasPreviousPage
                     _historyProvider.transBC == null
                         ? Text('Aucune transaction à afficher.')
                         : loopTransactions(context, result),

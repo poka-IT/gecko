@@ -123,6 +123,46 @@ pub extern "C" fn gen_dewif(
 }
 
 #[no_mangle]
+pub extern "C" fn gen_dewif_from_legacy(
+    port: i64,
+    currency: *const raw::c_char,
+    salt: *const raw::c_char,
+    password: *const raw::c_char,
+    member_wallet: u32,
+    secret_code_type: u32,
+    system_memory: i64,
+) {
+    exec_async(
+        port,
+        || {
+            let currency = char_ptr_to_str(currency)?;
+            let salt = char_ptr_to_str(salt)?.to_owned();
+            let password = char_ptr_to_str(password)?.to_owned();
+            let member_wallet = member_wallet != 0;
+            let secret_code_type = SecretCodeType::from(secret_code_type);
+            Ok((
+                currency,
+                salt,
+                password,
+                member_wallet,
+                secret_code_type,
+                system_memory,
+            ))
+        },
+        |(currency, salt, password, member_wallet, secret_code_type, system_memory)| {
+            legacy::gen_dewif_from_legacy(
+                currency,
+                salt,
+                password,
+                member_wallet,
+                secret_code_type,
+                system_memory,
+            )
+        },
+    )
+}
+
+#[no_mangle]
 pub extern "C" fn gen_mnemonic(port: i64, language: u32) {
     exec_async(port, || u32_to_language(language), mnemonic::gen_mnemonic)
 }

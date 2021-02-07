@@ -16,6 +16,25 @@
 use crate::*;
 use dup_crypto::keys::ed25519::{KeyPairFromSaltedPasswordGenerator, SaltedPassword};
 
+pub(super) fn gen_dewif_from_legacy(
+    currency: &str,
+    salt: String,
+    password: String,
+    member_wallet: bool,
+    secret_code_type: SecretCodeType,
+    system_memory: i64,
+) -> Result<Vec<String>, DubpError> {
+    let currency = parse_currency(currency)?;
+    let keypair = KeyPairFromSaltedPasswordGenerator::with_default_parameters()
+        .generate(SaltedPassword::new(salt, password));
+
+    let log_n = crate::dewif::log_n(system_memory);
+    let secret_code = gen_secret_code(member_wallet, secret_code_type, log_n)?;
+    let dewif = dup_crypto::dewif::write_dewif_v3_content(currency, &keypair, log_n, &secret_code);
+    let pubkey = keypair.public_key().to_base58();
+    Ok(vec![dewif, secret_code, pubkey])
+}
+
 pub(super) fn get_pubkey(salt: &str, password: &str) -> String {
     KeyPairFromSaltedPasswordGenerator::with_default_parameters()
         .generate(SaltedPassword::new(salt.to_owned(), password.to_owned()))

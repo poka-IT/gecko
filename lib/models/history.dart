@@ -12,7 +12,6 @@ class HistoryProvider with ChangeNotifier {
   String pubkey = '';
   HistoryProvider(this.pubkey);
   final TextEditingController outputPubkey = TextEditingController();
-  bool isTheEnd = false;
   List transBC;
   bool isFirstBuild = true;
   String fetchMoreCursor;
@@ -158,10 +157,8 @@ class HistoryProvider with ChangeNotifier {
         "###### DEBUG H Parse blockchainTX list. Cursor: $fetchMoreCursor ######");
     if (fetchMoreCursor != null) {
       transBC = parseHistory(blockchainTX, _pubkey);
-      isTheEnd = false;
     } else {
       print("###### DEBUG H - Début de l'historique");
-      isTheEnd = true;
     }
 
     return opts;

@@ -11,10 +11,11 @@ import 'package:intl/intl.dart';
 class HistoryProvider with ChangeNotifier {
   String pubkey = '';
   HistoryProvider(this.pubkey);
-  final TextEditingController outputPubkey = new TextEditingController();
+  final TextEditingController outputPubkey = TextEditingController();
   bool isTheEnd = false;
   List transBC;
   bool isFirstBuild = true;
+  String fetchMoreCursor;
 
   Future scan() async {
     await Permission.camera.request();
@@ -131,7 +132,9 @@ class HistoryProvider with ChangeNotifier {
 
     final Map pageInfo = result.data['txsHistoryBc']['both']['pageInfo'];
 
-    final String fetchMoreCursor = pageInfo['endCursor'];
+    fetchMoreCursor = pageInfo['endCursor'];
+    print(pageInfo['hasPreviousPage']);
+    print(pageInfo['hasNextPage']);
 
     if (fetchMoreCursor != null) {
       opts = FetchMoreOptions(

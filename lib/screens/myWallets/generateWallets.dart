@@ -1,4 +1,6 @@
+import 'package:flutter/services.dart';
 import 'package:gecko/models/generateWallets.dart';
+import 'package:gecko/models/walletOptions.dart';
 import 'package:gecko/screens/myWallets/confirmWalletStorage.dart';
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
@@ -21,6 +23,8 @@ class GenerateWalletsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
+    WalletOptionsProvider _walletOptions =
+        Provider.of<WalletOptionsProvider>(context);
     _generateWalletProvider.generateMnemonic();
     print('IS GENERATED ? : ' +
         _generateWalletProvider.walletIsGenerated.toString());
@@ -45,103 +49,112 @@ class GenerateWalletsScreen extends StatelessWidget {
               backgroundColor: Color(
                   0xffEFEFBF), //Color(0xffFFD68E), //Color.fromARGB(500, 204, 255, 255),
             ))),
-        body: SafeArea(
-          child: Column(children: <Widget>[
-            SizedBox(height: 20),
-            toolTips(_toolTipPubkey, 'Clé publique:',
-                "C'est votre RIB en Ğ1, les gens l'utiliseront pour vous payer"),
-            TextField(
-                enabled: false,
-                controller: _generateWalletProvider.pubkey,
-                maxLines: 1,
-                textAlign: TextAlign.center,
-                decoration: InputDecoration(),
-                style: TextStyle(
-                    fontSize: 14.0,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Monospace')),
-            SizedBox(height: 8),
-            toolTips(_toolTipSentence, 'Phrase de restauration:',
-                "Notez et gardez cette phrase précieusement sur un papier, elle vous servira à restaurer votre portefeuille sur un autre appareil"),
-            TextField(
-                enabled: false,
-                controller: _generateWalletProvider.mnemonicController,
-                maxLines: 3,
-                textAlign: TextAlign.center,
-                decoration: InputDecoration(
-                  contentPadding: EdgeInsets.all(15.0),
-                ),
-                style: TextStyle(
-                    fontSize: 22.0,
-                    color: Colors.black,
-                    fontWeight: FontWeight.w400)),
-            SizedBox(height: 8),
-            toolTips(_toolTipSecret, 'Code secret:',
-                "Retenez bien votre code secret, il vous sera demandé à chaque paiement, ainsi que pour configurer votre portefeuille"),
-            Container(
-              child: Stack(
-                alignment: Alignment.centerRight,
-                children: <Widget>[
-                  TextField(
-                      enabled: false,
-                      controller: _generateWalletProvider.pin,
-                      maxLines: 1,
-                      textAlign: TextAlign.center,
-                      decoration: InputDecoration(),
-                      style: TextStyle(
-                          fontSize: 30.0,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold)),
-                  IconButton(
-                    icon: Icon(Icons.replay),
-                    color: Color(0xffD28928),
-                    onPressed: () {
-                      _generateWalletProvider.changePinCode();
-                    },
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 20),
-            new ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  primary: Color(0xffFFD68E), // background
-                  onPrimary: Colors.black, // foreground
-                ),
-                onPressed: _generateWalletProvider.walletIsGenerated
-                    ? () {
-                        _generateWalletProvider.nbrWord =
-                            _generateWalletProvider.getRandomInt();
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) {
-                            return ConfirmStoreWallet(
-                                generatedMnemonic:
-                                    _generateWalletProvider.generatedMnemonic,
-                                generatedWallet:
-                                    _generateWalletProvider.actualWallet);
-                          }),
-                        );
-                      }
-                    : null,
-                child: Text('Enregistrer ce portefeuille',
-                    style: TextStyle(fontSize: 20))),
-            SizedBox(height: 20),
-            GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) {
-                      return PrintWallet(
-                          _generateWalletProvider.generatedMnemonic,
-                          _generateWalletProvider.actualWallet.publicKey);
-                    }),
-                  );
-                },
-                child: Icon(Icons.print))
-          ]),
-        ));
+        body: Builder(
+            builder: (ctx) => SafeArea(
+                  child: Column(children: <Widget>[
+                    SizedBox(height: 20),
+                    toolTips(_toolTipPubkey, 'Clé publique:',
+                        "C'est votre RIB en Ğ1, les gens l'utiliseront pour vous payer"),
+                    GestureDetector(
+                        onTap: () {
+                          Clipboard.setData(ClipboardData(
+                              text: _generateWalletProvider.pubkey.text));
+                          _walletOptions.snackCopyKey(ctx);
+                        },
+                        child: TextField(
+                            enabled: false,
+                            controller: _generateWalletProvider.pubkey,
+                            maxLines: 1,
+                            textAlign: TextAlign.center,
+                            decoration: InputDecoration(),
+                            style: TextStyle(
+                                fontSize: 14.0,
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Monospace'))),
+                    SizedBox(height: 8),
+                    toolTips(_toolTipSentence, 'Phrase de restauration:',
+                        "Notez et gardez cette phrase précieusement sur un papier, elle vous servira à restaurer votre portefeuille sur un autre appareil"),
+                    TextField(
+                        enabled: false,
+                        controller: _generateWalletProvider.mnemonicController,
+                        maxLines: 3,
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.all(15.0),
+                        ),
+                        style: TextStyle(
+                            fontSize: 22.0,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w400)),
+                    SizedBox(height: 8),
+                    toolTips(_toolTipSecret, 'Code secret:',
+                        "Retenez bien votre code secret, il vous sera demandé à chaque paiement, ainsi que pour configurer votre portefeuille"),
+                    Container(
+                      child: Stack(
+                        alignment: Alignment.centerRight,
+                        children: <Widget>[
+                          TextField(
+                              enabled: false,
+                              controller: _generateWalletProvider.pin,
+                              maxLines: 1,
+                              textAlign: TextAlign.center,
+                              decoration: InputDecoration(),
+                              style: TextStyle(
+                                  fontSize: 30.0,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold)),
+                          IconButton(
+                            icon: Icon(Icons.replay),
+                            color: Color(0xffD28928),
+                            onPressed: () {
+                              _generateWalletProvider.changePinCode();
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    new ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          primary: Color(0xffFFD68E), // background
+                          onPrimary: Colors.black, // foreground
+                        ),
+                        onPressed: _generateWalletProvider.walletIsGenerated
+                            ? () {
+                                _generateWalletProvider.nbrWord =
+                                    _generateWalletProvider.getRandomInt();
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) {
+                                    return ConfirmStoreWallet(
+                                        generatedMnemonic:
+                                            _generateWalletProvider
+                                                .generatedMnemonic,
+                                        generatedWallet: _generateWalletProvider
+                                            .actualWallet);
+                                  }),
+                                );
+                              }
+                            : null,
+                        child: Text('Enregistrer ce portefeuille',
+                            style: TextStyle(fontSize: 20))),
+                    SizedBox(height: 20),
+                    GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) {
+                              return PrintWallet(
+                                  _generateWalletProvider.generatedMnemonic,
+                                  _generateWalletProvider
+                                      .actualWallet.publicKey);
+                            }),
+                          );
+                        },
+                        child: Icon(Icons.print))
+                  ]),
+                )));
   }
 
   Widget toolTips(_key, _text, _message) {

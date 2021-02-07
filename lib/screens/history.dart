@@ -90,6 +90,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
     CesiumPlusProvider _cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context);
     print("I'M HERE 1");
+    bool _isFirstExec = true;
     return Expanded(
         child: Column(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -105,8 +106,8 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
             },
           ),
           builder: (QueryResult result, {fetchMore, refetch}) {
-            print("I'M HERE 2 !");
-            print(result.source.isEager);
+            print("I'M HERE 2 ! $_isFirstExec");
+            // print(result.source.isEager);
 
             if (result.isLoading && result.data == null) {
               print("I'M HERE 3 !");
@@ -136,6 +137,8 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
             opts = _historyProvider.checkQueryResult(
                 result, opts, _outputPubkey.text);
 
+            // _historyProvider.transBC = null;
+
             // Build history list
             return NotificationListener(
                 child: Expanded(
@@ -149,45 +152,48 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Container(
-                                padding: const EdgeInsets.only(left: 30),
-                                child: FutureBuilder(
-                                    future: _cesiumPlusProvider
-                                        .getAvatar(_historyProvider.pubkey),
-                                    initialData: [
-                                      File(appPath.path + '/default_avatar.png')
-                                    ],
-                                    builder: (BuildContext context,
-                                        AsyncSnapshot<List> _avatar) {
-                                      cesiumData = _avatar.data;
-                                      // _cesiumPlusProvider.isComplete = true;
-                                      if (_avatar.connectionState !=
-                                          ConnectionState.done) {
+                            if (_isFirstExec)
+                              Container(
+                                  padding: const EdgeInsets.only(left: 30),
+                                  child: FutureBuilder(
+                                      future: _cesiumPlusProvider
+                                          .getAvatar(_historyProvider.pubkey),
+                                      initialData: [
+                                        File(appPath.path +
+                                            '/default_avatar.png')
+                                      ],
+                                      builder: (BuildContext context,
+                                          AsyncSnapshot<List> _avatar) {
+                                        cesiumData = _avatar.data;
+                                        // _cesiumPlusProvider.isComplete = true;
+                                        if (_avatar.connectionState !=
+                                            ConnectionState.done) {
+                                          return Image.file(
+                                              File(appPath.path +
+                                                  '/default_avatar.png'),
+                                              height: 65);
+                                        }
+                                        if (_avatar.hasError) {
+                                          return Image.file(
+                                              File(appPath.path +
+                                                  '/default_avatar.png'),
+                                              height: 65);
+                                        }
+                                        if (_avatar.hasData) {
+                                          return SingleChildScrollView(
+                                              padding: EdgeInsets.all(0.0),
+                                              child: Image.file(_avatar.data[0],
+                                                  height: 65));
+                                        }
                                         return Image.file(
                                             File(appPath.path +
                                                 '/default_avatar.png'),
                                             height: 65);
-                                      }
-                                      if (_avatar.hasError) {
-                                        return Image.file(
-                                            File(appPath.path +
-                                                '/default_avatar.png'),
-                                            height: 65);
-                                      }
-                                      if (_avatar.hasData) {
-                                        return SingleChildScrollView(
-                                            padding: EdgeInsets.all(0.0),
-                                            child: Image.file(_avatar.data[0],
-                                                height: 65));
-                                      }
-                                      return Image.file(
-                                          File(appPath.path +
-                                              '/default_avatar.png'),
-                                          height: 65);
-                                    })),
-                            Text(balance.toString() + ' Ğ1',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 30.0)),
+                                      })),
+                            if (_isFirstExec)
+                              Text(balance.toString() + ' Ğ1',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 30.0)),
                             Container(
                                 padding: const EdgeInsets.fromLTRB(
                                     30, 0, 15, 0), // .only(right: 15),
@@ -204,20 +210,21 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                     color: Color(0xFFB16E16)))
                           ]),
                     SizedBox(height: 10),
-                    Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Container(
-                              // padding: const EdgeInsets.,
-                              child: FutureBuilder(
-                                  future: _cesiumPlusProvider
-                                      .getName(_historyProvider.pubkey),
-                                  initialData: '',
-                                  builder: (context, snapshot) {
-                                    return Text(snapshot.data);
-                                  }))
-                        ]),
+                    if (_isFirstExec)
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Container(
+                                // padding: const EdgeInsets.,
+                                child: FutureBuilder(
+                                    future: _cesiumPlusProvider
+                                        .getName(_historyProvider.pubkey),
+                                    initialData: '',
+                                    builder: (context, snapshot) {
+                                      return Text(snapshot.data);
+                                    }))
+                          ]),
                     SizedBox(height: 20),
                     const Divider(
                       color: Colors.grey,

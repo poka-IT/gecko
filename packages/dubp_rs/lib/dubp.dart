@@ -116,7 +116,6 @@ class DubpRust {
     return Future.value(NewWallet._(newWallet[0], newWallet[1], newWallet[2]));
   }
 
-
   /// Generate a wallet from a mnemonic phrase.
   ///
   /// If the mnemonic is not in English, you must indicate the language of
@@ -161,6 +160,24 @@ class DubpRust {
       Utf8.toUtf8(currency),
       Utf8.toUtf8(dewif),
       Utf8.toUtf8(pin),
+    );
+    return completer.future;
+  }
+
+  /// Get secret code length of `dewif` keypair.
+  static Future<int> getDewifSecretCodeLen(
+      {String currency = "g1",
+      String dewif,
+      SecretCodeType secretCodeType = SecretCodeType.letters}) async {
+    final completer = Completer<int>();
+    final sendPort =
+        singleCompletePort<int, String>(completer, callback: _handleErrInt);
+    native.get_dewif_secret_code_len(
+      sendPort.nativePort,
+      Utf8.toUtf8(currency),
+      Utf8.toUtf8(dewif),
+      0,
+      secretCodeType.index,
     );
     return completer.future;
   }
@@ -269,6 +286,16 @@ class DubpRust {
       throw error;
     } else {
       return arr;
+    }
+  }
+
+  static int _handleErrInt(String res) {
+    if (res.startsWith('DUBP_RS_ERROR: ')) {
+      final error = res;
+      print(error);
+      throw error;
+    } else {
+      return int.parse(res);
     }
   }
 }

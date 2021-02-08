@@ -15,6 +15,7 @@
 
 use crate::*;
 
+#[derive(Clone, Copy, Debug)]
 pub(crate) enum SecretCodeType {
     Digits,
     Letters,

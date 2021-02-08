@@ -64,6 +64,21 @@ pub(super) fn gen_dewif(
     Ok(vec![dewif, secret_code, pubkey])
 }
 
+pub(super) fn get_secret_code_len(
+    currency: Currency,
+    dewif: &str,
+    member_wallet: bool,
+    secret_code_type: SecretCodeType,
+) -> Result<String, DubpError> {
+    let log_n = dup_crypto::dewif::read_dewif_log_n(ExpectedCurrency::Specific(currency), dewif)
+        .map_err(DubpError::DewifReadError)?;
+
+    Ok(
+        crate::secret_code::compute_secret_code_len(member_wallet, secret_code_type, log_n)?
+            .to_string(),
+    )
+}
+
 pub(super) fn get_pubkey(currency: Currency, dewif: &str, pin: &str) -> Result<String, DubpError> {
     let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),

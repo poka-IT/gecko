@@ -6,3 +6,4 @@ Directory walletsDirectory;
 String appVersion;
 SharedPreferences prefs;
 String endPointGVA;
+int ramSys;

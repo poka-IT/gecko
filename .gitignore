@@ -54,3 +54,5 @@ packages/dubp_rs/lib/ffi.dart
 
 # Rust things
 /target
+
+pubkeys.txt

@@ -15,7 +15,7 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Future<NewWallet> get badWallet => null;
 
-  Future _getPubkeyFromDewif(_dewif, _pin) async {
+  Future _getPubkeyFromDewif(_dewif, _pin, _pinLenght) async {
     String _pubkey;
     RegExp regExp = new RegExp(
       r'^[A-Z0-9]+$',
@@ -23,7 +23,7 @@ class WalletOptionsProvider with ChangeNotifier {
       multiLine: false,
     );
 
-    if (regExp.hasMatch(_pin) == true && _pin.length == 6) {
+    if (regExp.hasMatch(_pin) == true && _pin.length == _pinLenght) {
       print("Le format du code PIN est correct.");
     } else {
       print('Format de code PIN invalide');
@@ -50,14 +50,15 @@ class WalletOptionsProvider with ChangeNotifier {
     }
   }
 
-  Future readLocalWallet(String _name, String _pin) async {
+  Future readLocalWallet(String _name, String _pin, _pinLenght) async {
     isWalletUnlock = false;
     try {
       File _walletFile = File('${walletsDirectory.path}/$_name/wallet.dewif');
       String _localDewif = await _walletFile.readAsString();
       String _localPubkey;
 
-      if ((_localPubkey = await _getPubkeyFromDewif(_localDewif, _pin)) !=
+      if ((_localPubkey =
+              await _getPubkeyFromDewif(_localDewif, _pin, _pinLenght)) !=
           'false') {
         this.pubkey.text = _localPubkey;
         isWalletUnlock = true;
@@ -201,6 +202,7 @@ class WalletOptionsProvider with ChangeNotifier {
     final Directory walletNameDirectory =
         Directory('${walletsDirectory.path}/$_name');
     final walletFile = File('${walletNameDirectory.path}/wallet.dewif');
+    print(_newWalletFile);
 
     walletFile.writeAsString('${_newWalletFile.dewif}');
     Navigator.pop(context);

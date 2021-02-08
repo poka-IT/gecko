@@ -1,6 +1,7 @@
 import 'package:dubp/dubp.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/cesiumPlus.dart';
+import 'package:gecko/models/changePin.dart';
 import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
@@ -14,6 +15,7 @@ import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import "package:system_info/system_info.dart";
 
 final bool enableSentry = true;
 
@@ -28,6 +30,8 @@ Future<void> main() async {
   await _homeProvider.createDefaultAvatar();
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
+  ramSys = SysInfo.getTotalPhysicalMemory() ~/ 800000;
+  print("Votre appareil fait $ramSys de RAM.");
   final HiveStore _store =
       await HiveStore.open(path: '${appPath.path}/gqlCache');
 
@@ -91,6 +95,7 @@ class Gecko extends StatelessWidget {
           ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
           ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
           ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
+          ChangeNotifierProvider(create: (_) => ChangePinProvider()),
           ChangeNotifierProvider(create: (_) => CesiumPlusProvider())
         ],
         child: GraphQLProvider(

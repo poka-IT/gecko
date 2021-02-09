@@ -15,7 +15,6 @@ import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import "package:system_info/system_info.dart";
 
 final bool enableSentry = true;
 
@@ -30,8 +29,6 @@ Future<void> main() async {
   await _homeProvider.createDefaultAvatar();
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
-  ramSys = SysInfo.getTotalPhysicalMemory() ~/ 800000;
-  print("Votre appareil fait $ramSys de RAM.");
   final HiveStore _store =
       await HiveStore.open(path: '${appPath.path}/gqlCache');
 

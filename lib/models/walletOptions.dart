@@ -75,6 +75,16 @@ class WalletOptionsProvider with ChangeNotifier {
     }
   }
 
+  int getPinLenght(_name) {
+    File _walletFile = File('${walletsDirectory.path}/$_name/wallet.dewif');
+    String _localDewif = _walletFile.readAsStringSync();
+
+    final int _pinLenght = DubpRust.getDewifSecretCodeLen(
+        dewif: _localDewif, secretCodeType: SecretCodeType.letters);
+
+    return _pinLenght;
+  }
+
   Future _renameWallet(_walletName, _newName) async {
     final _walletFile = Directory('${walletsDirectory.path}/$_walletName');
 

@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use dup_crypto::keys::ed25519::bip32::InvalidDerivationIndex;
+
 use crate::*;
 
 /// Dubp error
@@ -22,8 +24,14 @@ pub(crate) enum DubpError {
     DewifReadError(DewifReadError),
     #[error("I/O error: {0}")]
     IoErr(io::Error),
+    #[error("{0}")]
+    InvalidDerivationIndex(InvalidDerivationIndex),
     #[error("Digits secret code forbid for member wallet")]
     DigitsCodeForbidForMemberWallet,
+    #[error("this wallet is not an HD wallet")]
+    NotHdWallet,
+    #[error("this account index is not a transparent account index")]
+    NotTransparentAccountIndex,
     #[error("A given parameter is null")]
     NullParamErr,
     #[error("fail to generate random bytes")]
@@ -41,6 +49,12 @@ pub(crate) enum DubpError {
 impl From<io::Error> for DubpError {
     fn from(e: io::Error) -> Self {
         Self::IoErr(e)
+    }
+}
+
+impl From<InvalidDerivationIndex> for DubpError {
+    fn from(e: InvalidDerivationIndex) -> Self {
+        Self::InvalidDerivationIndex(e)
     }
 }
 

@@ -38,6 +38,15 @@ enum SecretCodeType {
   letters,
 }
 
+/// Wallet type
+enum WalletType {
+  /// Ed25519
+  ed25519,
+
+  /// BIP32-Ed25519
+  bip32Ed25519,
+}
+
 /// DUBP Rust utilities
 ///
 /// All the functions of this package are static methods of this
@@ -128,6 +137,7 @@ class DubpRust {
     Language language = Language.english,
     String mnemonic,
     SecretCodeType secretCodeType = SecretCodeType.letters,
+    WalletType walletType = WalletType.ed25519,
   }) async {
     int ram = SysInfo.getTotalPhysicalMemory();
     print('ram=$ram');
@@ -143,10 +153,32 @@ class DubpRust {
       0,
       secretCodeType.index,
       ram,
+      walletType.index,
     );
     List<String> newWallet = await completer.future;
 
     return Future.value(NewWallet._(newWallet[0], newWallet[1], newWallet[2]));
+  }
+
+  //get_bip32_dewif_accounts_pubkeys
+
+  /// Get BIP32 accounts public keys (in base 58) of `dewif` master keypair.
+  static Future<String> getBip32DewifAccountsPublicKeys(
+      {String currency = "g1",
+      String dewif,
+      String secretCode,
+      List<int> accountsIndex}) async {
+    final completer = Completer<String>();
+    final sendPort =
+        singleCompletePort<String, String>(completer, callback: _handleErr);
+    native.get_bip32_dewif_accounts_pubkeys(
+        sendPort.nativePort,
+        Utf8.toUtf8(currency),
+        Utf8.toUtf8(dewif),
+        Utf8.toUtf8(secretCode),
+        accountsIndex.length,
+        _listIntToPtr(accountsIndex));
+    return completer.future;
   }
 
   /// Get public key (in base 58) of `dewif` keypair.
@@ -215,6 +247,31 @@ class DubpRust {
     return completer.future;
   }
 
+  /// Sign the message `message` with `dewif` Bip32-Ed25519 keypair encryted
+  /// in DEWIF format.
+  ///
+  /// If you have several messages to sign, use `signSeveralBip32Transparent`
+  /// method instead.
+  static Future<String> signBip32Transparent(
+      {int accountIndex,
+      String currency = "g1",
+      String dewif,
+      String secretCode,
+      String message}) {
+    final completer = Completer<String>();
+    final sendPort =
+        singleCompletePort<String, String>(completer, callback: _handleErr);
+    native.sign_bip32_transparent(
+      sendPort.nativePort,
+      accountIndex,
+      Utf8.toUtf8(currency),
+      Utf8.toUtf8(dewif),
+      Utf8.toUtf8(secretCode),
+      Utf8.toUtf8(message),
+    );
+    return completer.future;
+  }
+
   /// Sign the message `message` with legacy wallet (password + salt)
   ///
   /// This deprecated method must be used only for compatibility purpose !
@@ -257,6 +314,44 @@ class DubpRust {
     );
 
     return completer.future;
+  }
+
+  /// Sign several messages `messages` with `dewif` keypair encryted in DEWIF
+  /// format.
+  ///
+  /// This method is optimized to sign several messages at once. If you have
+  /// several messages to sign, avoid calling the `sign` method for each
+  /// message. Use this `signSeveral` method instead.
+  static Future<List<String>> signSeveralBip32Transparent(
+      {int accountIndex,
+      String currency = "g1",
+      String dewif,
+      String pin,
+      List<String> messages}) {
+    final completer = Completer<List<String>>();
+    final sendPort = singleCompletePort<List<String>, List>(completer,
+        callback: _handleErrList);
+
+    native.sign_several_bip32_transparent(
+      sendPort.nativePort,
+      accountIndex,
+      Utf8.toUtf8(currency),
+      Utf8.toUtf8(dewif),
+      Utf8.toUtf8(pin),
+      messages.length,
+      _listStringToPtr(messages),
+    );
+
+    return completer.future;
+  }
+
+  static Pointer<Uint32> _listIntToPtr(List<int> list) {
+    //final listUint32 = list.map(int.toUnsigned).toList();
+    final Pointer<Uint32> ptr = allocate(count: list.length);
+    for (var i = 0; i < list.length; i++) {
+      ptr[i] = list[i];
+    }
+    return ptr;
   }
 
   static Pointer<Pointer<Utf8>> _listStringToPtr(List<String> list) {

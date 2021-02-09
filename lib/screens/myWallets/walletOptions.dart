@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dubp/dubp.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/walletOptions.dart';
 import 'package:gecko/screens/myWallets/changePin.dart';
@@ -22,7 +21,6 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
   bool hasError = false;
   var pinColor = Color(0xffF9F9F1);
   var walletPin = '';
-  int _pinLenght;
 
   Future<NewWallet> get badWallet => null;
 
@@ -35,11 +33,8 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
         Provider.of<MyWalletsProvider>(context);
     errorController = StreamController<ErrorAnimationType>();
     // _walletOptions.isWalletUnlock = false;
-    if (ramSys <= 3000) {
-      _pinLenght = 6;
-    } else {
-      _pinLenght = 5;
-    }
+
+    final int _pinLenght = _walletOptions.getPinLenght(this.walletName);
 
     return WillPopScope(
         onWillPop: () {

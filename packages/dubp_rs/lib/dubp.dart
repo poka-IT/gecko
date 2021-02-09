@@ -165,21 +165,21 @@ class DubpRust {
   }
 
   /// Get secret code length of `dewif` keypair.
-  static Future<int> getDewifSecretCodeLen(
+  static int getDewifSecretCodeLen(
       {String currency = "g1",
       String dewif,
-      SecretCodeType secretCodeType = SecretCodeType.letters}) async {
-    final completer = Completer<int>();
-    final sendPort =
-        singleCompletePort<int, String>(completer, callback: _handleErrInt);
-    native.get_dewif_secret_code_len(
-      sendPort.nativePort,
-      Utf8.toUtf8(currency),
+      SecretCodeType secretCodeType = SecretCodeType.letters}) {
+    int res = native.get_dewif_secret_code_len(
       Utf8.toUtf8(dewif),
       0,
       secretCodeType.index,
     );
-    return completer.future;
+    if (res == -1) {
+      print('DUBP_RS_ERROR: DEWIF file content is corrupted.');
+      throw 'DUBP_RS_ERROR: DEWIF file content is corrupted.';
+    } else {
+      return res;
+    }
   }
 
   /// Get public key (in base 58) of legacy wallet (password + salt)
@@ -289,7 +289,7 @@ class DubpRust {
     }
   }
 
-  static int _handleErrInt(String res) {
+  /*static int _handleErrInt(String res) {
     if (res.startsWith('DUBP_RS_ERROR: ')) {
       final error = res;
       print(error);
@@ -297,5 +297,5 @@ class DubpRust {
     } else {
       return int.parse(res);
     }
-  }
+  }*/
 }

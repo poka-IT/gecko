@@ -65,18 +65,22 @@ pub(super) fn gen_dewif(
 }
 
 pub(super) fn get_secret_code_len(
-    currency: Currency,
-    dewif: &str,
-    member_wallet: bool,
-    secret_code_type: SecretCodeType,
-) -> Result<String, DubpError> {
-    let log_n = dup_crypto::dewif::read_dewif_log_n(ExpectedCurrency::Specific(currency), dewif)
+    dewif: *const raw::c_char,
+    member_wallet: u32,
+    secret_code_type: u32,
+) -> Result<usize, DubpError> {
+    let dewif = char_ptr_to_str(dewif)?;
+    let member_wallet = member_wallet != 0;
+    let secret_code_type = SecretCodeType::from(secret_code_type);
+
+    let log_n = dup_crypto::dewif::read_dewif_log_n(ExpectedCurrency::Any, dewif)
         .map_err(DubpError::DewifReadError)?;
 
-    Ok(
-        crate::secret_code::compute_secret_code_len(member_wallet, secret_code_type, log_n)?
-            .to_string(),
-    )
+    Ok(crate::secret_code::compute_secret_code_len(
+        member_wallet,
+        secret_code_type,
+        log_n,
+    )?)
 }
 
 pub(super) fn get_pubkey(currency: Currency, dewif: &str, pin: &str) -> Result<String, DubpError> {

@@ -89,10 +89,6 @@ class WalletsHome extends StatelessWidget {
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
 
-    // TODO: Show history of my wallets
-    // HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
-    // Map _balance = Map();
-
     List _listWallets = [];
     myWalletProvider.listWallets.forEach((_name, _pubkey) {
       _listWallets.add(_name);

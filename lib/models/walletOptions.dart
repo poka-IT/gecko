@@ -63,6 +63,10 @@ class WalletOptionsProvider with ChangeNotifier {
         this.pubkey.text = _localPubkey;
         isWalletUnlock = true;
         notifyListeners();
+        print('GET BIP32 accounts publickeys from this dewif');
+        List _hdWallets = await DubpRust.getBip32DewifAccountsPublicKeys(
+            dewif: _localDewif, secretCode: _pin, accountsIndex: [0, 1, 2]);
+        print(_hdWallets);
 
         return _localDewif;
       } else {

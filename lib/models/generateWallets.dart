@@ -160,7 +160,8 @@ class GenerateWalletsProvider with ChangeNotifier {
       this.actualWallet = await DubpRust.genWalletFromMnemonic(
           language: Language.french,
           mnemonic: generatedMnemonic,
-          secretCodeType: SecretCodeType.letters);
+          secretCodeType: SecretCodeType.letters,
+          walletType: WalletType.bip32Ed25519);
     } catch (e, stack) {
       print(e);
       if (kReleaseMode) {

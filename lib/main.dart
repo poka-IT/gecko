@@ -32,22 +32,8 @@ Future<void> main() async {
   final HiveStore _store =
       await HiveStore.open(path: '${appPath.path}/gqlCache');
 
-  String _randomEndpoint;
-  int i = 0;
-  do {
-    if (i >= 5) {
-      print('NO VALID ENDPOINT FOUND !');
-      break;
-    }
-    if (i != 0) {
-      print(i.toString() + ' ème essai de recherche de endpoint GVA.');
-      await Future.delayed(Duration(milliseconds: 300));
-    }
-    _randomEndpoint = await _homeProvider.getRandomEndpoint();
-    i++;
-  } while (_randomEndpoint == 'HS');
-
-  endPointGVA = _randomEndpoint;
+  // Get a valid GVA endpoint
+  endPointGVA = await _homeProvider.getValidEndpoint();
 
   if (kReleaseMode && enableSentry) {
     await SentryFlutter.init(
@@ -55,12 +41,12 @@ Future<void> main() async {
         options.dsn =
             'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
       },
-      appRunner: () => runApp(Gecko(_randomEndpoint, _store)),
+      appRunner: () => runApp(Gecko(endPointGVA, _store)),
     );
   } else {
     print('Debug mode enabled: No sentry alerte');
 
-    runApp(Gecko(_randomEndpoint, _store));
+    runApp(Gecko(endPointGVA, _store));
   }
 }
 

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
@@ -28,28 +29,49 @@ class HomeProvider with ChangeNotifier {
     return version + '+' + buildNumber;
   }
 
-  Future<String> getRandomEndpoint() async {
-    // TODO: Improve implemention of getRandomEndpoint()
-    // final _json = json.decode(await getJsonEndpoints());
-    // print('JSON !! :');
-    // print(_json);
-    // final _list = _json[];
+  Future<String> getValidEndpoint() async {
+    List _listEndpoints = await rootBundle
+        .loadString('config/gva_endpoints.json')
+        .then((jsonStr) => jsonDecode(jsonStr));
 
-    final _listEndpoints = [
-      'https://g1.librelois.fr/gva',
-      'https://duniter-gva.axiom-team.fr/gva',
-      'https://duniter-g1.p2p.legal/gva'
-    ];
-    final _endpoint = getRandomElement(_listEndpoints);
+    int i = 0;
+    http.Response response;
+    _listEndpoints.shuffle();
+    String _endpoint;
+    int statusCode = 0;
+
+    final client = new HttpClient();
+    client.connectionTimeout = const Duration(seconds: 1);
+
+    do {
+      i++;
+      print(i.toString() + ' ème essai de recherche de endpoint GVA.');
+      try {
+        if (i > 5) {
+          break;
+        }
+        if (i != 0) {
+          await Future.delayed(Duration(milliseconds: 300));
+        }
+        response = await http
+            .post(_listEndpoints[i])
+            .timeout(const Duration(seconds: 1));
+      } on TimeoutException catch (_) {
+        print(_listEndpoints[i] + ' is timeout, next');
+        statusCode = 50;
+
+        continue;
+      } on SocketException catch (_) {
+        print(_listEndpoints[i] + ' is a bad endpoint, next');
+        statusCode = 70;
+        continue;
+      }
+      _endpoint = _listEndpoints[i];
+      statusCode = response.statusCode;
+      print('Endpoint statutcode: ' + statusCode.toString());
+    } while (statusCode != 400);
+
     print('ENDPOINT: ' + _endpoint);
-
-    // http.post(_endpoint);
-    final response = await http.post(_endpoint);
-    if (response.statusCode != 400) {
-      print('Endpoint statutcode: ' + response.statusCode.toString());
-      return 'HS';
-    }
-
     return _endpoint;
   }
 

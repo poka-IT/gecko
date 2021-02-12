@@ -163,14 +163,14 @@ class DubpRust {
   //get_bip32_dewif_accounts_pubkeys
 
   /// Get BIP32 accounts public keys (in base 58) of `dewif` master keypair.
-  static Future<String> getBip32DewifAccountsPublicKeys(
+  static Future<List<String>> getBip32DewifAccountsPublicKeys(
       {String currency = "g1",
       String dewif,
       String secretCode,
       List<int> accountsIndex}) async {
-    final completer = Completer<String>();
-    final sendPort =
-        singleCompletePort<String, String>(completer, callback: _handleErr);
+    final completer = Completer<List<String>>();
+    final sendPort = singleCompletePort<List<String>, List>(completer,
+        callback: _handleErrList);
     native.get_bip32_dewif_accounts_pubkeys(
         sendPort.nativePort,
         Utf8.toUtf8(currency),

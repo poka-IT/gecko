@@ -64,7 +64,7 @@ class WalletOptionsProvider with ChangeNotifier {
         isWalletUnlock = true;
         notifyListeners();
         print('GET BIP32 accounts publickeys from this dewif');
-        String _hdWallets = await DubpRust.getBip32DewifAccountsPublicKeys(
+        List _hdWallets = await DubpRust.getBip32DewifAccountsPublicKeys(
             dewif: _localDewif, secretCode: _pin, accountsIndex: [0, 1, 2]);
         print(_hdWallets);
 

@@ -7,4 +7,4 @@ codegen-units = 1
 debug = true
 
 [patch.crates-io]
-dup-crypto = { path = "/home/elois/dev/duniter/libs/dubp-rs-libs/crypto" }
+#dup-crypto = { path = "/home/elois/dev/duniter/libs/dubp-rs-libs/crypto" }

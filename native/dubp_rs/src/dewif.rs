@@ -57,7 +57,7 @@ pub(super) fn gen_dewif(
     let secret_code = gen_secret_code(member_wallet, secret_code_type, log_n)?;
 
     let (dewif, pubkey) = match wallet_type {
-        WalletType::Ed25519 => {
+        WalletType::Bip32Ed25519 => {
             let keypair = dup_crypto::keys::ed25519::bip32::KeyPair::from_seed(seed.clone());
             let pubkey = keypair.public_key();
             let dewif = dup_crypto::dewif::write_dewif_v4_content(
@@ -69,7 +69,7 @@ pub(super) fn gen_dewif(
             );
             (dewif, pubkey.to_base58())
         }
-        WalletType::Bip32Ed25519 => {
+        WalletType::Ed25519 => {
             let keypair = KeyPairFromSeed32Generator::generate(seed);
             let dewif =
                 dup_crypto::dewif::write_dewif_v3_content(currency, &keypair, log_n, &secret_code);

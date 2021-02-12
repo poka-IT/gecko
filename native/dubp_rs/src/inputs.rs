@@ -56,7 +56,7 @@ pub(crate) fn char_ptr_prt_to_vec_hard_derivation_index(
     u32_ptr: *const u32,
     len: u32,
 ) -> Result<Vec<DerivationIndex>, DubpError> {
-    u32_ptr_to_vec_u32(u32_ptr, len)?
+    u32_ptr_to_vec_u32(u32_ptr, len)
         .into_iter()
         .map(|ai| DerivationIndex::hard(ai).map_err(DubpError::InvalidDerivationIndex))
         .collect()
@@ -93,14 +93,14 @@ pub(crate) fn transparent_account_index(account_index: u32) -> Result<Derivation
     }
 }
 
-pub(crate) fn u32_ptr_to_vec_u32(u32_ptr: *const u32, len: u32) -> Result<Vec<u32>, DubpError> {
+pub(crate) fn u32_ptr_to_vec_u32(u32_ptr: *const u32, len: u32) -> Vec<u32> {
     let len = len as usize;
     let u32_slice: &[u32] = unsafe { std::slice::from_raw_parts(u32_ptr, len) };
     let mut vec = Vec::with_capacity(len);
     for u32_ in u32_slice {
         vec.push(*u32_);
     }
-    Ok(vec)
+    vec
 }
 
 pub(crate) fn u32_to_language(i: u32) -> Result<Language, DubpError> {

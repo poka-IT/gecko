@@ -50,7 +50,7 @@ flutter:
 
   assets:
     - images/
-    - config/
+    - config/gva_endpoints.json
     - assets/icon/gecko_final.png
     - assets/
     - assets/OpenSans-Regular.ttf

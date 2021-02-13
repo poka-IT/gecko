@@ -8,7 +8,6 @@ import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:package_info/package_info.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:http/http.dart' as http;
 
 class HomeProvider with ChangeNotifier {
   int _currentIndex = 0;
@@ -20,7 +19,7 @@ class HomeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future getAppVersion() async {
+  Future<String> getAppVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     String version = packageInfo.version;
     String buildNumber = packageInfo.buildNumber;
@@ -33,42 +32,47 @@ class HomeProvider with ChangeNotifier {
     List _listEndpoints = await rootBundle
         .loadString('config/gva_endpoints.json')
         .then((jsonStr) => jsonDecode(jsonStr));
+    _listEndpoints.shuffle();
 
     int i = 0;
-    http.Response response;
-    _listEndpoints.shuffle();
     String _endpoint;
     int statusCode = 0;
 
     final client = new HttpClient();
-    client.connectionTimeout = const Duration(seconds: 1);
+    client.connectionTimeout = const Duration(milliseconds: 800);
 
     do {
       i++;
       print(i.toString() + ' ème essai de recherche de endpoint GVA.');
-      try {
-        if (i > 5) {
-          break;
-        }
-        if (i != 0) {
-          await Future.delayed(Duration(milliseconds: 300));
-        }
-        response = await http
-            .post(_listEndpoints[i])
-            .timeout(const Duration(seconds: 1));
-      } on TimeoutException catch (_) {
-        print(_listEndpoints[i] + ' is timeout, next');
-        statusCode = 50;
+      print('Try GVA endpoint: ${_listEndpoints[i]}');
+      if (i > 2) {
+        print('NO VALID GVA ENDPOINT FOUND');
+        _endpoint = 'HS';
+        break;
+      }
+      if (i != 0) {
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
 
+      try {
+        final request = await client.postUrl(Uri.parse(_listEndpoints[i]));
+        final response = await request.close();
+
+        _endpoint = _listEndpoints[i];
+        statusCode = response.statusCode;
+      } on TimeoutException catch (_) {
+        print('This endpoint is timeout, next');
+        statusCode = 50;
         continue;
       } on SocketException catch (_) {
-        print(_listEndpoints[i] + ' is a bad endpoint, next');
+        print('This endpoint is a bad endpoint, next');
         statusCode = 70;
         continue;
+      } on Exception {
+        print('Unknown error');
+        statusCode = 60;
+        continue;
       }
-      _endpoint = _listEndpoints[i];
-      statusCode = response.statusCode;
-      print('Endpoint statutcode: ' + statusCode.toString());
     } while (statusCode != 400);
 
     print('ENDPOINT: ' + _endpoint);

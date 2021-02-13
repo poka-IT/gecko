@@ -36,10 +36,10 @@ class HomeProvider with ChangeNotifier {
 
     int i = 0;
     String _endpoint;
-    int statusCode = 0;
+    int _statusCode = 0;
 
-    final client = new HttpClient();
-    client.connectionTimeout = const Duration(milliseconds: 800);
+    final _client = new HttpClient();
+    _client.connectionTimeout = const Duration(milliseconds: 800);
 
     do {
       i++;
@@ -55,25 +55,25 @@ class HomeProvider with ChangeNotifier {
       }
 
       try {
-        final request = await client.postUrl(Uri.parse(_listEndpoints[i]));
+        final request = await _client.postUrl(Uri.parse(_listEndpoints[i]));
         final response = await request.close();
 
         _endpoint = _listEndpoints[i];
-        statusCode = response.statusCode;
+        _statusCode = response.statusCode;
       } on TimeoutException catch (_) {
         print('This endpoint is timeout, next');
-        statusCode = 50;
+        _statusCode = 50;
         continue;
       } on SocketException catch (_) {
         print('This endpoint is a bad endpoint, next');
-        statusCode = 70;
+        _statusCode = 70;
         continue;
       } on Exception {
         print('Unknown error');
-        statusCode = 60;
+        _statusCode = 60;
         continue;
       }
-    } while (statusCode != 400);
+    } while (_statusCode != 400);
 
     print('ENDPOINT: ' + _endpoint);
     return _endpoint;

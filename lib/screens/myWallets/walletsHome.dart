@@ -63,7 +63,7 @@ class WalletsHome extends StatelessWidget {
                             return GenerateWalletsScreen();
                           }),
                         ),
-                    child: Text('Générer un portefeuille',
+                    child: Text('Générer un trousseau',
                         style: TextStyle(fontSize: 20))),
                 SizedBox(height: 15),
                 Center(

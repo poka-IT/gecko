@@ -33,7 +33,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     final Directory walletNameDirectory =
         Directory('${walletsDirectory.path}/$_name');
     final walletFile = File('${walletNameDirectory.path}/wallet.dewif');
-    final walletPubkey = File('${walletNameDirectory.path}/pubkey');
 
     if (await walletNameDirectory.exists()) {
       print('Ce wallet existe déjà, impossible de le créer.');
@@ -43,10 +42,9 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     await walletNameDirectory.create();
     await walletFile.writeAsString('${wallet.dewif}');
-    await walletPubkey.writeAsString('${wallet.publicKey}');
 
     Navigator.pop(context, true);
-    Navigator.pop(context, wallet.publicKey);
+    Navigator.pop(context, true);
     // notifyListeners();
 
     return _name;
@@ -173,7 +171,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     }
 
     mnemonicController.text = generatedMnemonic;
-    pubkey.text = this.actualWallet.publicKey;
     pin.text = this.actualWallet.pin;
     // notifyListeners();
 
@@ -190,7 +187,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     // notifyListeners();
   }
 
-  Future<Uint8List> printWallet(String _title, String _pubkey) async {
+  Future<Uint8List> printWallet(String _title) async {
     final ByteData fontData =
         await rootBundle.load("assets/OpenSans-Regular.ttf");
     final pw.Font ttf = pw.Font.ttf(fontData.buffer.asByteData());
@@ -204,12 +201,6 @@ class GenerateWalletsProvider with ChangeNotifier {
         pageFormat: PdfPageFormat.a4,
         build: (context) {
           return pw.Column(children: <pw.Widget>[
-            pw.Text("Clé publique:",
-                style: pw.TextStyle(fontSize: 20, font: ttf)),
-            pw.SizedBox(height: 10),
-            pw.Text(_pubkey,
-                style: pw.TextStyle(fontSize: 15, font: ttf),
-                textAlign: pw.TextAlign.center),
             pw.SizedBox(height: 20),
             pw.Text("Phrase de restauration:",
                 style: pw.TextStyle(fontSize: 20, font: ttf)),

@@ -73,7 +73,7 @@ class MyWalletsProvider with ChangeNotifier {
             Provider.of<MyWalletsProvider>(context);
         return AlertDialog(
           title: Text(
-              'Êtes-vous sûr de vouloir supprimer tous vos portefeuilles ?'),
+              'Êtes-vous sûr de vouloir supprimer tous vos trousseaux ?'),
           content: SingleChildScrollView(child: Text('')),
           actions: <Widget>[
             TextButton(

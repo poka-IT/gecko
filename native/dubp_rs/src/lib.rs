@@ -176,6 +176,27 @@ pub extern "C" fn gen_mnemonic(port: i64, language: u32) {
 }
 
 #[no_mangle]
+pub extern "C" fn get_dewif_meta(
+    port: i64,
+    dewif: *const raw::c_char,
+    member_wallet: u32,
+    secret_code_type: u32,
+) {
+    exec_async(
+        port,
+        || {
+            let dewif = char_ptr_to_str(dewif)?;
+            let member_wallet = member_wallet != 0;
+            let secret_code_type = SecretCodeType::from(secret_code_type);
+            Ok((dewif, member_wallet, secret_code_type))
+        },
+        |(dewif, member_wallet, secret_code_type)| {
+            dewif::get_dewif_meta(dewif, member_wallet, secret_code_type)
+        },
+    )
+}
+
+#[no_mangle]
 pub extern "C" fn get_dewif_secret_code_len(
     dewif: *const raw::c_char,
     member_wallet: u32,

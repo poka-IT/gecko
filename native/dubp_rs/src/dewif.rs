@@ -67,23 +67,25 @@ pub(super) fn gen_dewif(
     Ok(vec![dewif, secret_code])
 }
 
-pub(super) fn get_secret_code_len(
-    dewif: *const raw::c_char,
-    member_wallet: u32,
-    secret_code_type: u32,
-) -> Result<usize, DubpError> {
-    let dewif = char_ptr_to_str(dewif)?;
-    let member_wallet = member_wallet != 0;
-    let secret_code_type = SecretCodeType::from(secret_code_type);
-
-    let log_n = dup_crypto::dewif::read_dewif_log_n(ExpectedCurrency::Any, dewif)
-        .map_err(DubpError::DewifReadError)?;
-
-    Ok(crate::secret_code::compute_secret_code_len(
-        member_wallet,
-        secret_code_type,
+pub(super) fn get_dewif_meta(
+    dewif: &str,
+    member_wallet: bool,
+    secret_code_type: SecretCodeType,
+) -> Result<Vec<String>, DubpError> {
+    let dup_crypto::dewif::DewifMeta {
+        currency,
         log_n,
-    )?)
+        version,
+    } = dup_crypto::dewif::read_dewif_meta(dewif).map_err(DubpError::DewifReadError)?;
+
+    let secret_code_len =
+        crate::secret_code::compute_secret_code_len(member_wallet, secret_code_type, log_n)?;
+
+    Ok(vec![
+        currency.to_string(),
+        secret_code_len.to_string(),
+        version.to_string(),
+    ])
 }
 
 pub(super) fn get_pubkey(
@@ -104,6 +106,25 @@ pub(super) fn get_pubkey(
         Some(_) => Err(DubpError::UnsupportedDewifVersion),
         None => Err(DubpError::DewifReadError(DewifReadError::CorruptedContent)),
     }
+}
+
+pub(super) fn get_secret_code_len(
+    dewif: *const raw::c_char,
+    member_wallet: u32,
+    secret_code_type: u32,
+) -> Result<usize, DubpError> {
+    let dewif = char_ptr_to_str(dewif)?;
+    let member_wallet = member_wallet != 0;
+    let secret_code_type = SecretCodeType::from(secret_code_type);
+
+    let log_n = dup_crypto::dewif::read_dewif_log_n(ExpectedCurrency::Any, dewif)
+        .map_err(DubpError::DewifReadError)?;
+
+    Ok(crate::secret_code::compute_secret_code_len(
+        member_wallet,
+        secret_code_type,
+        log_n,
+    )?)
 }
 
 pub(crate) fn log_n(system_memory: i64) -> u8 {

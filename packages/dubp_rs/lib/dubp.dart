@@ -6,6 +6,29 @@ import "package:system_info/system_info.dart";
 
 import 'ffi.dart' as native;
 
+/// DEWIF meta data
+class DewifMetaData {
+  /// Currency name
+  String currency;
+
+  /// Secret code length
+  int secretCodeLen;
+
+  /// DEWIF version
+  int version;
+
+  /// Wallet type
+  WalletType walletType;
+
+  DewifMetaData._(this.currency, this.secretCodeLen, this.version) {
+    if (version == 4) {
+      walletType = WalletType.bip32Ed25519;
+    } else {
+      walletType = WalletType.ed25519;
+    }
+  }
+}
+
 /// Language
 enum Language {
   /// English
@@ -174,6 +197,21 @@ class DubpRust {
         accountsIndex.length,
         _listIntToPtr(accountsIndex));
     return completer.future;
+  }
+
+  /// Get `dewif` keypair meta data.
+  static Future<DewifMetaData> getDewifMetaData(
+      {String dewif,
+      SecretCodeType secretCodeType = SecretCodeType.letters}) async {
+    final completer = Completer<List<String>>();
+    final sendPort = singleCompletePort<List<String>, List>(completer,
+        callback: _handleErrList);
+    native.get_dewif_meta(
+        sendPort.nativePort, Utf8.toUtf8(dewif), 0, secretCodeType.index);
+    List<String> dewifMetaData = await completer.future;
+
+    return Future.value(DewifMetaData._(dewifMetaData[0],
+        int.parse(dewifMetaData[1]), int.parse(dewifMetaData[2])));
   }
 
   /// Get public key (in base 58) of `dewif` keypair.

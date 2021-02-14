@@ -90,8 +90,8 @@ class WalletsHome extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context);
 
     List _listWallets = [];
-    myWalletProvider.listWallets.forEach((_name, _pubkey) {
-      _listWallets.add(_name);
+    myWalletProvider.listWallets.forEach((_nbr, _name) {
+      _listWallets.add('$_nbr:$_name');
     });
 
     return Column(children: <Widget>[
@@ -102,13 +102,14 @@ class WalletsHome extends StatelessWidget {
           leading: Padding(
               padding: const EdgeInsets.all(15.0),
               child: Text("0 Ğ1", style: TextStyle(fontSize: 14.0))),
-          title: Text(_repository, style: TextStyle(fontSize: 16.0)),
-          subtitle: Text(myWalletProvider.listWallets[_repository],
-              style: TextStyle(fontSize: 11.0)),
+          title:
+              Text(_repository.split(':')[1], style: TextStyle(fontSize: 16.0)),
           dense: true,
           onTap: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) {
-              return WalletOptions(walletName: _repository);
+              return WalletOptions(
+                  walletNbr: int.parse(_repository.split(':')[0]),
+                  walletName: _repository.split(':')[1]);
             }));
           },
         )

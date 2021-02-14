@@ -26,22 +26,30 @@ class GenerateWalletsProvider with ChangeNotifier {
   bool walletIsGenerated = true;
 
   TextEditingController mnemonicController = TextEditingController();
-  TextEditingController pubkey = TextEditingController();
   TextEditingController pin = TextEditingController();
 
-  Future storeWallet(NewWallet wallet, _name, BuildContext context) async {
-    final Directory walletNameDirectory =
-        Directory('${walletsDirectory.path}/$_name');
-    final walletFile = File('${walletNameDirectory.path}/wallet.dewif');
+  Future storeWallet(NewWallet wallet, String _name, BuildContext context,
+      {bool isHD = false}) async {
+    int nbrWallet = 0;
+    Directory walletNbrDirectory;
+    do {
+      nbrWallet++;
+      walletNbrDirectory = Directory('${walletsDirectory.path}/$nbrWallet');
+    } while (await walletNbrDirectory.exists());
 
-    if (await walletNameDirectory.exists()) {
-      print('Ce wallet existe déjà, impossible de le créer.');
-      _showWalletExistDialog(context);
-      return 'Exist: DENY';
+    final walletFile = File('${walletNbrDirectory.path}/wallet.dewif');
+
+    await walletNbrDirectory.create();
+    await walletFile.writeAsString(wallet.dewif);
+
+    final configFile = File('${walletNbrDirectory.path}/config.txt');
+
+    if (isHD) {
+      final int _derivationNbr = 3;
+      await configFile.writeAsString('$nbrWallet:$_name:$_derivationNbr');
+    } else {
+      await configFile.writeAsString('$nbrWallet:$_name');
     }
-
-    await walletNameDirectory.create();
-    await walletFile.writeAsString('${wallet.dewif}');
 
     Navigator.pop(context, true);
     Navigator.pop(context, true);
@@ -103,35 +111,6 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   void nameChanged() {
     notifyListeners();
-  }
-
-  Future<void> _showWalletExistDialog(BuildContext context) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Ce nom existe déjà'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('Veuillez choisir un autre nom pour votre portefeuille.'),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text("J'ai compris"),
-              onPressed: () {
-                Navigator.of(context).pop();
-                askedWordColor = Colors.green[500];
-                isAskedWordValid = true;
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Future<String> generateMnemonic() async {

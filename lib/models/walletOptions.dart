@@ -15,7 +15,7 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Future<NewWallet> get badWallet => null;
 
-  Future _getPubkeyFromDewif(_dewif, _pin, _pinLenght) async {
+  Future _getPubkeyFromDewif(_dewif, _pin, _pinLenght, {derivation}) async {
     String _pubkey;
     RegExp regExp = new RegExp(
       r'^[A-Z0-9]+$',
@@ -30,7 +30,9 @@ class WalletOptionsProvider with ChangeNotifier {
       return 'false';
     }
     try {
-      _pubkey = await DubpRust.getDewifPublicKey(dewif: _dewif, pin: _pin);
+      List _pubkeysTmp = await DubpRust.getBip32DewifAccountsPublicKeys(
+          dewif: _dewif, secretCode: _pin, accountsIndex: [3]);
+      _pubkey = _pubkeysTmp[0];
       this.pubkey.text = _pubkey;
       notifyListeners();
 
@@ -50,10 +52,12 @@ class WalletOptionsProvider with ChangeNotifier {
     }
   }
 
-  Future readLocalWallet(String _name, String _pin, _pinLenght) async {
+  Future readLocalWallet(
+      int _walletNbr, String _name, String _pin, _pinLenght) async {
     isWalletUnlock = false;
     try {
-      File _walletFile = File('${walletsDirectory.path}/$_name/wallet.dewif');
+      File _walletFile =
+          File('${walletsDirectory.path}/$_walletNbr/wallet.dewif');
       String _localDewif = await _walletFile.readAsString();
       String _localPubkey;
 
@@ -79,8 +83,9 @@ class WalletOptionsProvider with ChangeNotifier {
     }
   }
 
-  int getPinLenght(_name) {
-    File _walletFile = File('${walletsDirectory.path}/$_name/wallet.dewif');
+  int getPinLenght(_walletNbr) {
+    File _walletFile =
+        File('${walletsDirectory.path}/$_walletNbr/wallet.dewif');
     String _localDewif = _walletFile.readAsStringSync();
 
     final int _pinLenght = DubpRust.getDewifSecretCodeLen(

@@ -33,16 +33,10 @@ class MyWalletsProvider with ChangeNotifier {
     // int i = 0;
     walletsDirectory
         .listSync(recursive: false, followLinks: false)
-        .forEach((wallet) {
-      String _name = wallet.path.split('/').last;
-      List _pubkeyList = File(wallet.path + '/pubkey').readAsLinesSync();
-      String _pubkey = _pubkeyList[0];
-      listWallets[_name] = _pubkey;
-      // i++;
-
-      // for (var _wallets in listWallets) {
-      //   _wallets.pubkey =
-      // }
+        .forEach((_wallet) {
+      File('${_wallet.path}/config.txt').readAsLinesSync().forEach((element) {
+        listWallets[int.parse(element.split(':')[0])] = element.split(':')[1];
+      });
     });
     return listWallets;
   }
@@ -72,8 +66,8 @@ class MyWalletsProvider with ChangeNotifier {
         MyWalletsProvider _myWalletProvider =
             Provider.of<MyWalletsProvider>(context);
         return AlertDialog(
-          title: Text(
-              'Êtes-vous sûr de vouloir supprimer tous vos trousseaux ?'),
+          title:
+              Text('Êtes-vous sûr de vouloir supprimer tous vos trousseaux ?'),
           content: SingleChildScrollView(child: Text('')),
           actions: <Widget>[
             TextButton(

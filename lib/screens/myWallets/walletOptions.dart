@@ -11,8 +11,10 @@ import 'package:flutter/services.dart';
 
 // ignore: must_be_immutable
 class WalletOptions extends StatelessWidget with ChangeNotifier {
-  WalletOptions({Key keyMyWallets, @required this.walletName})
+  WalletOptions(
+      {Key keyMyWallets, @required this.walletNbr, @required this.walletName})
       : super(key: keyMyWallets);
+  int walletNbr;
   String walletName;
 
   StreamController<ErrorAnimationType> errorController;
@@ -34,7 +36,7 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
     errorController = StreamController<ErrorAnimationType>();
     // _walletOptions.isWalletUnlock = false;
 
-    final int _pinLenght = _walletOptions.getPinLenght(this.walletName);
+    final int _pinLenght = _walletOptions.getPinLenght(this.walletNbr);
 
     return WillPopScope(
         onWillPop: () {
@@ -244,6 +246,7 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                                       print("Completed");
                                       final resultWallet =
                                           await _walletOptions.readLocalWallet(
+                                              this.walletNbr,
                                               this.walletName,
                                               _pin.toUpperCase(),
                                               _pinLenght);

@@ -28,6 +28,8 @@ pub(crate) enum DubpError {
     InvalidDerivationIndex(InvalidDerivationIndex),
     #[error("Digits secret code forbid for member wallet")]
     DigitsCodeForbidForMemberWallet,
+    #[error("It is forbidden to retrieve the master public key of an HD wallet.")]
+    GetMasterPubkeyOfHdWallet,
     #[error("this wallet is not an HD wallet")]
     NotHdWallet,
     #[error("this account index is not a transparent account index")]
@@ -40,6 +42,8 @@ pub(crate) enum DubpError {
     UnknownCurrencyName,
     #[error("Unknown language")]
     UnknownLanguage,
+    #[error("Unsupported DEWIF version")]
+    UnsupportedDewifVersion,
     #[error("{0}")]
     Utf8Error(std::str::Utf8Error),
     #[error("Wrong language")]

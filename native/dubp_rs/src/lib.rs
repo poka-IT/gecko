@@ -45,9 +45,8 @@ use thiserror::Error;
 #[no_mangle]
 pub extern "C" fn change_dewif_secret_code(
     port: i64,
-    currency: *const raw::c_char,
     dewif: *const raw::c_char,
-    old_pin: *const raw::c_char,
+    old_secret_code: *const raw::c_char,
     member_wallet: u32,
     secret_code_type: u32,
     system_memory: i64,
@@ -55,25 +54,22 @@ pub extern "C" fn change_dewif_secret_code(
     exec_async(
         port,
         || {
-            let currency = char_ptr_to_str(currency)?;
             let dewif = char_ptr_to_str(dewif)?;
-            let old_pin = char_ptr_to_str(old_pin)?;
+            let old_secret_code = char_ptr_to_str(old_secret_code)?;
             let member_wallet = member_wallet != 0;
             let secret_code_type = SecretCodeType::from(secret_code_type);
             Ok((
-                currency,
                 dewif,
-                old_pin,
+                old_secret_code,
                 member_wallet,
                 secret_code_type,
                 system_memory,
             ))
         },
-        |(currency, dewif, old_pin, member_wallet, secret_code_type, system_memory)| {
+        |(dewif, old_secret_code, member_wallet, secret_code_type, system_memory)| {
             dewif::change_secret_code(
-                currency,
                 dewif,
-                old_pin,
+                old_secret_code,
                 member_wallet,
                 secret_code_type,
                 system_memory,

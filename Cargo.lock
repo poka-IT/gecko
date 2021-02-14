@@ -261,9 +261,9 @@ dependencies = [
 
 [[package]]
 name = "dup-crypto"
-version = "0.41.0"
+version = "0.41.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "38f6b6eb9f9a9e92e70515090be3733857966f2a635564f36e78af047e63a1bf"
+checksum = "e69f621e9575ed2647fb67a9e8a8d8d5cc8d9281dec2fc848c7619a159501562"
 dependencies = [
  "aes",
  "arrayvec",

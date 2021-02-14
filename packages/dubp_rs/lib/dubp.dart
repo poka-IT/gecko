@@ -23,10 +23,7 @@ class NewWallet {
   /// Secret code
   String pin;
 
-  /// Public key
-  String publicKey;
-
-  NewWallet._(this.dewif, this.pin, this.publicKey);
+  NewWallet._(this.dewif, this.pin);
 }
 
 /// Secret code type
@@ -60,7 +57,6 @@ class DubpRust {
 
   /// Change the secret code that encrypts the `dewif` keypair.
   static Future<NewWallet> changeDewifPin({
-    String currency = "g1",
     String dewif,
     String oldPin,
     SecretCodeType secretCodeType = SecretCodeType.letters,
@@ -72,7 +68,6 @@ class DubpRust {
         callback: _handleErrList);
     native.change_dewif_secret_code(
       sendPort.nativePort,
-      Utf8.toUtf8(currency),
       Utf8.toUtf8(dewif),
       Utf8.toUtf8(oldPin),
       0,
@@ -81,7 +76,7 @@ class DubpRust {
     );
     List<String> newWallet = await completer.future;
 
-    return Future.value(NewWallet._(newWallet[0], newWallet[1], newWallet[2]));
+    return Future.value(NewWallet._(newWallet[0], newWallet[1]));
   }
 
   /// Generate a random mnemonic
@@ -122,7 +117,7 @@ class DubpRust {
     );
     List<String> newWallet = await completer.future;
 
-    return Future.value(NewWallet._(newWallet[0], newWallet[1], newWallet[2]));
+    return Future.value(NewWallet._(newWallet[0], newWallet[1]));
   }
 
   /// Generate a wallet from a mnemonic phrase.
@@ -157,7 +152,7 @@ class DubpRust {
     );
     List<String> newWallet = await completer.future;
 
-    return Future.value(NewWallet._(newWallet[0], newWallet[1], newWallet[2]));
+    return Future.value(NewWallet._(newWallet[0], newWallet[1]));
   }
 
   //get_bip32_dewif_accounts_pubkeys

@@ -19,14 +19,12 @@ pub mod classic;
 use crate::*;
 
 pub(super) fn change_secret_code(
-    currency: &str,
     dewif: &str,
     old_secret_code: &str,
     member_wallet: bool,
     secret_code_type: SecretCodeType,
     system_memory: i64,
 ) -> Result<Vec<String>, DubpError> {
-    let currency = parse_currency(currency)?;
     let new_log_n = log_n(system_memory);
     let new_secret_code = gen_secret_code(member_wallet, secret_code_type, new_log_n)?;
 
@@ -34,9 +32,7 @@ pub(super) fn change_secret_code(
         dup_crypto::dewif::change_dewif_passphrase(dewif, old_secret_code, &new_secret_code)
             .map_err(DubpError::DewifReadError)?;
 
-    let pubkey = get_pubkey(currency, &new_dewif, &new_secret_code)?;
-
-    Ok(vec![new_dewif, new_secret_code, pubkey])
+    Ok(vec![new_dewif, new_secret_code])
 }
 
 pub(super) fn gen_dewif(
@@ -56,28 +52,60 @@ pub(super) fn gen_dewif(
     let log_n = log_n(system_memory);
     let secret_code = gen_secret_code(member_wallet, secret_code_type, log_n)?;
 
-    let (dewif, pubkey) = match wallet_type {
+    let dewif = match wallet_type {
         WalletType::Bip32Ed25519 => {
             let keypair = dup_crypto::keys::ed25519::bip32::KeyPair::from_seed(seed.clone());
             let pubkey = keypair.public_key();
-            let dewif = dup_crypto::dewif::write_dewif_v4_content(
-                currency,
-                log_n,
-                &secret_code,
-                &pubkey,
-                seed,
-            );
-            (dewif, pubkey.to_base58())
+            dup_crypto::dewif::write_dewif_v4_content(currency, log_n, &secret_code, &pubkey, seed)
         }
         WalletType::Ed25519 => {
             let keypair = KeyPairFromSeed32Generator::generate(seed);
-            let dewif =
-                dup_crypto::dewif::write_dewif_v3_content(currency, &keypair, log_n, &secret_code);
-            (dewif, keypair.public_key().to_base58())
+            dup_crypto::dewif::write_dewif_v3_content(currency, &keypair, log_n, &secret_code)
         }
     };
 
-    Ok(vec![dewif, secret_code, pubkey])
+    Ok(vec![dewif, secret_code])
+}
+
+pub(super) fn get_dewif_meta(
+    dewif: &str,
+    member_wallet: bool,
+    secret_code_type: SecretCodeType,
+) -> Result<Vec<String>, DubpError> {
+    let dup_crypto::dewif::DewifMeta {
+        currency,
+        log_n,
+        version,
+    } = dup_crypto::dewif::read_dewif_meta(dewif).map_err(DubpError::DewifReadError)?;
+
+    let secret_code_len =
+        crate::secret_code::compute_secret_code_len(member_wallet, secret_code_type, log_n)?;
+
+    Ok(vec![
+        currency.to_string(),
+        secret_code_len.to_string(),
+        version.to_string(),
+    ])
+}
+
+pub(super) fn get_pubkey(
+    currency: Currency,
+    dewif: &str,
+    secret_code: &str,
+) -> Result<String, DubpError> {
+    let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
+        ExpectedCurrency::Specific(currency),
+        dewif,
+        &secret_code.to_ascii_uppercase(),
+    )
+    .map_err(DubpError::DewifReadError)?;
+
+    match keypairs.next() {
+        Some(KeyPairEnum::Ed25519(keypair)) => Ok(keypair.public_key().to_base58()),
+        Some(KeyPairEnum::Bip32Ed25519(_)) => Err(DubpError::GetMasterPubkeyOfHdWallet),
+        Some(_) => Err(DubpError::UnsupportedDewifVersion),
+        None => Err(DubpError::DewifReadError(DewifReadError::CorruptedContent)),
+    }
 }
 
 pub(super) fn get_secret_code_len(
@@ -97,24 +125,6 @@ pub(super) fn get_secret_code_len(
         secret_code_type,
         log_n,
     )?)
-}
-
-pub(super) fn get_pubkey(
-    currency: Currency,
-    dewif: &str,
-    secret_code: &str,
-) -> Result<String, DubpError> {
-    let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
-        ExpectedCurrency::Specific(currency),
-        dewif,
-        &secret_code.to_ascii_uppercase(),
-    )
-    .map_err(DubpError::DewifReadError)?;
-    if let Some(keypair) = keypairs.next() {
-        Ok(keypair.public_key().to_base58())
-    } else {
-        Err(DubpError::DewifReadError(DewifReadError::CorruptedContent))
-    }
 }
 
 pub(crate) fn log_n(system_memory: i64) -> u8 {

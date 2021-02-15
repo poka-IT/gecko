@@ -23,8 +23,6 @@ class MyWalletsProvider with ChangeNotifier {
     }
   }
 
-  Future importWallet() async {}
-
   String getAllWalletsNames() {
     final bool _isWalletsExists = checkIfWalletExist();
     if (!_isWalletsExists) {

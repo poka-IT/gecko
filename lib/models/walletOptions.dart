@@ -161,7 +161,7 @@ class WalletOptionsProvider with ChangeNotifier {
       String newConfig =
           await _walletConfig.readAsLines().then((List<String> lines) {
         lines.removeWhere(
-            (element) => element == '$_walletNbr:$_name:$_derivation');
+            (element) => element.contains('$_walletNbr:$_name:$_derivation'));
 
         return lines.join('\n');
       });

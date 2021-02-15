@@ -46,7 +46,14 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     if (isHD) {
       final int _derivationNbr = 3;
-      await configFile.writeAsString('$nbrWallet:$_name:$_derivationNbr');
+      List _pubkeysTmp = await DubpRust.getBip32DewifAccountsPublicKeys(
+          dewif: wallet.dewif,
+          secretCode: wallet.pin,
+          accountsIndex: [_derivationNbr]);
+      String _pubkey = _pubkeysTmp[0];
+
+      await configFile
+          .writeAsString('$nbrWallet:$_name:$_derivationNbr:$_pubkey');
     } else {
       await configFile.writeAsString('$nbrWallet:$_name');
     }

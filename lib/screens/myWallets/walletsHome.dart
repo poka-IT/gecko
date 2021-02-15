@@ -8,7 +8,6 @@ import 'package:provider/provider.dart';
 // ignore: must_be_immutable
 class WalletsHome extends StatelessWidget {
   final _derivationKey = GlobalKey<FormState>();
-  final TextEditingController _newDerivationName = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -88,20 +87,37 @@ class WalletsHome extends StatelessWidget {
   }
 
   Widget myWalletsList(BuildContext context) {
-    MyWalletsProvider myWalletProvider =
+    MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
 
-    List _listWallets = myWalletProvider.listWallets.split('\n');
+    final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
+
+    if (!isWalletsExists) {
+      return Text('');
+    }
+
+    if (_myWalletProvider.listWallets == '') {
+      return Expanded(
+          child: Center(
+              child: Text(
+        'Veuillez générer votre premier portefeuille',
+        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
+      )));
+    }
+
+    List _listWallets = _myWalletProvider.listWallets.split('\n');
 
     return Expanded(
         child: ListView(children: <Widget>[
       SizedBox(height: 8),
       for (String _repository in _listWallets)
         ListTile(
-          contentPadding: const EdgeInsets.all(5.0),
+          contentPadding: const EdgeInsets.only(left: 7.0),
           leading: Padding(
-              padding: const EdgeInsets.all(15.0),
+              padding: const EdgeInsets.all(6.0),
               child: Text("0 Ğ1", style: TextStyle(fontSize: 14.0))),
+          // subtitle: Text(_repository.split(':')[3],
+          //     style: TextStyle(fontSize: 12.0, fontFamily: 'Monospace')),
           title:
               Text(_repository.split(':')[1], style: TextStyle(fontSize: 16.0)),
           dense: true,
@@ -118,8 +134,10 @@ class WalletsHome extends StatelessWidget {
   }
 
   Widget addNewDerivation(context, int _walletNbr) {
+    final TextEditingController _newDerivationName = TextEditingController();
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
+
     return AlertDialog(
       content: Stack(
         overflow: Overflow.visible,

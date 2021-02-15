@@ -78,7 +78,10 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                 errorBorder: InputBorder.none,
                 disabledBorder: InputBorder.none,
               ),
-              style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)),
+              style: TextStyle(
+                  fontSize: 14.0,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Monospace')),
           if (_historyProvider.pubkey != '')
             historyQuery(context, _historyProvider),
         ]));
@@ -273,7 +276,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                 subtitle: Text(
                     truncate(repository[2], 20,
                         omission: "...", position: TruncatePosition.end),
-                    style: TextStyle(fontSize: 11.0),
+                    style: TextStyle(fontSize: 11.0, fontFamily: 'Monospace'),
                     textAlign: TextAlign.center),
                 trailing: Text("${repository[3]} Ğ1",
                     style: TextStyle(fontSize: 14.0),

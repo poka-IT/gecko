@@ -26,6 +26,11 @@ class MyWalletsProvider with ChangeNotifier {
   Future importWallet() async {}
 
   String getAllWalletsNames() {
+    final bool _isWalletsExists = checkIfWalletExist();
+    if (!_isWalletsExists) {
+      return '';
+    }
+
     if (listWallets != null && listWallets.isNotEmpty) {
       listWallets = '';
     }
@@ -42,8 +47,8 @@ class MyWalletsProvider with ChangeNotifier {
         if (listWallets != '') {
           listWallets += '\n';
         }
-        listWallets +=
-            "${element.split(':')[0]}:${element.split(':')[1]}:${element.split(':')[2]}";
+        listWallets += element;
+        // listWallets += "${element.split(':')[0]}:${element.split(':')[1]}:${element.split(':')[2]}"
       });
     });
 
@@ -59,6 +64,7 @@ class MyWalletsProvider with ChangeNotifier {
       if (_answer) {
         await walletsDirectory.delete(recursive: true);
         await walletsDirectory.create();
+        notifyListeners();
         Navigator.pop(context);
       }
       return 0;
@@ -104,14 +110,18 @@ class MyWalletsProvider with ChangeNotifier {
 
   Future<void> generateNewDerivation(
       context, String _name, int _walletNbr) async {
+    int _newDerivationNbr;
     final _walletConfig =
         File('${walletsDirectory.path}/$_walletNbr/config.txt');
 
-    String _lastWallet =
-        await _walletConfig.readAsLines().then((value) => value.last);
-    int _lastDerivation = int.parse(_lastWallet.split(':')[2]);
-    // print(_lastDerivation);
-    int _newDerivationNbr = _lastDerivation + 3;
+    if (await _walletConfig.readAsString() == '') {
+      _newDerivationNbr = 3;
+    } else {
+      String _lastWallet =
+          await _walletConfig.readAsLines().then((value) => value.last);
+      int _lastDerivation = int.parse(_lastWallet.split(':')[2]);
+      _newDerivationNbr = _lastDerivation + 3;
+    }
 
     await _walletConfig.writeAsString('\n$_walletNbr:$_name:$_newDerivationNbr',
         mode: FileMode.append);

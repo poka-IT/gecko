@@ -1,6 +1,4 @@
-import 'package:flutter/services.dart';
 import 'package:gecko/models/generateWallets.dart';
-import 'package:gecko/models/walletOptions.dart';
 import 'package:gecko/screens/myWallets/confirmWalletStorage.dart';
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
@@ -15,7 +13,6 @@ class GenerateWalletsScreen extends StatelessWidget {
   String currentText = "";
   var pinColor = Colors.grey[300];
 
-  GlobalKey _toolTipPubkey = GlobalKey();
   GlobalKey _toolTipSentence = GlobalKey();
   GlobalKey _toolTipSecret = GlobalKey();
 
@@ -23,8 +20,6 @@ class GenerateWalletsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
-    WalletOptionsProvider _walletOptions =
-        Provider.of<WalletOptionsProvider>(context);
     _generateWalletProvider.generateMnemonic();
     print('IS GENERATED ? : ' +
         _generateWalletProvider.walletIsGenerated.toString());
@@ -32,7 +27,7 @@ class GenerateWalletsScreen extends StatelessWidget {
         appBar: AppBar(
             title: SizedBox(
           height: 22,
-          child: Text('Générer un portefeuille'),
+          child: Text('Générer un trousseau'),
         )),
         floatingActionButton: Container(
             height: 80.0,
@@ -53,26 +48,6 @@ class GenerateWalletsScreen extends StatelessWidget {
             builder: (ctx) => SafeArea(
                   child: Column(children: <Widget>[
                     SizedBox(height: 20),
-                    toolTips(_toolTipPubkey, 'Clé publique:',
-                        "C'est votre RIB en Ğ1, les gens l'utiliseront pour vous payer"),
-                    GestureDetector(
-                        onTap: () {
-                          Clipboard.setData(ClipboardData(
-                              text: _generateWalletProvider.pubkey.text));
-                          _walletOptions.snackCopyKey(ctx);
-                        },
-                        child: TextField(
-                            enabled: false,
-                            controller: _generateWalletProvider.pubkey,
-                            maxLines: 1,
-                            textAlign: TextAlign.center,
-                            decoration: InputDecoration(),
-                            style: TextStyle(
-                                fontSize: 14.0,
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Monospace'))),
-                    SizedBox(height: 8),
                     toolTips(_toolTipSentence, 'Phrase de restauration:',
                         "Notez et gardez cette phrase précieusement sur un papier, elle vous servira à restaurer votre portefeuille sur un autre appareil"),
                     TextField(
@@ -137,7 +112,7 @@ class GenerateWalletsScreen extends StatelessWidget {
                                 );
                               }
                             : null,
-                        child: Text('Enregistrer ce portefeuille',
+                        child: Text('Enregistrer ce trousseau',
                             style: TextStyle(fontSize: 20))),
                     SizedBox(height: 20),
                     GestureDetector(
@@ -146,9 +121,7 @@ class GenerateWalletsScreen extends StatelessWidget {
                             context,
                             MaterialPageRoute(builder: (context) {
                               return PrintWallet(
-                                  _generateWalletProvider.generatedMnemonic,
-                                  _generateWalletProvider
-                                      .actualWallet.publicKey);
+                                  _generateWalletProvider.generatedMnemonic);
                             }),
                           );
                         },
@@ -194,10 +167,9 @@ class GenerateWalletsScreen extends StatelessWidget {
 
 // ignore: must_be_immutable
 class PrintWallet extends StatelessWidget {
-  PrintWallet(this.sentence, this.pubkey);
+  PrintWallet(this.sentence);
 
   final String sentence;
-  final String pubkey;
 
   @override
   Widget build(BuildContext context) {
@@ -205,10 +177,9 @@ class PrintWallet extends StatelessWidget {
         Provider.of<GenerateWalletsProvider>(context);
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: Text('Imprimer ce portefeuille')),
+        appBar: AppBar(title: Text('Imprimer ce trousseau')),
         body: PdfPreview(
-          build: (format) =>
-              _generateWalletProvider.printWallet(sentence, pubkey),
+          build: (format) => _generateWalletProvider.printWallet(sentence),
         ),
       ),
     );

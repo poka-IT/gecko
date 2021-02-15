@@ -42,9 +42,9 @@ class SettingsScreen extends StatelessWidget {
                                 .redAccent, //Color(0xffFFD68E), // background
                             onPrimary: Colors.black, // foreground
                           ),
-                          onPressed: () => {
+                          onPressed: () async => {
                                 print('Suppression de tous les wallets'),
-                                _myWallets.deleteAllWallet(context)
+                                await _myWallets.deleteAllWallet(context)
                               },
                           child: Text(
                               "EFFACER TOUS MES PORTEFEUILLES, LE TEMPS DE L'ALPHA",

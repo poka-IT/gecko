@@ -26,27 +26,40 @@ class GenerateWalletsProvider with ChangeNotifier {
   bool walletIsGenerated = true;
 
   TextEditingController mnemonicController = TextEditingController();
-  TextEditingController pubkey = TextEditingController();
   TextEditingController pin = TextEditingController();
 
-  Future storeWallet(NewWallet wallet, _name, BuildContext context) async {
-    final Directory walletNameDirectory =
-        Directory('${walletsDirectory.path}/$_name');
-    final walletFile = File('${walletNameDirectory.path}/wallet.dewif');
-    final walletPubkey = File('${walletNameDirectory.path}/pubkey');
+  Future storeWallet(NewWallet wallet, String _name, BuildContext context,
+      {bool isHD = false}) async {
+    int nbrWallet = 0;
+    Directory walletNbrDirectory;
+    do {
+      nbrWallet++;
+      walletNbrDirectory = Directory('${walletsDirectory.path}/$nbrWallet');
+    } while (await walletNbrDirectory.exists());
 
-    if (await walletNameDirectory.exists()) {
-      print('Ce wallet existe déjà, impossible de le créer.');
-      _showWalletExistDialog(context);
-      return 'Exist: DENY';
+    final walletFile = File('${walletNbrDirectory.path}/wallet.dewif');
+
+    await walletNbrDirectory.create();
+    await walletFile.writeAsString(wallet.dewif);
+
+    final configFile = File('${walletNbrDirectory.path}/config.txt');
+
+    if (isHD) {
+      final int _derivationNbr = 3;
+      List _pubkeysTmp = await DubpRust.getBip32DewifAccountsPublicKeys(
+          dewif: wallet.dewif,
+          secretCode: wallet.pin,
+          accountsIndex: [_derivationNbr]);
+      String _pubkey = _pubkeysTmp[0];
+
+      await configFile
+          .writeAsString('$nbrWallet:$_name:$_derivationNbr:$_pubkey');
+    } else {
+      await configFile.writeAsString('$nbrWallet:$_name');
     }
 
-    await walletNameDirectory.create();
-    await walletFile.writeAsString('${wallet.dewif}');
-    await walletPubkey.writeAsString('${wallet.publicKey}');
-
     Navigator.pop(context, true);
-    Navigator.pop(context, wallet.publicKey);
+    Navigator.pop(context, true);
     // notifyListeners();
 
     return _name;
@@ -107,35 +120,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _showWalletExistDialog(BuildContext context) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Ce nom existe déjà'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('Veuillez choisir un autre nom pour votre portefeuille.'),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text("J'ai compris"),
-              onPressed: () {
-                Navigator.of(context).pop();
-                askedWordColor = Colors.green[500];
-                isAskedWordValid = true;
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Future<String> generateMnemonic() async {
     try {
       generatedMnemonic = await DubpRust.genMnemonic(language: Language.french);
@@ -173,7 +157,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     }
 
     mnemonicController.text = generatedMnemonic;
-    pubkey.text = this.actualWallet.publicKey;
     pin.text = this.actualWallet.pin;
     // notifyListeners();
 
@@ -190,7 +173,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     // notifyListeners();
   }
 
-  Future<Uint8List> printWallet(String _title, String _pubkey) async {
+  Future<Uint8List> printWallet(String _title) async {
     final ByteData fontData =
         await rootBundle.load("assets/OpenSans-Regular.ttf");
     final pw.Font ttf = pw.Font.ttf(fontData.buffer.asByteData());
@@ -204,12 +187,6 @@ class GenerateWalletsProvider with ChangeNotifier {
         pageFormat: PdfPageFormat.a4,
         build: (context) {
           return pw.Column(children: <pw.Widget>[
-            pw.Text("Clé publique:",
-                style: pw.TextStyle(fontSize: 20, font: ttf)),
-            pw.SizedBox(height: 10),
-            pw.Text(_pubkey,
-                style: pw.TextStyle(fontSize: 15, font: ttf),
-                textAlign: pw.TextAlign.center),
             pw.SizedBox(height: 20),
             pw.Text("Phrase de restauration:",
                 style: pw.TextStyle(fontSize: 20, font: ttf)),

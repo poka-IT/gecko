@@ -6,7 +6,7 @@ import 'package:gecko/globals.dart';
 import 'package:provider/provider.dart';
 
 class MyWalletsProvider with ChangeNotifier {
-  Map listWallets = Map();
+  String listWallets;
 
   bool checkIfWalletExist() {
     if (appPath == null) {
@@ -25,25 +25,33 @@ class MyWalletsProvider with ChangeNotifier {
 
   Future importWallet() async {}
 
-  Map getAllWalletsNames() {
-    if (listWallets.isNotEmpty) {
-      listWallets.clear();
+  String getAllWalletsNames() {
+    final bool _isWalletsExists = checkIfWalletExist();
+    if (!_isWalletsExists) {
+      return '';
+    }
+
+    if (listWallets != null && listWallets.isNotEmpty) {
+      listWallets = '';
+    }
+    if (listWallets == null) {
+      listWallets = '';
     }
 
     // int i = 0;
     walletsDirectory
         .listSync(recursive: false, followLinks: false)
-        .forEach((wallet) {
-      String _name = wallet.path.split('/').last;
-      List _pubkeyList = File(wallet.path + '/pubkey').readAsLinesSync();
-      String _pubkey = _pubkeyList[0];
-      listWallets[_name] = _pubkey;
-      // i++;
-
-      // for (var _wallets in listWallets) {
-      //   _wallets.pubkey =
-      // }
+        .forEach((_wallet) {
+      File _walletConfig = File('${_wallet.path}/config.txt');
+      _walletConfig.readAsLinesSync().forEach((element) {
+        if (listWallets != '') {
+          listWallets += '\n';
+        }
+        listWallets += element;
+        // listWallets += "${element.split(':')[0]}:${element.split(':')[1]}:${element.split(':')[2]}"
+      });
     });
+
     return listWallets;
   }
 
@@ -56,6 +64,7 @@ class MyWalletsProvider with ChangeNotifier {
       if (_answer) {
         await walletsDirectory.delete(recursive: true);
         await walletsDirectory.create();
+        notifyListeners();
         Navigator.pop(context);
       }
       return 0;
@@ -72,8 +81,8 @@ class MyWalletsProvider with ChangeNotifier {
         MyWalletsProvider _myWalletProvider =
             Provider.of<MyWalletsProvider>(context);
         return AlertDialog(
-          title: Text(
-              'Êtes-vous sûr de vouloir supprimer tous vos portefeuilles ?'),
+          title:
+              Text('Êtes-vous sûr de vouloir supprimer tous vos trousseaux ?'),
           content: SingleChildScrollView(child: Text('')),
           actions: <Widget>[
             TextButton(
@@ -97,6 +106,30 @@ class MyWalletsProvider with ChangeNotifier {
         );
       },
     );
+  }
+
+  Future<void> generateNewDerivation(
+      context, String _name, int _walletNbr) async {
+    int _newDerivationNbr;
+    final _walletConfig =
+        File('${walletsDirectory.path}/$_walletNbr/config.txt');
+
+    if (await _walletConfig.readAsString() == '') {
+      _newDerivationNbr = 3;
+    } else {
+      String _lastWallet =
+          await _walletConfig.readAsLines().then((value) => value.last);
+      int _lastDerivation = int.parse(_lastWallet.split(':')[2]);
+      _newDerivationNbr = _lastDerivation + 3;
+    }
+
+    await _walletConfig.writeAsString('\n$_walletNbr:$_name:$_newDerivationNbr',
+        mode: FileMode.append);
+
+    print(await _walletConfig.readAsString());
+    notifyListeners();
+
+    Navigator.pop(context);
   }
 
   void rebuildWidget() {

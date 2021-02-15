@@ -17,7 +17,6 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
   NewWallet generatedWallet;
 
   TextEditingController _mnemonicController = TextEditingController();
-  TextEditingController _pubkey = TextEditingController();
   TextEditingController _inputRestoreWord = TextEditingController();
   TextEditingController walletName = TextEditingController();
   FocusNode _wordFocus = FocusNode();
@@ -30,7 +29,6 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
         Provider.of<MyWalletsProvider>(context);
 
     this._mnemonicController.text = generatedMnemonic;
-    this._pubkey.text = generatedWallet.publicKey;
     return WillPopScope(
         onWillPop: () {
           _generateWalletProvider.isAskedWordValid = false;
@@ -49,38 +47,21 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                   }),
               title: SizedBox(
                 height: 22,
-                child: Text('Enregistrer ce portefeuille'),
+                child: Text('Enregistrer ce trousseau'),
               )),
           body: Center(
             child: Column(children: <Widget>[
               SizedBox(height: 15),
-              Text(
-                'Votre clé publique est :',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 17.0,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w400),
-              ),
-              TextField(
-                  enabled: false,
-                  controller: this._pubkey,
-                  maxLines: 1,
-                  textAlign: TextAlign.center,
-                  decoration: InputDecoration(),
-                  style: TextStyle(
-                      fontSize: 14.0,
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold)),
-              SizedBox(height: 12),
-              Text(
-                'Quel est le ${_generateWalletProvider.nbrWord + 1}ème mot de votre phrase de restauration ?',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 17.0,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w400),
-              ),
+              Container(
+                  width: 360,
+                  child: Text(
+                    'Quel est le ${_generateWalletProvider.nbrWord + 1}ème mot de votre phrase de restauration ?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 17.0,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w400),
+                  )),
               TextFormField(
                   focusNode: _wordFocus,
                   autofocus: true,
@@ -99,14 +80,16 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                       color: _generateWalletProvider.askedWordColor,
                       fontWeight: FontWeight.w500)),
               SizedBox(height: 12),
-              Text(
-                'Choisissez un nom pour votre portefeuille :',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 17.0,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w400),
-              ),
+              Container(
+                  width: 360,
+                  child: Text(
+                    'Choisissez un nom pour votre premier portefeuille :',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 17.0,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w400),
+                  )),
               TextFormField(
                   focusNode: _generateWalletProvider.walletNameFocus,
                   inputFormatters: [
@@ -145,7 +128,8 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                                     await _generateWalletProvider.storeWallet(
                                         generatedWallet,
                                         walletName.text,
-                                        context);
+                                        context,
+                                        isHD: true);
                                     _generateWalletProvider.isAskedWordValid =
                                         false;
                                     _generateWalletProvider.askedWordColor =

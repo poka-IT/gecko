@@ -93,7 +93,8 @@ class WalletsHome extends StatelessWidget {
 
     List _listWallets = myWalletProvider.listWallets.split('\n');
 
-    return Column(children: <Widget>[
+    return Expanded(
+        child: ListView(children: <Widget>[
       SizedBox(height: 8),
       for (String _repository in _listWallets)
         ListTile(
@@ -113,7 +114,7 @@ class WalletsHome extends StatelessWidget {
             }));
           },
         )
-    ]);
+    ]));
   }
 
   Widget addNewDerivation(context, int _walletNbr) {

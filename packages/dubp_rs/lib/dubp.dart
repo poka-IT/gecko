@@ -256,8 +256,8 @@ class DubpRust {
         singleCompletePort<String, String>(completer, callback: _handleErr);
     native.get_legacy_pubkey(
       sendPort.nativePort,
-      Utf8.toUtf8(password),
       Utf8.toUtf8(salt),
+      Utf8.toUtf8(password),
     );
     return completer.future;
   }

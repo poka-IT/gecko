@@ -7,6 +7,9 @@ import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class WalletsHome extends StatelessWidget {
+  final _derivationKey = GlobalKey<FormState>();
+  final TextEditingController _newDerivationName = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     MyWalletsProvider myWalletProvider =
@@ -27,12 +30,11 @@ class WalletsHome extends StatelessWidget {
                     child: FloatingActionButton(
                         heroTag: "buttonGenerateWallet",
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) {
-                              return GenerateWalletsScreen();
-                            }),
-                          );
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return addNewDerivation(context, 1);
+                              });
                         },
                         child: Container(
                             height: 40.0,
@@ -89,10 +91,7 @@ class WalletsHome extends StatelessWidget {
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
 
-    List _listWallets = [];
-    myWalletProvider.listWallets.forEach((_nbr, _name) {
-      _listWallets.add('$_nbr:$_name');
-    });
+    List _listWallets = myWalletProvider.listWallets.split('\n');
 
     return Column(children: <Widget>[
       SizedBox(height: 8),
@@ -109,10 +108,54 @@ class WalletsHome extends StatelessWidget {
             Navigator.push(context, MaterialPageRoute(builder: (context) {
               return WalletOptions(
                   walletNbr: int.parse(_repository.split(':')[0]),
-                  walletName: _repository.split(':')[1]);
+                  walletName: _repository.split(':')[1],
+                  derivation: int.parse(_repository.split(':')[2]));
             }));
           },
         )
     ]);
+  }
+
+  Widget addNewDerivation(context, int _walletNbr) {
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context);
+    return AlertDialog(
+      content: Stack(
+        overflow: Overflow.visible,
+        children: <Widget>[
+          Form(
+            key: _derivationKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text('Nom du portefeuille:'),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: TextFormField(
+                    controller: _newDerivationName,
+                    textAlign: TextAlign.center,
+                    autofocus: true,
+                  ),
+                ),
+                SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: RaisedButton(
+                    child: Text("Créer"),
+                    color: Color(0xffFFD68E),
+                    onPressed: () async {
+                      await _myWalletProvider
+                          .generateNewDerivation(
+                              context, _newDerivationName.text, _walletNbr)
+                          .then((_) => _newDerivationName.text == '');
+                    },
+                  ),
+                )
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

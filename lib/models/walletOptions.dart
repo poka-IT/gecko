@@ -15,7 +15,8 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Future<NewWallet> get badWallet => null;
 
-  Future _getPubkeyFromDewif(_dewif, _pin, _pinLenght, {derivation}) async {
+  Future _getPubkeyFromDewif(
+      String _dewif, _pin, int _pinLenght, int derivation) async {
     String _pubkey;
     RegExp regExp = new RegExp(
       r'^[A-Z0-9]+$',
@@ -31,7 +32,7 @@ class WalletOptionsProvider with ChangeNotifier {
     }
     try {
       List _pubkeysTmp = await DubpRust.getBip32DewifAccountsPublicKeys(
-          dewif: _dewif, secretCode: _pin, accountsIndex: [3]);
+          dewif: _dewif, secretCode: _pin, accountsIndex: [derivation]);
       _pubkey = _pubkeysTmp[0];
       this.pubkey.text = _pubkey;
       notifyListeners();
@@ -52,8 +53,8 @@ class WalletOptionsProvider with ChangeNotifier {
     }
   }
 
-  Future readLocalWallet(
-      int _walletNbr, String _name, String _pin, _pinLenght) async {
+  Future readLocalWallet(int _walletNbr, String _name, String _pin,
+      int _pinLenght, int derivation) async {
     isWalletUnlock = false;
     try {
       File _walletFile =
@@ -61,16 +62,12 @@ class WalletOptionsProvider with ChangeNotifier {
       String _localDewif = await _walletFile.readAsString();
       String _localPubkey;
 
-      if ((_localPubkey =
-              await _getPubkeyFromDewif(_localDewif, _pin, _pinLenght)) !=
+      if ((_localPubkey = await _getPubkeyFromDewif(
+              _localDewif, _pin, _pinLenght, derivation)) !=
           'false') {
         this.pubkey.text = _localPubkey;
         isWalletUnlock = true;
         notifyListeners();
-        print('GET BIP32 accounts publickeys from this dewif');
-        List _hdWallets = await DubpRust.getBip32DewifAccountsPublicKeys(
-            dewif: _localDewif, secretCode: _pin, accountsIndex: [0, 1, 2]);
-        print(_hdWallets);
 
         return _localDewif;
       } else {
@@ -94,17 +91,27 @@ class WalletOptionsProvider with ChangeNotifier {
     return _pinLenght;
   }
 
-  Future _renameWallet(_walletName, _newName) async {
-    final _walletFile = Directory('${walletsDirectory.path}/$_walletName');
+  Future _renameWallet(_walletName, _newName, _walletNbr, _derivation) async {
+    final _walletConfig =
+        File('${walletsDirectory.path}/$_walletNbr/config.txt');
 
-    try {
-      _walletFile.rename('${walletsDirectory.path}/$_newName');
-    } catch (e) {
-      print('ERREUR lors du renommage du wallet: $e');
-    }
+    String newConfig =
+        await _walletConfig.readAsLines().then((List<String> lines) {
+      int _index = lines.indexOf('$_walletNbr:$_walletName:$_derivation');
+      lines.removeWhere(
+          (element) => element == '$_walletNbr:$_walletName:$_derivation');
+      lines.insert(_index, '$_walletNbr:$_newName:$_derivation');
+
+      return lines.join('\n');
+    });
+
+    await _walletConfig.delete();
+    await _walletConfig.writeAsString(newConfig);
+    _newWalletName.text = '';
   }
 
-  Future<bool> renameWalletAlerte(context, _walletName) async {
+  Future<bool> renameWalletAlerte(
+      context, _walletName, _walletNbr, _derivation) async {
     return showDialog<bool>(
       context: context,
       barrierDismissible: true, // user must tap button!
@@ -130,11 +137,11 @@ class WalletOptionsProvider with ChangeNotifier {
             TextButton(
               child: Text("Valider"),
               onPressed: () {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _renameWallet(_walletName, this._newWalletName.text);
+                WidgetsBinding.instance.addPostFrameCallback((_) async {
+                  await _renameWallet(_walletName, this._newWalletName.text,
+                      _walletNbr, _derivation);
                 });
                 // notifyListeners();
-                Navigator.pop(context, true);
                 Navigator.pop(context, true);
               },
             ),
@@ -144,21 +151,26 @@ class WalletOptionsProvider with ChangeNotifier {
     );
   }
 
-  Future<int> deleteWallet(context, _name) async {
-    try {
-      final _walletFile = Directory('${walletsDirectory.path}/$_name');
-      print('DELETE THAT ?: $_walletFile');
+  Future<int> deleteWallet(context, _walletNbr, _name, _derivation) async {
+    final bool _answer = await _confirmDeletingWallet(context, _name);
 
-      final bool _answer = await _confirmDeletingWallet(context, _name);
+    if (_answer) {
+      final _walletConfig =
+          File('${walletsDirectory.path}/$_walletNbr/config.txt');
 
-      if (_answer) {
-        await _walletFile.delete(recursive: true);
-        Navigator.pop(context);
-      }
-      return 0;
-    } catch (e) {
-      return 1;
+      String newConfig =
+          await _walletConfig.readAsLines().then((List<String> lines) {
+        lines.removeWhere(
+            (element) => element == '$_walletNbr:$_name:$_derivation');
+
+        return lines.join('\n');
+      });
+
+      await _walletConfig.delete();
+      await _walletConfig.writeAsString(newConfig);
+      Navigator.pop(context);
     }
+    return 0;
   }
 
   Future<bool> _confirmDeletingWallet(context, _walletName) async {
@@ -172,8 +184,7 @@ class WalletOptionsProvider with ChangeNotifier {
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text(
-                    'Vous pourrez restaurer ce portefeuille à tout moment grace à votre phrase de restauration.'),
+                Text('Vous pourrez restaurer ce portefeuille plus tard.'),
               ],
             ),
           ),

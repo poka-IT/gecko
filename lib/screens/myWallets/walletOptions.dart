@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:dubp/dubp.dart';
 import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/walletOptions.dart';
-import 'package:gecko/screens/myWallets/changePin.dart';
 import 'dart:async';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
@@ -12,10 +11,14 @@ import 'package:flutter/services.dart';
 // ignore: must_be_immutable
 class WalletOptions extends StatelessWidget with ChangeNotifier {
   WalletOptions(
-      {Key keyMyWallets, @required this.walletNbr, @required this.walletName})
+      {Key keyMyWallets,
+      @required this.walletNbr,
+      @required this.walletName,
+      @required this.derivation})
       : super(key: keyMyWallets);
   int walletNbr;
   String walletName;
+  int derivation;
 
   StreamController<ErrorAnimationType> errorController;
   TextEditingController _enterPin = TextEditingController();
@@ -102,7 +105,10 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                                             ),
                                             onPressed: () => _walletOptions
                                                     .renameWalletAlerte(
-                                                        context, walletName)
+                                                        context,
+                                                        walletName,
+                                                        walletNbr,
+                                                        derivation)
                                                     .then((_result) {
                                                   if (_result == true) {
                                                     WidgetsBinding.instance
@@ -115,6 +121,8 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                                                       _myWalletProvider
                                                           .rebuildWidget();
                                                     });
+                                                    Navigator.pop(
+                                                        context, true);
                                                   }
                                                 }),
                                             child: Text(
@@ -127,38 +135,14 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                                 width: 300,
                                 child: ElevatedButton(
                                     style: ElevatedButton.styleFrom(
-                                      elevation: 5,
-                                      primary: Color(
-                                          0xffFFD68E), //Color(0xffFFD68E), // background
-                                      onPrimary: Colors.black, // foreground
-                                    ),
-                                    onPressed: () {
-                                      // changePin(widget.walletName, this.walletPin);
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder: (context) {
-                                          return ChangePinScreen(
-                                              walletName: walletName,
-                                              oldPin: this.walletPin);
-                                        }),
-                                      );
-                                    },
-                                    child: Text('Changer mon code secret',
-                                        style: TextStyle(fontSize: 20)))),
-                            SizedBox(height: 30),
-                            SizedBox(
-                                height: 50,
-                                width: 300,
-                                child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
                                       elevation: 6,
                                       primary: Colors
                                           .redAccent, //Color(0xffFFD68E), // background
                                       onPrimary: Colors.black, // foreground
                                     ),
                                     onPressed: () async {
-                                      await _walletOptions.deleteWallet(
-                                          context, walletName);
+                                      await _walletOptions.deleteWallet(context,
+                                          walletNbr, walletName, derivation);
                                       WidgetsBinding.instance
                                           .addPostFrameCallback((_) {
                                         _myWalletProvider.listWallets =
@@ -249,7 +233,8 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                                               this.walletNbr,
                                               this.walletName,
                                               _pin.toUpperCase(),
-                                              _pinLenght);
+                                              _pinLenght,
+                                              this.derivation);
                                       if (resultWallet == 'bad') {
                                         errorController.add(ErrorAnimationType
                                             .shake); // Triggering error shake animation

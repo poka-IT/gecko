@@ -128,7 +128,8 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                                     await _generateWalletProvider.storeWallet(
                                         generatedWallet,
                                         walletName.text,
-                                        context);
+                                        context,
+                                        isHD: true);
                                     _generateWalletProvider.isAskedWordValid =
                                         false;
                                     _generateWalletProvider.askedWordColor =

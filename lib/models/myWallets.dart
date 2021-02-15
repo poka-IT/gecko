@@ -6,7 +6,7 @@ import 'package:gecko/globals.dart';
 import 'package:provider/provider.dart';
 
 class MyWalletsProvider with ChangeNotifier {
-  Map listWallets = Map();
+  String listWallets;
 
   bool checkIfWalletExist() {
     if (appPath == null) {
@@ -25,19 +25,28 @@ class MyWalletsProvider with ChangeNotifier {
 
   Future importWallet() async {}
 
-  Map getAllWalletsNames() {
-    if (listWallets.isNotEmpty) {
-      listWallets.clear();
+  String getAllWalletsNames() {
+    if (listWallets != null && listWallets.isNotEmpty) {
+      listWallets = '';
+    }
+    if (listWallets == null) {
+      listWallets = '';
     }
 
     // int i = 0;
     walletsDirectory
         .listSync(recursive: false, followLinks: false)
         .forEach((_wallet) {
-      File('${_wallet.path}/config.txt').readAsLinesSync().forEach((element) {
-        listWallets[int.parse(element.split(':')[0])] = element.split(':')[1];
+      File _walletConfig = File('${_wallet.path}/config.txt');
+      _walletConfig.readAsLinesSync().forEach((element) {
+        if (listWallets != '') {
+          listWallets += '\n';
+        }
+        listWallets +=
+            "${element.split(':')[0]}:${element.split(':')[1]}:${element.split(':')[2]}";
       });
     });
+
     return listWallets;
   }
 
@@ -91,6 +100,26 @@ class MyWalletsProvider with ChangeNotifier {
         );
       },
     );
+  }
+
+  Future<void> generateNewDerivation(
+      context, String _name, int _walletNbr) async {
+    final _walletConfig =
+        File('${walletsDirectory.path}/$_walletNbr/config.txt');
+
+    String _lastWallet =
+        await _walletConfig.readAsLines().then((value) => value.last);
+    int _lastDerivation = int.parse(_lastWallet.split(':')[2]);
+    // print(_lastDerivation);
+    int _newDerivationNbr = _lastDerivation + 3;
+
+    await _walletConfig.writeAsString('\n$_walletNbr:$_name:$_newDerivationNbr',
+        mode: FileMode.append);
+
+    print(await _walletConfig.readAsString());
+    notifyListeners();
+
+    Navigator.pop(context);
   }
 
   void rebuildWidget() {

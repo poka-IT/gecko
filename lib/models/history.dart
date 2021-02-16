@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -8,6 +10,8 @@ import 'package:qrscan/qrscan.dart' as scanner;
 import 'dart:math';
 import 'package:intl/intl.dart';
 import 'package:truncate/truncate.dart';
+import 'package:crypto/crypto.dart';
+import 'package:fast_base58/fast_base58.dart';
 
 class HistoryProvider with ChangeNotifier {
   String pubkey = '';
@@ -56,11 +60,20 @@ class HistoryProvider with ChangeNotifier {
       print("C'est une pubkey !!!");
 
       this.pubkey = pubkey;
+
+      List<int> pubkeyByte = Base58Decode(pubkey);
+      Digest pubkeyS256 = sha256.convert(sha256.convert(pubkeyByte).bytes);
+      String pubkeyCheksum = Base58Encode(pubkeyS256.bytes);
+      String pubkeyChecksumShort = truncate(pubkeyCheksum, 3,
+          omission: "", position: TruncatePosition.end);
+
       pubkeyShort = truncate(pubkey, 5,
-              omission: ":", position: TruncatePosition.end) +
+              omission: String.fromCharCode(0x2026),
+              position: TruncatePosition.end) +
           truncate(pubkey, 4, omission: "", position: TruncatePosition.start) +
-          ':aaa';
+          ':$pubkeyChecksumShort';
       this.outputPubkey.text = pubkey;
+      print(pubkeyShort);
       notifyListeners();
 
       return pubkey;
@@ -194,6 +207,14 @@ class HistoryProvider with ChangeNotifier {
   num removeDecimalZero(double n) {
     String result = n.toStringAsFixed(n.truncateToDouble() == n ? 0 : 2);
     return num.parse(result);
+  }
+
+  snackCopyKey(context) {
+    final snackBar = SnackBar(
+        content:
+            Text("Cette clé publique a été copié dans votre presse-papier."),
+        duration: Duration(seconds: 2));
+    Scaffold.of(context).showSnackBar(snackBar);
   }
 
   // num getBalance(_pubkey) {

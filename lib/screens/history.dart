@@ -56,32 +56,6 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
         ),
         body: Column(children: <Widget>[
           SizedBox(height: 20),
-          TextField(
-              autofocus: false,
-              focusNode: _pubkeyFocus,
-              // Entrée de la pubkey
-              onChanged: (text) {
-                print("Clé tappxé: $text");
-                _historyProvider.isPubkey(text);
-              },
-              controller: this._outputPubkey,
-              maxLines: 1,
-              textAlign: TextAlign.center,
-              decoration: InputDecoration(
-                hintText: 'Tappez/Collez une clé publique, ou scannez',
-                hintStyle: TextStyle(fontSize: 14),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 7, vertical: 15),
-                border: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                errorBorder: InputBorder.none,
-                disabledBorder: InputBorder.none,
-              ),
-              style: TextStyle(
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Monospace')),
           if (_historyProvider.pubkey != '')
             historyQuery(context, _historyProvider),
         ]));
@@ -193,11 +167,18 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                                 '/default_avatar.png'),
                                             height: 65);
                                       })),
-                            Text(_historyProvider.pubkeyShort,
-                                style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w800,
-                                    fontFamily: 'Monospace')),
+                            GestureDetector(
+                              onTap: () {
+                                Clipboard.setData(ClipboardData(
+                                    text: _historyProvider.pubkey));
+                                _historyProvider.snackCopyKey(context);
+                              },
+                              child: Text(_historyProvider.pubkeyShort,
+                                  style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
+                                      fontFamily: 'Monospace')),
+                            ),
                             Container(
                                 padding: const EdgeInsets.fromLTRB(
                                     30, 0, 15, 0), // .only(right: 15),

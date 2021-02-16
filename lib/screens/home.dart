@@ -1,4 +1,5 @@
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
 import 'package:gecko/screens/history.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
+    HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
     return Scaffold(
       drawer: Drawer(
         child: Column(
@@ -73,21 +75,37 @@ class HomeScreen extends StatelessWidget {
                   icon: _homeProvider.searchIcon,
                   color: Colors.grey[850],
                   onPressed: () {
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(builder: (context) {
+                    //     return SearchList();
+                    //   }),
+                    // );
+
                     if (_homeProvider.searchIcon.icon == Icons.search) {
                       _homeProvider.searchIcon = Icon(
                         Icons.close,
                         color: Colors.grey[850],
                       );
-                      TextField(
+                      _homeProvider.appBarTitle = TextField(
+                        autofocus: true,
                         controller: _homeProvider.searchQuery,
-                        style: new TextStyle(
-                          color: Colors.white,
+                        onChanged: (text) {
+                          print("Clé tappé: $text");
+                          final String searchResult =
+                              _historyProvider.isPubkey(text);
+                          if (searchResult != '') {
+                            _homeProvider.currentIndex = 0;
+                          }
+                        },
+                        style: TextStyle(
+                          color: Colors.grey[850],
                         ),
-                        decoration: new InputDecoration(
+                        decoration: InputDecoration(
                             prefixIcon:
-                                new Icon(Icons.search, color: Colors.white),
-                            hintText: "Search...",
-                            hintStyle: new TextStyle(color: Colors.white)),
+                                Icon(Icons.search, color: Colors.grey[850]),
+                            hintText: "Rechercher ...",
+                            hintStyle: TextStyle(color: Colors.grey[850])),
                       );
                       _homeProvider.handleSearchStart();
                     } else {

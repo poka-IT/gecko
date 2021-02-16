@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'package:flutter/services.dart';
 import 'package:gecko/models/generateWallets.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/myWallets.dart';
+import 'package:gecko/models/walletOptions.dart';
 import 'package:provider/provider.dart';
 
 class ImportWalletScreen extends StatelessWidget {
@@ -13,6 +15,10 @@ class ImportWalletScreen extends StatelessWidget {
         Provider.of<GenerateWalletsProvider>(context);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
+    WalletOptionsProvider _walletOptions =
+        Provider.of<WalletOptionsProvider>(context);
+
+        _generateWalletProvider.showPinIfEmpty();
 
     return WillPopScope(
         onWillPop: () {
@@ -22,6 +28,9 @@ class ImportWalletScreen extends StatelessWidget {
           _generateWalletProvider.pin.text = '';
           _generateWalletProvider.canImport = false;
           _generateWalletProvider.isPinChanged = false;
+          _generateWalletProvider.isCesiumIDVisible = false;
+          _generateWalletProvider.isCesiumPWDVisible = false;
+          _generateWalletProvider.reloadBuild();
           return Future<bool>.value(true);
         },
         child: Scaffold(
@@ -35,6 +44,9 @@ class ImportWalletScreen extends StatelessWidget {
                       _generateWalletProvider.pin.text = '';
                       _generateWalletProvider.canImport = false;
                       _generateWalletProvider.isPinChanged = false;
+                      _generateWalletProvider.isCesiumIDVisible = false;
+                      _generateWalletProvider.isCesiumPWDVisible = false;
+                      _generateWalletProvider.reloadBuild();
                       Navigator.of(context).pop();
                     }),
                 title: SizedBox(
@@ -122,14 +134,21 @@ class ImportWalletScreen extends StatelessWidget {
                           ),
                         ),
                         SizedBox(height: 15),
-                        Text(
-                          _generateWalletProvider.cesiumPubkey.text,
-                          style: TextStyle(
-                              fontSize: 14.0,
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Monospace'),
-                        ),
+                        GestureDetector(
+                            onTap: () {
+                              Clipboard.setData(ClipboardData(
+                                  text: _generateWalletProvider
+                                      .cesiumPubkey.text));
+                              _walletOptions.snackCopyKey(ctx);
+                            },
+                            child: Text(
+                              _generateWalletProvider.cesiumPubkey.text,
+                              style: TextStyle(
+                                  fontSize: 14.0,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Monospace'),
+                            )),
                         SizedBox(height: 20),
                         toolTips(_toolTipSecret, 'Code secret:',
                             "Retenez bien votre code secret, il vous sera demandé à chaque paiement, ainsi que pour configurer votre portefeuille"),
@@ -151,8 +170,8 @@ class ImportWalletScreen extends StatelessWidget {
                                 icon: Icon(Icons.replay),
                                 color: Color(0xffD28928),
                                 onPressed: () {
-                                  _generateWalletProvider.changePinCode();
-                                  _generateWalletProvider.isPinChanged = true;
+                                  _generateWalletProvider.changePinCode(
+                                      reload: true);
                                 },
                               ),
                             ],

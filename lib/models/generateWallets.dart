@@ -41,7 +41,12 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   Future storeWallet(NewWallet wallet, String _name, BuildContext context,
       {bool isHD = false}) async {
-    int nbrWallet = 0;
+    int nbrWallet;
+    if (isHD) {
+      nbrWallet = 0;
+    } else {
+      nbrWallet = 1;
+    }
     Directory walletNbrDirectory;
     do {
       nbrWallet++;
@@ -65,6 +70,7 @@ class GenerateWalletsProvider with ChangeNotifier {
 
       await configFile
           .writeAsString('$nbrWallet:$_name:$_derivationNbr:$_pubkey');
+      Navigator.pop(context, true);
     } else {
       final int _derivationNbr = -1;
       String _pubkey = await DubpRust.getDewifPublicKey(
@@ -76,10 +82,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     }
 
     Navigator.pop(context, true);
-    if (isHD) {
-      Navigator.pop(context, true);
-    }
-    // notifyListeners();
 
     return _name;
   }
@@ -182,14 +184,17 @@ class GenerateWalletsProvider with ChangeNotifier {
     return this.actualWallet;
   }
 
-  Future<void> changePinCode() async {
+  Future<void> changePinCode({bool reload}) async {
     actualWallet = await DubpRust.changeDewifPin(
       dewif: actualWallet.dewif,
       oldPin: actualWallet.pin,
     );
 
     pin.text = actualWallet.pin;
-    notifyListeners();
+    isPinChanged = true;
+    if (reload) {
+      notifyListeners();
+    }
   }
 
   Future<Uint8List> printWallet(String _title) async {
@@ -238,8 +243,6 @@ class GenerateWalletsProvider with ChangeNotifier {
         salt: _cesiumID, password: _cesiumPWD);
 
     cesiumPubkey.text = _walletPubkey;
-    // changePinCode();
-    // notifyListeners();
     print(_walletPubkey);
   }
 
@@ -250,14 +253,14 @@ class GenerateWalletsProvider with ChangeNotifier {
         omission: "...", position: TruncatePosition.end);
     await storeWallet(
         actualWallet, 'Portefeuille Cesium - $shortPubkey', context);
-    print('taaaaaaaaaaaaaaaaa');
-    print(actualWallet.pin);
     cesiumID.text = '';
     cesiumPWD.text = '';
     cesiumPubkey.text = '';
     canImport = false;
     isPinChanged = false;
     pin.text = '';
+    isCesiumIDVisible = false;
+    isCesiumPWDVisible = false;
     notifyListeners();
   }
 
@@ -269,6 +272,13 @@ class GenerateWalletsProvider with ChangeNotifier {
   void cesiumPWDisVisible() {
     isCesiumPWDVisible = !isCesiumPWDVisible;
     notifyListeners();
+  }
+
+  void showPinIfEmpty() {
+    if (!isPinChanged) {
+      changePinCode(reload: true);
+      isPinChanged = true;
+    }
   }
 
   void reloadBuild() {

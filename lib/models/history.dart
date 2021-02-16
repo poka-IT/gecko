@@ -7,9 +7,11 @@ import 'package:sentry/sentry.dart' as sentry;
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'dart:math';
 import 'package:intl/intl.dart';
+import 'package:truncate/truncate.dart';
 
 class HistoryProvider with ChangeNotifier {
   String pubkey = '';
+  String pubkeyShort = '';
   HistoryProvider(this.pubkey);
   final TextEditingController outputPubkey = TextEditingController();
   List transBC;
@@ -54,6 +56,10 @@ class HistoryProvider with ChangeNotifier {
       print("C'est une pubkey !!!");
 
       this.pubkey = pubkey;
+      pubkeyShort = truncate(pubkey, 5,
+              omission: ":", position: TruncatePosition.end) +
+          truncate(pubkey, 4, omission: "", position: TruncatePosition.start) +
+          ':aaa';
       this.outputPubkey.text = pubkey;
       notifyListeners();
 

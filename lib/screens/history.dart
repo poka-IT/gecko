@@ -193,10 +193,11 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                                 '/default_avatar.png'),
                                             height: 65);
                                       })),
-                            if (_isFirstExec)
-                              Text(balance.toString() + ' Ğ1',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 30.0)),
+                            Text(_historyProvider.pubkeyShort,
+                                style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w800,
+                                    fontFamily: 'Monospace')),
                             Container(
                                 padding: const EdgeInsets.fromLTRB(
                                     30, 0, 15, 0), // .only(right: 15),
@@ -212,7 +213,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                     iconSize: 30,
                                     color: Color(0xFFB16E16)))
                           ]),
-                    SizedBox(height: 10),
+                    SizedBox(height: 15),
                     if (_isFirstExec)
                       Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -225,9 +226,15 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                         .getName(_historyProvider.pubkey),
                                     initialData: '',
                                     builder: (context, snapshot) {
-                                      return Text(snapshot.data);
+                                      return Text(snapshot.data,
+                                          style: TextStyle(fontSize: 16));
                                     }))
                           ]),
+                    SizedBox(height: 15),
+                    if (_isFirstExec)
+                      Text(balance.toString() + ' Ğ1',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 20.0)),
                     SizedBox(height: 20),
                     const Divider(
                       color: Colors.grey,

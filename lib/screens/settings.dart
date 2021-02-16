@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:dubp/dubp.dart';
 import 'package:gecko/models/myWallets.dart';
+import 'package:gecko/screens/myWallets/generateWallets.dart';
 import 'dart:io';
+
+import 'package:gecko/screens/myWallets/importWallet.dart';
 
 // ignore: must_be_immutable
 class SettingsScreen extends StatelessWidget {
@@ -28,18 +31,56 @@ class SettingsScreen extends StatelessWidget {
           child: Text('Paramètres'),
         )),
         body: Column(children: <Widget>[
+          SizedBox(height: 40),
+          SizedBox(
+              height: 50,
+              width: 500,
+              child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    elevation: 5,
+                    primary: Color(0xFFFFCA6F), // background
+                    onPrimary: Colors.black, // foreground
+                  ),
+                  onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) {
+                          return ImportWalletScreen();
+                        }),
+                      ).then((value) => {
+                            if (value == true) {Navigator.pop(context)}
+                          }),
+                  child: Text("Importer un portefeuille Cesium",
+                      style: TextStyle(fontSize: 15)))),
           SizedBox(height: 20),
+          SizedBox(
+              height: 50,
+              width: 500,
+              child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    elevation: 5,
+                    primary: Color(0xFFFFCA6F), // background
+                    onPrimary: Colors.black, // foreground
+                  ),
+                  onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) {
+                          return GenerateWalletsScreen();
+                        }),
+                      ).then((value) => {
+                            if (value == true) {Navigator.pop(context)}
+                          }),
+                  child: Text("Générer un nouveau trousseau",
+                      style: TextStyle(fontSize: 15)))),
           Expanded(
               child: Align(
                   alignment: Alignment.bottomCenter,
                   child: SizedBox(
                       height: 100,
-                      width: 1000,
+                      width: 500,
                       child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
-                            primary: Colors
-                                .redAccent, //Color(0xffFFD68E), // background
+                            primary: Colors.redAccent, // background
                             onPrimary: Colors.black, // foreground
                           ),
                           onPressed: () async => {

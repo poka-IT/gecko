@@ -49,3 +49,34 @@ pub(super) fn sign(salt: &str, password: &str, msg: &str) -> String {
         .sign(msg.as_bytes())
         .to_base64()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_dewif_legacy() -> Result<(), DubpError> {
+        let wallet = gen_dewif_from_legacy(
+            "g1",
+            "salt".to_owned(),
+            "pass".to_owned(),
+            false,
+            SecretCodeType::Letters,
+            1_000_000_000,
+        )?;
+        let dewif = &wallet[0];
+        let secret_code = &wallet[1];
+        let pubkey = &wallet[2];
+
+        assert_eq!(pubkey, "3YumN7F7D8c2hmkHLHf3ZD8wc3tBHiECEK9zLPkaJtAF");
+
+        assert_eq!(get_pubkey("salt", "pass"), pubkey.to_owned());
+
+        assert_eq!(
+            crate::dewif::get_pubkey(Currency::from(G1_CURRENCY), &dewif, &secret_code)?,
+            pubkey.to_owned()
+        );
+
+        Ok(())
+    }
+}

@@ -2,6 +2,7 @@ import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/walletOptions.dart';
 import 'package:gecko/screens/myWallets/generateWallets.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/screens/myWallets/importWallet.dart';
 import 'package:gecko/screens/myWallets/walletOptions.dart';
 import 'package:provider/provider.dart';
 
@@ -78,7 +79,12 @@ class WalletsHome extends StatelessWidget {
                       primary: Color(0xffFFD68E), // background
                       onPrimary: Colors.black, // foreground
                     ),
-                    onPressed: () => myWalletProvider.importWallet(),
+                    onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) {
+                            return ImportWalletScreen();
+                          }),
+                        ),
                     child: Text('Importer un portefeuille existant',
                         style: TextStyle(fontSize: 20))),
               ])),

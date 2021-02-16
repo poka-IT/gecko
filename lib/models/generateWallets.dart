@@ -11,6 +11,7 @@ import 'package:sentry_flutter/sentry_flutter.dart' as sentry;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:truncate/truncate.dart';
 
 class GenerateWalletsProvider with ChangeNotifier {
   GenerateWalletsProvider();
@@ -20,6 +21,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   FocusNode walletNameFocus = FocusNode();
   Color askedWordColor = Colors.black;
   bool isAskedWordValid = false;
+
   int nbrWord;
 
   String generatedMnemonic;
@@ -28,9 +30,23 @@ class GenerateWalletsProvider with ChangeNotifier {
   TextEditingController mnemonicController = TextEditingController();
   TextEditingController pin = TextEditingController();
 
+  // Import wallet
+  TextEditingController cesiumID = TextEditingController();
+  TextEditingController cesiumPWD = TextEditingController();
+  TextEditingController cesiumPubkey = TextEditingController();
+  bool isCesiumIDVisible = false;
+  bool isCesiumPWDVisible = false;
+  bool canImport = false;
+  bool isPinChanged = false;
+
   Future storeWallet(NewWallet wallet, String _name, BuildContext context,
       {bool isHD = false}) async {
-    int nbrWallet = 0;
+    int nbrWallet;
+    if (isHD) {
+      nbrWallet = 0;
+    } else {
+      nbrWallet = 1;
+    }
     Directory walletNbrDirectory;
     do {
       nbrWallet++;
@@ -54,13 +70,18 @@ class GenerateWalletsProvider with ChangeNotifier {
 
       await configFile
           .writeAsString('$nbrWallet:$_name:$_derivationNbr:$_pubkey');
+      Navigator.pop(context, true);
     } else {
-      await configFile.writeAsString('$nbrWallet:$_name');
+      final int _derivationNbr = -1;
+      String _pubkey = await DubpRust.getDewifPublicKey(
+        dewif: wallet.dewif,
+        pin: wallet.pin,
+      );
+      await configFile
+          .writeAsString('$nbrWallet:$_name:$_derivationNbr:$_pubkey');
     }
 
     Navigator.pop(context, true);
-    Navigator.pop(context, true);
-    // notifyListeners();
 
     return _name;
   }
@@ -163,14 +184,17 @@ class GenerateWalletsProvider with ChangeNotifier {
     return this.actualWallet;
   }
 
-  Future<void> changePinCode() async {
-    this.actualWallet = await DubpRust.changeDewifPin(
-      dewif: this.actualWallet.dewif,
-      oldPin: this.actualWallet.pin,
+  Future<void> changePinCode({bool reload}) async {
+    actualWallet = await DubpRust.changeDewifPin(
+      dewif: actualWallet.dewif,
+      oldPin: actualWallet.pin,
     );
 
-    pin.text = this.actualWallet.pin;
-    // notifyListeners();
+    pin.text = actualWallet.pin;
+    isPinChanged = true;
+    if (reload) {
+      notifyListeners();
+    }
   }
 
   Future<Uint8List> printWallet(String _title) async {
@@ -209,5 +233,55 @@ class GenerateWalletsProvider with ChangeNotifier {
     );
 
     return pdf.save();
+  }
+
+  Future<void> generateCesiumWalletPubkey(
+      String _cesiumID, String _cesiumPWD) async {
+    actualWallet = await DubpRust.genWalletFromDeprecatedSaltPassword(
+        salt: _cesiumID, password: _cesiumPWD);
+    String _walletPubkey = await DubpRust.getLegacyPublicKey(
+        salt: _cesiumID, password: _cesiumPWD);
+
+    cesiumPubkey.text = _walletPubkey;
+    print(_walletPubkey);
+  }
+
+  Future importWallet(context, _cesiumID, _cesiumPWD) async {
+    String _walletPubkey = await DubpRust.getLegacyPublicKey(
+        salt: _cesiumID, password: _cesiumPWD);
+    String shortPubkey = truncate(_walletPubkey, 9,
+        omission: "...", position: TruncatePosition.end);
+    await storeWallet(
+        actualWallet, 'Portefeuille Cesium - $shortPubkey', context);
+    cesiumID.text = '';
+    cesiumPWD.text = '';
+    cesiumPubkey.text = '';
+    canImport = false;
+    isPinChanged = false;
+    pin.text = '';
+    isCesiumIDVisible = false;
+    isCesiumPWDVisible = false;
+    notifyListeners();
+  }
+
+  void cesiumIDisVisible() {
+    isCesiumIDVisible = !isCesiumIDVisible;
+    notifyListeners();
+  }
+
+  void cesiumPWDisVisible() {
+    isCesiumPWDVisible = !isCesiumPWDVisible;
+    notifyListeners();
+  }
+
+  void showPinIfEmpty() {
+    if (!isPinChanged) {
+      changePinCode(reload: true);
+      isPinChanged = true;
+    }
+  }
+
+  void reloadBuild() {
+    notifyListeners();
   }
 }

@@ -83,7 +83,8 @@ class GenerateWalletsScreen extends StatelessWidget {
                             icon: Icon(Icons.replay),
                             color: Color(0xffD28928),
                             onPressed: () {
-                              _generateWalletProvider.changePinCode();
+                              _generateWalletProvider.changePinCode(
+                                  reload: false);
                             },
                           ),
                         ],

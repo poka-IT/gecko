@@ -3,7 +3,6 @@ import 'package:dubp/dubp.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:sentry/sentry.dart' as sentry;
 import 'package:gecko/globals.dart';
 
 class WalletOptionsProvider with ChangeNotifier {
@@ -30,26 +29,35 @@ class WalletOptionsProvider with ChangeNotifier {
       print('Format de code PIN invalide');
       return 'false';
     }
-    try {
-      List _pubkeysTmp = await DubpRust.getBip32DewifAccountsPublicKeys(
-          dewif: _dewif, secretCode: _pin, accountsIndex: [derivation]);
-      _pubkey = _pubkeysTmp[0];
-      this.pubkey.text = _pubkey;
-      notifyListeners();
+    if (derivation != -1) {
+      try {
+        List _pubkeysTmp = await DubpRust.getBip32DewifAccountsPublicKeys(
+            dewif: _dewif, secretCode: _pin, accountsIndex: [derivation]);
+        _pubkey = _pubkeysTmp[0];
+        this.pubkey.text = _pubkey;
+        notifyListeners();
 
-      return _pubkey;
-    } catch (e, stack) {
-      print('Bad PIN code !');
-      print(e);
-      if (kReleaseMode) {
-        await sentry.Sentry.captureException(
-          e,
-          stackTrace: stack,
-        );
+        return _pubkey;
+      } catch (e) {
+        print('Bad PIN code !');
+        print(e);
+        notifyListeners();
+
+        return 'false';
       }
-      notifyListeners();
+    } else {
+      try {
+        _pubkey = await DubpRust.getDewifPublicKey(dewif: _dewif, pin: _pin);
+        this.pubkey.text = _pubkey;
+        notifyListeners();
+        return _pubkey;
+      } catch (e) {
+        print('Bad PIN code !');
+        print(e);
+        notifyListeners();
 
-      return 'false';
+        return 'false';
+      }
     }
   }
 
@@ -97,12 +105,17 @@ class WalletOptionsProvider with ChangeNotifier {
 
     String newConfig =
         await _walletConfig.readAsLines().then((List<String> lines) {
+      int nbrLines = lines.length;
       int _index = lines.indexOf('$_walletNbr:$_walletName:$_derivation');
-      lines.removeWhere(
-          (element) => element == '$_walletNbr:$_walletName:$_derivation');
-      lines.insert(_index, '$_walletNbr:$_newName:$_derivation');
-
-      return lines.join('\n');
+      print(nbrLines);
+      if (nbrLines != 1) {
+        lines.removeWhere((element) =>
+            element.contains('$_walletNbr:$_walletName:$_derivation'));
+        lines.insert(_index, '$_walletNbr:$_newName:$_derivation');
+        return lines.join('\n');
+      } else {
+        return '$_walletNbr:$_newName:$_derivation';
+      }
     });
 
     await _walletConfig.delete();
@@ -158,16 +171,21 @@ class WalletOptionsProvider with ChangeNotifier {
       final _walletConfig =
           File('${walletsDirectory.path}/$_walletNbr/config.txt');
 
-      String newConfig =
-          await _walletConfig.readAsLines().then((List<String> lines) {
-        lines.removeWhere(
-            (element) => element.contains('$_walletNbr:$_name:$_derivation'));
+      if (_derivation != -1) {
+        String newConfig =
+            await _walletConfig.readAsLines().then((List<String> lines) {
+          lines.removeWhere(
+              (element) => element.contains('$_walletNbr:$_name:$_derivation'));
 
-        return lines.join('\n');
-      });
+          return lines.join('\n');
+        });
 
-      await _walletConfig.delete();
-      await _walletConfig.writeAsString(newConfig);
+        await _walletConfig.delete();
+        await _walletConfig.writeAsString(newConfig);
+      } else {
+        final _walletFile = Directory('${walletsDirectory.path}/$_walletNbr');
+        await _walletFile.delete(recursive: true);
+      }
       Navigator.pop(context);
     }
     return 0;

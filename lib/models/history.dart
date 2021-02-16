@@ -20,6 +20,8 @@ class HistoryProvider with ChangeNotifier {
   bool isFirstBuild = true;
   String fetchMoreCursor;
   Map pageInfo;
+  bool isHistoryScreen = false;
+  String historySwitchButtun = "Voir l'historique";
 
   Future scan() async {
     await Permission.camera.request();
@@ -58,26 +60,35 @@ class HistoryProvider with ChangeNotifier {
       print("C'est une pubkey !!!");
 
       this.pubkey = pubkey;
+      getShortPubkey(pubkey);
 
-      List<int> pubkeyByte = Base58Decode(pubkey);
-      Digest pubkeyS256 = sha256.convert(sha256.convert(pubkeyByte).bytes);
-      String pubkeyCheksum = Base58Encode(pubkeyS256.bytes);
-      String pubkeyChecksumShort = truncate(pubkeyCheksum, 3,
-          omission: "", position: TruncatePosition.end);
-
-      pubkeyShort = truncate(pubkey, 5,
-              omission: String.fromCharCode(0x2026),
-              position: TruncatePosition.end) +
-          truncate(pubkey, 4, omission: "", position: TruncatePosition.start) +
-          ':$pubkeyChecksumShort';
       this.outputPubkey.text = pubkey;
       print(pubkeyShort);
+
+      isHistoryScreen = false;
+      historySwitchButtun = "Voir l'historique";
       notifyListeners();
 
       return pubkey;
     }
 
     return '';
+  }
+
+  String getShortPubkey(String pubkey) {
+    List<int> pubkeyByte = Base58Decode(pubkey);
+    Digest pubkeyS256 = sha256.convert(sha256.convert(pubkeyByte).bytes);
+    String pubkeyCheksum = Base58Encode(pubkeyS256.bytes);
+    String pubkeyChecksumShort = truncate(pubkeyCheksum, 3,
+        omission: "", position: TruncatePosition.end);
+
+    pubkeyShort = truncate(pubkey, 5,
+            omission: String.fromCharCode(0x2026),
+            position: TruncatePosition.end) +
+        truncate(pubkey, 4, omission: "", position: TruncatePosition.start) +
+        ':$pubkeyChecksumShort';
+
+    return pubkeyShort;
   }
 
 // Pi: D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU         // For debug
@@ -128,11 +139,13 @@ class HistoryProvider with ChangeNotifier {
       num amountUD = amount / currentUD;
       if (direction == "RECEIVED") {
         transBC[i].add(transaction['issuers'][0]);
+        transBC[i].add(getShortPubkey(transaction['issuers'][0]));
         transBC[i].add(amount.toString());
         transBC[i].add(amountUD.toStringAsFixed(2));
       } else if (direction == "SENT") {
         final outPubkey = output.split("SIG(")[1].replaceAll(')', '');
         transBC[i].add(outPubkey);
+        transBC[i].add(getShortPubkey(outPubkey));
         transBC[i].add('- ' + amount.toString());
         transBC[i].add(amountUD.toStringAsFixed(2));
       }
@@ -213,6 +226,16 @@ class HistoryProvider with ChangeNotifier {
             Text("Cette clé publique a été copié dans votre presse-papier."),
         duration: Duration(seconds: 2));
     Scaffold.of(context).showSnackBar(snackBar);
+  }
+
+  void switchProfileView() {
+    isHistoryScreen = !isHistoryScreen;
+    if (isHistoryScreen) {
+      historySwitchButtun = "Payer";
+    } else {
+      historySwitchButtun = "Voir l'historique";
+    }
+    notifyListeners();
   }
 
   // num getBalance(_pubkey) {

@@ -104,11 +104,6 @@ class HomeProvider with ChangeNotifier {
     }
   }
 
-  searchAction() {
-    //TODO: OPEN SEARCH MODE !!
-    print('Search mode');
-  }
-
   T getRandomElement<T>(List<T> list) {
     final random = Random();
     var i = random.nextInt(list.length);

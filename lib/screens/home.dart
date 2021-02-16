@@ -111,7 +111,6 @@ class HomeScreen extends StatelessWidget {
                     } else {
                       _homeProvider.handleSearchEnd();
                     }
-                    _homeProvider.searchAction();
                   }))
         ],
         backgroundColor: Color(0xffFFD58D),

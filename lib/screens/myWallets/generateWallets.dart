@@ -91,7 +91,7 @@ class GenerateWalletsScreen extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 20),
-                    new ElevatedButton(
+                    ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           primary: Color(0xffFFD68E), // background
                           onPrimary: Colors.black, // foreground

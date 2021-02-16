@@ -65,12 +65,36 @@ class HomeScreen extends StatelessWidget {
                   icon: new Icon(Icons.menu, color: Colors.grey[850]),
                   onPressed: () => Scaffold.of(context).openDrawer(),
                 )),
-        title: Text('Ğecko', style: TextStyle(color: Colors.grey[850])),
+        title: _homeProvider.appBarTitle,
         actions: [
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Icon(Icons.search, color: Colors.grey[850]),
-          ),
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: IconButton(
+                  icon: _homeProvider.searchIcon,
+                  color: Colors.grey[850],
+                  onPressed: () {
+                    if (_homeProvider.searchIcon.icon == Icons.search) {
+                      _homeProvider.searchIcon = Icon(
+                        Icons.close,
+                        color: Colors.grey[850],
+                      );
+                      TextField(
+                        controller: _homeProvider.searchQuery,
+                        style: new TextStyle(
+                          color: Colors.white,
+                        ),
+                        decoration: new InputDecoration(
+                            prefixIcon:
+                                new Icon(Icons.search, color: Colors.white),
+                            hintText: "Search...",
+                            hintStyle: new TextStyle(color: Colors.white)),
+                      );
+                      _homeProvider.handleSearchStart();
+                    } else {
+                      _homeProvider.handleSearchEnd();
+                    }
+                    _homeProvider.searchAction();
+                  }))
         ],
         backgroundColor: Color(0xffFFD58D),
       ),

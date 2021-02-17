@@ -282,7 +282,6 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                 padding: EdgeInsets.all(8.0),
                 child: TextFormField(
                   textAlign: TextAlign.center,
-                  autofocus: true,
                   maxLines: 1,
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
@@ -291,17 +290,20 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: RaisedButton(
-                  child: Text("Payer"),
-                  color: Color(0xffFFD68E),
-                  onPressed: () {
-                    if (_formKey.currentState.validate()) {
-                      _formKey.currentState.save();
-                    }
-                  },
-                ),
-              )
+                  padding: const EdgeInsets.only(top: 15),
+                  child: OutlineButton(
+                    borderSide: BorderSide(width: 2, color: Color(0xffD28928)),
+                    onPressed: () {
+                      if (_formKey.currentState.validate()) {
+                        _formKey.currentState.save();
+                      }
+                    },
+                    child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Text("PAYER",
+                            style: TextStyle(
+                                fontSize: 25, color: Colors.grey[850]))),
+                  ))
             ],
           ),
         ),

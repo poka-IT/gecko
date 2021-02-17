@@ -10,7 +10,6 @@ import 'package:flutter/foundation.dart';
 import 'dart:ui';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:truncate/truncate.dart';
 
 // ignore: must_be_immutable
 class HistoryScreen extends StatelessWidget with ChangeNotifier {
@@ -21,6 +20,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
   final _formKey = GlobalKey<FormState>();
   FocusNode _pubkeyFocus = FocusNode();
   List cesiumData;
+  final double avatarsSize = 80;
 
   FetchMore fetchMore;
   FetchMoreOptions opts;
@@ -55,39 +55,13 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
           ),
         ),
         body: Column(children: <Widget>[
-          SizedBox(height: 20),
-          TextField(
-              autofocus: false,
-              focusNode: _pubkeyFocus,
-              // Entrée de la pubkey
-              onChanged: (text) {
-                print("Clé tappxé: $text");
-                _historyProvider.isPubkey(text);
-              },
-              controller: this._outputPubkey,
-              maxLines: 1,
-              textAlign: TextAlign.center,
-              decoration: InputDecoration(
-                hintText: 'Tappez/Collez une clé publique, ou scannez',
-                hintStyle: TextStyle(fontSize: 14),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 7, vertical: 15),
-                border: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                errorBorder: InputBorder.none,
-                disabledBorder: InputBorder.none,
-              ),
-              style: TextStyle(
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Monospace')),
+          SizedBox(height: 0),
           if (_historyProvider.pubkey != '')
             historyQuery(context, _historyProvider),
         ]));
   }
 
-  Widget historyQuery(context, _historyProvider) {
+  Widget historyQuery(context, HistoryProvider _historyProvider) {
     _pubkeyFocus.unfocus();
     // HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
     CesiumPlusProvider _cesiumPlusProvider =
@@ -148,7 +122,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                     child: ListView(
                   controller: scrollController,
                   children: <Widget>[
-                    SizedBox(height: 15),
+                    SizedBox(height: 20),
                     if (_historyProvider.pubkey != '')
                       Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -157,7 +131,8 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                           children: [
                             if (_isFirstExec)
                               Container(
-                                  padding: const EdgeInsets.only(left: 30),
+                                  padding:
+                                      const EdgeInsets.fromLTRB(12, 0, 5, 0),
                                   child: FutureBuilder(
                                       future: _cesiumPlusProvider
                                           .getAvatar(_historyProvider.pubkey),
@@ -174,71 +149,93 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                           return Image.file(
                                               File(appPath.path +
                                                   '/default_avatar.png'),
-                                              height: 65);
+                                              height: avatarsSize);
                                         }
                                         if (_avatar.hasError) {
                                           return Image.file(
                                               File(appPath.path +
                                                   '/default_avatar.png'),
-                                              height: 65);
+                                              height: avatarsSize);
                                         }
                                         if (_avatar.hasData) {
                                           return SingleChildScrollView(
                                               padding: EdgeInsets.all(0.0),
                                               child: Image.file(_avatar.data[0],
-                                                  height: 65));
+                                                  height: avatarsSize));
                                         }
                                         return Image.file(
                                             File(appPath.path +
                                                 '/default_avatar.png'),
-                                            height: 65);
+                                            height: avatarsSize);
                                       })),
-                            if (_isFirstExec)
-                              Text(balance.toString() + ' Ğ1',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 30.0)),
+                            GestureDetector(
+                              onTap: () {
+                                Clipboard.setData(ClipboardData(
+                                    text: _historyProvider.pubkey));
+                                _historyProvider.snackCopyKey(context);
+                              },
+                              child: Text(_historyProvider.pubkeyShort,
+                                  style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
+                                      fontFamily: 'Monospace')),
+                            ),
                             Container(
                                 padding: const EdgeInsets.fromLTRB(
-                                    30, 0, 15, 0), // .only(right: 15),
-                                child: IconButton(
-                                    icon: Icon(Icons.payments),
-                                    onPressed: () {
-                                      showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return paymentPopup(context);
-                                          });
-                                    },
-                                    iconSize: 30,
-                                    color: Color(0xFFB16E16)))
+                                    30, 0, 5, 0), // .only(right: 15),
+                                child: Text('TODO')),
+                            SizedBox(width: 0)
                           ]),
-                    SizedBox(height: 10),
                     if (_isFirstExec)
                       Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Container(
+                                padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
                                 // padding: const EdgeInsets.,
                                 child: FutureBuilder(
                                     future: _cesiumPlusProvider
                                         .getName(_historyProvider.pubkey),
-                                    initialData: '',
+                                    initialData: '...',
                                     builder: (context, snapshot) {
-                                      return Text(snapshot.data);
+                                      return Text(
+                                          snapshot.data != ''
+                                              ? snapshot.data
+                                              : '-',
+                                          style: TextStyle(fontSize: 20));
                                     }))
                           ]),
+                    SizedBox(height: 18),
+                    if (_isFirstExec)
+                      Container(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                          child: Text(balance.toString() + ' Ğ1',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 18.0))),
                     SizedBox(height: 20),
-                    const Divider(
-                      color: Colors.grey,
-                      height: 5,
-                      thickness: 0.5,
-                      indent: 0,
-                      endIndent: 0,
-                    ),
-                    _historyProvider.transBC == null
-                        ? Text('Aucune transaction à afficher.')
-                        : loopTransactions(context, result),
+                    ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          elevation: 1,
+                          primary: Colors.grey[50], // background
+                          onPrimary: Colors.black, // foreground
+                        ),
+                        onPressed: () {
+                          _historyProvider.switchProfileView();
+                        },
+                        child: Text(_historyProvider.historySwitchButtun,
+                            style: TextStyle(
+                                fontSize: 15, color: Color(0xffD28928)))),
+                    // const Divider(
+                    //   color: Colors.grey,
+                    //   height: 5,
+                    //   thickness: 0.5,
+                    //   indent: 0,
+                    //   endIndent: 0,
+                    // ),
+                    _historyProvider.isHistoryScreen
+                        ? historyView(context, result)
+                        : payView(context),
                   ],
                 )),
                 onNotification: (t) {
@@ -255,104 +252,114 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
     ));
   }
 
-  Widget loopTransactions(context, result) {
-    HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
+  Widget payView(context) {
+    TextEditingController payComment = new TextEditingController();
 
-    return Column(children: <Widget>[
-      for (var repository in _historyProvider.transBC)
-        Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: ListTile(
-                contentPadding: const EdgeInsets.all(5.0),
-                leading: Text(repository[1].toString(),
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[800],
-                        fontWeight: FontWeight.w700),
-                    textAlign: TextAlign.center),
-                title: Text(repository[5],
-                    style: TextStyle(fontSize: 14.0),
-                    textAlign: TextAlign.center),
-                subtitle: Text(
-                    truncate(repository[2], 20,
-                        omission: "...", position: TruncatePosition.end),
-                    style: TextStyle(fontSize: 11.0, fontFamily: 'Monospace'),
-                    textAlign: TextAlign.center),
-                trailing: Text("${repository[3]} Ğ1",
-                    style: TextStyle(fontSize: 14.0),
-                    textAlign: TextAlign.justify),
-                dense: true,
-                isThreeLine: false,
-                onTap: () {
-                  // this._outputPubkey.text = repository[2];
-                  _historyProvider.isPubkey(repository[2]);
-                })),
-      if (result.isLoading)
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            CircularProgressIndicator(),
-          ],
-        ),
-      // if (_historyProvider.isTheEnd) // What I did before ...
-      if (!_historyProvider.pageInfo['hasPreviousPage'])
-        Column(children: <Widget>[
-          SizedBox(height: 15),
-          Text("Début de l'historique.",
-              textAlign: TextAlign.center, style: TextStyle(fontSize: 20)),
-          SizedBox(height: 15)
-        ])
-    ]);
-  }
-
-  Widget paymentPopup(context) {
-    return AlertDialog(
-      content: Stack(
-        overflow: Overflow.visible,
-        children: <Widget>[
-          Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text('À:'),
-                Padding(
+    return Stack(
+      overflow: Overflow.visible,
+      children: <Widget>[
+        Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              SizedBox(height: 20),
+              Text('Commentaire:'),
+              Padding(
                   padding: EdgeInsets.all(8.0),
-                  child: Text(this._outputPubkey.text,
+                  child: TextField(
+                      controller: payComment,
+                      maxLines: 2,
                       textAlign: TextAlign.center,
-                      style:
-                          TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                      decoration: InputDecoration(),
+                      style: TextStyle(
+                          fontSize: 14.0,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold))),
+              SizedBox(height: 20),
+              Text('Montant (Ğ1):'),
+              Padding(
+                padding: EdgeInsets.all(8.0),
+                child: TextFormField(
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))
+                  ],
                 ),
-                SizedBox(height: 20),
-                Text('Montant (Ğ1):'),
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: TextFormField(
-                    textAlign: TextAlign.center,
-                    autofocus: true,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: <TextInputFormatter>[
-                      FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: RaisedButton(
-                    child: Text("Payer"),
-                    color: Color(0xffFFD68E),
+              ),
+              Padding(
+                  padding: const EdgeInsets.only(top: 15),
+                  child: OutlineButton(
+                    borderSide: BorderSide(width: 2, color: Color(0xffD28928)),
                     onPressed: () {
                       if (_formKey.currentState.validate()) {
                         _formKey.currentState.save();
                       }
                     },
-                  ),
-                )
-              ],
-            ),
+                    child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Text("PAYER",
+                            style: TextStyle(
+                                fontSize: 25, color: Colors.grey[850]))),
+                  ))
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
+  }
+
+  Widget historyView(context, result) {
+    HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
+
+    return _historyProvider.transBC == null
+        ? Text('Aucune transaction à afficher.')
+        : Column(children: <Widget>[
+            for (var repository in _historyProvider.transBC)
+              Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                  child: ListTile(
+                      contentPadding: const EdgeInsets.all(5.0),
+                      leading: Text(repository[1].toString(),
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[800],
+                              fontWeight: FontWeight.w700),
+                          textAlign: TextAlign.center),
+                      title: Text(repository[3],
+                          style: TextStyle(
+                              fontSize: 15.0, fontFamily: 'Monospace'),
+                          textAlign: TextAlign.center),
+                      subtitle: Text(repository[6] != '' ? repository[6] : '-',
+                          style: TextStyle(fontSize: 12.0),
+                          textAlign: TextAlign.center),
+                      trailing: Text("${repository[4]} Ğ1",
+                          style: TextStyle(fontSize: 14.0),
+                          textAlign: TextAlign.justify),
+                      dense: true,
+                      isThreeLine: false,
+                      onTap: () {
+                        // this._outputPubkey.text = repository[2];
+                        _historyProvider.isPubkey(repository[2]);
+                      })),
+            if (result.isLoading)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  CircularProgressIndicator(),
+                ],
+              ),
+            // if (_historyProvider.isTheEnd) // What I did before ...
+            if (!_historyProvider.pageInfo['hasPreviousPage'])
+              Column(children: <Widget>[
+                SizedBox(height: 15),
+                Text("Début de l'historique.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 20)),
+                SizedBox(height: 15)
+              ])
+          ]);
   }
 }

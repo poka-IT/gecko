@@ -32,6 +32,8 @@ dependencies:
   printing: ^4.0.0
   shared_preferences: ^0.5.12+4
   sync_http: ^0.2.0
+  crypto: ^2.1.5
+  fast_base58:
 
 
 flutter_icons:

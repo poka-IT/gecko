@@ -1,4 +1,5 @@
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
 import 'package:gecko/screens/history.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
+    HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
     return Scaffold(
       drawer: Drawer(
         child: Column(
@@ -65,12 +67,51 @@ class HomeScreen extends StatelessWidget {
                   icon: new Icon(Icons.menu, color: Colors.grey[850]),
                   onPressed: () => Scaffold.of(context).openDrawer(),
                 )),
-        title: Text('Ğecko', style: TextStyle(color: Colors.grey[850])),
+        title: _homeProvider.appBarTitle,
         actions: [
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Icon(Icons.search, color: Colors.grey[850]),
-          ),
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: IconButton(
+                  icon: _homeProvider.searchIcon,
+                  color: Colors.grey[850],
+                  onPressed: () {
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(builder: (context) {
+                    //     return SearchList();
+                    //   }),
+                    // );
+
+                    if (_homeProvider.searchIcon.icon == Icons.search) {
+                      _homeProvider.searchIcon = Icon(
+                        Icons.close,
+                        color: Colors.grey[850],
+                      );
+                      _homeProvider.appBarTitle = TextField(
+                        autofocus: true,
+                        controller: _homeProvider.searchQuery,
+                        onChanged: (text) {
+                          print("Clé tappé: $text");
+                          final String searchResult =
+                              _historyProvider.isPubkey(text);
+                          if (searchResult != '') {
+                            _homeProvider.currentIndex = 0;
+                          }
+                        },
+                        style: TextStyle(
+                          color: Colors.grey[850],
+                        ),
+                        decoration: InputDecoration(
+                            prefixIcon:
+                                Icon(Icons.search, color: Colors.grey[850]),
+                            hintText: "Rechercher ...",
+                            hintStyle: TextStyle(color: Colors.grey[850])),
+                      );
+                      _homeProvider.handleSearchStart();
+                    } else {
+                      _homeProvider.handleSearchEnd();
+                    }
+                  }))
         ],
         backgroundColor: Color(0xffFFD58D),
       ),

@@ -11,6 +11,10 @@ import 'package:path_provider/path_provider.dart';
 
 class HomeProvider with ChangeNotifier {
   int _currentIndex = 0;
+  bool isSearching;
+  Icon searchIcon = Icon(Icons.search);
+  final TextEditingController searchQuery = new TextEditingController();
+  Widget appBarTitle = Text('Ğecko', style: TextStyle(color: Colors.grey[850]));
 
   get currentIndex => _currentIndex;
 
@@ -101,8 +105,25 @@ class HomeProvider with ChangeNotifier {
   }
 
   T getRandomElement<T>(List<T> list) {
-    final random = new Random();
+    final random = Random();
     var i = random.nextInt(list.length);
     return list[i];
+  }
+
+  void handleSearchStart() {
+    isSearching = true;
+    notifyListeners();
+  }
+
+  void handleSearchEnd() {
+    searchIcon = Icon(
+      Icons.search,
+      color: Colors.grey[850],
+    );
+    appBarTitle = Text('Ğecko', style: TextStyle(color: Colors.grey[850]));
+    isSearching = false;
+    searchQuery.clear();
+
+    notifyListeners();
   }
 }

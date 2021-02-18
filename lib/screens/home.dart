@@ -88,7 +88,7 @@ class HomeScreen extends StatelessWidget {
                         onChanged: (text) {
                           print("Clé tappé: $text");
                           final String searchResult =
-                              _historyProvider.isPubkey(text);
+                              _historyProvider.isPubkey(context, text);
                           if (searchResult != '') {
                             _homeProvider.currentIndex = 0;
                           }
@@ -123,13 +123,18 @@ class HomeScreen extends StatelessWidget {
         currentIndex: _homeProvider.currentIndex,
         items: [
           BottomNavigationBarItem(
-            icon: new Icon(Icons.format_list_bulleted),
-            label: 'Accueil',
+            icon: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 86),
+                child: Image.asset('assets/blockchain.png')),
+            activeIcon: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 86),
+                child: Image.asset('assets/blockchain.png')),
+            label: 'Explorateur',
           ),
           BottomNavigationBarItem(
-            icon: new Icon(Icons.lock),
+            icon: Icon(Icons.lock),
             label: 'Mes portefeuilles',
-          )
+          ),
         ],
       ),
     );

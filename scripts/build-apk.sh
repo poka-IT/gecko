@@ -10,7 +10,7 @@ ori_app="app.apk"
 
 echo "Nom du build final: ${APPNAME}-${VERSION}+${BUILD}.apk"
 
-## To compile Rust binding
+## To build Rust dependancies
 # cargo br
 
 echo "To compile Rust binding, exec: cargo br"
@@ -20,6 +20,7 @@ if [[ $1 == "bundle" ]]; then
 	flutter build appbundle --release --target-platform android-arm,android-arm64 --build-name $VERSION --build-number $BUILD
 else
 #	flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64 --build-name $VERSION --build-number $BUILD
+#	flutter build apk --release --split-per-abi --build-name $VERSION --build-number $BUILD
 	flutter build apk --release --build-name $VERSION --build-number $BUILD
 fi
 

@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/home.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'dart:math';
 import 'package:intl/intl.dart';
@@ -22,7 +24,7 @@ class HistoryProvider with ChangeNotifier {
   bool isHistoryScreen = false;
   String historySwitchButtun = "Voir l'historique";
 
-  Future scan() async {
+  Future scan(context) async {
     await Permission.camera.request();
     String barcode;
     try {
@@ -33,14 +35,16 @@ class HistoryProvider with ChangeNotifier {
     }
     if (barcode != null) {
       this.outputPubkey.text = barcode;
-      isPubkey(barcode);
+      isPubkey(context, barcode);
     } else {
       return 'false';
     }
     return barcode;
   }
 
-  String isPubkey(pubkey) {
+  String isPubkey(context, pubkey) {
+    HomeProvider _homeProvider =
+        Provider.of<HomeProvider>(context, listen: false);
     final RegExp regExp = new RegExp(
       r'^[a-zA-Z0-9]+$',
       caseSensitive: false,
@@ -59,6 +63,7 @@ class HistoryProvider with ChangeNotifier {
 
       isHistoryScreen = false;
       historySwitchButtun = "Voir l'historique";
+      _homeProvider.handleSearchEnd();
       notifyListeners();
 
       return pubkey;

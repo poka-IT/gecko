@@ -24,69 +24,58 @@ import 'package:catcher/catcher.dart';
 final bool enableSentry = true;
 
 Future<void> main() async {
-  try {
-    WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
 
-    // var downloadsDirectory = DownloadsPathProvider.downloadsDirectory;
-    // File logFile = File(downloadsDirectory.toString() + '/gecko.log');
+  // var downloadsDirectory = DownloadsPathProvider.downloadsDirectory;
+  // File logFile = File(downloadsDirectory.toString() + '/gecko.log');
 
-    // await FlutterLogs.initLogs(
-    //     logLevelsEnabled: [
-    //       LogLevel.INFO,
-    //       LogLevel.WARNING,
-    //       LogLevel.ERROR,
-    //       LogLevel.SEVERE
-    //     ],
-    //     timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
-    //     directoryStructure: DirectoryStructure.FOR_EVENT,
-    //     logTypesEnabled: ["Locations", "APIs"],
-    //     logFileExtension: LogFileExtension.LOG,
-    //     logsWriteDirectoryName: downloadsDirectory.toString(),
-    //     logsExportDirectoryName: downloadsDirectory.toString());
+  // await FlutterLogs.initLogs(
+  //     logLevelsEnabled: [
+  //       LogLevel.INFO,
+  //       LogLevel.WARNING,
+  //       LogLevel.ERROR,
+  //       LogLevel.SEVERE
+  //     ],
+  //     timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
+  //     directoryStructure: DirectoryStructure.FOR_EVENT,
+  //     logTypesEnabled: ["Locations", "APIs"],
+  //     logFileExtension: LogFileExtension.LOG,
+  //     logsWriteDirectoryName: downloadsDirectory.toString(),
+  //     logsExportDirectoryName: downloadsDirectory.toString());
 
-    HomeProvider _homeProvider = HomeProvider();
-    await _homeProvider.getAppPath();
-    await _homeProvider.createDefaultAvatar();
-    appVersion = await _homeProvider.getAppVersion();
-    prefs = await SharedPreferences.getInstance();
-    final HiveStore _store =
-        await HiveStore.open(path: '${appPath.path}/gqlCache');
+  HomeProvider _homeProvider = HomeProvider();
+  await _homeProvider.getAppPath();
+  await _homeProvider.createDefaultAvatar();
+  appVersion = await _homeProvider.getAppVersion();
+  prefs = await SharedPreferences.getInstance();
+  final HiveStore _store =
+      await HiveStore.open(path: '${appPath.path}/gqlCache');
 
-    // Get a valid GVA endpoint
-    endPointGVA = await _homeProvider.getValidEndpoint();
+  // Get a valid GVA endpoint
+  endPointGVA = await _homeProvider.getValidEndpoint();
 
-    if (kReleaseMode &&  enableSentry) {
-      CatcherOptions debugOptions = CatcherOptions(DialogReportMode(), [
-        SentryHandler(SentryClient(SentryOptions(
-            dsn:
-                "https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110")))
-      ]);
-      // CatcherOptions releaseOptions = CatcherOptions(NotificationReportMode(), [
-      //   EmailManualHandler(["poka@p2p.legal"])
-      // ]);
-      Catcher(
-          rootWidget: Gecko(endPointGVA, _store), debugConfig: debugOptions);
+  if (kReleaseMode && enableSentry) {
+    CatcherOptions debugOptions = CatcherOptions(DialogReportMode(), [
+      SentryHandler(SentryClient(SentryOptions(
+          dsn:
+              "https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110")))
+    ]);
+    // CatcherOptions releaseOptions = CatcherOptions(NotificationReportMode(), [
+    //   EmailManualHandler(["poka@p2p.legal"])
+    // ]);
+    Catcher(rootWidget: Gecko(endPointGVA, _store), debugConfig: debugOptions);
 
-      // await SentryFlutter.init(
-      //   (options) {
-      //     options.dsn =
-      //         'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
-      //   },
-      //   appRunner: () => runApp(Gecko(endPointGVA, _store)),
-      // );
-    } else {
-      print('Debug mode enabled: No sentry alerte');
+    // await SentryFlutter.init(
+    //   (options) {
+    //     options.dsn =
+    //         'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
+    //   },
+    //   appRunner: () => runApp(Gecko(endPointGVA, _store)),
+    // );
+  } else {
+    print('Debug mode enabled: No sentry alerte');
 
-      runApp(Gecko(endPointGVA, _store));
-    }
-  } catch (e, stack) {
-    print(e);
-    if (kReleaseMode) {
-      await Sentry.captureException(
-        e,
-        stackTrace: stack,
-      );
-    }
+    runApp(Gecko(endPointGVA, _store));
   }
 }
 
@@ -107,7 +96,17 @@ class Gecko extends StatelessWidget {
         link: _httpLink,
       ),
     );
-    DubpRust.setup();
+    try {
+      DubpRust.setup();
+    } catch (e, stack) {
+      print(e);
+      if (kReleaseMode) {
+        Sentry.captureException(
+          e,
+          stackTrace: stack,
+        );
+      }
+    }
 
     return MultiProvider(
         providers: [

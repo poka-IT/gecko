@@ -43,7 +43,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
             child: FloatingActionButton(
               heroTag: "buttonScan",
               onPressed: () async {
-                await _historyProvider.scan();
+                await _historyProvider.scan(context);
               },
               child: Container(
                   height: 40.0,
@@ -346,7 +346,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                       isThreeLine: false,
                       onTap: () {
                         // this._outputPubkey.text = repository[2];
-                        _historyProvider.isPubkey(repository[2]);
+                        _historyProvider.isPubkey(context, repository[2]);
                       })),
             if (result.isLoading)
               Row(

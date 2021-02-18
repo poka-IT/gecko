@@ -123,12 +123,8 @@ class HomeScreen extends StatelessWidget {
         currentIndex: _homeProvider.currentIndex,
         items: [
           BottomNavigationBarItem(
-            icon: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 86),
-                child: Image.asset('assets/blockchain.png')),
-            activeIcon: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 86),
-                child: Image.asset('assets/blockchain.png')),
+            icon: Image.asset('assets/block-space-disabled.png', height: 26),
+            activeIcon: Image.asset('assets/blockchain.png', height: 26),
             label: 'Explorateur',
           ),
           BottomNavigationBarItem(

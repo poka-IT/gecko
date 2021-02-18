@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 // ignore: must_be_immutable
 class WalletsHome extends StatelessWidget {
   final _derivationKey = GlobalKey<FormState>();
+  int firstWalletDerivation;
 
   @override
   Widget build(BuildContext context) {
@@ -20,9 +21,14 @@ class WalletsHome extends StatelessWidget {
     myWalletProvider.listWallets = myWalletProvider.getAllWalletsNames();
     final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
 
+    if (myWalletProvider.listWallets != '') {
+      firstWalletDerivation =
+          int.parse(myWalletProvider.listWallets.split('\n')[0].split(':')[2]);
+    }
+
     return Scaffold(
         floatingActionButton: Visibility(
-            visible: (isWalletsExists),
+            visible: (isWalletsExists && firstWalletDerivation != -1),
             child: Container(
                 height: 80.0,
                 width: 80.0,

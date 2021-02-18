@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:gecko/screens/history.dart';
+import 'package:gecko/screens/myWallets/walletsHome.dart';
 import 'package:package_info/package_info.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -15,6 +17,8 @@ class HomeProvider with ChangeNotifier {
   Icon searchIcon = Icon(Icons.search);
   final TextEditingController searchQuery = new TextEditingController();
   Widget appBarTitle = Text('Ğecko', style: TextStyle(color: Colors.grey[850]));
+  List currentTab = [HistoryScreen(), WalletsHome()];
+
 
   get currentIndex => _currentIndex;
 

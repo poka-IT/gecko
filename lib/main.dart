@@ -12,45 +12,84 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:catcher/catcher.dart';
+
+// import 'dart:io';
+// import 'package:flutter_logs/flutter_logs.dart';
+// import 'package:downloads_path_provider/downloads_path_provider.dart';
 
 final bool enableSentry = true;
 
-// Future<String> getJsonEndpoints() {
-//   return rootBundle.loadString('config/gva_endpoints.json');
-// }
-
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  HomeProvider _homeProvider = HomeProvider();
-  await _homeProvider.getAppPath();
-  await _homeProvider.createDefaultAvatar();
-  appVersion = await _homeProvider.getAppVersion();
-  prefs = await SharedPreferences.getInstance();
-  final HiveStore _store =
-      await HiveStore.open(path: '${appPath.path}/gqlCache');
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  // Get a valid GVA endpoint
-  endPointGVA = await _homeProvider.getValidEndpoint();
+    // var downloadsDirectory = DownloadsPathProvider.downloadsDirectory;
+    // File logFile = File(downloadsDirectory.toString() + '/gecko.log');
 
-  if (kReleaseMode && enableSentry) {
-    await SentryFlutter.init(
-      (options) {
-        options.dsn =
-            'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
-      },
-      appRunner: () => runApp(Gecko(endPointGVA, _store)),
-    );
-  } else {
-    print('Debug mode enabled: No sentry alerte');
+    // await FlutterLogs.initLogs(
+    //     logLevelsEnabled: [
+    //       LogLevel.INFO,
+    //       LogLevel.WARNING,
+    //       LogLevel.ERROR,
+    //       LogLevel.SEVERE
+    //     ],
+    //     timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
+    //     directoryStructure: DirectoryStructure.FOR_EVENT,
+    //     logTypesEnabled: ["Locations", "APIs"],
+    //     logFileExtension: LogFileExtension.LOG,
+    //     logsWriteDirectoryName: downloadsDirectory.toString(),
+    //     logsExportDirectoryName: downloadsDirectory.toString());
 
-    runApp(Gecko(endPointGVA, _store));
+    HomeProvider _homeProvider = HomeProvider();
+    await _homeProvider.getAppPath();
+    await _homeProvider.createDefaultAvatar();
+    appVersion = await _homeProvider.getAppVersion();
+    prefs = await SharedPreferences.getInstance();
+    final HiveStore _store =
+        await HiveStore.open(path: '${appPath.path}/gqlCache');
+
+    // Get a valid GVA endpoint
+    endPointGVA = await _homeProvider.getValidEndpoint();
+
+    if (kReleaseMode &&  enableSentry) {
+      CatcherOptions debugOptions = CatcherOptions(DialogReportMode(), [
+        SentryHandler(SentryClient(SentryOptions(
+            dsn:
+                "https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110")))
+      ]);
+      // CatcherOptions releaseOptions = CatcherOptions(NotificationReportMode(), [
+      //   EmailManualHandler(["poka@p2p.legal"])
+      // ]);
+      Catcher(
+          rootWidget: Gecko(endPointGVA, _store), debugConfig: debugOptions);
+
+      // await SentryFlutter.init(
+      //   (options) {
+      //     options.dsn =
+      //         'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
+      //   },
+      //   appRunner: () => runApp(Gecko(endPointGVA, _store)),
+      // );
+    } else {
+      print('Debug mode enabled: No sentry alerte');
+
+      runApp(Gecko(endPointGVA, _store));
+    }
+  } catch (e, stack) {
+    print(e);
+    if (kReleaseMode) {
+      await Sentry.captureException(
+        e,
+        stackTrace: stack,
+      );
+    }
   }
 }
 
-// ignore: must_be_immutable
 class Gecko extends StatelessWidget {
   Gecko(this.randomEndpoint, this._store);
   final String randomEndpoint;
@@ -68,8 +107,8 @@ class Gecko extends StatelessWidget {
         link: _httpLink,
       ),
     );
-
     DubpRust.setup();
+
     return MultiProvider(
         providers: [
           // Provider(create: (context) => HistoryProvider()),
@@ -84,6 +123,7 @@ class Gecko extends StatelessWidget {
         child: GraphQLProvider(
             client: _client,
             child: MaterialApp(
+              navigatorKey: Catcher.navigatorKey,
               title: 'Ğecko',
               theme: ThemeData(
                 primaryColor: Color(0xffFFD58D),

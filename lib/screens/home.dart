@@ -1,17 +1,12 @@
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
-import 'package:gecko/screens/history.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import 'package:gecko/screens/myWallets/walletsHome.dart';
 import 'package:gecko/screens/settings.dart';
 import 'package:provider/provider.dart';
 
-// ignore: must_be_immutable
 class HomeScreen extends StatelessWidget {
-  var currentTab = [HistoryScreen(), WalletsHome()];
-
   @override
   Widget build(BuildContext context) {
     HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
@@ -116,7 +111,7 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: Color(0xffFFD58D),
       ),
       backgroundColor: Color(0xffF9F9F1),
-      body: currentTab[_homeProvider.currentIndex],
+      body: _homeProvider.currentTab[_homeProvider.currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Color(0xffFFD58D),
         fixedColor: Colors.grey[850],

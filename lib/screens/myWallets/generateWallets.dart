@@ -21,6 +21,8 @@ class GenerateWalletsScreen extends StatelessWidget {
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
     _generateWalletProvider.generateMnemonic();
+
+    // _generateWalletProvider.makeError();
     print('IS GENERATED ? : ' +
         _generateWalletProvider.walletIsGenerated.toString());
     return Scaffold(

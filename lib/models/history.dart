@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:sentry/sentry.dart' as sentry;
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'dart:math';
 import 'package:intl/intl.dart';
@@ -28,14 +27,8 @@ class HistoryProvider with ChangeNotifier {
     String barcode;
     try {
       barcode = await scanner.scan();
-    } catch (e, stack) {
+    } catch (e) {
       print(e);
-      if (kReleaseMode) {
-        await sentry.Sentry.captureException(
-          e,
-          stackTrace: stack,
-        );
-      }
       return 'false';
     }
     if (barcode != null) {
@@ -63,7 +56,6 @@ class HistoryProvider with ChangeNotifier {
       getShortPubkey(pubkey);
 
       this.outputPubkey.text = pubkey;
-      print(pubkeyShort);
 
       isHistoryScreen = false;
       historySwitchButtun = "Voir l'historique";

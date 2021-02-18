@@ -18,19 +18,9 @@ class ImportWalletScreen extends StatelessWidget {
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
 
-        _generateWalletProvider.showPinIfEmpty();
-
     return WillPopScope(
         onWillPop: () {
-          _generateWalletProvider.cesiumID.text = '';
-          _generateWalletProvider.cesiumPWD.text = '';
-          _generateWalletProvider.cesiumPubkey.text = '';
-          _generateWalletProvider.pin.text = '';
-          _generateWalletProvider.canImport = false;
-          _generateWalletProvider.isPinChanged = false;
-          _generateWalletProvider.isCesiumIDVisible = false;
-          _generateWalletProvider.isCesiumPWDVisible = false;
-          _generateWalletProvider.reloadBuild();
+          _generateWalletProvider.resetImportView();
           return Future<bool>.value(true);
         },
         child: Scaffold(
@@ -38,15 +28,7 @@ class ImportWalletScreen extends StatelessWidget {
                 leading: IconButton(
                     icon: Icon(Icons.arrow_back, color: Colors.black),
                     onPressed: () {
-                      _generateWalletProvider.cesiumID.text = '';
-                      _generateWalletProvider.cesiumPWD.text = '';
-                      _generateWalletProvider.cesiumPubkey.text = '';
-                      _generateWalletProvider.pin.text = '';
-                      _generateWalletProvider.canImport = false;
-                      _generateWalletProvider.isPinChanged = false;
-                      _generateWalletProvider.isCesiumIDVisible = false;
-                      _generateWalletProvider.isCesiumPWDVisible = false;
-                      _generateWalletProvider.reloadBuild();
+                      _generateWalletProvider.resetImportView();
                       Navigator.of(context).pop();
                     }),
                 title: SizedBox(
@@ -195,6 +177,7 @@ class ImportWalletScreen extends StatelessWidget {
                                                 .cesiumPWD.text)
                                         .then((value) {
                                       _myWalletProvider.rebuildWidget();
+                                      _generateWalletProvider.resetImportView();
                                     });
                                   }
                                 : null,

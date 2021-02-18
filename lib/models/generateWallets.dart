@@ -7,7 +7,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
-import 'package:sentry_flutter/sentry_flutter.dart' as sentry;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -81,6 +80,9 @@ class GenerateWalletsProvider with ChangeNotifier {
           .writeAsString('$nbrWallet:$_name:$_derivationNbr:$_pubkey');
     }
 
+    print('CODE PIN :::');
+    print(wallet.pin);
+
     Navigator.pop(context, true);
 
     return _name;
@@ -147,14 +149,8 @@ class GenerateWalletsProvider with ChangeNotifier {
       this.actualWallet = await generateWallet(this.generatedMnemonic);
       walletIsGenerated = true;
       // notifyListeners();
-    } catch (e, stack) {
+    } catch (e) {
       print(e);
-      if (kReleaseMode) {
-        await sentry.Sentry.captureException(
-          e,
-          stackTrace: stack,
-        );
-      }
     }
     // await checkIfWalletExist();
     return generatedMnemonic;
@@ -167,14 +163,8 @@ class GenerateWalletsProvider with ChangeNotifier {
           mnemonic: generatedMnemonic,
           secretCodeType: SecretCodeType.letters,
           walletType: WalletType.bip32Ed25519);
-    } catch (e, stack) {
+    } catch (e) {
       print(e);
-      if (kReleaseMode) {
-        await sentry.Sentry.captureException(
-          e,
-          stackTrace: stack,
-        );
-      }
     }
 
     mnemonicController.text = generatedMnemonic;
@@ -243,6 +233,8 @@ class GenerateWalletsProvider with ChangeNotifier {
         salt: _cesiumID, password: _cesiumPWD);
 
     cesiumPubkey.text = _walletPubkey;
+    pin.text = actualWallet.pin;
+    isPinChanged = true;
     print(_walletPubkey);
   }
 
@@ -274,12 +266,23 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void showPinIfEmpty() {
-    if (!isPinChanged) {
-      changePinCode(reload: true);
-      isPinChanged = true;
-    }
+  void resetImportView() {
+    cesiumID.text = '';
+    cesiumPWD.text = '';
+    cesiumPubkey.text = '';
+    pin.text = '';
+    canImport = false;
+    isPinChanged = false;
+    isCesiumIDVisible = false;
+    isCesiumPWDVisible = false;
+    actualWallet = null;
+    notifyListeners();
   }
+
+  // void makeError() {
+  //   var tata = File(appPath.path + '/ddfhjftjfg');
+  //   tata.readAsLinesSync();
+  // }
 
   void reloadBuild() {
     notifyListeners();

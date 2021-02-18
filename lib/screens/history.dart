@@ -48,7 +48,9 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
               child: Container(
                   height: 40.0,
                   width: 40.0,
-                  child: Image.asset('images/scanner.png')),
+                  child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 3),
+                      child: Image.asset('assets/qrcode-scan.png'))),
               backgroundColor: Color(
                   0xffEFEFBF), //Color(0xffFFD68E), //Color.fromARGB(500, 204, 255, 255),
             ),
@@ -174,7 +176,9 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                     text: _historyProvider.pubkey));
                                 _historyProvider.snackCopyKey(context);
                               },
-                              child: Text(_historyProvider.pubkeyShort,
+                              child: Text(
+                                  _historyProvider
+                                      .getShortPubkey(_historyProvider.pubkey),
                                   style: TextStyle(
                                       fontSize: 22,
                                       fontWeight: FontWeight.w800,

@@ -122,6 +122,7 @@ class DubpRust {
     String salt,
     String password,
     SecretCodeType secretCodeType = SecretCodeType.letters,
+    bool isMember = false,
   }) async {
     int ram = SysInfo.getTotalPhysicalMemory();
     print('ram=$ram');
@@ -134,7 +135,7 @@ class DubpRust {
       Utf8.toUtf8(currency),
       Utf8.toUtf8(salt),
       Utf8.toUtf8(password),
-      0,
+      isMember ? 1 : 0,
       secretCodeType.index,
       ram,
     );

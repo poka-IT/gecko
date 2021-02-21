@@ -32,7 +32,11 @@ pub(crate) fn compute_secret_code_len(
         }
         SecretCodeType::Letters => {
             if member_wallet {
-                Ok(10)
+                if log_n >= 15 {
+                    Ok(7)
+                } else {
+                    Ok(8)
+                }
             } else if log_n >= 15 {
                 Ok(5)
             } else {

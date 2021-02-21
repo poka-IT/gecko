@@ -49,6 +49,7 @@ class MyWalletsProvider with ChangeNotifier {
         // listWallets += "${element.split(':')[0]}:${element.split(':')[1]}:${element.split(':')[2]}"
       });
     });
+    print(listWallets);
 
     return listWallets;
   }

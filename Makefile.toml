@@ -159,7 +159,7 @@ run_task = "android-build"
 [tasks.android-armv7]
 private = true
 condition = { env_true = ["DEV"] }
-env = { ANDROID_TARGET = "arm-linux-androideabi" }
+env = { ANDROID_TARGET = "armv7-linux-androideabi" }
 run_task = "android-build"
 
 [tasks.android-i686]
@@ -183,7 +183,7 @@ run_task = "android-build-release"
 [tasks.android-armv7-release]
 private = true
 condition = { env_true = ["RELEASE"] }
-env = { ANDROID_TARGET = "arm-linux-androideabi" }
+env = { ANDROID_TARGET = "armv7-linux-androideabi" }
 run_task = "android-build-release"
 
 [tasks.android-i686-release]
@@ -227,7 +227,7 @@ run_task = "copy-lib"
 
 [tasks.post-android-armv7]
 private = true
-env = { ANDROID_TARGET = "arm-linux-androideabi", JNI_LIB_DIR = "armeabi-v7a" }
+env = { ANDROID_TARGET = "armv7-linux-androideabi", JNI_LIB_DIR = "armeabi-v7a" }
 run_task = "copy-lib"
 
 [tasks.post-android-i686]

@@ -21,7 +21,7 @@ For example:
 You will also need to add targets for all Android architectures:
 
 ```sh
-rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android
+rustup target add aarch64-linux-android arm-linux-androideabi x86_64-linux-android i686-linux-android
 ```
 
 If you develop on mac, you can also add targets for iOS:

@@ -111,28 +111,130 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: Color(0xffFFD58D),
       ),
       backgroundColor: Color(0xffF9F9F1),
-      body: _homeProvider.currentTab[_homeProvider.currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Color(0xffFFD58D),
-        fixedColor: Colors.grey[850],
-        unselectedItemColor: Color(0xffBD935C),
-        type: BottomNavigationBarType.fixed,
-        onTap: (index) {
-          _homeProvider.currentIndex = index;
-        },
-        currentIndex: _homeProvider.currentIndex,
-        items: [
-          BottomNavigationBarItem(
-            icon: Image.asset('assets/block-space-disabled.png', height: 26),
-            activeIcon: Image.asset('assets/blockchain.png', height: 26),
-            label: 'Explorateur',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.lock),
-            label: 'Mes portefeuilles',
-          ),
-        ],
-      ),
+      body: // _homeProvider.currentTab[_homeProvider.currentIndex],
+          Column(children: <Widget>[
+        Padding(
+            padding: EdgeInsets.only(top: 22),
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Image(
+                      image: AssetImage('assets/icon/gecko_final.png'),
+                      height: 180),
+                ])),
+        Padding(
+            padding: EdgeInsets.only(top: 15),
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    "L’application de paiement Ğ1\nplus mobile qu’un lésard du Vietnam",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.black, fontSize: 15),
+                  )
+                ])),
+        Padding(
+            padding: EdgeInsets.only(top: 60),
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Column(children: <Widget>[
+                    ClipOval(
+                      child: Material(
+                        color: Color(0xffFFD58D), // button color
+                        child: Padding(
+                            padding: EdgeInsets.all(17),
+                            child: InkWell(
+                              splashColor: Colors.black, // inkwell color
+                              child: Image(
+                                  image: AssetImage('assets/qrcode-scan.png'),
+                                  height: 58),
+                              onTap: () {},
+                            )),
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      "Payer par QR-Code",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.black, fontSize: 13),
+                    )
+                  ])
+                ])),
+        Padding(
+            padding: EdgeInsets.only(top: 60),
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Column(children: <Widget>[
+                    ClipOval(
+                      child: Material(
+                        color: Color(0xffFFD58D), // button color
+                        child: Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 18, vertical: 14),
+                            child: InkWell(
+                              splashColor: Colors.black, // inkwell color
+                              child: Image(
+                                  image: AssetImage('assets/blockchain.png'),
+                                  height: 65),
+                              onTap: () {},
+                            )),
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      "Explorer\n",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.black, fontSize: 13),
+                    )
+                  ]),
+                  SizedBox(width: 160),
+                  Column(children: <Widget>[
+                    ClipOval(
+                      child: Material(
+                        color: Color(0xffFFD58D), // button color
+                        child: Padding(
+                            padding: EdgeInsets.all(20),
+                            child: InkWell(
+                              splashColor: Colors.black, // inkwell color
+                              child: Image(
+                                  image: AssetImage('assets/lock.png'),
+                                  height: 50),
+                              onTap: () {},
+                            )),
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      "Gérer mes\nportefeuilles",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.black, fontSize: 13),
+                    )
+                  ])
+                ]))
+      ]),
+      // bottomNavigationBar: BottomNavigationBar(
+      //   backgroundColor: Color(0xffFFD58D),
+      //   fixedColor: Colors.grey[850],
+      //   unselectedItemColor: Color(0xffBD935C),
+      //   type: BottomNavigationBarType.fixed,
+      //   onTap: (index) {
+      //     _homeProvider.currentIndex = index;
+      //   },
+      //   currentIndex: _homeProvider.currentIndex,
+      //   items: [
+      //     BottomNavigationBarItem(
+      //       icon: Image.asset('assets/block-space-disabled.png', height: 26),
+      //       activeIcon: Image.asset('assets/blockchain.png', height: 26),
+      //       label: 'Explorateur',
+      //     ),
+      //     BottomNavigationBarItem(
+      //       icon: Icon(Icons.lock),
+      //       label: 'Mes portefeuilles',
+      //     ),
+      //   ],
+      // ),
     );
   }
 }

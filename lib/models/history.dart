@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/home.dart';
+import 'package:gecko/screens/history.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -64,6 +65,12 @@ class HistoryProvider with ChangeNotifier {
       isHistoryScreen = false;
       historySwitchButtun = "Voir l'historique";
       _homeProvider.handleSearchEnd();
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) {
+          return HistoryScreen();
+        }),
+      );
       notifyListeners();
 
       return pubkey;
@@ -202,8 +209,8 @@ class HistoryProvider with ChangeNotifier {
       }
       final snackBar =
           SnackBar(content: Text(_message), duration: Duration(seconds: 2));
-      Scaffold.of(context).showSnackBar(snackBar);
       isFirstBuild = false;
+      Scaffold.of(context).showSnackBar(snackBar);
     }
   }
 

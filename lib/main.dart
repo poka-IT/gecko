@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dubp/dubp.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/cesiumPlus.dart';
@@ -17,31 +19,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:catcher/catcher.dart';
 
-// import 'dart:io';
-// import 'package:flutter_logs/flutter_logs.dart';
-// import 'package:downloads_path_provider/downloads_path_provider.dart';
-
 final bool enableSentry = true;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // var downloadsDirectory = DownloadsPathProvider.downloadsDirectory;
-  // File logFile = File(downloadsDirectory.toString() + '/gecko.log');
-
-  // await FlutterLogs.initLogs(
-  //     logLevelsEnabled: [
-  //       LogLevel.INFO,
-  //       LogLevel.WARNING,
-  //       LogLevel.ERROR,
-  //       LogLevel.SEVERE
-  //     ],
-  //     timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
-  //     directoryStructure: DirectoryStructure.FOR_EVENT,
-  //     logTypesEnabled: ["Locations", "APIs"],
-  //     logFileExtension: LogFileExtension.LOG,
-  //     logsWriteDirectoryName: downloadsDirectory.toString(),
-  //     logsExportDirectoryName: downloadsDirectory.toString());
 
   HomeProvider _homeProvider = HomeProvider();
   await _homeProvider.getAppPath();
@@ -55,23 +36,33 @@ Future<void> main() async {
   endPointGVA = await _homeProvider.getValidEndpoint();
 
   if (kReleaseMode && enableSentry) {
-    CatcherOptions debugOptions = CatcherOptions(DialogReportMode(), [
-      SentryHandler(SentryClient(SentryOptions(
-          dsn:
-              "https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110")))
-    ]);
-    // CatcherOptions releaseOptions = CatcherOptions(NotificationReportMode(), [
-    //   EmailManualHandler(["poka@p2p.legal"])
+    // CatcherOptions debugOptions = CatcherOptions(DialogReportMode(), [
+    //   SentryHandler(SentryClient(SentryOptions(
+    //       dsn:
+    //           "https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110")))
     // ]);
-    Catcher(rootWidget: Gecko(endPointGVA, _store), debugConfig: debugOptions);
+    // // CatcherOptions releaseOptions = CatcherOptions(NotificationReportMode(), [
+    // //   EmailManualHandler(["poka@p2p.legal"])
+    // // ]);
+    // Catcher(rootWidget: Gecko(endPointGVA, _store), debugConfig: debugOptions);
 
-    // await SentryFlutter.init(
-    //   (options) {
-    //     options.dsn =
-    //         'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
-    //   },
-    //   appRunner: () => runApp(Gecko(endPointGVA, _store)),
-    // );
+    await SentryFlutter.init((options) {
+      options.dsn =
+          'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
+    }, appRunner: () => runApp(Gecko(endPointGVA, _store)));
+
+    // runZoned<Future<void>>(
+    //       () async {
+    //         runApp(Gecko(endPointGVA, _store));
+    //       },
+    //       onError: (dynamic error, StackTrace stackTrace) {
+    //         print("=================== CAUGHT DART ERROR");
+    //         // Sentry.captureException(
+    //         //   error,
+    //         //   stackTrace: stackTrace,
+    //         // );
+    //       },
+    //     ));
   } else {
     print('Debug mode enabled: No sentry alerte');
 
@@ -108,6 +99,8 @@ class Gecko extends StatelessWidget {
       }
     }
 
+    // HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
+    // HistoryProvider('').snackNode(context);
     return MultiProvider(
         providers: [
           // Provider(create: (context) => HistoryProvider()),

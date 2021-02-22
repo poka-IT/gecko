@@ -17,6 +17,9 @@ class HomeProvider with ChangeNotifier {
   Icon searchIcon = Icon(Icons.search);
   final TextEditingController searchQuery = new TextEditingController();
   Widget appBarTitle = Text('Ğecko', style: TextStyle(color: Colors.grey[850]));
+  Widget appBarExplorer =
+      Text('Explorateur', style: TextStyle(color: Colors.grey[850]));
+
   List currentTab = [HistoryScreen(), WalletsHome()];
 
   get currentIndex => _currentIndex;
@@ -124,6 +127,8 @@ class HomeProvider with ChangeNotifier {
       color: Colors.grey[850],
     );
     appBarTitle = Text('Ğecko', style: TextStyle(color: Colors.grey[850]));
+    appBarExplorer =
+        Text('Explorateur', style: TextStyle(color: Colors.grey[850]));
     isSearching = false;
     searchQuery.clear();
 

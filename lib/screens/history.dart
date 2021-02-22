@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/cesiumPlus.dart';
+import 'package:gecko/models/home.dart';
 import 'package:gecko/models/queries.dart';
 import 'package:gecko/models/history.dart';
 import 'package:flutter/material.dart';
@@ -28,14 +29,55 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
   @override
   Widget build(BuildContext context) {
     HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
+    HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
     this._outputPubkey.text = _historyProvider.pubkey;
     print('Build pubkey : ' + _historyProvider.pubkey);
     // _historyProvider.snackNode(context);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _historyProvider.snackNode(context);
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {});
 
     return Scaffold(
+        appBar: AppBar(
+          title: _homeProvider.appBarExplorer,
+          actions: [
+            Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: IconButton(
+                    icon: _homeProvider.searchIcon,
+                    color: Colors.grey[850],
+                    onPressed: () {
+                      if (_homeProvider.searchIcon.icon == Icons.search) {
+                        _homeProvider.searchIcon = Icon(
+                          Icons.close,
+                          color: Colors.grey[850],
+                        );
+                        _homeProvider.appBarExplorer = TextField(
+                          autofocus: true,
+                          controller: _homeProvider.searchQuery,
+                          onChanged: (text) {
+                            print("Clé tappé: $text");
+                            final String searchResult =
+                                _historyProvider.isPubkey(context, text);
+                            if (searchResult != '') {
+                              _homeProvider.currentIndex = 0;
+                            }
+                          },
+                          style: TextStyle(
+                            color: Colors.grey[850],
+                          ),
+                          decoration: InputDecoration(
+                              prefixIcon:
+                                  Icon(Icons.search, color: Colors.grey[850]),
+                              hintText: "Rechercher ...",
+                              hintStyle: TextStyle(color: Colors.grey[850])),
+                        );
+                        _homeProvider.handleSearchStart();
+                      } else {
+                        _homeProvider.handleSearchEnd();
+                      }
+                    }))
+          ],
+          backgroundColor: Color(0xffFFD58D),
+        ),
         floatingActionButton: Container(
           height: 80.0,
           width: 80.0,

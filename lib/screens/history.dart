@@ -162,128 +162,139 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
 
             // Build history list
             return NotificationListener(
-                child: Expanded(
-                    child: ListView(
-                  controller: scrollController,
-                  children: <Widget>[
-                    SizedBox(height: 20),
-                    if (_historyProvider.pubkey != '')
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
+                child: Builder(
+                    builder: (context) => Expanded(
+                            child: ListView(
+                          controller: scrollController,
+                          children: <Widget>[
+                            SizedBox(height: 20),
+                            if (_historyProvider.pubkey != '')
+                              Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    if (_isFirstExec)
+                                      Container(
+                                          padding: const EdgeInsets.fromLTRB(
+                                              12, 0, 5, 0),
+                                          child: FutureBuilder(
+                                              future:
+                                                  _cesiumPlusProvider.getAvatar(
+                                                      _historyProvider.pubkey),
+                                              initialData: [
+                                                File(appPath.path +
+                                                    '/default_avatar.png')
+                                              ],
+                                              builder: (BuildContext context,
+                                                  AsyncSnapshot<List> _avatar) {
+                                                cesiumData = _avatar.data;
+                                                // _cesiumPlusProvider.isComplete = true;
+                                                if (_avatar.connectionState !=
+                                                    ConnectionState.done) {
+                                                  return Image.file(
+                                                      File(appPath.path +
+                                                          '/default_avatar.png'),
+                                                      height: avatarsSize);
+                                                }
+                                                if (_avatar.hasError) {
+                                                  return Image.file(
+                                                      File(appPath.path +
+                                                          '/default_avatar.png'),
+                                                      height: avatarsSize);
+                                                }
+                                                if (_avatar.hasData) {
+                                                  return SingleChildScrollView(
+                                                      padding:
+                                                          EdgeInsets.all(0.0),
+                                                      child: Image.file(
+                                                          _avatar.data[0],
+                                                          height: avatarsSize));
+                                                }
+                                                return Image.file(
+                                                    File(appPath.path +
+                                                        '/default_avatar.png'),
+                                                    height: avatarsSize);
+                                              })),
+                                    GestureDetector(
+                                      onTap: () {
+                                        Clipboard.setData(ClipboardData(
+                                            text: _historyProvider.pubkey));
+                                        _historyProvider.snackCopyKey(context);
+                                      },
+                                      child: Text(
+                                          _historyProvider.getShortPubkey(
+                                              _historyProvider.pubkey),
+                                          style: TextStyle(
+                                              fontSize: 22,
+                                              fontWeight: FontWeight.w800,
+                                              fontFamily: 'Monospace')),
+                                    ),
+                                    Container(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            30, 0, 5, 0), // .only(right: 15),
+                                        child: Text('TODO')),
+                                    SizedBox(width: 0)
+                                  ]),
+                            if (_isFirstExec)
+                              Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            0, 0, 0, 0),
+                                        // padding: const EdgeInsets.,
+                                        child: FutureBuilder(
+                                            future: _cesiumPlusProvider.getName(
+                                                _historyProvider.pubkey),
+                                            initialData: '...',
+                                            builder: (context, snapshot) {
+                                              return Text(
+                                                  snapshot.data != ''
+                                                      ? snapshot.data
+                                                      : '-',
+                                                  style:
+                                                      TextStyle(fontSize: 20));
+                                            }))
+                                  ]),
+                            SizedBox(height: 18),
                             if (_isFirstExec)
                               Container(
                                   padding:
-                                      const EdgeInsets.fromLTRB(12, 0, 5, 0),
-                                  child: FutureBuilder(
-                                      future: _cesiumPlusProvider
-                                          .getAvatar(_historyProvider.pubkey),
-                                      initialData: [
-                                        File(appPath.path +
-                                            '/default_avatar.png')
-                                      ],
-                                      builder: (BuildContext context,
-                                          AsyncSnapshot<List> _avatar) {
-                                        cesiumData = _avatar.data;
-                                        // _cesiumPlusProvider.isComplete = true;
-                                        if (_avatar.connectionState !=
-                                            ConnectionState.done) {
-                                          return Image.file(
-                                              File(appPath.path +
-                                                  '/default_avatar.png'),
-                                              height: avatarsSize);
-                                        }
-                                        if (_avatar.hasError) {
-                                          return Image.file(
-                                              File(appPath.path +
-                                                  '/default_avatar.png'),
-                                              height: avatarsSize);
-                                        }
-                                        if (_avatar.hasData) {
-                                          return SingleChildScrollView(
-                                              padding: EdgeInsets.all(0.0),
-                                              child: Image.file(_avatar.data[0],
-                                                  height: avatarsSize));
-                                        }
-                                        return Image.file(
-                                            File(appPath.path +
-                                                '/default_avatar.png'),
-                                            height: avatarsSize);
-                                      })),
-                            GestureDetector(
-                              onTap: () {
-                                Clipboard.setData(ClipboardData(
-                                    text: _historyProvider.pubkey));
-                                _historyProvider.snackCopyKey(context);
-                              },
-                              child: Text(
-                                  _historyProvider
-                                      .getShortPubkey(_historyProvider.pubkey),
-                                  style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w800,
-                                      fontFamily: 'Monospace')),
-                            ),
-                            Container(
-                                padding: const EdgeInsets.fromLTRB(
-                                    30, 0, 5, 0), // .only(right: 15),
-                                child: Text('TODO')),
-                            SizedBox(width: 0)
-                          ]),
-                    if (_isFirstExec)
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Container(
-                                padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                                // padding: const EdgeInsets.,
-                                child: FutureBuilder(
-                                    future: _cesiumPlusProvider
-                                        .getName(_historyProvider.pubkey),
-                                    initialData: '...',
-                                    builder: (context, snapshot) {
-                                      return Text(
-                                          snapshot.data != ''
-                                              ? snapshot.data
-                                              : '-',
-                                          style: TextStyle(fontSize: 20));
-                                    }))
-                          ]),
-                    SizedBox(height: 18),
-                    if (_isFirstExec)
-                      Container(
-                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                          child: Text(balance.toString() + ' Ğ1',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 18.0))),
-                    SizedBox(height: 20),
-                    ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          elevation: 1,
-                          primary: Colors.grey[50], // background
-                          onPrimary: Colors.black, // foreground
-                        ),
-                        onPressed: () {
-                          _historyProvider.switchProfileView();
-                        },
-                        child: Text(_historyProvider.historySwitchButtun,
-                            style: TextStyle(
-                                fontSize: 15, color: Color(0xffD28928)))),
-                    // const Divider(
-                    //   color: Colors.grey,
-                    //   height: 5,
-                    //   thickness: 0.5,
-                    //   indent: 0,
-                    //   endIndent: 0,
-                    // ),
-                    _historyProvider.isHistoryScreen
-                        ? historyView(context, result)
-                        : payView(context),
-                  ],
-                )),
+                                      const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                                  child: Text(balance.toString() + ' Ğ1',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(fontSize: 18.0))),
+                            SizedBox(height: 20),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 1,
+                                  primary: Colors.grey[50], // background
+                                  onPrimary: Colors.black, // foreground
+                                ),
+                                onPressed: () {
+                                  _historyProvider.switchProfileView();
+                                },
+                                child: Text(
+                                    _historyProvider.historySwitchButtun,
+                                    style: TextStyle(
+                                        fontSize: 15,
+                                        color: Color(0xffD28928)))),
+                            // const Divider(
+                            //   color: Colors.grey,
+                            //   height: 5,
+                            //   thickness: 0.5,
+                            //   indent: 0,
+                            //   endIndent: 0,
+                            // ),
+                            _historyProvider.isHistoryScreen
+                                ? historyView(context, result)
+                                : payView(context),
+                          ],
+                        ))),
                 onNotification: (t) {
                   if (t is ScrollEndNotification &&
                       scrollController.position.pixels >=

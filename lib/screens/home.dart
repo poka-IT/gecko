@@ -12,8 +12,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
     HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
-    // _historyProvider.snackNode(context);
-
+    HistoryProvider _historyStatic = HistoryProvider('');
     return Scaffold(
         resizeToAvoidBottomInset: false,
         drawer: Drawer(
@@ -74,13 +73,6 @@ class HomeScreen extends StatelessWidget {
                     icon: _homeProvider.searchIcon,
                     color: Colors.grey[850],
                     onPressed: () {
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(builder: (context) {
-                      //     return SearchList();
-                      //   }),
-                      // );
-
                       if (_homeProvider.searchIcon.icon == Icons.search) {
                         _homeProvider.searchIcon = Icon(
                           Icons.close,
@@ -115,183 +107,218 @@ class HomeScreen extends StatelessWidget {
           backgroundColor: Color(0xffFFD58D),
         ),
         backgroundColor: Color(0xffF9F9F1),
-        body: // _homeProvider.currentTab[_homeProvider.currentIndex],
-            Builder(
-          builder: (context) => Column(children: <Widget>[
-            // _historyProvider.snackNode(context),
-            // SnackBar(content: Text('tataaa')),
-
-            Padding(
-                padding: EdgeInsets.only(top: 22),
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      SizedBox(width: 7),
-                      Image(
-                          image: AssetImage('assets/icon/gecko_final.png'),
-                          height: 180),
-                    ])),
-            Padding(
-                padding: EdgeInsets.only(top: 15),
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        "L’application de paiement Ğ1\nplus mobile qu’un lésard du Vietnam",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.black, fontSize: 15),
-                      )
-                    ])),
-            Padding(
-                padding: EdgeInsets.only(top: 60),
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Column(children: <Widget>[
-                        Container(
-                          child: ClipOval(
-                            child: Material(
-                              color: Color(0xffFFD58D), // button color
-                              child: InkWell(
-                                  splashColor:
-                                      Color(0xffD28928), // inkwell color
-                                  child: Padding(
-                                      padding: EdgeInsets.all(17),
-                                      child: Image(
-                                          image: AssetImage(
-                                              'assets/qrcode-scan.png'),
-                                          height: 58)),
-                                  onTap: () async {
-                                    await _historyProvider.scan(context);
-                                  }),
-                            ),
-                          ),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.grey,
-                                  blurRadius: 4.0,
-                                  offset: Offset(2.0, 2.5),
-                                  spreadRadius: 0.5)
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          "Payer par QR-Code",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.black, fontSize: 13),
-                        )
-                      ])
-                    ])),
-            Padding(
-                padding: EdgeInsets.only(top: 60),
-                child:
-                    Row(mainAxisAlignment: MainAxisAlignment.center, children: <
-                        Widget>[
-                  Column(children: <Widget>[
-                    Container(
-                      child: ClipOval(
-                        child: Material(
-                          color: Color(0xffFFD58D), // button color
-                          child: InkWell(
-                              splashColor: Color(0xffD28928), // inkwell color
-                              child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 18, vertical: 14),
-                                  child: Image(
-                                      image:
-                                          AssetImage('assets/blockchain.png'),
-                                      height: 65)),
-                              onTap: () {}),
-                        ),
-                      ),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                              color: Colors.grey,
-                              blurRadius: 4.0,
-                              offset: Offset(2.0, 2.5),
-                              spreadRadius: 0.5)
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      "Explorer\n",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.black, fontSize: 13),
-                    )
+        body: Builder(
+            builder: (ctx) => StatefulWrapper(
+                  onInit: () {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      _historyStatic.snackNode(ctx);
+                    });
+                  },
+                  child: Column(children: <Widget>[
+                    Padding(
+                        padding: EdgeInsets.only(top: 22),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              SizedBox(width: 7),
+                              Image(
+                                  image:
+                                      AssetImage('assets/icon/gecko_final.png'),
+                                  height: 180),
+                            ])),
+                    Padding(
+                        padding: EdgeInsets.only(top: 15),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Text(
+                                "L’application de paiement Ğ1\nplus mobile qu’un lésard du Vietnam",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color: Colors.black, fontSize: 15),
+                              )
+                            ])),
+                    Padding(
+                        padding: EdgeInsets.only(top: 60),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Column(children: <Widget>[
+                                Container(
+                                  child: ClipOval(
+                                    child: Material(
+                                      color: Color(0xffFFD58D), // button color
+                                      child: InkWell(
+                                          splashColor: Color(
+                                              0xffD28928), // inkwell color
+                                          child: Padding(
+                                              padding: EdgeInsets.all(17),
+                                              child: Image(
+                                                  image: AssetImage(
+                                                      'assets/qrcode-scan.png'),
+                                                  height: 58)),
+                                          onTap: () async {
+                                            await _historyProvider
+                                                .scan(context);
+                                          }),
+                                    ),
+                                  ),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color: Colors.grey,
+                                          blurRadius: 4.0,
+                                          offset: Offset(2.0, 2.5),
+                                          spreadRadius: 0.5)
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  "Payer par QR-Code",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: Colors.black, fontSize: 13),
+                                )
+                              ])
+                            ])),
+                    Padding(
+                        padding: EdgeInsets.only(top: 60),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Column(children: <Widget>[
+                                Container(
+                                  child: ClipOval(
+                                    child: Material(
+                                      color: Color(0xffFFD58D), // button color
+                                      child: InkWell(
+                                          splashColor: Color(
+                                              0xffD28928), // inkwell color
+                                          child: Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 18, vertical: 14),
+                                              child: Image(
+                                                  image: AssetImage(
+                                                      'assets/blockchain.png'),
+                                                  height: 65)),
+                                          onTap: () {}),
+                                    ),
+                                  ),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color: Colors.grey,
+                                          blurRadius: 4.0,
+                                          offset: Offset(2.0, 2.5),
+                                          spreadRadius: 0.5)
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  "Explorer\n",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: Colors.black, fontSize: 13),
+                                )
+                              ]),
+                              SizedBox(width: 140),
+                              Column(children: <Widget>[
+                                Container(
+                                  child: ClipOval(
+                                    child: Material(
+                                      color: Color(0xffFFD58D), // button color
+                                      child: InkWell(
+                                          splashColor: Color(
+                                              0xffD28928), // inkwell color
+                                          child: Padding(
+                                              padding: EdgeInsets.all(20),
+                                              child: Image(
+                                                  image: AssetImage(
+                                                      'assets/lock.png'),
+                                                  height: 50)),
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) {
+                                                return WalletsHome();
+                                              }),
+                                            );
+                                          }),
+                                    ),
+                                  ),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color: Colors.grey,
+                                          blurRadius: 4.0,
+                                          offset: Offset(2.0, 2.5),
+                                          spreadRadius: 0.5)
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  "Gérer mes\nportefeuilles",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: Colors.black, fontSize: 13),
+                                )
+                              ])
+                            ]))
                   ]),
-                  SizedBox(width: 140),
-                  Column(children: <Widget>[
-                    Container(
-                      child: ClipOval(
-                        child: Material(
-                          color: Color(0xffFFD58D), // button color
-                          child: InkWell(
-                              splashColor: Color(0xffD28928), // inkwell color
-                              child: Padding(
-                                  padding: EdgeInsets.all(20),
-                                  child: Image(
-                                      image: AssetImage('assets/lock.png'),
-                                      height: 50)),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) {
-                                    return WalletsHome();
-                                  }),
-                                );
-                              }),
-                        ),
-                      ),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                              color: Colors.grey,
-                              blurRadius: 4.0,
-                              offset: Offset(2.0, 2.5),
-                              spreadRadius: 0.5)
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      "Gérer mes\nportefeuilles",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.black, fontSize: 13),
-                    )
-                  ])
-                ]))
-          ]),
-          // bottomNavigationBar: BottomNavigationBar(
-          //   backgroundColor: Color(0xffFFD58D),
-          //   fixedColor: Colors.grey[850],
-          //   unselectedItemColor: Color(0xffBD935C),
-          //   type: BottomNavigationBarType.fixed,
-          //   onTap: (index) {
-          //     _homeProvider.currentIndex = index;
-          //   },
-          //   currentIndex: _homeProvider.currentIndex,
-          //   items: [
-          //     BottomNavigationBarItem(
-          //       icon: Image.asset('assets/block-space-disabled.png', height: 26),
-          //       activeIcon: Image.asset('assets/blockchain.png', height: 26),
-          //       label: 'Explorateur',
-          //     ),
-          //     BottomNavigationBarItem(
-          //       icon: Icon(Icons.lock),
-          //       label: 'Mes portefeuilles',
-          //     ),
-          //   ],
-          // ),
-        ));
+                  // bottomNavigationBar: BottomNavigationBar(
+                  //   backgroundColor: Color(0xffFFD58D),
+                  //   fixedColor: Colors.grey[850],
+                  //   unselectedItemColor: Color(0xffBD935C),
+                  //   type: BottomNavigationBarType.fixed,
+                  //   onTap: (index) {
+                  //     _homeProvider.currentIndex = index;
+                  //   },
+                  //   currentIndex: _homeProvider.currentIndex,
+                  //   items: [
+                  //     BottomNavigationBarItem(
+                  //       icon: Image.asset('assets/block-space-disabled.png', height: 26),
+                  //       activeIcon: Image.asset('assets/blockchain.png', height: 26),
+                  //       label: 'Explorateur',
+                  //     ),
+                  //     BottomNavigationBarItem(
+                  //       icon: Icon(Icons.lock),
+                  //       label: 'Mes portefeuilles',
+                  //     ),
+                  //   ],
+                  // ),
+                )));
+  }
+}
+
+class StatefulWrapper extends StatefulWidget {
+  final Function onInit;
+  final Widget child;
+  const StatefulWrapper({@required this.onInit, @required this.child});
+  @override
+  _StatefulWrapperState createState() => _StatefulWrapperState();
+}
+
+class _StatefulWrapperState extends State<StatefulWrapper> {
+  @override
+  void initState() {
+    if (widget.onInit != null) {
+      widget.onInit();
+    }
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
   }
 }

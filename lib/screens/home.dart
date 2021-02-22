@@ -126,6 +126,7 @@ class HomeScreen extends StatelessWidget {
                 child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
+                      SizedBox(width: 7),
                       Image(
                           image: AssetImage('assets/icon/gecko_final.png'),
                           height: 180),

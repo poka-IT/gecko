@@ -1,6 +1,4 @@
 import 'dart:async';
-
-import 'package:dubp/dubp.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/cesiumPlus.dart';
 import 'package:gecko/models/changePin.dart';
@@ -87,17 +85,6 @@ class Gecko extends StatelessWidget {
         link: _httpLink,
       ),
     );
-    try {
-      DubpRust.setup();
-    } catch (e, stack) {
-      print(e);
-      if (kReleaseMode) {
-        Sentry.captureException(
-          e,
-          stackTrace: stack,
-        );
-      }
-    }
 
     // HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
     // HistoryProvider('').snackNode(context);

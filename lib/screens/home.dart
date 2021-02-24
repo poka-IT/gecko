@@ -1,3 +1,4 @@
+import 'package:dubp/dubp.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
@@ -111,6 +112,7 @@ class HomeScreen extends StatelessWidget {
             builder: (ctx) => StatefulWrapper(
                   onInit: () {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
+                      DubpRust.setup();
                       _historyStatic.snackNode(ctx);
                     });
                   },
@@ -124,10 +126,10 @@ class HomeScreen extends StatelessWidget {
                               Image(
                                   image:
                                       AssetImage('assets/icon/gecko_final.png'),
-                                  height: 180),
+                                  height: 160),
                             ])),
                     Padding(
-                        padding: EdgeInsets.only(top: 15),
+                        padding: EdgeInsets.only(top: 12),
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
@@ -139,7 +141,7 @@ class HomeScreen extends StatelessWidget {
                               )
                             ])),
                     Padding(
-                        padding: EdgeInsets.only(top: 60),
+                        padding: EdgeInsets.only(top: 40),
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
@@ -156,7 +158,7 @@ class HomeScreen extends StatelessWidget {
                                               child: Image(
                                                   image: AssetImage(
                                                       'assets/qrcode-scan.png'),
-                                                  height: 58)),
+                                                  height: 50)),
                                           onTap: () async {
                                             await _historyProvider
                                                 .scan(context);
@@ -185,7 +187,7 @@ class HomeScreen extends StatelessWidget {
                               ])
                             ])),
                     Padding(
-                        padding: EdgeInsets.only(top: 60),
+                        padding: EdgeInsets.only(top: 40),
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
@@ -203,7 +205,7 @@ class HomeScreen extends StatelessWidget {
                                               child: Image(
                                                   image: AssetImage(
                                                       'assets/blockchain.png'),
-                                                  height: 65)),
+                                                  height: 55)),
                                           onTap: () {}),
                                     ),
                                   ),
@@ -227,7 +229,7 @@ class HomeScreen extends StatelessWidget {
                                       color: Colors.black, fontSize: 13),
                                 )
                               ]),
-                              SizedBox(width: 140),
+                              SizedBox(width: 100),
                               Column(children: <Widget>[
                                 Container(
                                   child: ClipOval(
@@ -241,7 +243,7 @@ class HomeScreen extends StatelessWidget {
                                               child: Image(
                                                   image: AssetImage(
                                                       'assets/lock.png'),
-                                                  height: 50)),
+                                                  height: 45)),
                                           onTap: () {
                                             Navigator.push(
                                               context,

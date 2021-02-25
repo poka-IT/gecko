@@ -19,7 +19,6 @@ class HomeProvider with ChangeNotifier {
   Widget appBarTitle = Text('Ğecko', style: TextStyle(color: Colors.grey[850]));
   List currentTab = [HistoryScreen(), WalletsHome()];
 
-
   get currentIndex => _currentIndex;
 
   set currentIndex(int index) {

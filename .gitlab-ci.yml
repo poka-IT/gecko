@@ -2,6 +2,7 @@ stages:
   - format
   - build_and_test
   - quality
+  - package
 
 .env:
   image: axiomteam/gecko-ci:v0.0.5
@@ -44,3 +45,29 @@ audit_dependencies:
   script:
     - cargo deny -V
     - cargo deny check
+
+releases:test:
+  extends: .env
+  stage: package
+  allow_failure: true
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - when: manual
+  script:
+    - bash "release/android/build-apk.sh" "$(date +%Y%m%d).$(date +%H%M).$(date +%S)+0"
+  artifacts:
+    paths: &releases_artifacts
+      - work/bin/
+    expire_in: 72h
+
+releases:x64:
+  extends: .env
+  stage: package
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - bash "release/android/build-apk.sh" "${CI_COMMIT_TAG#v}"
+  artifacts:
+    paths: *releases_artifacts
+    expire_in: 1 mos

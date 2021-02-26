@@ -161,49 +161,79 @@ extern "C"
 {
 #endif // __cplusplus
 
-  int32_t error_message_utf8(char *buf, int32_t length);
+void change_dewif_secret_code(int64_t port,
+                              const char *dewif,
+                              const char *old_secret_code,
+                              uint32_t member_wallet,
+                              uint32_t secret_code_type,
+                              int64_t system_memory);
 
-  int32_t last_error_length(void);
+void gen_dewif(int64_t port,
+               const char *currency,
+               uint32_t language,
+               const char *mnemonic,
+               uint32_t member_wallet,
+               uint32_t secret_code_type,
+               int64_t system_memory,
+               uint32_t wallet_type);
 
-  int32_t change_dewif_pin(int64_t port,
-                         const char *currency,
-                         const char *dewif,
-                         const char *old_pin,
-                         const char *new_pin);
+void gen_dewif_from_legacy(int64_t port,
+                           const char *currency,
+                           const char *salt,
+                           const char *password,
+                           uint32_t member_wallet,
+                           uint32_t secret_code_type,
+                           int64_t system_memory);
 
-  int32_t error_message_utf8(char *buf, int32_t length);
+void gen_mnemonic(int64_t port, uint32_t language);
 
-  int32_t gen_dewif(int64_t port,
-                    const char *currency,
-                    uint32_t language,
-                    const char *mnemonic,
-                    const char *pin);
+void get_bip32_dewif_accounts_pubkeys(int64_t port,
+                                      const char *currency,
+                                      const char *dewif,
+                                      const char *secret_code,
+                                      uint32_t accounts_indexs_len,
+                                      const uint32_t *accounts_indexs);
 
-  int32_t gen_mnemonic(int64_t port, uint32_t language);
+void get_dewif_meta(int64_t port,
+                    const char *dewif,
+                    uint32_t member_wallet,
+                    uint32_t secret_code_type);
 
-  int32_t gen_pin10(int64_t port);
+void get_dewif_pubkey(int64_t port, const char *currency, const char *dewif, const char *pin);
 
-  int32_t gen_pin6(int64_t port);
+int32_t get_dewif_secret_code_len(const char *dewif,
+                                  uint32_t member_wallet,
+                                  uint32_t secret_code_type);
 
-  int32_t gen_pin8(int64_t port);
+void get_legacy_pubkey(int64_t port, const char *salt, const char *password);
 
-  int32_t get_dewif_pubkey(int64_t port, const char *currency, const char *dewif, const char *pin);
+void mnemonic_to_pubkey(int64_t port, uint32_t language, const char *mnemonic_phrase);
 
-  int32_t last_error_length(void);
+void sign(int64_t port, const char *currency, const char *dewif, const char *pin, const char *msg);
 
-  int32_t mnemonic_to_pubkey(int64_t port, uint32_t language, const char *mnemonic_phrase);
+void sign_bip32_transparent(int64_t port,
+                            uint32_t account_index,
+                            const char *currency,
+                            const char *dewif,
+                            const char *secret_code,
+                            const char *msg);
 
-  int32_t sign(int64_t port,
-              const char *currency,
-              const char *dewif,
-              const char *pin,
-              const char *msg);
+void sign_legacy(int64_t port, const char *salt, const char *password, const char *msg);
 
-  int32_t sign_several(int64_t port,
-                      const char *currency,
-                      const char *dewif,
-                      const char *pin,
-                      const char *msgs);
+void sign_several(int64_t port,
+                  const char *currency,
+                  const char *dewif,
+                  const char *pin,
+                  uint32_t msgs_len,
+                  const char *const *msgs);
+
+void sign_several_bip32_transparent(int64_t port,
+                                    uint32_t account_index,
+                                    const char *currency,
+                                    const char *dewif,
+                                    const char *pin,
+                                    uint32_t msgs_len,
+                                    const char *const *msgs);
 
 #ifdef __cplusplus
 } // extern "C"

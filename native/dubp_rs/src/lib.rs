@@ -87,7 +87,6 @@ pub extern "C" fn gen_dewif(
     member_wallet: u32,
     secret_code_type: u32,
     system_memory: i64,
-    wallet_type: u32,
 ) {
     exec_async(
         port,
@@ -97,7 +96,6 @@ pub extern "C" fn gen_dewif(
             let mnemonic = char_ptr_to_str(mnemonic)?;
             let member_wallet = member_wallet != 0;
             let secret_code_type = SecretCodeType::from(secret_code_type);
-            let wallet_type = WalletType::from(wallet_type);
             Ok((
                 currency,
                 language,
@@ -105,18 +103,9 @@ pub extern "C" fn gen_dewif(
                 member_wallet,
                 secret_code_type,
                 system_memory,
-                wallet_type,
             ))
         },
-        |(
-            currency,
-            language,
-            mnemonic,
-            member_wallet,
-            secret_code_type,
-            system_memory,
-            wallet_type,
-        )| {
+        |(currency, language, mnemonic, member_wallet, secret_code_type, system_memory)| {
             dewif::gen_dewif(
                 currency,
                 language,
@@ -124,7 +113,6 @@ pub extern "C" fn gen_dewif(
                 member_wallet,
                 secret_code_type,
                 system_memory,
-                wallet_type,
             )
         },
     )

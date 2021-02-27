@@ -42,7 +42,6 @@ pub(super) fn gen_dewif(
     member_wallet: bool,
     secret_code_type: SecretCodeType,
     system_memory: i64,
-    wallet_type: WalletType,
 ) -> Result<Vec<String>, DubpError> {
     let currency = parse_currency(currency)?;
     let mnemonic =
@@ -52,17 +51,10 @@ pub(super) fn gen_dewif(
     let log_n = log_n(system_memory);
     let secret_code = gen_secret_code(member_wallet, secret_code_type, log_n)?;
 
-    let dewif = match wallet_type {
-        WalletType::Bip32Ed25519 => {
-            let keypair = dup_crypto::keys::ed25519::bip32::KeyPair::from_seed(seed.clone());
-            let pubkey = keypair.public_key();
-            dup_crypto::dewif::write_dewif_v4_content(currency, log_n, &secret_code, &pubkey, seed)
-        }
-        WalletType::Ed25519 => {
-            let keypair = KeyPairFromSeed32Generator::generate(seed);
-            dup_crypto::dewif::write_dewif_v3_content(currency, &keypair, log_n, &secret_code)
-        }
-    };
+    let keypair = dup_crypto::keys::ed25519::bip32::KeyPair::from_seed(seed.clone());
+    let pubkey = keypair.public_key();
+    let dewif =
+        dup_crypto::dewif::write_dewif_v4_content(currency, log_n, &secret_code, &pubkey, seed);
 
     Ok(vec![dewif, secret_code])
 }

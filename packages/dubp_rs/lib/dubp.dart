@@ -156,7 +156,6 @@ class DubpRust {
     Language language = Language.english,
     String mnemonic,
     SecretCodeType secretCodeType = SecretCodeType.letters,
-    WalletType walletType = WalletType.ed25519,
   }) async {
     int ram = SysInfo.getTotalPhysicalMemory();
     print('ram=$ram');
@@ -172,7 +171,6 @@ class DubpRust {
       0,
       secretCodeType.index,
       ram,
-      walletType.index,
     );
     List<String> newWallet = await completer.future;
 
@@ -263,24 +261,6 @@ class DubpRust {
     return completer.future;
   }
 
-  /// Sign the message `message` with `dewif` keypair encryted in DEWIF format.
-  ///
-  /// If you have several messages to sign, use `signSeveral` method instead.
-  static Future<String> sign(
-      {String currency = "g1", String dewif, String pin, String message}) {
-    final completer = Completer<String>();
-    final sendPort =
-        singleCompletePort<String, String>(completer, callback: _handleErr);
-    native.sign(
-      sendPort.nativePort,
-      Utf8.toUtf8(currency),
-      Utf8.toUtf8(dewif),
-      Utf8.toUtf8(pin),
-      Utf8.toUtf8(message),
-    );
-    return completer.future;
-  }
-
   /// Sign the message `message` with `dewif` Bip32-Ed25519 keypair encryted
   /// in DEWIF format.
   ///
@@ -320,33 +300,6 @@ class DubpRust {
       Utf8.toUtf8(salt),
       Utf8.toUtf8(message),
     );
-    return completer.future;
-  }
-
-  /// Sign several messages `messages` with `dewif` keypair encryted in DEWIF
-  /// format.
-  ///
-  /// This method is optimized to sign several messages at once. If you have
-  /// several messages to sign, avoid calling the `sign` method for each
-  /// message. Use this `signSeveral` method instead.
-  static Future<List<String>> signSeveral(
-      {String currency = "g1",
-      String dewif,
-      String pin,
-      List<String> messages}) {
-    final completer = Completer<List<String>>();
-    final sendPort = singleCompletePort<List<String>, List>(completer,
-        callback: _handleErrList);
-
-    native.sign_several(
-      sendPort.nativePort,
-      Utf8.toUtf8(currency),
-      Utf8.toUtf8(dewif),
-      Utf8.toUtf8(pin),
-      messages.length,
-      _listStringToPtr(messages),
-    );
-
     return completer.future;
   }
 

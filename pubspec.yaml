@@ -5,7 +5,7 @@ description: A new Flutter project.
 # pub.dev using `pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 0.0.1+17
+version: 0.0.1+18
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -38,6 +38,7 @@ dependencies:
   sentry: ^4.0.4
   sentry_flutter: ^4.0.4
   catcher: ^0.4.1
+  bubble: ^1.1.9+1
 
 flutter_icons:
   android: "ic_launcher"
@@ -65,4 +66,7 @@ flutter:
     - assets/block-space.png
     - assets/block-space-disabled.png
     - assets/lock.png
+    - assets/onBoarding/gecko_bar.png
+    - assets/onBoarding/wallet.png
+    - assets/onBoarding/cesium.png
 

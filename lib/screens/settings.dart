@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:dubp/dubp.dart';
+import 'package:flutter/services.dart';
 import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/screens/myWallets/generateWallets.dart';
 import 'dart:io';
-
 import 'package:gecko/screens/myWallets/importWallet.dart';
 
 // ignore: must_be_immutable
@@ -23,6 +23,7 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     // getAppDirectory();
     return Scaffold(
         appBar: AppBar(

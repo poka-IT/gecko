@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dubp/dubp.dart';
+import 'package:flutter/services.dart';
 import 'package:gecko/models/changePin.dart';
 import 'dart:io';
 import 'package:provider/provider.dart';
@@ -17,6 +18,7 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     ChangePinProvider _changePin = Provider.of<ChangePinProvider>(context);
     // _walletOptions.changePin(walletName, oldPin);
     // _walletOptions.newPin.text = _tmpPin;

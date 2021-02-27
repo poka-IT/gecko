@@ -28,6 +28,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
     HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
     this._outputPubkey.text = _historyProvider.pubkey;

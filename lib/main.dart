@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/cesiumPlus.dart';
 import 'package:gecko/models/changePin.dart';
@@ -75,6 +76,7 @@ class Gecko extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     final _httpLink = HttpLink(
       randomEndpoint,
     );

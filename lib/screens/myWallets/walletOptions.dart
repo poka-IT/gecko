@@ -31,6 +31,7 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     print("Build walletOptions");
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);

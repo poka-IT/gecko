@@ -1,9 +1,9 @@
+import 'package:flutter/services.dart';
 import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/walletOptions.dart';
-import 'package:gecko/screens/myWallets/generateWallets.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/screens/myWallets/importWallet.dart';
 import 'package:gecko/screens/myWallets/walletOptions.dart';
+import 'package:gecko/screens/onBoarding/1_noKeychainFound.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
@@ -13,6 +13,7 @@ class WalletsHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
     WalletOptionsProvider _walletOptions =
@@ -54,53 +55,9 @@ class WalletsHome extends StatelessWidget {
                                 color: Colors.grey[850])),
                         backgroundColor: Color(0xffEFEFBF))))),
         body: SafeArea(
-            child: Column(children: <Widget>[
-          Visibility(
-              visible: (!isWalletsExists),
-              child: Column(children: <Widget>[
-                SizedBox(height: 120),
-                Center(
-                    child: Text("Vous n'avez encore généré aucun portefeuille.",
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.w500),
-                        textAlign: TextAlign.center)),
-                SizedBox(height: 80),
-                ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      primary: Color(0xffFFD68E), // background
-                      onPrimary: Colors.black, // foreground
-                    ),
-                    onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) {
-                            return GenerateWalletsScreen();
-                          }),
-                        ),
-                    child: Text('Générer un trousseau',
-                        style: TextStyle(fontSize: 20))),
-                SizedBox(height: 15),
-                Center(
-                    child: Text("ou",
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.w500),
-                        textAlign: TextAlign.center)),
-                SizedBox(height: 15),
-                ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      primary: Color(0xffFFD68E), // background
-                      onPrimary: Colors.black, // foreground
-                    ),
-                    onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) {
-                            return ImportWalletScreen();
-                          }),
-                        ),
-                    child: Text('Importer un portefeuille existant',
-                        style: TextStyle(fontSize: 20))),
-              ])),
-          Visibility(visible: isWalletsExists, child: myWalletsList(context))
-        ])));
+            child: !isWalletsExists
+                ? NoKeyChainScreen()
+                : Text('Wallet list screen')));
   }
 
   Widget myWalletsList(BuildContext context) {

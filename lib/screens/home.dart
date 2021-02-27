@@ -3,17 +3,26 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/myWallets.dart';
+import 'package:gecko/screens/commonElements.dart';
 import 'package:gecko/screens/myWallets/walletsHome.dart';
+import 'package:gecko/screens/onBoarding/1_noKeychainFound.dart';
 import 'dart:ui';
 import 'package:gecko/screens/settings.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
     HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
     HistoryProvider _historyStatic = HistoryProvider('');
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context);
+    final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
+    // CommonElements commonElements = CommonElements();
     return Scaffold(
         resizeToAvoidBottomInset: false,
         drawer: Drawer(
@@ -206,7 +215,15 @@ class HomeScreen extends StatelessWidget {
                                                   image: AssetImage(
                                                       'assets/blockchain.png'),
                                                   height: 55)),
-                                          onTap: () {}),
+                                          onTap: () {
+                                            // Navigator.push(
+                                            //   context,
+                                            //   MaterialPageRoute(
+                                            //       builder: (context) {
+                                            //     return TemplateScreen();
+                                            //   }),
+                                            // );
+                                          }),
                                     ),
                                   ),
                                   decoration: BoxDecoration(
@@ -245,13 +262,19 @@ class HomeScreen extends StatelessWidget {
                                                       'assets/lock.png'),
                                                   height: 45)),
                                           onTap: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) {
-                                                return WalletsHome();
-                                              }),
-                                            );
+                                            isWalletsExists
+                                                ? Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) {
+                                                      return WalletsHome();
+                                                    }),
+                                                  )
+                                                : Navigator.push(context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) {
+                                                    return NoKeyChainScreen();
+                                                  }));
                                           }),
                                     ),
                                   ),

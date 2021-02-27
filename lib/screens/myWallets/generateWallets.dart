@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/screens/myWallets/confirmWalletStorage.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,7 @@ class GenerateWalletsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
     _generateWalletProvider.generateMnemonic();

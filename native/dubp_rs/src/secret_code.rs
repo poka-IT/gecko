@@ -58,6 +58,14 @@ pub(crate) fn gen_secret_code(
     }
 }
 
+pub(crate) fn is_ascii_letters(secret_code: &str) -> bool {
+    secret_code.len()
+        == secret_code
+            .chars()
+            .filter(|char| char.is_ascii_alphabetic())
+            .count()
+}
+
 fn gen_random_digits(n: usize) -> Result<String, DubpError> {
     let mut digits_string = dup_crypto::rand::gen_u32()
         .map_err(|_| DubpError::RandErr)?

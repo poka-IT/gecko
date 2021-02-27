@@ -159,10 +159,10 @@ class GenerateWalletsProvider with ChangeNotifier {
   Future<NewWallet> generateWallet(generatedMnemonic) async {
     try {
       this.actualWallet = await DubpRust.genWalletFromMnemonic(
-          language: Language.french,
-          mnemonic: generatedMnemonic,
-          secretCodeType: SecretCodeType.letters,
-          walletType: WalletType.bip32Ed25519);
+        language: Language.french,
+        mnemonic: generatedMnemonic,
+        secretCodeType: SecretCodeType.letters,
+      );
     } catch (e) {
       print(e);
     }

@@ -22,20 +22,24 @@ use crate::*;
 pub(crate) enum DubpError {
     #[error("{0}")]
     DewifReadError(DewifReadError),
-    #[error("I/O error: {0}")]
-    IoErr(io::Error),
-    #[error("{0}")]
-    InvalidDerivationIndex(InvalidDerivationIndex),
     #[error("Digits secret code forbid for member wallet")]
     DigitsCodeForbidForMemberWallet,
     #[error("It is forbidden to retrieve the master public key of an HD wallet.")]
     GetMasterPubkeyOfHdWallet,
+    #[error("I/O error: {0}")]
+    IoErr(io::Error),
+    #[error("{0}")]
+    InvalidDerivationIndex(InvalidDerivationIndex),
+    #[error("Invalid secret code type")]
+    InvalidSecretCodeType,
     #[error("this wallet is not an HD wallet")]
     NotHdWallet,
     #[error("this account index is not a transparent account index")]
     NotTransparentAccountIndex,
     #[error("A given parameter is null")]
     NullParamErr,
+    #[error("Secret code too short: please change your secret code")]
+    SecretCodeTooShort,
     #[error("fail to generate random bytes")]
     RandErr,
     #[error("Unknown currency name")]

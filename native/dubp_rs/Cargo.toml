@@ -11,10 +11,10 @@ crate-type = ["rlib"]
 
 [dependencies]
 allo-isolate = "0.1.6"
-dup-crypto = { version = "0.43.2", features = ["bip32-ed25519", "dewif", "mnemonic", "mnemonic_french", "scrypt"] }
+dup-crypto = { version = "0.44.0", features = ["bip32-ed25519", "dewif", "mnemonic", "mnemonic_french", "scrypt"] }
 fast-threadpool = { version = "0.3.0", default-features = false }
 once_cell = { version = "1.3.1", default-features = false, features = ["std"] }
-thiserror = "1.0.23"
+thiserror = "1.0.24"
 
 [build-dependencies]
 cbindgen = "0.14.3"

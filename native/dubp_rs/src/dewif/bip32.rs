@@ -15,12 +15,31 @@
 
 use crate::*;
 
+const MEMBER_ACCOUNT_INDEX: u32 = 0;
+
 pub(crate) fn get_accounts_pubkeys(
     currency: Currency,
     dewif: &str,
     secret_code: &str,
     accounts_indexs: Vec<DerivationIndex>,
 ) -> Result<Vec<String>, DubpError> {
+    if accounts_indexs.contains(
+        &DerivationIndex::hard(MEMBER_ACCOUNT_INDEX).map_err(DubpError::InvalidDerivationIndex)?,
+    ) {
+        if crate::secret_code::is_ascii_letters(secret_code) {
+            let log_n =
+                dup_crypto::dewif::read_dewif_log_n(ExpectedCurrency::Specific(currency), dewif)
+                    .map_err(DubpError::DewifReadError)?;
+            let expected_secret_code_len =
+                crate::secret_code::compute_secret_code_len(true, SecretCodeType::Letters, log_n)?;
+
+            if secret_code.len() < expected_secret_code_len {
+                return Err(DubpError::SecretCodeTooShort);
+            }
+        } else {
+            return Err(DubpError::InvalidSecretCodeType);
+        }
+    }
     let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
         dewif,

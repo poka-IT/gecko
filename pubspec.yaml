@@ -5,7 +5,7 @@ description: A new Flutter project.
 # pub.dev using `pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 0.0.1+11
+version: 0.0.1+17
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -64,4 +64,5 @@ flutter:
     - assets/blockchain.png
     - assets/block-space.png
     - assets/block-space-disabled.png
+    - assets/lock.png
 

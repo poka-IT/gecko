@@ -27,6 +27,11 @@ class WalletsHome extends StatelessWidget {
     }
 
     return Scaffold(
+        appBar: AppBar(
+          title: Text('Mes portefeuilles',
+              style: TextStyle(color: Colors.grey[850])),
+          backgroundColor: Color(0xffFFD58D),
+        ),
         floatingActionButton: Visibility(
             visible: (isWalletsExists && firstWalletDerivation != -1),
             child: Container(

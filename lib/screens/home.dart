@@ -4,7 +4,6 @@ import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/myWallets.dart';
-import 'package:gecko/screens/commonElements.dart';
 import 'package:gecko/screens/myWallets/walletsHome.dart';
 import 'package:gecko/screens/onBoarding/1_noKeychainFound.dart';
 import 'dart:ui';

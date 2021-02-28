@@ -1,7 +1,8 @@
 import 'package:bubble/bubble.dart';
 import 'package:flutter/services.dart';
-import 'package:gecko/screens/home.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/screens/commonElements.dart';
+import 'package:gecko/screens/onBoarding/2_stepOne.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:provider/provider.dart';
 
@@ -60,7 +61,14 @@ class NoKeyChainScreen extends StatelessWidget {
                           child: Image(
                               image: AssetImage('assets/onBoarding/wallet.png'),
                               height: 75)),
-                      onTap: () {}),
+                      onTap: () {
+                        Navigator.push(
+                            context, SlideLeftRoute(page: OnboardingStepOne()));
+                        // Navigator.push(context,
+                        //     MaterialPageRoute(builder: (context) {
+                        //   return OnboardingStepOne();
+                        // }));
+                      }),
                 ),
               ),
               decoration: BoxDecoration(
@@ -122,27 +130,6 @@ class NoKeyChainScreen extends StatelessWidget {
   }
 }
 
-// class GeckoSpeechAppBar extends StatelessWidget with PreferredSizeWidget {
-
-//   }
-//   // Widget build(BuildContext context) {
-//   //   return AppBar(
-//   //       leading: IconButton(
-//   //         icon: Container(
-//   //             height: 100,
-//   //             child: Image.asset('assets/onBoarding/gecko_bar.png')),
-//   //         onPressed: () => Navigator.popUntil(
-//   //           context,
-//   //           ModalRoute.withName('/'),
-//   //         ),
-//   //       ),
-//   //       title: SizedBox(
-//   //         height: 22,
-//   //         child: Text('Mes portefeuilles'),
-//   //       ));
-//   // }
-// }
-
 class GeckoSpeechAppBar extends StatelessWidget with PreferredSizeWidget {
   @override
   final Size preferredSize;
@@ -156,29 +143,6 @@ class GeckoSpeechAppBar extends StatelessWidget with PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    // return PreferredSize(
-    //   preferredSize: Size(MediaQuery.of(context).size.width, 200),
-    //   child: Container(
-    //     child: Stack(
-    //       alignment: Alignment.topLeft,
-    //       children: <Widget>[
-    //         Container(
-    //           color: Color(0xffFFD68E),
-    //           width: MediaQuery.of(context).size.width,
-    //           height: 100,
-    //         ),
-    //         Container(
-    //           // width: 100,
-    //           height: 200,
-    //           child: Column(children: <Widget>[
-    //             SizedBox(height: 61.5),
-    //             Image.asset('assets/onBoarding/gecko_bar.png')
-    //           ]),
-    //         ),
-    //       ],
-    //     ),
-    //   ),
-    // );
     return AppBar(
         leading: IconButton(
           icon: Container(

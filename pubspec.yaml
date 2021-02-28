@@ -57,16 +57,7 @@ flutter:
   assets:
     - images/
     - config/gva_endpoints.json
-    - assets/icon/gecko_final.png
     - assets/
-    - assets/OpenSans-Regular.ttf
-    - assets/icon_user.png
-    - assets/qrcode-scan.png
-    - assets/blockchain.png
-    - assets/block-space.png
-    - assets/block-space-disabled.png
-    - assets/lock.png
-    - assets/onBoarding/gecko_bar.png
-    - assets/onBoarding/wallet.png
-    - assets/onBoarding/cesium.png
-
+    - assets/icon/
+    - assets/onBoarding/
+    - assets/onBoarding/progress_bar/

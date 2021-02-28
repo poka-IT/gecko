@@ -36,3 +36,48 @@ class CommonElements {
     );
   }
 }
+
+class SmoothTransition extends PageRouteBuilder {
+  final Widget page;
+  SmoothTransition({this.page})
+      : super(
+          pageBuilder: (
+            BuildContext context,
+            Animation<double> animation,
+            Animation<double> secondaryAnimation,
+          ) =>
+              TweenAnimationBuilder(
+            duration: const Duration(seconds: 5),
+            tween: Tween(begin: 200, end: 200),
+            builder: (BuildContext context, dynamic value, Widget child) {
+              return page;
+            },
+          ),
+        );
+}
+
+class SlideLeftRoute extends PageRouteBuilder {
+  final Widget page;
+  SlideLeftRoute({this.page})
+      : super(
+          pageBuilder: (
+            BuildContext context,
+            Animation<double> animation,
+            Animation<double> secondaryAnimation,
+          ) =>
+              page,
+          transitionsBuilder: (
+            BuildContext context,
+            Animation<double> animation,
+            Animation<double> secondaryAnimation,
+            Widget child,
+          ) =>
+              SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(1, 0),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          ),
+        );
+}

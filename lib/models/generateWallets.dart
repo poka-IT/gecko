@@ -279,6 +279,22 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<List<String>> generateWordList() async {
+    final String _sentance = await generateMnemonic();
+    List<String> _wordsList = [];
+    String word;
+    int _nbr = 1;
+
+    for (word in _sentance.split(' ')) {
+      // print(word);
+      _wordsList.add("$_nbr:$word");
+      _nbr++;
+    }
+    // notifyListeners();
+
+    return _wordsList;
+  }
+
   // void makeError() {
   //   var tata = File(appPath.path + '/ddfhjftjfg');
   //   tata.readAsLinesSync();

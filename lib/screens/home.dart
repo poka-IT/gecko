@@ -126,7 +126,7 @@ class HomeScreen extends StatelessWidget {
                   },
                   child: Column(children: <Widget>[
                     Padding(
-                        padding: EdgeInsets.only(top: 22),
+                        padding: EdgeInsets.only(top: 20),
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
@@ -134,22 +134,24 @@ class HomeScreen extends StatelessWidget {
                               Image(
                                   image:
                                       AssetImage('assets/icon/gecko_final.png'),
-                                  height: 160),
+                                  height: 180),
                             ])),
                     Padding(
-                        padding: EdgeInsets.only(top: 12),
+                        padding: EdgeInsets.only(top: 15),
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               Text(
-                                "L’application de paiement Ğ1\nplus mobile qu’un lésard du Vietnam",
+                                "y'a pas de lézard !",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                    color: Colors.black, fontSize: 15),
+                                    color: Colors.black,
+                                    fontSize: 17,
+                                    fontStyle: FontStyle.italic),
                               )
                             ])),
                     Padding(
-                        padding: EdgeInsets.only(top: 40),
+                        padding: EdgeInsets.only(top: 60),
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
@@ -162,11 +164,11 @@ class HomeScreen extends StatelessWidget {
                                           splashColor: Color(
                                               0xffD28928), // inkwell color
                                           child: Padding(
-                                              padding: EdgeInsets.all(17),
+                                              padding: EdgeInsets.all(22),
                                               child: Image(
                                                   image: AssetImage(
                                                       'assets/qrcode-scan.png'),
-                                                  height: 50)),
+                                                  height: 60)),
                                           onTap: () async {
                                             await _historyProvider
                                                 .scan(context);
@@ -185,17 +187,17 @@ class HomeScreen extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                SizedBox(height: 10),
+                                SizedBox(height: 12),
                                 Text(
                                   "Payer par QR-Code",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                      color: Colors.black, fontSize: 13),
+                                      color: Colors.black, fontSize: 16),
                                 )
                               ])
                             ])),
                     Padding(
-                        padding: EdgeInsets.only(top: 40),
+                        padding: EdgeInsets.only(top: 50),
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
@@ -209,11 +211,11 @@ class HomeScreen extends StatelessWidget {
                                               0xffD28928), // inkwell color
                                           child: Padding(
                                               padding: EdgeInsets.symmetric(
-                                                  horizontal: 18, vertical: 14),
+                                                  horizontal: 20, vertical: 16),
                                               child: Image(
                                                   image: AssetImage(
                                                       'assets/blockchain.png'),
-                                                  height: 55)),
+                                                  height: 70)),
                                           onTap: () {
                                             // Navigator.push(
                                             //   context,
@@ -237,15 +239,15 @@ class HomeScreen extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                SizedBox(height: 10),
+                                SizedBox(height: 12),
                                 Text(
                                   "Explorer\n",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                      color: Colors.black, fontSize: 13),
+                                      color: Colors.black, fontSize: 16),
                                 )
                               ]),
-                              SizedBox(width: 100),
+                              SizedBox(width: 140),
                               Column(children: <Widget>[
                                 Container(
                                   child: ClipOval(
@@ -255,11 +257,11 @@ class HomeScreen extends StatelessWidget {
                                           splashColor: Color(
                                               0xffD28928), // inkwell color
                                           child: Padding(
-                                              padding: EdgeInsets.all(20),
+                                              padding: EdgeInsets.all(23),
                                               child: Image(
                                                   image: AssetImage(
                                                       'assets/lock.png'),
-                                                  height: 45)),
+                                                  height: 57)),
                                           onTap: () {
                                             isWalletsExists
                                                 ? Navigator.push(
@@ -289,12 +291,12 @@ class HomeScreen extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                SizedBox(height: 10),
+                                SizedBox(height: 12),
                                 Text(
                                   "Gérer mes\nportefeuilles",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                      color: Colors.black, fontSize: 13),
+                                      color: Colors.black, fontSize: 16),
                                 )
                               ])
                             ]))

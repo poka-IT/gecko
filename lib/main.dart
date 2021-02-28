@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:catcher/catcher.dart';
@@ -102,21 +103,34 @@ class Gecko extends StatelessWidget {
           ChangeNotifierProvider(create: (_) => CesiumPlusProvider())
         ],
         child: GraphQLProvider(
-            client: _client,
-            child: MaterialApp(
-              navigatorKey: Catcher.navigatorKey,
-              title: 'Ğecko',
-              theme: ThemeData(
-                primaryColor: Color(0xffFFD58D),
-                accentColor: Colors.grey[850],
-                textTheme: TextTheme(
-                  bodyText1: TextStyle(),
-                  bodyText2: TextStyle(),
-                ).apply(
-                  bodyColor: Color(0xff855F2D),
-                ),
+          client: _client,
+          child: MaterialApp(
+            builder: (context, widget) => ResponsiveWrapper.builder(
+                BouncingScrollWrapper.builder(context, widget),
+                maxWidth: 1200,
+                minWidth: 480,
+                defaultScale: true,
+                breakpoints: [
+                  ResponsiveBreakpoint.resize(480, name: MOBILE),
+                  ResponsiveBreakpoint.autoScale(800, name: TABLET),
+                  ResponsiveBreakpoint.resize(1000, name: DESKTOP),
+                ],
+                background: Container(color: Color(0xFFF5F5F5))),
+            navigatorKey: Catcher.navigatorKey,
+            title: 'Ğecko',
+            theme: ThemeData(
+              primaryColor: Color(0xffFFD58D),
+              accentColor: Colors.grey[850],
+              textTheme: TextTheme(
+                bodyText1: TextStyle(),
+                bodyText2: TextStyle(),
+              ).apply(
+                bodyColor: Color(0xff855F2D),
               ),
-              home: HomeScreen(),
-            )));
+            ),
+            home: HomeScreen(),
+            initialRoute: "/",
+          ),
+        ));
   }
 }

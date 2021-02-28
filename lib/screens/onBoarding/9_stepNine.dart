@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/screens/commonElements.dart';
+import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
@@ -70,7 +71,7 @@ class OnboardingStepNine extends StatelessWidget {
                     fontWeight: FontWeight.w500),
               ),
             ),
-            SizedBox(height: 64),
+            SizedBox(height: 50),
             // TextField(
             //     enabled: false,
             //     controller: _generateWalletProvider.mnemonicController,
@@ -84,6 +85,21 @@ class OnboardingStepNine extends StatelessWidget {
             //         color: Colors.black,
             //         fontWeight: FontWeight.w400)),
             sentanceArray(context),
+            SizedBox(height: 15),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return PrintWallet(
+                        _generateWalletProvider.generatedMnemonic);
+                  }),
+                );
+              },
+              child: Image.asset(
+                'assets/printer.png',
+              ),
+            ),
             Expanded(
                 child: Align(
                     alignment: Alignment.bottomCenter,
@@ -102,7 +118,7 @@ class OnboardingStepNine extends StatelessWidget {
                           child: Text("Choisir une autre phrase",
                               style: TextStyle(fontSize: 20))),
                     ))),
-            SizedBox(height: 20),
+            SizedBox(height: 25),
             SizedBox(
               width: 350,
               height: 55,
@@ -171,6 +187,7 @@ Widget sentanceArray(BuildContext context) {
             padding: EdgeInsets.symmetric(horizontal: 12),
             child: Container(
                 decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black),
                     color: Colors.grey[300],
                     borderRadius: BorderRadius.all(
                       const Radius.circular(10),
@@ -207,7 +224,6 @@ Widget sentanceArray(BuildContext context) {
 }
 
 Widget arrayCell(dataWord) {
-  print(dataWord);
   return Container(
       width: 80,
       child: Column(children: <Widget>[
@@ -216,4 +232,25 @@ Widget arrayCell(dataWord) {
         Text(dataWord.split(':')[1],
             style: TextStyle(fontSize: 16, color: Colors.black)),
       ]));
+}
+
+// ignore: must_be_immutable
+class PrintWallet extends StatelessWidget {
+  PrintWallet(this.sentence);
+
+  final String sentence;
+
+  @override
+  Widget build(BuildContext context) {
+    GenerateWalletsProvider _generateWalletProvider =
+        Provider.of<GenerateWalletsProvider>(context);
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Imprimer ce trousseau')),
+        body: PdfPreview(
+          build: (format) => _generateWalletProvider.printWallet(sentence),
+        ),
+      ),
+    );
+  }
 }

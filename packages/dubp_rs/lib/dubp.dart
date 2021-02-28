@@ -177,7 +177,16 @@ class DubpRust {
     return Future.value(NewWallet._(newWallet[0], newWallet[1]));
   }
 
-  //get_bip32_dewif_accounts_pubkeys
+  /// Get next external public key of a specific opaque account
+  static Future<String> getOpaqueAccountNextExternalPublicKey(
+      {int accountIndex}) async {
+    final completer = Completer<String>();
+    final sendPort =
+        singleCompletePort<String, String>(completer, callback: _handleErr);
+    native.get_opaque_account_next_external_address(
+        sendPort.nativePort, accountIndex.toUnsigned(31));
+    return completer.future;
+  }
 
   /// Get BIP32 accounts public keys (in base 58) of `dewif` master keypair.
   static Future<List<String>> getBip32DewifAccountsPublicKeys(
@@ -194,7 +203,7 @@ class DubpRust {
         Utf8.toUtf8(dewif),
         Utf8.toUtf8(secretCode),
         accountsIndex.length,
-        _listIntToPtr(accountsIndex));
+        _listIntToPtrUint32(accountsIndex));
     return completer.future;
   }
 
@@ -215,14 +224,26 @@ class DubpRust {
 
   /// Get public key (in base 58) of `dewif` keypair.
   static Future<String> getDewifPublicKey(
-      {String currency = "g1", String dewif, String pin}) async {
+      {int accountIndexOpt,
+      int addressIndexOpt,
+      String currency = "g1",
+      String dewif,
+      bool externalOpt,
+      String pin}) async {
+    var externalOptInt = -1;
+    if (externalOpt != null) {
+      externalOptInt = externalOpt ? 1 : 0;
+    }
     final completer = Completer<String>();
     final sendPort =
         singleCompletePort<String, String>(completer, callback: _handleErr);
     native.get_dewif_pubkey(
       sendPort.nativePort,
+      accountIndexOpt ?? -1,
+      addressIndexOpt ?? -1,
       Utf8.toUtf8(currency),
       Utf8.toUtf8(dewif),
+      externalOptInt,
       Utf8.toUtf8(pin),
     );
     return completer.future;
@@ -261,43 +282,55 @@ class DubpRust {
     return completer.future;
   }
 
-  /// Sign the message `message` with `dewif` Bip32-Ed25519 keypair encryted
-  /// in DEWIF format.
-  ///
-  /// If you have several messages to sign, use `signSeveralBip32Transparent`
-  /// method instead.
-  static Future<String> signBip32Transparent(
-      {int accountIndex,
-      String currency = "g1",
-      String dewif,
-      String secretCode,
-      String message}) {
-    final completer = Completer<String>();
+  /// Load opaque accounts
+  static Future<void> loadOpaqueAccounts(
+    List<int> accountsIndex,
+    String currency,
+    String dewif,
+    String secretCode,
+  ) {
+    final completer = Completer<void>();
     final sendPort =
-        singleCompletePort<String, String>(completer, callback: _handleErr);
-    native.sign_bip32_transparent(
-      sendPort.nativePort,
-      accountIndex,
-      Utf8.toUtf8(currency),
-      Utf8.toUtf8(dewif),
-      Utf8.toUtf8(secretCode),
-      Utf8.toUtf8(message),
-    );
+        singleCompletePort<void, String>(completer, callback: _handleErrVoid);
+    native.load_opaque_bip32_accounts(
+        sendPort.nativePort,
+        accountsIndex.length,
+        _listIntToPtrUint32(accountsIndex),
+        Utf8.toUtf8(currency),
+        Utf8.toUtf8(dewif),
+        Utf8.toUtf8(secretCode));
     return completer.future;
   }
 
-  /// Sign the message `message` with legacy wallet (password + salt)
+  /// Sign the message `message` with `dewif` keypair encryted
+  /// in DEWIF format.
   ///
-  /// This deprecated method must be used only for compatibility purpose !
-  static Future<String> signLegacy(
-      {String password, String salt, String message}) {
+  /// If you have several messages to sign, use `signSeveral`
+  /// method instead.
+  static Future<String> sign(
+      {int accountIndexOpt,
+      int addressIndexOpt,
+      String currency = "g1",
+      String dewif,
+      bool externalOpt,
+      String secretCode,
+      String message}) {
+    var externalOptInt = -1;
+    if (externalOpt != null) {
+      externalOptInt = externalOpt ? 1 : 0;
+    }
+
     final completer = Completer<String>();
     final sendPort =
         singleCompletePort<String, String>(completer, callback: _handleErr);
-    native.sign_legacy(
+    native.sign(
       sendPort.nativePort,
-      Utf8.toUtf8(password),
-      Utf8.toUtf8(salt),
+      accountIndexOpt ?? -1,
+      addressIndexOpt ?? -1,
+      Utf8.toUtf8(currency),
+      Utf8.toUtf8(dewif),
+      externalOptInt,
+      Utf8.toUtf8(secretCode),
       Utf8.toUtf8(message),
     );
     return completer.future;
@@ -309,22 +342,31 @@ class DubpRust {
   /// This method is optimized to sign several messages at once. If you have
   /// several messages to sign, avoid calling the `sign` method for each
   /// message. Use this `signSeveral` method instead.
-  static Future<List<String>> signSeveralBip32Transparent(
-      {int accountIndex,
+  static Future<List<String>> signSeveral(
+      {int accountIndexOpt,
+      int addressIndexOpt,
       String currency = "g1",
       String dewif,
-      String pin,
+      bool externalOpt,
+      String secretCode,
       List<String> messages}) {
+    var externalOptInt = -1;
+    if (externalOpt != null) {
+      externalOptInt = externalOpt ? 1 : 0;
+    }
+
     final completer = Completer<List<String>>();
     final sendPort = singleCompletePort<List<String>, List>(completer,
         callback: _handleErrList);
 
-    native.sign_several_bip32_transparent(
+    native.sign_several(
       sendPort.nativePort,
-      accountIndex,
+      accountIndexOpt ?? -1,
+      addressIndexOpt ?? -1,
       Utf8.toUtf8(currency),
       Utf8.toUtf8(dewif),
-      Utf8.toUtf8(pin),
+      externalOptInt,
+      Utf8.toUtf8(secretCode),
       messages.length,
       _listStringToPtr(messages),
     );
@@ -332,11 +374,11 @@ class DubpRust {
     return completer.future;
   }
 
-  static Pointer<Uint32> _listIntToPtr(List<int> list) {
-    //final listUint32 = list.map(int.toUnsigned).toList();
-    final Pointer<Uint32> ptr = allocate(count: list.length);
-    for (var i = 0; i < list.length; i++) {
-      ptr[i] = list[i];
+  static Pointer<Uint32> _listIntToPtrUint32(List<int> list) {
+    final listUint32 = list.map((i) => i.toUnsigned(31)).toList();
+    final Pointer<Uint32> ptr = allocate(count: listUint32.length);
+    for (var i = 0; i < listUint32.length; i++) {
+      ptr[i] = listUint32[i];
     }
     return ptr;
   }
@@ -368,6 +410,14 @@ class DubpRust {
       throw error;
     } else {
       return arr;
+    }
+  }
+
+  static void _handleErrVoid(String res) {
+    if (res.startsWith('DUBP_RS_ERROR: ')) {
+      final error = res;
+      print(error);
+      throw error;
     }
   }
 

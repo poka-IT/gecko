@@ -42,14 +42,6 @@ pub(super) fn get_pubkey(salt: &str, password: &str) -> String {
         .to_base58()
 }
 
-pub(super) fn sign(salt: &str, password: &str, msg: &str) -> String {
-    KeyPairFromSaltedPasswordGenerator::with_default_parameters()
-        .generate(SaltedPassword::new(salt.to_owned(), password.to_owned()))
-        .generate_signator()
-        .sign(msg.as_bytes())
-        .to_base64()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -73,7 +65,14 @@ mod tests {
         assert_eq!(get_pubkey("salt", "pass"), pubkey.to_owned());
 
         assert_eq!(
-            crate::dewif::get_pubkey(Currency::from(G1_CURRENCY), &dewif, &secret_code)?,
+            crate::dewif::get_pubkey(
+                None,
+                None,
+                Currency::from(G1_CURRENCY),
+                &dewif,
+                None,
+                &secret_code
+            )?,
             pubkey.to_owned()
         );
 

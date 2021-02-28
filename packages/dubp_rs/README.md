@@ -144,10 +144,12 @@ NewWallet new_wallet = await DubpRust.genWalletFromMnemonic(
 #### Function signature
 
 ```dart
-static Future<String> signBip32Transparent({
+static Future<String> sign({
     int accountIndex,
+    int addressIndexOpt,
     String currency = "g1",
     String dewif,
+    bool externalOpt,
     String secretCode,
     String message
 });
@@ -158,7 +160,7 @@ If the wallet is not dedicated to the Ğ1 currency, you must indicate the curren
 #### Usage example
 
 ```dart
-String signature = await DubpRust.signBip32Transparent(
+String signature = await DubpRust.sign(
     accountIndex: 3,
     dewif: "AAAAARAAAAGfFDAs+jVZYkfhBlHZZ2fEQIvBqnG16g5+02cY18wSOjW0cUg2JV3SUTJYN2CrbQeRDwGazWnzSFBphchMmiL0",
     pin: "CDJ4UB",

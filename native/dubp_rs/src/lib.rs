@@ -32,14 +32,19 @@ use dup_crypto::{
     bases::b58::ToBase58,
     dewif::{Currency, DewifReadError, ExpectedCurrency, G1_CURRENCY, G1_TEST_CURRENCY},
     keys::{
-        ed25519::bip32::DerivationIndex, ed25519::KeyPairFromSeed32Generator, KeyPair as _,
-        KeyPairEnum, Signator as _, Signature as _,
+        ed25519::bip32::{
+            ChainCode, InvalidAccountIndex, KeyPair, PrivateDerivationPath, PublicKeyWithChainCode,
+        },
+        ed25519::{KeyPairFromSeed32Generator, PublicKey},
+        KeyPair as _, KeyPairEnum, Signator as _, Signature as _,
     },
     mnemonic::{Language, Mnemonic, MnemonicType},
+    utils::{U31Error, U31},
 };
 use fast_threadpool::{ThreadPool, ThreadPoolConfig, ThreadPoolSyncHandler};
 use once_cell::sync::Lazy;
-use std::{ffi::CStr, io, os::raw};
+use parking_lot::Mutex;
+use std::{collections::HashMap, ffi::CStr, io, os::raw, sync::Arc};
 use thiserror::Error;
 
 #[no_mangle]
@@ -164,6 +169,30 @@ pub extern "C" fn gen_mnemonic(port: i64, language: u32) {
 }
 
 #[no_mangle]
+pub extern "C" fn get_bip32_dewif_accounts_pubkeys(
+    port: i64,
+    currency: *const raw::c_char,
+    dewif: *const raw::c_char,
+    secret_code: *const raw::c_char,
+    accounts_indexs_len: u32,
+    accounts_indexs: *const u32,
+) {
+    exec_async(
+        port,
+        || {
+            let currency = parse_currency(char_ptr_to_str(currency)?)?;
+            let dewif = char_ptr_to_str(dewif)?;
+            let secret_code = char_ptr_to_str(secret_code)?;
+            let accounts_indexs = char_ptr_prt_to_vec_u31(accounts_indexs, accounts_indexs_len)?;
+            Ok((currency, dewif, secret_code, accounts_indexs))
+        },
+        |(currency, dewif, secret_code, accounts_indexs)| {
+            dewif::bip32::get_accounts_pubkeys(currency, dewif, secret_code, accounts_indexs)
+        },
+    )
+}
+
+#[no_mangle]
 pub extern "C" fn get_dewif_meta(
     port: i64,
     dewif: *const raw::c_char,
@@ -201,43 +230,76 @@ pub extern "C" fn get_dewif_secret_code_len(
 #[no_mangle]
 pub extern "C" fn get_dewif_pubkey(
     port: i64,
+    account_index: i32,
+    address_index: i32,
     currency: *const raw::c_char,
     dewif: *const raw::c_char,
+    external_opt: i32,
     pin: *const raw::c_char,
 ) {
     exec_async(
         port,
         || {
+            let account_index_opt = i32_to_opt_u32(account_index);
+            let address_index_opt = i32_to_opt_u31(address_index)?;
             let currency = parse_currency(char_ptr_to_str(currency)?)?;
             let dewif = char_ptr_to_str(dewif)?;
+            let external_opt = i32_to_opt_bool(external_opt);
             let pin = char_ptr_to_str(pin)?;
-            Ok((currency, dewif, pin))
+            Ok((
+                account_index_opt,
+                address_index_opt,
+                currency,
+                dewif,
+                external_opt,
+                pin,
+            ))
         },
-        |(currency, dewif, pin)| dewif::get_pubkey(currency, dewif, pin),
+        |(account_index_opt, address_index_opt, currency, dewif, external_opt, pin)| {
+            dewif::get_pubkey(
+                account_index_opt,
+                address_index_opt,
+                currency,
+                dewif,
+                external_opt,
+                pin,
+            )
+        },
     )
 }
 
 #[no_mangle]
-pub extern "C" fn get_bip32_dewif_accounts_pubkeys(
+pub extern "C" fn get_opaque_account_next_external_address(port: i64, account_index: u32) {
+    exec_async(
+        port,
+        || {
+            let account_index = U31::new(account_index)?;
+            Ok(account_index)
+        },
+        dewif::bip32::get_opaque_account_next_external_address,
+    )
+}
+
+#[no_mangle]
+pub extern "C" fn load_opaque_bip32_accounts(
     port: i64,
+    accounts_indexs_len: u32,
+    accounts_indexs: *const u32,
     currency: *const raw::c_char,
     dewif: *const raw::c_char,
     secret_code: *const raw::c_char,
-    accounts_indexs_len: u32,
-    accounts_indexs: *const u32,
 ) {
     exec_async(
         port,
         || {
+            let accounts_indexs = char_ptr_prt_to_vec_u31(accounts_indexs, accounts_indexs_len)?;
             let currency = parse_currency(char_ptr_to_str(currency)?)?;
             let dewif = char_ptr_to_str(dewif)?;
             let secret_code = char_ptr_to_str(secret_code)?;
-            let accounts_indexs =
-                char_ptr_prt_to_vec_hard_derivation_index(accounts_indexs, accounts_indexs_len)?;
-            Ok((currency, dewif, secret_code, accounts_indexs))
+            Ok((accounts_indexs, currency, dewif, secret_code))
         },
-        |(currency, dewif, secret_code, accounts_indexs)| {
-            dewif::bip32::get_accounts_pubkeys(currency, dewif, secret_code, accounts_indexs)
+        |(accounts_indexs, currency, dewif, secret_code)| {
+            dewif::bip32::load_opaque_bip32_accounts(accounts_indexs, currency, dewif, secret_code)
         },
     )
 }
@@ -279,112 +341,106 @@ pub extern "C" fn mnemonic_to_pubkey(
 #[no_mangle]
 pub extern "C" fn sign(
     port: i64,
+    account_index: i32,
+    address_index: i32,
     currency: *const raw::c_char,
     dewif: *const raw::c_char,
-    pin: *const raw::c_char,
-    msg: *const raw::c_char,
-) {
-    exec_async(
-        port,
-        || {
-            let currency = char_ptr_to_str(currency)?;
-            let dewif = char_ptr_to_str(dewif)?;
-            let pin = char_ptr_to_str(pin)?;
-            let msg = char_ptr_to_str(msg)?;
-            Ok((currency, dewif, pin, msg))
-        },
-        |(currency, dewif, pin, msg)| dewif::classic::sign(currency, dewif, pin, msg),
-    )
-}
-
-#[no_mangle]
-pub extern "C" fn sign_bip32_transparent(
-    port: i64,
-    account_index: u32,
-    currency: *const raw::c_char,
-    dewif: *const raw::c_char,
+    external_opt: i32,
     secret_code: *const raw::c_char,
     msg: *const raw::c_char,
 ) {
     exec_async(
         port,
         || {
-            let account_index = transparent_account_index(account_index)?;
-            let currency = char_ptr_to_str(currency)?;
+            let account_index_opt = i32_to_opt_u32(account_index);
+            let address_index_opt = i32_to_opt_u31(address_index)?;
+            let currency = parse_currency(char_ptr_to_str(currency)?)?;
             let dewif = char_ptr_to_str(dewif)?;
-            let pin = char_ptr_to_str(secret_code)?;
+            let external_opt = i32_to_opt_bool(external_opt);
+            let secret_code = char_ptr_to_str(secret_code)?;
             let msg = char_ptr_to_str(msg)?;
-            Ok((currency, dewif, pin, msg, account_index))
+            Ok((
+                account_index_opt,
+                address_index_opt,
+                currency,
+                dewif,
+                external_opt,
+                secret_code,
+                msg,
+            ))
         },
-        |(currency, dewif, secret_code, msg, account_index)| {
-            dewif::bip32::sign_transparent(account_index, currency, dewif, secret_code, msg)
+        |(
+            account_index_opt,
+            address_index_opt,
+            currency,
+            dewif,
+            external_opt,
+            secret_code,
+            msg,
+        )| {
+            dewif::sign(
+                account_index_opt,
+                address_index_opt,
+                currency,
+                dewif,
+                external_opt,
+                secret_code,
+                msg,
+            )
         },
-    )
-}
-
-#[no_mangle]
-pub extern "C" fn sign_legacy(
-    port: i64,
-    salt: *const raw::c_char,
-    password: *const raw::c_char,
-    msg: *const raw::c_char,
-) {
-    exec_async(
-        port,
-        || {
-            let salt = char_ptr_to_str(salt)?;
-            let password = char_ptr_to_str(password)?;
-            let msg = char_ptr_to_str(msg)?;
-            Ok((salt, password, msg))
-        },
-        |(salt, password, msg)| Ok::<_, DubpError>(legacy::sign(salt, password, msg)),
     )
 }
 
 #[no_mangle]
 pub extern "C" fn sign_several(
     port: i64,
+    account_index: i32,
+    address_index: i32,
     currency: *const raw::c_char,
     dewif: *const raw::c_char,
-    pin: *const raw::c_char,
+    external_opt: i32,
+    secret_code: *const raw::c_char,
     msgs_len: u32,
     msgs: *const *const raw::c_char,
 ) {
     exec_async(
         port,
         || {
-            let currency = char_ptr_to_str(currency)?;
+            let account_index_opt = i32_to_opt_u32(account_index);
+            let address_index_opt = i32_to_opt_u31(address_index)?;
+            let currency = parse_currency(char_ptr_to_str(currency)?)?;
             let dewif = char_ptr_to_str(dewif)?;
-            let pin = char_ptr_to_str(pin)?;
+            let external_opt = i32_to_opt_bool(external_opt);
+            let secret_code = char_ptr_to_str(secret_code)?;
             let msgs = char_ptr_prt_to_vec_str(msgs, msgs_len)?;
-            Ok((currency, dewif, pin, msgs))
+            Ok((
+                account_index_opt,
+                address_index_opt,
+                currency,
+                dewif,
+                external_opt,
+                secret_code,
+                msgs,
+            ))
         },
-        |(currency, dewif, pin, msgs)| dewif::classic::sign_several(currency, dewif, pin, &msgs),
-    )
-}
-
-#[no_mangle]
-pub extern "C" fn sign_several_bip32_transparent(
-    port: i64,
-    account_index: u32,
-    currency: *const raw::c_char,
-    dewif: *const raw::c_char,
-    pin: *const raw::c_char,
-    msgs_len: u32,
-    msgs: *const *const raw::c_char,
-) {
-    exec_async(
-        port,
-        || {
-            let account_index = transparent_account_index(account_index)?;
-            let currency = char_ptr_to_str(currency)?;
-            let dewif = char_ptr_to_str(dewif)?;
-            let pin = char_ptr_to_str(pin)?;
-            let msgs = char_ptr_prt_to_vec_str(msgs, msgs_len)?;
-            Ok((currency, dewif, pin, msgs, account_index))
-        },
-        |(currency, dewif, pin, msgs, account_index)| {
-            dewif::bip32::sign_several_transparent(account_index, currency, dewif, pin, &msgs)
+        |(
+            account_index_opt,
+            address_index_opt,
+            currency,
+            dewif,
+            external_opt,
+            secret_code,
+            msgs,
+        )| {
+            dewif::sign_several(
+                account_index_opt,
+                address_index_opt,
+                currency,
+                dewif,
+                external_opt,
+                secret_code,
+                &msgs,
+            )
         },
     )
 }

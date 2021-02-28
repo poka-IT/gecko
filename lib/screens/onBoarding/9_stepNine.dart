@@ -71,7 +71,7 @@ class OnboardingStepNine extends StatelessWidget {
                     fontWeight: FontWeight.w500),
               ),
             ),
-            SizedBox(height: 50),
+            SizedBox(height: 64),
             // TextField(
             //     enabled: false,
             //     controller: _generateWalletProvider.mnemonicController,

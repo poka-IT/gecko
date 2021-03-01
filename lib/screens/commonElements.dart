@@ -1,6 +1,92 @@
 import 'package:flutter/material.dart';
+import 'package:bubble/bubble.dart';
 
 class CommonElements {
+  // Exemple de Widget
+  Widget exemple(String data) {
+    return Text('Coucou');
+  }
+
+  Widget bubbleSpeak(String text, {double long}) {
+    return Bubble(
+      padding: long == null
+          ? BubbleEdges.all(18)
+          : BubbleEdges.symmetric(horizontal: long, vertical: 30),
+      elevation: 5,
+      color: Colors.white,
+      margin: BubbleEdges.fromLTRB(10, 0, 20, 10),
+      // nip: BubbleNip.leftTop,
+      child: Text(
+        text,
+        style: TextStyle(
+            color: Colors.black, fontSize: 18, fontWeight: FontWeight.w400),
+      ),
+    );
+  }
+
+  Widget bubbleSpeakRich(List<TextSpan> text) {
+    return Bubble(
+      padding: BubbleEdges.all(18),
+      elevation: 5,
+      color: Colors.white,
+      margin: BubbleEdges.fromLTRB(10, 0, 20, 10),
+      // nip: BubbleNip.leftTop,
+      child: RichText(
+          text: new TextSpan(
+        style: new TextStyle(
+          fontSize: 18.0,
+          color: Colors.black,
+        ),
+        children: <TextSpan>[
+          new TextSpan(text: "Munissez-vous d'"),
+          new TextSpan(
+              text: 'un papier et d’un crayon\n',
+              style: new TextStyle(fontWeight: FontWeight.bold)),
+          new TextSpan(
+              text: "afin de pouvoir noter votre phrase de restauration."),
+        ],
+      )),
+    );
+  }
+
+  Widget onboardingProgressBar(String screenTitle, int progress) {
+    return Stack(children: [
+      Container(height: 100),
+      Positioned(
+          top: 0, left: 0, right: 0, child: GeckoSpeechAppBar(screenTitle)),
+      Positioned(
+        top: 0,
+        left: 0,
+        child: Image.asset(
+          'assets/onBoarding/gecko_bar.png',
+        ),
+      ),
+      if (progress != 0)
+        Positioned(
+          top: 75,
+          left: 90,
+          child: Image.asset(
+            'assets/onBoarding/progress_bar/total.png',
+          ),
+        ),
+      if (progress != 0)
+        Positioned(
+          top: 75,
+          left: 90,
+          child: Image.asset(
+            'assets/onBoarding/progress_bar/$progress.png',
+          ),
+        ),
+      if (progress != 0)
+        Positioned(
+          top: 70,
+          right: 90,
+          child: Text('$progress%',
+              style: TextStyle(fontSize: 12, color: Colors.black)),
+        ),
+    ]);
+  }
+
   Widget roundButton(
     AssetImage image,
     ontap,
@@ -80,4 +166,34 @@ class SlideLeftRoute extends PageRouteBuilder {
             child: child,
           ),
         );
+}
+
+class GeckoSpeechAppBar extends StatelessWidget with PreferredSizeWidget {
+  @override
+  final Size preferredSize;
+  final String title;
+
+  GeckoSpeechAppBar(
+    this.title, {
+    Key key,
+  })  : preferredSize = Size.fromHeight(105.4),
+        super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+        leading: IconButton(
+          icon: Container(
+              height: 30,
+              child: Image.asset('assets/onBoarding/gecko_bar.png')),
+          onPressed: () => Navigator.popUntil(
+            context,
+            ModalRoute.withName('/'),
+          ),
+        ),
+        title: SizedBox(
+          height: 25,
+          child: Text(title),
+        ));
+  }
 }

@@ -1,6 +1,4 @@
 import 'dart:ui';
-
-import 'package:bubble/bubble.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/commonElements.dart';
@@ -14,71 +12,25 @@ class OnboardingStepEight extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    CommonElements common = CommonElements();
+
     return Scaffold(
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(children: <Widget>[
-            Stack(children: [
-              Container(height: 100),
-              Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: GeckoSpeechAppBar('Ma phrase de restauration')),
-              Positioned(
-                top: 0,
-                left: 0,
-                child: Image.asset(
-                  'assets/onBoarding/gecko_bar.png',
-                ),
-              ),
-              Positioned(
-                top: 70,
-                left: 50,
-                child: Image.asset(
-                  'assets/onBoarding/progress_bar/total.png',
-                ),
-              ),
-              Positioned(
-                top: 70,
-                left: 50,
-                child: Image.asset(
-                  'assets/onBoarding/progress_bar/$progress.png',
-                ),
-              ),
-              Positioned(
-                top: 66,
-                right: 45,
-                child: Text('$progress%',
-                    style: TextStyle(fontSize: 12, color: Colors.black)),
-              ),
-            ]),
-            Bubble(
-              padding: BubbleEdges.all(15),
-              elevation: 5,
-              color: Colors.white,
-              margin: BubbleEdges.fromLTRB(10, 0, 20, 10),
-              // nip: BubbleNip.leftTop,
-              child: Text(
-                "J’ai généré votre phrase de restauration !\nTâchez de la garder bien secrète, car elle permet à quiconque la connaît d’accéder à tous vos portefeuilles.",
-                style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500),
-              ),
+            common.onboardingProgressBar('Ma phrase de restauration', progress),
+            common.bubbleSpeak(
+              "J’ai généré votre phrase de restauration !\nTâchez de la garder bien secrète, car elle permet à quiconque la connaît d’accéder à tous vos portefeuilles.",
             ),
-            SizedBox(height: 10),
-            // ImageFiltered(
-            //   imageFilter: ImageFilter.blur(sigmaX: 2.5, sigmaY: 2.5),
-            //   child:
+            SizedBox(height: 30),
             sentanceArray(context),
             // ),
             Expanded(
                 child: Align(
                     alignment: Alignment.bottomCenter,
                     child: SizedBox(
-                      width: 350,
-                      height: 55,
+                      width: 400,
+                      height: 62,
                       child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
@@ -96,36 +48,6 @@ class OnboardingStepEight extends StatelessWidget {
                     ))),
             SizedBox(height: 80),
           ]),
-        ));
-  }
-}
-
-class GeckoSpeechAppBar extends StatelessWidget with PreferredSizeWidget {
-  @override
-  final Size preferredSize;
-  final String title;
-
-  GeckoSpeechAppBar(
-    this.title, {
-    Key key,
-  })  : preferredSize = Size.fromHeight(105.4),
-        super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return AppBar(
-        leading: IconButton(
-          icon: Container(
-              height: 30,
-              child: Image.asset('assets/onBoarding/gecko_bar.png')),
-          onPressed: () => Navigator.popUntil(
-            context,
-            ModalRoute.withName('/'),
-          ),
-        ),
-        title: SizedBox(
-          height: 25,
-          child: Text(title),
         ));
   }
 }
@@ -172,19 +94,19 @@ Widget sentanceArray(BuildContext context) {
 
 Widget arrayCell(dataWord) {
   return Container(
-      width: 80,
+      width: 102,
       child: Column(
         children: <Widget>[
           ImageFiltered(
             imageFilter: ImageFilter.blur(sigmaX: 2.5, sigmaY: 2.5),
             child: Text(dataWord.split(':')[0],
-                style: TextStyle(fontSize: 12, color: Colors.black)),
+                style: TextStyle(fontSize: 14, color: Colors.black)),
           ),
           SizedBox(height: 2),
           ImageFiltered(
             imageFilter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
             child: Text(dataWord.split(':')[1],
-                style: TextStyle(fontSize: 16, color: Colors.black)),
+                style: TextStyle(fontSize: 20, color: Colors.black)),
           )
         ],
       ));

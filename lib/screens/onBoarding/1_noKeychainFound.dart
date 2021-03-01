@@ -1,7 +1,8 @@
-import 'package:bubble/bubble.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gecko/screens/commonElements.dart';
+import 'package:gecko/screens/myWallets/importWallet.dart';
 import 'package:gecko/screens/onBoarding/2_stepOne.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:provider/provider.dart';
@@ -13,43 +14,18 @@ class NoKeyChainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    // HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
+    CommonElements common = CommonElements();
     return Scaffold(
         extendBodyBehindAppBar: true,
         // backgroundColor: Colors.white,
         // appBar: GeckoSpeechAppBar('Mes portefeuilles'),
         body: SafeArea(
           child: Column(children: <Widget>[
-            Stack(children: [
-              Container(height: 100),
-              Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: GeckoSpeechAppBar('Mes portefeuilles')),
-              Positioned(
-                top: 0,
-                left: 0,
-                child: Image.asset(
-                  'assets/onBoarding/gecko_bar.png',
-                ),
-              ),
-            ]),
-            Bubble(
-              padding: BubbleEdges.all(15),
-              elevation: 5,
-              color: Colors.white,
-              margin: BubbleEdges.fromLTRB(10, 0, 20, 10),
-              // nip: BubbleNip.leftTop,
-              child: Text(
-                "Je ne connais pour l’instant aucun de vos portefeuilles.\n\nVous pouvez en créer un nouveau, ou bien importer un portefeuille Cesium existant.",
-                style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500),
-              ),
+            common.onboardingProgressBar('Mes portefeuilles', 0),
+            common.bubbleSpeak(
+              "Je ne connais pour l’instant aucun de vos portefeuilles.\n\nVous pouvez en créer un nouveau, ou bien importer un portefeuille Cesium existant.",
             ),
-            SizedBox(height: 70),
+            SizedBox(height: 90),
             Container(
               child: ClipOval(
                 child: Material(
@@ -57,17 +33,13 @@ class NoKeyChainScreen extends StatelessWidget {
                   child: InkWell(
                       splashColor: Color(0xffD28928), // inkwell color
                       child: Padding(
-                          padding: EdgeInsets.all(12),
+                          padding: EdgeInsets.all(8),
                           child: Image(
                               image: AssetImage('assets/onBoarding/wallet.png'),
-                              height: 75)),
+                              height: 90)),
                       onTap: () {
                         Navigator.push(
                             context, SlideLeftRoute(page: OnboardingStepOne()));
-                        // Navigator.push(context,
-                        //     MaterialPageRoute(builder: (context) {
-                        //   return OnboardingStepOne();
-                        // }));
                       }),
                 ),
               ),
@@ -83,13 +55,13 @@ class NoKeyChainScreen extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 15),
             Text(
               "Créer un nouveau\nportefeuille",
               textAlign: TextAlign.center,
               style: TextStyle(
                   color: Colors.black,
-                  fontSize: 13,
+                  fontSize: 16,
                   fontWeight: FontWeight.w500),
             ),
             SizedBox(height: 70),
@@ -100,11 +72,18 @@ class NoKeyChainScreen extends StatelessWidget {
                   child: InkWell(
                       splashColor: Color(0xffD28928), // inkwell color
                       child: Padding(
-                          padding: EdgeInsets.all(8),
-                          child: Image(
-                              image: AssetImage('assets/onBoarding/cesium.png'),
-                              height: 50)),
-                      onTap: () {}),
+                        padding: EdgeInsets.all(12),
+                        child:
+                            // Image(
+                            // image: AssetImage('assets/cesium_bw3.png'),
+                            // height: 60),
+                            SvgPicture.asset('assets/cesium_small.svg',
+                                semanticsLabel: 'Cesium Logo', height: 48),
+                      ),
+                      onTap: () {
+                        Navigator.push(context,
+                            SlideLeftRoute(page: ImportWalletScreen()));
+                      }),
                 ),
               ),
               decoration: BoxDecoration(
@@ -123,39 +102,9 @@ class NoKeyChainScreen extends StatelessWidget {
             Text(
               "Importer un\nportefeuille Cesium",
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.black, fontSize: 10),
+              style: TextStyle(color: Colors.black, fontSize: 13),
             )
           ]),
-        ));
-  }
-}
-
-class GeckoSpeechAppBar extends StatelessWidget with PreferredSizeWidget {
-  @override
-  final Size preferredSize;
-  final String title;
-
-  GeckoSpeechAppBar(
-    this.title, {
-    Key key,
-  })  : preferredSize = Size.fromHeight(105.4),
-        super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return AppBar(
-        leading: IconButton(
-          icon: Container(
-              height: 30,
-              child: Image.asset('assets/onBoarding/gecko_bar.png')),
-          onPressed: () => Navigator.popUntil(
-            context,
-            ModalRoute.withName('/'),
-          ),
-        ),
-        title: SizedBox(
-          height: 25,
-          child: Text(title),
         ));
   }
 }

@@ -1,4 +1,3 @@
-import 'package:bubble/bubble.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/generateWallets.dart';
@@ -16,74 +15,20 @@ class OnboardingStepNine extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
+    CommonElements common = CommonElements();
+
     // _generateWalletProvider.generateMnemonic();
 
     return Scaffold(
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(children: <Widget>[
-            Stack(children: [
-              Container(height: 100),
-              Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: GeckoSpeechAppBar('Ma phrase de restauration')),
-              Positioned(
-                top: 0,
-                left: 0,
-                child: Image.asset(
-                  'assets/onBoarding/gecko_bar.png',
-                ),
-              ),
-              Positioned(
-                top: 70,
-                left: 50,
-                child: Image.asset(
-                  'assets/onBoarding/progress_bar/total.png',
-                ),
-              ),
-              Positioned(
-                top: 70,
-                left: 50,
-                child: Image.asset(
-                  'assets/onBoarding/progress_bar/$progress.png',
-                ),
-              ),
-              Positioned(
-                top: 66,
-                right: 45,
-                child: Text('$progress%',
-                    style: TextStyle(fontSize: 12, color: Colors.black)),
-              ),
-            ]),
-            Bubble(
-              padding: BubbleEdges.fromLTRB(40, 15, 40, 15),
-              elevation: 5,
-              color: Colors.white,
-              margin: BubbleEdges.fromLTRB(10, 0, 20, 10),
-              // nip: BubbleNip.leftTop,
-              child: Text(
-                "C’est le moment de noter votre phrase !",
-                style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500),
-              ),
+            common.onboardingProgressBar('Ma phrase de restauration', progress),
+            common.bubbleSpeak(
+              "C’est le moment de noter votre phrase !",
+              long: 60,
             ),
-            SizedBox(height: 64),
-            // TextField(
-            //     enabled: false,
-            //     controller: _generateWalletProvider.mnemonicController,
-            //     maxLines: 3,
-            //     textAlign: TextAlign.center,
-            //     decoration: InputDecoration(
-            //       contentPadding: EdgeInsets.all(15.0),
-            //     ),
-            //     style: TextStyle(
-            //         fontSize: 22.0,
-            //         color: Colors.black,
-            //         fontWeight: FontWeight.w400)),
+            SizedBox(height: 69),
             sentanceArray(context),
             SizedBox(height: 15),
             GestureDetector(
@@ -104,8 +49,8 @@ class OnboardingStepNine extends StatelessWidget {
                 child: Align(
                     alignment: Alignment.bottomCenter,
                     child: SizedBox(
-                      width: 350,
-                      height: 55,
+                      width: 400,
+                      height: 62,
                       child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
@@ -120,8 +65,8 @@ class OnboardingStepNine extends StatelessWidget {
                     ))),
             SizedBox(height: 25),
             SizedBox(
-              width: 350,
-              height: 55,
+              width: 400,
+              height: 62,
               child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     elevation: 5,
@@ -142,38 +87,6 @@ class OnboardingStepNine extends StatelessWidget {
         ));
   }
 }
-
-class GeckoSpeechAppBar extends StatelessWidget with PreferredSizeWidget {
-  @override
-  final Size preferredSize;
-  final String title;
-
-  GeckoSpeechAppBar(
-    this.title, {
-    Key key,
-  })  : preferredSize = Size.fromHeight(105.4),
-        super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return AppBar(
-        leading: IconButton(
-          icon: Container(
-              height: 30,
-              child: Image.asset('assets/onBoarding/gecko_bar.png')),
-          onPressed: () => Navigator.popUntil(
-            context,
-            ModalRoute.withName('/'),
-          ),
-        ),
-        title: SizedBox(
-          height: 25,
-          child: Text(title),
-        ));
-  }
-}
-
-// _generateWalletProvider
 
 Widget sentanceArray(BuildContext context) {
   GenerateWalletsProvider _generateWalletProvider =
@@ -225,12 +138,12 @@ Widget sentanceArray(BuildContext context) {
 
 Widget arrayCell(dataWord) {
   return Container(
-      width: 80,
+      width: 102,
       child: Column(children: <Widget>[
-        Text(dataWord.split(':')[0], style: TextStyle(fontSize: 12)),
+        Text(dataWord.split(':')[0], style: TextStyle(fontSize: 14)),
         SizedBox(height: 2),
         Text(dataWord.split(':')[1],
-            style: TextStyle(fontSize: 16, color: Colors.black)),
+            style: TextStyle(fontSize: 19, color: Colors.black)),
       ]));
 }
 

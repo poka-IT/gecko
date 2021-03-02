@@ -232,7 +232,6 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                                       final resultWallet =
                                           await _walletOptions.readLocalWallet(
                                               this.walletNbr,
-                                              this.walletName,
                                               _pin.toUpperCase(),
                                               _pinLenght,
                                               this.derivation);

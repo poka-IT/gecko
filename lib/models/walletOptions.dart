@@ -6,8 +6,8 @@ import 'dart:async';
 import 'package:gecko/globals.dart';
 
 class WalletOptionsProvider with ChangeNotifier {
-  TextEditingController pubkey = new TextEditingController();
-  TextEditingController _newWalletName = new TextEditingController();
+  TextEditingController pubkey = TextEditingController();
+  TextEditingController _newWalletName = TextEditingController();
   bool isWalletUnlock = false;
   bool ischangedPin = false;
   TextEditingController newPin = new TextEditingController();
@@ -61,8 +61,8 @@ class WalletOptionsProvider with ChangeNotifier {
     }
   }
 
-  Future readLocalWallet(int _walletNbr, String _name, String _pin,
-      int _pinLenght, int derivation) async {
+  Future readLocalWallet(
+      int _walletNbr, String _pin, int _pinLenght, int derivation) async {
     isWalletUnlock = false;
     try {
       File _walletFile =
@@ -84,6 +84,7 @@ class WalletOptionsProvider with ChangeNotifier {
     } catch (e) {
       print('ERROR READING FILE: $e');
       this.pubkey.clear();
+      notifyListeners();
       return 'bad';
     }
   }

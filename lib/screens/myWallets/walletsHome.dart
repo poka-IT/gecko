@@ -49,15 +49,15 @@ class WalletsHome extends StatelessWidget {
                               });
                         },
                         child: Container(
-                            height: 40.0,
-                            width: 40.0,
+                            height: 40,
+                            width: 40,
                             child: Icon(Icons.person_add_alt_1_rounded,
                                 color: Colors.grey[850])),
                         backgroundColor: Color(0xffEFEFBF))))),
         body: SafeArea(
             child: !isWalletsExists
                 ? NoKeyChainScreen()
-                : Text('Wallet list screen')));
+                : myWalletsList(context)));
   }
 
   Widget myWalletsList(BuildContext context) {

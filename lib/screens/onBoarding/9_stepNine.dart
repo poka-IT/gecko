@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/screens/commonElements.dart';
+import 'package:gecko/screens/onBoarding/10_stepTen.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 
@@ -74,10 +75,21 @@ class OnboardingStepNine extends StatelessWidget {
                     onPrimary: Colors.white, // foreground
                   ),
                   onPressed: () {
-                    // Navigator.push(
-                    //   context,
-                    //   SmoothTransition(page: OnboardingStepNince()),
-                    // );
+                    _generateWalletProvider.nbrWord =
+                        _generateWalletProvider.getRandomInt();
+                    _generateWalletProvider.nbrWordAlpha =
+                        _generateWalletProvider
+                            .intToString(_generateWalletProvider.nbrWord + 1);
+
+                    Navigator.push(
+                      context,
+                      SmoothTransition(
+                          page: OnboardingStepTen(
+                              generatedMnemonic:
+                                  _generateWalletProvider.generatedMnemonic,
+                              generatedWallet:
+                                  _generateWalletProvider.actualWallet)),
+                    );
                   },
                   child: Text("J'ai noté ma phrase",
                       style: TextStyle(fontSize: 20))),

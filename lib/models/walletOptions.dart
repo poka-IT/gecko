@@ -75,7 +75,7 @@ class WalletOptionsProvider with ChangeNotifier {
           'false') {
         this.pubkey.text = _localPubkey;
         isWalletUnlock = true;
-        notifyListeners();
+        // notifyListeners();
 
         return _localDewif;
       } else {
@@ -84,7 +84,7 @@ class WalletOptionsProvider with ChangeNotifier {
     } catch (e) {
       print('ERROR READING FILE: $e');
       this.pubkey.clear();
-      notifyListeners();
+      // notifyListeners();
       return 'bad';
     }
   }
@@ -264,5 +264,9 @@ class WalletOptionsProvider with ChangeNotifier {
             Text("Cette clé publique a été copié dans votre presse-papier."),
         duration: Duration(seconds: 2));
     Scaffold.of(context).showSnackBar(snackBar);
+  }
+
+  void reloadBuild() {
+    notifyListeners();
   }
 }

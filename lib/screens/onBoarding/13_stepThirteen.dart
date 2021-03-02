@@ -3,14 +3,12 @@ import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/generateWallets.dart';
-import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/screens/commonElements.dart';
 import 'package:gecko/screens/onBoarding/14_stepFourteen.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class OnboardingStepThirteen extends StatelessWidget {
-  TextEditingController tplController = TextEditingController();
   NewWallet generatedWallet;
   final int progress = 83;
 
@@ -19,14 +17,23 @@ class OnboardingStepThirteen extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
-    MyWalletsProvider myWalletProvider =
-        Provider.of<MyWalletsProvider>(context);
+    // MyWalletsProvider myWalletProvider =
+    //     Provider.of<MyWalletsProvider>(context);
     CommonElements common = CommonElements();
+    _generateWalletProvider.pin.text = '';
+    // _generateWalletProvider.changePinCode(reload: false);
 
     return Scaffold(
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(children: <Widget>[
+            FutureBuilder(
+                future: _generateWalletProvider.changePinCode(reload: false),
+                // initialData: '...',
+                builder: (context, snapshot) {
+                  generatedWallet = snapshot.data;
+                  return Visibility(visible: false, child: Text(''));
+                }),
             common.onboardingProgressBar('Ma phrase de restauration', progress),
             common.bubbleSpeakRich(<TextSpan>[
               TextSpan(
@@ -100,8 +107,8 @@ class OnboardingStepThirteen extends StatelessWidget {
                     await _generateWalletProvider.storeWallet(
                         generatedWallet, 'Mon portefeuille courant', context,
                         isHD: true);
-                    myWalletProvider.listWallets =
-                        myWalletProvider.getAllWalletsNames();
+                    // myWalletProvider.listWallets =
+                    //     myWalletProvider.getAllWalletsNames();
                     _generateWalletProvider.isAskedWordValid = false;
                     _generateWalletProvider.askedWordColor = Colors.black;
                     Navigator.push(

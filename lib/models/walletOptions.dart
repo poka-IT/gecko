@@ -89,6 +89,21 @@ class WalletOptionsProvider with ChangeNotifier {
     }
   }
 
+  Future checkPinOK(String _createdDewif, String _pin, int _pinLenght) async {
+    isWalletUnlock = false;
+    try {
+      if (await _getPubkeyFromDewif(_createdDewif, _pin, _pinLenght, 3) !=
+          'false') {
+        return true;
+      } else {
+        throw false;
+      }
+    } catch (e) {
+      print('ERROR READING FILE: $e');
+      return false;
+    }
+  }
+
   int getPinLenght(_walletNbr) {
     File _walletFile =
         File('${walletsDirectory.path}/$_walletNbr/wallet.dewif');

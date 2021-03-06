@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:ui';
+import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/walletOptions.dart';
 import 'package:gecko/screens/commonElements.dart';
@@ -10,6 +12,12 @@ import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class OnboardingStepFourteen extends StatelessWidget {
+  OnboardingStepFourteen({
+    Key validationKey,
+    @required this.generatedWallet,
+  }) : super(key: validationKey);
+
+  NewWallet generatedWallet;
   final int progress = 92;
   final formKey = GlobalKey<FormState>();
   var pinColor = Color(0xFFA4B600);
@@ -46,6 +54,8 @@ class OnboardingStepFourteen extends StatelessWidget {
     TextEditingController _enterPin = TextEditingController();
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
+    GenerateWalletsProvider _generateWalletProvider =
+        Provider.of<GenerateWalletsProvider>(context);
 
     return Form(
       key: formKey,
@@ -95,22 +105,29 @@ class OnboardingStepFourteen extends StatelessWidget {
             ],
             onCompleted: (_pin) async {
               print("Completed");
-              final resultWallet = await _walletOptions.readLocalWallet(
-                  _walletNbr, _pin.toUpperCase(), _pinLenght, _derivation);
-              if (resultWallet == 'bad') {
+              // final resultWallet = await _walletOptions.readLocalWallet(
+              //     _walletNbr, _pin.toUpperCase(), _pinLenght, _derivation);
+              final bool resultWallet = await _walletOptions.checkPinOK(
+                  generatedWallet.dewif, _pin.toUpperCase(), _pinLenght);
+              if (resultWallet) {
+                pinColor = Colors.green[500];
+                print(generatedWallet.pin);
+                await _generateWalletProvider.storeWallet(
+                    generatedWallet, 'Mon portefeuille courant', context,
+                    isHD: true);
+                _myWalletProvider.getAllWalletsNames();
+                _walletOptions.reloadBuild();
+                _myWalletProvider.rebuildWidget();
+                Navigator.popUntil(
+                  context,
+                  ModalRoute.withName('/'),
+                );
+              } else {
                 errorController.add(ErrorAnimationType
                     .shake); // Triggering error shake animation
                 hasError = true;
                 pinColor = Colors.red[600];
                 _walletOptions.reloadBuild();
-              } else {
-                pinColor = Colors.green[500];
-                _myWalletProvider.getAllWalletsNames();
-                _walletOptions.reloadBuild();
-                Navigator.popUntil(
-                  context,
-                  ModalRoute.withName('/'),
-                );
               }
             },
             onChanged: (value) {

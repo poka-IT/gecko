@@ -21,7 +21,6 @@ class OnboardingStepThirteen extends StatelessWidget {
     //     Provider.of<MyWalletsProvider>(context);
     CommonElements common = CommonElements();
     _generateWalletProvider.pin.text = '';
-    // _generateWalletProvider.changePinCode(reload: false);
 
     return Scaffold(
         extendBodyBehindAppBar: true,
@@ -85,9 +84,9 @@ class OnboardingStepThirteen extends StatelessWidget {
                             primary: Color(0xffFFD58D),
                             onPrimary: Colors.black, // foreground
                           ),
-                          onPressed: () {
-                            _generateWalletProvider.changePinCode(
-                                reload: false);
+                          onPressed: () async {
+                            generatedWallet = await _generateWalletProvider
+                                .changePinCode(reload: false);
                           },
                           child: Text("Choisir un autre code secret",
                               style: TextStyle(fontSize: 20))),
@@ -103,17 +102,13 @@ class OnboardingStepThirteen extends StatelessWidget {
                     onPrimary: Colors.white, // foreground
                   ),
                   onPressed: () async {
-                    // TODO: Store wallet here !
-                    await _generateWalletProvider.storeWallet(
-                        generatedWallet, 'Mon portefeuille courant', context,
-                        isHD: true);
-                    // myWalletProvider.listWallets =
-                    //     myWalletProvider.getAllWalletsNames();
                     _generateWalletProvider.isAskedWordValid = false;
                     _generateWalletProvider.askedWordColor = Colors.black;
                     Navigator.push(
                       context,
-                      SmoothTransition(page: OnboardingStepFourteen()),
+                      SmoothTransition(
+                          page: OnboardingStepFourteen(
+                              generatedWallet: generatedWallet)),
                     );
                   },
                   child: Text("J'ai noté mon code secret",

@@ -11,6 +11,7 @@ import 'package:gecko/models/walletOptions.dart';
 import 'package:gecko/screens/home.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/screens/myWallets/walletsHome.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
@@ -130,6 +131,9 @@ class Gecko extends StatelessWidget {
             ),
             home: HomeScreen(),
             initialRoute: "/",
+            routes: {
+              '/mywallets': (context) => WalletsHome(),
+            },
           ),
         ));
   }

@@ -7,6 +7,7 @@ import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/walletOptions.dart';
 import 'package:gecko/screens/commonElements.dart';
+import 'package:gecko/screens/onBoarding/15_stepFiveteen.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 
@@ -118,9 +119,9 @@ class OnboardingStepFourteen extends StatelessWidget {
                 _myWalletProvider.getAllWalletsNames();
                 _walletOptions.reloadBuild();
                 _myWalletProvider.rebuildWidget();
-                Navigator.popUntil(
+                Navigator.push(
                   context,
-                  ModalRoute.withName('/'),
+                  SmoothTransition(page: OnboardingStepFiveteen()),
                 );
               } else {
                 errorController.add(ErrorAnimationType

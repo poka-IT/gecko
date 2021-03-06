@@ -20,8 +20,8 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
   String walletName;
   int derivation;
 
+  // ignore: close_sinks
   StreamController<ErrorAnimationType> errorController;
-  TextEditingController _enterPin = TextEditingController();
   final formKey = GlobalKey<FormState>();
   bool hasError = false;
   var pinColor = Color(0xffF9F9F1);
@@ -39,6 +39,7 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
         Provider.of<MyWalletsProvider>(context);
     errorController = StreamController<ErrorAnimationType>();
     // _walletOptions.isWalletUnlock = false;
+    print("Is unlock ? ${_walletOptions.isWalletUnlock}");
 
     final int _pinLenght = _walletOptions.getPinLenght(this.walletNbr);
 
@@ -178,87 +179,177 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                                   fontWeight: FontWeight.w400),
                             ),
                             SizedBox(height: 50),
-                            Form(
-                              key: formKey,
-                              child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 8.0, horizontal: 30),
-                                  child: PinCodeTextField(
-                                    autoFocus: true,
-                                    appContext: context,
-                                    pastedTextStyle: TextStyle(
-                                      color: Colors.green.shade600,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    length: _pinLenght,
-                                    obscureText: false,
-                                    obscuringCharacter: '*',
-                                    animationType: AnimationType.fade,
-                                    validator: (v) {
-                                      if (v.length < _pinLenght) {
-                                        return "Votre code PIN fait $_pinLenght caractères";
-                                      } else {
-                                        return null;
-                                      }
-                                    },
-                                    pinTheme: PinTheme(
-                                      shape: PinCodeFieldShape.box,
-                                      borderRadius: BorderRadius.circular(5),
-                                      fieldHeight: 60,
-                                      fieldWidth: 50,
-                                      activeFillColor: hasError
-                                          ? Colors.orange
-                                          : Colors.white,
-                                    ),
-                                    cursorColor: Colors.black,
-                                    animationDuration:
-                                        Duration(milliseconds: 300),
-                                    textStyle:
-                                        TextStyle(fontSize: 20, height: 1.6),
-                                    backgroundColor: pinColor,
-                                    enableActiveFill: false,
-                                    errorAnimationController: errorController,
-                                    controller: _enterPin,
-                                    keyboardType: TextInputType.text,
-                                    boxShadows: [
-                                      BoxShadow(
-                                        offset: Offset(0, 1),
-                                        color: Colors.black12,
-                                        blurRadius: 10,
-                                      )
-                                    ],
-                                    onCompleted: (_pin) async {
-                                      print("Completed");
-                                      final resultWallet =
-                                          await _walletOptions.readLocalWallet(
-                                              this.walletNbr,
-                                              _pin.toUpperCase(),
-                                              _pinLenght,
-                                              this.derivation);
-                                      if (resultWallet == 'bad') {
-                                        errorController.add(ErrorAnimationType
-                                            .shake); // Triggering error shake animation
-                                        hasError = true;
-                                        pinColor = Colors.red[200];
-                                        notifyListeners();
-                                      } else {
-                                        pinColor = Colors.green[200];
-                                        // setState(() {});
-                                        // await Future.delayed(Duration(milliseconds: 50));
-                                        this.walletPin = _pin.toUpperCase();
-                                        // isWalletUnlock = true;
-                                        notifyListeners();
-                                      }
-                                    },
-                                    onChanged: (value) {
-                                      if (pinColor != Color(0xffF9F9F1)) {
-                                        pinColor = Color(0xffF9F9F1);
-                                      }
-                                      print(value);
-                                    },
-                                  )),
-                            )
+                            pinForm(context, _pinLenght, walletNbr, derivation)
+                            // Form(
+                            //   key: formKey,
+                            //   child: Padding(
+                            //       padding: const EdgeInsets.symmetric(
+                            //           vertical: 8.0, horizontal: 30),
+                            //       child: PinCodeTextField(
+                            //         autoFocus: true,
+                            //         appContext: context,
+                            //         pastedTextStyle: TextStyle(
+                            //           color: Colors.green.shade600,
+                            //           fontWeight: FontWeight.bold,
+                            //         ),
+                            //         length: _pinLenght,
+                            //         obscureText: false,
+                            //         obscuringCharacter: '*',
+                            //         animationType: AnimationType.fade,
+                            //         validator: (v) {
+                            //           if (v.length < _pinLenght) {
+                            //             return "Votre code PIN fait $_pinLenght caractères";
+                            //           } else {
+                            //             return null;
+                            //           }
+                            //         },
+                            //         pinTheme: PinTheme(
+                            //           shape: PinCodeFieldShape.box,
+                            //           borderRadius: BorderRadius.circular(5),
+                            //           fieldHeight: 60,
+                            //           fieldWidth: 50,
+                            //           activeFillColor: hasError
+                            //               ? Colors.orange
+                            //               : Colors.white,
+                            //         ),
+                            //         cursorColor: Colors.black,
+                            //         animationDuration:
+                            //             Duration(milliseconds: 300),
+                            //         textStyle:
+                            //             TextStyle(fontSize: 20, height: 1.6),
+                            //         backgroundColor: pinColor,
+                            //         enableActiveFill: false,
+                            //         errorAnimationController: errorController,
+                            //         controller: _enterPin,
+                            //         keyboardType: TextInputType.text,
+                            //         boxShadows: [
+                            //           BoxShadow(
+                            //             offset: Offset(0, 1),
+                            //             color: Colors.black12,
+                            //             blurRadius: 10,
+                            //           )
+                            //         ],
+                            //         onCompleted: (_pin) async {
+                            //           print("Completed");
+                            //           final resultWallet =
+                            //               await _walletOptions.readLocalWallet(
+                            //                   this.walletNbr,
+                            //                   _pin.toUpperCase(),
+                            //                   _pinLenght,
+                            //                   this.derivation);
+                            //           if (resultWallet == 'bad') {
+                            //             errorController.add(ErrorAnimationType
+                            //                 .shake); // Triggering error shake animation
+                            //             hasError = true;
+                            //             pinColor = Colors.red[200];
+                            //             notifyListeners();
+                            //           } else {
+                            //             pinColor = Colors.green[200];
+                            //             // setState(() {});
+                            //             // await Future.delayed(Duration(milliseconds: 50));
+                            //             this.walletPin = _pin.toUpperCase();
+                            //             // isWalletUnlock = true;
+                            //             notifyListeners();
+                            //           }
+                            //         },
+                            //         onChanged: (value) {
+                            //           if (pinColor != Color(0xffF9F9F1)) {
+                            //             pinColor = Color(0xffF9F9F1);
+                            //           }
+                            //           print(value);
+                            //         },
+                            //       )),
+                            // )
                           ]))),
                     ])))));
+  }
+
+  Widget pinForm(context, _pinLenght, int _walletNbr, int _derivation) {
+    // var _walletPin = '';
+// ignore: close_sinks
+    StreamController<ErrorAnimationType> errorController =
+        StreamController<ErrorAnimationType>();
+    TextEditingController _enterPin = TextEditingController();
+    WalletOptionsProvider _walletOptions =
+        Provider.of<WalletOptionsProvider>(context);
+
+    return Form(
+      key: formKey,
+      child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
+          child: PinCodeTextField(
+            autoFocus: true,
+            appContext: context,
+            pastedTextStyle: TextStyle(
+              color: Colors.green.shade600,
+              fontWeight: FontWeight.bold,
+            ),
+            length: _pinLenght,
+            obscureText: false,
+            obscuringCharacter: '*',
+            animationType: AnimationType.fade,
+            validator: (v) {
+              if (v.length < _pinLenght) {
+                return "Votre code PIN fait $_pinLenght caractères";
+              } else {
+                return null;
+              }
+            },
+            pinTheme: PinTheme(
+              activeColor: pinColor,
+              borderWidth: 4,
+              shape: PinCodeFieldShape.box,
+              borderRadius: BorderRadius.circular(5),
+              fieldHeight: 60,
+              fieldWidth: 50,
+              activeFillColor: hasError ? Colors.blueAccent : Colors.black,
+            ),
+            cursorColor: Colors.black,
+            animationDuration: Duration(milliseconds: 300),
+            textStyle: TextStyle(fontSize: 20, height: 1.6),
+            backgroundColor: Color(0xffF9F9F1),
+            enableActiveFill: false,
+            errorAnimationController: errorController,
+            controller: _enterPin,
+            keyboardType: TextInputType.text,
+            boxShadows: [
+              BoxShadow(
+                offset: Offset(0, 1),
+                color: Colors.black12,
+                blurRadius: 10,
+              )
+            ],
+            onCompleted: (_pin) async {
+              print("Completed");
+              final resultWallet = await _walletOptions.readLocalWallet(
+                  this.walletNbr,
+                  _pin.toUpperCase(),
+                  _pinLenght,
+                  this.derivation);
+              if (resultWallet == 'bad') {
+                errorController.add(ErrorAnimationType
+                    .shake); // Triggering error shake animation
+                hasError = true;
+                pinColor = Colors.red[600];
+                _walletOptions.reloadBuild();
+              } else {
+                pinColor = Colors.green[400];
+                // setState(() {});
+                // await Future.delayed(Duration(milliseconds: 50));
+                this.walletPin = _pin.toUpperCase();
+                _walletOptions.isWalletUnlock = true;
+                // isWalletUnlock = true;
+                _walletOptions.reloadBuild();
+                // notifyListeners();
+              }
+            },
+            onChanged: (value) {
+              if (pinColor != Color(0xFFA4B600)) {
+                pinColor = Color(0xFFA4B600);
+              }
+              print(value);
+            },
+          )),
+    );
   }
 }

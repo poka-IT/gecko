@@ -13,8 +13,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use dup_crypto::keys::ed25519::bip32::InvalidDerivationIndex;
-
 use crate::*;
 
 /// Dubp error
@@ -26,20 +24,30 @@ pub(crate) enum DubpError {
     DigitsCodeForbidForMemberWallet,
     #[error("It is forbidden to retrieve the master public key of an HD wallet.")]
     GetMasterPubkeyOfHdWallet,
+    #[error("Give external bool or address index for legacy wallet.")]
+    GiveExternalBoolOrAddressIndexForLegacyWallet,
     #[error("I/O error: {0}")]
     IoErr(io::Error),
     #[error("{0}")]
-    InvalidDerivationIndex(InvalidDerivationIndex),
+    InvalidAccountIndex(InvalidAccountIndex),
+    #[error("{0}")]
+    InvalidU31(U31Error),
     #[error("Invalid secret code type")]
     InvalidSecretCodeType,
+    #[error("Missing external bool")]
+    MissingExternalBool,
     #[error("this wallet is not an HD wallet")]
     NotHdWallet,
-    #[error("this account index is not a transparent account index")]
-    NotTransparentAccountIndex,
     #[error("A given parameter is null")]
     NullParamErr,
+    #[error("Opaque account not loaded")]
+    OpaqueAccountNotLoaded,
     #[error("Secret code too short: please change your secret code")]
     SecretCodeTooShort,
+    #[error("The chaining address cannot be used to sign with opaque account")]
+    TryToSignWithChainingAddress,
+    #[error("The internal chaining address cannot be used to sign with semi-opaque account")]
+    TryToSignWithInternalChainingAddress,
     #[error("fail to generate random bytes")]
     RandErr,
     #[error("Unknown currency name")]
@@ -60,9 +68,15 @@ impl From<io::Error> for DubpError {
     }
 }
 
-impl From<InvalidDerivationIndex> for DubpError {
-    fn from(e: InvalidDerivationIndex) -> Self {
-        Self::InvalidDerivationIndex(e)
+impl From<InvalidAccountIndex> for DubpError {
+    fn from(e: InvalidAccountIndex) -> Self {
+        Self::InvalidAccountIndex(e)
+    }
+}
+
+impl From<U31Error> for DubpError {
+    fn from(e: U31Error) -> Self {
+        Self::InvalidU31(e)
     }
 }
 
@@ -75,6 +89,17 @@ impl DartRes {
 impl IntoDart for DartRes {
     fn into_dart(self) -> allo_isolate::ffi::DartCObject {
         self.0.into_dart()
+    }
+}
+impl<E> From<Result<(), E>> for DartRes
+where
+    E: ToString,
+{
+    fn from(res: Result<(), E>) -> Self {
+        match res {
+            Ok(()) => Self("".into_dart()),
+            Err(e) => Self(format!("DUBP_RS_ERROR: {}", e.to_string()).into_dart()),
+        }
     }
 }
 impl<E> From<Result<String, E>> for DartRes

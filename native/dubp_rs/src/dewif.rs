@@ -81,22 +81,38 @@ pub(super) fn get_dewif_meta(
 }
 
 pub(super) fn get_pubkey(
+    account_index_opt: Option<u32>,
+    address_index_opt: Option<U31>,
     currency: Currency,
     dewif: &str,
+    external_opt: Option<bool>,
     secret_code: &str,
 ) -> Result<String, DubpError> {
-    let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
-        ExpectedCurrency::Specific(currency),
-        dewif,
-        &secret_code.to_ascii_uppercase(),
-    )
-    .map_err(DubpError::DewifReadError)?;
+    if let Some(account_index) = account_index_opt {
+        dewif::bip32::get_bip32_pubkey(
+            account_index,
+            address_index_opt,
+            currency,
+            dewif,
+            external_opt,
+            secret_code,
+        )
+    } else if address_index_opt.is_none() && external_opt.is_none() {
+        let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
+            ExpectedCurrency::Specific(currency),
+            dewif,
+            &secret_code.to_ascii_uppercase(),
+        )
+        .map_err(DubpError::DewifReadError)?;
 
-    match keypairs.next() {
-        Some(KeyPairEnum::Ed25519(keypair)) => Ok(keypair.public_key().to_base58()),
-        Some(KeyPairEnum::Bip32Ed25519(_)) => Err(DubpError::GetMasterPubkeyOfHdWallet),
-        Some(_) => Err(DubpError::UnsupportedDewifVersion),
-        None => Err(DubpError::DewifReadError(DewifReadError::CorruptedContent)),
+        match keypairs.next() {
+            Some(KeyPairEnum::Ed25519(keypair)) => Ok(keypair.public_key().to_base58()),
+            Some(KeyPairEnum::Bip32Ed25519(_)) => Err(DubpError::GetMasterPubkeyOfHdWallet),
+            Some(_) => Err(DubpError::UnsupportedDewifVersion),
+            None => Err(DubpError::DewifReadError(DewifReadError::CorruptedContent)),
+        }
+    } else {
+        Err(DubpError::GiveExternalBoolOrAddressIndexForLegacyWallet)
     }
 }
 
@@ -124,5 +140,53 @@ pub(crate) fn log_n(system_memory: i64) -> u8 {
         15
     } else {
         12
+    }
+}
+
+pub(super) fn sign(
+    account_index_opt: Option<u32>,
+    address_index_opt: Option<U31>,
+    currency: Currency,
+    dewif: &str,
+    external_opt: Option<bool>,
+    secret_code: &str,
+    msg: &str,
+) -> Result<String, DubpError> {
+    if let Some(account_index) = account_index_opt {
+        dewif::bip32::sign_bip32(
+            account_index,
+            address_index_opt,
+            currency,
+            dewif,
+            external_opt,
+            secret_code,
+            msg,
+        )
+    } else {
+        dewif::classic::sign(currency, dewif, secret_code, msg)
+    }
+}
+
+pub(super) fn sign_several(
+    account_index_opt: Option<u32>,
+    address_index_opt: Option<U31>,
+    currency: Currency,
+    dewif: &str,
+    external_opt: Option<bool>,
+    secret_code: &str,
+    msgs: &[&str],
+) -> Result<Vec<String>, DubpError> {
+    if let Some(account_index) = account_index_opt {
+        dewif::bip32::sign_several_bip32(
+            account_index,
+            address_index_opt,
+            currency,
+            dewif,
+            external_opt,
+            secret_code,
+            msgs,
+        )
+    } else {
+        dewif::classic::sign_several(currency, dewif, secret_code, msgs)
     }
 }

@@ -16,12 +16,11 @@
 use crate::*;
 
 pub(crate) fn sign(
-    currency: &str,
+    currency: Currency,
     dewif: &str,
     secret_code: &str,
     msg: &str,
 ) -> Result<String, DubpError> {
-    let currency = parse_currency(currency)?;
     let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
         dewif,
@@ -36,12 +35,11 @@ pub(crate) fn sign(
 }
 
 pub(crate) fn sign_several(
-    currency: &str,
+    currency: Currency,
     dewif: &str,
     secret_code: &str,
     msgs: &[&str],
 ) -> Result<Vec<String>, DubpError> {
-    let currency = parse_currency(currency)?;
     let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
         dewif,

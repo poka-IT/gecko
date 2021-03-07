@@ -52,13 +52,13 @@ pub(crate) fn char_ptr_to_str<'a>(c_char_ptr: *const raw::c_char) -> Result<&'a 
     }
 }
 
-pub(crate) fn char_ptr_prt_to_vec_hard_derivation_index(
+pub(crate) fn char_ptr_prt_to_vec_u31(
     u32_ptr: *const u32,
     len: u32,
-) -> Result<Vec<DerivationIndex>, DubpError> {
+) -> Result<Vec<U31>, DubpError> {
     u32_ptr_to_vec_u32(u32_ptr, len)
         .into_iter()
-        .map(|ai| DerivationIndex::hard(ai).map_err(DubpError::InvalidDerivationIndex))
+        .map(|ai| U31::new(ai).map_err(DubpError::InvalidU31))
         .collect()
 }
 
@@ -76,6 +76,30 @@ pub(crate) fn char_ptr_prt_to_vec_str<'a>(
     Ok(str_vec)
 }
 
+pub(crate) fn i32_to_opt_bool(i: i32) -> Option<bool> {
+    match i {
+        1 => Some(true),
+        0 => Some(false),
+        _ => None,
+    }
+}
+
+pub(crate) fn i32_to_opt_u31(i: i32) -> Result<Option<U31>, DubpError> {
+    if i >= 0 {
+        Ok(Some(U31::new(i as u32)?))
+    } else {
+        Ok(None)
+    }
+}
+
+pub(crate) fn i32_to_opt_u32(i: i32) -> Option<u32> {
+    if i >= 0 {
+        Some(i as u32)
+    } else {
+        None
+    }
+}
+
 pub(crate) fn parse_currency(currency: &str) -> Result<Currency, DubpError> {
     let currency_code = match currency {
         "g1" => G1_CURRENCY,
@@ -83,14 +107,6 @@ pub(crate) fn parse_currency(currency: &str) -> Result<Currency, DubpError> {
         _ => return Err(DubpError::UnknownCurrencyName),
     };
     Ok(Currency::from(currency_code))
-}
-
-pub(crate) fn transparent_account_index(account_index: u32) -> Result<DerivationIndex, DubpError> {
-    if account_index % 3 == 0 {
-        DerivationIndex::hard(account_index).map_err(DubpError::InvalidDerivationIndex)
-    } else {
-        Err(DubpError::NotTransparentAccountIndex)
-    }
 }
 
 pub(crate) fn u32_ptr_to_vec_u32(u32_ptr: *const u32, len: u32) -> Vec<u32> {

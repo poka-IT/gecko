@@ -7,3 +7,7 @@ String appVersion;
 SharedPreferences prefs;
 String endPointGVA;
 int ramSys;
+
+// Responsive ratios
+bool isTall;
+double ratio;

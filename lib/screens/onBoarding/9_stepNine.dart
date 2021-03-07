@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/screens/commonElements.dart';
 import 'package:gecko/screens/onBoarding/10_stepTen.dart';
@@ -29,9 +30,9 @@ class OnboardingStepNine extends StatelessWidget {
               "C’est le moment de noter votre phrase !",
               long: 60,
             ),
-            SizedBox(height: 69),
+            SizedBox(height: isTall ? 100 : 70),
             sentanceArray(context),
-            SizedBox(height: 15),
+            SizedBox(height: isTall ? 20 : 15),
             GestureDetector(
               onTap: () {
                 Navigator.push(

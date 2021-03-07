@@ -1,7 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/screens/commonElements.dart';
-import 'package:gecko/screens/onBoarding/6_stepSix.dart';
+import 'package:gecko/screens/onBoarding/7_stepSeven.dart';
 
 // ignore: must_be_immutable
 class OnboardingStepFive extends StatelessWidget {
@@ -21,10 +22,10 @@ class OnboardingStepFive extends StatelessWidget {
             common.bubbleSpeak(
               "Par contre, attention :\n\nDans une blockchain, il n’y a pas de procédure de récupération de trousseau.\n\nSi vous perdez votre phrase de restauration, je ne pourrai pas vous la communiquer, et vous ne pourrez donc plus jamais accéder à votre compte.",
             ),
-            SizedBox(height: 10),
+            SizedBox(height: isTall ? 30 : 10),
             Image.asset(
               'assets/onBoarding/maison-qui-brule.png',
-              height: 200,
+              width: 320 * ratio,
             ),
             Expanded(
                 child: Align(
@@ -41,7 +42,7 @@ class OnboardingStepFive extends StatelessWidget {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              SmoothTransition(page: OnboardingStepSix()),
+                              SmoothTransition(page: OnboardingStepSeven()),
                             );
                           },
                           child: Text("J'ai compris",

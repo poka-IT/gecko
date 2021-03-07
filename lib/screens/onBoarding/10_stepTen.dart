@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/screens/commonElements.dart';
 import 'package:gecko/screens/onBoarding/11_stepEleven.dart';
@@ -39,6 +40,7 @@ class OnboardingStepTen extends StatelessWidget {
           return Future<bool>.value(true);
         },
         child: Scaffold(
+            resizeToAvoidBottomInset: false,
             extendBodyBehindAppBar: true,
             body: SafeArea(
               child: Column(children: <Widget>[
@@ -47,19 +49,68 @@ class OnboardingStepTen extends StatelessWidget {
                 common.bubbleSpeakRich(<TextSpan>[
                   TextSpan(
                       text:
-                          "Avez-vous bien noté votre phrase de restauration ?\n\nPour en être sûr, veuillez taper dans le champ ci-dessous le "),
+                          "Avez-vous bien noté votre phrase de restauration ?\n\nPour en être sûr, veuillez taper dans le champ ci-dessous le ",
+                      style: TextStyle(fontSize: 16 * ratio)),
                   TextSpan(
                       text: '${_generateWalletProvider.nbrWord + 1}ème mot',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  TextSpan(text: " de votre phrase de restauration :"),
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16 * ratio)),
+                  TextSpan(
+                      text: " de votre phrase de restauration :",
+                      style: TextStyle(fontSize: 16 * ratio)),
                 ]),
-                SizedBox(height: 70),
-                Text('${_generateWalletProvider.nbrWord + 1}',
-                    style: TextStyle(
-                        fontSize: 17,
-                        color: Color(0xffD28928),
-                        fontWeight: FontWeight.w400)),
-                SizedBox(height: 7),
+
+                // LayoutBuilder(builder: (builder, constraints) {
+                //   // 2
+                //   var hasDetailPage = constraints.maxWidth > 480;
+
+                //   if (hasDetailPage) {
+                //     // 3
+                //     return Row(
+                //       children: [
+                //         // 4
+                //         SizedBox(
+                //           width: 250,
+                //           height: 500,
+                //           child: Text('GRAND'),
+                //         ),
+                //         // 5
+                //         Expanded(
+                //           child: Text('GRAND 2'),
+                //         ),
+                //       ],
+                //     );
+                //   } else {
+                //     // 6
+                //     return Text('PETIT');
+                //   }
+                // }),
+
+                // Expanded(
+                //   child:
+                //       //ScreenTypeLayout with custom breakpoints supplied
+                //       ScreenTypeLayout(
+                //     breakpoints: ScreenBreakpoints(
+                //       tablet: 600,
+                //       desktop: 950,
+                //       watch: 480,
+                //     ),
+                //     mobile: Container(color: Colors.blue),
+                //     tablet: Container(color: Colors.yellow),
+                //     desktop: Container(color: Colors.red),
+                //     watch: Container(color: Colors.purple),
+                //   ),
+                // ),
+
+                SizedBox(height: isTall ? 70 : 10),
+                if (isTall)
+                  Text('${_generateWalletProvider.nbrWord + 1}',
+                      style: TextStyle(
+                          fontSize: 17,
+                          color: Color(0xffD28928),
+                          fontWeight: FontWeight.w400)),
+                SizedBox(height: isTall ? 10 : 0),
                 Container(
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(7),

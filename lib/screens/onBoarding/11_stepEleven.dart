@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/screens/commonElements.dart';
 import 'package:gecko/screens/onBoarding/12_stepTwelve.dart';
 
@@ -27,10 +28,10 @@ class OnboardingStepEleven extends StatelessWidget {
                   text:
                       " \n\nVotre code secret chiffre votre trousseau de clefs, ce qui le rend inutilisable par d’autres, par exemple si vous perdez votre téléphone ou si on vous le vole."),
             ]),
-            SizedBox(height: 10),
+            SizedBox(height: isTall ? 50 : 10),
             Image.asset(
               'assets/onBoarding/treasure-chest-gecko-souligne.png',
-              height: 400,
+              height: 280 * ratio, //5": 400
             ),
             Expanded(
                 child: Align(

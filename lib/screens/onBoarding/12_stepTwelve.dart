@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/screens/commonElements.dart';
 import 'package:gecko/screens/onBoarding/13_stepThirteen.dart';
 
@@ -12,7 +13,7 @@ class OnboardingStepTwelve extends StatelessWidget {
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     CommonElements common = CommonElements();
-
+    
     return Scaffold(
         extendBodyBehindAppBar: true,
         body: SafeArea(
@@ -23,7 +24,7 @@ class OnboardingStepTwelve extends StatelessWidget {
             SizedBox(height: 10),
             Image.asset(
               'assets/onBoarding/plusieurs-codes-secrets-un-trousseau.png',
-              height: 470,
+              height: 410 * ratio,
             ),
             Expanded(
                 child: Align(
@@ -46,7 +47,7 @@ class OnboardingStepTwelve extends StatelessWidget {
                           child: Text("Générer le code secret",
                               style: TextStyle(fontSize: 20))),
                     ))),
-            SizedBox(height: 80),
+            SizedBox(height: isTall ? 80 : 40),
           ]),
         ));
   }

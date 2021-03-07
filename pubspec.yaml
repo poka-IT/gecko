@@ -39,8 +39,9 @@ dependencies:
   sentry_flutter: ^4.0.4
   catcher: ^0.4.1
   bubble: ^1.1.9+1
-  responsive_framework: ^0.0.14
   flutter_svg: ^0.19.1
+  responsive_framework: ^0.0.14
+  responsive_builder: ^0.3.0
 
 flutter_icons:
   android: "ic_launcher"

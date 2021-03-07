@@ -21,6 +21,13 @@ class HomeScreen extends StatelessWidget {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
     final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
+
+    isTall = false;
+    ratio = 1;
+    if (MediaQuery.of(context).size.height >= 930) {
+      isTall = true;
+      ratio = 1.125;
+    }
     // CommonElements commonElements = CommonElements();
     return Scaffold(
         resizeToAvoidBottomInset: false,

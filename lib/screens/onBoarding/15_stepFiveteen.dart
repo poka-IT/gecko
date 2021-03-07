@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/screens/commonElements.dart';
 import 'package:gecko/screens/myWallets/walletsHome.dart';
 
@@ -21,10 +22,10 @@ class OnboardingStepFiveteen extends StatelessWidget {
             common.bubbleSpeak(
               "Top !\n\nVotre trousseau de clef et votre portefeuille ont été créés avec un immense succès.\n\nFélicitations !",
             ),
-            SizedBox(height: 10),
+            SizedBox(height: isTall ? 20 : 10),
             Image.asset(
               'assets/onBoarding/gecko-clin.gif',
-              height: 300,
+              height: isTall ? 400 : 300,
             ),
             Expanded(
                 child: Align(

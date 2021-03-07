@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/walletOptions.dart';
@@ -32,6 +33,7 @@ class OnboardingStepFourteen extends StatelessWidget {
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
     CommonElements common = CommonElements();
+    final int _pinLenght = _walletOptions.getPinLenght(generatedWallet.dewif);
 
     return Scaffold(
         extendBodyBehindAppBar: true,
@@ -40,8 +42,8 @@ class OnboardingStepFourteen extends StatelessWidget {
             common.onboardingProgressBar('Ma phrase de restauration', progress),
             common.bubbleSpeak(
                 "Avez-vous bien mémorisé votre code secret ?\n\nVérifions ça ensemble !\n\nTapez votre code secret dans le champ ci-dessous (après c’est fini, promis-juré-gecko)."),
-            SizedBox(height: 80),
-            pinForm(context, _walletOptions, 5, 1, 3)
+            SizedBox(height: isTall ? 80 : 10),
+            pinForm(context, _walletOptions, _pinLenght, 1, 3)
           ]),
         ));
   }

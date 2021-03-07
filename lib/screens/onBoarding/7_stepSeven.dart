@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/screens/commonElements.dart';
 import 'package:gecko/screens/onBoarding/8_stepEight.dart';
 
@@ -45,10 +46,10 @@ class OnboardingStepSeven extends StatelessWidget {
                 ),
               ]),
             )),
-            SizedBox(height: 50),
+            SizedBox(height: isTall ? 120 : 50),
             SizedBox(
               width: 400,
-                      height: 62,
+              height: 62,
               child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     elevation: 5,

@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/screens/commonElements.dart';
 import 'package:gecko/screens/onBoarding/9_stepNine.dart';
 
@@ -22,7 +23,8 @@ class OnboardingStepEight extends StatelessWidget {
             common.bubbleSpeak(
               "J’ai généré votre phrase de restauration !\nTâchez de la garder bien secrète, car elle permet à quiconque la connaît d’accéder à tous vos portefeuilles.",
             ),
-            SizedBox(height: 30),
+            SizedBox(height: isTall ? 61 : 31),
+            // SizedBox(height: 30),
             sentanceArray(context),
             // ),
             Expanded(

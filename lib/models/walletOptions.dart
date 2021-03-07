@@ -105,9 +105,14 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   int getPinLenght(_walletNbr) {
-    File _walletFile =
-        File('${walletsDirectory.path}/$_walletNbr/wallet.dewif');
-    String _localDewif = _walletFile.readAsStringSync();
+    String _localDewif;
+    if (_walletNbr is int) {
+      File _walletFile =
+          File('${walletsDirectory.path}/$_walletNbr/wallet.dewif');
+      _localDewif = _walletFile.readAsStringSync();
+    } else {
+      _localDewif = _walletNbr;
+    }
 
     final int _pinLenght = DubpRust.getDewifSecretCodeLen(
         dewif: _localDewif, secretCodeType: SecretCodeType.letters);

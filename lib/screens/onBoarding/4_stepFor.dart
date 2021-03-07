@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/screens/commonElements.dart';
 import 'package:gecko/screens/onBoarding/5_stepFive.dart';
 
@@ -21,14 +22,14 @@ class OnboardingStepFor extends StatelessWidget {
             common.bubbleSpeak(
               "Si un jour vous changez de téléphone, il vous suffira de me redonner votre phrase de restauration pour recréer votre trousseau.",
             ),
-            SizedBox(height: 10),
+            SizedBox(height: isTall ? 15 : 0),
             // Row(children: <Widget>[
             // Align(
             //     alignment: Alignment.centerRight,
             //     child:
             Image.asset(
               'assets/onBoarding/plusieurs-appareils-un-trousseau.png',
-              height: 350,
+              height: 400 * ratio,
             ),
             // ]),
             Expanded(

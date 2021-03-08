@@ -3,17 +3,31 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/screens/myWallets/walletsHome.dart';
+import 'package:gecko/models/myWallets.dart';
+import 'package:gecko/screens/onBoarding/0_noKeychainFound.dart';
 import 'dart:ui';
 import 'package:gecko/screens/settings.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
     HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
     HistoryProvider _historyStatic = HistoryProvider('');
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context);
+    final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
+
+    isTall = false;
+    ratio = 1;
+    if (MediaQuery.of(context).size.height >= 930) {
+      isTall = true;
+      ratio = 1.125;
+    }
+    // CommonElements commonElements = CommonElements();
     return Scaffold(
         resizeToAvoidBottomInset: false,
         drawer: Drawer(
@@ -118,7 +132,7 @@ class HomeScreen extends StatelessWidget {
                   },
                   child: Column(children: <Widget>[
                     Padding(
-                        padding: EdgeInsets.only(top: 22),
+                        padding: EdgeInsets.only(top: 20),
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
@@ -126,22 +140,24 @@ class HomeScreen extends StatelessWidget {
                               Image(
                                   image:
                                       AssetImage('assets/icon/gecko_final.png'),
-                                  height: 160),
+                                  height: 180),
                             ])),
                     Padding(
-                        padding: EdgeInsets.only(top: 12),
+                        padding: EdgeInsets.only(top: 15),
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               Text(
-                                "L’application de paiement Ğ1\nplus mobile qu’un lésard du Vietnam",
+                                "y'a pas de lézard !",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                    color: Colors.black, fontSize: 15),
+                                    color: Colors.black,
+                                    fontSize: 17,
+                                    fontStyle: FontStyle.italic),
                               )
                             ])),
                     Padding(
-                        padding: EdgeInsets.only(top: 40),
+                        padding: EdgeInsets.only(top: 60),
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
@@ -154,11 +170,11 @@ class HomeScreen extends StatelessWidget {
                                           splashColor: Color(
                                               0xffD28928), // inkwell color
                                           child: Padding(
-                                              padding: EdgeInsets.all(17),
+                                              padding: EdgeInsets.all(22),
                                               child: Image(
                                                   image: AssetImage(
                                                       'assets/qrcode-scan.png'),
-                                                  height: 50)),
+                                                  height: 60)),
                                           onTap: () async {
                                             await _historyProvider
                                                 .scan(context);
@@ -177,17 +193,17 @@ class HomeScreen extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                SizedBox(height: 10),
+                                SizedBox(height: 12),
                                 Text(
                                   "Payer par QR-Code",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                      color: Colors.black, fontSize: 13),
+                                      color: Colors.black, fontSize: 16),
                                 )
                               ])
                             ])),
                     Padding(
-                        padding: EdgeInsets.only(top: 40),
+                        padding: EdgeInsets.only(top: 50),
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
@@ -201,57 +217,19 @@ class HomeScreen extends StatelessWidget {
                                               0xffD28928), // inkwell color
                                           child: Padding(
                                               padding: EdgeInsets.symmetric(
-                                                  horizontal: 18, vertical: 14),
+                                                  horizontal: 20, vertical: 16),
                                               child: Image(
                                                   image: AssetImage(
                                                       'assets/blockchain.png'),
-                                                  height: 55)),
-                                          onTap: () {}),
-                                    ),
-                                  ),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                          color: Colors.grey,
-                                          blurRadius: 4.0,
-                                          offset: Offset(2.0, 2.5),
-                                          spreadRadius: 0.5)
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(height: 10),
-                                Text(
-                                  "Explorer\n",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      color: Colors.black, fontSize: 13),
-                                )
-                              ]),
-                              SizedBox(width: 100),
-                              Column(children: <Widget>[
-                                Container(
-                                  child: ClipOval(
-                                    child: Material(
-                                      color: Color(0xffFFD58D), // button color
-                                      child: InkWell(
-                                          splashColor: Color(
-                                              0xffD28928), // inkwell color
-                                          child: Padding(
-                                              padding: EdgeInsets.all(20),
-                                              child: Image(
-                                                  image: AssetImage(
-                                                      'assets/lock.png'),
-                                                  height: 45)),
+                                                  height: 70)),
                                           onTap: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) {
-                                                return WalletsHome();
-                                              }),
-                                            );
+                                            // Navigator.push(
+                                            //   context,
+                                            //   MaterialPageRoute(
+                                            //       builder: (context) {
+                                            //     return TemplateScreen();
+                                            //   }),
+                                            // );
                                           }),
                                     ),
                                   ),
@@ -267,12 +245,59 @@ class HomeScreen extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                SizedBox(height: 10),
+                                SizedBox(height: 12),
+                                Text(
+                                  "Explorer\n",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: Colors.black, fontSize: 16),
+                                )
+                              ]),
+                              SizedBox(width: 140),
+                              Column(children: <Widget>[
+                                Container(
+                                  child: ClipOval(
+                                    child: Material(
+                                      color: Color(0xffFFD58D), // button color
+                                      child: InkWell(
+                                          splashColor: Color(
+                                              0xffD28928), // inkwell color
+                                          child: Padding(
+                                              padding: EdgeInsets.all(23),
+                                              child: Image(
+                                                  image: AssetImage(
+                                                      'assets/lock.png'),
+                                                  height: 57)),
+                                          onTap: () {
+                                            isWalletsExists
+                                                ? Navigator.pushNamed(
+                                                    context, '/mywallets')
+                                                : Navigator.push(context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) {
+                                                    return NoKeyChainScreen();
+                                                  }));
+                                          }),
+                                    ),
+                                  ),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color: Colors.grey,
+                                          blurRadius: 4.0,
+                                          offset: Offset(2.0, 2.5),
+                                          spreadRadius: 0.5)
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: 12),
                                 Text(
                                   "Gérer mes\nportefeuilles",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                      color: Colors.black, fontSize: 13),
+                                      color: Colors.black, fontSize: 16),
                                 )
                               ])
                             ]))

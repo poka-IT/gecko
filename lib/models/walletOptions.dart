@@ -6,8 +6,8 @@ import 'dart:async';
 import 'package:gecko/globals.dart';
 
 class WalletOptionsProvider with ChangeNotifier {
-  TextEditingController pubkey = new TextEditingController();
-  TextEditingController _newWalletName = new TextEditingController();
+  TextEditingController pubkey = TextEditingController();
+  TextEditingController _newWalletName = TextEditingController();
   bool isWalletUnlock = false;
   bool ischangedPin = false;
   TextEditingController newPin = new TextEditingController();
@@ -61,8 +61,8 @@ class WalletOptionsProvider with ChangeNotifier {
     }
   }
 
-  Future readLocalWallet(int _walletNbr, String _name, String _pin,
-      int _pinLenght, int derivation) async {
+  Future readLocalWallet(
+      int _walletNbr, String _pin, int _pinLenght, int derivation) async {
     isWalletUnlock = false;
     try {
       File _walletFile =
@@ -75,7 +75,7 @@ class WalletOptionsProvider with ChangeNotifier {
           'false') {
         this.pubkey.text = _localPubkey;
         isWalletUnlock = true;
-        notifyListeners();
+        // notifyListeners();
 
         return _localDewif;
       } else {
@@ -84,14 +84,35 @@ class WalletOptionsProvider with ChangeNotifier {
     } catch (e) {
       print('ERROR READING FILE: $e');
       this.pubkey.clear();
+      // notifyListeners();
       return 'bad';
     }
   }
 
+  Future checkPinOK(String _createdDewif, String _pin, int _pinLenght) async {
+    isWalletUnlock = false;
+    try {
+      if (await _getPubkeyFromDewif(_createdDewif, _pin, _pinLenght, 3) !=
+          'false') {
+        return true;
+      } else {
+        throw false;
+      }
+    } catch (e) {
+      print('ERROR READING FILE: $e');
+      return false;
+    }
+  }
+
   int getPinLenght(_walletNbr) {
-    File _walletFile =
-        File('${walletsDirectory.path}/$_walletNbr/wallet.dewif');
-    String _localDewif = _walletFile.readAsStringSync();
+    String _localDewif;
+    if (_walletNbr is int) {
+      File _walletFile =
+          File('${walletsDirectory.path}/$_walletNbr/wallet.dewif');
+      _localDewif = _walletFile.readAsStringSync();
+    } else {
+      _localDewif = _walletNbr;
+    }
 
     final int _pinLenght = DubpRust.getDewifSecretCodeLen(
         dewif: _localDewif, secretCodeType: SecretCodeType.letters);
@@ -186,7 +207,10 @@ class WalletOptionsProvider with ChangeNotifier {
         final _walletFile = Directory('${walletsDirectory.path}/$_walletNbr');
         await _walletFile.delete(recursive: true);
       }
-      Navigator.pop(context);
+      Navigator.popUntil(
+        context,
+        ModalRoute.withName('/mywallets'),
+      );
     }
     return 0;
   }
@@ -263,5 +287,9 @@ class WalletOptionsProvider with ChangeNotifier {
             Text("Cette clé publique a été copié dans votre presse-papier."),
         duration: Duration(seconds: 2));
     Scaffold.of(context).showSnackBar(snackBar);
+  }
+
+  void reloadBuild() {
+    notifyListeners();
   }
 }

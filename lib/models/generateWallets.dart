@@ -22,6 +22,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   bool isAskedWordValid = false;
 
   int nbrWord;
+  String nbrWordAlpha;
 
   String generatedMnemonic;
   bool walletIsGenerated = true;
@@ -46,6 +47,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     } else {
       nbrWallet = 1;
     }
+
     Directory walletNbrDirectory;
     do {
       nbrWallet++;
@@ -69,7 +71,9 @@ class GenerateWalletsProvider with ChangeNotifier {
 
       await configFile
           .writeAsString('$nbrWallet:$_name:$_derivationNbr:$_pubkey');
-      Navigator.pop(context, true);
+      print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+      print('${wallet.pin} : $_name : $isHD');
+      // Navigator.pop(context, true);
     } else {
       final int _derivationNbr = -1;
       String _pubkey = await DubpRust.getDewifPublicKey(
@@ -80,10 +84,7 @@ class GenerateWalletsProvider with ChangeNotifier {
           .writeAsString('$nbrWallet:$_name:$_derivationNbr:$_pubkey');
     }
 
-    print('CODE PIN :::');
-    print(wallet.pin);
-
-    Navigator.pop(context, true);
+    // Navigator.pop(context, true);
 
     return _name;
   }
@@ -113,7 +114,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       print('Word is OK');
       isAskedWordValid = true;
       askedWordColor = Colors.green[600];
-      walletNameFocus.nextFocus();
+      // walletNameFocus.nextFocus();
       notifyListeners();
     } else {
       isAskedWordValid = false;
@@ -137,6 +138,26 @@ class GenerateWalletsProvider with ChangeNotifier {
   int getRandomInt() {
     var rng = new Random();
     return rng.nextInt(12);
+  }
+
+  String intToString(int _nbr) {
+    Map nbrToString = {};
+    nbrToString[1] = 'Premier';
+    nbrToString[2] = 'Deuxième';
+    nbrToString[3] = 'Troisième';
+    nbrToString[4] = 'Quatrième';
+    nbrToString[5] = 'Cinquième';
+    nbrToString[6] = 'Sixième';
+    nbrToString[7] = 'Septième';
+    nbrToString[8] = 'Huitième';
+    nbrToString[9] = 'Neuvième';
+    nbrToString[10] = 'Dixième';
+    nbrToString[11] = 'Onzième';
+    nbrToString[12] = 'Douzième';
+
+    nbrWordAlpha = nbrToString[_nbr];
+
+    return nbrWordAlpha;
   }
 
   void nameChanged() {
@@ -174,7 +195,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     return this.actualWallet;
   }
 
-  Future<void> changePinCode({bool reload}) async {
+  Future<NewWallet> changePinCode({bool reload}) async {
     actualWallet = await DubpRust.changeDewifPin(
       dewif: actualWallet.dewif,
       oldPin: actualWallet.pin,
@@ -185,6 +206,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     if (reload) {
       notifyListeners();
     }
+    return actualWallet;
   }
 
   Future<Uint8List> printWallet(String _title) async {
@@ -277,6 +299,22 @@ class GenerateWalletsProvider with ChangeNotifier {
     isCesiumPWDVisible = false;
     actualWallet = null;
     notifyListeners();
+  }
+
+  Future<List<String>> generateWordList() async {
+    final String _sentance = await generateMnemonic();
+    List<String> _wordsList = [];
+    String word;
+    int _nbr = 1;
+
+    for (word in _sentance.split(' ')) {
+      // print(word);
+      _wordsList.add("$_nbr:$word");
+      _nbr++;
+    }
+    // notifyListeners();
+
+    return _wordsList;
   }
 
   // void makeError() {

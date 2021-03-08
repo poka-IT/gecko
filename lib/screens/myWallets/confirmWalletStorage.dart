@@ -23,6 +23,7 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
     MyWalletsProvider _myWalletProvider =

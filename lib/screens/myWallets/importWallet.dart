@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 class ImportWalletScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     GlobalKey _toolTipSecret = GlobalKey();
     Timer _debounce;
     GenerateWalletsProvider _generateWalletProvider =

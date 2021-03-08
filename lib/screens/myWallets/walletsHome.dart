@@ -114,7 +114,7 @@ class WalletsHome extends StatelessWidget {
 
     return AlertDialog(
       content: Stack(
-        overflow: Overflow.visible,
+        clipBehavior: Clip.hardEdge,
         children: <Widget>[
           Form(
             key: _derivationKey,
@@ -133,16 +133,19 @@ class WalletsHome extends StatelessWidget {
                 SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: RaisedButton(
-                    child: Text("Créer"),
-                    color: Color(0xffFFD68E),
-                    onPressed: () async {
-                      await _myWalletProvider
-                          .generateNewDerivation(
-                              context, _newDerivationName.text, _walletNbr)
-                          .then((_) => _newDerivationName.text == '');
-                    },
-                  ),
+                  child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        elevation: 1,
+                        primary: Color(0xffFFD68E), // background
+                        onPrimary: Colors.black, // foreground
+                      ),
+                      onPressed: () async {
+                        await _myWalletProvider
+                            .generateNewDerivation(
+                                context, _newDerivationName.text, _walletNbr)
+                            .then((_) => _newDerivationName.text == '');
+                      },
+                      child: Text("Créer")),
                 )
               ],
             ),

@@ -71,8 +71,6 @@ class GenerateWalletsProvider with ChangeNotifier {
 
       await configFile
           .writeAsString('$nbrWallet:$_name:$_derivationNbr:$_pubkey');
-      print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
-      print('${wallet.pin} : $_name : $isHD');
       // Navigator.pop(context, true);
     } else {
       final int _derivationNbr = -1;

@@ -286,7 +286,7 @@ class WalletOptionsProvider with ChangeNotifier {
         content:
             Text("Cette clé publique a été copié dans votre presse-papier."),
         duration: Duration(seconds: 2));
-    Scaffold.of(context).showSnackBar(snackBar);
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   void reloadBuild() {

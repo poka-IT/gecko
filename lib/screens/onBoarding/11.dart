@@ -33,7 +33,7 @@ class OnboardingStepThirteen extends StatelessWidget {
                   generatedWallet = snapshot.data;
                   return Visibility(visible: false, child: Text(''));
                 }),
-            common.onboardingProgressBar('Ma phrase de restauration', progress),
+            common.onboardingProgressBar(context, 'Ma phrase de restauration', progress),
             common.bubbleSpeakRich(<TextSpan>[
               TextSpan(
                   text:

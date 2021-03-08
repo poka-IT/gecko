@@ -18,7 +18,7 @@ class OnboardingStepTwelve extends StatelessWidget {
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(children: <Widget>[
-            common.onboardingProgressBar('Ma phrase de restauration', progress),
+            common.onboardingProgressBar(context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
                 "Si un jour vous changez de téléphone, votre code secret sera différent, mais il vous suffira de me redonner votre phrase de restauration pour recréer votre trousseau."),
             SizedBox(height: 10),

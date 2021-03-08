@@ -18,7 +18,7 @@ class OnboardingStepFiveteen extends StatelessWidget {
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(children: <Widget>[
-            common.onboardingProgressBar('Ma phrase de restauration', progress),
+            common.onboardingProgressBar(context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
               "Top !\n\nVotre trousseau de clef et votre portefeuille ont été créés avec un immense succès.\n\nFélicitations !",
             ),

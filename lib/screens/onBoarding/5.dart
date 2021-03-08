@@ -18,7 +18,7 @@ class OnboardingStepSeven extends StatelessWidget {
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(children: <Widget>[
-            common.onboardingProgressBar('Ma phrase de restauration', progress),
+            common.onboardingProgressBar(context, 'Ma phrase de restauration', progress),
             common.bubbleSpeakRich(
               <TextSpan>[
                 TextSpan(text: "Munissez-vous d'"),

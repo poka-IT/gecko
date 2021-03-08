@@ -20,7 +20,7 @@ class OnboardingStepTwo extends StatelessWidget {
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(children: <Widget>[
-            common.onboardingProgressBar('Nouveau portefeuilles', progress),
+            common.onboardingProgressBar(context, 'Nouveau portefeuilles', progress),
             common.bubbleSpeak(
               "Un trousseau est créé à partir d’une phrase de restauration.",
             ),

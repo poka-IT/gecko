@@ -42,7 +42,8 @@ class CommonElements {
     );
   }
 
-  Widget onboardingProgressBar(String screenTitle, int progress) {
+  Widget onboardingProgressBar(
+      BuildContext context, String screenTitle, int progress) {
     return Stack(children: [
       Container(height: 100),
       Positioned(
@@ -50,8 +51,16 @@ class CommonElements {
       Positioned(
         top: 0,
         left: 0,
-        child: Image.asset(
-          'assets/onBoarding/gecko_bar.png',
+        child: GestureDetector(
+          onTap: () {
+            Navigator.popUntil(
+              context,
+              ModalRoute.withName('/'),
+            );
+          },
+          child: Image.asset(
+            'assets/onBoarding/gecko_bar.png',
+          ),
         ),
       ),
       if (progress != 0)

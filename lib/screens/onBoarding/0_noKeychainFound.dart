@@ -21,7 +21,7 @@ class NoKeyChainScreen extends StatelessWidget {
         // appBar: GeckoSpeechAppBar('Mes portefeuilles'),
         body: SafeArea(
           child: Column(children: <Widget>[
-            common.onboardingProgressBar('Mes portefeuilles', 0),
+            common.onboardingProgressBar(context, 'Mes portefeuilles', 0),
             common.bubbleSpeak(
               "Je ne connais pour l’instant aucun de vos portefeuilles.\n\nVous pouvez en créer un nouveau, ou bien importer un portefeuille Cesium existant.",
             ),

@@ -18,7 +18,8 @@ class OnboardingStepEleven extends StatelessWidget {
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(children: <Widget>[
-            common.onboardingProgressBar('Ma phrase de restauration', progress),
+            common.onboardingProgressBar(
+                context, 'Ma phrase de restauration', progress),
             common.bubbleSpeakRich(<TextSpan>[
               TextSpan(text: "Super !\n\nJe vais maintenant créer votre "),
               TextSpan(
@@ -48,7 +49,8 @@ class OnboardingStepEleven extends StatelessWidget {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              FaderTransition(page: OnboardingStepTwelve(), isFast: true),
+                              FaderTransition(
+                                  page: OnboardingStepTwelve(), isFast: true),
                             );
                           },
                           child: Text("J'ai compris",

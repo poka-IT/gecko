@@ -102,6 +102,30 @@ class DubpRust {
     return Future.value(NewWallet._(newWallet[0], newWallet[1]));
   }
 
+  /// Check validity of a base58 public key with its checksum
+  static Future<void> checkPublicKey({String pubkey}) {
+    final completer = Completer<void>();
+    final sendPort =
+        singleCompletePort<void, String>(completer, callback: _handleErrVoid);
+    native.check_pubkey(
+      sendPort.nativePort,
+      Utf8.toUtf8(pubkey),
+    );
+    return completer.future;
+  }
+
+  /// Compute public key checksum
+  static Future<String> computeChecksum({String pubkey}) {
+    final completer = Completer<String>();
+    final sendPort =
+        singleCompletePort<String, String>(completer, callback: _handleErr);
+    native.compute_checksum(
+      sendPort.nativePort,
+      Utf8.toUtf8(pubkey),
+    );
+    return completer.future;
+  }
+
   /// Generate a random mnemonic
   static Future<String> genMnemonic({Language language = Language.english}) {
     final completer = Completer<String>();

@@ -31,6 +31,8 @@ pub(crate) enum DubpError {
     #[error("{0}")]
     InvalidAccountIndex(InvalidAccountIndex),
     #[error("{0}")]
+    InvalidPubkey(PublicKeyFromStrErr),
+    #[error("{0}")]
     InvalidU31(U31Error),
     #[error("Invalid secret code type")]
     InvalidSecretCodeType,

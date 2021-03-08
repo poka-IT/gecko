@@ -21,6 +21,7 @@ mod error;
 mod inputs;
 mod legacy;
 mod mnemonic;
+mod pubkey;
 mod secret_code;
 
 use crate::error::{DartRes, DubpError};
@@ -35,8 +36,8 @@ use dup_crypto::{
         ed25519::bip32::{
             ChainCode, InvalidAccountIndex, KeyPair, PrivateDerivationPath, PublicKeyWithChainCode,
         },
-        ed25519::{KeyPairFromSeed32Generator, PublicKey},
-        KeyPair as _, KeyPairEnum, Signator as _, Signature as _,
+        ed25519::{KeyPairFromSeed32Generator, PublicKey, PublicKeyFromStrErr},
+        KeyPair as _, KeyPairEnum, PublicKey as _, Signator as _, Signature as _,
     },
     mnemonic::{Language, Mnemonic, MnemonicType},
     utils::{U31Error, U31},
@@ -80,6 +81,20 @@ pub extern "C" fn change_dewif_secret_code(
                 system_memory,
             )
         },
+    )
+}
+
+#[no_mangle]
+pub extern "C" fn check_pubkey(port: i64, pubkey: *const raw::c_char) {
+    exec_async(port, || Ok(char_ptr_to_str(pubkey)?), pubkey::check_pubkey)
+}
+
+#[no_mangle]
+pub extern "C" fn compute_checksum(port: i64, pubkey: *const raw::c_char) {
+    exec_async(
+        port,
+        || Ok(char_ptr_to_str(pubkey)?),
+        pubkey::compute_checksum,
     )
 }
 

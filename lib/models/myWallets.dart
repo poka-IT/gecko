@@ -95,7 +95,7 @@ class MyWalletsProvider with ChangeNotifier {
     final _walletConfig = File('${walletsDirectory.path}/$chest/list.conf');
 
     List configLines = await _walletConfig.readAsLines();
-    log.d(configLines);
+    //log.d(configLines);
 
     if (configLines.isEmpty) {
       return WalletData('');
@@ -233,6 +233,11 @@ class WalletData {
       this.name = parts[2];
       this.derivation = int.parse(parts[3]);
     }
+  }
+
+  // default wallet
+  static WalletData defaultWallet() {
+    return WalletData("0:0:default:3");
   }
 
   // representation of WalletData when debugging

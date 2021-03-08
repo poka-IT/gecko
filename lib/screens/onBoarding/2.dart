@@ -20,7 +20,8 @@ class OnboardingStepTwo extends StatelessWidget {
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(children: <Widget>[
-            common.onboardingProgressBar(context, 'Nouveau portefeuilles', progress),
+            common.onboardingProgressBar(
+                context, 'Nouveau portefeuilles', progress),
             common.bubbleSpeak(
               "Un trousseau est créé à partir d’une phrase de restauration.",
             ),
@@ -42,7 +43,8 @@ class OnboardingStepTwo extends StatelessWidget {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            FaderTransition(page: OnboardingStepFor(), isFast: true),
+                            FaderTransition(
+                                page: OnboardingStepFor(), isFast: true),
                           );
                         },
                         child: Text("D'accord", style: TextStyle(fontSize: 20)),

@@ -18,7 +18,8 @@ class OnboardingStepFor extends StatelessWidget {
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(children: <Widget>[
-            common.onboardingProgressBar(context, 'Ma phrase de restauration', progress),
+            common.onboardingProgressBar(
+                context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
               "Si un jour vous changez de téléphone, il vous suffira de me redonner votre phrase de restauration pour recréer votre trousseau.",
             ),
@@ -47,7 +48,8 @@ class OnboardingStepFor extends StatelessWidget {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              FaderTransition(page: OnboardingStepFive(), isFast: true),
+                              FaderTransition(
+                                  page: OnboardingStepFive(), isFast: true),
                             );
                           },
                           child: Text("J'ai compris",

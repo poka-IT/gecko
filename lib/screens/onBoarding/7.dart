@@ -25,7 +25,8 @@ class OnboardingStepNine extends StatelessWidget {
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(children: <Widget>[
-            common.onboardingProgressBar(context, 'Ma phrase de restauration', progress),
+            common.onboardingProgressBar(
+                context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
               "C’est le moment de noter votre phrase !",
               long: 60,

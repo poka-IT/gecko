@@ -19,7 +19,8 @@ class OnboardingStepOne extends StatelessWidget {
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(children: <Widget>[
-            common.onboardingProgressBar(context, 'Nouveau portefeuilles', progress),
+            common.onboardingProgressBar(
+                context, 'Nouveau portefeuilles', progress),
             common.bubbleSpeak(
               "Il semblerait que vous n’ayez pas encore de trousseau.\n\nUn trousseau vous permet de gérer un ou plusieurs portefeuilles.",
             ),
@@ -41,8 +42,10 @@ class OnboardingStepOne extends StatelessWidget {
                             onPrimary: Colors.white, // foreground
                           ),
                           onPressed: () {
-                            Navigator.push(context,
-                                FaderTransition(page: OnboardingStepTwo(), isFast: true));
+                            Navigator.push(
+                                context,
+                                FaderTransition(
+                                    page: OnboardingStepTwo(), isFast: true));
                           },
                           child: Text('Créer mon trousseau',
                               style: TextStyle(fontSize: 20))),

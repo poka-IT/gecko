@@ -39,7 +39,8 @@ class OnboardingStepFourteen extends StatelessWidget {
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(children: <Widget>[
-            common.onboardingProgressBar(context, 'Ma phrase de restauration', progress),
+            common.onboardingProgressBar(
+                context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
                 "Avez-vous bien mémorisé votre code secret ?\n\nVérifions ça ensemble !\n\nTapez votre code secret dans le champ ci-dessous (après c’est fini, promis-juré-gecko)."),
             SizedBox(height: isTall ? 80 : 10),

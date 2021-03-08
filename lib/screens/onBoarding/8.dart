@@ -44,8 +44,8 @@ class OnboardingStepTen extends StatelessWidget {
             extendBodyBehindAppBar: true,
             body: SafeArea(
               child: Column(children: <Widget>[
-                common.onboardingProgressBar(context, 
-                    'Valider ma phrase de restauration', progress),
+                common.onboardingProgressBar(
+                    context, 'Valider ma phrase de restauration', progress),
                 common.bubbleSpeakRich(<TextSpan>[
                   TextSpan(
                       text:
@@ -54,8 +54,7 @@ class OnboardingStepTen extends StatelessWidget {
                   TextSpan(
                       text: '${_generateWalletProvider.nbrWord + 1}ème mot',
                       style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16 * ratio)),
+                          fontWeight: FontWeight.bold, fontSize: 16 * ratio)),
                   TextSpan(
                       text: " de votre phrase de restauration :",
                       style: TextStyle(fontSize: 16 * ratio)),
@@ -164,7 +163,8 @@ class OnboardingStepTen extends StatelessWidget {
                                     Navigator.push(
                                       context,
                                       FaderTransition(
-                                          page: OnboardingStepEleven(), isFast: true),
+                                          page: OnboardingStepEleven(),
+                                          isFast: true),
                                     );
                                   },
                                   child: Text("Continuer",

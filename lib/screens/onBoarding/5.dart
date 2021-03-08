@@ -18,7 +18,8 @@ class OnboardingStepSeven extends StatelessWidget {
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(children: <Widget>[
-            common.onboardingProgressBar(context, 'Ma phrase de restauration', progress),
+            common.onboardingProgressBar(
+                context, 'Ma phrase de restauration', progress),
             common.bubbleSpeakRich(
               <TextSpan>[
                 TextSpan(text: "Munissez-vous d'"),
@@ -59,7 +60,8 @@ class OnboardingStepSeven extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      FaderTransition(page: OnboardingStepEight(), isFast: true),
+                      FaderTransition(
+                          page: OnboardingStepEight(), isFast: true),
                     );
                   },
                   child: Text("J'ai de quoi noter",

@@ -18,7 +18,8 @@ class OnboardingStepFive extends StatelessWidget {
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(children: <Widget>[
-            common.onboardingProgressBar(context, 'Ma phrase de restauration', progress),
+            common.onboardingProgressBar(
+                context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
               "Par contre, attention :\n\nDans une blockchain, il n’y a pas de procédure de récupération de trousseau.\n\nSi vous perdez votre phrase de restauration, je ne pourrai pas vous la communiquer, et vous ne pourrez donc plus jamais accéder à votre compte.",
             ),
@@ -42,7 +43,8 @@ class OnboardingStepFive extends StatelessWidget {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              FaderTransition(page: OnboardingStepSeven(), isFast: true),
+                              FaderTransition(
+                                  page: OnboardingStepSeven(), isFast: true),
                             );
                           },
                           child: Text("J'ai compris",

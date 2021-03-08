@@ -33,7 +33,8 @@ class OnboardingStepThirteen extends StatelessWidget {
                   generatedWallet = snapshot.data;
                   return Visibility(visible: false, child: Text(''));
                 }),
-            common.onboardingProgressBar(context, 'Ma phrase de restauration', progress),
+            common.onboardingProgressBar(
+                context, 'Ma phrase de restauration', progress),
             common.bubbleSpeakRich(<TextSpan>[
               TextSpan(
                   text:
@@ -108,7 +109,8 @@ class OnboardingStepThirteen extends StatelessWidget {
                       context,
                       FaderTransition(
                           page: OnboardingStepFourteen(
-                              generatedWallet: generatedWallet), isFast: true),
+                              generatedWallet: generatedWallet),
+                          isFast: true),
                     );
                   },
                   child: Text("J'ai noté mon code secret",

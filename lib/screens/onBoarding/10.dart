@@ -13,12 +13,13 @@ class OnboardingStepTwelve extends StatelessWidget {
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     CommonElements common = CommonElements();
-    
+
     return Scaffold(
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(children: <Widget>[
-            common.onboardingProgressBar(context, 'Ma phrase de restauration', progress),
+            common.onboardingProgressBar(
+                context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
                 "Si un jour vous changez de téléphone, votre code secret sera différent, mais il vous suffira de me redonner votre phrase de restauration pour recréer votre trousseau."),
             SizedBox(height: 10),
@@ -41,7 +42,8 @@ class OnboardingStepTwelve extends StatelessWidget {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              FaderTransition(page: OnboardingStepThirteen(), isFast: true),
+                              FaderTransition(
+                                  page: OnboardingStepThirteen(), isFast: true),
                             );
                           },
                           child: Text("Générer le code secret",

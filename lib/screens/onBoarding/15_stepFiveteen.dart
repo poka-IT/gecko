@@ -7,7 +7,7 @@ import 'package:gecko/screens/myWallets/walletsHome.dart';
 // ignore: must_be_immutable
 class OnboardingStepFiveteen extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
-  final int progress = 28;
+  final int progress = 12;
 
   @override
   Widget build(BuildContext context) {

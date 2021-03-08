@@ -74,7 +74,7 @@ class CommonElements {
         Positioned(
           top: 70,
           right: 90,
-          child: Text('$progress%',
+          child: Text(progress == 12 ? '11/11' : '$progress/11',
               style: TextStyle(fontSize: 12, color: Colors.black)),
         ),
     ]);

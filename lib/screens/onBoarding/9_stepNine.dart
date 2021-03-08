@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 // ignore: must_be_immutable
 class OnboardingStepNine extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
-  final int progress = 50;
+  final int progress = 6;
 
   @override
   Widget build(BuildContext context) {

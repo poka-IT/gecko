@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 // ignore: must_be_immutable
 class OnboardingStepThirteen extends StatelessWidget {
   NewWallet generatedWallet;
-  final int progress = 83;
+  final int progress = 10;
 
   @override
   Widget build(BuildContext context) {

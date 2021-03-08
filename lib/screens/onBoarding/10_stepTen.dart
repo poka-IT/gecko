@@ -23,7 +23,7 @@ class OnboardingStepTen extends StatelessWidget {
   TextEditingController wordController = TextEditingController();
   TextEditingController _mnemonicController = TextEditingController();
 
-  final int progress = 58;
+  final int progress = 7;
 
   @override
   Widget build(BuildContext context) {

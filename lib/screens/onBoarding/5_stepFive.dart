@@ -7,7 +7,7 @@ import 'package:gecko/screens/onBoarding/7_stepSeven.dart';
 // ignore: must_be_immutable
 class OnboardingStepFive extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
-  final int progress = 25;
+  final int progress = 4;
 
   @override
   Widget build(BuildContext context) {

@@ -20,7 +20,7 @@ class OnboardingStepFourteen extends StatelessWidget {
   }) : super(key: validationKey);
 
   NewWallet generatedWallet;
-  final int progress = 92;
+  final int progress = 11;
   final formKey = GlobalKey<FormState>();
   var pinColor = Color(0xFFA4B600);
   bool hasError = false;

@@ -18,7 +18,6 @@ import 'package:flutter/foundation.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:catcher/catcher.dart';
 
 final bool enableSentry = true;
 
@@ -117,7 +116,6 @@ class Gecko extends StatelessWidget {
                   ResponsiveBreakpoint.resize(1000, name: DESKTOP),
                 ],
                 background: Container(color: Color(0xFFF5F5F5))),
-            navigatorKey: Catcher.navigatorKey,
             title: 'Ğecko',
             theme: ThemeData(
               primaryColor: Color(0xffFFD58D),

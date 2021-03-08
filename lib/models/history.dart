@@ -210,7 +210,7 @@ class HistoryProvider with ChangeNotifier {
       final snackBar =
           SnackBar(content: Text(_message), duration: Duration(seconds: 2));
       isFirstBuild = false;
-      Scaffold.of(context).showSnackBar(snackBar);
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 
@@ -229,7 +229,7 @@ class HistoryProvider with ChangeNotifier {
         content:
             Text("Cette clé publique a été copié dans votre presse-papier."),
         duration: Duration(seconds: 2));
-    Scaffold.of(context).showSnackBar(snackBar);
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   void switchProfileView() {

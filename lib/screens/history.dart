@@ -314,7 +314,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
     TextEditingController payComment = new TextEditingController();
 
     return Stack(
-      overflow: Overflow.visible,
+      clipBehavior: Clip.hardEdge,
       children: <Widget>[
         Form(
           key: _formKey,
@@ -349,8 +349,9 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
               ),
               Padding(
                   padding: const EdgeInsets.only(top: 15),
-                  child: OutlineButton(
-                    borderSide: BorderSide(width: 2, color: Color(0xffD28928)),
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                        side: BorderSide(width: 2, color: Color(0xffD28928))),
                     onPressed: () {
                       if (_formKey.currentState.validate()) {
                         _formKey.currentState.save();

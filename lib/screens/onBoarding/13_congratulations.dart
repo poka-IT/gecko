@@ -2,7 +2,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/screens/commonElements.dart';
-import 'package:gecko/screens/myWallets/walletsHome.dart';
 
 // ignore: must_be_immutable
 class OnboardingStepFiveteen extends StatelessWidget {
@@ -45,9 +44,9 @@ class OnboardingStepFiveteen extends StatelessWidget {
                               context,
                               ModalRoute.withName('/'),
                             );
-                            Navigator.push(
+                            Navigator.pushNamed(
                               context,
-                              SmoothTransition(page: WalletsHome()),
+                              '/mywallets',
                             );
                           },
                           child: Text("Accéder à mes portefeuilles",

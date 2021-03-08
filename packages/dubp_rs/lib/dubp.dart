@@ -91,8 +91,9 @@ class DubpRust {
         callback: _handleErrList);
     native.change_dewif_secret_code(
       sendPort.nativePort,
-      Utf8.toUtf8(dewif),
-      Utf8.toUtf8(oldPin),
+      // utf8.encoder(dewif),
+      StringUtf8Pointer(dewif).toNativeUtf8(),
+      StringUtf8Pointer(oldPin).toNativeUtf8(),
       0,
       secretCodeType.index,
       ram,
@@ -109,7 +110,7 @@ class DubpRust {
         singleCompletePort<void, String>(completer, callback: _handleErrVoid);
     native.check_pubkey(
       sendPort.nativePort,
-      Utf8.toUtf8(pubkey),
+      StringUtf8Pointer(pubkey).toNativeUtf8(),
     );
     return completer.future;
   }
@@ -121,7 +122,7 @@ class DubpRust {
         singleCompletePort<String, String>(completer, callback: _handleErr);
     native.compute_checksum(
       sendPort.nativePort,
-      Utf8.toUtf8(pubkey),
+      StringUtf8Pointer(pubkey).toNativeUtf8(),
     );
     return completer.future;
   }
@@ -156,9 +157,9 @@ class DubpRust {
         callback: _handleErrList);
     native.gen_dewif_from_legacy(
       sendPort.nativePort,
-      Utf8.toUtf8(currency),
-      Utf8.toUtf8(salt),
-      Utf8.toUtf8(password),
+      StringUtf8Pointer(currency).toNativeUtf8(),
+      StringUtf8Pointer(salt).toNativeUtf8(),
+      StringUtf8Pointer(password).toNativeUtf8(),
       isMember ? 1 : 0,
       secretCodeType.index,
       ram,
@@ -189,9 +190,9 @@ class DubpRust {
         callback: _handleErrList);
     native.gen_dewif(
       sendPort.nativePort,
-      Utf8.toUtf8(currency),
+      StringUtf8Pointer(currency).toNativeUtf8(),
       language.index,
-      Utf8.toUtf8(mnemonic),
+      StringUtf8Pointer(mnemonic).toNativeUtf8(),
       0,
       secretCodeType.index,
       ram,
@@ -223,9 +224,9 @@ class DubpRust {
         callback: _handleErrList);
     native.get_bip32_dewif_accounts_pubkeys(
         sendPort.nativePort,
-        Utf8.toUtf8(currency),
-        Utf8.toUtf8(dewif),
-        Utf8.toUtf8(secretCode),
+        StringUtf8Pointer(currency).toNativeUtf8(),
+        StringUtf8Pointer(dewif).toNativeUtf8(),
+        StringUtf8Pointer(secretCode).toNativeUtf8(),
         accountsIndex.length,
         _listIntToPtrUint32(accountsIndex));
     return completer.future;
@@ -238,8 +239,8 @@ class DubpRust {
     final completer = Completer<List<String>>();
     final sendPort = singleCompletePort<List<String>, List>(completer,
         callback: _handleErrList);
-    native.get_dewif_meta(
-        sendPort.nativePort, Utf8.toUtf8(dewif), 0, secretCodeType.index);
+    native.get_dewif_meta(sendPort.nativePort,
+        StringUtf8Pointer(dewif).toNativeUtf8(), 0, secretCodeType.index);
     List<String> dewifMetaData = await completer.future;
 
     return Future.value(DewifMetaData._(dewifMetaData[0],
@@ -265,10 +266,10 @@ class DubpRust {
       sendPort.nativePort,
       accountIndexOpt ?? -1,
       addressIndexOpt ?? -1,
-      Utf8.toUtf8(currency),
-      Utf8.toUtf8(dewif),
+      StringUtf8Pointer(currency).toNativeUtf8(),
+      StringUtf8Pointer(dewif).toNativeUtf8(),
       externalOptInt,
-      Utf8.toUtf8(pin),
+      StringUtf8Pointer(pin).toNativeUtf8(),
     );
     return completer.future;
   }
@@ -279,7 +280,7 @@ class DubpRust {
       String dewif,
       SecretCodeType secretCodeType = SecretCodeType.letters}) {
     int res = native.get_dewif_secret_code_len(
-      Utf8.toUtf8(dewif),
+      StringUtf8Pointer(dewif).toNativeUtf8(),
       0,
       secretCodeType.index,
     );
@@ -300,8 +301,8 @@ class DubpRust {
         singleCompletePort<String, String>(completer, callback: _handleErr);
     native.get_legacy_pubkey(
       sendPort.nativePort,
-      Utf8.toUtf8(salt),
-      Utf8.toUtf8(password),
+      StringUtf8Pointer(salt).toNativeUtf8(),
+      StringUtf8Pointer(password).toNativeUtf8(),
     );
     return completer.future;
   }
@@ -320,9 +321,9 @@ class DubpRust {
         sendPort.nativePort,
         accountsIndex.length,
         _listIntToPtrUint32(accountsIndex),
-        Utf8.toUtf8(currency),
-        Utf8.toUtf8(dewif),
-        Utf8.toUtf8(secretCode));
+        StringUtf8Pointer(currency).toNativeUtf8(),
+        StringUtf8Pointer(dewif).toNativeUtf8(),
+        StringUtf8Pointer(secretCode).toNativeUtf8());
     return completer.future;
   }
 
@@ -351,11 +352,11 @@ class DubpRust {
       sendPort.nativePort,
       accountIndexOpt ?? -1,
       addressIndexOpt ?? -1,
-      Utf8.toUtf8(currency),
-      Utf8.toUtf8(dewif),
+      StringUtf8Pointer(currency).toNativeUtf8(),
+      StringUtf8Pointer(dewif).toNativeUtf8(),
       externalOptInt,
-      Utf8.toUtf8(secretCode),
-      Utf8.toUtf8(message),
+      StringUtf8Pointer(secretCode).toNativeUtf8(),
+      StringUtf8Pointer(message).toNativeUtf8(),
     );
     return completer.future;
   }
@@ -387,10 +388,10 @@ class DubpRust {
       sendPort.nativePort,
       accountIndexOpt ?? -1,
       addressIndexOpt ?? -1,
-      Utf8.toUtf8(currency),
-      Utf8.toUtf8(dewif),
+      StringUtf8Pointer(currency).toNativeUtf8(),
+      StringUtf8Pointer(dewif).toNativeUtf8(),
       externalOptInt,
-      Utf8.toUtf8(secretCode),
+      StringUtf8Pointer(secretCode).toNativeUtf8(),
       messages.length,
       _listStringToPtr(messages),
     );
@@ -400,7 +401,7 @@ class DubpRust {
 
   static Pointer<Uint32> _listIntToPtrUint32(List<int> list) {
     final listUint32 = list.map((i) => i.toUnsigned(31)).toList();
-    final Pointer<Uint32> ptr = allocate(count: listUint32.length);
+    final Pointer<Uint32> ptr = malloc.allocate(listUint32.length);
     for (var i = 0; i < listUint32.length; i++) {
       ptr[i] = listUint32[i];
     }
@@ -408,8 +409,9 @@ class DubpRust {
   }
 
   static Pointer<Pointer<Utf8>> _listStringToPtr(List<String> list) {
-    final listUtf8 = list.map(Utf8.toUtf8).toList();
-    final Pointer<Pointer<Utf8>> ptr = allocate(count: listUtf8.length);
+    final listUtf8 =
+        list.map((s) => StringUtf8Pointer(s).toNativeUtf8()).toList();
+    final Pointer<Pointer<Utf8>> ptr = malloc.allocate(listUtf8.length);
     for (var i = 0; i < listUtf8.length; i++) {
       ptr[i] = listUtf8[i];
     }

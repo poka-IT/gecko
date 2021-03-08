@@ -207,7 +207,10 @@ class WalletOptionsProvider with ChangeNotifier {
         final _walletFile = Directory('${walletsDirectory.path}/$_walletNbr');
         await _walletFile.delete(recursive: true);
       }
-      Navigator.pop(context);
+      Navigator.popUntil(
+        context,
+        ModalRoute.withName('/mywallets'),
+      );
     }
     return 0;
   }

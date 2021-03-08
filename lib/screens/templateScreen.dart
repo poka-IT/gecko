@@ -71,11 +71,9 @@ class TemplateScreen extends StatelessWidget {
             SizedBox(height: 20),
             GestureDetector(
                 onTap: () {
-                  Navigator.push(
+                  Navigator.popUntil(
                     context,
-                    MaterialPageRoute(builder: (context) {
-                      return HomeScreen();
-                    }),
+                    ModalRoute.withName('/'),
                   );
                 },
                 child: Icon(Icons.home))

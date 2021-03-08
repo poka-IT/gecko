@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/walletOptions.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/screens/myWallets/walletOptions.dart';
+import 'package:gecko/screens/myWallets/unlockingWallet.dart';
 import 'package:gecko/screens/onBoarding/1_noKeychainFound.dart';
 import 'package:provider/provider.dart';
 
@@ -97,7 +97,7 @@ class WalletsHome extends StatelessWidget {
           dense: true,
           onTap: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) {
-              return WalletOptions(
+              return UnlockingWallet(
                   walletNbr: int.parse(_repository.split(':')[0]),
                   walletName: _repository.split(':')[1],
                   derivation: int.parse(_repository.split(':')[2]));

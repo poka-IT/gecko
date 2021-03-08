@@ -2,29 +2,30 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/screens/commonElements.dart';
-import 'package:gecko/screens/onBoarding/13_stepThirteen.dart';
+import 'package:gecko/screens/onBoarding/5.dart';
 
 // ignore: must_be_immutable
-class OnboardingStepTwelve extends StatelessWidget {
+class OnboardingStepFive extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
-  final int progress = 9;
+  final int progress = 4;
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     CommonElements common = CommonElements();
-    
+
     return Scaffold(
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(children: <Widget>[
             common.onboardingProgressBar('Ma phrase de restauration', progress),
             common.bubbleSpeak(
-                "Si un jour vous changez de téléphone, votre code secret sera différent, mais il vous suffira de me redonner votre phrase de restauration pour recréer votre trousseau."),
-            SizedBox(height: 10),
+              "Par contre, attention :\n\nDans une blockchain, il n’y a pas de procédure de récupération de trousseau.\n\nSi vous perdez votre phrase de restauration, je ne pourrai pas vous la communiquer, et vous ne pourrez donc plus jamais accéder à votre compte.",
+            ),
+            SizedBox(height: isTall ? 30 : 10),
             Image.asset(
-              'assets/onBoarding/plusieurs-codes-secrets-un-trousseau.png',
-              height: 410 * ratio,
+              'assets/onBoarding/maison-qui-brule.png',
+              width: 320 * ratio,
             ),
             Expanded(
                 child: Align(
@@ -41,13 +42,13 @@ class OnboardingStepTwelve extends StatelessWidget {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              SmoothTransition(page: OnboardingStepThirteen()),
+                              FaderTransition(page: OnboardingStepSeven(), isFast: true),
                             );
                           },
-                          child: Text("Générer le code secret",
+                          child: Text("J'ai compris",
                               style: TextStyle(fontSize: 20))),
                     ))),
-            SizedBox(height: isTall ? 80 : 40),
+            SizedBox(height: 80),
           ]),
         ));
   }

@@ -3,7 +3,7 @@ import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/walletOptions.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/unlockingWallet.dart';
-import 'package:gecko/screens/onBoarding/1_noKeychainFound.dart';
+import 'package:gecko/screens/onBoarding/0_noKeychainFound.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable

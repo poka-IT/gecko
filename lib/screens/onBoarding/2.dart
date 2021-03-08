@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/commonElements.dart';
-import 'package:gecko/screens/onBoarding/4_stepFor.dart';
+import 'package:gecko/screens/onBoarding/3.dart';
 // import 'package:gecko/screens/commonElements.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:provider/provider.dart';
@@ -42,7 +42,7 @@ class OnboardingStepTwo extends StatelessWidget {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            SmoothTransition(page: OnboardingStepFor()),
+                            FaderTransition(page: OnboardingStepFor(), isFast: true),
                           );
                         },
                         child: Text("D'accord", style: TextStyle(fontSize: 20)),

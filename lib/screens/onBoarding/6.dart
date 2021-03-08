@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/screens/commonElements.dart';
-import 'package:gecko/screens/onBoarding/9_stepNine.dart';
+import 'package:gecko/screens/onBoarding/7.dart';
 
 // ignore: must_be_immutable
 class OnboardingStepEight extends StatelessWidget {
@@ -42,7 +42,8 @@ class OnboardingStepEight extends StatelessWidget {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              SmoothTransition(page: OnboardingStepNine()),
+                              FaderTransition(
+                                  page: OnboardingStepNine(), isFast: false),
                             );
                           },
                           child: Text("Afficher ma phrase",
@@ -100,13 +101,13 @@ Widget arrayCell(dataWord) {
       child: Column(
         children: <Widget>[
           ImageFiltered(
-            imageFilter: ImageFilter.blur(sigmaX: 2.5, sigmaY: 2.5),
+            imageFilter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
             child: Text(dataWord.split(':')[0],
                 style: TextStyle(fontSize: 14, color: Colors.black)),
           ),
           SizedBox(height: 2),
           ImageFiltered(
-            imageFilter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+            imageFilter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
             child: Text(dataWord.split(':')[1],
                 style: TextStyle(fontSize: 20, color: Colors.black)),
           )

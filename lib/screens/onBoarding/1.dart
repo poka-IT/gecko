@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/commonElements.dart';
-import 'package:gecko/screens/onBoarding/3_stepTwo.dart';
+import 'package:gecko/screens/onBoarding/2.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:provider/provider.dart';
 
@@ -42,7 +42,7 @@ class OnboardingStepOne extends StatelessWidget {
                           ),
                           onPressed: () {
                             Navigator.push(context,
-                                SmoothTransition(page: OnboardingStepTwo()));
+                                FaderTransition(page: OnboardingStepTwo(), isFast: true));
                           },
                           child: Text('Créer mon trousseau',
                               style: TextStyle(fontSize: 20))),

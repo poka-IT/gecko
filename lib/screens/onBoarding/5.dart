@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/screens/commonElements.dart';
-import 'package:gecko/screens/onBoarding/8_stepEight.dart';
+import 'package:gecko/screens/onBoarding/6.dart';
 
 // ignore: must_be_immutable
 class OnboardingStepSeven extends StatelessWidget {
@@ -59,7 +59,7 @@ class OnboardingStepSeven extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      SmoothTransition(page: OnboardingStepEight()),
+                      FaderTransition(page: OnboardingStepEight(), isFast: true),
                     );
                   },
                   child: Text("J'ai de quoi noter",

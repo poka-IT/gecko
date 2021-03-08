@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gecko/screens/commonElements.dart';
 import 'package:gecko/screens/myWallets/importWallet.dart';
-import 'package:gecko/screens/onBoarding/2_stepOne.dart';
+import 'package:gecko/screens/onBoarding/1.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:provider/provider.dart';
 
@@ -39,7 +39,9 @@ class NoKeyChainScreen extends StatelessWidget {
                               height: 90)),
                       onTap: () {
                         Navigator.push(
-                            context, SlideLeftRoute(page: OnboardingStepOne()));
+                            context,
+                            FaderTransition(
+                                page: OnboardingStepOne(), isFast: true));
                       }),
                 ),
               ),

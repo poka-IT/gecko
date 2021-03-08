@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/screens/commonElements.dart';
-import 'package:gecko/screens/onBoarding/14_stepFourteen.dart';
+import 'package:gecko/screens/onBoarding/12.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
@@ -106,9 +106,9 @@ class OnboardingStepThirteen extends StatelessWidget {
                     _generateWalletProvider.askedWordColor = Colors.black;
                     Navigator.push(
                       context,
-                      SmoothTransition(
+                      FaderTransition(
                           page: OnboardingStepFourteen(
-                              generatedWallet: generatedWallet)),
+                              generatedWallet: generatedWallet), isFast: true),
                     );
                   },
                   child: Text("J'ai noté mon code secret",

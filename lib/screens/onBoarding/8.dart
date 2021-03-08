@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/screens/commonElements.dart';
-import 'package:gecko/screens/onBoarding/11_stepEleven.dart';
+import 'package:gecko/screens/onBoarding/9.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
@@ -163,8 +163,8 @@ class OnboardingStepTen extends StatelessWidget {
                                   onPressed: () {
                                     Navigator.push(
                                       context,
-                                      SmoothTransition(
-                                          page: OnboardingStepEleven()),
+                                      FaderTransition(
+                                          page: OnboardingStepEleven(), isFast: true),
                                     );
                                   },
                                   child: Text("Continuer",

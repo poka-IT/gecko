@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/screens/commonElements.dart';
-import 'package:gecko/screens/onBoarding/10_stepTen.dart';
+import 'package:gecko/screens/onBoarding/8.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 
@@ -84,12 +84,13 @@ class OnboardingStepNine extends StatelessWidget {
 
                     Navigator.push(
                       context,
-                      SmoothTransition(
+                      FaderTransition(
                           page: OnboardingStepTen(
                               generatedMnemonic:
                                   _generateWalletProvider.generatedMnemonic,
                               generatedWallet:
-                                  _generateWalletProvider.actualWallet)),
+                                  _generateWalletProvider.actualWallet),
+                          isFast: true),
                     );
                   },
                   child: Text("J'ai noté ma phrase",
@@ -107,7 +108,20 @@ Widget sentanceArray(BuildContext context) {
 
   return FutureBuilder(
       future: _generateWalletProvider.generateWordList(),
-      initialData: '::::::::::::',
+      initialData: [
+        '1:...',
+        '2:...',
+        '3:...',
+        '4:...',
+        '5:...',
+        '6:...',
+        '7:...',
+        '8:...',
+        '9:...',
+        '10:...',
+        '11:...',
+        '12:...',
+      ],
       builder: (context, formatedArray) {
         return Container(
             padding: EdgeInsets.symmetric(horizontal: 12),

@@ -2,12 +2,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/screens/commonElements.dart';
-import 'package:gecko/screens/onBoarding/5_stepFive.dart';
+import 'package:gecko/screens/onBoarding/10.dart';
 
 // ignore: must_be_immutable
-class OnboardingStepFor extends StatelessWidget {
+class OnboardingStepEleven extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
-  final int progress = 3;
+  final int progress = 8;
 
   @override
   Widget build(BuildContext context) {
@@ -19,19 +19,20 @@ class OnboardingStepFor extends StatelessWidget {
         body: SafeArea(
           child: Column(children: <Widget>[
             common.onboardingProgressBar('Ma phrase de restauration', progress),
-            common.bubbleSpeak(
-              "Si un jour vous changez de téléphone, il vous suffira de me redonner votre phrase de restauration pour recréer votre trousseau.",
-            ),
-            SizedBox(height: isTall ? 15 : 0),
-            // Row(children: <Widget>[
-            // Align(
-            //     alignment: Alignment.centerRight,
-            //     child:
+            common.bubbleSpeakRich(<TextSpan>[
+              TextSpan(text: "Super !\n\nJe vais maintenant créer votre "),
+              TextSpan(
+                  text: 'code secret.',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              TextSpan(
+                  text:
+                      " \n\nVotre code secret chiffre votre trousseau de clefs, ce qui le rend inutilisable par d’autres, par exemple si vous perdez votre téléphone ou si on vous le vole."),
+            ]),
+            SizedBox(height: isTall ? 50 : 10),
             Image.asset(
-              'assets/onBoarding/plusieurs-appareils-un-trousseau.png',
-              height: 400 * ratio,
+              'assets/onBoarding/treasure-chest-gecko-souligne.png',
+              height: 280 * ratio, //5": 400
             ),
-            // ]),
             Expanded(
                 child: Align(
                     alignment: Alignment.bottomCenter,
@@ -47,7 +48,7 @@ class OnboardingStepFor extends StatelessWidget {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              SmoothTransition(page: OnboardingStepFive()),
+                              FaderTransition(page: OnboardingStepTwelve(), isFast: true),
                             );
                           },
                           child: Text("J'ai compris",

@@ -57,65 +57,7 @@ class WalletsHome extends StatelessWidget {
         body: SafeArea(
             child: !isWalletsExists
                 ? NoKeyChainScreen()
-                : myWalletsTiles(context)));
-  }
-
-  Widget myWalletsTiles(BuildContext context) {
-    MyWalletsProvider _myWalletProvider =
-        Provider.of<MyWalletsProvider>(context);
-
-    final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
-
-    if (!isWalletsExists) {
-      return Text('');
-    }
-
-    if (_myWalletProvider.listWallets == '') {
-      return Expanded(
-          child: Center(
-              child: Text(
-        'Veuillez générer votre premier portefeuille',
-        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
-      )));
-    }
-
-    List _listWallets = _myWalletProvider.listWallets.split('\n');
-    // final int nbrOfWallets = _listWallets.length;
-    print(_listWallets);
-
-    return GridView.count(
-        crossAxisCount: 2,
-        childAspectRatio: 1,
-        crossAxisSpacing: 0,
-        mainAxisSpacing: 0,
-        children: <Widget>[
-          for (String _repository in _listWallets)
-            Padding(
-                padding: EdgeInsets.all(16),
-                child: ClipRRect(
-                    borderRadius: BorderRadius.all(Radius.circular(12)),
-                    child: ListTile(
-                      // contentPadding: const EdgeInsets.only(left: 7.0),
-                      tileColor: Colors.green[100],
-                      // leading: Text('IMAGE'),
-
-                      // subtitle: Text(_repository.split(':')[3],
-                      //     style: TextStyle(fontSize: 12.0, fontFamily: 'Monospace')),
-                      title: Center(
-                          child: Text(_repository.split(':')[1],
-                              style: TextStyle(fontSize: 16.0))),
-                      // dense: true,
-                      onTap: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) {
-                          return UnlockingWallet(
-                              walletNbr: int.parse(_repository.split(':')[0]),
-                              walletName: _repository.split(':')[1],
-                              derivation: int.parse(_repository.split(':')[2]));
-                        }));
-                      },
-                    )))
-        ]);
+                : myWalletsList(context)));
   }
 
   Widget myWalletsList(BuildContext context) {

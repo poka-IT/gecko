@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/walletOptions.dart';
 import 'package:flutter/material.dart';
@@ -81,7 +82,9 @@ class WalletsHome extends StatelessWidget {
 
     List _listWallets = _myWalletProvider.listWallets.split('\n');
     // final int nbrOfWallets = _listWallets.length;
-    print(_listWallets);
+    // print(_listWallets);
+    // print("${_listWallets[0].split(':')[0]}:${_listWallets[0].split(':')[2]}");
+    // print(defaultWallet);
 
     return GridView.count(
         crossAxisCount: 2,
@@ -94,27 +97,62 @@ class WalletsHome extends StatelessWidget {
                 padding: EdgeInsets.all(16),
                 child: ClipRRect(
                     borderRadius: BorderRadius.all(Radius.circular(12)),
-                    child: ListTile(
-                      // contentPadding: const EdgeInsets.only(left: 7.0),
-                      tileColor: Colors.green[100],
-                      // leading: Text('IMAGE'),
+                    child: Column(children: <Widget>[
+                      Expanded(
+                          child: Container(
+                        width: double.infinity,
+                        height: double.infinity,
+                        decoration: BoxDecoration(
+                            gradient: RadialGradient(
+                          radius: 1,
+                          colors: [
+                            Colors.green[100],
+                            Colors.green[500],
+                          ],
+                        )),
+                        child:
+                            // SvgPicture.asset('assets/chopp-gecko2.png',
+                            //         semanticsLabel: 'Gecko', height: 48),
+                            Image.asset(
+                          'assets/chopp-gecko2.png',
+                        ),
+                      )),
+                      ListTile(
+                        // contentPadding: const EdgeInsets.only(left: 7.0),
+                        tileColor:
+                            "${_repository.split(':')[0]}:${_repository.split(':')[2]}" ==
+                                    defaultWallet
+                                ? Color(0xffD28928)
+                                : Color(0xffFFD58D),
+                        // leading: Text('IMAGE'),
 
-                      // subtitle: Text(_repository.split(':')[3],
-                      //     style: TextStyle(fontSize: 12.0, fontFamily: 'Monospace')),
-                      title: Center(
-                          child: Text(_repository.split(':')[1],
-                              style: TextStyle(fontSize: 16.0))),
-                      // dense: true,
-                      onTap: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) {
-                          return UnlockingWallet(
-                              walletNbr: int.parse(_repository.split(':')[0]),
-                              walletName: _repository.split(':')[1],
-                              derivation: int.parse(_repository.split(':')[2]));
-                        }));
-                      },
-                    )))
+                        // subtitle: Text(_repository.split(':')[3],
+                        //     style: TextStyle(fontSize: 12.0, fontFamily: 'Monospace')),
+                        title: Center(
+                            child: Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 5),
+                                child: Text(_repository.split(':')[1],
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        fontSize: 16.0,
+                                        color:
+                                            "${_repository.split(':')[0]}:${_repository.split(':')[2]}" ==
+                                                    defaultWallet
+                                                ? Color(0xffF9F9F1)
+                                                : Colors.black)))),
+                        // dense: true,
+                        onTap: () {
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                            return UnlockingWallet(
+                                walletNbr: int.parse(_repository.split(':')[0]),
+                                walletName: _repository.split(':')[1],
+                                derivation:
+                                    int.parse(_repository.split(':')[2]));
+                          }));
+                        },
+                      )
+                    ])))
         ]);
   }
 
@@ -200,7 +238,7 @@ class WalletsHome extends StatelessWidget {
                       onPressed: () async {
                         await _myWalletProvider
                             .generateNewDerivation(
-                                context, _newDerivationName.text, _walletNbr)
+                                context, _newDerivationName.text)
                             .then((_) => _newDerivationName.text == '');
                       },
                       child: Text("Créer")),

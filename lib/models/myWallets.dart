@@ -13,6 +13,8 @@ class MyWalletsProvider with ChangeNotifier {
       return false;
     }
 
+    print(walletsDirectory.listSync());
+
     List contents = walletsDirectory.listSync();
     if (contents.length == 0) {
       print('No wallets detected');
@@ -52,6 +54,23 @@ class MyWalletsProvider with ChangeNotifier {
     print(listWallets);
 
     return listWallets;
+  }
+
+  Future getDefaultWallet() async {
+    defaultWalletFile = File('${appPath.path}/defaultWallet');
+
+    bool isdefaultWalletFile = await defaultWalletFile.exists();
+
+    if (!isdefaultWalletFile) {
+      await File(defaultWalletFile.path).create();
+    }
+
+    try {
+      defaultWallet = await defaultWalletFile.readAsString();
+    } catch (e) {
+      defaultWallet = '0:3';
+    }
+    if (defaultWallet == '') defaultWallet = '0:3';
   }
 
   Future<int> deleteAllWallet(context) async {
@@ -107,11 +126,9 @@ class MyWalletsProvider with ChangeNotifier {
     );
   }
 
-  Future<void> generateNewDerivation(
-      context, String _name, int _walletNbr) async {
+  Future<void> generateNewDerivation(context, String _name) async {
     int _newDerivationNbr;
-    final _walletConfig =
-        File('${walletsDirectory.path}/$_walletNbr/config.txt');
+    final _walletConfig = File('${walletsDirectory.path}/0/config.txt');
 
     if (await _walletConfig.readAsString() == '') {
       _newDerivationNbr = 3;
@@ -122,7 +139,7 @@ class MyWalletsProvider with ChangeNotifier {
       _newDerivationNbr = _lastDerivation + 3;
     }
 
-    await _walletConfig.writeAsString('\n$_walletNbr:$_name:$_newDerivationNbr',
+    await _walletConfig.writeAsString('\n0:$_name:$_newDerivationNbr',
         mode: FileMode.append);
 
     print(await _walletConfig.readAsString());

@@ -39,50 +39,30 @@ class GenerateWalletsProvider with ChangeNotifier {
   bool canImport = false;
   bool isPinChanged = false;
 
-  Future storeWallet(NewWallet wallet, String _name, BuildContext context,
-      {bool isHD = false}) async {
-    int nbrWallet;
-    if (isHD) {
-      nbrWallet = 0;
-    } else {
-      nbrWallet = 1;
-    }
+  Future storeHDWallet(
+      NewWallet _wallet, String _name, BuildContext context) async {
+    // Directory walletDirectory;
 
-    Directory walletNbrDirectory;
-    do {
-      nbrWallet++;
-      walletNbrDirectory = Directory('${walletsDirectory.path}/$nbrWallet');
-    } while (await walletNbrDirectory.exists());
+    final Directory hdDirectory = Directory('${walletsDirectory.path}/0');
+    await hdDirectory.create();
 
-    final walletFile = File('${walletNbrDirectory.path}/wallet.dewif');
+    final configFile = File('${hdDirectory.path}/config.txt');
+    final dewifFile = File('${hdDirectory.path}/wallet.dewif');
 
-    await walletNbrDirectory.create();
-    await walletFile.writeAsString(wallet.dewif);
+    // List<String> _lastConfig = [];
+    // _lastConfig = await masterConfigFile.readAsLines();
+    // final int _lastDerivation = int.parse(_lastConfig.last.split(':')[2]);
+    // final int _derivationNbr = _lastDerivation + 3;
 
-    final configFile = File('${walletNbrDirectory.path}/config.txt');
+    final int _derivationNbr = 3;
+    List _pubkeysTmp = await DubpRust.getBip32DewifAccountsPublicKeys(
+        dewif: _wallet.dewif,
+        secretCode: _wallet.pin,
+        accountsIndex: [_derivationNbr]);
+    String _pubkey = _pubkeysTmp[0];
 
-    if (isHD) {
-      final int _derivationNbr = 3;
-      List _pubkeysTmp = await DubpRust.getBip32DewifAccountsPublicKeys(
-          dewif: wallet.dewif,
-          secretCode: wallet.pin,
-          accountsIndex: [_derivationNbr]);
-      String _pubkey = _pubkeysTmp[0];
-
-      await configFile
-          .writeAsString('$nbrWallet:$_name:$_derivationNbr:$_pubkey');
-      // Navigator.pop(context, true);
-    } else {
-      final int _derivationNbr = -1;
-      String _pubkey = await DubpRust.getDewifPublicKey(
-        dewif: wallet.dewif,
-        pin: wallet.pin,
-      );
-      await configFile
-          .writeAsString('$nbrWallet:$_name:$_derivationNbr:$_pubkey');
-    }
-
-    // Navigator.pop(context, true);
+    await configFile.writeAsString('0:$_name:$_derivationNbr:$_pubkey');
+    await dewifFile.writeAsString(_wallet.dewif);
 
     return _name;
   }
@@ -263,8 +243,8 @@ class GenerateWalletsProvider with ChangeNotifier {
         salt: _cesiumID, password: _cesiumPWD);
     String shortPubkey = truncate(_walletPubkey, 9,
         omission: "...", position: TruncatePosition.end);
-    await storeWallet(
-        actualWallet, 'Portefeuille Cesium - $shortPubkey', context);
+    // await storeWallet(
+    //     actualWallet, 'Portefeuille Cesium - $shortPubkey', context);
     cesiumID.text = '';
     cesiumPWD.text = '';
     cesiumPubkey.text = '';

@@ -116,9 +116,8 @@ class OnboardingStepFourteen extends StatelessWidget {
               if (resultWallet) {
                 pinColor = Colors.green[500];
                 print(generatedWallet.pin);
-                await _generateWalletProvider.storeWallet(
-                    generatedWallet, 'Mon portefeuille courant', context,
-                    isHD: true);
+                await _generateWalletProvider.storeHDWallet(
+                    generatedWallet, 'Mon portefeuille courant', context);
                 _myWalletProvider.getAllWalletsNames();
                 _walletOptions.reloadBuild();
                 _myWalletProvider.rebuildWidget();

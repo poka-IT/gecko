@@ -142,7 +142,7 @@ class WalletsHome extends StatelessWidget {
                       onPressed: () async {
                         await _myWalletProvider
                             .generateNewDerivation(
-                                context, _newDerivationName.text, _walletNbr)
+                                context, _newDerivationName.text)
                             .then((_) => _newDerivationName.text == '');
                       },
                       child: Text("Créer")),

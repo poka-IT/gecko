@@ -25,8 +25,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   HomeProvider _homeProvider = HomeProvider();
+  MyWalletsProvider _walletsProvider = MyWalletsProvider();
   await _homeProvider.getAppPath();
   await _homeProvider.createDefaultAvatar();
+  await _walletsProvider.getDefaultWallet();
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
   final HiveStore _store =

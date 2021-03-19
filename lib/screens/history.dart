@@ -254,7 +254,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                             initialData: '...',
                                             builder: (context, snapshot) {
                                               return Text(
-                                                  snapshot.data != ''
+                                                  snapshot.data != null
                                                       ? snapshot.data
                                                       : '-',
                                                   style:

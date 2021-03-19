@@ -101,7 +101,6 @@ class HistoryProvider with ChangeNotifier {
 // Lion simone: 78jhpprYkMNF6i5kQPXfkAVBpd2aqcpieNsXTSW4c21f
 
   List parseHistory(txs, _pubkey) {
-    // print(txs);
     var transBC = [];
     int i = 0;
 
@@ -135,7 +134,7 @@ class HistoryProvider with ChangeNotifier {
       transBC[i].add(date);
       // print(
       //     "DEBUG date et comment: ${date.toString()} -- ${transaction['comment'].toString()}");
-      int amountBrut = int.parse(output.split(':')[0]);
+      final int amountBrut = int.parse(output.split(':')[0]);
       final base = int.parse(output.split(':')[1]);
       final int applyBase = base - currentBase;
       final num amount =

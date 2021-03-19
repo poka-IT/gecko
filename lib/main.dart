@@ -28,7 +28,7 @@ Future<void> main() async {
   MyWalletsProvider _walletsProvider = MyWalletsProvider();
   await _homeProvider.getAppPath();
   await _homeProvider.createDefaultAvatar();
-  await _walletsProvider.getDefaultWallet();
+  await _walletsProvider.initWalletFolder();
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
   final HiveStore _store =

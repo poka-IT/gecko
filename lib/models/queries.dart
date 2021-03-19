@@ -1,7 +1,7 @@
 const String getHistory = r'''
   query ($pubkey: String!, $number: Int!, $cursor: String) {
         txsHistoryBc(
-            pubkeyOrScript: $pubkey
+            script: $pubkey
             pagination: { pageSize: $number, ord: DESC, cursor: $cursor }
         ) {
             both {

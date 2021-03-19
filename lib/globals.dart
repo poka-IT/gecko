@@ -1,9 +1,12 @@
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// Files paths
 Directory appPath;
 Directory walletsDirectory;
 File defaultWalletFile;
+File currentChestFile;
+
 String defaultWallet;
 String appVersion;
 SharedPreferences prefs;

@@ -1,9 +1,12 @@
 import 'dart:io';
+import 'package:crypto/crypto.dart';
 import 'package:dubp/dubp.dart';
+import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:truncate/truncate.dart';
 
 class WalletOptionsProvider with ChangeNotifier {
   TextEditingController pubkey = TextEditingController();
@@ -65,8 +68,7 @@ class WalletOptionsProvider with ChangeNotifier {
       int _walletNbr, String _pin, int _pinLenght, int derivation) async {
     isWalletUnlock = false;
     try {
-      File _walletFile =
-          File('${walletsDirectory.path}/$_walletNbr/wallet.dewif');
+      File _walletFile = File('${walletsDirectory.path}/0/wallet.dewif');
       String _localDewif = await _walletFile.readAsString();
       String _localPubkey;
 
@@ -107,8 +109,7 @@ class WalletOptionsProvider with ChangeNotifier {
   int getPinLenght(_walletNbr) {
     String _localDewif;
     if (_walletNbr is int) {
-      File _walletFile =
-          File('${walletsDirectory.path}/$_walletNbr/wallet.dewif');
+      File _walletFile = File('${walletsDirectory.path}/0/wallet.dewif');
       _localDewif = _walletFile.readAsStringSync();
     } else {
       _localDewif = _walletNbr;
@@ -121,21 +122,21 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Future _renameWallet(_walletName, _newName, _walletNbr, _derivation) async {
-    final _walletConfig =
-        File('${walletsDirectory.path}/$_walletNbr/config.txt');
+    final _walletConfig = File('${walletsDirectory.path}/0/list.conf');
 
     String newConfig =
         await _walletConfig.readAsLines().then((List<String> lines) {
       int nbrLines = lines.length;
-      int _index = lines.indexOf('$_walletNbr:$_walletName:$_derivation');
+      print(lines);
       print(nbrLines);
+      int _index = lines.indexOf('0:$_walletNbr:$_walletName:$_derivation');
       if (nbrLines != 1) {
         lines.removeWhere((element) =>
-            element.contains('$_walletNbr:$_walletName:$_derivation'));
-        lines.insert(_index, '$_walletNbr:$_newName:$_derivation');
+            element.contains('0:$_walletNbr:$_walletName:$_derivation'));
+        lines.insert(_index, '0:$_walletNbr:$_newName:$_derivation');
         return lines.join('\n');
       } else {
-        return '$_walletNbr:$_newName:$_derivation';
+        return '0:$_walletNbr:$_newName:$_derivation';
       }
     });
 
@@ -189,14 +190,13 @@ class WalletOptionsProvider with ChangeNotifier {
     final bool _answer = await _confirmDeletingWallet(context, _name);
 
     if (_answer) {
-      final _walletConfig =
-          File('${walletsDirectory.path}/$_walletNbr/config.txt');
+      final _walletConfig = File('${walletsDirectory.path}/0/list.conf');
 
       if (_derivation != -1) {
         String newConfig =
             await _walletConfig.readAsLines().then((List<String> lines) {
-          lines.removeWhere(
-              (element) => element.contains('$_walletNbr:$_name:$_derivation'));
+          lines.removeWhere((element) =>
+              element.contains('0:$_walletNbr:$_name:$_derivation'));
 
           return lines.join('\n');
         });
@@ -287,6 +287,22 @@ class WalletOptionsProvider with ChangeNotifier {
             Text("Cette clé publique a été copié dans votre presse-papier."),
         duration: Duration(seconds: 2));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  String getShortPubkey(String pubkey) {
+    List<int> pubkeyByte = Base58Decode(pubkey);
+    Digest pubkeyS256 = sha256.convert(sha256.convert(pubkeyByte).bytes);
+    String pubkeyCheksum = Base58Encode(pubkeyS256.bytes);
+    String pubkeyChecksumShort = truncate(pubkeyCheksum, 3,
+        omission: "", position: TruncatePosition.end);
+
+    String pubkeyShort = truncate(pubkey, 5,
+            omission: String.fromCharCode(0x2026),
+            position: TruncatePosition.end) +
+        truncate(pubkey, 4, omission: "", position: TruncatePosition.start) +
+        ':$pubkeyChecksumShort';
+
+    return pubkeyShort;
   }
 
   void reloadBuild() {

@@ -39,14 +39,16 @@ class GenerateWalletsProvider with ChangeNotifier {
   bool canImport = false;
   bool isPinChanged = false;
 
-  Future storeHDWallet(
+  Future storeHDWChest(
       NewWallet _wallet, String _name, BuildContext context) async {
     // Directory walletDirectory;
 
     final Directory hdDirectory = Directory('${walletsDirectory.path}/0');
     await hdDirectory.create();
 
-    final configFile = File('${hdDirectory.path}/config.txt');
+    final configFile = File('${hdDirectory.path}/list.conf');
+    File _currentChestFile = File('${walletsDirectory.path}/currentChest.conf');
+
     final dewifFile = File('${hdDirectory.path}/wallet.dewif');
 
     // List<String> _lastConfig = [];
@@ -61,8 +63,14 @@ class GenerateWalletsProvider with ChangeNotifier {
         accountsIndex: [_derivationNbr]);
     String _pubkey = _pubkeysTmp[0];
 
-    await configFile.writeAsString('0:$_name:$_derivationNbr:$_pubkey');
+    await configFile.writeAsString('0:0:$_name:$_derivationNbr:$_pubkey');
     await dewifFile.writeAsString(_wallet.dewif);
+    bool isCurrentChestExist = _currentChestFile.existsSync();
+    if (isCurrentChestExist) {
+      await _currentChestFile.delete();
+    }
+    await _currentChestFile.create();
+    await _currentChestFile.writeAsString('0');
 
     return _name;
   }
@@ -147,11 +155,9 @@ class GenerateWalletsProvider with ChangeNotifier {
       generatedMnemonic = await DubpRust.genMnemonic(language: Language.french);
       this.actualWallet = await generateWallet(this.generatedMnemonic);
       walletIsGenerated = true;
-      // notifyListeners();
     } catch (e) {
       print(e);
     }
-    // await checkIfWalletExist();
     return generatedMnemonic;
   }
 

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:dubp/dubp.dart';
 import 'package:fast_base58/fast_base58.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:truncate/truncate.dart';
+import 'package:qrscan/qrscan.dart' as scanner;
 
 class WalletOptionsProvider with ChangeNotifier {
   TextEditingController pubkey = TextEditingController();
@@ -14,6 +16,11 @@ class WalletOptionsProvider with ChangeNotifier {
   bool isWalletUnlock = false;
   bool ischangedPin = false;
   TextEditingController newPin = new TextEditingController();
+  bool isEditing = false;
+  bool isBalanceBlur = true;
+  FocusNode walletNameFocus = FocusNode();
+  TextEditingController nameController = TextEditingController();
+  String walletID;
 
   Future<NewWallet> get badWallet => null;
 
@@ -121,22 +128,36 @@ class WalletOptionsProvider with ChangeNotifier {
     return _pinLenght;
   }
 
-  Future _renameWallet(_walletName, _newName, _walletNbr, _derivation) async {
+  Future _renameWallet(_walletID, _newName) async {
     final _walletConfig = File('${walletsDirectory.path}/0/list.conf');
 
     String newConfig =
         await _walletConfig.readAsLines().then((List<String> lines) {
       int nbrLines = lines.length;
-      print(lines);
-      print(nbrLines);
-      int _index = lines.indexOf('0:$_walletNbr:$_walletName:$_derivation');
+      // print(lines);
+      // print(nbrLines);
+      // int _index = lines.indexOf('0:$_walletNbr:$_walletName:$_derivation');
       if (nbrLines != 1) {
-        lines.removeWhere((element) =>
-            element.contains('0:$_walletNbr:$_walletName:$_derivation'));
-        lines.insert(_index, '0:$_walletNbr:$_newName:$_derivation');
+        for (String wLine in lines) {
+          String wID = "${wLine.split(':')[0]}:${wLine.split(':')[1]}";
+          print(
+              "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+          print(wLine);
+          String deri = wLine.split(':')[3];
+          print("($wID == $_walletID ???");
+          if (wID == _walletID) {
+            lines.remove(wLine);
+            lines.add('$_walletID:$_newName:$deri');
+            // return '$_walletID:$_newName:$deri';
+            print('OOUUUUUUUIIIIIIIIIIIIIIIIIII');
+          }
+        }
+        // lines.removeWhere((element) =>
+        //     '${element.split(':')[0]}:${element.split(':')[1]}' == _walletID);
+        // lines.add('$_walletID:$_newName:$deri');
         return lines.join('\n');
       } else {
-        return '0:$_walletNbr:$_newName:$_derivation';
+        return 'true';
       }
     });
 
@@ -173,8 +194,8 @@ class WalletOptionsProvider with ChangeNotifier {
               child: Text("Valider"),
               onPressed: () {
                 WidgetsBinding.instance.addPostFrameCallback((_) async {
-                  await _renameWallet(_walletName, this._newWalletName.text,
-                      _walletNbr, _derivation);
+                  // await _renameWallet(_walletName, this._newWalletName.text,
+                  //     _walletNbr, _derivation);
                 });
                 // notifyListeners();
                 Navigator.pop(context, true);
@@ -184,6 +205,26 @@ class WalletOptionsProvider with ChangeNotifier {
         );
       },
     );
+  }
+
+  Future<bool> editWalletName(_wID) async {
+    bool nameState;
+    if (isEditing) {
+      if (!nameController.text.contains(':') &&
+          nameController.text.length <= 45) {
+        await _renameWallet(_wID, nameController.text);
+        nameState = true;
+      } else {
+        nameState = false;
+      }
+    } else {
+      walletNameFocus.requestFocus();
+      nameState = true;
+    }
+
+    isEditing ? isEditing = false : isEditing = true;
+    notifyListeners();
+    return nameState;
   }
 
   Future<int> deleteWallet(context, _walletNbr, _name, _derivation) async {
@@ -303,6 +344,15 @@ class WalletOptionsProvider with ChangeNotifier {
         ':$pubkeyChecksumShort';
 
     return pubkeyShort;
+  }
+
+  void bluringBalance() {
+    isBalanceBlur = !isBalanceBlur;
+    notifyListeners();
+  }
+
+  Future<Uint8List> generateQRcode(String _pubkey) async {
+    return await scanner.generateBarCode(_pubkey);
   }
 
   void reloadBuild() {

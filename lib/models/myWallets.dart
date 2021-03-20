@@ -68,6 +68,8 @@ class MyWalletsProvider with ChangeNotifier {
       listWallets = '';
     }
 
+    print(walletsDirectory.path);
+
     // int i = 0;
     File _walletConfig = File('${walletsDirectory.path}/$_chest/list.conf');
     _walletConfig.readAsLinesSync().forEach((element) {

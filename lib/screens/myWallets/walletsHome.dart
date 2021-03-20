@@ -77,11 +77,13 @@ class WalletsHome extends StatelessWidget {
 
     if (_myWalletProvider.listWallets == '') {
       return Expanded(
-          child: Center(
-              child: Text(
-        'Veuillez générer votre premier portefeuille',
-        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
-      )));
+          child: Column(children: <Widget>[
+        Center(
+            child: Text(
+          'Veuillez générer votre premier portefeuille',
+          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
+        )),
+      ]));
     }
 
     List _listWallets = _myWalletProvider.listWallets.split('\n');

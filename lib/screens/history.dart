@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/cesiumPlus.dart';
@@ -11,6 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'dart:ui';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 // ignore: must_be_immutable
 class HistoryScreen extends StatelessWidget with ChangeNotifier {
@@ -25,6 +25,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
 
   FetchMore fetchMore;
   FetchMoreOptions opts;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +38,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
     WidgetsBinding.instance.addPostFrameCallback((_) {});
 
     return Scaffold(
+        key: _scaffoldKey,
         appBar: AppBar(
           title: _homeProvider.appBarExplorer,
           actions: [
@@ -153,8 +155,14 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
               return const Text('Aucune donnée à afficher.');
             }
 
-            final num balance = _historyProvider
-                .removeDecimalZero(result.data['balance']['amount'] / 100);
+            num balance;
+
+            if (result.data['balance'] == null) {
+              balance = 0.0;
+            } else {
+              balance = _historyProvider
+                  .removeDecimalZero(result.data['balance']['amount'] / 100);
+            }
 
             opts = _historyProvider.checkQueryResult(
                 result, opts, _outputPubkey.text);
@@ -179,7 +187,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                     if (_isFirstExec)
                                       Container(
                                           padding: const EdgeInsets.fromLTRB(
-                                              12, 0, 5, 0),
+                                              20, 0, 30, 0),
                                           child: FutureBuilder(
                                               future:
                                                   _cesiumPlusProvider.getAvatar(
@@ -235,7 +243,21 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                     Container(
                                         padding: const EdgeInsets.fromLTRB(
                                             30, 0, 5, 0), // .only(right: 15),
-                                        child: Text('TODO')),
+                                        child: Card(
+                                          child: Column(
+                                            children: <Widget>[
+                                              SvgPicture.string(
+                                                _historyProvider
+                                                    .generateIdenticon(
+                                                        _historyProvider
+                                                            .pubkey),
+                                                fit: BoxFit.contain,
+                                                height: 64,
+                                                width: 64,
+                                              ),
+                                            ],
+                                          ),
+                                        )),
                                     SizedBox(width: 0)
                                   ]),
                             if (_isFirstExec)

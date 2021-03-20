@@ -5,7 +5,7 @@ description: Pay with G1.
 # pub.dev using `pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 0.0.1+21
+version: 0.0.1+22
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -45,6 +45,7 @@ dependencies:
   flutter_svg: ^0.20.0-nullsafety
   responsive_framework: ^0.0.14
   responsive_builder: ^0.3.0
+  jdenticon_dart: ^2.0.0
 
 flutter_icons:
   android: "ic_launcher"

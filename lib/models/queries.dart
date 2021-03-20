@@ -52,8 +52,13 @@ const String getHistory = r'''
 
 const String getBalance = r'''
   query ($pubkey: String!) {
-    balance(script: $pubkey) {
-      amount
-      base
+      balance(script: $pubkey) {
+        amount
+        base
+      }
+      currentUd {
+        amount
+        base
+      }
     }
   ''';

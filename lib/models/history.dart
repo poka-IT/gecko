@@ -4,6 +4,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/home.dart';
 import 'package:gecko/screens/history.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
@@ -24,6 +25,7 @@ class HistoryProvider with ChangeNotifier {
   Map pageInfo;
   bool isHistoryScreen = false;
   String historySwitchButtun = "Voir l'historique";
+  String rawSvg;
 
   Future scan(context) async {
     await Permission.camera.request();
@@ -43,7 +45,7 @@ class HistoryProvider with ChangeNotifier {
     return barcode;
   }
 
-  String isPubkey(context, pubkey) {
+  String isPubkey(context, pubkey, {bool goHistory}) {
     HomeProvider _homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
     final RegExp regExp = new RegExp(
@@ -62,8 +64,16 @@ class HistoryProvider with ChangeNotifier {
 
       this.outputPubkey.text = pubkey;
 
-      isHistoryScreen = false;
-      historySwitchButtun = "Voir l'historique";
+      if (goHistory == null) goHistory = false;
+
+      if (goHistory) {
+        isHistoryScreen = true;
+        historySwitchButtun = "Payer";
+      } else {
+        isHistoryScreen = false;
+        historySwitchButtun = "Voir l'historique";
+      }
+
       _homeProvider.handleSearchEnd();
       Navigator.push(
         context,
@@ -239,6 +249,10 @@ class HistoryProvider with ChangeNotifier {
       historySwitchButtun = "Voir l'historique";
     }
     notifyListeners();
+  }
+
+  String generateIdenticon(String _pubkey) {
+    return Jdenticon.toSvg(_pubkey);
   }
 
   // num getBalance(_pubkey) {

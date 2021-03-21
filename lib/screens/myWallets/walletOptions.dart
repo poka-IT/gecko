@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/history.dart';
 import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/queries.dart';
@@ -23,6 +24,7 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
   int derivation;
   int _nbrLinesName = 1;
   bool _isNewNameValid = false;
+  bool isDefaultWallet;
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +51,12 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
     _walletOptions.nameController.text.length >= 15
         ? _nbrLinesName = 2
         : _nbrLinesName = 1;
-    if (_walletOptions.nameController.text.length >= 26) _nbrLinesName = 3;
+    if (_walletOptions.nameController.text.length >= 26 && isTall)
+      _nbrLinesName = 3;
+
+    defaultWallet == _walletOptions.walletID
+        ? isDefaultWallet = true
+        : isDefaultWallet = false;
 
     // print(_walletOptions.generateQRcode(_walletOptions.pubkey.text));
 
@@ -59,8 +66,9 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
         _walletOptions.isBalanceBlur = true;
         Navigator.popUntil(
           context,
-          ModalRoute.withName('/mywallets'),
+          ModalRoute.withName('/'),
         );
+        Navigator.pushNamed(context, '/mywallets');
         return Future<bool>.value(true);
       },
       child: Scaffold(
@@ -73,8 +81,9 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                     _walletOptions.isBalanceBlur = true;
                     Navigator.popUntil(
                       context,
-                      ModalRoute.withName('/mywallets'),
+                      ModalRoute.withName('/'),
                     );
+                    Navigator.pushNamed(context, '/mywallets');
                   }),
               title: SizedBox(
                 height: 22,
@@ -84,7 +93,7 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
             builder: (ctx) => SafeArea(
               child: Column(children: <Widget>[
                 Container(
-                  height: 15,
+                  height: isTall ? 15 : 0,
                   color: Color(0xffFFD68E),
                 ),
                 Container(
@@ -99,15 +108,25 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                     )),
                     child: Row(children: <Widget>[
                       SizedBox(width: 25),
-                      Image.asset(
-                        'assets/chopp-gecko2.png',
-                      ),
-                      Column(children: <Widget>[
-                        Image.asset(
-                          'assets/walletOptions/camera.png',
-                        ),
-                        SizedBox(height: 100)
-                      ]),
+                      InkWell(
+                          onTap: () async {
+                            await _walletOptions.changeAvatar();
+                            print('CHANGE AVATAR');
+                          },
+                          child: Image.asset(
+                            'assets/chopp-gecko2.png',
+                          )),
+                      InkWell(
+                          onTap: () async {
+                            await _walletOptions.changeAvatar();
+                            print('CHANGE AVATAR');
+                          },
+                          child: Column(children: <Widget>[
+                            Image.asset(
+                              'assets/walletOptions/camera.png',
+                            ),
+                            SizedBox(height: 100)
+                          ])),
                       // SizedBox(width: 20),
                       Column(children: <Widget>[
                         Row(children: <Widget>[
@@ -129,12 +148,12 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                                     contentPadding: EdgeInsets.all(15.0),
                                   ),
                                   style: TextStyle(
-                                      fontSize: 27,
+                                      fontSize: isTall ? 27 : 23,
                                       color: Colors.black,
                                       fontWeight: FontWeight.w400,
                                       fontFamily: 'Monospace')),
                             ),
-                            SizedBox(height: 5),
+                            SizedBox(height: isTall ? 5 : 0),
                             Query(
                               options: QueryOptions(
                                 document: gql(getBalance),
@@ -178,11 +197,13 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                                             : 0),
                                     child: Text('$wBalanceUD',
                                         style: TextStyle(
-                                            fontSize: 20, color: Colors.black)),
+                                            fontSize: isTall ? 20 : 18,
+                                            color: Colors.black)),
                                   ),
                                   Text(' DU',
                                       style: TextStyle(
-                                          fontSize: 20, color: Colors.black))
+                                          fontSize: isTall ? 20 : 18,
+                                          color: Colors.black))
                                 ]);
 
                                 // Text(
@@ -198,7 +219,9 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                                   _walletOptions.bluringBalance();
                                 },
                                 child: Image.asset(
-                                  'assets/walletOptions/icon_oeuil.png',
+                                  _walletOptions.isBalanceBlur
+                                      ? 'assets/walletOptions/icon_oeuil.png'
+                                      : 'assets/walletOptions/icon_oeuil_close.png',
                                 )),
                           ]),
                           SizedBox(width: 0),
@@ -254,15 +277,17 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                         ]),
                       ]),
                     ])),
+                SizedBox(height: 4 * ratio),
                 FutureBuilder(
                     future: _walletOptions
                         .generateQRcode(_walletOptions.pubkey.text),
                     builder: (context, snapshot) {
                       return snapshot.data != null
-                          ? Image.memory(snapshot.data, height: 300)
+                          ? Image.memory(snapshot.data,
+                              height: isTall ? 300 : 270)
                           : Text('-', style: TextStyle(fontSize: 20));
                     }),
-                SizedBox(height: 15),
+                SizedBox(height: 15 * ratio),
                 GestureDetector(
                     onTap: () {
                       Clipboard.setData(
@@ -317,7 +342,7 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                                             color: Colors.grey[50]))
                                   ]))),
                         ]))),
-                SizedBox(height: 10),
+                SizedBox(height: 10 * ratio),
                 InkWell(
                     onTap: () {
                       _historyProvider.isPubkey(ctx, _walletOptions.pubkey.text,
@@ -330,27 +355,46 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                           Image.asset(
                             'assets/walletOptions/clock.png',
                           ),
-                          SizedBox(width: 10),
+                          SizedBox(width: 12),
                           Text('Historique des transactions',
                               style:
                                   TextStyle(fontSize: 20, color: Colors.black)),
                         ]))),
-                SizedBox(height: 15),
+                SizedBox(height: 12 * ratio),
                 InkWell(
-                    onTap: () {},
+                    onTap: !isDefaultWallet
+                        ? () async {
+                            await _walletOptions
+                                .defAsDefaultWallet(_walletOptions.walletID)
+                                .then((value) => {
+                                      _myWalletProvider
+                                          .getAllWalletsNames(_currentChest),
+                                      _myWalletProvider.rebuildWidget()
+                                    });
+                          }
+                        : null,
                     child: SizedBox(
                         height: 50,
                         child: Row(children: <Widget>[
-                          SizedBox(width: 35),
-                          Image.asset(
-                            'assets/walletOptions/android-checkmark.png',
-                          ),
-                          SizedBox(width: 10),
-                          Text('Portefeuille par defaut',
-                              style:
-                                  TextStyle(fontSize: 20, color: Colors.black)),
+                          SizedBox(width: 31),
+                          CircleAvatar(
+                              backgroundColor:
+                                  Colors.grey[isDefaultWallet ? 300 : 500],
+                              child: Image.asset(
+                                'assets/walletOptions/android-checkmark.png',
+                              )),
+                          SizedBox(width: 12),
+                          Text(
+                              isDefaultWallet
+                                  ? 'Ce portefeuille est celui par defaut'
+                                  : 'Définir comme portefeuille par défaut',
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  color: isDefaultWallet
+                                      ? Colors.grey[500]
+                                      : Colors.black)),
                         ]))),
-                SizedBox(height: 15),
+                SizedBox(height: 17 * ratio),
                 InkWell(
                     onTap: () async {
                       await _walletOptions.deleteWallet(
@@ -362,11 +406,11 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                       });
                     },
                     child: Row(children: <Widget>[
-                      SizedBox(width: 30),
+                      SizedBox(width: 33),
                       Image.asset(
                         'assets/walletOptions/trash.png',
                       ),
-                      SizedBox(width: 10),
+                      SizedBox(width: 14),
                       Text('Supprimer ce portefeuille',
                           style: TextStyle(
                               fontSize: 20, color: Color(0xffD80000))),

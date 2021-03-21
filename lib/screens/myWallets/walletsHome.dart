@@ -30,6 +30,8 @@ class WalletsHome extends StatelessWidget {
     if (myWalletProvider.listWallets != '') {
       firstWalletDerivation =
           int.parse(myWalletProvider.listWallets.split('\n')[0].split(':')[3]);
+
+      myWalletProvider.getDefaultWallet();
     }
 
     return Scaffold(

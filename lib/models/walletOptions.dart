@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:truncate/truncate.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 
@@ -353,6 +354,28 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Future<Uint8List> generateQRcode(String _pubkey) async {
     return await scanner.generateBarCode(_pubkey);
+  }
+
+  Future defAsDefaultWallet(String _id) async {
+    await defaultWalletFile.delete();
+    await defaultWalletFile.create();
+    await defaultWalletFile
+        .writeAsString(_id)
+        .then((value) => notifyListeners());
+  }
+
+  Future changeAvatar() async {
+    File _image;
+    final picker = ImagePicker();
+
+    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      _image = File(pickedFile.path);
+      return _image;
+    } else {
+      print('No image selected.');
+    }
   }
 
   void reloadBuild() {

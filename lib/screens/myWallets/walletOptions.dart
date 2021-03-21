@@ -83,173 +83,176 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
           body: Builder(
             builder: (ctx) => SafeArea(
               child: Column(children: <Widget>[
-                SizedBox(height: 25),
-                Row(children: <Widget>[
-                  SizedBox(width: 25),
-                  Image.asset(
-                    'assets/chopp-gecko2.png',
-                  ),
-                  Image.asset(
-                    'assets/walletOptions/camera.png',
-                  ),
-                  // SizedBox(width: 20),
-                  Column(children: <Widget>[
-                    Row(children: <Widget>[
+                Container(
+                  height: 15,
+                  color: Color(0xffFFD68E),
+                ),
+                Container(
+                    decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xffFFD68E),
+                        Color(0xFFFFFCF7),
+                      ],
+                    )),
+                    child: Row(children: <Widget>[
+                      SizedBox(width: 25),
+                      Image.asset(
+                        'assets/chopp-gecko2.png',
+                      ),
                       Column(children: <Widget>[
-                        SizedBox(
-                          width: 250,
-                          child: TextField(
-                              // autofocus: true,
-                              focusNode: _walletOptions.walletNameFocus,
-                              enabled: _walletOptions.isEditing,
-                              controller: _walletOptions.nameController,
-                              maxLines: _nbrLinesName,
-                              textAlign: TextAlign.center,
-                              decoration: InputDecoration(
-                                border: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                disabledBorder: InputBorder.none,
-                                contentPadding: EdgeInsets.all(15.0),
-                              ),
-                              style: TextStyle(
-                                  fontSize: 27,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w400)),
+                        Image.asset(
+                          'assets/walletOptions/camera.png',
                         ),
-                        SizedBox(height: 5),
-                        // Query(
-                        //     options: QueryOptions(
-                        //       document: gql(getBalance),
-                        //       variables: <String, dynamic>{
-                        //         'pubkey': _walletOptions.pubkey.text,
-                        //       },
-                        //     ),
-                        //     builder: (QueryResult result,
-                        //         {fetchMore, refetch}) {
-                        //       return Text(
-                        //         '$result DU',
-                        //         style: TextStyle(
-                        //             fontSize: 20, color: Colors.black),
-                        //       );
-                        //     }),
-                        Query(
-                          options: QueryOptions(
-                            document: gql(
-                                getBalance), // this is the query string you just created
-                            variables: {
-                              'pubkey': _walletOptions.pubkey.text,
-                            },
-                            pollInterval: Duration(seconds: 1),
-                          ),
-                          builder: (QueryResult result,
-                              {VoidCallback refetch, FetchMore fetchMore}) {
-                            if (result.hasException) {
-                              return Text(result.exception.toString());
-                            }
-
-                            if (result.isLoading) {
-                              return Text('Loading');
-                            }
-                            // List repositories = result.data['viewer']['repositories']['nodes'];
-                            String wBalanceUD;
-                            if (result.data['balance'] == null) {
-                              wBalanceUD = '0.0';
-                            } else {
-                              int wBalanceG1 = result.data['balance']['amount'];
-                              int currentUD =
-                                  result.data['currentUd']['amount'];
-                              double wBalanceUDBrut =
-                                  wBalanceG1 / currentUD; // .toString();
-                              wBalanceUD = double.parse(
-                                      (wBalanceUDBrut).toStringAsFixed(2))
-                                  .toString();
-                            }
-                            return Row(children: <Widget>[
-                              ImageFiltered(
-                                imageFilter: ImageFilter.blur(
-                                    sigmaX:
-                                        _walletOptions.isBalanceBlur ? 6 : 0,
-                                    sigmaY:
-                                        _walletOptions.isBalanceBlur ? 5 : 0),
-                                child: Text('$wBalanceUD',
-                                    style: TextStyle(
-                                        fontSize: 20, color: Colors.black)),
-                              ),
-                              Text(' DU',
-                                  style: TextStyle(
-                                      fontSize: 20, color: Colors.black))
-                            ]);
-
-                            // Text(
-                            //   '$wBalanceUD DU',
-                            //   style: TextStyle(
-                            //       fontSize: 20, color: Colors.black),
-                            // );
-                          },
-                        ),
-                        SizedBox(height: 5),
-                        InkWell(
-                            onTap: () {
-                              _walletOptions.bluringBalance();
-                            },
-                            child: Image.asset(
-                              'assets/walletOptions/icon_oeuil.png',
-                            )),
+                        SizedBox(height: 100)
                       ]),
-                      SizedBox(width: 0),
+                      // SizedBox(width: 20),
                       Column(children: <Widget>[
-                        InkWell(
-                            onTap: () async {
-                              // _walletOptions.isEditing = true;
-                              // _walletOptions.reloadBuild();
-                              // _walletOptions.walletNameFocus
-                              // .requestFocus();
-                              _isNewNameValid = await _walletOptions
-                                  .editWalletName(_walletOptions.walletID);
-                              //     .then((_) {
-                              //   _walletOptions.walletNameFocus
-                              //       .requestFocus();
-                              //   _walletOptions.reloadBuild();
-                              // });
+                        Row(children: <Widget>[
+                          Column(children: <Widget>[
+                            SizedBox(
+                              width: 250,
+                              child: TextField(
+                                  // autofocus: true,
+                                  focusNode: _walletOptions.walletNameFocus,
+                                  enabled: _walletOptions.isEditing,
+                                  controller: _walletOptions.nameController,
+                                  maxLines: _nbrLinesName,
+                                  textAlign: TextAlign.center,
+                                  decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    focusedBorder: InputBorder.none,
+                                    enabledBorder: InputBorder.none,
+                                    disabledBorder: InputBorder.none,
+                                    contentPadding: EdgeInsets.all(15.0),
+                                  ),
+                                  style: TextStyle(
+                                      fontSize: 27,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w400)),
+                            ),
+                            SizedBox(height: 5),
+                            Query(
+                              options: QueryOptions(
+                                document: gql(getBalance),
+                                variables: {
+                                  'pubkey': _walletOptions.pubkey.text,
+                                },
+                                pollInterval: Duration(seconds: 1),
+                              ),
+                              builder: (QueryResult result,
+                                  {VoidCallback refetch, FetchMore fetchMore}) {
+                                if (result.hasException) {
+                                  return Text(result.exception.toString());
+                                }
 
-                              //     .then(
-                              //   (_result) {
-                              //     if (_result == true) {
-                              //       WidgetsBinding.instance
-                              //           .addPostFrameCallback((_) {
-                              //         _myWalletProvider.listWallets =
-                              //             _myWalletProvider
-                              //                 .getAllWalletsNames(
-                              //                     _currentChest);
-                              //         _myWalletProvider.rebuildWidget();
-                              //       });
-                              //       Navigator.popUntil(
-                              //         context,
-                              //         ModalRoute.withName('/mywallets'),
-                              //       );
-                              //     }
-                              //   },
-                              // );
-                            },
-                            child: ClipRRect(
-                              child: Image.asset(
-                                  _walletOptions.isEditing
-                                      ? 'assets/walletOptions/android-checkmark.png'
-                                      : 'assets/walletOptions/edit.png',
-                                  width: 20,
-                                  height: 20),
-                            )),
-                        // Image.asset(
-                        //   'assets/walletOptions/edit.png',
-                        // ),
-                        SizedBox(
-                          height: 60,
-                        )
-                      ])
-                    ]),
-                  ]),
-                ]),
+                                if (result.isLoading) {
+                                  return Text('Loading');
+                                }
+                                // List repositories = result.data['viewer']['repositories']['nodes'];
+                                String wBalanceUD;
+                                if (result.data['balance'] == null) {
+                                  wBalanceUD = '0.0';
+                                } else {
+                                  int wBalanceG1 =
+                                      result.data['balance']['amount'];
+                                  int currentUD =
+                                      result.data['currentUd']['amount'];
+                                  double wBalanceUDBrut =
+                                      wBalanceG1 / currentUD; // .toString();
+                                  wBalanceUD = double.parse(
+                                          (wBalanceUDBrut).toStringAsFixed(2))
+                                      .toString();
+                                }
+                                return Row(children: <Widget>[
+                                  ImageFiltered(
+                                    imageFilter: ImageFilter.blur(
+                                        sigmaX: _walletOptions.isBalanceBlur
+                                            ? 6
+                                            : 0,
+                                        sigmaY: _walletOptions.isBalanceBlur
+                                            ? 5
+                                            : 0),
+                                    child: Text('$wBalanceUD',
+                                        style: TextStyle(
+                                            fontSize: 20, color: Colors.black)),
+                                  ),
+                                  Text(' DU',
+                                      style: TextStyle(
+                                          fontSize: 20, color: Colors.black))
+                                ]);
+
+                                // Text(
+                                //   '$wBalanceUD DU',
+                                //   style: TextStyle(
+                                //       fontSize: 20, color: Colors.black),
+                                // );
+                              },
+                            ),
+                            SizedBox(height: 5),
+                            InkWell(
+                                onTap: () {
+                                  _walletOptions.bluringBalance();
+                                },
+                                child: Image.asset(
+                                  'assets/walletOptions/icon_oeuil.png',
+                                )),
+                          ]),
+                          SizedBox(width: 0),
+                          Column(children: <Widget>[
+                            InkWell(
+                                onTap: () async {
+                                  // _walletOptions.isEditing = true;
+                                  // _walletOptions.reloadBuild();
+                                  // _walletOptions.walletNameFocus
+                                  // .requestFocus();
+                                  _isNewNameValid = await _walletOptions
+                                      .editWalletName(_walletOptions.walletID);
+                                  //     .then((_) {
+                                  //   _walletOptions.walletNameFocus
+                                  //       .requestFocus();
+                                  //   _walletOptions.reloadBuild();
+                                  // });
+
+                                  //     .then(
+                                  //   (_result) {
+                                  //     if (_result == true) {
+                                  //       WidgetsBinding.instance
+                                  //           .addPostFrameCallback((_) {
+                                  //         _myWalletProvider.listWallets =
+                                  //             _myWalletProvider
+                                  //                 .getAllWalletsNames(
+                                  //                     _currentChest);
+                                  //         _myWalletProvider.rebuildWidget();
+                                  //       });
+                                  //       Navigator.popUntil(
+                                  //         context,
+                                  //         ModalRoute.withName('/mywallets'),
+                                  //       );
+                                  //     }
+                                  //   },
+                                  // );
+                                },
+                                child: ClipRRect(
+                                  child: Image.asset(
+                                      _walletOptions.isEditing
+                                          ? 'assets/walletOptions/android-checkmark.png'
+                                          : 'assets/walletOptions/edit.png',
+                                      width: 20,
+                                      height: 20),
+                                )),
+                            // Image.asset(
+                            //   'assets/walletOptions/edit.png',
+                            // ),
+                            SizedBox(
+                              height: 60,
+                            )
+                          ])
+                        ]),
+                      ]),
+                    ])),
                 FutureBuilder(
                     future: _walletOptions
                         .generateQRcode(_walletOptions.pubkey.text),
@@ -285,22 +288,33 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                                   fontWeight: FontWeight.w800,
                                   fontFamily: 'Monospace')),
                           SizedBox(width: 15),
-                          ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: new BorderRadius.circular(8),
-                                ),
-                                elevation: 1,
-                                primary: Color(0xffD28928), // background
-                                onPrimary: Colors.black, // foreground
-                              ),
-                              onPressed: () {
-                                ClipboardData(text: _walletOptions.pubkey.text);
-                                _walletOptions.snackCopyKey(ctx);
-                              },
-                              child: Text('Copier',
-                                  style: TextStyle(
-                                      fontSize: 15, color: Colors.grey[50]))),
+                          SizedBox(
+                              height: 40,
+                              child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          new BorderRadius.circular(8),
+                                    ),
+                                    elevation: 1,
+                                    primary: Color(0xffD28928), // background
+                                    onPrimary: Colors.black, // foreground
+                                  ),
+                                  onPressed: () {
+                                    ClipboardData(
+                                        text: _walletOptions.pubkey.text);
+                                    _walletOptions.snackCopyKey(ctx);
+                                  },
+                                  child: Row(children: <Widget>[
+                                    Image.asset(
+                                      'assets/walletOptions/copy-white.png',
+                                    ),
+                                    SizedBox(width: 7),
+                                    Text('Copier',
+                                        style: TextStyle(
+                                            fontSize: 15,
+                                            color: Colors.grey[50]))
+                                  ]))),
                         ]))),
                 SizedBox(height: 10),
                 InkWell(

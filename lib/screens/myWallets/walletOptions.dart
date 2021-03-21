@@ -49,7 +49,7 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
     _walletOptions.nameController.text.length >= 15
         ? _nbrLinesName = 2
         : _nbrLinesName = 1;
-    if (_walletOptions.nameController.text.length >= 30) _nbrLinesName = 3;
+    if (_walletOptions.nameController.text.length >= 26) _nbrLinesName = 3;
 
     // print(_walletOptions.generateQRcode(_walletOptions.pubkey.text));
 
@@ -94,7 +94,7 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                       end: Alignment.bottomCenter,
                       colors: [
                         Color(0xffFFD68E),
-                        Color(0xFFFFFCF7),
+                        Color(0xfffafafa),
                       ],
                     )),
                     child: Row(children: <Widget>[
@@ -113,7 +113,7 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                         Row(children: <Widget>[
                           Column(children: <Widget>[
                             SizedBox(
-                              width: 250,
+                              width: 260,
                               child: TextField(
                                   // autofocus: true,
                                   focusNode: _walletOptions.walletNameFocus,
@@ -131,7 +131,8 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                                   style: TextStyle(
                                       fontSize: 27,
                                       color: Colors.black,
-                                      fontWeight: FontWeight.w400)),
+                                      fontWeight: FontWeight.w400,
+                                      fontFamily: 'Monospace')),
                             ),
                             SizedBox(height: 5),
                             Query(
@@ -301,8 +302,8 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                                     onPrimary: Colors.black, // foreground
                                   ),
                                   onPressed: () {
-                                    ClipboardData(
-                                        text: _walletOptions.pubkey.text);
+                                    Clipboard.setData(ClipboardData(
+                                        text: _walletOptions.pubkey.text));
                                     _walletOptions.snackCopyKey(ctx);
                                   },
                                   child: Row(children: <Widget>[

@@ -211,7 +211,7 @@ class WalletOptionsProvider with ChangeNotifier {
     bool nameState;
     if (isEditing) {
       if (!nameController.text.contains(':') &&
-          nameController.text.length <= 45) {
+          nameController.text.length <= 39) {
         await _renameWallet(_wID, nameController.text);
         nameState = true;
       } else {

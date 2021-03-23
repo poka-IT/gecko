@@ -30,7 +30,6 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
         Provider.of<MyWalletsProvider>(context);
     final int _currentChest = _myWalletProvider.getCurrentChest();
 
-
     this._mnemonicController.text = generatedMnemonic;
     return WillPopScope(
         onWillPop: () {
@@ -139,8 +138,8 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                                     WidgetsBinding.instance
                                         .addPostFrameCallback((_) {
                                       _myWalletProvider.listWallets =
-                                          _myWalletProvider
-                                              .getAllWalletsNames(_currentChest);
+                                          _myWalletProvider.getAllWalletsNames(
+                                              _currentChest);
                                       _myWalletProvider.rebuildWidget();
                                     });
                                   }

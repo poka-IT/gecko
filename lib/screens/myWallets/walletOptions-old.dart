@@ -111,7 +111,8 @@ class WalletOptionsOld extends StatelessWidget with ChangeNotifier {
                                                   _myWalletProvider
                                                           .listWallets =
                                                       _myWalletProvider
-                                                          .getAllWalletsNames(_currentChest);
+                                                          .getAllWalletsNames(
+                                                              _currentChest);
                                                   _myWalletProvider
                                                       .rebuildWidget();
                                                 });
@@ -141,7 +142,8 @@ class WalletOptionsOld extends StatelessWidget with ChangeNotifier {
                                   WidgetsBinding.instance
                                       .addPostFrameCallback((_) {
                                     _myWalletProvider.listWallets =
-                                        _myWalletProvider.getAllWalletsNames(_currentChest);
+                                        _myWalletProvider
+                                            .getAllWalletsNames(_currentChest);
                                     _myWalletProvider.rebuildWidget();
                                   });
                                 },

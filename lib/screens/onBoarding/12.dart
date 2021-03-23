@@ -62,7 +62,7 @@ class OnboardingStepFourteen extends StatelessWidget {
         Provider.of<GenerateWalletsProvider>(context);
 
     final int _currentChest = _myWalletProvider.getCurrentChest();
-    
+
     return Form(
       key: formKey,
       child: Padding(

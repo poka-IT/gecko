@@ -10,7 +10,6 @@ import 'package:gecko/globals.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:truncate/truncate.dart';
 
 class GenerateWalletsProvider with ChangeNotifier {
   GenerateWalletsProvider();
@@ -245,10 +244,10 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   Future importWallet(context, _cesiumID, _cesiumPWD) async {
-    String _walletPubkey = await DubpRust.getLegacyPublicKey(
-        salt: _cesiumID, password: _cesiumPWD);
-    String shortPubkey = truncate(_walletPubkey, 9,
-        omission: "...", position: TruncatePosition.end);
+    // String _walletPubkey = await DubpRust.getLegacyPublicKey(
+    //     salt: _cesiumID, password: _cesiumPWD);
+    // String shortPubkey = truncate(_walletPubkey, 9,
+    //     omission: "...", position: TruncatePosition.end);
     // await storeWallet(
     //     actualWallet, 'Portefeuille Cesium - $shortPubkey', context);
     cesiumID.text = '';

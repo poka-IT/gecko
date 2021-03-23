@@ -8,13 +8,50 @@ import 'package:provider/provider.dart';
 class MyWalletsProvider with ChangeNotifier {
   String listWallets;
 
+  Future initWalletFolder() async {
+    await getDefaultWallet();
+
+    final bool isWalletFolderExist = await walletsDirectory.exists();
+    if (!isWalletFolderExist) {
+      await Directory(walletsDirectory.path).create();
+    }
+
+    File _currentChestFile = File('${walletsDirectory.path}/currentChest.conf');
+
+    await _currentChestFile.create();
+    await _currentChestFile.writeAsString('0');
+
+    final bool isChestsExist =
+        await Directory('${walletsDirectory.path}/0').exists();
+    if (!isChestsExist) {
+      await Directory('${walletsDirectory.path}/0').create();
+      await Directory('${walletsDirectory.path}/1').create();
+      await File('${walletsDirectory.path}/0/list.conf').create();
+      await File('${walletsDirectory.path}/0/order.conf').create();
+      await File('${walletsDirectory.path}/1/list.conf').create();
+      await File('${walletsDirectory.path}/1/order.conf').create();
+    }
+  }
+
+  int getCurrentChest() {
+    File _currentChestFile = File('${walletsDirectory.path}/currentChest.conf');
+
+    bool isCurrentChestExist = _currentChestFile.existsSync();
+    if (!isCurrentChestExist) {
+      _currentChestFile.createSync();
+      _currentChestFile.writeAsString('0');
+    }
+    return int.parse(_currentChestFile.readAsStringSync());
+  }
+
   bool checkIfWalletExist() {
     if (appPath == null) {
       return false;
     }
 
-    List contents = walletsDirectory.listSync();
-    if (contents.length == 0) {
+    final String _walletList = getAllWalletsNames(0);
+
+    if (_walletList == '') {
       print('No wallets detected');
       return false;
     } else {
@@ -23,12 +60,7 @@ class MyWalletsProvider with ChangeNotifier {
     }
   }
 
-  String getAllWalletsNames() {
-    final bool _isWalletsExists = checkIfWalletExist();
-    if (!_isWalletsExists) {
-      return '';
-    }
-
+  String getAllWalletsNames(int _chest) {
     if (listWallets != null && listWallets.isNotEmpty) {
       listWallets = '';
     }
@@ -36,22 +68,37 @@ class MyWalletsProvider with ChangeNotifier {
       listWallets = '';
     }
 
+    print(walletsDirectory.path);
+
     // int i = 0;
-    walletsDirectory
-        .listSync(recursive: false, followLinks: false)
-        .forEach((_wallet) {
-      File _walletConfig = File('${_wallet.path}/config.txt');
-      _walletConfig.readAsLinesSync().forEach((element) {
-        if (listWallets != '') {
-          listWallets += '\n';
-        }
-        listWallets += element;
-        // listWallets += "${element.split(':')[0]}:${element.split(':')[1]}:${element.split(':')[2]}"
-      });
+    File _walletConfig = File('${walletsDirectory.path}/$_chest/list.conf');
+    _walletConfig.readAsLinesSync().forEach((element) {
+      if (listWallets != '') {
+        listWallets += '\n';
+      }
+      listWallets += element;
+      // listWallets += "${element.split(':')[0]}:${element.split(':')[1]}:${element.split(':')[2]}"
     });
     print(listWallets);
 
     return listWallets;
+  }
+
+  Future getDefaultWallet() async {
+    defaultWalletFile = File('${appPath.path}/defaultWallet');
+
+    bool isdefaultWalletFile = await defaultWalletFile.exists();
+
+    if (!isdefaultWalletFile) {
+      await File(defaultWalletFile.path).create();
+    }
+
+    try {
+      defaultWallet = await defaultWalletFile.readAsString();
+    } catch (e) {
+      defaultWallet = '0:0';
+    }
+    if (defaultWallet == '') defaultWallet = '0:0';
   }
 
   Future<int> deleteAllWallet(context) async {
@@ -63,6 +110,7 @@ class MyWalletsProvider with ChangeNotifier {
       if (_answer) {
         await walletsDirectory.delete(recursive: true);
         await walletsDirectory.create();
+        await initWalletFolder();
         notifyListeners();
         Navigator.pop(context);
       }
@@ -95,7 +143,7 @@ class MyWalletsProvider with ChangeNotifier {
               onPressed: () {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   _myWalletProvider.listWallets =
-                      _myWalletProvider.getAllWalletsNames();
+                      _myWalletProvider.getAllWalletsNames(getCurrentChest());
                   _myWalletProvider.rebuildWidget();
                 });
                 Navigator.pop(context, true);
@@ -107,22 +155,26 @@ class MyWalletsProvider with ChangeNotifier {
     );
   }
 
-  Future<void> generateNewDerivation(
-      context, String _name, int _walletNbr) async {
+  Future<void> generateNewDerivation(context, String _name) async {
     int _newDerivationNbr;
-    final _walletConfig =
-        File('${walletsDirectory.path}/$_walletNbr/config.txt');
+    int _newWalletNbr;
+    final _walletConfig = File('${walletsDirectory.path}/0/list.conf');
 
     if (await _walletConfig.readAsString() == '') {
       _newDerivationNbr = 3;
+      _newWalletNbr = 0;
     } else {
       String _lastWallet =
           await _walletConfig.readAsLines().then((value) => value.last);
-      int _lastDerivation = int.parse(_lastWallet.split(':')[2]);
+      int _lastDerivation = int.parse(_lastWallet.split(':')[3]);
       _newDerivationNbr = _lastDerivation + 3;
+
+      int _lastWalletNbr = int.parse(_lastWallet.split(':')[1]);
+      _newWalletNbr = _lastWalletNbr + 1;
     }
 
-    await _walletConfig.writeAsString('\n$_walletNbr:$_name:$_newDerivationNbr',
+    await _walletConfig.writeAsString(
+        '\n0:$_newWalletNbr:$_name:$_newDerivationNbr',
         mode: FileMode.append);
 
     print(await _walletConfig.readAsString());

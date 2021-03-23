@@ -1,7 +1,12 @@
+import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/globals.dart';
+import 'package:gecko/models/history.dart';
 import 'package:gecko/models/myWallets.dart';
+import 'package:gecko/models/queries.dart';
 import 'package:gecko/models/walletOptions.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
@@ -17,6 +22,9 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
   int walletNbr;
   String walletName;
   int derivation;
+  int _nbrLinesName = 1;
+  bool _isNewNameValid = false;
+  bool isDefaultWallet;
 
   @override
   Widget build(BuildContext context) {
@@ -26,137 +34,390 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
         Provider.of<WalletOptionsProvider>(context);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
+    HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
 
-    // _walletOptions.isWalletUnlock = false;
-    print("Is unlock ? ${_walletOptions.isWalletUnlock}");
+    final int _currentChest = _myWalletProvider.getCurrentChest();
+    final String shortPubkey =
+        _walletOptions.getShortPubkey(_walletOptions.pubkey.text);
+
+    if (_walletOptions.nameController.text == null ||
+        _isNewNameValid == false) {
+      _walletOptions.nameController.text = walletName;
+    } else {
+      walletName = _walletOptions.nameController.text;
+    }
+    _walletOptions.walletID = '0:$walletNbr';
+
+    _walletOptions.nameController.text.length >= 15
+        ? _nbrLinesName = 2
+        : _nbrLinesName = 1;
+    if (_walletOptions.nameController.text.length >= 26 && isTall)
+      _nbrLinesName = 3;
+
+    defaultWallet == _walletOptions.walletID
+        ? isDefaultWallet = true
+        : isDefaultWallet = false;
+
+    // print(_walletOptions.generateQRcode(_walletOptions.pubkey.text));
 
     return WillPopScope(
-        onWillPop: () {
-          _walletOptions.isWalletUnlock = false;
-          Navigator.popUntil(
-            context,
-            ModalRoute.withName('/mywallets'),
-          );
-          return Future<bool>.value(true);
-        },
-        child: Scaffold(
+      onWillPop: () {
+        _walletOptions.isEditing = false;
+        _walletOptions.isBalanceBlur = true;
+        Navigator.popUntil(
+          context,
+          ModalRoute.withName('/'),
+        );
+        Navigator.pushNamed(context, '/mywallets');
+        return Future<bool>.value(true);
+      },
+      child: Scaffold(
           resizeToAvoidBottomInset: false,
           appBar: AppBar(
               leading: IconButton(
                   icon: Icon(Icons.arrow_back, color: Colors.black),
                   onPressed: () {
-                    _walletOptions.isWalletUnlock = false;
+                    _walletOptions.isEditing = false;
+                    _walletOptions.isBalanceBlur = true;
                     Navigator.popUntil(
                       context,
-                      ModalRoute.withName('/mywallets'),
+                      ModalRoute.withName('/'),
                     );
+                    Navigator.pushNamed(context, '/mywallets');
                   }),
               title: SizedBox(
                 height: 22,
-                child: Text(walletName),
+                child: Text(_walletOptions.nameController.text),
               )),
           body: Builder(
-              builder: (ctx) => SafeArea(
-                    child: Column(children: <Widget>[
-                      Expanded(
+            builder: (ctx) => SafeArea(
+              child: Column(children: <Widget>[
+                Container(
+                  height: isTall ? 15 : 0,
+                  color: Color(0xffFFD68E),
+                ),
+                Container(
+                    decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xffFFD68E),
+                        Color(0xfffafafa),
+                      ],
+                    )),
+                    child: Row(children: <Widget>[
+                      SizedBox(width: 25),
+                      InkWell(
+                          onTap: () async {
+                            await _walletOptions.changeAvatar();
+                            print('CHANGE AVATAR');
+                          },
+                          child: Image.asset(
+                            'assets/chopp-gecko2.png',
+                          )),
+                      InkWell(
+                          onTap: () async {
+                            await _walletOptions.changeAvatar();
+                            print('CHANGE AVATAR');
+                          },
                           child: Column(children: <Widget>[
-                        SizedBox(height: 15),
-                        Text(
-                          'Clé publique:',
-                          style: TextStyle(
-                              fontSize: 15.0,
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w400),
-                        ),
-                        SizedBox(height: 15),
-                        GestureDetector(
-                            onTap: () {
-                              Clipboard.setData(ClipboardData(
-                                  text: _walletOptions.pubkey.text));
-                              _walletOptions.snackCopyKey(ctx);
-                            },
-                            child: Text(
-                              _walletOptions.pubkey.text,
-                              style: TextStyle(
-                                  fontSize: 14.0,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Monospace'),
-                            )),
-                        Expanded(
-                            child: Align(
-                                alignment: Alignment.bottomCenter,
-                                child: SizedBox(
-                                    height: 50,
-                                    width: 300,
-                                    child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          elevation: 5,
-                                          primary: Color(
-                                              0xffFFD68E), //Color(0xffFFD68E), // background
-                                          onPrimary: Colors.black, // foreground
-                                        ),
-                                        onPressed: () => _walletOptions
-                                                .renameWalletAlerte(
-                                                    context,
-                                                    walletName,
-                                                    walletNbr,
-                                                    derivation)
-                                                .then((_result) {
-                                              if (_result == true) {
-                                                WidgetsBinding.instance
-                                                    .addPostFrameCallback((_) {
-                                                  _myWalletProvider
-                                                          .listWallets =
-                                                      _myWalletProvider
-                                                          .getAllWalletsNames();
-                                                  _myWalletProvider
-                                                      .rebuildWidget();
-                                                });
-                                                Navigator.popUntil(
-                                                  context,
-                                                  ModalRoute.withName(
-                                                      '/mywallets'),
-                                                );
-                                              }
-                                            }),
-                                        child: Text('Renommer ce portefeuille',
-                                            style: TextStyle(fontSize: 20)))))),
-                        SizedBox(height: 30),
-                        SizedBox(
-                            height: 50,
-                            width: 300,
-                            child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  elevation: 6,
-                                  primary: Colors
-                                      .redAccent, //Color(0xffFFD68E), // background
-                                  onPrimary: Colors.black, // foreground
-                                ),
-                                onPressed: () async {
-                                  await _walletOptions.deleteWallet(context,
-                                      walletNbr, walletName, derivation);
-                                  WidgetsBinding.instance
-                                      .addPostFrameCallback((_) {
-                                    _myWalletProvider.listWallets =
-                                        _myWalletProvider.getAllWalletsNames();
-                                    _myWalletProvider.rebuildWidget();
-                                  });
+                            Image.asset(
+                              'assets/walletOptions/camera.png',
+                            ),
+                            SizedBox(height: 100)
+                          ])),
+                      // SizedBox(width: 20),
+                      Column(children: <Widget>[
+                        Row(children: <Widget>[
+                          Column(children: <Widget>[
+                            SizedBox(
+                              width: 260,
+                              child: TextField(
+                                  // autofocus: true,
+                                  focusNode: _walletOptions.walletNameFocus,
+                                  enabled: _walletOptions.isEditing,
+                                  controller: _walletOptions.nameController,
+                                  maxLines: _nbrLinesName,
+                                  textAlign: TextAlign.center,
+                                  decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    focusedBorder: InputBorder.none,
+                                    enabledBorder: InputBorder.none,
+                                    disabledBorder: InputBorder.none,
+                                    contentPadding: EdgeInsets.all(15.0),
+                                  ),
+                                  style: TextStyle(
+                                      fontSize: isTall ? 27 : 23,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w400,
+                                      fontFamily: 'Monospace')),
+                            ),
+                            SizedBox(height: isTall ? 5 : 0),
+                            Query(
+                              options: QueryOptions(
+                                document: gql(getBalance),
+                                variables: {
+                                  'pubkey': _walletOptions.pubkey.text,
                                 },
-                                child: Text('Supprimer ce portefeuille',
-                                    style: TextStyle(fontSize: 20)))),
-                        SizedBox(height: 50),
-                        Text(
-                          'Portefeuille déverrouillé',
+                                pollInterval: Duration(seconds: 1),
+                              ),
+                              builder: (QueryResult result,
+                                  {VoidCallback refetch, FetchMore fetchMore}) {
+                                if (result.hasException) {
+                                  return Text(result.exception.toString());
+                                }
+
+                                if (result.isLoading) {
+                                  return Text('Loading');
+                                }
+                                // List repositories = result.data['viewer']['repositories']['nodes'];
+                                String wBalanceUD;
+                                if (result.data['balance'] == null) {
+                                  wBalanceUD = '0.0';
+                                } else {
+                                  int wBalanceG1 =
+                                      result.data['balance']['amount'];
+                                  int currentUD =
+                                      result.data['currentUd']['amount'];
+                                  double wBalanceUDBrut =
+                                      wBalanceG1 / currentUD; // .toString();
+                                  wBalanceUD = double.parse(
+                                          (wBalanceUDBrut).toStringAsFixed(2))
+                                      .toString();
+                                }
+                                return Row(children: <Widget>[
+                                  ImageFiltered(
+                                    imageFilter: ImageFilter.blur(
+                                        sigmaX: _walletOptions.isBalanceBlur
+                                            ? 6
+                                            : 0,
+                                        sigmaY: _walletOptions.isBalanceBlur
+                                            ? 5
+                                            : 0),
+                                    child: Text('$wBalanceUD',
+                                        style: TextStyle(
+                                            fontSize: isTall ? 20 : 18,
+                                            color: Colors.black)),
+                                  ),
+                                  Text(' DU',
+                                      style: TextStyle(
+                                          fontSize: isTall ? 20 : 18,
+                                          color: Colors.black))
+                                ]);
+
+                                // Text(
+                                //   '$wBalanceUD DU',
+                                //   style: TextStyle(
+                                //       fontSize: 20, color: Colors.black),
+                                // );
+                              },
+                            ),
+                            SizedBox(height: 5),
+                            InkWell(
+                                onTap: () {
+                                  _walletOptions.bluringBalance();
+                                },
+                                child: Image.asset(
+                                  _walletOptions.isBalanceBlur
+                                      ? 'assets/walletOptions/icon_oeuil.png'
+                                      : 'assets/walletOptions/icon_oeuil_close.png',
+                                )),
+                          ]),
+                          SizedBox(width: 0),
+                          Column(children: <Widget>[
+                            InkWell(
+                                onTap: () async {
+                                  // _walletOptions.isEditing = true;
+                                  // _walletOptions.reloadBuild();
+                                  // _walletOptions.walletNameFocus
+                                  // .requestFocus();
+                                  _isNewNameValid = await _walletOptions
+                                      .editWalletName(_walletOptions.walletID);
+                                  //     .then((_) {
+                                  //   _walletOptions.walletNameFocus
+                                  //       .requestFocus();
+                                  //   _walletOptions.reloadBuild();
+                                  // });
+
+                                  //     .then(
+                                  //   (_result) {
+                                  //     if (_result == true) {
+                                  //       WidgetsBinding.instance
+                                  //           .addPostFrameCallback((_) {
+                                  //         _myWalletProvider.listWallets =
+                                  //             _myWalletProvider
+                                  //                 .getAllWalletsNames(
+                                  //                     _currentChest);
+                                  //         _myWalletProvider.rebuildWidget();
+                                  //       });
+                                  //       Navigator.popUntil(
+                                  //         context,
+                                  //         ModalRoute.withName('/mywallets'),
+                                  //       );
+                                  //     }
+                                  //   },
+                                  // );
+                                },
+                                child: ClipRRect(
+                                  child: Image.asset(
+                                      _walletOptions.isEditing
+                                          ? 'assets/walletOptions/android-checkmark.png'
+                                          : 'assets/walletOptions/edit.png',
+                                      width: 20,
+                                      height: 20),
+                                )),
+                            // Image.asset(
+                            //   'assets/walletOptions/edit.png',
+                            // ),
+                            SizedBox(
+                              height: 60,
+                            )
+                          ])
+                        ]),
+                      ]),
+                    ])),
+                SizedBox(height: 4 * ratio),
+                FutureBuilder(
+                    future: _walletOptions
+                        .generateQRcode(_walletOptions.pubkey.text),
+                    builder: (context, snapshot) {
+                      return snapshot.data != null
+                          ? Image.memory(snapshot.data,
+                              height: isTall ? 300 : 270)
+                          : Text('-', style: TextStyle(fontSize: 20));
+                    }),
+                SizedBox(height: 15 * ratio),
+                GestureDetector(
+                    onTap: () {
+                      Clipboard.setData(
+                          ClipboardData(text: _walletOptions.pubkey.text));
+                      _walletOptions.snackCopyKey(ctx);
+                    },
+                    child: SizedBox(
+                        height: 50,
+                        child: Row(children: <Widget>[
+                          SizedBox(width: 30),
+                          Image.asset(
+                            'assets/walletOptions/key.png',
+                          ),
+                          SizedBox(width: 10),
+                          Text("${shortPubkey.split(':')[0]}:",
+                              style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  fontFamily: 'Monospace',
+                                  color: Colors.black)),
+                          Text(shortPubkey.split(':')[1],
+                              style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  fontFamily: 'Monospace')),
+                          SizedBox(width: 15),
+                          SizedBox(
+                              height: 40,
+                              child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          new BorderRadius.circular(8),
+                                    ),
+                                    elevation: 1,
+                                    primary: Color(0xffD28928), // background
+                                    onPrimary: Colors.black, // foreground
+                                  ),
+                                  onPressed: () {
+                                    Clipboard.setData(ClipboardData(
+                                        text: _walletOptions.pubkey.text));
+                                    _walletOptions.snackCopyKey(ctx);
+                                  },
+                                  child: Row(children: <Widget>[
+                                    Image.asset(
+                                      'assets/walletOptions/copy-white.png',
+                                    ),
+                                    SizedBox(width: 7),
+                                    Text('Copier',
+                                        style: TextStyle(
+                                            fontSize: 15,
+                                            color: Colors.grey[50]))
+                                  ]))),
+                        ]))),
+                SizedBox(height: 10 * ratio),
+                InkWell(
+                    onTap: () {
+                      _historyProvider.isPubkey(ctx, _walletOptions.pubkey.text,
+                          goHistory: true);
+                    },
+                    child: SizedBox(
+                        height: 50,
+                        child: Row(children: <Widget>[
+                          SizedBox(width: 30),
+                          Image.asset(
+                            'assets/walletOptions/clock.png',
+                          ),
+                          SizedBox(width: 12),
+                          Text('Historique des transactions',
+                              style:
+                                  TextStyle(fontSize: 20, color: Colors.black)),
+                        ]))),
+                SizedBox(height: 12 * ratio),
+                InkWell(
+                    onTap: !isDefaultWallet
+                        ? () async {
+                            await _walletOptions
+                                .defAsDefaultWallet(_walletOptions.walletID)
+                                .then((value) => {
+                                      _myWalletProvider
+                                          .getAllWalletsNames(_currentChest),
+                                      _myWalletProvider.rebuildWidget()
+                                    });
+                          }
+                        : null,
+                    child: SizedBox(
+                        height: 50,
+                        child: Row(children: <Widget>[
+                          SizedBox(width: 31),
+                          CircleAvatar(
+                              backgroundColor:
+                                  Colors.grey[isDefaultWallet ? 300 : 500],
+                              child: Image.asset(
+                                'assets/walletOptions/android-checkmark.png',
+                              )),
+                          SizedBox(width: 12),
+                          Text(
+                              isDefaultWallet
+                                  ? 'Ce portefeuille est celui par defaut'
+                                  : 'Définir comme portefeuille par défaut',
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  color: isDefaultWallet
+                                      ? Colors.grey[500]
+                                      : Colors.black)),
+                        ]))),
+                SizedBox(height: 17 * ratio),
+                InkWell(
+                    onTap: () async {
+                      await _walletOptions.deleteWallet(
+                          context, walletNbr, walletName, derivation);
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _myWalletProvider.listWallets =
+                            _myWalletProvider.getAllWalletsNames(_currentChest);
+                        _myWalletProvider.rebuildWidget();
+                      });
+                    },
+                    child: Row(children: <Widget>[
+                      SizedBox(width: 33),
+                      Image.asset(
+                        'assets/walletOptions/trash.png',
+                      ),
+                      SizedBox(width: 14),
+                      Text('Supprimer ce portefeuille',
                           style: TextStyle(
-                              color: Colors.green,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15),
-                        ),
-                        SizedBox(height: 10)
-                      ])),
-                    ]),
-                  )),
-        ));
+                              fontSize: 20, color: Color(0xffD80000))),
+                    ])),
+              ]),
+            ),
+          )),
+    );
   }
 }

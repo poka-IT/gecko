@@ -1,9 +1,15 @@
 import 'dart:io';
+import 'dart:typed_data';
+import 'package:crypto/crypto.dart';
 import 'package:dubp/dubp.dart';
+import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:truncate/truncate.dart';
+import 'package:qrscan/qrscan.dart' as scanner;
 
 class WalletOptionsProvider with ChangeNotifier {
   TextEditingController pubkey = TextEditingController();
@@ -11,6 +17,11 @@ class WalletOptionsProvider with ChangeNotifier {
   bool isWalletUnlock = false;
   bool ischangedPin = false;
   TextEditingController newPin = new TextEditingController();
+  bool isEditing = false;
+  bool isBalanceBlur = true;
+  FocusNode walletNameFocus = FocusNode();
+  TextEditingController nameController = TextEditingController();
+  String walletID;
 
   Future<NewWallet> get badWallet => null;
 
@@ -65,8 +76,7 @@ class WalletOptionsProvider with ChangeNotifier {
       int _walletNbr, String _pin, int _pinLenght, int derivation) async {
     isWalletUnlock = false;
     try {
-      File _walletFile =
-          File('${walletsDirectory.path}/$_walletNbr/wallet.dewif');
+      File _walletFile = File('${walletsDirectory.path}/0/wallet.dewif');
       String _localDewif = await _walletFile.readAsString();
       String _localPubkey;
 
@@ -107,8 +117,7 @@ class WalletOptionsProvider with ChangeNotifier {
   int getPinLenght(_walletNbr) {
     String _localDewif;
     if (_walletNbr is int) {
-      File _walletFile =
-          File('${walletsDirectory.path}/$_walletNbr/wallet.dewif');
+      File _walletFile = File('${walletsDirectory.path}/0/wallet.dewif');
       _localDewif = _walletFile.readAsStringSync();
     } else {
       _localDewif = _walletNbr;
@@ -120,22 +129,36 @@ class WalletOptionsProvider with ChangeNotifier {
     return _pinLenght;
   }
 
-  Future _renameWallet(_walletName, _newName, _walletNbr, _derivation) async {
-    final _walletConfig =
-        File('${walletsDirectory.path}/$_walletNbr/config.txt');
+  Future _renameWallet(_walletID, _newName) async {
+    final _walletConfig = File('${walletsDirectory.path}/0/list.conf');
 
     String newConfig =
         await _walletConfig.readAsLines().then((List<String> lines) {
       int nbrLines = lines.length;
-      int _index = lines.indexOf('$_walletNbr:$_walletName:$_derivation');
-      print(nbrLines);
+      // print(lines);
+      // print(nbrLines);
+      // int _index = lines.indexOf('0:$_walletNbr:$_walletName:$_derivation');
       if (nbrLines != 1) {
-        lines.removeWhere((element) =>
-            element.contains('$_walletNbr:$_walletName:$_derivation'));
-        lines.insert(_index, '$_walletNbr:$_newName:$_derivation');
+        for (String wLine in lines) {
+          String wID = "${wLine.split(':')[0]}:${wLine.split(':')[1]}";
+          print(
+              "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+          print(wLine);
+          String deri = wLine.split(':')[3];
+          print("($wID == $_walletID ???");
+          if (wID == _walletID) {
+            lines.remove(wLine);
+            lines.add('$_walletID:$_newName:$deri');
+            // return '$_walletID:$_newName:$deri';
+            print('OOUUUUUUUIIIIIIIIIIIIIIIIIII');
+          }
+        }
+        // lines.removeWhere((element) =>
+        //     '${element.split(':')[0]}:${element.split(':')[1]}' == _walletID);
+        // lines.add('$_walletID:$_newName:$deri');
         return lines.join('\n');
       } else {
-        return '$_walletNbr:$_newName:$_derivation';
+        return 'true';
       }
     });
 
@@ -172,8 +195,8 @@ class WalletOptionsProvider with ChangeNotifier {
               child: Text("Valider"),
               onPressed: () {
                 WidgetsBinding.instance.addPostFrameCallback((_) async {
-                  await _renameWallet(_walletName, this._newWalletName.text,
-                      _walletNbr, _derivation);
+                  // await _renameWallet(_walletName, this._newWalletName.text,
+                  //     _walletNbr, _derivation);
                 });
                 // notifyListeners();
                 Navigator.pop(context, true);
@@ -185,18 +208,37 @@ class WalletOptionsProvider with ChangeNotifier {
     );
   }
 
+  Future<bool> editWalletName(_wID) async {
+    bool nameState;
+    if (isEditing) {
+      if (!nameController.text.contains(':') &&
+          nameController.text.length <= 39) {
+        await _renameWallet(_wID, nameController.text);
+        nameState = true;
+      } else {
+        nameState = false;
+      }
+    } else {
+      walletNameFocus.requestFocus();
+      nameState = true;
+    }
+
+    isEditing ? isEditing = false : isEditing = true;
+    notifyListeners();
+    return nameState;
+  }
+
   Future<int> deleteWallet(context, _walletNbr, _name, _derivation) async {
     final bool _answer = await _confirmDeletingWallet(context, _name);
 
     if (_answer) {
-      final _walletConfig =
-          File('${walletsDirectory.path}/$_walletNbr/config.txt');
+      final _walletConfig = File('${walletsDirectory.path}/0/list.conf');
 
       if (_derivation != -1) {
         String newConfig =
             await _walletConfig.readAsLines().then((List<String> lines) {
-          lines.removeWhere(
-              (element) => element.contains('$_walletNbr:$_name:$_derivation'));
+          lines.removeWhere((element) =>
+              element.contains('0:$_walletNbr:$_name:$_derivation'));
 
           return lines.join('\n');
         });
@@ -287,6 +329,53 @@ class WalletOptionsProvider with ChangeNotifier {
             Text("Cette clé publique a été copié dans votre presse-papier."),
         duration: Duration(seconds: 2));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  String getShortPubkey(String pubkey) {
+    List<int> pubkeyByte = Base58Decode(pubkey);
+    Digest pubkeyS256 = sha256.convert(sha256.convert(pubkeyByte).bytes);
+    String pubkeyCheksum = Base58Encode(pubkeyS256.bytes);
+    String pubkeyChecksumShort = truncate(pubkeyCheksum, 3,
+        omission: "", position: TruncatePosition.end);
+
+    String pubkeyShort = truncate(pubkey, 5,
+            omission: String.fromCharCode(0x2026),
+            position: TruncatePosition.end) +
+        truncate(pubkey, 4, omission: "", position: TruncatePosition.start) +
+        ':$pubkeyChecksumShort';
+
+    return pubkeyShort;
+  }
+
+  void bluringBalance() {
+    isBalanceBlur = !isBalanceBlur;
+    notifyListeners();
+  }
+
+  Future<Uint8List> generateQRcode(String _pubkey) async {
+    return await scanner.generateBarCode(_pubkey);
+  }
+
+  Future defAsDefaultWallet(String _id) async {
+    await defaultWalletFile.delete();
+    await defaultWalletFile.create();
+    await defaultWalletFile
+        .writeAsString(_id)
+        .then((value) => notifyListeners());
+  }
+
+  Future changeAvatar() async {
+    File _image;
+    final picker = ImagePicker();
+
+    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      _image = File(pickedFile.path);
+      return _image;
+    } else {
+      print('No image selected.');
+    }
   }
 
   void reloadBuild() {

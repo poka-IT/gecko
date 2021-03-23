@@ -1,7 +1,7 @@
 const String getHistory = r'''
   query ($pubkey: String!, $number: Int!, $cursor: String) {
         txsHistoryBc(
-            pubkeyOrScript: $pubkey
+            script: $pubkey
             pagination: { pageSize: $number, ord: DESC, cursor: $cursor }
         ) {
             both {
@@ -52,8 +52,13 @@ const String getHistory = r'''
 
 const String getBalance = r'''
   query ($pubkey: String!) {
-    balance(script: $pubkey) {
-      amount
-      base
+      balance(script: $pubkey) {
+        amount
+        base
+      }
+      currentUd {
+        amount
+        base
+      }
     }
   ''';

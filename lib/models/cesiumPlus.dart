@@ -67,7 +67,7 @@ class CesiumPlusProvider with ChangeNotifier {
     String _name;
 
     List queryOptions = await _buildQuery(_pubkey);
-    final response = await http.post(queryOptions[0],
+    final response = await http.post((Uri.parse(queryOptions[0])),
         body: queryOptions[1], headers: queryOptions[2]);
     // print('RESULT CESIUM QUERY: ${response.body}'); //For debug
     final responseJson = json.decode(response.body);
@@ -87,7 +87,7 @@ class CesiumPlusProvider with ChangeNotifier {
 
   Future<List> getAvatar(String _pubkey) async {
     List queryOptions = await _buildQuery(_pubkey);
-    final response = await http.post(queryOptions[0],
+    final response = await http.post((Uri.parse(queryOptions[0])),
         body: queryOptions[1], headers: queryOptions[2]);
     // print('RESULT CESIUM QUERY: ${response.body}'); //For debug
     final responseJson = json.decode(response.body);

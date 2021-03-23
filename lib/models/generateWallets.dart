@@ -10,7 +10,6 @@ import 'package:gecko/globals.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:truncate/truncate.dart';
 
 class GenerateWalletsProvider with ChangeNotifier {
   GenerateWalletsProvider();
@@ -39,50 +38,38 @@ class GenerateWalletsProvider with ChangeNotifier {
   bool canImport = false;
   bool isPinChanged = false;
 
-  Future storeWallet(NewWallet wallet, String _name, BuildContext context,
-      {bool isHD = false}) async {
-    int nbrWallet;
-    if (isHD) {
-      nbrWallet = 0;
-    } else {
-      nbrWallet = 1;
+  Future storeHDWChest(
+      NewWallet _wallet, String _name, BuildContext context) async {
+    // Directory walletDirectory;
+
+    final Directory hdDirectory = Directory('${walletsDirectory.path}/0');
+    await hdDirectory.create();
+
+    final configFile = File('${hdDirectory.path}/list.conf');
+    File _currentChestFile = File('${walletsDirectory.path}/currentChest.conf');
+
+    final dewifFile = File('${hdDirectory.path}/wallet.dewif');
+
+    // List<String> _lastConfig = [];
+    // _lastConfig = await masterConfigFile.readAsLines();
+    // final int _lastDerivation = int.parse(_lastConfig.last.split(':')[2]);
+    // final int _derivationNbr = _lastDerivation + 3;
+
+    final int _derivationNbr = 3;
+    List _pubkeysTmp = await DubpRust.getBip32DewifAccountsPublicKeys(
+        dewif: _wallet.dewif,
+        secretCode: _wallet.pin,
+        accountsIndex: [_derivationNbr]);
+    String _pubkey = _pubkeysTmp[0];
+
+    await configFile.writeAsString('0:0:$_name:$_derivationNbr:$_pubkey');
+    await dewifFile.writeAsString(_wallet.dewif);
+    bool isCurrentChestExist = _currentChestFile.existsSync();
+    if (isCurrentChestExist) {
+      await _currentChestFile.delete();
     }
-
-    Directory walletNbrDirectory;
-    do {
-      nbrWallet++;
-      walletNbrDirectory = Directory('${walletsDirectory.path}/$nbrWallet');
-    } while (await walletNbrDirectory.exists());
-
-    final walletFile = File('${walletNbrDirectory.path}/wallet.dewif');
-
-    await walletNbrDirectory.create();
-    await walletFile.writeAsString(wallet.dewif);
-
-    final configFile = File('${walletNbrDirectory.path}/config.txt');
-
-    if (isHD) {
-      final int _derivationNbr = 3;
-      List _pubkeysTmp = await DubpRust.getBip32DewifAccountsPublicKeys(
-          dewif: wallet.dewif,
-          secretCode: wallet.pin,
-          accountsIndex: [_derivationNbr]);
-      String _pubkey = _pubkeysTmp[0];
-
-      await configFile
-          .writeAsString('$nbrWallet:$_name:$_derivationNbr:$_pubkey');
-      // Navigator.pop(context, true);
-    } else {
-      final int _derivationNbr = -1;
-      String _pubkey = await DubpRust.getDewifPublicKey(
-        dewif: wallet.dewif,
-        pin: wallet.pin,
-      );
-      await configFile
-          .writeAsString('$nbrWallet:$_name:$_derivationNbr:$_pubkey');
-    }
-
-    // Navigator.pop(context, true);
+    await _currentChestFile.create();
+    await _currentChestFile.writeAsString('0');
 
     return _name;
   }
@@ -167,11 +154,9 @@ class GenerateWalletsProvider with ChangeNotifier {
       generatedMnemonic = await DubpRust.genMnemonic(language: Language.french);
       this.actualWallet = await generateWallet(this.generatedMnemonic);
       walletIsGenerated = true;
-      // notifyListeners();
     } catch (e) {
       print(e);
     }
-    // await checkIfWalletExist();
     return generatedMnemonic;
   }
 
@@ -259,12 +244,12 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   Future importWallet(context, _cesiumID, _cesiumPWD) async {
-    String _walletPubkey = await DubpRust.getLegacyPublicKey(
-        salt: _cesiumID, password: _cesiumPWD);
-    String shortPubkey = truncate(_walletPubkey, 9,
-        omission: "...", position: TruncatePosition.end);
-    await storeWallet(
-        actualWallet, 'Portefeuille Cesium - $shortPubkey', context);
+    // String _walletPubkey = await DubpRust.getLegacyPublicKey(
+    //     salt: _cesiumID, password: _cesiumPWD);
+    // String shortPubkey = truncate(_walletPubkey, 9,
+    //     omission: "...", position: TruncatePosition.end);
+    // await storeWallet(
+    //     actualWallet, 'Portefeuille Cesium - $shortPubkey', context);
     cesiumID.text = '';
     cesiumPWD.text = '';
     cesiumPubkey.text = '';

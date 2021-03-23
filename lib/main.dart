@@ -25,12 +25,14 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   HomeProvider _homeProvider = HomeProvider();
+  MyWalletsProvider _walletsProvider = MyWalletsProvider();
   await _homeProvider.getAppPath();
   await _homeProvider.createDefaultAvatar();
+  await _walletsProvider.initWalletFolder();
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
-  final HiveStore _store =
-      await HiveStore.open(path: '${appPath.path}/gqlCache');
+  // final HiveStore _store =
+  //     await HiveStore.open(path: '${appPath.path}/gqlCache');
 
   // Get a valid GVA endpoint
   endPointGVA = await _homeProvider.getValidEndpoint();
@@ -49,7 +51,7 @@ Future<void> main() async {
     await SentryFlutter.init((options) {
       options.dsn =
           'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
-    }, appRunner: () => runApp(Gecko(endPointGVA, _store)));
+    }, appRunner: () => runApp(Gecko(endPointGVA)));
 
     // runZoned<Future<void>>(
     //       () async {
@@ -66,14 +68,13 @@ Future<void> main() async {
   } else {
     print('Debug mode enabled: No sentry alerte');
 
-    runApp(Gecko(endPointGVA, _store));
+    runApp(Gecko(endPointGVA));
   }
 }
 
 class Gecko extends StatelessWidget {
-  Gecko(this.randomEndpoint, this._store);
+  Gecko(this.randomEndpoint);
   final String randomEndpoint;
-  final HiveStore _store;
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +85,7 @@ class Gecko extends StatelessWidget {
 
     final _client = ValueNotifier(
       GraphQLClient(
-        cache: GraphQLCache(store: _store),
+        cache: GraphQLCache(),
         link: _httpLink,
       ),
     );

@@ -28,6 +28,7 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
         Provider.of<GenerateWalletsProvider>(context);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
+    final int _currentChest = _myWalletProvider.getCurrentChest();
 
     this._mnemonicController.text = generatedMnemonic;
     return WillPopScope(
@@ -126,11 +127,10 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                                         .isAskedWordValid &&
                                     this.walletName.text != '')
                                 ? () async {
-                                    await _generateWalletProvider.storeWallet(
+                                    await _generateWalletProvider.storeHDWChest(
                                         generatedWallet,
                                         walletName.text,
-                                        context,
-                                        isHD: true);
+                                        context);
                                     _generateWalletProvider.isAskedWordValid =
                                         false;
                                     _generateWalletProvider.askedWordColor =
@@ -138,8 +138,8 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                                     WidgetsBinding.instance
                                         .addPostFrameCallback((_) {
                                       _myWalletProvider.listWallets =
-                                          _myWalletProvider
-                                              .getAllWalletsNames();
+                                          _myWalletProvider.getAllWalletsNames(
+                                              _currentChest);
                                       _myWalletProvider.rebuildWidget();
                                     });
                                   }

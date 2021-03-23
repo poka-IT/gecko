@@ -61,6 +61,8 @@ class OnboardingStepFourteen extends StatelessWidget {
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
 
+    final int _currentChest = _myWalletProvider.getCurrentChest();
+
     return Form(
       key: formKey,
       child: Padding(
@@ -116,10 +118,9 @@ class OnboardingStepFourteen extends StatelessWidget {
               if (resultWallet) {
                 pinColor = Colors.green[500];
                 print(generatedWallet.pin);
-                await _generateWalletProvider.storeWallet(
-                    generatedWallet, 'Mon portefeuille courant', context,
-                    isHD: true);
-                _myWalletProvider.getAllWalletsNames();
+                await _generateWalletProvider.storeHDWChest(
+                    generatedWallet, 'Mon portefeuille courant', context);
+                _myWalletProvider.getAllWalletsNames(_currentChest);
                 _walletOptions.reloadBuild();
                 _myWalletProvider.rebuildWidget();
                 Navigator.push(

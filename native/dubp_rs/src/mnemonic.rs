@@ -24,7 +24,7 @@ pub(super) fn gen_mnemonic(language: Language) -> Result<String, DubpError> {
 pub(super) fn mnemonic_to_pubkey(language: Language, mnemonic: &str) -> Result<String, DubpError> {
     let mnemonic =
         Mnemonic::from_phrase(mnemonic, language).map_err(|_| DubpError::WrongLanguage)?;
-    let seed = dup_crypto::mnemonic::mnemonic_to_seed(&mnemonic);
+    let seed = dubp_client::crypto::mnemonic::mnemonic_to_seed(&mnemonic);
     let keypair = KeyPairFromSeed32Generator::generate(seed);
     Ok(keypair.public_key().to_base58())
 }

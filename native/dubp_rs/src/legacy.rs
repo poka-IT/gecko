@@ -14,7 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use crate::*;
-use dup_crypto::keys::ed25519::{KeyPairFromSaltedPasswordGenerator, SaltedPassword};
+use dubp_client::crypto::keys::ed25519::{KeyPairFromSaltedPasswordGenerator, SaltedPassword};
 
 pub(super) fn gen_dewif_from_legacy(
     currency: &str,
@@ -30,7 +30,8 @@ pub(super) fn gen_dewif_from_legacy(
 
     let log_n = crate::dewif::log_n(system_memory);
     let secret_code = gen_secret_code(member_wallet, secret_code_type, log_n)?;
-    let dewif = dup_crypto::dewif::write_dewif_v3_content(currency, &keypair, log_n, &secret_code);
+    let dewif =
+        dubp_client::crypto::dewif::write_dewif_v3_content(currency, &keypair, log_n, &secret_code);
     let pubkey = keypair.public_key().to_base58();
     Ok(vec![dewif, secret_code, pubkey])
 }

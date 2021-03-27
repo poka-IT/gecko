@@ -399,6 +399,35 @@ class DubpRust {
     return completer.future;
   }
 
+  ///  Make a simple payment from a transparent account
+  static Future<void> simplePaymentFromTransparentAccount(
+      {int accountIndex,
+      double amount,
+      String currency = "g1",
+      String dewif,
+      String gvaEndpoint,
+      String recipient,
+      String secretCode,
+      String txComment}) {
+    final completer = Completer<void>();
+    final sendPort =
+        singleCompletePort<void, String>(completer, callback: _handleErrVoid);
+
+    native.simple_payment_bip32(
+      sendPort.nativePort,
+      accountIndex,
+      amount,
+      StringUtf8Pointer(currency).toNativeUtf8(),
+      StringUtf8Pointer(dewif).toNativeUtf8(),
+      StringUtf8Pointer(gvaEndpoint).toNativeUtf8(),
+      StringUtf8Pointer(recipient).toNativeUtf8(),
+      StringUtf8Pointer(secretCode).toNativeUtf8(),
+      StringUtf8Pointer(txComment).toNativeUtf8(),
+    );
+
+    return completer.future;
+  }
+
   static Pointer<Uint32> _listIntToPtrUint32(List<int> list) {
     final listUint32 = list.map((i) => i.toUnsigned(31)).toList();
     final Pointer<Uint32> ptr = malloc.allocate(listUint32.length);

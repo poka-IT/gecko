@@ -52,6 +52,20 @@ pub(crate) fn char_ptr_to_str<'a>(c_char_ptr: *const raw::c_char) -> Result<&'a 
     }
 }
 
+pub(crate) fn char_ptr_to_opt_string(
+    c_char_ptr: *const raw::c_char,
+) -> Result<Option<String>, DubpError> {
+    Ok(if c_char_ptr.is_null() {
+        None
+    } else {
+        Some(
+            unsafe { CStr::from_ptr(c_char_ptr).to_str() }
+                .map_err(DubpError::Utf8Error)?
+                .to_owned(),
+        )
+    })
+}
+
 pub(crate) fn char_ptr_prt_to_vec_u31(
     u32_ptr: *const u32,
     len: u32,

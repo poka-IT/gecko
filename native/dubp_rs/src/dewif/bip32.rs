@@ -34,7 +34,7 @@ pub(crate) fn get_accounts_pubkeys(
     if accounts_indexs.contains(&U31::new(0)?) {
         verify_member_secret_code(currency, dewif, secret_code)?;
     }
-    let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
+    let mut keypairs = dubp_client::crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),
@@ -53,15 +53,15 @@ pub(crate) fn get_accounts_pubkeys(
     }
 }
 
-pub(crate) fn get_bip32_pubkey(
+pub(crate) fn get_bip32_keypair(
     account_index: u32,
     address_index_opt: Option<U31>,
     currency: Currency,
     dewif: &str,
     external_opt: Option<bool>,
     secret_code: &str,
-) -> Result<String, DubpError> {
-    let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
+) -> Result<KeyPairEnum, DubpError> {
+    let mut keypairs = dubp_client::crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),
@@ -73,12 +73,44 @@ pub(crate) fn get_bip32_pubkey(
     }
 
     match keypairs.next() {
-        Some(KeyPairEnum::Bip32Ed25519(master_keypair)) => get_bip32_pubkey_inner(
-            account_index,
-            address_index_opt,
-            external_opt,
-            master_keypair,
-        ),
+        Some(KeyPairEnum::Bip32Ed25519(master_keypair)) => {
+            Ok(KeyPairEnum::Bip32Ed25519(master_keypair.derive(
+                z_get_derivation_path(account_index, address_index_opt, external_opt)?,
+            )))
+        }
+        Some(_) => Err(DubpError::NotHdWallet),
+        None => Err(DubpError::DewifReadError(DewifReadError::CorruptedContent)),
+    }
+}
+
+pub(crate) fn get_bip32_pubkey(
+    account_index: u32,
+    address_index_opt: Option<U31>,
+    currency: Currency,
+    dewif: &str,
+    external_opt: Option<bool>,
+    secret_code: &str,
+) -> Result<String, DubpError> {
+    let mut keypairs = dubp_client::crypto::dewif::read_dewif_file_content(
+        ExpectedCurrency::Specific(currency),
+        dewif,
+        &secret_code.to_ascii_uppercase(),
+    )
+    .map_err(DubpError::DewifReadError)?;
+
+    if account_index == 0 {
+        verify_member_secret_code(currency, dewif, secret_code)?;
+    }
+
+    match keypairs.next() {
+        Some(KeyPairEnum::Bip32Ed25519(master_keypair)) => Ok(master_keypair
+            .derive(z_get_derivation_path(
+                account_index,
+                address_index_opt,
+                external_opt,
+            )?)
+            .public_key()
+            .to_base58()),
         Some(_) => Err(DubpError::NotHdWallet),
         None => Err(DubpError::DewifReadError(DewifReadError::CorruptedContent)),
     }
@@ -111,7 +143,7 @@ pub(crate) fn load_opaque_bip32_accounts(
     dewif: &str,
     secret_code: &str,
 ) -> Result<(), DubpError> {
-    let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
+    let mut keypairs = dubp_client::crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),
@@ -147,7 +179,7 @@ pub(crate) fn sign_bip32(
     secret_code: &str,
     msg: &str,
 ) -> Result<String, DubpError> {
-    let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
+    let mut keypairs = dubp_client::crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),
@@ -180,7 +212,7 @@ pub(crate) fn sign_several_bip32(
     secret_code: &str,
     msgs: &[&str],
 ) -> Result<Vec<String>, DubpError> {
-    let mut keypairs = dup_crypto::dewif::read_dewif_file_content(
+    let mut keypairs = dubp_client::crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),
@@ -202,22 +234,6 @@ pub(crate) fn sign_several_bip32(
         Some(_) => Err(DubpError::NotHdWallet),
         None => Err(DubpError::DewifReadError(DewifReadError::CorruptedContent)),
     }
-}
-
-fn get_bip32_pubkey_inner(
-    account_index: u32,
-    address_index_opt: Option<U31>,
-    external_opt: Option<bool>,
-    master_keypair: KeyPair,
-) -> Result<String, DubpError> {
-    Ok(master_keypair
-        .derive(z_get_derivation_path(
-            account_index,
-            address_index_opt,
-            external_opt,
-        )?)
-        .public_key()
-        .to_base58())
 }
 
 fn sign_bip32_inner(
@@ -265,9 +281,11 @@ fn verify_member_secret_code(
     secret_code: &str,
 ) -> Result<(), DubpError> {
     if crate::secret_code::is_ascii_letters(secret_code) {
-        let log_n =
-            dup_crypto::dewif::read_dewif_log_n(ExpectedCurrency::Specific(currency), dewif)
-                .map_err(DubpError::DewifReadError)?;
+        let log_n = dubp_client::crypto::dewif::read_dewif_log_n(
+            ExpectedCurrency::Specific(currency),
+            dewif,
+        )
+        .map_err(DubpError::DewifReadError)?;
         let expected_secret_code_len =
             crate::secret_code::compute_secret_code_len(true, SecretCodeType::Letters, log_n)?;
 

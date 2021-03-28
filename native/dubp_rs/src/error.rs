@@ -16,6 +16,7 @@
 use crate::*;
 
 /// Dubp error
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Error)]
 pub(crate) enum DubpError {
     #[error("{0}")]
@@ -26,12 +27,16 @@ pub(crate) enum DubpError {
     GetMasterPubkeyOfHdWallet,
     #[error("Give external bool or address index for legacy wallet.")]
     GiveExternalBoolOrAddressIndexForLegacyWallet,
+    #[error("{0}")]
+    GvaClientError(dubp_client::GvaClientError),
     #[error("I/O error: {0}")]
     IoErr(io::Error),
     #[error("{0}")]
     InvalidAccountIndex(InvalidAccountIndex),
     #[error("{0}")]
     InvalidPubkey(PublicKeyFromStrErr),
+    #[error("{0}")]
+    InvalidScript(dubp_client::documents_parser::TextParseError),
     #[error("{0}")]
     InvalidU31(U31Error),
     #[error("Invalid secret code type")]
@@ -44,6 +49,8 @@ pub(crate) enum DubpError {
     NullParamErr,
     #[error("Opaque account not loaded")]
     OpaqueAccountNotLoaded,
+    #[error("Payment error: {0}")]
+    PaymentError(String),
     #[error("Secret code too short: please change your secret code")]
     SecretCodeTooShort,
     #[error("The chaining address cannot be used to sign with opaque account")]

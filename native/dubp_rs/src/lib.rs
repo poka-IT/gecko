@@ -21,6 +21,7 @@ mod error;
 mod inputs;
 mod legacy;
 mod mnemonic;
+mod payment;
 mod pubkey;
 mod secret_code;
 
@@ -29,7 +30,7 @@ use crate::inputs::*;
 use crate::r#async::exec_async;
 use crate::secret_code::gen_secret_code;
 use allo_isolate::{IntoDart, Isolate};
-use dup_crypto::{
+use dubp_client::crypto::{
     bases::b58::ToBase58,
     dewif::{Currency, DewifReadError, ExpectedCurrency, G1_CURRENCY, G1_TEST_CURRENCY},
     keys::{
@@ -455,6 +456,62 @@ pub extern "C" fn sign_several(
                 external_opt,
                 secret_code,
                 &msgs,
+            )
+        },
+    )
+}
+
+#[no_mangle]
+pub extern "C" fn simple_payment_bip32(
+    port: i64,
+    account_index: u32,
+    amount: f64,
+    currency: *const raw::c_char,
+    dewif: *const raw::c_char,
+    gva_endpoint: *const raw::c_char,
+    recipient: *const raw::c_char,
+    secret_code: *const raw::c_char,
+    tx_comment: *const raw::c_char,
+) {
+    exec_async(
+        port,
+        || {
+            let currency = parse_currency(char_ptr_to_str(currency)?)?;
+            let dewif = char_ptr_to_str(dewif)?;
+            let gva_endpoint = char_ptr_to_str(gva_endpoint)?;
+            let recipient = char_ptr_to_str(recipient)?;
+            let secret_code = char_ptr_to_str(secret_code)?;
+            let tx_comment = char_ptr_to_opt_string(tx_comment)?;
+            Ok((
+                account_index,
+                amount,
+                currency,
+                dewif,
+                gva_endpoint,
+                secret_code,
+                recipient,
+                tx_comment,
+            ))
+        },
+        |(
+            account_index,
+            amount,
+            currency,
+            dewif,
+            gva_endpoint,
+            secret_code,
+            recipient,
+            tx_comment,
+        )| {
+            payment::simple_payment(
+                account_index,
+                amount,
+                currency,
+                dewif,
+                gva_endpoint,
+                secret_code,
+                recipient,
+                tx_comment,
             )
         },
     )

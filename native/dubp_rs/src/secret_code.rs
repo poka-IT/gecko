@@ -67,7 +67,7 @@ pub(crate) fn is_ascii_letters(secret_code: &str) -> bool {
 }
 
 fn gen_random_digits(n: usize) -> Result<String, DubpError> {
-    let mut digits_string = dup_crypto::rand::gen_u32()
+    let mut digits_string = dubp_client::crypto::rand::gen_u32()
         .map_err(|_| DubpError::RandErr)?
         .to_string();
     digits_string.truncate(n);
@@ -97,7 +97,7 @@ fn gen_random_letters(mut n: usize) -> Result<String, DubpError> {
 }
 
 fn gen_random_letters_inner(n: usize) -> Result<String, DubpError> {
-    let mut i = dup_crypto::rand::gen_u32().map_err(|_| DubpError::RandErr)?;
+    let mut i = dubp_client::crypto::rand::gen_u32().map_err(|_| DubpError::RandErr)?;
     let mut letters = String::new();
 
     for _ in 0..n {

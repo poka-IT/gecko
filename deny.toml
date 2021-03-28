@@ -17,7 +17,7 @@ skip-tree = [
 [licenses]
 unlicensed = "deny"
 # We want really high confidence when inferring licenses from text
-confidence-threshold = 0.92
+confidence-threshold = 0.8
 allow = [
     "AGPL-3.0",
     "Apache-2.0",
@@ -48,3 +48,7 @@ license-files = [
 [sources]
 unknown-registry = "deny"
 unknown-git = "deny"
+allow-git = [
+    "https://git.duniter.org/libs/dubp-rs-client-lib",
+    "https://git.duniter.org/nodes/typescript/duniter"
+]

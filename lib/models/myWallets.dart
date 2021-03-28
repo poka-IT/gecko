@@ -9,7 +9,7 @@ class MyWalletsProvider with ChangeNotifier {
   String listWallets;
 
   Future initWalletFolder() async {
-    await getDefaultWallet();
+    getDefaultWallet();
 
     final bool isWalletFolderExist = await walletsDirectory.exists();
     if (!isWalletFolderExist) {
@@ -84,17 +84,17 @@ class MyWalletsProvider with ChangeNotifier {
     return listWallets;
   }
 
-  Future getDefaultWallet() async {
+  void getDefaultWallet() {
     defaultWalletFile = File('${appPath.path}/defaultWallet');
 
-    bool isdefaultWalletFile = await defaultWalletFile.exists();
+    bool isdefaultWalletFile = defaultWalletFile.existsSync();
 
     if (!isdefaultWalletFile) {
-      await File(defaultWalletFile.path).create();
+      File(defaultWalletFile.path).createSync();
     }
 
     try {
-      defaultWallet = await defaultWalletFile.readAsString();
+      defaultWallet = defaultWalletFile.readAsStringSync();
     } catch (e) {
       defaultWallet = '0:0';
     }

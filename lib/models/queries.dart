@@ -62,3 +62,4 @@ const String getBalance = r'''
       }
     }
   ''';
+

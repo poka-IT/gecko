@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 
 // ignore: must_be_immutable
-class WalletOptions extends StatelessWidget with ChangeNotifier {
+class WalletOptions extends StatelessWidget {
   WalletOptions(
       {Key keyMyWallets,
       @required this.walletNbr,
@@ -160,7 +160,7 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                                 variables: {
                                   'pubkey': _walletOptions.pubkey.text,
                                 },
-                                pollInterval: Duration(seconds: 1),
+                                // pollInterval: Duration(seconds: 1),
                               ),
                               builder: (QueryResult result,
                                   {VoidCallback refetch, FetchMore fetchMore}) {
@@ -171,6 +171,10 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                                 if (result.isLoading) {
                                   return Text('Loading');
                                 }
+
+                                // TODO: catch links errors
+                                print(result);
+
                                 // List repositories = result.data['viewer']['repositories']['nodes'];
                                 String wBalanceUD;
                                 if (result.data['balance'] == null) {

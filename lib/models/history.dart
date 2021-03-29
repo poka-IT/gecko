@@ -1,8 +1,12 @@
+import 'dart:io';
+
+import 'package:dubp/dubp.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/home.dart';
 import 'package:gecko/screens/history.dart';
+import 'package:gecko/screens/myWallets/unlockingWallet.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -43,6 +47,20 @@ class HistoryProvider with ChangeNotifier {
       return 'false';
     }
     return barcode;
+  }
+
+  void pay(amount, comment) {
+    UnlockingWallet();
+
+    String dewif = File(walletsDirectory.path +
+            '${defaultWallet.split(':')[0]}/wallet.dewif')
+        .readAsLinesSync()[0];
+    DubpRust.simplePaymentFromTransparentAccount(
+        accountIndex: 0,
+        amount: 1,
+        dewif: dewif,
+        gvaEndpoint: endPointGVA,
+        recipient: pubkey);
   }
 
   String isPubkey(context, pubkey, {bool goHistory}) {

@@ -7,6 +7,7 @@ import 'package:gecko/models/queries.dart';
 import 'package:gecko/models/history.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:gecko/screens/myWallets/unlockingWallet.dart';
 import 'dart:ui';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
@@ -315,7 +316,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                             // ),
                             _historyProvider.isHistoryScreen
                                 ? historyView(context, result)
-                                : payView(context),
+                                : payView(context, _historyProvider),
                           ],
                         ))),
                 onNotification: (t) {
@@ -332,7 +333,8 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
     ));
   }
 
-  Widget payView(context) {
+  Widget payView(context, HistoryProvider _historyProvider) {
+    TextEditingController payAmount = new TextEditingController();
     TextEditingController payComment = new TextEditingController();
 
     return Stack(
@@ -361,6 +363,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
               Padding(
                 padding: EdgeInsets.all(8.0),
                 child: TextFormField(
+                  controller: payAmount,
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   keyboardType: TextInputType.number,
@@ -375,9 +378,10 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                     style: OutlinedButton.styleFrom(
                         side: BorderSide(width: 2, color: Color(0xffD28928))),
                     onPressed: () {
-                      if (_formKey.currentState.validate()) {
-                        _formKey.currentState.save();
-                      }
+                      // if (_formKey.currentState.validate()) {
+                      //   _formKey.currentState.save();
+                      // }
+                      _historyProvider.pay(payAmount.text, payComment.text);
                     },
                     child: Padding(
                         padding: const EdgeInsets.all(12),

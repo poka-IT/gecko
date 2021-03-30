@@ -13,6 +13,8 @@ SharedPreferences prefs;
 String endPointGVA;
 int ramSys;
 
+String cesiumPod = "https://g1.data.le-sou.org";
+
 // Responsive ratios
 bool isTall;
 double ratio;

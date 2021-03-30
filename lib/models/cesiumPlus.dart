@@ -51,7 +51,6 @@ class CesiumPlusProvider with ChangeNotifier {
       "indices_boost": {"user": 100, "page": 1, "group": 0.01}
     });
 
-    String cesiumPod = "https://g1.data.le-sou.org";
     String requestUrl = "/user,page,group/profile,record/_search";
     String podRequest = cesiumPod + requestUrl;
 

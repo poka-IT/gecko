@@ -22,6 +22,7 @@ class WalletOptionsProvider with ChangeNotifier {
   FocusNode walletNameFocus = FocusNode();
   TextEditingController nameController = TextEditingController();
   String walletID;
+  bool isDefaultWallet;
 
   Future<NewWallet> get badWallet => null;
 
@@ -356,12 +357,11 @@ class WalletOptionsProvider with ChangeNotifier {
     return await scanner.generateBarCode(_pubkey);
   }
 
-  Future defAsDefaultWallet(String _id) async {
-    await defaultWalletFile.delete();
-    await defaultWalletFile.create();
-    await defaultWalletFile
-        .writeAsString(_id)
-        .then((value) => notifyListeners());
+  void defAsDefaultWallet(String _id) {
+    defaultWalletFile.deleteSync();
+    defaultWalletFile.createSync();
+    defaultWalletFile.writeAsStringSync(_id);
+    notifyListeners();
   }
 
   Future changeAvatar() async {

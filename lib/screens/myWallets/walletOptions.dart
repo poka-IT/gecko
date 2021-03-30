@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 
 // ignore: must_be_immutable
-class WalletOptions extends StatelessWidget with ChangeNotifier {
+class WalletOptions extends StatelessWidget {
   WalletOptions(
       {Key keyMyWallets,
       @required this.walletNbr,
@@ -24,7 +24,6 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
   int derivation;
   int _nbrLinesName = 1;
   bool _isNewNameValid = false;
-  bool isDefaultWallet;
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +45,6 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
     } else {
       walletName = _walletOptions.nameController.text;
     }
-    _walletOptions.walletID = '0:$walletNbr';
 
     _walletOptions.nameController.text.length >= 15
         ? _nbrLinesName = 2
@@ -54,9 +52,13 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
     if (_walletOptions.nameController.text.length >= 26 && isTall)
       _nbrLinesName = 3;
 
+    _walletOptions.walletID = '0:$walletNbr';
+
+    _myWalletProvider.getDefaultWallet();
+
     defaultWallet == _walletOptions.walletID
-        ? isDefaultWallet = true
-        : isDefaultWallet = false;
+        ? _walletOptions.isDefaultWallet = true
+        : _walletOptions.isDefaultWallet = false;
 
     // print(_walletOptions.generateQRcode(_walletOptions.pubkey.text));
 
@@ -160,7 +162,7 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                                 variables: {
                                   'pubkey': _walletOptions.pubkey.text,
                                 },
-                                pollInterval: Duration(seconds: 1),
+                                // pollInterval: Duration(seconds: 1),
                               ),
                               builder: (QueryResult result,
                                   {VoidCallback refetch, FetchMore fetchMore}) {
@@ -171,6 +173,9 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                                 if (result.isLoading) {
                                   return Text('Loading');
                                 }
+
+                                print(result);
+
                                 // List repositories = result.data['viewer']['repositories']['nodes'];
                                 String wBalanceUD;
                                 if (result.data['balance'] == null) {
@@ -362,15 +367,12 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                         ]))),
                 SizedBox(height: 12 * ratio),
                 InkWell(
-                    onTap: !isDefaultWallet
-                        ? () async {
-                            await _walletOptions
-                                .defAsDefaultWallet(_walletOptions.walletID)
-                                .then((value) => {
-                                      _myWalletProvider
-                                          .getAllWalletsNames(_currentChest),
-                                      _myWalletProvider.rebuildWidget()
-                                    });
+                    onTap: !_walletOptions.isDefaultWallet
+                        ? () {
+                            defaultWallet = '0:$walletNbr';
+                            _walletOptions
+                                .defAsDefaultWallet(_walletOptions.walletID);
+                            _myWalletProvider.getAllWalletsNames(_currentChest);
                           }
                         : null,
                     child: SizedBox(
@@ -378,19 +380,19 @@ class WalletOptions extends StatelessWidget with ChangeNotifier {
                         child: Row(children: <Widget>[
                           SizedBox(width: 31),
                           CircleAvatar(
-                              backgroundColor:
-                                  Colors.grey[isDefaultWallet ? 300 : 500],
+                              backgroundColor: Colors.grey[
+                                  _walletOptions.isDefaultWallet ? 300 : 500],
                               child: Image.asset(
                                 'assets/walletOptions/android-checkmark.png',
                               )),
                           SizedBox(width: 12),
                           Text(
-                              isDefaultWallet
+                              _walletOptions.isDefaultWallet
                                   ? 'Ce portefeuille est celui par defaut'
                                   : 'Définir comme portefeuille par défaut',
                               style: TextStyle(
                                   fontSize: 20,
-                                  color: isDefaultWallet
+                                  color: _walletOptions.isDefaultWallet
                                       ? Colors.grey[500]
                                       : Colors.black)),
                         ]))),

@@ -144,7 +144,7 @@ class UnlockingWallet extends StatelessWidget {
                 pinColor = Colors.green[400];
                 // await Future.delayed(Duration(milliseconds: 50));
                 Navigator.push(
-                    context,
+                    formKey.currentContext,
                     SmoothTransition(
                         page: WalletOptions(
                             walletNbr: walletNbr,

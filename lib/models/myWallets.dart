@@ -84,6 +84,22 @@ class MyWalletsProvider with ChangeNotifier {
     return listWallets;
   }
 
+  int getDerivationNbr(String _id) {
+    int chest = int.parse(_id.split(':')[0]);
+    // int nbr = int.parse(_id.split(':')[1]);
+    final _walletConfig = File('${walletsDirectory.path}/$chest/list.conf');
+
+    int derivation;
+
+    _walletConfig.readAsLinesSync().forEach((element) {
+      if ("${element.split(':')[0]}:${element.split(':')[1]}" == _id) {
+        derivation = int.parse(element.split(':')[3]);
+      }
+    });
+
+    return derivation;
+  }
+
   void getDefaultWallet() {
     defaultWalletFile = File('${appPath.path}/defaultWallet');
 

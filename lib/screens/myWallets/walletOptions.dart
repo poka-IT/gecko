@@ -13,11 +13,7 @@ import 'package:flutter/services.dart';
 
 // ignore: must_be_immutable
 class WalletOptions extends StatelessWidget {
-  WalletOptions(
-      {Key keyMyWallets,
-      @required this.walletNbr,
-      @required this.walletName,
-      @required this.derivation})
+  WalletOptions({Key keyMyWallets, @required this.walletNbr})
       : super(key: keyMyWallets);
   int walletNbr;
   String walletName;

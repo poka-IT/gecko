@@ -13,12 +13,10 @@ import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class UnlockingWallet extends StatelessWidget {
-  UnlockingWallet(
-      {Key keyUnlockWallet,
-      @required this.walletNbr,
-      @required this.walletName,
-      @required this.derivation})
-      : super(key: keyUnlockWallet);
+  UnlockingWallet({
+    Key keyUnlockWallet,
+    @required this.walletNbr,
+  }) : super(key: keyUnlockWallet);
   int walletNbr;
   String walletName;
   int derivation;
@@ -146,10 +144,7 @@ class UnlockingWallet extends StatelessWidget {
                 Navigator.push(
                     formKey.currentContext,
                     SmoothTransition(
-                        page: WalletOptions(
-                            walletNbr: walletNbr,
-                            walletName: walletName,
-                            derivation: derivation)));
+                        page: WalletOptions(walletNbr: walletNbr)));
               }
             },
             onChanged: (value) {

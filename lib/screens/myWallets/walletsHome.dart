@@ -108,9 +108,7 @@ class WalletsHome extends StatelessWidget {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
                         return UnlockingWallet(
-                            walletNbr: int.parse(_repository.split(':')[1]),
-                            walletName: _repository.split(':')[2],
-                            derivation: int.parse(_repository.split(':')[3]));
+                            walletNbr: int.parse(_repository.split(':')[1]));
                       }));
                     },
                     child: ClipRRect(
@@ -165,10 +163,7 @@ class WalletsHome extends StatelessWidget {
                                   MaterialPageRoute(builder: (context) {
                                 return UnlockingWallet(
                                     walletNbr:
-                                        int.parse(_repository.split(':')[1]),
-                                    walletName: _repository.split(':')[2],
-                                    derivation:
-                                        int.parse(_repository.split(':')[3]));
+                                        int.parse(_repository.split(':')[1]));
                               }));
                             },
                           )

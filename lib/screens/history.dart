@@ -381,7 +381,12 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                       // if (_formKey.currentState.validate()) {
                       //   _formKey.currentState.save();
                       // }
-                      _historyProvider.pay(payAmount.text, payComment.text);
+                      // _historyProvider.pay(payAmount.text, payComment.text);
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return UnlockingWallet(
+                            walletNbr: int.parse(defaultWallet));
+                      }));
                     },
                     child: Padding(
                         padding: const EdgeInsets.all(12),

@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/home.dart';
 import 'package:gecko/screens/history.dart';
-import 'package:gecko/screens/myWallets/unlockingWallet.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -49,9 +48,7 @@ class HistoryProvider with ChangeNotifier {
     return barcode;
   }
 
-  void pay(amount, comment) {
-    UnlockingWallet();
-
+  void pay(context, amount, comment) {
     String dewif = File(walletsDirectory.path +
             '${defaultWallet.split(':')[0]}/wallet.dewif')
         .readAsLinesSync()[0];

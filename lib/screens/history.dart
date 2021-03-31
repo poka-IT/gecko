@@ -384,8 +384,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                       // _historyProvider.pay(payAmount.text, payComment.text);
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
-                        return UnlockingWallet(
-                            walletNbr: int.parse(defaultWallet));
+                        return UnlockingWallet(wallet: defaultWallet);
                       }));
                     },
                     child: Padding(

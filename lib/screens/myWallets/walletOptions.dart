@@ -13,11 +13,9 @@ import 'package:flutter/services.dart';
 
 // ignore: must_be_immutable
 class WalletOptions extends StatelessWidget {
-  WalletOptions({Key keyMyWallets, @required this.walletNbr})
+  WalletOptions({Key keyMyWallets, @required this.wallet})
       : super(key: keyMyWallets);
-  int walletNbr;
-  String walletName;
-  int derivation;
+  WalletData wallet;
   int _nbrLinesName = 1;
   bool _isNewNameValid = false;
 
@@ -37,9 +35,9 @@ class WalletOptions extends StatelessWidget {
 
     if (_walletOptions.nameController.text == null ||
         _isNewNameValid == false) {
-      _walletOptions.nameController.text = walletName;
+      _walletOptions.nameController.text = wallet.name;
     } else {
-      walletName = _walletOptions.nameController.text;
+      wallet.name = _walletOptions.nameController.text;
     }
 
     _walletOptions.nameController.text.length >= 15
@@ -48,13 +46,17 @@ class WalletOptions extends StatelessWidget {
     if (_walletOptions.nameController.text.length >= 26 && isTall)
       _nbrLinesName = 3;
 
-    _walletOptions.walletID = '0:$walletNbr';
+    _walletOptions.walletID = '0:${wallet.number}';
 
     _myWalletProvider.getDefaultWallet();
 
-    defaultWallet == _walletOptions.walletID
-        ? _walletOptions.isDefaultWallet = true
-        : _walletOptions.isDefaultWallet = false;
+    _walletOptions.isDefaultWallet =
+        (defaultWallet.id() == _walletOptions.walletID);
+
+    int currentChest = _myWalletProvider.getCurrentChest();
+
+    print('roooooooooooooo');
+    print("$currentChest:${wallet.number}");
 
     // print(_walletOptions.generateQRcode(_walletOptions.pubkey.text));
 
@@ -248,7 +250,7 @@ class WalletOptions extends StatelessWidget {
                                   //           .addPostFrameCallback((_) {
                                   //         _myWalletProvider.listWallets =
                                   //             _myWalletProvider
-                                  //                 .getAllWalletsNames(
+                                  //                 .readAllWallets(
                                   //                     _currentChest);
                                   //         _myWalletProvider.rebuildWidget();
                                   //       });
@@ -365,10 +367,9 @@ class WalletOptions extends StatelessWidget {
                 InkWell(
                     onTap: !_walletOptions.isDefaultWallet
                         ? () {
-                            defaultWallet = '0:$walletNbr';
-                            _walletOptions
-                                .defAsDefaultWallet(_walletOptions.walletID);
-                            _myWalletProvider.getAllWalletsNames(_currentChest);
+                            defaultWallet = wallet;
+                            _walletOptions.defAsDefaultWallet(wallet.id());
+                            _myWalletProvider.readAllWallets(_currentChest);
                           }
                         : null,
                     child: SizedBox(
@@ -395,11 +396,10 @@ class WalletOptions extends StatelessWidget {
                 SizedBox(height: 17 * ratio),
                 InkWell(
                     onTap: () async {
-                      await _walletOptions.deleteWallet(
-                          context, walletNbr, walletName, derivation);
+                      await _walletOptions.deleteWallet(context, wallet);
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         _myWalletProvider.listWallets =
-                            _myWalletProvider.getAllWalletsNames(_currentChest);
+                            _myWalletProvider.readAllWallets(_currentChest);
                         _myWalletProvider.rebuildWidget();
                       });
                     },

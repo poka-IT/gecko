@@ -138,8 +138,8 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                                     WidgetsBinding.instance
                                         .addPostFrameCallback((_) {
                                       _myWalletProvider.listWallets =
-                                          _myWalletProvider.getAllWalletsNames(
-                                              _currentChest);
+                                          _myWalletProvider
+                                              .readAllWallets(_currentChest);
                                       _myWalletProvider.rebuildWidget();
                                     });
                                   }

@@ -111,7 +111,7 @@ class WalletOptionsOld extends StatelessWidget with ChangeNotifier {
                                                   _myWalletProvider
                                                           .listWallets =
                                                       _myWalletProvider
-                                                          .getAllWalletsNames(
+                                                          .readAllWallets(
                                                               _currentChest);
                                                   _myWalletProvider
                                                       .rebuildWidget();
@@ -137,13 +137,15 @@ class WalletOptionsOld extends StatelessWidget with ChangeNotifier {
                                   onPrimary: Colors.black, // foreground
                                 ),
                                 onPressed: () async {
-                                  await _walletOptions.deleteWallet(context,
-                                      walletNbr, walletName, derivation);
+                                  await _walletOptions.deleteWallet(
+                                      context,
+                                      _myWalletProvider.getWalletData(
+                                          _walletOptions.walletID));
                                   WidgetsBinding.instance
                                       .addPostFrameCallback((_) {
                                     _myWalletProvider.listWallets =
                                         _myWalletProvider
-                                            .getAllWalletsNames(_currentChest);
+                                            .readAllWallets(_currentChest);
                                     _myWalletProvider.rebuildWidget();
                                   });
                                 },

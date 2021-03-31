@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:gecko/models/myWallets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Files paths
@@ -7,7 +8,7 @@ Directory walletsDirectory;
 File defaultWalletFile;
 File currentChestFile;
 
-String defaultWallet;
+WalletData defaultWallet;
 String appVersion;
 SharedPreferences prefs;
 String endPointGVA;

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/walletOptions.dart';
 import 'package:gecko/screens/commonElements.dart';
 import 'package:flutter/material.dart';
@@ -15,11 +16,9 @@ import 'package:provider/provider.dart';
 class UnlockingWallet extends StatelessWidget {
   UnlockingWallet({
     Key keyUnlockWallet,
-    @required this.walletNbr,
+    @required this.wallet,
   }) : super(key: keyUnlockWallet);
-  int walletNbr;
-  String walletName;
-  int derivation;
+  WalletData wallet;
 
   // ignore: close_sinks
   StreamController<ErrorAnimationType> errorController;
@@ -35,7 +34,7 @@ class UnlockingWallet extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
-    final int _pinLenght = _walletOptions.getPinLenght(this.walletNbr);
+    final int _pinLenght = _walletOptions.getPinLenght(this.wallet.number);
     errorController = StreamController<ErrorAnimationType>();
 
     return Scaffold(
@@ -55,7 +54,7 @@ class UnlockingWallet extends StatelessWidget {
                   fontWeight: FontWeight.w400),
             ),
             SizedBox(height: 50),
-            pinForm(context, _pinLenght, walletNbr, derivation),
+            pinForm(context, _pinLenght, wallet.number, wallet.derivation),
           ]),
         ),
         GestureDetector(
@@ -128,10 +127,7 @@ class UnlockingWallet extends StatelessWidget {
             onCompleted: (_pin) async {
               print("Completed");
               final resultWallet = await _walletOptions.readLocalWallet(
-                  this.walletNbr,
-                  _pin.toUpperCase(),
-                  _pinLenght,
-                  this.derivation);
+                  context, this.wallet, _pin.toUpperCase(), _pinLenght);
               if (resultWallet == 'bad') {
                 errorController.add(ErrorAnimationType
                     .shake); // Triggering error shake animation
@@ -144,7 +140,9 @@ class UnlockingWallet extends StatelessWidget {
                 Navigator.push(
                     formKey.currentContext,
                     SmoothTransition(
-                        page: WalletOptions(walletNbr: walletNbr)));
+                        page: WalletOptions(
+                      wallet: wallet,
+                    )));
               }
             },
             onChanged: (value) {

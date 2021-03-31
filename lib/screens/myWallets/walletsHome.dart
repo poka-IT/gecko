@@ -24,12 +24,11 @@ class WalletsHome extends StatelessWidget {
     final int _currentChest = myWalletProvider.getCurrentChest();
 
     myWalletProvider.listWallets =
-        myWalletProvider.getAllWalletsNames(_currentChest);
+        myWalletProvider.readAllWallets(_currentChest);
     final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
 
-    if (myWalletProvider.listWallets != '') {
-      firstWalletDerivation =
-          int.parse(myWalletProvider.listWallets.split('\n')[0].split(':')[3]);
+    if (myWalletProvider.listWallets.isEmpty) {
+      firstWalletDerivation = myWalletProvider.listWallets[0].derivation;
 
       myWalletProvider.getDefaultWallet();
     }
@@ -77,7 +76,7 @@ class WalletsHome extends StatelessWidget {
       return Text('');
     }
 
-    if (_myWalletProvider.listWallets == '') {
+    if (_myWalletProvider.listWallets.isEmpty) {
       return Expanded(
           child: Column(children: <Widget>[
         Center(
@@ -88,7 +87,7 @@ class WalletsHome extends StatelessWidget {
       ]));
     }
 
-    List _listWallets = _myWalletProvider.listWallets.split('\n');
+    List _listWallets = _myWalletProvider.listWallets;
     // final int nbrOfWallets = _listWallets.length;
     // print(_listWallets);
     // print("${_listWallets[0].split(':')[0]}:${_listWallets[0].split(':')[2]}");
@@ -100,15 +99,14 @@ class WalletsHome extends StatelessWidget {
         crossAxisSpacing: 0,
         mainAxisSpacing: 0,
         children: <Widget>[
-          for (String _repository in _listWallets)
+          for (WalletData _repository in _listWallets)
             Padding(
                 padding: EdgeInsets.all(16),
                 child: GestureDetector(
                     onTap: () {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
-                        return UnlockingWallet(
-                            walletNbr: int.parse(_repository.split(':')[1]));
+                        return UnlockingWallet(wallet: _repository);
                       }));
                     },
                     child: ClipRRect(
@@ -135,11 +133,9 @@ class WalletsHome extends StatelessWidget {
                           )),
                           ListTile(
                             // contentPadding: const EdgeInsets.only(left: 7.0),
-                            tileColor:
-                                "${_repository.split(':')[0]}:${_repository.split(':')[1]}" ==
-                                        defaultWallet
-                                    ? Color(0xffD28928)
-                                    : Color(0xffFFD58D),
+                            tileColor: _repository == defaultWallet
+                                ? Color(0xffD28928)
+                                : Color(0xffFFD58D),
                             // leading: Text('IMAGE'),
 
                             // subtitle: Text(_repository.split(':')[3],
@@ -148,22 +144,18 @@ class WalletsHome extends StatelessWidget {
                                 child: Padding(
                                     padding:
                                         EdgeInsets.symmetric(horizontal: 5),
-                                    child: Text(_repository.split(':')[2],
+                                    child: Text(_repository.name,
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
                                             fontSize: 16.0,
-                                            color:
-                                                "${_repository.split(':')[0]}:${_repository.split(':')[1]}" ==
-                                                        defaultWallet
-                                                    ? Color(0xffF9F9F1)
-                                                    : Colors.black)))),
+                                            color: _repository == defaultWallet
+                                                ? Color(0xffF9F9F1)
+                                                : Colors.black)))),
                             // dense: true,
                             onTap: () {
                               Navigator.push(context,
                                   MaterialPageRoute(builder: (context) {
-                                return UnlockingWallet(
-                                    walletNbr:
-                                        int.parse(_repository.split(':')[1]));
+                                return UnlockingWallet(wallet: _repository);
                               }));
                             },
                           )

@@ -49,9 +49,9 @@ class HistoryProvider with ChangeNotifier {
   }
 
   void pay(context, amount, comment) {
-    String dewif = File(walletsDirectory.path +
-            '${defaultWallet.split(':')[0]}/wallet.dewif')
-        .readAsLinesSync()[0];
+    String dewif =
+        File(walletsDirectory.path + '${defaultWallet.chest}/wallet.dewif')
+            .readAsLinesSync()[0];
     DubpRust.simplePaymentFromTransparentAccount(
         accountIndex: 0,
         amount: 1,

@@ -6,8 +6,7 @@ import 'package:gecko/globals.dart';
 import 'package:provider/provider.dart';
 
 class MyWalletsProvider with ChangeNotifier {
-  String listWallets;
-
+  List<WalletData> listWallets = [];
   Future initWalletFolder() async {
     getDefaultWallet();
 
@@ -49,9 +48,9 @@ class MyWalletsProvider with ChangeNotifier {
       return false;
     }
 
-    final String _walletList = getAllWalletsNames(0);
+    final List _walletList = readAllWallets(0);
 
-    if (_walletList == '') {
+    if (_walletList.isEmpty) {
       print('No wallets detected');
       return false;
     } else {
@@ -60,61 +59,55 @@ class MyWalletsProvider with ChangeNotifier {
     }
   }
 
-  String getAllWalletsNames(int _chest) {
-    if (listWallets != null && listWallets.isNotEmpty) {
-      listWallets = '';
-    }
-    if (listWallets == null) {
-      listWallets = '';
-    }
-
+  List readAllWallets(int _chest) {
     print(walletsDirectory.path);
+
+    listWallets = [];
 
     // int i = 0;
     File _walletConfig = File('${walletsDirectory.path}/$_chest/list.conf');
     _walletConfig.readAsLinesSync().forEach((element) {
-      if (listWallets != '') {
-        listWallets += '\n';
-      }
-      listWallets += element;
+      print(element);
+      listWallets.add(WalletData(element));
       // listWallets += "${element.split(':')[0]}:${element.split(':')[1]}:${element.split(':')[2]}"
     });
-    print(listWallets);
+    // listWallets.forEach((e) {
+    //   print(e.name);
+    // });
+    // print(listWallets);
 
     return listWallets;
   }
 
-  int getDerivationNbr(String _id) {
+  WalletData getWalletData(String _id) {
     int chest = int.parse(_id.split(':')[0]);
     // int nbr = int.parse(_id.split(':')[1]);
     final _walletConfig = File('${walletsDirectory.path}/$chest/list.conf');
 
-    int derivation;
-
     _walletConfig.readAsLinesSync().forEach((element) {
-      if ("${element.split(':')[0]}:${element.split(':')[1]}" == _id) {
-        derivation = int.parse(element.split(':')[3]);
+      WalletData wallet = WalletData(element);
+      if (_id == "${wallet.chest}:${wallet.number}") {
+        return wallet;
       }
     });
-
-    return derivation;
+    return WalletData("0:0:Null:0");
   }
 
   void getDefaultWallet() {
     defaultWalletFile = File('${appPath.path}/defaultWallet');
 
-    bool isdefaultWalletFile = defaultWalletFile.existsSync();
-
-    if (!isdefaultWalletFile) {
+    if (!defaultWalletFile.existsSync()) {
       File(defaultWalletFile.path).createSync();
     }
 
     try {
-      defaultWallet = defaultWalletFile.readAsStringSync();
+      ////////////////////////////////////////////////////////////
+      defaultWallet = getWalletData(defaultWalletFile.readAsStringSync());
+      print("found default wallet $defaultWallet");
     } catch (e) {
-      defaultWallet = '0:0';
+      print("ERROR $e");
+      defaultWallet = WalletData('0:0:null:0');
     }
-    if (defaultWallet == '') defaultWallet = '0:0';
   }
 
   Future<int> deleteAllWallet(context) async {
@@ -159,7 +152,7 @@ class MyWalletsProvider with ChangeNotifier {
               onPressed: () {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   _myWalletProvider.listWallets =
-                      _myWalletProvider.getAllWalletsNames(getCurrentChest());
+                      _myWalletProvider.readAllWallets(getCurrentChest());
                   _myWalletProvider.rebuildWidget();
                 });
                 Navigator.pop(context, true);
@@ -201,5 +194,39 @@ class MyWalletsProvider with ChangeNotifier {
 
   void rebuildWidget() {
     notifyListeners();
+  }
+}
+
+// wallet data contains elements identifying wallet
+class WalletData {
+  int chest;
+  int number;
+  String name;
+  int derivation;
+
+  // constructor from ':'-separated string
+  WalletData(String element) {
+    List parts = element.split(':');
+
+    this.chest = int.parse(parts[0]);
+    this.number = int.parse(parts[1]);
+    this.name = parts[2];
+    this.derivation = int.parse(parts[3]);
+  }
+
+  // representation of WalletData when debugging
+  @override
+  String toString() {
+    return this.name;
+  }
+
+  // creates the ':'-separated string from the WalletData
+  String inLine() {
+    return "${this.chest}:${this.number}:${this.name}:${this.derivation}";
+  }
+
+  // returns only the id part of the ':'-separated string
+  String id() {
+    return "${this.chest}:${this.number}";
   }
 }

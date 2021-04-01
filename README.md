@@ -1,8 +1,10 @@
 # Ğecko
 
-Ğecko is a transaction client written in Dart. It is fast and secure thanks to native code compilation, Rust cryptography bindings and Duniter's new GraphQL API (GVA). It is not intended to manage member accounts, but rather simple wallets.
+Ğecko is a transaction client owned by [Axiom-Team association] and written in Dart. It is fast and secure thanks to native code compilation, Rust cryptography bindings and Duniter's new GraphQL API (GVA). It is not intended to manage member accounts, but rather simple wallets.
 
 The development is quite early, you can participate in the discussion [on the Duniter forum](https://forum.duniter.org/t/gecko-nouveau-client-de-paiements-1-sur-mobile-en-cours-de-developpement-dart-flutter/7857) (mostly FR)
+
+[Axiom-Team association]: https://axiom-team.fr/
 
 ## Getting Started
 

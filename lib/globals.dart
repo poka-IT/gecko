@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:gecko/models/myWallets.dart';
+import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Files paths
@@ -19,3 +20,6 @@ String cesiumPod = "https://g1.data.le-sou.org";
 // Responsive ratios
 bool isTall;
 double ratio;
+
+// Logger
+var logger = Logger();

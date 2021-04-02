@@ -133,7 +133,7 @@ class WalletsHome extends StatelessWidget {
                           )),
                           ListTile(
                             // contentPadding: const EdgeInsets.only(left: 7.0),
-                            tileColor: _repository == defaultWallet
+                            tileColor: _repository.id() == defaultWallet.id()
                                 ? Color(0xffD28928)
                                 : Color(0xffFFD58D),
                             // leading: Text('IMAGE'),
@@ -148,7 +148,8 @@ class WalletsHome extends StatelessWidget {
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
                                             fontSize: 16.0,
-                                            color: _repository == defaultWallet
+                                            color: _repository.id() ==
+                                                    defaultWallet.id()
                                                 ? Color(0xffF9F9F1)
                                                 : Colors.black)))),
                             // dense: true,

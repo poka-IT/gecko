@@ -84,13 +84,9 @@ class MyWalletsProvider with ChangeNotifier {
     // int nbr = int.parse(_id.split(':')[1]);
     final _walletConfig = File('${walletsDirectory.path}/$chest/list.conf');
 
-    _walletConfig.readAsLinesSync().forEach((element) {
-      WalletData wallet = WalletData(element);
-      if (_id == "${wallet.chest}:${wallet.number}") {
-        return wallet;
-      }
-    });
-    return WalletData("0:0:Null:0");
+    return WalletData(_walletConfig
+        .readAsLinesSync()
+        .firstWhere((element) => element.startsWith(_id)));
   }
 
   void getDefaultWallet() {
@@ -100,14 +96,8 @@ class MyWalletsProvider with ChangeNotifier {
       File(defaultWalletFile.path).createSync();
     }
 
-    try {
-      ////////////////////////////////////////////////////////////
-      defaultWallet = getWalletData(defaultWalletFile.readAsStringSync());
-      print("found default wallet $defaultWallet");
-    } catch (e) {
-      print("ERROR $e");
-      defaultWallet = WalletData('0:0:null:0');
-    }
+    defaultWallet = getWalletData(defaultWalletFile.readAsStringSync());
+    print("found default wallet $defaultWallet");
   }
 
   Future<int> deleteAllWallet(context) async {

@@ -2,22 +2,21 @@ import 'dart:async';
 
 import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/models/history.dart';
 import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/walletOptions.dart';
-import 'package:gecko/screens/commonElements.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/screens/myWallets/walletOptions.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/globals.dart';
 
 // ignore: must_be_immutable
 class UnlockingWallet extends StatelessWidget {
-  UnlockingWallet({
-    Key keyUnlockWallet,
-    @required this.wallet,
-  }) : super(key: keyUnlockWallet);
+  UnlockingWallet(
+      {Key keyUnlockWallet, @required this.wallet, @required this.action})
+      : super(key: keyUnlockWallet);
   WalletData wallet;
+  String action;
 
   // ignore: close_sinks
   StreamController<ErrorAnimationType> errorController;
@@ -76,6 +75,9 @@ class UnlockingWallet extends StatelessWidget {
     TextEditingController _enterPin = TextEditingController();
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context);
+    HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
 
     return Form(
       key: formKey,
@@ -127,6 +129,9 @@ class UnlockingWallet extends StatelessWidget {
               log.d("Completed");
               final resultWallet = await _walletOptions.readLocalWallet(
                   context, this.wallet, _pin.toUpperCase(), _pinLenght);
+              // _myWalletProvider.pinCode = _pin.toUpperCase();
+              _myWalletProvider.pinLenght = _pinLenght;
+
               if (resultWallet == 'bad') {
                 errorController.add(ErrorAnimationType
                     .shake); // Triggering error shake animation
@@ -136,12 +141,12 @@ class UnlockingWallet extends StatelessWidget {
               } else {
                 pinColor = Colors.green[400];
                 // await Future.delayed(Duration(milliseconds: 50));
-                Navigator.push(
-                    formKey.currentContext,
-                    SmoothTransition(
-                        page: WalletOptions(
-                      wallet: wallet,
-                    )));
+                if (action == "mywallets") {
+                  Navigator.pushNamed(formKey.currentContext, '/mywallets');
+                } else if (action == "pay") {
+                  print("Go payments");
+                  _historyProvider.pay(context, _pin.toUpperCase());
+                }
               }
             },
             onChanged: (value) {

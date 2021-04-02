@@ -4,6 +4,7 @@ import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/myWallets.dart';
+import 'package:gecko/screens/myWallets/unlockingWallet.dart';
 import 'package:gecko/screens/onBoarding/0_noKeychainFound.dart';
 import 'dart:ui';
 import 'package:gecko/screens/settings.dart';
@@ -270,8 +271,17 @@ class HomeScreen extends StatelessWidget {
                                                   height: 57)),
                                           onTap: () {
                                             isWalletsExists
-                                                ? Navigator.pushNamed(
-                                                    context, '/mywallets')
+                                                ? Navigator.push(context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) {
+                                                    return UnlockingWallet(
+                                                      wallet: defaultWallet,
+                                                      action: "mywallets",
+                                                    );
+                                                  }))
+
+                                                // Navigator.pushNamed(
+                                                //     context, '/mywallets')
                                                 : Navigator.push(context,
                                                     MaterialPageRoute(
                                                         builder: (context) {

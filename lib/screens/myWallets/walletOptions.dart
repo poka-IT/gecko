@@ -7,7 +7,6 @@ import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/queries.dart';
 import 'package:gecko/models/walletOptions.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'dart:async';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 
@@ -57,17 +56,16 @@ class WalletOptions extends StatelessWidget {
     log.d("Wallet options: $currentChest:${wallet.number}");
 
     return WillPopScope(
-      onWillPop: () {
-        _walletOptions.isEditing = false;
-        _walletOptions.isBalanceBlur = true;
-        Navigator.popUntil(
-          context,
-          ModalRoute.withName('/'),
-        );
-        Navigator.pushNamed(context, '/mywallets');
-        return Future<bool>.value(true);
-      },
-      child: Scaffold(
+        onWillPop: () {
+          _walletOptions.isEditing = false;
+          _walletOptions.isBalanceBlur = true;
+          Navigator.popUntil(
+            context,
+            ModalRoute.withName('/mywallets'),
+          );
+          return Future<bool>.value(true);
+        },
+        child: Scaffold(
           resizeToAvoidBottomInset: false,
           appBar: AppBar(
               leading: IconButton(
@@ -77,9 +75,8 @@ class WalletOptions extends StatelessWidget {
                     _walletOptions.isBalanceBlur = true;
                     Navigator.popUntil(
                       context,
-                      ModalRoute.withName('/'),
+                      ModalRoute.withName('/mywallets'),
                     );
-                    Navigator.pushNamed(context, '/mywallets');
                   }),
               title: SizedBox(
                 height: 22,
@@ -405,7 +402,7 @@ class WalletOptions extends StatelessWidget {
                     ])),
               ]),
             ),
-          )),
-    );
+          ),
+        ));
   }
 }

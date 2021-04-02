@@ -29,6 +29,8 @@ class HistoryProvider with ChangeNotifier {
   bool isHistoryScreen = false;
   String historySwitchButtun = "Voir l'historique";
   String rawSvg;
+  TextEditingController payAmount = TextEditingController();
+  TextEditingController payComment = TextEditingController();
 
   Future scan(context) async {
     await Permission.camera.request();
@@ -48,16 +50,31 @@ class HistoryProvider with ChangeNotifier {
     return barcode;
   }
 
-  void pay(context, amount, comment) {
+  void pay(BuildContext context, String pinCode) {
+    // MyWalletsProvider _myWalletProvider = MyWalletsProvider();
     String dewif =
-        File(walletsDirectory.path + '${defaultWallet.chest}/wallet.dewif')
+        File(walletsDirectory.path + '/${defaultWallet.chest}/wallet.dewif')
             .readAsLinesSync()[0];
-    DubpRust.simplePaymentFromTransparentAccount(
-        accountIndex: 0,
-        amount: 1,
-        dewif: dewif,
-        gvaEndpoint: endPointGVA,
-        recipient: pubkey);
+    try {
+      print(defaultWallet.derivation);
+      print(payAmount.text);
+      print(payComment.text);
+      print(dewif);
+      print(endPointGVA);
+      print(pinCode);
+      print(pubkey);
+      DubpRust.simplePaymentFromTransparentAccount(
+          accountIndex: defaultWallet.derivation,
+          amount: double.parse(payAmount.text),
+          txComment: payComment.text,
+          dewif: dewif,
+          gvaEndpoint: endPointGVA,
+          secretCode: pinCode,
+          recipient: pubkey);
+    } catch (e) {
+      log.e("ERROR DUBP PAYMENTS");
+      log.e(e);
+    }
   }
 
   String isPubkey(context, pubkey, {bool goHistory}) {

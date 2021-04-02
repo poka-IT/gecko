@@ -328,9 +328,6 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
   }
 
   Widget payView(context, HistoryProvider _historyProvider) {
-    TextEditingController payAmount = new TextEditingController();
-    TextEditingController payComment = new TextEditingController();
-
     return Stack(
       clipBehavior: Clip.hardEdge,
       children: <Widget>[
@@ -344,7 +341,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
               Padding(
                   padding: EdgeInsets.all(8.0),
                   child: TextField(
-                      controller: payComment,
+                      controller: _historyProvider.payComment,
                       maxLines: 2,
                       textAlign: TextAlign.center,
                       decoration: InputDecoration(),
@@ -357,7 +354,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
               Padding(
                 padding: EdgeInsets.all(8.0),
                 child: TextFormField(
-                  controller: payAmount,
+                  controller: _historyProvider.payAmount,
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   keyboardType: TextInputType.number,
@@ -378,7 +375,8 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                       // _historyProvider.pay(payAmount.text, payComment.text);
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
-                        return UnlockingWallet(wallet: defaultWallet);
+                        return UnlockingWallet(
+                            wallet: defaultWallet, action: "pay");
                       }));
                     },
                     child: Padding(

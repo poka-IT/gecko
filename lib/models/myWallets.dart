@@ -7,6 +7,9 @@ import 'package:provider/provider.dart';
 
 class MyWalletsProvider with ChangeNotifier {
   List<WalletData> listWallets = [];
+  String pinCode;
+  int pinLenght;
+
   Future initWalletFolder() async {
     getDefaultWallet();
 

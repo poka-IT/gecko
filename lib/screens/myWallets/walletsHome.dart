@@ -3,7 +3,8 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/walletOptions.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/screens/myWallets/unlockingWallet.dart';
+import 'package:gecko/screens/commonElements.dart';
+import 'package:gecko/screens/myWallets/walletOptions.dart';
 import 'package:gecko/screens/onBoarding/0_noKeychainFound.dart';
 import 'package:provider/provider.dart';
 
@@ -33,42 +34,60 @@ class WalletsHome extends StatelessWidget {
       myWalletProvider.getDefaultWallet();
     }
 
-    return Scaffold(
-        appBar: AppBar(
-          title: Text('Mes portefeuilles',
-              style: TextStyle(color: Colors.grey[850])),
-          backgroundColor: Color(0xffFFD58D),
-        ),
-        floatingActionButton: Visibility(
-            visible: (isWalletsExists && firstWalletDerivation != -1),
-            child: Container(
-                height: 80.0,
-                width: 80.0,
-                child: FittedBox(
-                    child: FloatingActionButton(
-                        heroTag: "buttonGenerateWallet",
-                        onPressed: () {
-                          showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return addNewDerivation(context, 1);
-                              });
-                        },
-                        child: Container(
-                            height: 40,
-                            width: 40,
-                            child: Icon(Icons.person_add_alt_1_rounded,
-                                color: Colors.grey[850])),
-                        backgroundColor: Color(0xffEFEFBF))))),
-        body: SafeArea(
-            child: !isWalletsExists
-                ? NoKeyChainScreen()
-                : myWalletsTiles(context)));
+    return WillPopScope(
+        onWillPop: () {
+          Navigator.popUntil(
+            context,
+            ModalRoute.withName('/'),
+          );
+          return Future<bool>.value(true);
+        },
+        child: Scaffold(
+            appBar: AppBar(
+              leading: IconButton(
+                  icon: Icon(Icons.arrow_back, color: Colors.black),
+                  onPressed: () {
+                    Navigator.popUntil(
+                      context,
+                      ModalRoute.withName('/'),
+                    );
+                  }),
+              title: Text('Mes portefeuilles',
+                  style: TextStyle(color: Colors.grey[850])),
+              backgroundColor: Color(0xffFFD58D),
+            ),
+            floatingActionButton: Visibility(
+                visible: (isWalletsExists && firstWalletDerivation != -1),
+                child: Container(
+                    height: 80.0,
+                    width: 80.0,
+                    child: FittedBox(
+                        child: FloatingActionButton(
+                            heroTag: "buttonGenerateWallet",
+                            onPressed: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return addNewDerivation(context, 1);
+                                  });
+                            },
+                            child: Container(
+                                height: 40,
+                                width: 40,
+                                child: Icon(Icons.person_add_alt_1_rounded,
+                                    color: Colors.grey[850])),
+                            backgroundColor: Color(0xffEFEFBF))))),
+            body: SafeArea(
+                child: !isWalletsExists
+                    ? NoKeyChainScreen()
+                    : myWalletsTiles(context))));
   }
 
   Widget myWalletsTiles(BuildContext context) {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
+    WalletOptionsProvider _walletOptions =
+        Provider.of<WalletOptionsProvider>(context);
 
     final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
 
@@ -99,11 +118,23 @@ class WalletsHome extends StatelessWidget {
             Padding(
                 padding: EdgeInsets.all(16),
                 child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return UnlockingWallet(wallet: _repository);
-                      }));
+                    onTap: () async {
+                      await _walletOptions.readLocalWallet(
+                          context,
+                          _repository,
+                          _myWalletProvider.pinCode,
+                          _myWalletProvider.pinLenght);
+                      Navigator.push(
+                          context,
+                          SmoothTransition(
+                              page: WalletOptions(
+                            wallet: _repository,
+                          )));
+
+                      // Navigator.push(context,
+                      //     MaterialPageRoute(builder: (context) {
+                      //   return UnlockingWallet(wallet: _repository);
+                      // }));
                     },
                     child: ClipRRect(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -150,10 +181,12 @@ class WalletsHome extends StatelessWidget {
                                                 : Colors.black)))),
                             // dense: true,
                             onTap: () {
-                              Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) {
-                                return UnlockingWallet(wallet: _repository);
-                              }));
+                              Navigator.push(
+                                  context,
+                                  SmoothTransition(
+                                      page: WalletOptions(
+                                    wallet: _repository,
+                                  )));
                             },
                           )
                         ]))))

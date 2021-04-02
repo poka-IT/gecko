@@ -22,7 +22,6 @@ class WalletOptions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    log.d("Build walletOptions");
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
     MyWalletsProvider _myWalletProvider =
@@ -55,7 +54,7 @@ class WalletOptions extends StatelessWidget {
 
     int currentChest = _myWalletProvider.getCurrentChest();
 
-    log.d("$currentChest:${wallet.number}");
+    log.d("Wallet options: $currentChest:${wallet.number}");
 
     return WillPopScope(
       onWillPop: () {

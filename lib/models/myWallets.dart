@@ -54,22 +54,21 @@ class MyWalletsProvider with ChangeNotifier {
       log.i('No wallets detected');
       return false;
     } else {
-      log.i('Some wallets have been detected.');
       return true;
     }
   }
 
   List readAllWallets(int _chest) {
-    log.d(walletsDirectory.path);
+    // log.d(walletsDirectory.path);
 
     listWallets = [];
 
     File _walletConfig = File('${walletsDirectory.path}/$_chest/list.conf');
     _walletConfig.readAsLinesSync().forEach((element) {
-      log.i(element);
       listWallets.add(WalletData(element));
     });
 
+    log.i(listWallets.toString());
     return listWallets;
   }
 

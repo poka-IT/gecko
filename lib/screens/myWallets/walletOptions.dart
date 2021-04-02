@@ -22,7 +22,7 @@ class WalletOptions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    print("Build walletOptions");
+    log.d("Build walletOptions");
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
     MyWalletsProvider _myWalletProvider =
@@ -55,10 +55,7 @@ class WalletOptions extends StatelessWidget {
 
     int currentChest = _myWalletProvider.getCurrentChest();
 
-    print('roooooooooooooo');
-    print("$currentChest:${wallet.number}");
-
-    // print(_walletOptions.generateQRcode(_walletOptions.pubkey.text));
+    log.d("$currentChest:${wallet.number}");
 
     return WillPopScope(
       onWillPop: () {
@@ -111,7 +108,6 @@ class WalletOptions extends StatelessWidget {
                       InkWell(
                           onTap: () async {
                             await _walletOptions.changeAvatar();
-                            print('CHANGE AVATAR');
                           },
                           child: Image.asset(
                             'assets/chopp-gecko2.png',
@@ -119,7 +115,6 @@ class WalletOptions extends StatelessWidget {
                       InkWell(
                           onTap: () async {
                             await _walletOptions.changeAvatar();
-                            print('CHANGE AVATAR');
                           },
                           child: Column(children: <Widget>[
                             Image.asset(
@@ -127,14 +122,12 @@ class WalletOptions extends StatelessWidget {
                             ),
                             SizedBox(height: 100)
                           ])),
-                      // SizedBox(width: 20),
                       Column(children: <Widget>[
                         Row(children: <Widget>[
                           Column(children: <Widget>[
                             SizedBox(
                               width: 260,
                               child: TextField(
-                                  // autofocus: true,
                                   focusNode: _walletOptions.walletNameFocus,
                                   enabled: _walletOptions.isEditing,
                                   controller: _walletOptions.nameController,
@@ -171,8 +164,6 @@ class WalletOptions extends StatelessWidget {
                                 if (result.isLoading) {
                                   return Text('Loading');
                                 }
-
-                                print(result);
 
                                 // List repositories = result.data['viewer']['repositories']['nodes'];
                                 String wBalanceUD;

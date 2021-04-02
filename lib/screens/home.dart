@@ -97,7 +97,7 @@ class HomeScreen extends StatelessWidget {
                           autofocus: true,
                           controller: _homeProvider.searchQuery,
                           onChanged: (text) {
-                            print("Clé tappé: $text");
+                            log.d("Clé tappé: $text");
                             final String searchResult =
                                 _historyProvider.isPubkey(context, text);
                             if (searchResult != '') {

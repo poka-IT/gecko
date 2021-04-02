@@ -110,14 +110,10 @@ class OnboardingStepFourteen extends StatelessWidget {
               )
             ],
             onCompleted: (_pin) async {
-              print("Completed");
-              // final resultWallet = await _walletOptions.readLocalWallet(
-              //     _walletNbr, _pin.toUpperCase(), _pinLenght, _derivation);
               final bool resultWallet = await _walletOptions.checkPinOK(
                   generatedWallet.dewif, _pin.toUpperCase(), _pinLenght);
               if (resultWallet) {
                 pinColor = Colors.green[500];
-                print(generatedWallet.pin);
                 await _generateWalletProvider.storeHDWChest(
                     generatedWallet, 'Mon portefeuille courant', context);
                 _myWalletProvider.readAllWallets(_currentChest);
@@ -140,7 +136,6 @@ class OnboardingStepFourteen extends StatelessWidget {
               if (pinColor != Color(0xFFA4B600)) {
                 pinColor = Color(0xFFA4B600);
               }
-              print(value);
             },
           )),
     );

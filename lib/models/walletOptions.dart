@@ -38,9 +38,7 @@ class WalletOptionsProvider with ChangeNotifier {
     );
 
     if (regExp.hasMatch(_pin) == true && _pin.length == _pinLenght) {
-      print("Le format du code PIN est correct.");
     } else {
-      print('Format de code PIN invalide');
       return 'false';
     }
     if (derivation != -1) {
@@ -53,8 +51,7 @@ class WalletOptionsProvider with ChangeNotifier {
 
         return _pubkey;
       } catch (e) {
-        print('Bad PIN code !');
-        print(e);
+        log.w('Bad PIN code !\n' + e);
         notifyListeners();
 
         return 'false';
@@ -66,8 +63,7 @@ class WalletOptionsProvider with ChangeNotifier {
         notifyListeners();
         return _pubkey;
       } catch (e) {
-        print('Bad PIN code !');
-        print(e);
+        log.w('Bad PIN code !\n' + e);
         notifyListeners();
 
         return 'false';
@@ -96,7 +92,7 @@ class WalletOptionsProvider with ChangeNotifier {
         throw 'Bad pubkey';
       }
     } catch (e) {
-      print('ERROR READING FILE: $e');
+      log.e('ERROR READING FILE: $e');
       this.pubkey.clear();
       // notifyListeners();
       return 'bad';
@@ -113,7 +109,7 @@ class WalletOptionsProvider with ChangeNotifier {
         throw false;
       }
     } catch (e) {
-      print('ERROR READING FILE: $e');
+      log.e('ERROR READING FILE: $e');
       return false;
     }
   }
@@ -299,7 +295,7 @@ class WalletOptionsProvider with ChangeNotifier {
       // notifyListeners();
       return newWalletFile;
     } catch (e) {
-      print('Impossible de changer le code PIN.');
+      log.e('Impossible de changer le code PIN.');
       return badWallet;
     }
   }
@@ -308,7 +304,6 @@ class WalletOptionsProvider with ChangeNotifier {
     final Directory walletNameDirectory =
         Directory('${walletsDirectory.path}/$_name');
     final walletFile = File('${walletNameDirectory.path}/wallet.dewif');
-    print(_newWalletFile);
 
     walletFile.writeAsString('${_newWalletFile.dewif}');
     Navigator.pop(context);
@@ -365,7 +360,7 @@ class WalletOptionsProvider with ChangeNotifier {
       _image = File(pickedFile.path);
       return _image;
     } else {
-      print('No image selected.');
+      log.w('No image selected.');
     }
   }
 

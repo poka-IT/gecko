@@ -88,10 +88,6 @@ class WalletsHome extends StatelessWidget {
     }
 
     List _listWallets = _myWalletProvider.listWallets;
-    // final int nbrOfWallets = _listWallets.length;
-    // print(_listWallets);
-    // print("${_listWallets[0].split(':')[0]}:${_listWallets[0].split(':')[2]}");
-    // print(defaultWallet);
 
     return GridView.count(
         crossAxisCount: 2,

@@ -5,6 +5,7 @@ import 'package:gecko/models/walletOptions.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/globals.dart';
 
 // ignore: must_be_immutable
 class WalletOptionsOld extends StatelessWidget with ChangeNotifier {
@@ -21,14 +22,11 @@ class WalletOptionsOld extends StatelessWidget with ChangeNotifier {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    print("Build walletOptions");
+    log.d("Build walletOptions");
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
-
-    // _walletOptions.isWalletUnlock = false;
-    print("Is unlock ? ${_walletOptions.isWalletUnlock}");
 
     final int _currentChest = _myWalletProvider.getCurrentChest();
 

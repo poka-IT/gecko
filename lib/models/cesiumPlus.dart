@@ -68,7 +68,6 @@ class CesiumPlusProvider with ChangeNotifier {
     List queryOptions = await _buildQuery(_pubkey);
     final response = await http.post((Uri.parse(queryOptions[0])),
         body: queryOptions[1], headers: queryOptions[2]);
-    // print('RESULT CESIUM QUERY: ${response.body}'); //For debug
     final responseJson = json.decode(response.body);
     if (responseJson['hits']['hits'].toString() == '[]') {
       return '';
@@ -79,7 +78,6 @@ class CesiumPlusProvider with ChangeNotifier {
       return '';
     }
     _name = responseJson['hits']['hits'][0]['_source']['title'];
-    print(_name);
 
     return _name;
   }
@@ -88,7 +86,6 @@ class CesiumPlusProvider with ChangeNotifier {
     List queryOptions = await _buildQuery(_pubkey);
     final response = await http.post((Uri.parse(queryOptions[0])),
         body: queryOptions[1], headers: queryOptions[2]);
-    // print('RESULT CESIUM QUERY: ${response.body}'); //For debug
     final responseJson = json.decode(response.body);
     if (responseJson['hits']['hits'].toString() == '[]') {
       return [File(appPath.path + '/default_avatar.png')];
@@ -103,21 +100,10 @@ class CesiumPlusProvider with ChangeNotifier {
 
     var avatarFile =
         File('${(await getTemporaryDirectory()).path}/avatar$iAvatar.png');
-    // final bool _isAvatarExist = await avatarFile.exists();
-    // if (_isAvatarExist) {
-    //   await avatarFile.delete();
-    // }
     await avatarFile.writeAsBytes(base64.decode(_avatar));
     iAvatar++;
     isComplete = true;
 
     return [avatarFile];
   }
-
-  // isNameComplete() {
-  //   while (isComplete == false) {
-  //     print(isComplete);
-  //     Duration(milliseconds: 50);
-  //   }
-  // }
 }

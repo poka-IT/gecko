@@ -36,7 +36,7 @@ class HistoryProvider with ChangeNotifier {
     try {
       barcode = await scanner.scan();
     } catch (e) {
-      print(e);
+      log.e(e);
       return 'false';
     }
     if (barcode != null) {
@@ -72,7 +72,7 @@ class HistoryProvider with ChangeNotifier {
     if (regExp.hasMatch(pubkey) == true &&
         pubkey.length > 42 &&
         pubkey.length < 45) {
-      print("C'est une pubkey !!!");
+      log.d("C'est une pubkey !!!");
 
       this.pubkey = pubkey;
       getShortPubkey(pubkey);
@@ -157,8 +157,6 @@ class HistoryProvider with ChangeNotifier {
       final date = formatter.format(dateBrut);
       transBC[i].add(transaction['writtenTime']);
       transBC[i].add(date);
-      // print(
-      //     "DEBUG date et comment: ${date.toString()} -- ${transaction['comment'].toString()}");
       final int amountBrut = int.parse(output.split(':')[0]);
       final base = int.parse(output.split(':')[1]);
       final int applyBase = base - currentBase;
@@ -191,9 +189,6 @@ class HistoryProvider with ChangeNotifier {
     pageInfo = result.data['txsHistoryBc']['both']['pageInfo'];
 
     fetchMoreCursor = pageInfo['endCursor'];
-    print('hasPreviousPage: ' + pageInfo['hasPreviousPage'].toString());
-    print('hasNextPage: ' + pageInfo['hasNextPage'].toString());
-
     if (fetchMoreCursor != null) {
       opts = FetchMoreOptions(
         variables: {'cursor': fetchMoreCursor},
@@ -211,12 +206,12 @@ class HistoryProvider with ChangeNotifier {
       );
     }
 
-    print(
+    log.d(
         "###### DEBUG H Parse blockchainTX list. Cursor: $fetchMoreCursor ######");
     if (fetchMoreCursor != null) {
       transBC = parseHistory(blockchainTX, _pubkey);
     } else {
-      print("###### DEBUG H - Début de l'historique");
+      log.i("###### DEBUG H - Début de l'historique");
     }
 
     return opts;

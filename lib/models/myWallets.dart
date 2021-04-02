@@ -51,37 +51,30 @@ class MyWalletsProvider with ChangeNotifier {
     final List _walletList = readAllWallets(0);
 
     if (_walletList.isEmpty) {
-      print('No wallets detected');
+      log.i('No wallets detected');
       return false;
     } else {
-      print('Some wallets have been detected.');
+      log.i('Some wallets have been detected.');
       return true;
     }
   }
 
   List readAllWallets(int _chest) {
-    print(walletsDirectory.path);
+    log.d(walletsDirectory.path);
 
     listWallets = [];
 
-    // int i = 0;
     File _walletConfig = File('${walletsDirectory.path}/$_chest/list.conf');
     _walletConfig.readAsLinesSync().forEach((element) {
-      print(element);
+      log.i(element);
       listWallets.add(WalletData(element));
-      // listWallets += "${element.split(':')[0]}:${element.split(':')[1]}:${element.split(':')[2]}"
     });
-    // listWallets.forEach((e) {
-    //   print(e.name);
-    // });
-    // print(listWallets);
 
     return listWallets;
   }
 
   WalletData getWalletData(String _id) {
     int chest = int.parse(_id.split(':')[0]);
-    // int nbr = int.parse(_id.split(':')[1]);
     final _walletConfig = File('${walletsDirectory.path}/$chest/list.conf');
 
     return WalletData(_walletConfig
@@ -97,12 +90,11 @@ class MyWalletsProvider with ChangeNotifier {
     }
 
     defaultWallet = getWalletData(defaultWalletFile.readAsStringSync());
-    print("found default wallet $defaultWallet");
   }
 
   Future<int> deleteAllWallet(context) async {
     try {
-      print('DELETE THAT ?: $walletsDirectory');
+      log.w('DELETE THAT ?: $walletsDirectory');
 
       final bool _answer = await _confirmDeletingAllWallets(context);
 
@@ -176,7 +168,6 @@ class MyWalletsProvider with ChangeNotifier {
         '\n0:$_newWalletNbr:$_name:$_newDerivationNbr',
         mode: FileMode.append);
 
-    print(await _walletConfig.readAsString());
     notifyListeners();
 
     Navigator.pop(context);

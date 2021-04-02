@@ -9,8 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/walletOptions.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
-// import 'package:gecko/models/home.dart';
-// import 'package:provider/provider.dart';
+import 'package:gecko/globals.dart';
 
 // ignore: must_be_immutable
 class UnlockingWallet extends StatelessWidget {
@@ -125,7 +124,7 @@ class UnlockingWallet extends StatelessWidget {
               )
             ],
             onCompleted: (_pin) async {
-              print("Completed");
+              log.d("Completed");
               final resultWallet = await _walletOptions.readLocalWallet(
                   context, this.wallet, _pin.toUpperCase(), _pinLenght);
               if (resultWallet == 'bad') {
@@ -149,7 +148,6 @@ class UnlockingWallet extends StatelessWidget {
               if (pinColor != Color(0xFFA4B600)) {
                 pinColor = Color(0xFFA4B600);
               }
-              print(value);
             },
           )),
     );

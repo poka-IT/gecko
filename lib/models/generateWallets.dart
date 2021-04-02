@@ -79,8 +79,6 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     final runesAsked = _mnemo.split(' ')[nbrWord].runes;
     List<int> runesAskedUnaccent = [];
-    print(runesAsked);
-    print(value.runes);
     for (int i in runesAsked) {
       if (i == 768 || i == 769 || i == 770 || i == 771) {
         continue;
@@ -92,11 +90,11 @@ class GenerateWalletsProvider with ChangeNotifier {
         utf8.decode(runesAskedUnaccent).toLowerCase();
     final String unaccentedInputWord = removeDiacritics(value).toLowerCase();
 
-    print("Is $unaccentedAskedWord equal to input $unaccentedInputWord ?");
+    log.i("Is $unaccentedAskedWord equal to input $unaccentedInputWord ?");
     if (unaccentedAskedWord == unaccentedInputWord ||
         value == 'triche' ||
         value == '3.14') {
-      print('Word is OK');
+      log.d('Word is OK');
       isAskedWordValid = true;
       askedWordColor = Colors.green[600];
       // walletNameFocus.nextFocus();
@@ -155,7 +153,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       this.actualWallet = await generateWallet(this.generatedMnemonic);
       walletIsGenerated = true;
     } catch (e) {
-      print(e);
+      log.e(e);
     }
     return generatedMnemonic;
   }
@@ -168,7 +166,7 @@ class GenerateWalletsProvider with ChangeNotifier {
         secretCodeType: SecretCodeType.letters,
       );
     } catch (e) {
-      print(e);
+      log.e(e);
     }
 
     mnemonicController.text = generatedMnemonic;
@@ -240,7 +238,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     cesiumPubkey.text = _walletPubkey;
     pin.text = actualWallet.pin;
     isPinChanged = true;
-    print(_walletPubkey);
+    log.d(_walletPubkey);
   }
 
   Future importWallet(context, _cesiumID, _cesiumPWD) async {
@@ -291,19 +289,12 @@ class GenerateWalletsProvider with ChangeNotifier {
     int _nbr = 1;
 
     for (word in _sentance.split(' ')) {
-      // print(word);
       _wordsList.add("$_nbr:$word");
       _nbr++;
     }
-    // notifyListeners();
 
     return _wordsList;
   }
-
-  // void makeError() {
-  //   var tata = File(appPath.path + '/ddfhjftjfg');
-  //   tata.readAsLinesSync();
-  // }
 
   void reloadBuild() {
     notifyListeners();

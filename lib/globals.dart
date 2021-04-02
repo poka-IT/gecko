@@ -22,4 +22,4 @@ bool isTall;
 double ratio;
 
 // Logger
-var logger = Logger();
+var log = Logger();

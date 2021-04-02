@@ -48,7 +48,6 @@ class ImportWalletScreen extends StatelessWidget {
                               _debounce.cancel();
                             _debounce =
                                 Timer(const Duration(milliseconds: 200), () {
-                              print("ID Cesium tappé: $text");
                               _generateWalletProvider
                                   .generateCesiumWalletPubkey(text,
                                       _generateWalletProvider.cesiumPWD.text)
@@ -86,7 +85,6 @@ class ImportWalletScreen extends StatelessWidget {
                               _debounce.cancel();
                             _debounce =
                                 Timer(const Duration(milliseconds: 200), () {
-                              print("ID Cesium tappé: $text");
                               _generateWalletProvider
                                   .generateCesiumWalletPubkey(
                                       _generateWalletProvider.cesiumID.text,

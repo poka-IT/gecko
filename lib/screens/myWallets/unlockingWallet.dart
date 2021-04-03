@@ -24,6 +24,7 @@ class UnlockingWallet extends StatelessWidget {
   bool hasError = false;
   var pinColor = Color(0xffF9F9F1);
   var walletPin = '';
+  String resultPay;
 
   Future<NewWallet> get badWallet => null;
 
@@ -148,7 +149,9 @@ class UnlockingWallet extends StatelessWidget {
                   Navigator.pushNamed(formKey.currentContext, '/mywallets');
                 } else if (action == "pay") {
                   print("Go payments");
-                  _historyProvider.pay(context, _pin.toUpperCase());
+                  resultPay =
+                      await _historyProvider.pay(context, _pin.toUpperCase());
+                  await _paymentsResult(context);
                 }
               }
             },
@@ -158,6 +161,32 @@ class UnlockingWallet extends StatelessWidget {
               }
             },
           )),
+    );
+  }
+
+  Future<bool> _paymentsResult(context) {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: true, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(resultPay == "Success"
+              ? 'Paiement effecuté avec succès !'
+              : "Une erreur s'est produite lors du paiement"),
+          content: SingleChildScrollView(child: Text('')),
+          actions: <Widget>[
+            TextButton(
+              child: Text("OK"),
+              onPressed: () {
+                Navigator.popUntil(
+                  context,
+                  ModalRoute.withName('/'),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

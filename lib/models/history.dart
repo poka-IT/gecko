@@ -50,20 +50,14 @@ class HistoryProvider with ChangeNotifier {
     return barcode;
   }
 
-  void pay(BuildContext context, String pinCode) {
+  Future<String> pay(BuildContext context, String pinCode) async {
     // MyWalletsProvider _myWalletProvider = MyWalletsProvider();
-    String dewif =
-        File(walletsDirectory.path + '/${defaultWallet.chest}/wallet.dewif')
-            .readAsLinesSync()[0];
+    List dewifList = await File(
+            walletsDirectory.path + '/${defaultWallet.chest}/wallet.dewif')
+        .readAsLines();
+    String dewif = dewifList[0];
     try {
-      print(defaultWallet.derivation);
-      print(payAmount.text);
-      print(payComment.text);
-      print(dewif);
-      print(endPointGVA);
-      print(pinCode);
-      print(pubkey);
-      DubpRust.simplePaymentFromTransparentAccount(
+      await DubpRust.simplePaymentFromTransparentAccount(
           accountIndex: defaultWallet.derivation,
           amount: double.parse(payAmount.text),
           txComment: payComment.text,
@@ -71,9 +65,11 @@ class HistoryProvider with ChangeNotifier {
           gvaEndpoint: endPointGVA,
           secretCode: pinCode,
           recipient: pubkey);
+      return "Success";
     } catch (e) {
       log.e("ERROR DUBP PAYMENTS");
       log.e(e);
+      return "Payments errors: $e";
     }
   }
 
@@ -137,6 +133,7 @@ class HistoryProvider with ChangeNotifier {
     return pubkeyShort;
   }
 
+// poka: Do99s6wQR2JLfhirPdpAERSjNbmjjECzGxHNJMiNKT3P
 // Pi: D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU         // For debug
 // Boris: JE6mkuzSpT3ePciCPRTpuMT9fqPUVVLJz2618d33p7tn
 // Matograine portefeuille: 9p5nHsES6xujFR7pw2yGy4PLKKHgWsMvsDHaHF64Uj25.

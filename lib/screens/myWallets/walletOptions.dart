@@ -7,28 +7,20 @@ import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/queries.dart';
 import 'package:gecko/models/walletOptions.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'dart:async';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 
 // ignore: must_be_immutable
 class WalletOptions extends StatelessWidget {
-  WalletOptions(
-      {Key keyMyWallets,
-      @required this.walletNbr,
-      @required this.walletName,
-      @required this.derivation})
+  WalletOptions({Key keyMyWallets, @required this.wallet})
       : super(key: keyMyWallets);
-  int walletNbr;
-  String walletName;
-  int derivation;
+  WalletData wallet;
   int _nbrLinesName = 1;
   bool _isNewNameValid = false;
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    print("Build walletOptions");
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
     MyWalletsProvider _myWalletProvider =
@@ -41,9 +33,9 @@ class WalletOptions extends StatelessWidget {
 
     if (_walletOptions.nameController.text == null ||
         _isNewNameValid == false) {
-      _walletOptions.nameController.text = walletName;
+      _walletOptions.nameController.text = wallet.name;
     } else {
-      walletName = _walletOptions.nameController.text;
+      wallet.name = _walletOptions.nameController.text;
     }
 
     _walletOptions.nameController.text.length >= 15
@@ -52,28 +44,28 @@ class WalletOptions extends StatelessWidget {
     if (_walletOptions.nameController.text.length >= 26 && isTall)
       _nbrLinesName = 3;
 
-    _walletOptions.walletID = '0:$walletNbr';
+    _walletOptions.walletID = '0:${wallet.number}';
 
     _myWalletProvider.getDefaultWallet();
 
-    defaultWallet == _walletOptions.walletID
-        ? _walletOptions.isDefaultWallet = true
-        : _walletOptions.isDefaultWallet = false;
+    _walletOptions.isDefaultWallet =
+        (defaultWallet.id() == _walletOptions.walletID);
 
-    // print(_walletOptions.generateQRcode(_walletOptions.pubkey.text));
+    int currentChest = _myWalletProvider.getCurrentChest();
+
+    log.d("Wallet options: $currentChest:${wallet.number}");
 
     return WillPopScope(
-      onWillPop: () {
-        _walletOptions.isEditing = false;
-        _walletOptions.isBalanceBlur = true;
-        Navigator.popUntil(
-          context,
-          ModalRoute.withName('/'),
-        );
-        Navigator.pushNamed(context, '/mywallets');
-        return Future<bool>.value(true);
-      },
-      child: Scaffold(
+        onWillPop: () {
+          _walletOptions.isEditing = false;
+          _walletOptions.isBalanceBlur = true;
+          Navigator.popUntil(
+            context,
+            ModalRoute.withName('/mywallets'),
+          );
+          return Future<bool>.value(true);
+        },
+        child: Scaffold(
           resizeToAvoidBottomInset: false,
           appBar: AppBar(
               leading: IconButton(
@@ -83,9 +75,8 @@ class WalletOptions extends StatelessWidget {
                     _walletOptions.isBalanceBlur = true;
                     Navigator.popUntil(
                       context,
-                      ModalRoute.withName('/'),
+                      ModalRoute.withName('/mywallets'),
                     );
-                    Navigator.pushNamed(context, '/mywallets');
                   }),
               title: SizedBox(
                 height: 22,
@@ -113,7 +104,6 @@ class WalletOptions extends StatelessWidget {
                       InkWell(
                           onTap: () async {
                             await _walletOptions.changeAvatar();
-                            print('CHANGE AVATAR');
                           },
                           child: Image.asset(
                             'assets/chopp-gecko2.png',
@@ -121,7 +111,6 @@ class WalletOptions extends StatelessWidget {
                       InkWell(
                           onTap: () async {
                             await _walletOptions.changeAvatar();
-                            print('CHANGE AVATAR');
                           },
                           child: Column(children: <Widget>[
                             Image.asset(
@@ -129,14 +118,12 @@ class WalletOptions extends StatelessWidget {
                             ),
                             SizedBox(height: 100)
                           ])),
-                      // SizedBox(width: 20),
                       Column(children: <Widget>[
                         Row(children: <Widget>[
                           Column(children: <Widget>[
                             SizedBox(
                               width: 260,
                               child: TextField(
-                                  // autofocus: true,
                                   focusNode: _walletOptions.walletNameFocus,
                                   enabled: _walletOptions.isEditing,
                                   controller: _walletOptions.nameController,
@@ -173,8 +160,6 @@ class WalletOptions extends StatelessWidget {
                                 if (result.isLoading) {
                                   return Text('Loading');
                                 }
-
-                                print(result);
 
                                 // List repositories = result.data['viewer']['repositories']['nodes'];
                                 String wBalanceUD;
@@ -252,7 +237,7 @@ class WalletOptions extends StatelessWidget {
                                   //           .addPostFrameCallback((_) {
                                   //         _myWalletProvider.listWallets =
                                   //             _myWalletProvider
-                                  //                 .getAllWalletsNames(
+                                  //                 .readAllWallets(
                                   //                     _currentChest);
                                   //         _myWalletProvider.rebuildWidget();
                                   //       });
@@ -369,10 +354,9 @@ class WalletOptions extends StatelessWidget {
                 InkWell(
                     onTap: !_walletOptions.isDefaultWallet
                         ? () {
-                            defaultWallet = '0:$walletNbr';
-                            _walletOptions
-                                .defAsDefaultWallet(_walletOptions.walletID);
-                            _myWalletProvider.getAllWalletsNames(_currentChest);
+                            defaultWallet = wallet;
+                            _walletOptions.defAsDefaultWallet(wallet.id());
+                            _myWalletProvider.readAllWallets(_currentChest);
                           }
                         : null,
                     child: SizedBox(
@@ -399,11 +383,10 @@ class WalletOptions extends StatelessWidget {
                 SizedBox(height: 17 * ratio),
                 InkWell(
                     onTap: () async {
-                      await _walletOptions.deleteWallet(
-                          context, walletNbr, walletName, derivation);
+                      await _walletOptions.deleteWallet(context, wallet);
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         _myWalletProvider.listWallets =
-                            _myWalletProvider.getAllWalletsNames(_currentChest);
+                            _myWalletProvider.readAllWallets(_currentChest);
                         _myWalletProvider.rebuildWidget();
                       });
                     },
@@ -419,7 +402,7 @@ class WalletOptions extends StatelessWidget {
                     ])),
               ]),
             ),
-          )),
-    );
+          ),
+        ));
   }
 }

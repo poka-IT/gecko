@@ -3,7 +3,8 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/walletOptions.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/screens/myWallets/unlockingWallet.dart';
+import 'package:gecko/screens/commonElements.dart';
+import 'package:gecko/screens/myWallets/walletOptions.dart';
 import 'package:gecko/screens/onBoarding/0_noKeychainFound.dart';
 import 'package:provider/provider.dart';
 
@@ -24,52 +25,69 @@ class WalletsHome extends StatelessWidget {
     final int _currentChest = myWalletProvider.getCurrentChest();
 
     myWalletProvider.listWallets =
-        myWalletProvider.getAllWalletsNames(_currentChest);
+        myWalletProvider.readAllWallets(_currentChest);
     final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
 
-    if (myWalletProvider.listWallets != '') {
-      firstWalletDerivation =
-          int.parse(myWalletProvider.listWallets.split('\n')[0].split(':')[3]);
+    if (myWalletProvider.listWallets.isEmpty) {
+      firstWalletDerivation = myWalletProvider.listWallets[0].derivation;
 
       myWalletProvider.getDefaultWallet();
     }
 
-    return Scaffold(
-        appBar: AppBar(
-          title: Text('Mes portefeuilles',
-              style: TextStyle(color: Colors.grey[850])),
-          backgroundColor: Color(0xffFFD58D),
-        ),
-        floatingActionButton: Visibility(
-            visible: (isWalletsExists && firstWalletDerivation != -1),
-            child: Container(
-                height: 80.0,
-                width: 80.0,
-                child: FittedBox(
-                    child: FloatingActionButton(
-                        heroTag: "buttonGenerateWallet",
-                        onPressed: () {
-                          showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return addNewDerivation(context, 1);
-                              });
-                        },
-                        child: Container(
-                            height: 40,
-                            width: 40,
-                            child: Icon(Icons.person_add_alt_1_rounded,
-                                color: Colors.grey[850])),
-                        backgroundColor: Color(0xffEFEFBF))))),
-        body: SafeArea(
-            child: !isWalletsExists
-                ? NoKeyChainScreen()
-                : myWalletsTiles(context)));
+    return WillPopScope(
+        onWillPop: () {
+          Navigator.popUntil(
+            context,
+            ModalRoute.withName('/'),
+          );
+          return Future<bool>.value(true);
+        },
+        child: Scaffold(
+            appBar: AppBar(
+              leading: IconButton(
+                  icon: Icon(Icons.arrow_back, color: Colors.black),
+                  onPressed: () {
+                    Navigator.popUntil(
+                      context,
+                      ModalRoute.withName('/'),
+                    );
+                  }),
+              title: Text('Mes portefeuilles',
+                  style: TextStyle(color: Colors.grey[850])),
+              backgroundColor: Color(0xffFFD58D),
+            ),
+            floatingActionButton: Visibility(
+                visible: (isWalletsExists && firstWalletDerivation != -1),
+                child: Container(
+                    height: 80.0,
+                    width: 80.0,
+                    child: FittedBox(
+                        child: FloatingActionButton(
+                            heroTag: "buttonGenerateWallet",
+                            onPressed: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return addNewDerivation(context, 1);
+                                  });
+                            },
+                            child: Container(
+                                height: 40,
+                                width: 40,
+                                child: Icon(Icons.person_add_alt_1_rounded,
+                                    color: Colors.grey[850])),
+                            backgroundColor: Color(0xffEFEFBF))))),
+            body: SafeArea(
+                child: !isWalletsExists
+                    ? NoKeyChainScreen()
+                    : myWalletsTiles(context))));
   }
 
   Widget myWalletsTiles(BuildContext context) {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
+    WalletOptionsProvider _walletOptions =
+        Provider.of<WalletOptionsProvider>(context);
 
     final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
 
@@ -77,7 +95,7 @@ class WalletsHome extends StatelessWidget {
       return Text('');
     }
 
-    if (_myWalletProvider.listWallets == '') {
+    if (_myWalletProvider.listWallets.isEmpty) {
       return Expanded(
           child: Column(children: <Widget>[
         Center(
@@ -88,11 +106,7 @@ class WalletsHome extends StatelessWidget {
       ]));
     }
 
-    List _listWallets = _myWalletProvider.listWallets.split('\n');
-    // final int nbrOfWallets = _listWallets.length;
-    // print(_listWallets);
-    // print("${_listWallets[0].split(':')[0]}:${_listWallets[0].split(':')[2]}");
-    // print(defaultWallet);
+    List _listWallets = _myWalletProvider.listWallets;
 
     return GridView.count(
         crossAxisCount: 2,
@@ -100,18 +114,27 @@ class WalletsHome extends StatelessWidget {
         crossAxisSpacing: 0,
         mainAxisSpacing: 0,
         children: <Widget>[
-          for (String _repository in _listWallets)
+          for (WalletData _repository in _listWallets)
             Padding(
                 padding: EdgeInsets.all(16),
                 child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return UnlockingWallet(
-                            walletNbr: int.parse(_repository.split(':')[1]),
-                            walletName: _repository.split(':')[2],
-                            derivation: int.parse(_repository.split(':')[3]));
-                      }));
+                    onTap: () async {
+                      await _walletOptions.readLocalWallet(
+                          context,
+                          _repository,
+                          _myWalletProvider.pinCode,
+                          _myWalletProvider.pinLenght);
+                      Navigator.push(
+                          context,
+                          SmoothTransition(
+                              page: WalletOptions(
+                            wallet: _repository,
+                          )));
+
+                      // Navigator.push(context,
+                      //     MaterialPageRoute(builder: (context) {
+                      //   return UnlockingWallet(wallet: _repository);
+                      // }));
                     },
                     child: ClipRRect(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -137,11 +160,9 @@ class WalletsHome extends StatelessWidget {
                           )),
                           ListTile(
                             // contentPadding: const EdgeInsets.only(left: 7.0),
-                            tileColor:
-                                "${_repository.split(':')[0]}:${_repository.split(':')[1]}" ==
-                                        defaultWallet
-                                    ? Color(0xffD28928)
-                                    : Color(0xffFFD58D),
+                            tileColor: _repository.id() == defaultWallet.id()
+                                ? Color(0xffD28928)
+                                : Color(0xffFFD58D),
                             // leading: Text('IMAGE'),
 
                             // subtitle: Text(_repository.split(':')[3],
@@ -150,26 +171,22 @@ class WalletsHome extends StatelessWidget {
                                 child: Padding(
                                     padding:
                                         EdgeInsets.symmetric(horizontal: 5),
-                                    child: Text(_repository.split(':')[2],
+                                    child: Text(_repository.name,
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
                                             fontSize: 16.0,
-                                            color:
-                                                "${_repository.split(':')[0]}:${_repository.split(':')[1]}" ==
-                                                        defaultWallet
-                                                    ? Color(0xffF9F9F1)
-                                                    : Colors.black)))),
+                                            color: _repository.id() ==
+                                                    defaultWallet.id()
+                                                ? Color(0xffF9F9F1)
+                                                : Colors.black)))),
                             // dense: true,
                             onTap: () {
-                              Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) {
-                                return UnlockingWallet(
-                                    walletNbr:
-                                        int.parse(_repository.split(':')[1]),
-                                    walletName: _repository.split(':')[2],
-                                    derivation:
-                                        int.parse(_repository.split(':')[3]));
-                              }));
+                              Navigator.push(
+                                  context,
+                                  SmoothTransition(
+                                      page: WalletOptions(
+                                    wallet: _repository,
+                                  )));
                             },
                           )
                         ]))))

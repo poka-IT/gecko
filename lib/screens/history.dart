@@ -7,6 +7,7 @@ import 'package:gecko/models/queries.dart';
 import 'package:gecko/models/history.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:gecko/screens/myWallets/unlockingWallet.dart';
 import 'dart:ui';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
@@ -33,8 +34,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
     HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
     HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
     this._outputPubkey.text = _historyProvider.pubkey;
-    print('Build pubkey : ' + _historyProvider.pubkey);
-    // _historyProvider.snackNode(context);
+    log.i('Build pubkey : ' + _historyProvider.pubkey);
     WidgetsBinding.instance.addPostFrameCallback((_) {});
 
     return Scaffold(
@@ -57,7 +57,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                           autofocus: true,
                           controller: _homeProvider.searchQuery,
                           onChanged: (text) {
-                            print("Clé tappé: $text");
+                            log.d("Clé tappé: $text");
                             final String searchResult =
                                 _historyProvider.isPubkey(context, text);
                             if (searchResult != '') {
@@ -113,7 +113,6 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
     // HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
     CesiumPlusProvider _cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context);
-    print("I'M HERE 1");
     bool _isFirstExec = true;
     return Expanded(
         child: Column(
@@ -130,18 +129,14 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
             },
           ),
           builder: (QueryResult result, {fetchMore, refetch}) {
-            print("I'M HERE 2 ! $_isFirstExec");
-            // print(result.source.isEager);
-
             if (result.isLoading && result.data == null) {
-              print("I'M HERE 3 !");
               return const Center(
                 child: CircularProgressIndicator(),
               );
             }
 
             if (result.hasException) {
-              print('Error GVA: ' + result.exception.toString());
+              log.e('Error GVA: ' + result.exception.toString());
               return Column(children: <Widget>[
                 SizedBox(height: 50),
                 Text(
@@ -315,7 +310,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                             // ),
                             _historyProvider.isHistoryScreen
                                 ? historyView(context, result)
-                                : payView(context),
+                                : payView(context, _historyProvider),
                           ],
                         ))),
                 onNotification: (t) {
@@ -332,9 +327,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
     ));
   }
 
-  Widget payView(context) {
-    TextEditingController payComment = new TextEditingController();
-
+  Widget payView(context, HistoryProvider _historyProvider) {
     return Stack(
       clipBehavior: Clip.hardEdge,
       children: <Widget>[
@@ -344,26 +337,34 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               SizedBox(height: 20),
-              Text('Commentaire:'),
+              Text('Commentaire:', style: TextStyle(fontSize: 20.0)),
               Padding(
                   padding: EdgeInsets.all(8.0),
                   child: TextField(
-                      controller: payComment,
+                      controller: _historyProvider.payComment,
                       maxLines: 2,
                       textAlign: TextAlign.center,
                       decoration: InputDecoration(),
                       style: TextStyle(
-                          fontSize: 14.0,
+                          fontSize: 22,
                           color: Colors.black,
                           fontWeight: FontWeight.bold))),
               SizedBox(height: 20),
-              Text('Montant (Ğ1):'),
+              Text('Montant (DU/Ğ1):', style: TextStyle(fontSize: 20.0)),
               Padding(
                 padding: EdgeInsets.all(8.0),
                 child: TextFormField(
+                  style: TextStyle(fontSize: 22),
+                  controller: _historyProvider.payAmount,
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    contentPadding:
+                        EdgeInsets.symmetric(vertical: 25.0, horizontal: 10.0),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0)),
+                  ),
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))
                   ],
@@ -375,9 +376,15 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                     style: OutlinedButton.styleFrom(
                         side: BorderSide(width: 2, color: Color(0xffD28928))),
                     onPressed: () {
-                      if (_formKey.currentState.validate()) {
-                        _formKey.currentState.save();
-                      }
+                      // if (_formKey.currentState.validate()) {
+                      //   _formKey.currentState.save();
+                      // }
+                      // _historyProvider.pay(payAmount.text, payComment.text);
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return UnlockingWallet(
+                            wallet: defaultWallet, action: "pay");
+                      }));
                     },
                     child: Padding(
                         padding: const EdgeInsets.all(12),

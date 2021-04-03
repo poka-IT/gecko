@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:dubp/dubp.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -26,6 +29,8 @@ class HistoryProvider with ChangeNotifier {
   bool isHistoryScreen = false;
   String historySwitchButtun = "Voir l'historique";
   String rawSvg;
+  TextEditingController payAmount = TextEditingController();
+  TextEditingController payComment = TextEditingController();
 
   Future scan(context) async {
     await Permission.camera.request();
@@ -33,7 +38,7 @@ class HistoryProvider with ChangeNotifier {
     try {
       barcode = await scanner.scan();
     } catch (e) {
-      print(e);
+      log.e(e);
       return 'false';
     }
     if (barcode != null) {
@@ -43,6 +48,29 @@ class HistoryProvider with ChangeNotifier {
       return 'false';
     }
     return barcode;
+  }
+
+  Future<String> pay(BuildContext context, String pinCode) async {
+    // MyWalletsProvider _myWalletProvider = MyWalletsProvider();
+    List dewifList = await File(
+            walletsDirectory.path + '/${defaultWallet.chest}/wallet.dewif')
+        .readAsLines();
+    String dewif = dewifList[0];
+    try {
+      await DubpRust.simplePaymentFromTransparentAccount(
+          accountIndex: defaultWallet.derivation,
+          amount: double.parse(payAmount.text),
+          txComment: payComment.text,
+          dewif: dewif,
+          gvaEndpoint: endPointGVA,
+          secretCode: pinCode,
+          recipient: pubkey);
+      return "Success";
+    } catch (e) {
+      log.e("ERROR DUBP PAYMENTS");
+      log.e(e);
+      return "Payments errors: $e";
+    }
   }
 
   String isPubkey(context, pubkey, {bool goHistory}) {
@@ -57,7 +85,7 @@ class HistoryProvider with ChangeNotifier {
     if (regExp.hasMatch(pubkey) == true &&
         pubkey.length > 42 &&
         pubkey.length < 45) {
-      print("C'est une pubkey !!!");
+      log.d("C'est une pubkey !!!");
 
       this.pubkey = pubkey;
       getShortPubkey(pubkey);
@@ -105,6 +133,7 @@ class HistoryProvider with ChangeNotifier {
     return pubkeyShort;
   }
 
+// poka: Do99s6wQR2JLfhirPdpAERSjNbmjjECzGxHNJMiNKT3P
 // Pi: D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU         // For debug
 // Boris: JE6mkuzSpT3ePciCPRTpuMT9fqPUVVLJz2618d33p7tn
 // Matograine portefeuille: 9p5nHsES6xujFR7pw2yGy4PLKKHgWsMvsDHaHF64Uj25.
@@ -142,8 +171,6 @@ class HistoryProvider with ChangeNotifier {
       final date = formatter.format(dateBrut);
       transBC[i].add(transaction['writtenTime']);
       transBC[i].add(date);
-      // print(
-      //     "DEBUG date et comment: ${date.toString()} -- ${transaction['comment'].toString()}");
       final int amountBrut = int.parse(output.split(':')[0]);
       final base = int.parse(output.split(':')[1]);
       final int applyBase = base - currentBase;
@@ -176,9 +203,6 @@ class HistoryProvider with ChangeNotifier {
     pageInfo = result.data['txsHistoryBc']['both']['pageInfo'];
 
     fetchMoreCursor = pageInfo['endCursor'];
-    print('hasPreviousPage: ' + pageInfo['hasPreviousPage'].toString());
-    print('hasNextPage: ' + pageInfo['hasNextPage'].toString());
-
     if (fetchMoreCursor != null) {
       opts = FetchMoreOptions(
         variables: {'cursor': fetchMoreCursor},
@@ -196,12 +220,12 @@ class HistoryProvider with ChangeNotifier {
       );
     }
 
-    print(
+    log.d(
         "###### DEBUG H Parse blockchainTX list. Cursor: $fetchMoreCursor ######");
     if (fetchMoreCursor != null) {
       transBC = parseHistory(blockchainTX, _pubkey);
     } else {
-      print("###### DEBUG H - Début de l'historique");
+      log.i("###### DEBUG H - Début de l'historique");
     }
 
     return opts;

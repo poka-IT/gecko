@@ -5,6 +5,7 @@ import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/screens/myWallets/generateWallets.dart';
 import 'dart:io';
 import 'package:gecko/screens/myWallets/importWallet.dart';
+import 'package:gecko/globals.dart';
 
 // ignore: must_be_immutable
 class SettingsScreen extends StatelessWidget {
@@ -85,7 +86,7 @@ class SettingsScreen extends StatelessWidget {
                             onPrimary: Colors.black, // foreground
                           ),
                           onPressed: () async => {
-                                print('Suppression de tous les wallets'),
+                                log.i('Suppression de tous les wallets'),
                                 await _myWallets.deleteAllWallet(context)
                               },
                           child: Text(

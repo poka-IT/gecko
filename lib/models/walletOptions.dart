@@ -1,3 +1,4 @@
+// import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/myWallets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:truncate/truncate.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
@@ -36,9 +38,7 @@ class WalletOptionsProvider with ChangeNotifier {
     );
 
     if (regExp.hasMatch(_pin) == true && _pin.length == _pinLenght) {
-      print("Le format du code PIN est correct.");
     } else {
-      print('Format de code PIN invalide');
       return 'false';
     }
     if (derivation != -1) {
@@ -51,8 +51,7 @@ class WalletOptionsProvider with ChangeNotifier {
 
         return _pubkey;
       } catch (e) {
-        print('Bad PIN code !');
-        print(e);
+        log.w('Bad PIN code !\n' + e);
         notifyListeners();
 
         return 'false';
@@ -64,8 +63,7 @@ class WalletOptionsProvider with ChangeNotifier {
         notifyListeners();
         return _pubkey;
       } catch (e) {
-        print('Bad PIN code !');
-        print(e);
+        log.w('Bad PIN code !\n' + e);
         notifyListeners();
 
         return 'false';
@@ -74,15 +72,17 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Future readLocalWallet(
-      int _walletNbr, String _pin, int _pinLenght, int derivation) async {
+      context, WalletData _wallet, String _pin, int _pinLenght) async {
     isWalletUnlock = false;
     try {
       File _walletFile = File('${walletsDirectory.path}/0/wallet.dewif');
       String _localDewif = await _walletFile.readAsString();
       String _localPubkey;
+      // log.d("_wallet:");
+      log.d(_pin);
 
       if ((_localPubkey = await _getPubkeyFromDewif(
-              _localDewif, _pin, _pinLenght, derivation)) !=
+              _localDewif, _pin, _pinLenght, _wallet.derivation)) !=
           'false') {
         this.pubkey.text = _localPubkey;
         isWalletUnlock = true;
@@ -93,7 +93,7 @@ class WalletOptionsProvider with ChangeNotifier {
         throw 'Bad pubkey';
       }
     } catch (e) {
-      print('ERROR READING FILE: $e');
+      log.e('ERROR READING FILE: $e');
       this.pubkey.clear();
       // notifyListeners();
       return 'bad';
@@ -110,7 +110,7 @@ class WalletOptionsProvider with ChangeNotifier {
         throw false;
       }
     } catch (e) {
-      print('ERROR READING FILE: $e');
+      log.e('ERROR READING FILE: $e');
       return false;
     }
   }
@@ -136,27 +136,15 @@ class WalletOptionsProvider with ChangeNotifier {
     String newConfig =
         await _walletConfig.readAsLines().then((List<String> lines) {
       int nbrLines = lines.length;
-      // print(lines);
-      // print(nbrLines);
-      // int _index = lines.indexOf('0:$_walletNbr:$_walletName:$_derivation');
       if (nbrLines != 1) {
         for (String wLine in lines) {
           String wID = "${wLine.split(':')[0]}:${wLine.split(':')[1]}";
-          print(
-              "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-          print(wLine);
           String deri = wLine.split(':')[3];
-          print("($wID == $_walletID ???");
           if (wID == _walletID) {
             lines.remove(wLine);
             lines.add('$_walletID:$_newName:$deri');
-            // return '$_walletID:$_newName:$deri';
-            print('OOUUUUUUUIIIIIIIIIIIIIIIIIII');
           }
         }
-        // lines.removeWhere((element) =>
-        //     '${element.split(':')[0]}:${element.split(':')[1]}' == _walletID);
-        // lines.add('$_walletID:$_newName:$deri');
         return lines.join('\n');
       } else {
         return 'true';
@@ -229,17 +217,16 @@ class WalletOptionsProvider with ChangeNotifier {
     return nameState;
   }
 
-  Future<int> deleteWallet(context, _walletNbr, _name, _derivation) async {
-    final bool _answer = await _confirmDeletingWallet(context, _name);
+  Future<int> deleteWallet(context, wallet) async {
+    final bool _answer = await _confirmDeletingWallet(context, wallet.name);
 
     if (_answer) {
       final _walletConfig = File('${walletsDirectory.path}/0/list.conf');
 
-      if (_derivation != -1) {
+      if (wallet.derivation != -1) {
         String newConfig =
             await _walletConfig.readAsLines().then((List<String> lines) {
-          lines.removeWhere((element) =>
-              element.contains('0:$_walletNbr:$_name:$_derivation'));
+          lines.removeWhere((element) => element.contains(wallet.inLine()));
 
           return lines.join('\n');
         });
@@ -247,7 +234,8 @@ class WalletOptionsProvider with ChangeNotifier {
         await _walletConfig.delete();
         await _walletConfig.writeAsString(newConfig);
       } else {
-        final _walletFile = Directory('${walletsDirectory.path}/$_walletNbr');
+        final _walletFile =
+            Directory('${walletsDirectory.path}/${wallet.number}');
         await _walletFile.delete(recursive: true);
       }
       Navigator.popUntil(
@@ -308,7 +296,7 @@ class WalletOptionsProvider with ChangeNotifier {
       // notifyListeners();
       return newWalletFile;
     } catch (e) {
-      print('Impossible de changer le code PIN.');
+      log.e('Impossible de changer le code PIN.');
       return badWallet;
     }
   }
@@ -317,7 +305,6 @@ class WalletOptionsProvider with ChangeNotifier {
     final Directory walletNameDirectory =
         Directory('${walletsDirectory.path}/$_name');
     final walletFile = File('${walletNameDirectory.path}/wallet.dewif');
-    print(_newWalletFile);
 
     walletFile.writeAsString('${_newWalletFile.dewif}');
     Navigator.pop(context);
@@ -374,7 +361,7 @@ class WalletOptionsProvider with ChangeNotifier {
       _image = File(pickedFile.path);
       return _image;
     } else {
-      print('No image selected.');
+      log.w('No image selected.');
     }
   }
 

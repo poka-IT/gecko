@@ -53,10 +53,10 @@ class HomeProvider with ChangeNotifier {
 
     do {
       i++;
-      print(i.toString() + ' ème essai de recherche de endpoint GVA.');
-      print('Try GVA endpoint: ${_listEndpoints[i]}');
+      log.d(i.toString() + ' ème essai de recherche de endpoint GVA.');
+      log.d('Try GVA endpoint: ${_listEndpoints[i]}');
       if (i > 2) {
-        print('NO VALID GVA ENDPOINT FOUND');
+        log.e('NO VALID GVA ENDPOINT FOUND');
         _endpoint = 'HS';
         break;
       }
@@ -71,21 +71,21 @@ class HomeProvider with ChangeNotifier {
         _endpoint = _listEndpoints[i];
         _statusCode = response.statusCode;
       } on TimeoutException catch (_) {
-        print('This endpoint is timeout, next');
+        log.e('This endpoint is timeout, next');
         _statusCode = 50;
         continue;
       } on SocketException catch (_) {
-        print('This endpoint is a bad endpoint, next');
+        log.e('This endpoint is a bad endpoint, next');
         _statusCode = 70;
         continue;
       } on Exception {
-        print('Unknown error');
+        log.e('Unknown error');
         _statusCode = 60;
         continue;
       }
     } while (_statusCode != 400);
 
-    print('ENDPOINT: ' + _endpoint);
+    log.i('ENDPOINT: ' + _endpoint);
     return _endpoint;
   }
 

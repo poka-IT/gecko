@@ -2,26 +2,21 @@ import 'dart:async';
 
 import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/models/history.dart';
+import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/walletOptions.dart';
-import 'package:gecko/screens/commonElements.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/screens/myWallets/walletOptions.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
-// import 'package:gecko/models/home.dart';
-// import 'package:provider/provider.dart';
+import 'package:gecko/globals.dart';
 
 // ignore: must_be_immutable
 class UnlockingWallet extends StatelessWidget {
   UnlockingWallet(
-      {Key keyUnlockWallet,
-      @required this.walletNbr,
-      @required this.walletName,
-      @required this.derivation})
+      {Key keyUnlockWallet, @required this.wallet, @required this.action})
       : super(key: keyUnlockWallet);
-  int walletNbr;
-  String walletName;
-  int derivation;
+  WalletData wallet;
+  String action;
 
   // ignore: close_sinks
   StreamController<ErrorAnimationType> errorController;
@@ -29,6 +24,7 @@ class UnlockingWallet extends StatelessWidget {
   bool hasError = false;
   var pinColor = Color(0xffF9F9F1);
   var walletPin = '';
+  String resultPay;
 
   Future<NewWallet> get badWallet => null;
 
@@ -37,7 +33,9 @@ class UnlockingWallet extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
-    final int _pinLenght = _walletOptions.getPinLenght(this.walletNbr);
+
+    log.d("defaultWallet: " + defaultWallet.toString());
+    final int _pinLenght = _walletOptions.getPinLenght(wallet.number);
     errorController = StreamController<ErrorAnimationType>();
 
     return Scaffold(
@@ -57,7 +55,7 @@ class UnlockingWallet extends StatelessWidget {
                   fontWeight: FontWeight.w400),
             ),
             SizedBox(height: 50),
-            pinForm(context, _pinLenght, walletNbr, derivation),
+            pinForm(context, _pinLenght, wallet.number, wallet.derivation),
           ]),
         ),
         GestureDetector(
@@ -80,6 +78,9 @@ class UnlockingWallet extends StatelessWidget {
     TextEditingController _enterPin = TextEditingController();
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context);
+    HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
 
     return Form(
       key: formKey,
@@ -128,12 +129,13 @@ class UnlockingWallet extends StatelessWidget {
               )
             ],
             onCompleted: (_pin) async {
-              print("Completed");
+              log.d("Completed");
+              _myWalletProvider.pinCode = _pin;
               final resultWallet = await _walletOptions.readLocalWallet(
-                  this.walletNbr,
-                  _pin.toUpperCase(),
-                  _pinLenght,
-                  this.derivation);
+                  context, this.wallet, _pin.toUpperCase(), _pinLenght);
+              // _myWalletProvider.pinCode = _pin.toUpperCase();
+              _myWalletProvider.pinLenght = _pinLenght;
+
               if (resultWallet == 'bad') {
                 errorController.add(ErrorAnimationType
                     .shake); // Triggering error shake animation
@@ -143,22 +145,48 @@ class UnlockingWallet extends StatelessWidget {
               } else {
                 pinColor = Colors.green[400];
                 // await Future.delayed(Duration(milliseconds: 50));
-                Navigator.push(
-                    formKey.currentContext,
-                    SmoothTransition(
-                        page: WalletOptions(
-                            walletNbr: walletNbr,
-                            walletName: walletName,
-                            derivation: derivation)));
+                if (action == "mywallets") {
+                  Navigator.pushNamed(formKey.currentContext, '/mywallets');
+                } else if (action == "pay") {
+                  print("Go payments");
+                  resultPay =
+                      await _historyProvider.pay(context, _pin.toUpperCase());
+                  await _paymentsResult(context);
+                }
               }
             },
             onChanged: (value) {
               if (pinColor != Color(0xFFA4B600)) {
                 pinColor = Color(0xFFA4B600);
               }
-              print(value);
             },
           )),
+    );
+  }
+
+  Future<bool> _paymentsResult(context) {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: true, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(resultPay == "Success"
+              ? 'Paiement effecuté avec succès !'
+              : "Une erreur s'est produite lors du paiement"),
+          content: SingleChildScrollView(child: Text('')),
+          actions: <Widget>[
+            TextButton(
+              child: Text("OK"),
+              onPressed: () {
+                Navigator.popUntil(
+                  context,
+                  ModalRoute.withName('/'),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

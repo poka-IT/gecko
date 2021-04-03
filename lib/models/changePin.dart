@@ -27,7 +27,7 @@ class ChangePinProvider with ChangeNotifier {
       notifyListeners();
       return newWalletFile;
     } catch (e) {
-      print('Impossible de changer le code PIN.');
+      log.e('Impossible de changer le code PIN.');
       return badWallet;
     }
   }
@@ -36,7 +36,6 @@ class ChangePinProvider with ChangeNotifier {
     final Directory walletNameDirectory =
         Directory('${walletsDirectory.path}/$_name');
     final walletFile = File('${walletNameDirectory.path}/wallet.dewif');
-    print(_newWalletFile);
 
     walletFile.writeAsString('${_newWalletFile.dewif}');
     Navigator.pop(context);

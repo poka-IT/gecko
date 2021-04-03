@@ -337,7 +337,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               SizedBox(height: 20),
-              Text('Commentaire:'),
+              Text('Commentaire:', style: TextStyle(fontSize: 20.0)),
               Padding(
                   padding: EdgeInsets.all(8.0),
                   child: TextField(
@@ -346,18 +346,25 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                       textAlign: TextAlign.center,
                       decoration: InputDecoration(),
                       style: TextStyle(
-                          fontSize: 14.0,
+                          fontSize: 22,
                           color: Colors.black,
                           fontWeight: FontWeight.bold))),
               SizedBox(height: 20),
-              Text('Montant (Ğ1):'),
+              Text('Montant (DU/Ğ1):', style: TextStyle(fontSize: 20.0)),
               Padding(
                 padding: EdgeInsets.all(8.0),
                 child: TextFormField(
+                  style: TextStyle(fontSize: 22),
                   controller: _historyProvider.payAmount,
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    contentPadding:
+                        EdgeInsets.symmetric(vertical: 25.0, horizontal: 10.0),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0)),
+                  ),
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))
                   ],

@@ -74,11 +74,12 @@ class WalletOptionsProvider with ChangeNotifier {
   Future readLocalWallet(
       context, WalletData _wallet, String _pin, int _pinLenght) async {
     isWalletUnlock = false;
-    // MyWalletsProvider _myWalletProvider = MyWalletsProvider();
     try {
       File _walletFile = File('${walletsDirectory.path}/0/wallet.dewif');
       String _localDewif = await _walletFile.readAsString();
       String _localPubkey;
+      // log.d("_wallet:");
+      log.d(_pin);
 
       if ((_localPubkey = await _getPubkeyFromDewif(
               _localDewif, _pin, _pinLenght, _wallet.derivation)) !=

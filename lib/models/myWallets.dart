@@ -11,7 +11,7 @@ class MyWalletsProvider with ChangeNotifier {
   int pinLenght;
 
   Future initWalletFolder() async {
-    getDefaultWallet();
+    // getDefaultWallet();
 
     final bool isWalletFolderExist = await walletsDirectory.exists();
     if (!isWalletFolderExist) {
@@ -32,6 +32,7 @@ class MyWalletsProvider with ChangeNotifier {
       await File('${walletsDirectory.path}/0/order.conf').create();
       await File('${walletsDirectory.path}/1/list.conf').create();
       await File('${walletsDirectory.path}/1/order.conf').create();
+      getDefaultWallet();
     }
   }
 
@@ -89,6 +90,7 @@ class MyWalletsProvider with ChangeNotifier {
 
     if (!defaultWalletFile.existsSync()) {
       File(defaultWalletFile.path).createSync();
+      defaultWalletFile.writeAsStringSync("0:0");
     }
 
     defaultWallet = getWalletData(defaultWalletFile.readAsStringSync());
@@ -102,7 +104,9 @@ class MyWalletsProvider with ChangeNotifier {
 
       if (_answer) {
         await walletsDirectory.delete(recursive: true);
+        await defaultWalletFile.delete();
         await walletsDirectory.create();
+        await defaultWalletFile.create();
         await initWalletFolder();
         notifyListeners();
         Navigator.pop(context);

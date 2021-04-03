@@ -32,7 +32,9 @@ class UnlockingWallet extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
-    final int _pinLenght = _walletOptions.getPinLenght(this.wallet.number);
+
+    log.d("defaultWallet: " + defaultWallet.toString());
+    final int _pinLenght = _walletOptions.getPinLenght(wallet.number);
     errorController = StreamController<ErrorAnimationType>();
 
     return Scaffold(
@@ -127,6 +129,7 @@ class UnlockingWallet extends StatelessWidget {
             ],
             onCompleted: (_pin) async {
               log.d("Completed");
+              _myWalletProvider.pinCode = _pin;
               final resultWallet = await _walletOptions.readLocalWallet(
                   context, this.wallet, _pin.toUpperCase(), _pinLenght);
               // _myWalletProvider.pinCode = _pin.toUpperCase();

@@ -97,6 +97,10 @@ class MyWalletsProvider with ChangeNotifier {
     List configLines = await _walletConfig.readAsLines();
     log.d(configLines);
 
+    if (configLines.isEmpty) {
+      return WalletData('');
+    }
+
     return WalletData(
         configLines.firstWhere((element) => element.startsWith(_id)));
   }
@@ -136,7 +140,7 @@ class MyWalletsProvider with ChangeNotifier {
         await walletsDirectory.create();
         // await defaultWalletFile.create();
         await initWalletFolder();
-        await Future.delayed(Duration(milliseconds: 100));
+        await Future.delayed(Duration(milliseconds: 500));
         notifyListeners();
         rebuildWidget();
         Navigator.pop(context);

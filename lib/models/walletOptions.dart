@@ -78,15 +78,13 @@ class WalletOptionsProvider with ChangeNotifier {
       File _walletFile = File('${walletsDirectory.path}/0/wallet.dewif');
       String _localDewif = await _walletFile.readAsString();
       String _localPubkey;
-      // log.d("_wallet:");
-      log.d(_pin);
+      // log.d("$_localDewif $_pin $_pinLenght ${_wallet.derivation}");
 
       if ((_localPubkey = await _getPubkeyFromDewif(
               _localDewif, _pin, _pinLenght, _wallet.derivation)) !=
           'false') {
         this.pubkey.text = _localPubkey;
         isWalletUnlock = true;
-        // notifyListeners();
 
         return _localDewif;
       } else {
@@ -95,7 +93,6 @@ class WalletOptionsProvider with ChangeNotifier {
     } catch (e) {
       log.e('ERROR READING FILE: $e');
       this.pubkey.clear();
-      // notifyListeners();
       return 'bad';
     }
   }
@@ -320,6 +317,7 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   String getShortPubkey(String pubkey) {
+    log.d(pubkey);
     List<int> pubkeyByte = Base58Decode(pubkey);
     Digest pubkeyS256 = sha256.convert(sha256.convert(pubkeyByte).bytes);
     String pubkeyCheksum = Base58Encode(pubkeyS256.bytes);

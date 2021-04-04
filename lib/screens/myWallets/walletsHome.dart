@@ -18,9 +18,6 @@ class WalletsHome extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
-    WalletOptionsProvider _walletOptions =
-        Provider.of<WalletOptionsProvider>(context);
-    _walletOptions.isWalletUnlock = false;
 
     final int _currentChest = myWalletProvider.getCurrentChest();
 

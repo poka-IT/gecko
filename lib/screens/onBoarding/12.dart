@@ -110,6 +110,7 @@ class OnboardingStepFourteen extends StatelessWidget {
               )
             ],
             onCompleted: (_pin) async {
+              _myWalletProvider.pinCode = _pin;
               final bool resultWallet = await _walletOptions.checkPinOK(
                   generatedWallet.dewif, _pin.toUpperCase(), _pinLenght);
               if (resultWallet) {

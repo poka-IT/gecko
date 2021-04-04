@@ -28,7 +28,6 @@ class HomeScreen extends StatelessWidget {
       isTall = true;
       ratio = 1.125;
     }
-    // CommonElements commonElements = CommonElements();
     return Scaffold(
         resizeToAvoidBottomInset: false,
         drawer: Drawer(

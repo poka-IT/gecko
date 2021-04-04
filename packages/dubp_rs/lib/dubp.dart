@@ -232,6 +232,21 @@ class DubpRust {
     return completer.future;
   }
 
+  /// Get mnemonic phrase of `dewif` (algo Bip32-Ed25519 only).
+  static Future<List<String>> getBip32DewifMnemonic(
+      {String currency = "g1", String dewif, String secretCode}) async {
+    final completer = Completer<List<String>>();
+    final sendPort = singleCompletePort<List<String>, List>(completer,
+        callback: _handleErrList);
+    native.get_bip32_dewif_mnemonic(
+      sendPort.nativePort,
+      StringUtf8Pointer(currency).toNativeUtf8(),
+      StringUtf8Pointer(dewif).toNativeUtf8(),
+      StringUtf8Pointer(secretCode).toNativeUtf8(),
+    );
+    return completer.future;
+  }
+
   /// Get `dewif` keypair meta data.
   static Future<DewifMetaData> getDewifMetaData(
       {String dewif,

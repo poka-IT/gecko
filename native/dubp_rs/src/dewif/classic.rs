@@ -21,13 +21,13 @@ pub(crate) fn sign(
     secret_code: &str,
     msg: &str,
 ) -> Result<String, DubpError> {
-    let mut keypairs = dubp_client::crypto::dewif::read_dewif_file_content(
+    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),
     )
     .map_err(DubpError::DewifReadError)?;
-    if let Some(KeyPairEnum::Ed25519(keypair)) = keypairs.next() {
+    if let DewifPayload::Ed25519(keypair) = payload {
         Ok(keypair.generate_signator().sign(msg.as_bytes()).to_base64())
     } else {
         Err(DubpError::DewifReadError(DewifReadError::CorruptedContent))
@@ -40,13 +40,13 @@ pub(crate) fn sign_several(
     secret_code: &str,
     msgs: &[&str],
 ) -> Result<Vec<String>, DubpError> {
-    let mut keypairs = dubp_client::crypto::dewif::read_dewif_file_content(
+    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),
     )
     .map_err(DubpError::DewifReadError)?;
-    if let Some(KeyPairEnum::Ed25519(keypair)) = keypairs.next() {
+    if let DewifPayload::Ed25519(keypair) = payload {
         let signator = keypair.generate_signator();
         Ok(msgs
             .iter()

@@ -34,22 +34,24 @@ pub(crate) fn get_accounts_pubkeys(
     if accounts_indexs.contains(&U31::new(0)?) {
         verify_member_secret_code(currency, dewif, secret_code)?;
     }
-    let mut keypairs = dubp_client::crypto::dewif::read_dewif_file_content(
+    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),
     )
     .map_err(DubpError::DewifReadError)?;
-    match keypairs.next() {
-        Some(KeyPairEnum::Bip32Ed25519(master_keypair)) => Ok(accounts_indexs
-            .into_iter()
-            .map(|account_index| {
-                PrivateDerivationPath::transparent(account_index)
-                    .map(|path| master_keypair.derive(path).public_key().to_base58())
-            })
-            .collect::<Result<Vec<_>, InvalidAccountIndex>>()?),
-        Some(_) => Err(DubpError::NotHdWallet),
-        None => Err(DubpError::DewifReadError(DewifReadError::CorruptedContent)),
+    match payload {
+        DewifPayload::Bip32Ed25519(mnemonic) => {
+            let master_keypair = KeyPair::from_mnemonic(&mnemonic);
+            Ok(accounts_indexs
+                .into_iter()
+                .map(|account_index| {
+                    PrivateDerivationPath::transparent(account_index)
+                        .map(|path| master_keypair.derive(path).public_key().to_base58())
+                })
+                .collect::<Result<Vec<_>, InvalidAccountIndex>>()?)
+        }
+        _ => Err(DubpError::NotHdWallet),
     }
 }
 
@@ -61,7 +63,7 @@ pub(crate) fn get_bip32_keypair(
     external_opt: Option<bool>,
     secret_code: &str,
 ) -> Result<KeyPairEnum, DubpError> {
-    let mut keypairs = dubp_client::crypto::dewif::read_dewif_file_content(
+    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),
@@ -72,14 +74,14 @@ pub(crate) fn get_bip32_keypair(
         verify_member_secret_code(currency, dewif, secret_code)?;
     }
 
-    match keypairs.next() {
-        Some(KeyPairEnum::Bip32Ed25519(master_keypair)) => {
+    match payload {
+        DewifPayload::Bip32Ed25519(mnemonic) => {
+            let master_keypair = KeyPair::from_mnemonic(&mnemonic);
             Ok(KeyPairEnum::Bip32Ed25519(master_keypair.derive(
                 z_get_derivation_path(account_index, address_index_opt, external_opt)?,
             )))
         }
-        Some(_) => Err(DubpError::NotHdWallet),
-        None => Err(DubpError::DewifReadError(DewifReadError::CorruptedContent)),
+        _ => Err(DubpError::NotHdWallet),
     }
 }
 
@@ -91,7 +93,7 @@ pub(crate) fn get_bip32_pubkey(
     external_opt: Option<bool>,
     secret_code: &str,
 ) -> Result<String, DubpError> {
-    let mut keypairs = dubp_client::crypto::dewif::read_dewif_file_content(
+    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),
@@ -102,17 +104,19 @@ pub(crate) fn get_bip32_pubkey(
         verify_member_secret_code(currency, dewif, secret_code)?;
     }
 
-    match keypairs.next() {
-        Some(KeyPairEnum::Bip32Ed25519(master_keypair)) => Ok(master_keypair
-            .derive(z_get_derivation_path(
-                account_index,
-                address_index_opt,
-                external_opt,
-            )?)
-            .public_key()
-            .to_base58()),
-        Some(_) => Err(DubpError::NotHdWallet),
-        None => Err(DubpError::DewifReadError(DewifReadError::CorruptedContent)),
+    match payload {
+        DewifPayload::Bip32Ed25519(mnemonic) => {
+            let master_keypair = KeyPair::from_mnemonic(&mnemonic);
+            Ok(master_keypair
+                .derive(z_get_derivation_path(
+                    account_index,
+                    address_index_opt,
+                    external_opt,
+                )?)
+                .public_key()
+                .to_base58())
+        }
+        _ => Err(DubpError::NotHdWallet),
     }
 }
 
@@ -137,20 +141,39 @@ pub(crate) fn get_opaque_account_next_external_address(
     }
 }
 
+pub(crate) fn get_mnemonic(
+    currency: Currency,
+    dewif: &str,
+    secret_code: &str,
+) -> Result<String, DubpError> {
+    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_file_content(
+        ExpectedCurrency::Specific(currency),
+        dewif,
+        &secret_code.to_ascii_uppercase(),
+    )
+    .map_err(DubpError::DewifReadError)?;
+
+    match payload {
+        DewifPayload::Bip32Ed25519(mnemonic) => Ok(mnemonic.phrase().to_owned()),
+        _ => Err(DubpError::NotHdWallet),
+    }
+}
+
 pub(crate) fn load_opaque_bip32_accounts(
     accounts_indexs: Vec<U31>,
     currency: Currency,
     dewif: &str,
     secret_code: &str,
 ) -> Result<(), DubpError> {
-    let mut keypairs = dubp_client::crypto::dewif::read_dewif_file_content(
+    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),
     )
     .map_err(DubpError::DewifReadError)?;
-    match keypairs.next() {
-        Some(KeyPairEnum::Bip32Ed25519(master_keypair)) => {
+    match payload {
+        DewifPayload::Bip32Ed25519(mnemonic) => {
+            let master_keypair = KeyPair::from_mnemonic(&mnemonic);
             for account_index in accounts_indexs {
                 let external_path = PrivateDerivationPath::opaque(account_index, true, None)?;
                 let external_kp = master_keypair.derive(external_path);
@@ -165,8 +188,7 @@ pub(crate) fn load_opaque_bip32_accounts(
             }
             Ok(())
         }
-        Some(_) => Err(DubpError::NotHdWallet),
-        None => Err(DubpError::DewifReadError(DewifReadError::CorruptedContent)),
+        _ => Err(DubpError::NotHdWallet),
     }
 }
 
@@ -179,7 +201,7 @@ pub(crate) fn sign_bip32(
     secret_code: &str,
     msg: &str,
 ) -> Result<String, DubpError> {
-    let mut keypairs = dubp_client::crypto::dewif::read_dewif_file_content(
+    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),
@@ -190,16 +212,18 @@ pub(crate) fn sign_bip32(
         verify_member_secret_code(currency, dewif, secret_code)?;
     }
 
-    match keypairs.next() {
-        Some(KeyPairEnum::Bip32Ed25519(master_keypair)) => sign_bip32_inner(
-            account_index,
-            address_index_opt,
-            external_opt,
-            master_keypair,
-            msg,
-        ),
-        Some(_) => Err(DubpError::NotHdWallet),
-        None => Err(DubpError::DewifReadError(DewifReadError::CorruptedContent)),
+    match payload {
+        DewifPayload::Bip32Ed25519(mnemonic) => {
+            let master_keypair = KeyPair::from_mnemonic(&mnemonic);
+            sign_bip32_inner(
+                account_index,
+                address_index_opt,
+                external_opt,
+                master_keypair,
+                msg,
+            )
+        }
+        _ => Err(DubpError::NotHdWallet),
     }
 }
 
@@ -212,7 +236,7 @@ pub(crate) fn sign_several_bip32(
     secret_code: &str,
     msgs: &[&str],
 ) -> Result<Vec<String>, DubpError> {
-    let mut keypairs = dubp_client::crypto::dewif::read_dewif_file_content(
+    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_file_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),
@@ -223,16 +247,18 @@ pub(crate) fn sign_several_bip32(
         verify_member_secret_code(currency, dewif, secret_code)?;
     }
 
-    match keypairs.next() {
-        Some(KeyPairEnum::Bip32Ed25519(master_keypair)) => sign_several_bip32_inner(
-            account_index,
-            address_index_opt,
-            external_opt,
-            master_keypair,
-            msgs,
-        ),
-        Some(_) => Err(DubpError::NotHdWallet),
-        None => Err(DubpError::DewifReadError(DewifReadError::CorruptedContent)),
+    match payload {
+        DewifPayload::Bip32Ed25519(mnemonic) => {
+            let master_keypair = KeyPair::from_mnemonic(&mnemonic);
+            sign_several_bip32_inner(
+                account_index,
+                address_index_opt,
+                external_opt,
+                master_keypair,
+                msgs,
+            )
+        }
+        _ => Err(DubpError::NotHdWallet),
     }
 }
 

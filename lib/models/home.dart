@@ -61,11 +61,8 @@ class HomeProvider with ChangeNotifier {
       int listLenght = _listEndpoints.length - 1;
       if (i > listLenght) {
         log.e('NO VALID GVA ENDPOINT FOUND');
-        playSound('faché');
         _endpoint = 'HS';
         break;
-      } else {
-        playSound('start');
       }
       if (i != 0) {
         await Future.delayed(const Duration(milliseconds: 300));

@@ -53,6 +53,12 @@ Future<void> main() async {
   // Get a valid GVA endpoint
   endPointGVA = await _homeProvider.getValidEndpoint();
 
+  if (endPointGVA == 'HS') {
+    _homeProvider.playSound('faché');
+  } else {
+    _homeProvider.playSound('start');
+  }
+
   if (kReleaseMode && enableSentry) {
     // CatcherOptions debugOptions = CatcherOptions(DialogReportMode(), [
     //   SentryHandler(SentryClient(SentryOptions(

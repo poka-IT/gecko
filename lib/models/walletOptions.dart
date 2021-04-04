@@ -157,7 +157,7 @@ class WalletOptionsProvider with ChangeNotifier {
       context, _walletName, _walletNbr, _derivation) async {
     return showDialog<bool>(
       context: context,
-      barrierDismissible: true, // user must tap button!
+      barrierDismissible: true,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Choisissez un nouveau nom pour ce portefeuille'),

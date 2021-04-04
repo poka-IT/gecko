@@ -119,6 +119,7 @@ class OnboardingStepFourteen extends StatelessWidget {
                 _myWalletProvider.readAllWallets(_currentChest);
                 _walletOptions.reloadBuild();
                 _myWalletProvider.rebuildWidget();
+                await _myWalletProvider.getDefaultWalletAsync();
                 Navigator.push(
                   context,
                   FaderTransition(

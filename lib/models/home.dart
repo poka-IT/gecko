@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:audioplayers/audio_cache.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,6 +23,7 @@ class HomeProvider with ChangeNotifier {
       Text('Explorateur', style: TextStyle(color: Colors.grey[850]));
 
   List currentTab = [HistoryScreen(), WalletsHome()];
+  AudioCache player = AudioCache(prefix: 'sounds/');
 
   get currentIndex => _currentIndex;
 
@@ -54,11 +57,15 @@ class HomeProvider with ChangeNotifier {
     do {
       i++;
       log.d(i.toString() + ' ème essai de recherche de endpoint GVA.');
-      log.d('Try GVA endpoint: ${_listEndpoints[i]}');
-      if (i > 2) {
+      log.d('Try GVA endpoint: ${_listEndpoints[i - 1]}');
+      int listLenght = _listEndpoints.length - 1;
+      if (i > listLenght) {
         log.e('NO VALID GVA ENDPOINT FOUND');
+        playSound('faché');
         _endpoint = 'HS';
         break;
+      } else {
+        playSound('start');
       }
       if (i != 0) {
         await Future.delayed(const Duration(milliseconds: 300));
@@ -119,6 +126,11 @@ class HomeProvider with ChangeNotifier {
   void handleSearchStart() {
     isSearching = true;
     notifyListeners();
+  }
+
+  void playSound(String customSound) async {
+    await player.play('$customSound.wav',
+        volume: 1, mode: PlayerMode.LOW_LATENCY, stayAwake: false);
   }
 
   void handleSearchEnd() {

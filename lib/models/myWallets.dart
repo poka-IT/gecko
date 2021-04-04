@@ -32,8 +32,9 @@ class MyWalletsProvider with ChangeNotifier {
       await File('${walletsDirectory.path}/0/order.conf').create();
       await File('${walletsDirectory.path}/1/list.conf').create();
       await File('${walletsDirectory.path}/1/order.conf').create();
-      getDefaultWallet();
+      // getDefaultWallet();
     }
+    await getDefaultWalletAsync();
   }
 
   int getCurrentChest() {
@@ -77,12 +78,27 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   WalletData getWalletData(String _id) {
+    // log.d(_id);
+    if (_id == '') return WalletData('');
     int chest = int.parse(_id.split(':')[0]);
     final _walletConfig = File('${walletsDirectory.path}/$chest/list.conf');
 
     return WalletData(_walletConfig
         .readAsLinesSync()
         .firstWhere((element) => element.startsWith(_id)));
+  }
+
+  Future<WalletData> getWalletDataAsync(String _id) async {
+    // log.d(_id);
+    if (_id == '') return WalletData('');
+    int chest = int.parse(_id.split(':')[0]);
+    final _walletConfig = File('${walletsDirectory.path}/$chest/list.conf');
+
+    List configLines = await _walletConfig.readAsLines();
+    log.d(configLines);
+
+    return WalletData(
+        configLines.firstWhere((element) => element.startsWith(_id)));
   }
 
   void getDefaultWallet() {
@@ -96,6 +112,18 @@ class MyWalletsProvider with ChangeNotifier {
     defaultWallet = getWalletData(defaultWalletFile.readAsStringSync());
   }
 
+  Future getDefaultWalletAsync() async {
+    defaultWalletFile = File('${appPath.path}/defaultWallet');
+
+    if (!await defaultWalletFile.exists()) {
+      await File(defaultWalletFile.path).create();
+      await defaultWalletFile.writeAsString("0:0");
+    } else {
+      defaultWallet =
+          await getWalletDataAsync(await defaultWalletFile.readAsString());
+    }
+  }
+
   Future<int> deleteAllWallet(context) async {
     try {
       log.w('DELETE THAT ?: $walletsDirectory');
@@ -106,9 +134,11 @@ class MyWalletsProvider with ChangeNotifier {
         await walletsDirectory.delete(recursive: true);
         await defaultWalletFile.delete();
         await walletsDirectory.create();
-        await defaultWalletFile.create();
+        // await defaultWalletFile.create();
         await initWalletFolder();
+        await Future.delayed(Duration(milliseconds: 100));
         notifyListeners();
+        rebuildWidget();
         Navigator.pop(context);
       }
       return 0;
@@ -193,12 +223,14 @@ class WalletData {
 
   // constructor from ':'-separated string
   WalletData(String element) {
-    List parts = element.split(':');
+    if (element != '') {
+      List parts = element.split(':');
 
-    this.chest = int.parse(parts[0]);
-    this.number = int.parse(parts[1]);
-    this.name = parts[2];
-    this.derivation = int.parse(parts[3]);
+      this.chest = int.parse(parts[0]);
+      this.number = int.parse(parts[1]);
+      this.name = parts[2];
+      this.derivation = int.parse(parts[3]);
+    }
   }
 
   // representation of WalletData when debugging

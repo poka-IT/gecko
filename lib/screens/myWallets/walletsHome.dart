@@ -31,6 +31,8 @@ class WalletsHome extends StatelessWidget {
       myWalletProvider.getDefaultWallet();
     }
 
+    log.d("${myWalletProvider.pinCode},${myWalletProvider.pinLenght}");
+
     return WillPopScope(
         onWillPop: () {
           Navigator.popUntil(

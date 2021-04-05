@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dubp/dubp.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -140,8 +142,12 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                                       _myWalletProvider.listWallets =
                                           _myWalletProvider
                                               .readAllWallets(_currentChest);
-                                      _myWalletProvider.rebuildWidget();
+                                      scheduleMicrotask(() {
+                                        _myWalletProvider.rebuildWidget();
+                                      });
                                     });
+                                    Navigator.popUntil(
+                                        context, ModalRoute.withName('/'));
                                   }
                                 : null,
                             child: Text('Confirmer',

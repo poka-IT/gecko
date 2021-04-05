@@ -125,9 +125,9 @@ class HomeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void playSound(String customSound) async {
+  void playSound(String customSound, double volume) async {
     await player.play('$customSound.wav',
-        volume: 1, mode: PlayerMode.LOW_LATENCY, stayAwake: false);
+        volume: volume, mode: PlayerMode.LOW_LATENCY, stayAwake: false);
   }
 
   void handleSearchEnd() {
@@ -141,6 +141,10 @@ class HomeProvider with ChangeNotifier {
     isSearching = false;
     searchQuery.clear();
 
+    notifyListeners();
+  }
+
+  void rebuildWidget() {
     notifyListeners();
   }
 }

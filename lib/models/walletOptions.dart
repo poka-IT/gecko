@@ -8,8 +8,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/home.dart';
 import 'package:gecko/models/myWallets.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:truncate/truncate.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 
@@ -73,6 +75,8 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Future readLocalWallet(
       context, WalletData _wallet, String _pin, int _pinLenght) async {
+    HomeProvider _homeProvider =
+        Provider.of<HomeProvider>(context, listen: false);
     isWalletUnlock = false;
     try {
       File _walletFile = File('${walletsDirectory.path}/0/wallet.dewif');
@@ -85,12 +89,12 @@ class WalletOptionsProvider with ChangeNotifier {
           'false') {
         this.pubkey.text = _localPubkey;
         isWalletUnlock = true;
-
         return _localDewif;
       } else {
         throw 'Bad pubkey';
       }
     } catch (e) {
+      _homeProvider.playSound('non', 0.6);
       log.e('ERROR READING FILE: $e');
       this.pubkey.clear();
       return 'bad';

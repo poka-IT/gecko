@@ -54,9 +54,9 @@ Future<void> main() async {
   endPointGVA = await _homeProvider.getValidEndpoint();
 
   if (endPointGVA == 'HS') {
-    _homeProvider.playSound('faché');
+    _homeProvider.playSound('faché', 0.7);
   } else {
-    _homeProvider.playSound('start');
+    _homeProvider.playSound('start', 0.5);
   }
 
   if (kReleaseMode && enableSentry) {

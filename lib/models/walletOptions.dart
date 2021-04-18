@@ -8,8 +8,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/home.dart';
 import 'package:gecko/models/myWallets.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:truncate/truncate.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 
@@ -73,29 +75,28 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Future readLocalWallet(
       context, WalletData _wallet, String _pin, int _pinLenght) async {
+    HomeProvider _homeProvider =
+        Provider.of<HomeProvider>(context, listen: false);
     isWalletUnlock = false;
     try {
       File _walletFile = File('${walletsDirectory.path}/0/wallet.dewif');
       String _localDewif = await _walletFile.readAsString();
       String _localPubkey;
-      // log.d("_wallet:");
-      log.d(_pin);
+      // log.d("$_localDewif $_pin $_pinLenght ${_wallet.derivation}");
 
       if ((_localPubkey = await _getPubkeyFromDewif(
               _localDewif, _pin, _pinLenght, _wallet.derivation)) !=
           'false') {
         this.pubkey.text = _localPubkey;
         isWalletUnlock = true;
-        // notifyListeners();
-
         return _localDewif;
       } else {
         throw 'Bad pubkey';
       }
     } catch (e) {
+      _homeProvider.playSound('non', 0.6);
       log.e('ERROR READING FILE: $e');
       this.pubkey.clear();
-      // notifyListeners();
       return 'bad';
     }
   }
@@ -160,7 +161,7 @@ class WalletOptionsProvider with ChangeNotifier {
       context, _walletName, _walletNbr, _derivation) async {
     return showDialog<bool>(
       context: context,
-      barrierDismissible: true, // user must tap button!
+      barrierDismissible: true,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Choisissez un nouveau nom pour ce portefeuille'),
@@ -320,6 +321,7 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   String getShortPubkey(String pubkey) {
+    log.d(pubkey);
     List<int> pubkeyByte = Base58Decode(pubkey);
     Digest pubkeyS256 = sha256.convert(sha256.convert(pubkeyByte).bytes);
     String pubkeyCheksum = Base58Encode(pubkeyS256.bytes);

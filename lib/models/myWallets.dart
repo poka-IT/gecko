@@ -97,6 +97,10 @@ class MyWalletsProvider with ChangeNotifier {
     List configLines = await _walletConfig.readAsLines();
     log.d(configLines);
 
+    if (configLines.isEmpty) {
+      return WalletData('');
+    }
+
     return WalletData(
         configLines.firstWhere((element) => element.startsWith(_id)));
   }
@@ -125,20 +129,24 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   Future<int> deleteAllWallet(context) async {
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
     try {
       log.w('DELETE THAT ?: $walletsDirectory');
 
       final bool _answer = await _confirmDeletingAllWallets(context);
-
       if (_answer) {
         await walletsDirectory.delete(recursive: true);
         await defaultWalletFile.delete();
         await walletsDirectory.create();
-        // await defaultWalletFile.create();
         await initWalletFolder();
-        await Future.delayed(Duration(milliseconds: 100));
+        // await Future.delayed(Duration(milliseconds: 500));
+        // scheduleMicrotask(() {
         notifyListeners();
         rebuildWidget();
+        _myWalletProvider.rebuildWidget();
+        // });
+
         Navigator.pop(context);
       }
       return 0;
@@ -152,8 +160,6 @@ class MyWalletsProvider with ChangeNotifier {
       context: context,
       barrierDismissible: true, // user must tap button!
       builder: (BuildContext context) {
-        MyWalletsProvider _myWalletProvider =
-            Provider.of<MyWalletsProvider>(context);
         return AlertDialog(
           title:
               Text('Êtes-vous sûr de vouloir supprimer tous vos trousseaux ?'),
@@ -168,11 +174,6 @@ class MyWalletsProvider with ChangeNotifier {
             TextButton(
               child: Text("Oui"),
               onPressed: () {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _myWalletProvider.listWallets =
-                      _myWalletProvider.readAllWallets(getCurrentChest());
-                  _myWalletProvider.rebuildWidget();
-                });
                 Navigator.pop(context, true);
               },
             ),

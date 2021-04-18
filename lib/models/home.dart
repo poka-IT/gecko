@@ -61,11 +61,8 @@ class HomeProvider with ChangeNotifier {
       int listLenght = _listEndpoints.length - 1;
       if (i > listLenght) {
         log.e('NO VALID GVA ENDPOINT FOUND');
-        playSound('faché');
         _endpoint = 'HS';
         break;
-      } else {
-        playSound('start');
       }
       if (i != 0) {
         await Future.delayed(const Duration(milliseconds: 300));
@@ -128,9 +125,9 @@ class HomeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void playSound(String customSound) async {
+  void playSound(String customSound, double volume) async {
     await player.play('$customSound.wav',
-        volume: 1, mode: PlayerMode.LOW_LATENCY, stayAwake: false);
+        volume: volume, mode: PlayerMode.LOW_LATENCY, stayAwake: false);
   }
 
   void handleSearchEnd() {
@@ -144,6 +141,10 @@ class HomeProvider with ChangeNotifier {
     isSearching = false;
     searchQuery.clear();
 
+    notifyListeners();
+  }
+
+  void rebuildWidget() {
     notifyListeners();
   }
 }

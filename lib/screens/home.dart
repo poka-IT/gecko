@@ -257,6 +257,7 @@ class HomeScreen extends StatelessWidget {
                               Column(children: <Widget>[
                                 Container(
                                   child: ClipOval(
+                                    key: Key('manageWallets'),
                                     child: Material(
                                       color: Color(0xffFFD58D), // button color
                                       child: InkWell(

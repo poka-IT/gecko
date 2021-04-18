@@ -34,7 +34,7 @@ dependencies:
   pdf: ^3.0.1
   printing: ^5.0.2
   shared_preferences: ^2.0.3
-  sync_http: ^0.2.0
+  sync_http: ^0.3.0
   crypto: ^3.0.0
   fast_base58:
   logger: ^1.0.0
@@ -47,6 +47,9 @@ dependencies:
   responsive_builder: ^0.3.0
   jdenticon_dart: ^2.0.0
   audioplayers: ^0.18.1
+  flutter_driver:
+    sdk: flutter
+  test: ^1.16.6
 
 flutter_icons:
   android: "ic_launcher"

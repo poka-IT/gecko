@@ -7,7 +7,7 @@ class CommonElements {
     return Text('Coucou');
   }
 
-  Widget bubbleSpeak(String text, {double long}) {
+  Widget bubbleSpeak(String text, {double long, Key textKey}) {
     return Bubble(
       padding: long == null
           ? BubbleEdges.all(18)
@@ -18,6 +18,7 @@ class CommonElements {
       // nip: BubbleNip.leftTop,
       child: Text(
         text,
+        key: textKey,
         style: TextStyle(
             color: Colors.black, fontSize: 18, fontWeight: FontWeight.w400),
       ),

@@ -7,7 +7,7 @@ edition = "2018"
 
 [lib]
 name = "dubp_rs"
-crate-type = ["cdylib"]
+crate-type = ["rlib"]
 
 [dependencies]
 allo-isolate = "0.1.6"

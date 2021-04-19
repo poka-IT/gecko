@@ -67,3 +67,32 @@ If you installed a 32bits VM, use the 32bits build command.
 ### Build the app
 
 In a dart file (e.g. `lib/main.dart`), type the `F5` key to build the code. The app should open automatically in your VM which is running.
+
+### Build your app for Desktop
+
+#### Linux
+
+Install dependancies:
+
+`sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev`
+
+Then build debug for linux:
+
+`flutter run -d linux`
+
+If you get this error:
+
+```
+flutter /usr/share/cmake-3.16/Modules/FindPkgConfig.cmake:643 (_pkg_check_modules_internal)
+```
+
+Please try:
+
+`sudo apt install liblzma-dev`
+
+then
+
+`flutter clean && flutter run -d linux`
+
+
+

@@ -4,7 +4,7 @@ import 'package:flutter_driver/flutter_driver.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('Counter App', () {
+  group('Gecko App', () {
     // First, define the Finders and use them to locate widgets from the
     // test suite. Note: the Strings provided to the `byValueKey` method must
     // be the same as the Strings we used for the Keys in step 1.
@@ -26,14 +26,12 @@ void main() {
       }
     });
 
-    test('Open wallets management', () async {
+    test('Open wallets management - OnBoarding', () async {
       await driver.runUnsynchronized(() async {
-        // First, tap the button.
+        // First, tap the button manage wallets
         await driver.tap(manageWalletsFinder);
 
-        // tester.tap(find.widgetWithText(Button, 'Update'));
-        //
-
+        // Get the SerializableFinder for text widget with key 'textOnboarding'
         SerializableFinder textOnboarding = find.byValueKey(
           'textOnboarding',
         );
@@ -41,7 +39,7 @@ void main() {
         print(
             '####################################################################');
 
-        // Then, verify the counter text is incremented by 1.
+        // Verify onboarding is starting, with text
         expect(await driver.getText(textOnboarding),
             "Je ne connais pour l’instant aucun de vos portefeuilles.\n\nVous pouvez en créer un nouveau, ou bien importer un portefeuille Cesium existant.");
       });

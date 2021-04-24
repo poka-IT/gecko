@@ -28,7 +28,7 @@ class OnboardingStepNine extends StatelessWidget {
             common.onboardingProgressBar(
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
-              "C’est le moment de noter votre phrase !",
+              "C'est le moment de noter votre phrase !",
               textKey: Key('step7'),
               long: 60,
             ),

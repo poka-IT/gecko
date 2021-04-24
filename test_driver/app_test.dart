@@ -62,13 +62,13 @@ void main() {
 
     test('OnBoarding - Generate sentance', (
         {timeout: const Duration(seconds: 5)}) async {
-      await driver.tap(find.byValueKey('goStep6'));
+      await driver.tap(find.byValueKey('goStep7'));
 
       expect(
           await driver.getText(find.byValueKey(
             'step7',
           )),
-          "Munissez-vous d'un papier et d’un crayon\nafin de pouvoir noter votre phrase de restauration.");
+          "C'est le moment de noter votre phrase !");
     });
   });
 }

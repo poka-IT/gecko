@@ -51,10 +51,22 @@ void main() {
       await driver.tap(find.byValueKey('goStep3'));
       await driver.tap(find.byValueKey('goStep4'));
       await driver.tap(find.byValueKey('goStep5'));
+      await driver.tap(find.byValueKey('goStep6'));
 
       expect(
           await driver.getText(find.byValueKey(
-            'step5',
+            'step6',
+          )),
+          "J’ai généré votre phrase de restauration !\nTâchez de la garder bien secrète, car elle permet à quiconque la connaît d’accéder à tous vos portefeuilles.");
+    });
+
+    test('OnBoarding - Generate sentance', (
+        {timeout: const Duration(seconds: 5)}) async {
+      await driver.tap(find.byValueKey('goStep6'));
+
+      expect(
+          await driver.getText(find.byValueKey(
+            'step7',
           )),
           "Munissez-vous d'un papier et d’un crayon\nafin de pouvoir noter votre phrase de restauration.");
     });

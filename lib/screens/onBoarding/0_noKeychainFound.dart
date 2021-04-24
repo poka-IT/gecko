@@ -31,6 +31,7 @@ class NoKeyChainScreen extends StatelessWidget {
                 child: Material(
                   color: Color(0xffFFD58D), // button color
                   child: InkWell(
+                      key: Key('goStep1'),
                       splashColor: Color(0xffD28928), // inkwell color
                       child: Padding(
                           padding: EdgeInsets.all(8),

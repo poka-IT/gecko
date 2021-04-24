@@ -20,15 +20,18 @@ class OnboardingStepEleven extends StatelessWidget {
           child: Column(children: <Widget>[
             common.onboardingProgressBar(
                 context, 'Ma phrase de restauration', progress),
-            common.bubbleSpeakRich(<TextSpan>[
-              TextSpan(text: "Super !\n\nJe vais maintenant créer votre "),
-              TextSpan(
-                  text: 'code secret.',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              TextSpan(
-                  text:
-                      " \n\nVotre code secret chiffre votre trousseau de clefs, ce qui le rend inutilisable par d’autres, par exemple si vous perdez votre téléphone ou si on vous le vole."),
-            ]),
+            common.bubbleSpeakRich(
+              <TextSpan>[
+                TextSpan(text: "Super !\n\nJe vais maintenant créer votre "),
+                TextSpan(
+                    text: 'code secret.',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                TextSpan(
+                    text:
+                        " \n\nVotre code secret chiffre votre trousseau de clefs, ce qui le rend inutilisable par d’autres, par exemple si vous perdez votre téléphone ou si on vous le vole."),
+              ],
+              textKey: Key('step8'),
+            ),
             SizedBox(height: isTall ? 50 : 10),
             Image.asset(
               'assets/onBoarding/treasure-chest-gecko-souligne.png',
@@ -41,6 +44,7 @@ class OnboardingStepEleven extends StatelessWidget {
                       width: 400,
                       height: 62,
                       child: ElevatedButton(
+                          key: Key('goStep10'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
                             primary: Color(0xffD28928),

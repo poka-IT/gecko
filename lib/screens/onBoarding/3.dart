@@ -22,6 +22,7 @@ class OnboardingStepFor extends StatelessWidget {
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
               "Si un jour vous changez de téléphone, il vous suffira de me redonner votre phrase de restauration pour recréer votre trousseau.",
+              textKey: Key('step3'),
             ),
             SizedBox(height: isTall ? 15 : 0),
             // Row(children: <Widget>[
@@ -40,6 +41,7 @@ class OnboardingStepFor extends StatelessWidget {
                       width: 400,
                       height: 62,
                       child: ElevatedButton(
+                          key: Key('goStep4'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
                             primary: Color(0xffD28928),

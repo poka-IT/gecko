@@ -21,7 +21,9 @@ class OnboardingStepTwelve extends StatelessWidget {
             common.onboardingProgressBar(
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
-                "Si un jour vous changez de téléphone, votre code secret sera différent, mais il vous suffira de me redonner votre phrase de restauration pour recréer votre trousseau."),
+              "Si un jour vous changez de téléphone, votre code secret sera différent, mais il vous suffira de me redonner votre phrase de restauration pour recréer votre trousseau.",
+              textKey: Key('step10'),
+            ),
             SizedBox(height: 10),
             Image.asset(
               'assets/onBoarding/plusieurs-codes-secrets-un-trousseau.png',
@@ -34,6 +36,7 @@ class OnboardingStepTwelve extends StatelessWidget {
                       width: 400,
                       height: 62,
                       child: ElevatedButton(
+                          key: Key('goStep11'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
                             primary: Color(0xffD28928),

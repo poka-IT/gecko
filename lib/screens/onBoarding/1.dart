@@ -22,8 +22,8 @@ class OnboardingStepOne extends StatelessWidget {
             common.onboardingProgressBar(
                 context, 'Nouveau portefeuilles', progress),
             common.bubbleSpeak(
-              "Il semblerait que vous n’ayez pas encore de trousseau.\n\nUn trousseau vous permet de gérer un ou plusieurs portefeuilles.",
-            ),
+                "Il semblerait que vous n’ayez pas encore de trousseau.\n\nUn trousseau vous permet de gérer un ou plusieurs portefeuilles.",
+                textKey: Key('step1')),
             SizedBox(height: 90),
             Image.asset(
               'assets/onBoarding/keys-and-wallets-horizontal.png',
@@ -36,6 +36,7 @@ class OnboardingStepOne extends StatelessWidget {
                       width: 400,
                       height: 62,
                       child: ElevatedButton(
+                          key: Key('goStep2'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
                             primary: Color(0xffD28928),

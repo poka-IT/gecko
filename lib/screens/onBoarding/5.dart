@@ -30,6 +30,7 @@ class OnboardingStepSeven extends StatelessWidget {
                     text:
                         "afin de pouvoir noter votre phrase de restauration."),
               ],
+              textKey: Key('step5'),
             ),
             Expanded(
                 child: Align(
@@ -52,6 +53,7 @@ class OnboardingStepSeven extends StatelessWidget {
               width: 400,
               height: 62,
               child: ElevatedButton(
+                  key: Key('goStep6'),
                   style: ElevatedButton.styleFrom(
                     elevation: 5,
                     primary: Color(0xffD28928),

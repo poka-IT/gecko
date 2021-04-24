@@ -23,6 +23,7 @@ class OnboardingStepEight extends StatelessWidget {
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
               "J’ai généré votre phrase de restauration !\nTâchez de la garder bien secrète, car elle permet à quiconque la connaît d’accéder à tous vos portefeuilles.",
+              textKey: Key('step6'),
             ),
             SizedBox(height: isTall ? 61 : 31),
             // SizedBox(height: 30),
@@ -35,6 +36,7 @@ class OnboardingStepEight extends StatelessWidget {
                       width: 400,
                       height: 62,
                       child: ElevatedButton(
+                          key: Key('goStep7'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
                             primary: Color(0xffD28928),

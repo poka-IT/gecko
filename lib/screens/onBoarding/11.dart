@@ -35,17 +35,20 @@ class OnboardingStepThirteen extends StatelessWidget {
                 }),
             common.onboardingProgressBar(
                 context, 'Ma phrase de restauration', progress),
-            common.bubbleSpeakRich(<TextSpan>[
-              TextSpan(
-                  text:
-                      "Et voilà votre code secret !\n\nMémorisez-le ou notez-le, car il vous sera demandé "),
-              TextSpan(
-                  text: 'à chaque fois',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              TextSpan(
-                  text:
-                      " que vous voudrez effectuer un paiement sur cet appareil."),
-            ]),
+            common.bubbleSpeakRich(
+              <TextSpan>[
+                TextSpan(
+                    text:
+                        "Et voilà votre code secret !\n\nMémorisez-le ou notez-le, car il vous sera demandé "),
+                TextSpan(
+                    text: 'à chaque fois',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                TextSpan(
+                    text:
+                        " que vous voudrez effectuer un paiement sur cet appareil."),
+              ],
+              textKey: Key('step11'),
+            ),
             SizedBox(height: 100),
             Container(
               child: Stack(
@@ -97,6 +100,7 @@ class OnboardingStepThirteen extends StatelessWidget {
               width: 400,
               height: 62,
               child: ElevatedButton(
+                  key: Key('goStep12'),
                   style: ElevatedButton.styleFrom(
                     elevation: 5,
                     primary: Color(0xffD28928),

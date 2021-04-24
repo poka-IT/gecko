@@ -26,23 +26,37 @@ void main() {
       }
     });
 
-    test('Open wallets management - OnBoarding', () async {
-      await driver.runUnsynchronized(() async {
-        // First, tap the button manage wallets
-        await driver.tap(manageWalletsFinder);
+    test('OnBoarding - Open wallets management', (
+        {timeout: const Duration(seconds: 2)}) async {
+      // await driver.runUnsynchronized(() async { // Needed if we want to manage async drivers
+      await driver.tap(manageWalletsFinder);
 
-        // Get the SerializableFinder for text widget with key 'textOnboarding'
-        SerializableFinder textOnboarding = find.byValueKey(
-          'textOnboarding',
-        );
+      // Get the SerializableFinder for text widget with key 'textOnboarding'
+      SerializableFinder textOnboarding = find.byValueKey(
+        'textOnboarding',
+      );
 
-        print(
-            '####################################################################');
+      print(
+          '####################################################################');
 
-        // Verify onboarding is starting, with text
-        expect(await driver.getText(textOnboarding),
-            "Je ne connais pour l’instant aucun de vos portefeuilles.\n\nVous pouvez en créer un nouveau, ou bien importer un portefeuille Cesium existant.");
-      });
+      // Verify onboarding is starting, with text
+      expect(await driver.getText(textOnboarding),
+          "Je ne connais pour l’instant aucun de vos portefeuilles.\n\nVous pouvez en créer un nouveau, ou bien importer un portefeuille Cesium existant.");
+    });
+
+    test('OnBoarding - Go to create restore sentance', (
+        {timeout: const Duration(seconds: 5)}) async {
+      await driver.tap(find.byValueKey('goStep1'));
+      await driver.tap(find.byValueKey('goStep2'));
+      await driver.tap(find.byValueKey('goStep3'));
+      await driver.tap(find.byValueKey('goStep4'));
+      await driver.tap(find.byValueKey('goStep5'));
+
+      expect(
+          await driver.getText(find.byValueKey(
+            'step5',
+          )),
+          "Munissez-vous d'un papier et d’un crayon\nafin de pouvoir noter votre phrase de restauration.");
     });
   });
 }

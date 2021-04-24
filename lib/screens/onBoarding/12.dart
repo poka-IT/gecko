@@ -42,7 +42,9 @@ class OnboardingStepFourteen extends StatelessWidget {
             common.onboardingProgressBar(
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
-                "Avez-vous bien mémorisé votre code secret ?\n\nVérifions ça ensemble !\n\nTapez votre code secret dans le champ ci-dessous (après c’est fini, promis-juré-gecko)."),
+              "Avez-vous bien mémorisé votre code secret ?\n\nVérifions ça ensemble !\n\nTapez votre code secret dans le champ ci-dessous (après c’est fini, promis-juré-gecko).",
+              textKey: Key('step12'),
+            ),
             SizedBox(height: isTall ? 80 : 10),
             pinForm(context, _walletOptions, _pinLenght, 1, 3)
           ]),

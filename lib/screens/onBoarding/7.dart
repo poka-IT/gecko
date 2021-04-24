@@ -29,6 +29,7 @@ class OnboardingStepNine extends StatelessWidget {
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
               "C’est le moment de noter votre phrase !",
+              textKey: Key('step7'),
               long: 60,
             ),
             SizedBox(height: isTall ? 100 : 70),
@@ -71,6 +72,7 @@ class OnboardingStepNine extends StatelessWidget {
               width: 400,
               height: 62,
               child: ElevatedButton(
+                  key: Key('goStep8'),
                   style: ElevatedButton.styleFrom(
                     elevation: 5,
                     primary: Color(0xffD28928),

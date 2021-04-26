@@ -16,37 +16,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f26201604c87b1e01bd3d98f8d5d9a8fcbb815e8cedb41ffccbeb4bf593a35fe"
 
 [[package]]
-name = "aes"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "884391ef1066acaa41e766ba8f596341b96e93ce34f9a43e7d24bf0a0eaf0561"
-dependencies = [
- "aes-soft",
- "aesni",
- "cipher",
-]
-
-[[package]]
-name = "aes-soft"
-version = "0.6.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be14c7498ea50828a38d0e24a765ed2effe92a705885b57d029cd67d45744072"
-dependencies = [
- "cipher",
- "opaque-debug 0.3.0",
-]
-
-[[package]]
-name = "aesni"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea2e11f5e94c2f7d386164cc2aa1f97823fed6f259e486940a71c174dd01b0ce"
-dependencies = [
- "cipher",
- "opaque-debug 0.3.0",
-]
-
-[[package]]
 name = "allo-isolate"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -281,15 +250,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cipher"
-version = "0.2.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12f8e7987cbd042a63249497f41aed09f8e65add917ea6566effbc56578d6801"
-dependencies = [
- "generic-array 0.14.4",
-]
-
-[[package]]
 name = "clang"
 version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -405,28 +365,34 @@ checksum = "fea41bba32d969b513997752735605054bc0dfa92b4c56bf1189f2e174be7a10"
 
 [[package]]
 name = "dubp"
-version = "0.50.0"
+version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1669c61ccfe0d3fc7be8fe3175ebd401b9c879f638425f31e92777c73b32ea86"
+checksum = "5649c2ed6d55ce1dda5c2ef3af34f5c669c4f8882c81a5d9a395c044c8d001fe"
 dependencies = [
  "dubp-common",
  "dubp-documents",
  "dubp-documents-parser",
  "dubp-wallet",
- "dup-crypto 0.50.0",
+ "dup-crypto",
 ]
 
 [[package]]
 name = "dubp-client"
 version = "0.1.0"
-source = "git+https://git.duniter.org/libs/dubp-rs-client-lib?branch=master#a690f9b1bb029495c6aaf957c31d528dd282b49c"
+source = "git+https://git.duniter.org/libs/dubp-rs-client-lib?branch=master#13ea957330fcb5507d544c9ce4d61902c731a059"
 dependencies = [
+ "arrayvec",
  "bincode",
+ "cfg-if 1.0.0",
  "dubp",
  "duniter-bca-types",
+ "fast-threadpool 0.3.1-alpha.0",
+ "flume",
  "graphql_client",
  "maybe-async",
+ "rand",
  "reqwest",
+ "resiter",
  "serde",
  "static_assertions",
  "thiserror",
@@ -434,11 +400,11 @@ dependencies = [
 
 [[package]]
 name = "dubp-common"
-version = "0.50.0"
+version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "515fb09166a50b4543a99c42359fc4afa5a4c7af118c6f9627575c2760f3fef8"
+checksum = "af754efaf281211ef4253f9a833adf9064ef95c594f1acb86bee37202d23104b"
 dependencies = [
- "dup-crypto 0.50.0",
+ "dup-crypto",
  "serde",
  "serde_json",
  "thiserror",
@@ -447,9 +413,9 @@ dependencies = [
 
 [[package]]
 name = "dubp-documents"
-version = "0.50.0"
+version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ccc9327c62778ee4fd060c0efbe32c6cfda5e317c4a2eb4ddee8293fbd278904"
+checksum = "0ea7da99c4b73abafa67362741f0271b41e987f33c566daa794fb3aa78adbe55"
 dependencies = [
  "beef",
  "dubp-wallet",
@@ -461,9 +427,9 @@ dependencies = [
 
 [[package]]
 name = "dubp-documents-parser"
-version = "0.50.0"
+version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "271ce4a6bebfdfdaefb0e51f57c9bb04976fce5fbe2744dd60c1dcf857c60c20"
+checksum = "c31fa6ba34a4f0e86e2fe2ac4d1c9e9ff6e36bdcfef64e78279b9a05297bd069"
 dependencies = [
  "dubp-documents",
  "json-pest-parser",
@@ -475,9 +441,9 @@ dependencies = [
 
 [[package]]
 name = "dubp-wallet"
-version = "0.50.0"
+version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f6e65a121fa6745038e903ed3d1eb6a97f9658c6c6e2bfbf7e9ffdaf34161d23"
+checksum = "34ff32a5d34243b2e435f1a7d3b0930fedf2396da07ca2ef6ba51aac1debb0ad"
 dependencies = [
  "byteorder",
  "dubp-common",
@@ -496,8 +462,7 @@ dependencies = [
  "cbindgen",
  "dart-bindgen",
  "dubp-client",
- "dup-crypto 0.46.0",
- "fast-threadpool",
+ "fast-threadpool 0.3.0",
  "once_cell",
  "parking_lot",
  "rusty-hook",
@@ -507,7 +472,7 @@ dependencies = [
 [[package]]
 name = "duniter-bca-types"
 version = "0.1.0"
-source = "git+https://git.duniter.org/nodes/typescript/duniter?branch=dev#591f334185151a200a7dbb06b32ff434a19b0885"
+source = "git+https://git.duniter.org/nodes/rust/modules/duniter-gva#d602fca862972b0ecc6639033e67720a268ce9d7"
 dependencies = [
  "arrayvec",
  "bincode",
@@ -519,11 +484,10 @@ dependencies = [
 
 [[package]]
 name = "dup-crypto"
-version = "0.46.0"
+version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "97b1ebfa9edbb53cd4434f01877fcd74fb2416b93a217754d2daecbeecad67eb"
+checksum = "d66627bb4c014d390a345230745931e2144cc10f3dc16989399dde85510a6543"
 dependencies = [
- "aes",
  "arrayvec",
  "base64",
  "blake3",
@@ -532,29 +496,7 @@ dependencies = [
  "cryptoxide",
  "ed25519-bip32",
  "getrandom",
- "once_cell",
- "ring",
- "serde",
- "thiserror",
- "zerocopy",
- "zeroize",
-]
-
-[[package]]
-name = "dup-crypto"
-version = "0.50.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3032421000ca2cdd372bd72f4c548be7f1386d357abb0936291890064d3072e8"
-dependencies = [
- "aes",
- "arrayvec",
- "base64",
- "blake3",
- "bs58",
- "byteorder",
- "cryptoxide",
- "ed25519-bip32",
- "getrandom",
+ "hex",
  "once_cell",
  "ring",
  "serde",
@@ -637,6 +579,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "fast-threadpool"
+version = "0.3.1-alpha.0"
+source = "git+https://github.com/librelois/fast-threadpool?branch=main#1a271710677ecc43cbfe43234ec21c954dfdbef7"
+dependencies = [
+ "async-oneshot",
+ "flume",
+ "num_cpus",
+]
+
+[[package]]
 name = "flate2"
 version = "1.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -654,6 +606,10 @@ version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0362ef9c4c1fa854ff95b4cb78045a86e810d804dc04937961988b45427104a9"
 dependencies = [
+ "futures-core",
+ "futures-sink",
+ "nanorand",
+ "pin-project",
  "spinning_top",
 ]
 
@@ -783,8 +739,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c9495705279e7140bf035dde1f6e750c162df8b625267cd52cc44e0b156732c8"
 dependencies = [
  "cfg-if 1.0.0",
+ "js-sys",
  "libc",
  "wasi",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -902,6 +860,12 @@ checksum = "5aca5565f760fb5b220e499d72710ed156fdb74e631659e99377d9ebfbd13ae8"
 dependencies = [
  "libc",
 ]
+
+[[package]]
+name = "hex"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
 name = "http"
@@ -1137,6 +1101,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "nanorand"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ac1378b66f7c93a1c0f8464a19bf47df8795083842e5090f4b7305973d5a22d0"
+dependencies = [
+ "getrandom",
+]
+
+[[package]]
 name = "nias"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1178,12 +1151,6 @@ name = "opaque-debug"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2839e79665f131bdb5782e51f2c6c9599c133c6098982a54c794358bf432529c"
-
-[[package]]
-name = "opaque-debug"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 
 [[package]]
 name = "parking_lot"
@@ -1424,6 +1391,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "resiter"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bd69ab1e90258b7769f0b5c46bfd802b8206d0707ced4ca4b9d5681b744de1be"
+
+[[package]]
 name = "ring"
 version = "0.16.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1543,7 +1516,7 @@ dependencies = [
  "block-buffer",
  "digest 0.8.1",
  "fake-simd",
- "opaque-debug 0.2.3",
+ "opaque-debug",
 ]
 
 [[package]]

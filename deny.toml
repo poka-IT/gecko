@@ -50,5 +50,6 @@ unknown-registry = "deny"
 unknown-git = "deny"
 allow-git = [
     "https://git.duniter.org/libs/dubp-rs-client-lib",
-    "https://git.duniter.org/nodes/typescript/duniter"
+    "https://git.duniter.org/nodes/rust/modules/duniter-gva",
+    "https://github.com/librelois/fast-threadpool"
 ]

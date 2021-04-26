@@ -49,20 +49,12 @@ pub(super) fn gen_dewif(
     let currency = parse_currency(currency)?;
     let mnemonic =
         Mnemonic::from_phrase(mnemonic, language).map_err(|_| DubpError::WrongLanguage)?;
-    let seed = dubp_client::crypto::mnemonic::mnemonic_to_seed(&mnemonic);
 
     let log_n = log_n(system_memory);
     let secret_code = gen_secret_code(member_wallet, secret_code_type, log_n)?;
 
-    let keypair = dubp_client::crypto::keys::ed25519::bip32::KeyPair::from_seed(seed.clone());
-    let pubkey = keypair.public_key();
-    let dewif = dubp_client::crypto::dewif::write_dewif_v4_content(
-        currency,
-        log_n,
-        &secret_code,
-        &pubkey,
-        seed,
-    );
+    let dewif =
+        dubp_client::crypto::dewif::create_dewif_v1(currency, log_n, &mnemonic, &secret_code);
 
     Ok(vec![dewif, secret_code])
 }
@@ -73,6 +65,7 @@ pub(super) fn get_dewif_meta(
     secret_code_type: SecretCodeType,
 ) -> Result<Vec<String>, DubpError> {
     let dubp_client::crypto::dewif::DewifMeta {
+        algo,
         currency,
         log_n,
         version,
@@ -82,6 +75,11 @@ pub(super) fn get_dewif_meta(
         crate::secret_code::compute_secret_code_len(member_wallet, secret_code_type, log_n)?;
 
     Ok(vec![
+        if algo == KeysAlgo::Bip32Ed25519 {
+            "Bip32Ed25519".to_owned()
+        } else {
+            "Ed25519".to_owned()
+        },
         currency.to_string(),
         secret_code_len.to_string(),
         version.to_string(),
@@ -106,18 +104,16 @@ pub(super) fn get_pubkey(
             secret_code,
         )
     } else if address_index_opt.is_none() && external_opt.is_none() {
-        let mut keypairs = dubp_client::crypto::dewif::read_dewif_file_content(
+        let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_file_content(
             ExpectedCurrency::Specific(currency),
             dewif,
             &secret_code.to_ascii_uppercase(),
         )
         .map_err(DubpError::DewifReadError)?;
 
-        match keypairs.next() {
-            Some(KeyPairEnum::Ed25519(keypair)) => Ok(keypair.public_key().to_base58()),
-            Some(KeyPairEnum::Bip32Ed25519(_)) => Err(DubpError::GetMasterPubkeyOfHdWallet),
-            Some(_) => Err(DubpError::UnsupportedDewifVersion),
-            None => Err(DubpError::DewifReadError(DewifReadError::CorruptedContent)),
+        match payload {
+            DewifPayload::Ed25519(keypair) => Ok(keypair.public_key().to_base58()),
+            DewifPayload::Bip32Ed25519(_) => Err(DubpError::GetMasterPubkeyOfHdWallet),
         }
     } else {
         Err(DubpError::GiveExternalBoolOrAddressIndexForLegacyWallet)
@@ -136,11 +132,7 @@ pub(super) fn get_secret_code_len(
     let log_n = dubp_client::crypto::dewif::read_dewif_log_n(ExpectedCurrency::Any, dewif)
         .map_err(DubpError::DewifReadError)?;
 
-    Ok(crate::secret_code::compute_secret_code_len(
-        member_wallet,
-        secret_code_type,
-        log_n,
-    )?)
+    crate::secret_code::compute_secret_code_len(member_wallet, secret_code_type, log_n)
 }
 
 pub(crate) fn log_n(system_memory: i64) -> u8 {

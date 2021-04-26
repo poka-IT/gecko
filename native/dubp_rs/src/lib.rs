@@ -32,13 +32,16 @@ use crate::secret_code::gen_secret_code;
 use allo_isolate::{IntoDart, Isolate};
 use dubp_client::crypto::{
     bases::b58::ToBase58,
-    dewif::{Currency, DewifReadError, ExpectedCurrency, G1_CURRENCY, G1_TEST_CURRENCY},
+    dewif::{
+        Currency, DewifContent, DewifPayload, DewifReadError, ExpectedCurrency, G1_CURRENCY,
+        G1_TEST_CURRENCY,
+    },
     keys::{
         ed25519::bip32::{
             ChainCode, InvalidAccountIndex, KeyPair, PrivateDerivationPath, PublicKeyWithChainCode,
         },
         ed25519::{KeyPairFromSeed32Generator, PublicKey, PublicKeyFromStrErr},
-        KeyPair as _, KeyPairEnum, PublicKey as _, Signator as _, Signature as _,
+        KeyPair as _, KeyPairEnum, KeysAlgo, PublicKey as _, Signator as _, Signature as _,
     },
     mnemonic::{Language, Mnemonic, MnemonicType},
     utils::{U31Error, U31},
@@ -87,16 +90,12 @@ pub extern "C" fn change_dewif_secret_code(
 
 #[no_mangle]
 pub extern "C" fn check_pubkey(port: i64, pubkey: *const raw::c_char) {
-    exec_async(port, || Ok(char_ptr_to_str(pubkey)?), pubkey::check_pubkey)
+    exec_async(port, || char_ptr_to_str(pubkey), pubkey::check_pubkey)
 }
 
 #[no_mangle]
 pub extern "C" fn compute_checksum(port: i64, pubkey: *const raw::c_char) {
-    exec_async(
-        port,
-        || Ok(char_ptr_to_str(pubkey)?),
-        pubkey::compute_checksum,
-    )
+    exec_async(port, || char_ptr_to_str(pubkey), pubkey::compute_checksum)
 }
 
 #[no_mangle]
@@ -205,6 +204,25 @@ pub extern "C" fn get_bip32_dewif_accounts_pubkeys(
         |(currency, dewif, secret_code, accounts_indexs)| {
             dewif::bip32::get_accounts_pubkeys(currency, dewif, secret_code, accounts_indexs)
         },
+    )
+}
+
+#[no_mangle]
+pub extern "C" fn get_bip32_dewif_mnemonic(
+    port: i64,
+    currency: *const raw::c_char,
+    dewif: *const raw::c_char,
+    secret_code: *const raw::c_char,
+) {
+    exec_async(
+        port,
+        || {
+            let currency = parse_currency(char_ptr_to_str(currency)?)?;
+            let dewif = char_ptr_to_str(dewif)?;
+            let secret_code = char_ptr_to_str(secret_code)?;
+            Ok((currency, dewif, secret_code))
+        },
+        |(currency, dewif, secret_code)| dewif::bip32::get_mnemonic(currency, dewif, secret_code),
     )
 }
 

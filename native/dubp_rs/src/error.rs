@@ -63,8 +63,8 @@ pub(crate) enum DubpError {
     UnknownCurrencyName,
     #[error("Unknown language")]
     UnknownLanguage,
-    #[error("Unsupported DEWIF version")]
-    UnsupportedDewifVersion,
+    //#[error("Unsupported DEWIF version")]
+    //UnsupportedDewifVersion,
     #[error("{0}")]
     Utf8Error(std::str::Utf8Error),
     #[error("Wrong language")]

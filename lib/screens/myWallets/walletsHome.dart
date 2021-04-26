@@ -158,6 +158,9 @@ class WalletsHome extends StatelessWidget {
                             ),
                           )),
                           ListTile(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    bottom: Radius.circular(12))),
                             // contentPadding: const EdgeInsets.only(left: 7.0),
                             tileColor: _repository.id() == defaultWallet.id()
                                 ? Color(0xffD28928)

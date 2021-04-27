@@ -52,7 +52,7 @@ class HomeProvider with ChangeNotifier {
     int _statusCode = 0;
 
     final _client = new HttpClient();
-    _client.connectionTimeout = const Duration(milliseconds: 800);
+    _client.connectionTimeout = const Duration(milliseconds: 1000);
 
     do {
       i++;

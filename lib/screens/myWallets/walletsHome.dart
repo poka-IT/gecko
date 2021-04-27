@@ -52,6 +52,7 @@ class WalletsHome extends StatelessWidget {
                     );
                   }),
               title: Text('Mes portefeuilles',
+                  key: Key('myWallets'),
                   style: TextStyle(color: Colors.grey[850])),
               backgroundColor: Color(0xffFFD58D),
             ),

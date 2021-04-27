@@ -108,6 +108,7 @@ class OnboardingStepTen extends StatelessWidget {
                 SizedBox(height: isTall ? 70 : 10),
                 if (isTall)
                   Text('${_generateWalletProvider.nbrWord + 1}',
+                      key: Key('askedWord'),
                       style: TextStyle(
                           fontSize: 17,
                           color: Color(0xffD28928),
@@ -122,6 +123,7 @@ class OnboardingStepTen extends StatelessWidget {
                         )),
                     width: 430,
                     child: TextFormField(
+                        key: Key('inputWord'),
                         autofocus: true,
                         enabled: !_generateWalletProvider.isAskedWordValid,
                         controller: this.wordController,

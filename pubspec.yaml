@@ -50,6 +50,7 @@ dependencies:
   flutter_driver:
     sdk: flutter
   test: ^1.16.6
+  unorm_dart: ^0.2.0
 
 flutter_icons:
   android: "ic_launcher"

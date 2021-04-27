@@ -30,7 +30,7 @@ class OnboardingStepEleven extends StatelessWidget {
                     text:
                         " \n\nVotre code secret chiffre votre trousseau de clefs, ce qui le rend inutilisable par d’autres, par exemple si vous perdez votre téléphone ou si on vous le vole."),
               ],
-              textKey: Key('step8'),
+              textKey: Key('step9'),
             ),
             SizedBox(height: isTall ? 50 : 10),
             Image.asset(

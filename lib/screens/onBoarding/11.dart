@@ -55,6 +55,7 @@ class OnboardingStepThirteen extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 children: <Widget>[
                   TextField(
+                      key: Key('generatedPin'),
                       enabled: false,
                       controller: _generateWalletProvider.pin,
                       maxLines: 1,

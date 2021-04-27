@@ -126,6 +126,7 @@ Widget sentanceArray(BuildContext context) {
         '12:...',
       ],
       builder: (context, formatedArray) {
+        // print(formatedArray.data);
         return Container(
             padding: EdgeInsets.symmetric(horizontal: 12),
             child: Container(
@@ -173,6 +174,7 @@ Widget arrayCell(dataWord) {
         Text(dataWord.split(':')[0], style: TextStyle(fontSize: 14)),
         SizedBox(height: 2),
         Text(dataWord.split(':')[1],
+            key: Key('word${dataWord.split(':')[0]}'),
             style: TextStyle(fontSize: 19, color: Colors.black)),
       ]));
 }

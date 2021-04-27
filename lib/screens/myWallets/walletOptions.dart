@@ -205,6 +205,7 @@ class WalletOptions extends StatelessWidget {
                             ),
                             SizedBox(height: 5),
                             InkWell(
+                                key: Key('displayBalance'),
                                 onTap: () {
                                   _walletOptions.bluringBalance();
                                 },
@@ -279,6 +280,7 @@ class WalletOptions extends StatelessWidget {
                     }),
                 SizedBox(height: 15 * ratio),
                 GestureDetector(
+                    key: Key('copyPubkey'),
                     onTap: () {
                       Clipboard.setData(
                           ClipboardData(text: _walletOptions.pubkey.text));
@@ -334,6 +336,7 @@ class WalletOptions extends StatelessWidget {
                         ]))),
                 SizedBox(height: 10 * ratio),
                 InkWell(
+                    key: Key('displayHistory'),
                     onTap: () {
                       _historyProvider.isPubkey(ctx, _walletOptions.pubkey.text,
                           goHistory: true);
@@ -352,6 +355,7 @@ class WalletOptions extends StatelessWidget {
                         ]))),
                 SizedBox(height: 12 * ratio),
                 InkWell(
+                    key: Key('setDefaultWallet'),
                     onTap: !_walletOptions.isDefaultWallet
                         ? () {
                             defaultWallet = wallet;
@@ -381,25 +385,31 @@ class WalletOptions extends StatelessWidget {
                                       : Colors.black)),
                         ]))),
                 SizedBox(height: 17 * ratio),
-                InkWell(
-                    onTap: () async {
-                      await _walletOptions.deleteWallet(context, wallet);
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        _myWalletProvider.listWallets =
-                            _myWalletProvider.readAllWallets(_currentChest);
-                        _myWalletProvider.rebuildWidget();
-                      });
-                    },
-                    child: Row(children: <Widget>[
-                      SizedBox(width: 33),
-                      Image.asset(
-                        'assets/walletOptions/trash.png',
-                      ),
-                      SizedBox(width: 14),
-                      Text('Supprimer ce portefeuille',
-                          style: TextStyle(
-                              fontSize: 20, color: Color(0xffD80000))),
-                    ])),
+                if (!_walletOptions.isDefaultWallet)
+                  InkWell(
+                      key: Key('deleteWallet'),
+                      onTap: !_walletOptions.isDefaultWallet
+                          ? () async {
+                              await _walletOptions.deleteWallet(
+                                  context, wallet);
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                _myWalletProvider.listWallets =
+                                    _myWalletProvider
+                                        .readAllWallets(_currentChest);
+                                _myWalletProvider.rebuildWidget();
+                              });
+                            }
+                          : null,
+                      child: Row(children: <Widget>[
+                        SizedBox(width: 33),
+                        Image.asset(
+                          'assets/walletOptions/trash.png',
+                        ),
+                        SizedBox(width: 14),
+                        Text('Supprimer ce portefeuille',
+                            style: TextStyle(
+                                fontSize: 20, color: Color(0xffD80000))),
+                      ])),
               ]),
             ),
           ),

@@ -15,6 +15,7 @@ void main() {
     // final buttonFinder = find.byValueKey('increment');
 
     FlutterDriver driver;
+    String pinCode;
 
     // Connect to the Flutter driver before running any tests.
     setUpAll(() async {
@@ -80,7 +81,7 @@ void main() {
 
       while (await getText('word1') == '...') {
         print('Waiting for Mnemonic generation...');
-        await Future.delayed(const Duration(milliseconds: 100));
+        await sleep(100);
       }
 
       Future selectWord() async {
@@ -93,14 +94,11 @@ void main() {
             await getText('step7'), "C'est le moment de noter votre phrase !");
 
         await tapOn('goStep8');
-        await Future.delayed(const Duration(milliseconds: 200));
+        await sleep(200);
 
         String goodWord = words[int.parse(
           await getText('askedWord'),
         )];
-
-        // await tapOn('inputWord');
-        // await Future.delayed(const Duration(milliseconds: 500));
 
         // Enter the expected word
         await driver.enterText(goodWord);
@@ -117,13 +115,13 @@ void main() {
       //Go back 2 times to mnemonic generation screen
       await goBack();
       await goBack();
-      await Future.delayed(const Duration(milliseconds: 100));
+      await sleep(100);
 
       // Generate 3 times mnemonic
       await tapOn('generateMnemonic');
       await tapOn('generateMnemonic');
       await tapOn('generateMnemonic');
-      await Future.delayed(const Duration(milliseconds: 500));
+      await sleep(500);
 
       await selectWord();
     });
@@ -137,18 +135,22 @@ void main() {
 
       while (await getText('generatedPin') == '') {
         print('Waiting for pin code generation...');
-        await Future.delayed(const Duration(milliseconds: 100));
+        await sleep(100);
       }
 
-      final pinCode = await getText('generatedPin');
+      // Change secret code 4 times
+      for (int i = 0; i < 4; i++) await tapOn('changeSecretCode');
+
+      await sleep(500);
+      pinCode = await getText('generatedPin');
 
       await tapOn('goStep12');
-      await Future.delayed(const Duration(milliseconds: 300));
+      await sleep(300);
 
       // //Enter bad secret code
       // await driver.enterText('abcde');
       // await tapOn('formKey');
-      // await Future.delayed(const Duration(milliseconds: 4000));
+      // await sleep(1500);
       // await tapOn('formKey2');
 
       //Enter good secret code
@@ -163,21 +165,96 @@ void main() {
       await tapOn('goWalletHome');
 
       expect(await getText('myWallets'), "Mes portefeuilles");
-      await Future.delayed(const Duration(milliseconds: 300));
+      await sleep(300);
+
+      // Create a derivation
+      Future createDerivation(String _name) async {
+        await tapOn('addDerivation');
+        await sleep(100);
+
+        await driver.enterText(_name);
+
+        await tapOn('validDerivation');
+        await sleep(300);
+      }
 
       // Add a second derivation
-      await tapOn('addDerivation');
-      await Future.delayed(const Duration(milliseconds: 50));
+      await createDerivation('Derivation 2');
 
-      await driver.enterText('Derivation 2');
-
-      await tapOn('validDerivation');
-      await Future.delayed(const Duration(milliseconds: 300));
-
+      // Go to second derivation options
       await driver.tap(find.text('Derivation 2'));
+      await sleep(100);
+
+      // Test options
+      await tapOn('displayBalance');
+      await tapOn('displayHistory');
+      await sleep(300);
+      await goBack();
+      await tapOn('displayBalance');
+      await sleep(100);
+      await tapOn('displayBalance');
+      await sleep(100);
+      await tapOn('displayBalance');
+      await tapOn('setDefaultWallet');
+      await sleep(50);
+      await tapOn('copyPubkey');
+      await driver.waitFor(find
+          .text('Cette clé publique a été copié dans votre presse-papier.'));
+      await goBack();
+
+      // Add a third derivation
+      await createDerivation('Derivation 3');
+
+      // Add a fourth derivation
+      await createDerivation('Derivation 4');
+      await sleep(50);
+
+      // Go to third derivation options
+      await driver.tap(find.text('Derivation 3'));
+      await sleep(100);
+      await tapOn('displayBalance');
+
+      // Delete a derivation
+      Future deleteWallet(bool _confirm) async {
+        await tapOn('deleteWallet');
+        await sleep(100);
+        _confirm
+            ? await tapOn('confirmDeleting')
+            : await tapOn('cancelDeleting');
+        await sleep(300);
+      }
+
+      // Delete third derivation
+      await deleteWallet(true);
+
+      // Add derivation 5,6 and 7
+      await createDerivation('Derivation 5');
+      await createDerivation('Derivation 6');
+      await createDerivation('Derivation 7');
+
+      // Go home and come back to my wallets view
+      await goBack();
+      await sleep(100);
+      await tapOn('manageWallets');
+      await sleep(200);
+      //Enter secret code
+      await driver.enterText(pinCode);
+      await sleep(200);
+
+      // Go to derivation 6 and delete it
+      await driver.tap(find.text('Derivation 6'));
+      await sleep(100);
+      await deleteWallet(true);
+
+      // Go to 2nd derivation and check if it's de default
+      await driver.tap(find.text('Derivation 2'));
+      await driver.waitFor(find.text('Ce portefeuille est celui par defaut'));
+      await tapOn('setDefaultWallet');
+      await sleep(100);
+      await driver.waitFor(find.text('Ce portefeuille est celui par defaut'));
 
       // Wait 3 seconds at the end
-      await Future.delayed(const Duration(seconds: 3));
+      await sleep(3000);
     });
   });
 }
@@ -189,4 +266,8 @@ Future goBack() async {
     <String>['shell', 'input', 'keyevent', 'KEYCODE_BACK'],
     runInShell: true,
   );
+}
+
+Future sleep(int _time) async {
+  await Future.delayed(Duration(milliseconds: _time));
 }

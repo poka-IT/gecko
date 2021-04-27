@@ -84,6 +84,7 @@ class OnboardingStepThirteen extends StatelessWidget {
                       width: 400,
                       height: 62,
                       child: ElevatedButton(
+                          key: Key('changeSecretCode'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
                             primary: Color(0xffFFD58D),

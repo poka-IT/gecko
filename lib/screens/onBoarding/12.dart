@@ -70,6 +70,7 @@ class OnboardingStepFourteen extends StatelessWidget {
       child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
           child: PinCodeTextField(
+            key: Key('formKey2'),
             autoFocus: true,
             appContext: context,
             pastedTextStyle: TextStyle(
@@ -77,7 +78,7 @@ class OnboardingStepFourteen extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
             length: _pinLenght,
-            obscureText: false,
+            obscureText: true,
             obscuringCharacter: '*',
             animationType: AnimationType.fade,
             validator: (v) {

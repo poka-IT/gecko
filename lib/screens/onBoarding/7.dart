@@ -56,6 +56,7 @@ class OnboardingStepNine extends StatelessWidget {
                       width: 400,
                       height: 62,
                       child: ElevatedButton(
+                          key: Key('generateMnemonic'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
                             primary: Color(0xffFFD58D),

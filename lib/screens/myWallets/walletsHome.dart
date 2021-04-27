@@ -63,6 +63,7 @@ class WalletsHome extends StatelessWidget {
                     width: 80.0,
                     child: FittedBox(
                         child: FloatingActionButton(
+                            key: Key('addDerivation'),
                             heroTag: "buttonGenerateWallet",
                             onPressed: () {
                               showDialog(
@@ -223,6 +224,7 @@ class WalletsHome extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: ElevatedButton(
+                      key: Key('validDerivation'),
                       style: ElevatedButton.styleFrom(
                         elevation: 1,
                         primary: Color(0xffFFD68E), // background

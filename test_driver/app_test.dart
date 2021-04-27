@@ -93,11 +93,14 @@ void main() {
             await getText('step7'), "C'est le moment de noter votre phrase !");
 
         await tapOn('goStep8');
-        await Future.delayed(const Duration(milliseconds: 50));
+        await Future.delayed(const Duration(milliseconds: 200));
 
         String goodWord = words[int.parse(
           await getText('askedWord'),
         )];
+
+        // await tapOn('inputWord');
+        // await Future.delayed(const Duration(milliseconds: 500));
 
         // Enter the expected word
         await driver.enterText(goodWord);

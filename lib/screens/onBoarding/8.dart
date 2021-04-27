@@ -106,13 +106,13 @@ class OnboardingStepTen extends StatelessWidget {
                 // ),
 
                 SizedBox(height: isTall ? 70 : 10),
-                if (isTall)
-                  Text('${_generateWalletProvider.nbrWord + 1}',
-                      key: Key('askedWord'),
-                      style: TextStyle(
-                          fontSize: 17,
-                          color: Color(0xffD28928),
-                          fontWeight: FontWeight.w400)),
+
+                Text('${_generateWalletProvider.nbrWord + 1}',
+                    key: Key('askedWord'),
+                    style: TextStyle(
+                        fontSize: isTall ? 17 : 10,
+                        color: Color(0xffD28928),
+                        fontWeight: FontWeight.w400)),
                 SizedBox(height: isTall ? 10 : 0),
                 Container(
                     decoration: BoxDecoration(

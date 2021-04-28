@@ -7,7 +7,7 @@ stages:
 .env:
   image: axiomteam/gecko-ci:v0.0.6
   tags:
-    - 1000i100
+    - gecko
   before_script:
     - rustup show
     - rustc --version && cargo --version

@@ -80,6 +80,7 @@ class SettingsScreen extends StatelessWidget {
                       height: 100,
                       width: 500,
                       child: ElevatedButton(
+                          key: Key('deleteAllWallets'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
                             primary: Colors.redAccent, // background

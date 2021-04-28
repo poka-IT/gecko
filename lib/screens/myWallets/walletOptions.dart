@@ -124,6 +124,7 @@ class WalletOptions extends StatelessWidget {
                             SizedBox(
                               width: 260,
                               child: TextField(
+                                  key: Key('walletName'),
                                   focusNode: _walletOptions.walletNameFocus,
                                   enabled: _walletOptions.isEditing,
                                   controller: _walletOptions.nameController,
@@ -218,6 +219,7 @@ class WalletOptions extends StatelessWidget {
                           SizedBox(width: 0),
                           Column(children: <Widget>[
                             InkWell(
+                                key: Key('renameWallet'),
                                 onTap: () async {
                                   // _walletOptions.isEditing = true;
                                   // _walletOptions.reloadBuild();

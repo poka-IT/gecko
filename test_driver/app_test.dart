@@ -1,12 +1,12 @@
 // Imports the Flutter Driver API.
 import 'dart:async';
 import 'dart:io';
-
 import 'package:flutter_driver/flutter_driver.dart';
-// import 'package:flutter_test/flutter_test.dart';
 import 'package:test/test.dart';
+// import 'package:flutter/services.dart';
 
 void main() {
+  int globalTimeout = 2;
   group('Gecko App', () {
     // First, define the Finders and use them to locate widgets from the
     // test suite. Note: the Strings provided to the `byValueKey` method must
@@ -41,18 +41,44 @@ void main() {
       ));
     }
 
+    Future<bool> isPresent(SerializableFinder byValueKey,
+        {Duration timeout = const Duration(seconds: 1)}) async {
+      try {
+        await driver.waitFor(byValueKey, timeout: timeout);
+        return true;
+      } catch (exception) {
+        return false;
+      }
+    }
+
     test('OnBoarding - Open wallets management', (
-        {timeout: const Duration(seconds: 2)}) async {
+        {timeout: Timeout.none}) async {
       // await driver.runUnsynchronized(() async { // Needed if we want to manage async drivers
       await driver.tap(manageWalletsFinder);
+
+      print(
+          '####################################################################');
+
+      // If a wallet exist, go to delete theme all
+      if (!await isPresent(find.byValueKey('goStep1'))) {
+        await goBack();
+        await tapOn('drawerMenu');
+        await sleep(300);
+        await tapOn('parameters');
+        await sleep(300);
+        await tapOn('deleteAllWallets');
+        await sleep(300);
+        await tapOn('confirmDeletingAllWallets');
+        await sleep(300);
+        await driver.tap(manageWalletsFinder);
+      }
 
       // Get the SerializableFinder for text widget with key 'textOnboarding'
       SerializableFinder textOnboarding = find.byValueKey(
         'textOnboarding',
       );
 
-      print(
-          '####################################################################');
+      await sleep(100);
 
       // Verify onboarding is starting, with text
       expect(await driver.getText(textOnboarding),
@@ -60,7 +86,7 @@ void main() {
     });
 
     test('OnBoarding - Go to create restore sentance', (
-        {timeout: const Duration(seconds: 5)}) async {
+        {timeout: Timeout.none}) async {
       await tapOn('goStep1');
       await tapOn('goStep2');
       await tapOn('goStep3');
@@ -76,7 +102,7 @@ void main() {
     });
 
     test('OnBoarding - Generate sentance and confirme it', (
-        {timeout: const Duration(seconds: 5)}) async {
+        {timeout: Timeout.none}) async {
       await tapOn('goStep7');
 
       while (await getText('word1') == '...') {
@@ -126,7 +152,7 @@ void main() {
       await selectWord();
     });
     test('OnBoarding - Generate secret code and confirm it', (
-        {timeout: const Duration(seconds: 5)}) async {
+        {timeout: Timeout.none}) async {
       expect(await getText('step9'),
           "Super !\n\nJe vais maintenant créer votre code secret. \n\nVotre code secret chiffre votre trousseau de clefs, ce qui le rend inutilisable par d’autres, par exemple si vous perdez votre téléphone ou si on vous le vole.");
 
@@ -161,7 +187,7 @@ void main() {
     });
 
     test('My wallets - Create a derivation and display it', (
-        {timeout: const Duration(seconds: 5)}) async {
+        {timeout: Timeout.none}) async {
       await tapOn('goWalletHome');
 
       expect(await getText('myWallets'), "Mes portefeuilles");
@@ -252,11 +278,83 @@ void main() {
       await tapOn('setDefaultWallet');
       await sleep(100);
       await driver.waitFor(find.text('Ce portefeuille est celui par defaut'));
+      await sleep(300);
+
+      // Display history, copy pubkey, go back and rename wallet name
+      await tapOn('displayHistory');
+      await sleep(400);
+      await tapOn('copyPubkey');
+      await driver.waitFor(find
+          .text('Cette clé publique a été copié dans votre presse-papier.'));
+      await sleep(800);
+      await goBack();
+      await sleep(300);
+      await tapOn('renameWallet');
+      await sleep(100);
+      await tapOn('walletName');
+      await sleep(100);
+      await driver.enterText('Renommage wallet 2');
+      await sleep(300);
+      await tapOn('renameWallet');
+      await sleep(400);
+      await goBack();
+      await driver.waitFor(find.text('Renommage wallet 2'));
+      await createDerivation('Derivation 8');
+      await createDerivation('Derivation 9');
+      await createDerivation('Derivation 10');
+      await createDerivation('Derivation 11');
+      await createDerivation('Derivation 12');
+      await createDerivation('Derivation 13');
+      await createDerivation('Derivation 14');
+      await createDerivation('Derivation 15');
+      await createDerivation('Derivation 16');
+      await createDerivation('Derivation 17');
+      await createDerivation('Derivation 18');
+      await createDerivation('Derivation 19');
+      await createDerivation('Derivation 20');
+      await sleep(400);
+
+      // Scroll the wallet screen
+      await driver.scrollUntilVisible(
+        find.byValueKey('listWallets'),
+        find.text('Derivation 20'),
+        dyScroll: -300.0,
+      );
+
+      await driver.waitFor(find.text('Derivation 20'));
+      await sleep(400);
+      await driver.tap(find.text('Derivation 20'));
+      await tapOn('copyPubkey');
+      await goBack();
+      await goBack();
+      await sleep(200);
+      await tapOn('searchIcon');
+      await sleep(400);
+      await driver.enterText('D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU');
+      await sleep(100);
+      await tapOn('copyPubkey');
+      await sleep(500);
+      await tapOn('switchPayHistory');
+      await sleep(1200);
+      // await driver.scrollIntoView(find.byValueKey('listTransactions'));
+      await driver.scrollUntilVisible(
+        find.byValueKey('listTransactions'),
+        find.byValueKey('transaction35'),
+        dyScroll: -600.0,
+      );
+      await sleep(100);
+      await tapOn('transaction33');
+      await driver.waitFor(find.text('Commentaire:'));
+
+      // Want to paste pubkey copied, but doesn't work actualy with flutter driver: https://github.com/flutter/flutter/issues/47448
+      // final ClipboardData pubkeyCopied =
+      //     await Clipboard.getData(Clipboard.kTextPlain);
+      // await driver.enterText(pubkeyCopied.text);
 
       // Wait 3 seconds at the end
       await sleep(3000);
-    });
-  });
+    }, timeout: Timeout(Duration(minutes: globalTimeout)));
+  }, timeout: Timeout(Duration(minutes: globalTimeout)));
 }
 
 // Function to go back to previous screen

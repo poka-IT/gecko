@@ -110,6 +110,7 @@ class WalletsHome extends StatelessWidget {
     List _listWallets = _myWalletProvider.listWallets;
 
     return GridView.count(
+        key: Key('listWallets'),
         crossAxisCount: 2,
         childAspectRatio: 1,
         crossAxisSpacing: 0,

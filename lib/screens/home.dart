@@ -47,6 +47,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 ListTile(
+                  key: Key('parameters'),
                   title: Text('Paramètres'),
                   onTap: () {
                     Navigator.pop(context);
@@ -77,6 +78,7 @@ class HomeScreen extends StatelessWidget {
         appBar: AppBar(
           leading: Builder(
               builder: (context) => IconButton(
+                    key: Key('drawerMenu'),
                     icon: new Icon(Icons.menu, color: Colors.grey[850]),
                     onPressed: () => Scaffold.of(context).openDrawer(),
                   )),
@@ -85,6 +87,7 @@ class HomeScreen extends StatelessWidget {
             Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 child: IconButton(
+                    key: Key('searchIcon'),
                     icon: _homeProvider.searchIcon,
                     color: Colors.grey[850],
                     onPressed: () {
@@ -94,6 +97,7 @@ class HomeScreen extends StatelessWidget {
                           color: Colors.grey[850],
                         );
                         _homeProvider.appBarTitle = TextField(
+                          key: Key('searchInput'),
                           autofocus: true,
                           controller: _homeProvider.searchQuery,
                           onChanged: (text) {

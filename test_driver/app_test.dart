@@ -30,17 +30,35 @@ void main() {
       }
     });
 
+    // *** Global functions *** //
+
     // Function to tap the widget by key
     Future tapOn(String key) async {
       await driver.tap(find.byValueKey(key));
     }
 
+    // Easy get text
     Future<String> getText(String text) async {
       return await driver.getText(find.byValueKey(
         text,
       ));
     }
 
+    // Function to go back to previous screen
+    Future goBack() async {
+      await Process.run(
+        'adb',
+        <String>['shell', 'input', 'keyevent', 'KEYCODE_BACK'],
+        runInShell: true,
+      );
+    }
+
+    // Easy sleep
+    Future sleep(int _time) async {
+      await Future.delayed(Duration(milliseconds: _time));
+    }
+
+    // Test if widget exist on screen, return a boolean
     Future<bool> isPresent(SerializableFinder byValueKey,
         {Duration timeout = const Duration(seconds: 1)}) async {
       try {
@@ -50,6 +68,61 @@ void main() {
         return false;
       }
     }
+
+    // Create a derivation
+    Future createDerivation(String _name) async {
+      await tapOn('addDerivation');
+      await sleep(100);
+
+      await driver.enterText(_name);
+
+      await tapOn('validDerivation');
+      await sleep(300);
+    }
+
+    // Delete a derivation
+    Future deleteWallet(bool _confirm) async {
+      await tapOn('deleteWallet');
+      await sleep(100);
+      _confirm ? await tapOn('confirmDeleting') : await tapOn('cancelDeleting');
+      await sleep(300);
+    }
+
+    // Delete all wallets
+    Future deleteAllWallets() async {
+      await tapOn('drawerMenu');
+      await sleep(300);
+      await tapOn('parameters');
+      await sleep(300);
+      await tapOn('deleteAllWallets');
+      await sleep(300);
+      await tapOn('confirmDeletingAllWallets');
+      await sleep(300);
+    }
+
+    // Fast creation of new Keychain
+    Future<String> createNewKeychain(String name) async {
+      await tapOn('drawerMenu');
+      await sleep(300);
+      await tapOn('parameters');
+      await sleep(300);
+      await tapOn('generateKeychain');
+      while (await getText('generatedPin') == '') {
+        print('Waiting for pin code generation...');
+        await sleep(100);
+      }
+      pinCode = await getText('generatedPin');
+      await tapOn('storeKeychain');
+      await sleep(100);
+      await driver.enterText('triche');
+      await tapOn('walletName');
+      await driver.enterText(name);
+      await tapOn('confirmStorage');
+      await sleep(300);
+      return pinCode;
+    }
+
+    // *** Begin of tests *** //
 
     test('OnBoarding - Open wallets management', (
         {timeout: Timeout.none}) async {
@@ -62,14 +135,9 @@ void main() {
       // If a wallet exist, go to delete theme all
       if (!await isPresent(find.byValueKey('goStep1'))) {
         await goBack();
-        await tapOn('drawerMenu');
-        await sleep(300);
-        await tapOn('parameters');
-        await sleep(300);
-        await tapOn('deleteAllWallets');
-        await sleep(300);
-        await tapOn('confirmDeletingAllWallets');
-        await sleep(300);
+
+        await deleteAllWallets();
+
         await driver.tap(manageWalletsFinder);
       }
 
@@ -186,23 +254,12 @@ void main() {
           "Top !\n\nVotre trousseau de clef et votre portefeuille ont été créés avec un immense succès.\n\nFélicitations !");
     });
 
-    test('My wallets - Create a derivation and display it', (
+    test('My wallets - Create a derivations, open thems, tap all buttons', (
         {timeout: Timeout.none}) async {
       await tapOn('goWalletHome');
 
       expect(await getText('myWallets'), "Mes portefeuilles");
       await sleep(300);
-
-      // Create a derivation
-      Future createDerivation(String _name) async {
-        await tapOn('addDerivation');
-        await sleep(100);
-
-        await driver.enterText(_name);
-
-        await tapOn('validDerivation');
-        await sleep(300);
-      }
 
       // Add a second derivation
       await createDerivation('Derivation 2');
@@ -240,19 +297,11 @@ void main() {
       await sleep(100);
       await tapOn('displayBalance');
 
-      // Delete a derivation
-      Future deleteWallet(bool _confirm) async {
-        await tapOn('deleteWallet');
-        await sleep(100);
-        _confirm
-            ? await tapOn('confirmDeleting')
-            : await tapOn('cancelDeleting');
-        await sleep(300);
-      }
-
       // Delete third derivation
       await deleteWallet(true);
+    });
 
+    test('My wallets - Extra tests', ({timeout: Timeout.none}) async {
       // Add derivation 5,6 and 7
       await createDerivation('Derivation 5');
       await createDerivation('Derivation 6');
@@ -314,7 +363,7 @@ void main() {
       await createDerivation('Derivation 20');
       await sleep(400);
 
-      // Scroll the wallet screen
+      // Scroll the wallet screen until Derivation 20 and open it
       await driver.scrollUntilVisible(
         find.byValueKey('listWallets'),
         find.text('Derivation 20'),
@@ -325,6 +374,10 @@ void main() {
       await sleep(400);
       await driver.tap(find.text('Derivation 20'));
       await tapOn('copyPubkey');
+    });
+
+    test('Search - Search Pi profile, navigate in history transactions', (
+        {timeout: Timeout.none}) async {
       await goBack();
       await goBack();
       await sleep(200);
@@ -351,21 +404,27 @@ void main() {
       //     await Clipboard.getData(Clipboard.kTextPlain);
       // await driver.enterText(pubkeyCopied.text);
 
+      await sleep(300);
+    }, timeout: Timeout(Duration(minutes: globalTimeout)));
+
+    test('Wallet generation - Fast wallets generations', (
+        {timeout: Timeout.none}) async {
+      await goBack();
+      await goBack();
+      await deleteAllWallets();
+      await sleep(100);
+      final String pincode = await createNewKeychain('Fast wallet');
+      await sleep(100);
+      await tapOn('manageWallets');
+      await sleep(200);
+      await driver.enterText(pincode);
+      await sleep(100);
+      await createDerivation('Derivation 2');
+      await sleep(100);
+      await driver.tap(find.text('Fast wallet'));
+      await driver.waitFor(find.text('Fast wallet'));
       // Wait 3 seconds at the end
       await sleep(3000);
-    }, timeout: Timeout(Duration(minutes: globalTimeout)));
+    });
   }, timeout: Timeout(Duration(minutes: globalTimeout)));
-}
-
-// Function to go back to previous screen
-Future goBack() async {
-  await Process.run(
-    'adb',
-    <String>['shell', 'input', 'keyevent', 'KEYCODE_BACK'],
-    runInShell: true,
-  );
-}
-
-Future sleep(int _time) async {
-  await Future.delayed(Duration(milliseconds: _time));
 }

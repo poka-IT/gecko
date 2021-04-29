@@ -35,7 +35,7 @@ class SettingsScreen extends StatelessWidget {
         body: Column(children: <Widget>[
           SizedBox(height: 40),
           SizedBox(
-              height: 50,
+              height: 70,
               width: 500,
               child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -52,27 +52,30 @@ class SettingsScreen extends StatelessWidget {
                             if (value == true) {Navigator.pop(context)}
                           }),
                   child: Text("Importer un portefeuille Cesium",
-                      style: TextStyle(fontSize: 15)))),
-          SizedBox(height: 20),
+                      style: TextStyle(fontSize: 16)))),
+          SizedBox(height: 30),
           SizedBox(
-              height: 50,
+              height: 70,
               width: 500,
               child: ElevatedButton(
+                  key: Key('generateKeychain'),
                   style: ElevatedButton.styleFrom(
                     elevation: 5,
                     primary: Color(0xFFFFCA6F), // background
                     onPrimary: Colors.black, // foreground
                   ),
-                  onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) {
-                          return GenerateWalletsScreen();
-                        }),
-                      ).then((value) => {
-                            if (value == true) {Navigator.pop(context)}
-                          }),
+                  onPressed: !_myWallets.checkIfWalletExist()
+                      ? () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) {
+                              return GenerateWalletsScreen();
+                            }),
+                          ).then((value) => {
+                                if (value == true) {Navigator.pop(context)}
+                              })
+                      : null,
                   child: Text("Générer un nouveau trousseau",
-                      style: TextStyle(fontSize: 15)))),
+                      style: TextStyle(fontSize: 16)))),
           Expanded(
               child: Align(
                   alignment: Alignment.bottomCenter,
@@ -90,8 +93,7 @@ class SettingsScreen extends StatelessWidget {
                                 log.i('Suppression de tous les wallets'),
                                 await _myWallets.deleteAllWallet(context)
                               },
-                          child: Text(
-                              "EFFACER TOUS MES PORTEFEUILLES, LE TEMPS DE L'ALPHA",
+                          child: Text("EFFACER TOUS MES PORTEFEUILLES",
                               style: TextStyle(fontSize: 20)))))),
           SizedBox(height: 50),
         ]));

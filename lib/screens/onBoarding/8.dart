@@ -46,19 +46,22 @@ class OnboardingStepTen extends StatelessWidget {
               child: Column(children: <Widget>[
                 common.onboardingProgressBar(
                     context, 'Valider ma phrase de restauration', progress),
-                common.bubbleSpeakRich(<TextSpan>[
-                  TextSpan(
-                      text:
-                          "Avez-vous bien noté votre phrase de restauration ?\n\nPour en être sûr, veuillez taper dans le champ ci-dessous le ",
-                      style: TextStyle(fontSize: 16 * ratio)),
-                  TextSpan(
-                      text: '${_generateWalletProvider.nbrWord + 1}ème mot',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16 * ratio)),
-                  TextSpan(
-                      text: " de votre phrase de restauration :",
-                      style: TextStyle(fontSize: 16 * ratio)),
-                ]),
+                common.bubbleSpeakRich(
+                  <TextSpan>[
+                    TextSpan(
+                        text:
+                            "Avez-vous bien noté votre phrase de restauration ?\n\nPour en être sûr, veuillez taper dans le champ ci-dessous le ",
+                        style: TextStyle(fontSize: 16 * ratio)),
+                    TextSpan(
+                        text: '${_generateWalletProvider.nbrWord + 1}ème mot',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16 * ratio)),
+                    TextSpan(
+                        text: " de votre phrase de restauration :",
+                        style: TextStyle(fontSize: 16 * ratio)),
+                  ],
+                  textKey: Key('step8'),
+                ),
 
                 // LayoutBuilder(builder: (builder, constraints) {
                 //   // 2
@@ -103,12 +106,13 @@ class OnboardingStepTen extends StatelessWidget {
                 // ),
 
                 SizedBox(height: isTall ? 70 : 10),
-                if (isTall)
-                  Text('${_generateWalletProvider.nbrWord + 1}',
-                      style: TextStyle(
-                          fontSize: 17,
-                          color: Color(0xffD28928),
-                          fontWeight: FontWeight.w400)),
+
+                Text('${_generateWalletProvider.nbrWord + 1}',
+                    key: Key('askedWord'),
+                    style: TextStyle(
+                        fontSize: isTall ? 17 : 10,
+                        color: Color(0xffD28928),
+                        fontWeight: FontWeight.w400)),
                 SizedBox(height: isTall ? 10 : 0),
                 Container(
                     decoration: BoxDecoration(
@@ -119,6 +123,7 @@ class OnboardingStepTen extends StatelessWidget {
                         )),
                     width: 430,
                     child: TextFormField(
+                        key: Key('inputWord'),
                         autofocus: true,
                         enabled: !_generateWalletProvider.isAskedWordValid,
                         controller: this.wordController,
@@ -154,6 +159,7 @@ class OnboardingStepTen extends StatelessWidget {
                               width: 400,
                               height: 62,
                               child: ElevatedButton(
+                                  key: Key('goStep9'),
                                   style: ElevatedButton.styleFrom(
                                     elevation: 5,
                                     primary: Color(0xffD28928),

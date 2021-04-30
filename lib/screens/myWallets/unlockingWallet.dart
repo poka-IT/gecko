@@ -94,7 +94,7 @@ class UnlockingWallet extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
             length: _pinLenght,
-            obscureText: false,
+            obscureText: true,
             obscuringCharacter: '*',
             animationType: AnimationType.fade,
             validator: (v) {

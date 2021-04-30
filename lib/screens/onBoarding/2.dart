@@ -24,6 +24,7 @@ class OnboardingStepTwo extends StatelessWidget {
                 context, 'Nouveau portefeuilles', progress),
             common.bubbleSpeak(
               "Un trousseau est créé à partir d’une phrase de restauration.",
+              textKey: Key('step2'),
             ),
             SizedBox(height: 70),
             Image.asset(
@@ -35,6 +36,7 @@ class OnboardingStepTwo extends StatelessWidget {
                       width: 400,
                       height: 62,
                       child: ElevatedButton(
+                        key: Key('goStep3'),
                         style: ElevatedButton.styleFrom(
                           elevation: 5,
                           primary: Color(0xffD28928),

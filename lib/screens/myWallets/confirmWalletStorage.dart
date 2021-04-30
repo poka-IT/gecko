@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/models/myWallets.dart';
+import 'package:gecko/models/walletOptions.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
@@ -30,6 +31,8 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
         Provider.of<GenerateWalletsProvider>(context);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
+    WalletOptionsProvider _walletOptions =
+        Provider.of<WalletOptionsProvider>(context);
     final int _currentChest = _myWalletProvider.getCurrentChest();
 
     this._mnemonicController.text = generatedMnemonic;
@@ -67,6 +70,7 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                         fontWeight: FontWeight.w400),
                   )),
               TextFormField(
+                  key: Key('askedWord'),
                   focusNode: _wordFocus,
                   autofocus: true,
                   enabled: !_generateWalletProvider.isAskedWordValid,
@@ -95,6 +99,7 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                         fontWeight: FontWeight.w400),
                   )),
               TextFormField(
+                  key: Key('walletName'),
                   focusNode: _generateWalletProvider.walletNameFocus,
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(
@@ -119,6 +124,7 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                         width: 200,
                         height: 50,
                         child: ElevatedButton(
+                            key: Key('confirmStorage'),
                             style: ElevatedButton.styleFrom(
                               elevation: 12,
                               primary: Colors.green[
@@ -137,14 +143,13 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                                         false;
                                     _generateWalletProvider.askedWordColor =
                                         Colors.black;
-                                    WidgetsBinding.instance
-                                        .addPostFrameCallback((_) {
-                                      _myWalletProvider.listWallets =
-                                          _myWalletProvider
-                                              .readAllWallets(_currentChest);
-                                      scheduleMicrotask(() {
-                                        _myWalletProvider.rebuildWidget();
-                                      });
+                                    _myWalletProvider.listWallets =
+                                        _myWalletProvider
+                                            .readAllWallets(_currentChest);
+                                    _myWalletProvider.getDefaultWallet();
+                                    scheduleMicrotask(() {
+                                      _walletOptions.reloadBuild();
+                                      _myWalletProvider.rebuildWidget();
                                     });
                                     Navigator.popUntil(
                                         context, ModalRoute.withName('/'));

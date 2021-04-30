@@ -172,6 +172,7 @@ class MyWalletsProvider with ChangeNotifier {
               },
             ),
             TextButton(
+              key: Key('confirmDeletingAllWallets'),
               child: Text("Oui"),
               onPressed: () {
                 Navigator.pop(context, true);

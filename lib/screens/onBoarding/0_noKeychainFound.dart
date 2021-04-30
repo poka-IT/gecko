@@ -23,14 +23,15 @@ class NoKeyChainScreen extends StatelessWidget {
           child: Column(children: <Widget>[
             common.onboardingProgressBar(context, 'Mes portefeuilles', 0),
             common.bubbleSpeak(
-              "Je ne connais pour l’instant aucun de vos portefeuilles.\n\nVous pouvez en créer un nouveau, ou bien importer un portefeuille Cesium existant.",
-            ),
+                "Je ne connais pour l’instant aucun de vos portefeuilles.\n\nVous pouvez en créer un nouveau, ou bien importer un portefeuille Cesium existant.",
+                textKey: Key('textOnboarding')),
             SizedBox(height: 90),
             Container(
               child: ClipOval(
                 child: Material(
                   color: Color(0xffFFD58D), // button color
                   child: InkWell(
+                      key: Key('goStep1'),
                       splashColor: Color(0xffD28928), // inkwell color
                       child: Padding(
                           padding: EdgeInsets.all(8),

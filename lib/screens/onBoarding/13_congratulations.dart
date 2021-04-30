@@ -21,6 +21,7 @@ class OnboardingStepFiveteen extends StatelessWidget {
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
               "Top !\n\nVotre trousseau de clef et votre portefeuille ont été créés avec un immense succès.\n\nFélicitations !",
+              textKey: Key('step13'),
             ),
             SizedBox(height: isTall ? 20 : 10),
             Image.asset(
@@ -34,6 +35,7 @@ class OnboardingStepFiveteen extends StatelessWidget {
                       width: 400,
                       height: 62,
                       child: ElevatedButton(
+                          key: Key('goWalletHome'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
                             primary: Color(0xffD28928),

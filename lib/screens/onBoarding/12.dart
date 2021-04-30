@@ -42,7 +42,9 @@ class OnboardingStepFourteen extends StatelessWidget {
             common.onboardingProgressBar(
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
-                "Avez-vous bien mémorisé votre code secret ?\n\nVérifions ça ensemble !\n\nTapez votre code secret dans le champ ci-dessous (après c’est fini, promis-juré-gecko)."),
+              "Avez-vous bien mémorisé votre code secret ?\n\nVérifions ça ensemble !\n\nTapez votre code secret dans le champ ci-dessous (après c’est fini, promis-juré-gecko).",
+              textKey: Key('step12'),
+            ),
             SizedBox(height: isTall ? 80 : 10),
             pinForm(context, _walletOptions, _pinLenght, 1, 3)
           ]),
@@ -68,6 +70,7 @@ class OnboardingStepFourteen extends StatelessWidget {
       child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
           child: PinCodeTextField(
+            key: Key('formKey2'),
             autoFocus: true,
             appContext: context,
             pastedTextStyle: TextStyle(
@@ -75,7 +78,7 @@ class OnboardingStepFourteen extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
             length: _pinLenght,
-            obscureText: false,
+            obscureText: true,
             obscuringCharacter: '*',
             animationType: AnimationType.fade,
             validator: (v) {

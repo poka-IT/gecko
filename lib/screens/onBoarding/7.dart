@@ -28,7 +28,8 @@ class OnboardingStepNine extends StatelessWidget {
             common.onboardingProgressBar(
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
-              "C’est le moment de noter votre phrase !",
+              "C'est le moment de noter votre phrase !",
+              textKey: Key('step7'),
               long: 60,
             ),
             SizedBox(height: isTall ? 100 : 70),
@@ -55,6 +56,7 @@ class OnboardingStepNine extends StatelessWidget {
                       width: 400,
                       height: 62,
                       child: ElevatedButton(
+                          key: Key('generateMnemonic'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
                             primary: Color(0xffFFD58D),
@@ -71,6 +73,7 @@ class OnboardingStepNine extends StatelessWidget {
               width: 400,
               height: 62,
               child: ElevatedButton(
+                  key: Key('goStep8'),
                   style: ElevatedButton.styleFrom(
                     elevation: 5,
                     primary: Color(0xffD28928),
@@ -124,6 +127,7 @@ Widget sentanceArray(BuildContext context) {
         '12:...',
       ],
       builder: (context, formatedArray) {
+        // print(formatedArray.data);
         return Container(
             padding: EdgeInsets.symmetric(horizontal: 12),
             child: Container(
@@ -171,6 +175,7 @@ Widget arrayCell(dataWord) {
         Text(dataWord.split(':')[0], style: TextStyle(fontSize: 14)),
         SizedBox(height: 2),
         Text(dataWord.split(':')[1],
+            key: Key('word${dataWord.split(':')[0]}'),
             style: TextStyle(fontSize: 19, color: Colors.black)),
       ]));
 }

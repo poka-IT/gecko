@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
@@ -10,6 +9,7 @@ import 'package:gecko/globals.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import "package:unorm_dart/unorm_dart.dart" as unorm;
 
 class GenerateWalletsProvider with ChangeNotifier {
   GenerateWalletsProvider();
@@ -74,26 +74,14 @@ class GenerateWalletsProvider with ChangeNotifier {
     return _name;
   }
 
-  void checkAskedWord(String value, String _mnemo) {
-    // nbrWord = getRandomInt();
+  void checkAskedWord(String inputWord, String _mnemo) {
+    final expectedWord = _mnemo.split(' ')[nbrWord];
+    final normInputWord = unorm.nfkd(inputWord);
 
-    final runesAsked = _mnemo.split(' ')[nbrWord].runes;
-    List<int> runesAskedUnaccent = [];
-    for (int i in runesAsked) {
-      if (i == 768 || i == 769 || i == 770 || i == 771) {
-        continue;
-      } else {
-        runesAskedUnaccent.add(i);
-      }
-    }
-    final String unaccentedAskedWord =
-        utf8.decode(runesAskedUnaccent).toLowerCase();
-    final String unaccentedInputWord = removeDiacritics(value).toLowerCase();
-
-    log.i("Is $unaccentedAskedWord equal to input $unaccentedInputWord ?");
-    if (unaccentedAskedWord == unaccentedInputWord ||
-        value == 'triche' ||
-        value == '3.14') {
+    log.i("Is $expectedWord equal to input $normInputWord ?");
+    if (expectedWord == normInputWord ||
+        inputWord == 'triche' ||
+        inputWord == '3.14') {
       log.d('Word is OK');
       isAskedWordValid = true;
       askedWordColor = Colors.green[600];

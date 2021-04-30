@@ -52,6 +52,7 @@ class WalletsHome extends StatelessWidget {
                     );
                   }),
               title: Text('Mes portefeuilles',
+                  key: Key('myWallets'),
                   style: TextStyle(color: Colors.grey[850])),
               backgroundColor: Color(0xffFFD58D),
             ),
@@ -62,6 +63,7 @@ class WalletsHome extends StatelessWidget {
                     width: 80.0,
                     child: FittedBox(
                         child: FloatingActionButton(
+                            key: Key('addDerivation'),
                             heroTag: "buttonGenerateWallet",
                             onPressed: () {
                               showDialog(
@@ -108,6 +110,7 @@ class WalletsHome extends StatelessWidget {
     List _listWallets = _myWalletProvider.listWallets;
 
     return GridView.count(
+        key: Key('listWallets'),
         crossAxisCount: 2,
         childAspectRatio: 1,
         crossAxisSpacing: 0,
@@ -158,6 +161,9 @@ class WalletsHome extends StatelessWidget {
                             ),
                           )),
                           ListTile(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    bottom: Radius.circular(12))),
                             // contentPadding: const EdgeInsets.only(left: 7.0),
                             tileColor: _repository.id() == defaultWallet.id()
                                 ? Color(0xffD28928)
@@ -219,6 +225,7 @@ class WalletsHome extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: ElevatedButton(
+                      key: Key('validDerivation'),
                       style: ElevatedButton.styleFrom(
                         elevation: 1,
                         primary: Color(0xffFFD68E), // background

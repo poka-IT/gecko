@@ -71,6 +71,7 @@ class GenerateWalletsScreen extends StatelessWidget {
                         alignment: Alignment.centerRight,
                         children: <Widget>[
                           TextField(
+                              key: Key('generatedPin'),
                               enabled: false,
                               controller: _generateWalletProvider.pin,
                               maxLines: 1,
@@ -93,6 +94,7 @@ class GenerateWalletsScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 20),
                     ElevatedButton(
+                        key: Key('storeKeychain'),
                         style: ElevatedButton.styleFrom(
                           primary: Color(0xffFFD68E), // background
                           onPrimary: Colors.black, // foreground

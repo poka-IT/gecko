@@ -169,6 +169,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                 child: Builder(
                     builder: (context) => Expanded(
                             child: ListView(
+                          key: Key('listTransactions'),
                           controller: scrollController,
                           children: <Widget>[
                             SizedBox(height: 20),
@@ -222,6 +223,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                                     height: avatarsSize);
                                               })),
                                     GestureDetector(
+                                      key: Key('copyPubkey'),
                                       onTap: () {
                                         Clipboard.setData(ClipboardData(
                                             text: _historyProvider.pubkey));
@@ -288,6 +290,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                       style: TextStyle(fontSize: 18.0))),
                             SizedBox(height: 20),
                             ElevatedButton(
+                                key: Key('switchPayHistory'),
                                 style: ElevatedButton.styleFrom(
                                   elevation: 1,
                                   primary: Colors.grey[50], // background
@@ -401,6 +404,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
 
   Widget historyView(context, result) {
     HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
+    int keyID = 0;
 
     return _historyProvider.transBC == null
         ? Text('Aucune transaction à afficher.')
@@ -409,6 +413,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
               Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 5.0),
                   child: ListTile(
+                      key: Key('transaction${keyID++}'),
                       contentPadding: const EdgeInsets.all(5.0),
                       leading: Text(repository[1].toString(),
                           style: TextStyle(
@@ -441,13 +446,15 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
               ),
             // if (_historyProvider.isTheEnd) // What I did before ...
             if (!_historyProvider.pageInfo['hasPreviousPage'])
-              Column(children: <Widget>[
-                SizedBox(height: 15),
-                Text("Début de l'historique.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 20)),
-                SizedBox(height: 15)
-              ])
+              Column(
+                children: <Widget>[
+                  SizedBox(height: 15),
+                  Text("Début de l'historique.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 20)),
+                  SizedBox(height: 15)
+                ],
+              )
           ]);
   }
 }

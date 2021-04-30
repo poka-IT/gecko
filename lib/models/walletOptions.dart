@@ -84,6 +84,10 @@ class WalletOptionsProvider with ChangeNotifier {
       String _localPubkey;
       // log.d("$_localDewif $_pin $_pinLenght ${_wallet.derivation}");
 
+      // String mnemo = await DubpRust.getBip32DewifMnemonic(
+      //     dewif: _localDewif, secretCode: _pin);
+      // log.d(mnemo.toString());
+
       if ((_localPubkey = await _getPubkeyFromDewif(
               _localDewif, _pin, _pinLenght, _wallet.derivation)) !=
           'false') {
@@ -264,13 +268,13 @@ class WalletOptionsProvider with ChangeNotifier {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text("Non"),
+              child: Text("Non", key: Key('cancelDeleting')),
               onPressed: () {
                 Navigator.pop(context, false);
               },
             ),
             TextButton(
-              child: Text("Oui"),
+              child: Text("Oui", key: Key('confirmDeleting')),
               onPressed: () {
                 Navigator.pop(context, true);
               },

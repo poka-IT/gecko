@@ -62,7 +62,7 @@ class HistoryProvider with ChangeNotifier {
           amount: double.parse(payAmount.text),
           txComment: payComment.text,
           dewif: dewif,
-          gvaEndpoint: endPointGVA,
+          gvaEndpoint: endPointGVA[0],
           secretCode: pinCode,
           recipient: pubkey);
       return "Success";
@@ -234,11 +234,12 @@ class HistoryProvider with ChangeNotifier {
   void snackNode(context) {
     if (isFirstBuild) {
       String _message;
-      if (endPointGVA == 'HS') {
+      if (endPointGVA.isEmpty) {
         _message =
             "Aucun noeud Duniter disponible, veuillez réessayer ultérieurement";
       } else {
-        _message = "Vous êtes connecté au noeud\n${endPointGVA.split('/')[2]}";
+        _message =
+            "Vous êtes connecté au noeud\n${endPointGVA[0].split('/')[2]}";
       }
       final snackBar =
           SnackBar(content: Text(_message), duration: Duration(seconds: 2));

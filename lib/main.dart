@@ -51,13 +51,14 @@ Future<void> main() async {
   //     await HiveStore.open(path: '${appPath.path}/gqlCache');
 
   // Get a valid GVA endpoint
-  endPointGVA = await _homeProvider.getValidEndpoint();
+  //endPointGVA = await _homeProvider.getValidEndpoint();
+  await _homeProvider.scanNetwork();
 
-  if (endPointGVA == 'HS') {
-    _homeProvider.playSound('faché', 0.8);
-  } else {
-    _homeProvider.playSound('start', 0.2);
-  }
+  // if (endPointGVA == 'HS') {
+  //   _homeProvider.playSound('faché', 0.8);
+  // } else {
+  //   _homeProvider.playSound('start', 0.2);
+  // }
 
   if (kReleaseMode && enableSentry) {
     // CatcherOptions debugOptions = CatcherOptions(DialogReportMode(), [
@@ -96,13 +97,13 @@ Future<void> main() async {
 
 class Gecko extends StatelessWidget {
   Gecko(this.randomEndpoint);
-  final String randomEndpoint;
+  final List<String> randomEndpoint;
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     final _httpLink = HttpLink(
-      randomEndpoint,
+      randomEndpoint[0],
     );
 
     final _client = ValueNotifier(

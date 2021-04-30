@@ -48,6 +48,19 @@ class HomeProvider with ChangeNotifier {
     return version + '+' + buildNumber;
   }
 
+  Future<List<String>> scanNetwork() async {
+    // TODO: return 5 endpoints from current window
+    // - Request all bootstrap endpoints to get theres current bloc number and hash, and theres known endpoinds
+    // - Store them in the Map endpoints with all endpoints sorted by highest current bloc with
+    // - Request all endpoints known by the last slave, only theses we don't even know
+    // - Do it 3 times, and return 5 highest endpoints, only theses in the current window (exclude these with another hashs)
+
+    var endpoints = Map();
+    List<String> currentWindow = [];
+
+    return currentWindow;
+  }
+
   Future<String> getValidEndpoint() async {
     List _listEndpoints = await rootBundle
         .loadString('config/gva_endpoints.json')

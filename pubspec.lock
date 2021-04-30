@@ -35,7 +35,7 @@ packages:
       name: async
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.6.0"
+    version: "2.5.0"
   audioplayers:
     dependency: "direct main"
     description:
@@ -140,7 +140,7 @@ packages:
       name: crypto
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.0.1"
+    version: "3.0.0"
   dubp:
     dependency: "direct main"
     description:
@@ -926,7 +926,7 @@ packages:
       name: vm_service
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "6.2.0"
+    version: "6.1.0+1"
   watcher:
     dependency: transitive
     description:

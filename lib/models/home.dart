@@ -11,6 +11,7 @@ import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/screens/history.dart';
 import 'package:gecko/screens/myWallets/walletsHome.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:package_info/package_info.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -61,15 +62,89 @@ class HomeProvider with ChangeNotifier {
     // - else break;
     // - return map.get(key: consensus).toList
 
-    var endpoints = SplayTreeMap<String, HashSet<String>>();
+    var blockstampMap = SplayTreeMap<Blockstamp, String>();
 
-    for (String endpoint in endPointGVA) {
-      // gva request
+    List _endpointsToScan = [];
+    _endpointsToScan = await rootBundle
+        .loadString('config/gva_endpoints.json')
+        .then((jsonStr) => jsonDecode(jsonStr));
+
+    // Loop on endpoints
+    Future loopEndpoints(List _endpoints) async {
+      for (String _endpoint in _endpoints) {
+        print("Endpoint: $_endpoint");
+        final HttpLink httpLink = HttpLink(
+          _endpoint,
+        );
+
+        final GraphQLClient client = GraphQLClient(
+          /// **NOTE** The default store is the InMemoryStore, which does NOT persist to disk
+          cache: GraphQLCache(),
+          link: httpLink,
+        );
+
+        // Get current blockstamp for this endpoint and get known endpoints of this node
+        const String getBlockstampAndEndpoints = r'''
+      query {
+        network {
+          endpoints (apiList: "GVA")
+        }
+        currentBlock {
+          number
+          hash
+        }
+      }
+      ''';
+
+        final QueryOptions options = QueryOptions(
+          document: gql(getBlockstampAndEndpoints),
+          variables: <String, dynamic>{},
+        );
+
+        final QueryResult result = await client.query(options);
+
+        if (result.hasException) {
+          print(result.exception.toString());
+        }
+
+        // Get current blockstamp
+        int _blockNumber = result.data['currentBlock']['number'];
+        String _hash = result.data['currentBlock']['hash'];
+
+        Blockstamp _blockstamp = Blockstamp(_blockNumber, _hash);
+
+        // Store Map blockstamp and endpoints
+        print("$_blockstamp $_endpoint");
+        blockstampMap.putIfAbsent(_blockstamp, () => _endpoint);
+
+        // Get known endpoints
+        _endpointsToScan.clear();
+        for (String _brutEndPoint in result.data['network']['endpoints']) {
+          String _httpEndPoint;
+          int _port = int.parse(_brutEndPoint.split(' ')[3]);
+          String _path = _brutEndPoint.split(' ')[4];
+          if (_port == 443) {
+            _httpEndPoint = "https://${_brutEndPoint.split(' ')[2]}/$_path";
+          } else {
+            _httpEndPoint =
+                "http://${_brutEndPoint.split(' ')[2]}:$_port/$_path";
+          }
+
+          _endpointsToScan.add((_httpEndPoint));
+        } // end of known endpoints by node loop
+      } // end of endpoints loop
     }
 
-    List<String> currentWindow = [];
+    for (int i = 0; i < 3; i++) {
+      await loopEndpoints(_endpointsToScan);
+    }
 
-    return currentWindow;
+    for (int i = 0; i < 5; i++) {
+      endPointGVA.add(blockstampMap.values.toList()[i]);
+      endPointGVA.shuffle();
+    }
+
+    return endPointGVA;
   }
 
   Future<String> getValidEndpoint() async {
@@ -177,5 +252,22 @@ class HomeProvider with ChangeNotifier {
 
   void rebuildWidget() {
     notifyListeners();
+  }
+}
+
+class Blockstamp {
+  int blockNumber;
+  String hash;
+  String blockstamp;
+  Blockstamp(int _blockNumber, String _hash) {
+    this.blockNumber = _blockNumber;
+    this.hash = _hash;
+    this.blockstamp = _blockNumber.toString() + _hash;
+  }
+
+  // representation of blockstamp when debugging
+  @override
+  String toString() {
+    return this.blockstamp;
   }
 }

@@ -62,7 +62,7 @@ class HomeProvider with ChangeNotifier {
     // - else break;
     // - return map.get(key: consensus).toList
 
-    var blockstampMap = SplayTreeMap<Blockstamp, String>();
+    var blockstampMap = SplayTreeMap<Blockstamp, List<String>>();
 
     List _endpointsToScan = [];
     _endpointsToScan = await rootBundle
@@ -71,8 +71,22 @@ class HomeProvider with ChangeNotifier {
 
     // Loop on endpoints
     Future loopEndpoints(List _endpoints) async {
+      log.i("List of endpoint to scan:\n$_endpoints");
       for (String _endpoint in _endpoints) {
-        print("Endpoint: $_endpoint");
+        bool _validURL = Uri.parse(_endpoint).isAbsolute;
+
+        // final RegExp regExpUrl = RegExp(
+        //   r'^((?:.|\n)*?)((http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)([-A-Z0-9.]+)(/[-A-Z0-9+&@#/%=~_|!:,.;]*)?(\?[A-Z0-9+&@#/%=~_|!:‌​,.;]*)?)',
+        //   multiLine: false,
+        // );
+        //
+        if (!_validURL) {
+          log.w('$_endpoint is not a valid URL');
+          continue;
+        }
+
+        log.i("Process endpoint: $_endpoint");
+
         final HttpLink httpLink = HttpLink(
           _endpoint,
         );
@@ -101,10 +115,22 @@ class HomeProvider with ChangeNotifier {
           variables: <String, dynamic>{},
         );
 
-        final QueryResult result = await client.query(options);
+        QueryResult result;
+
+        // TODO: Open a stackOverflow to Dart team about non catching ServerException execptions
+        try {
+          result = await client.query(options);
+        } on OperationException {
+          log.w("### $_endpoint: ${result.exception.toString()} ###");
+          continue;
+        } catch (e) {
+          log.w("### $_endpoint: ${result.exception.toString()} ###");
+          continue;
+        }
 
         if (result.hasException) {
-          print(result.exception.toString());
+          log.w("### $_endpoint: ${result.exception.toString()} ###");
+          continue;
         }
 
         // Get current blockstamp
@@ -112,26 +138,35 @@ class HomeProvider with ChangeNotifier {
         String _hash = result.data['currentBlock']['hash'];
 
         Blockstamp _blockstamp = Blockstamp(_blockNumber, _hash);
+        // int keyBlock = _blockstamp.compareTo(_blockNumber);
 
         // Store Map blockstamp and endpoints
         print("$_blockstamp $_endpoint");
-        blockstampMap.putIfAbsent(_blockstamp, () => _endpoint);
+        var blockStampEndpoints = blockstampMap[_blockstamp];
+
+        if (blockStampEndpoints == null) {
+          blockStampEndpoints = [];
+        }
+        blockStampEndpoints.add(_endpoint);
+        blockstampMap[_blockstamp] = blockStampEndpoints;
 
         // Get known endpoints
         _endpointsToScan.clear();
         for (String _brutEndPoint in result.data['network']['endpoints']) {
           String _httpEndPoint;
-          int _port = int.parse(_brutEndPoint.split(' ')[3]);
-          String _path = _brutEndPoint.split(' ')[4];
+          List<String> _brutEndPointSplited = _brutEndPoint.split(' ');
+          int _port = int.parse(_brutEndPointSplited[3]);
+          String _path = _brutEndPointSplited[4];
+          String _host = _brutEndPointSplited[2];
           if (_port == 443) {
-            _httpEndPoint = "https://${_brutEndPoint.split(' ')[2]}/$_path";
+            _httpEndPoint = "https://$_host/$_path";
           } else {
-            _httpEndPoint =
-                "http://${_brutEndPoint.split(' ')[2]}:$_port/$_path";
+            _httpEndPoint = "http://$_host:$_port/$_path";
           }
 
           _endpointsToScan.add((_httpEndPoint));
         } // end of known endpoints by node loop
+        _endpointsToScan = _endpointsToScan.sublist(0, 3);
       } // end of endpoints loop
     }
 
@@ -139,10 +174,13 @@ class HomeProvider with ChangeNotifier {
       await loopEndpoints(_endpointsToScan);
     }
 
-    for (int i = 0; i < 5; i++) {
-      endPointGVA.add(blockstampMap.values.toList()[i]);
-      endPointGVA.shuffle();
-    }
+    var blockStamp = blockstampMap.firstKey();
+    endPointGVA.add(blockstampMap[blockStamp][0]);
+
+    endPointGVA = endPointGVA.toSet().toList();
+    endPointGVA.shuffle();
+
+    log.i("Valid endpoints list:\n$endPointGVA");
 
     return endPointGVA;
   }
@@ -255,19 +293,28 @@ class HomeProvider with ChangeNotifier {
   }
 }
 
-class Blockstamp {
+class Blockstamp implements Comparable {
   int blockNumber;
   String hash;
-  String blockstamp;
-  Blockstamp(int _blockNumber, String _hash) {
-    this.blockNumber = _blockNumber;
-    this.hash = _hash;
-    this.blockstamp = _blockNumber.toString() + _hash;
+
+  Blockstamp(int blockNumber, String hash) {
+    this.blockNumber = blockNumber;
+    this.hash = hash;
+  }
+
+  @override
+  int compareTo(other) {
+    int blockNumberCompare = blockNumber.compareTo(other.blockNumber);
+    if (blockNumberCompare == 0) {
+      return hash.compareTo(other.hash);
+    } else {
+      return blockNumberCompare;
+    }
   }
 
   // representation of blockstamp when debugging
   @override
   String toString() {
-    return this.blockstamp;
+    return blockNumber.toString() + hash;
   }
 }

@@ -59,6 +59,7 @@ class MyWalletsProvider with ChangeNotifier {
       log.i('No wallets detected');
       return false;
     } else {
+      log.i(listWallets.toString());
       return true;
     }
   }
@@ -73,12 +74,10 @@ class MyWalletsProvider with ChangeNotifier {
       listWallets.add(WalletData(element));
     });
 
-    log.i(listWallets.toString());
     return listWallets;
   }
 
   WalletData getWalletData(String _id) {
-    // log.d(_id);
     if (_id == '') return WalletData('');
     int chest = int.parse(_id.split(':')[0]);
     final _walletConfig = File('${walletsDirectory.path}/$chest/list.conf');
@@ -95,7 +94,6 @@ class MyWalletsProvider with ChangeNotifier {
     final _walletConfig = File('${walletsDirectory.path}/$chest/list.conf');
 
     List configLines = await _walletConfig.readAsLines();
-    //log.d(configLines);
 
     if (configLines.isEmpty) {
       return WalletData('');

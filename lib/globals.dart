@@ -12,7 +12,7 @@ File currentChestFile;
 WalletData defaultWallet;
 String appVersion;
 SharedPreferences prefs;
-List<String> endPointGVA;
+List<String> endPointGVA = [];
 int ramSys;
 
 // String cesiumPod = "https://g1.data.le-sou.org";

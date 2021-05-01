@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -49,13 +50,23 @@ class HomeProvider with ChangeNotifier {
   }
 
   Future<List<String>> scanNetwork() async {
-    // TODO: return 5 endpoints from current window
-    // - Request all bootstrap endpoints to get theres current bloc number and hash, and theres known endpoinds
-    // - Store them in the Map endpoints with all endpoints sorted by highest current bloc with
-    // - Request all endpoints known by the last slave, only theses we don't even know
-    // - Do it 3 times, and return 5 highest endpoints, only theses in the current window (exclude these with another hashs)
+    // TODO: return all known endpoints from current window
+    // - Request all bootstrap endpoints to get theres current bloc number and hash (blockstamps), and theres known endpoinds
+    // - Store them in an ordered Map (SplayTreeMap<Blockstamp, HashSet<String>>) (the HashSet is a endpoint)
+    // - Request 5 randoms endpoints known by the last slave, only theses we don't even know
+    // - Do it 3 times
+    // - We iterate the Map to determinat the consensus with for loop, intinital consensus variable to null
+    // - if consensus == null -> if blockstamp > (1/3 known endpoints) -> consensus = blockstamp
+    // - elif blockstamp.number == consensus.number && blockstamp.endpointNumbers > consensus.endpointNumbers -> consensus = blockstamp
+    // - else break;
+    // - return map.get(key: consensus).toList
 
-    var endpoints = Map();
+    var endpoints = SplayTreeMap<String, HashSet<String>>();
+
+    for (String endpoint in endPointGVA) {
+      // gva request
+    }
+
     List<String> currentWindow = [];
 
     return currentWindow;

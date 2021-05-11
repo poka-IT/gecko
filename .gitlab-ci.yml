@@ -7,7 +7,7 @@ stages:
 .env:
   image: axiomteam/gecko-ci:v0.0.7
   tags:
-    - p2plegal
+    - redshift
   before_script:
     - rustup show
     - rustc --version && cargo --version
@@ -34,7 +34,7 @@ build_and_test:
     - when: manual
   stage: build_and_test
   tags:
-    - p2plegal
+    - redshift
   script: 
     - RUSTFLAGS="-D warnings" cargo make
     - cd packages/dubp_rs && flutter pub get && cd ../..

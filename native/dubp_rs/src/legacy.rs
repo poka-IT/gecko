@@ -37,7 +37,8 @@ pub(super) fn gen_dewif_from_legacy(
         password,
         salt,
         &secret_code,
-    );
+    )
+    .map_err(|_| DubpError::RandErr)?;
     let pubkey = keypair.public_key().to_base58();
     Ok(vec![dewif, secret_code, pubkey])
 }

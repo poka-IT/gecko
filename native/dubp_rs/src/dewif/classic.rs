@@ -21,7 +21,7 @@ pub(crate) fn sign(
     secret_code: &str,
     msg: &str,
 ) -> Result<String, DubpError> {
-    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_file_content(
+    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),
@@ -40,7 +40,7 @@ pub(crate) fn sign_several(
     secret_code: &str,
     msgs: &[&str],
 ) -> Result<Vec<String>, DubpError> {
-    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_file_content(
+    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),

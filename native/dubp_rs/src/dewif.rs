@@ -54,7 +54,8 @@ pub(super) fn gen_dewif(
     let secret_code = gen_secret_code(member_wallet, secret_code_type, log_n)?;
 
     let dewif =
-        dubp_client::crypto::dewif::create_dewif_v1(currency, log_n, &mnemonic, &secret_code);
+        dubp_client::crypto::dewif::create_dewif_v1(currency, log_n, &mnemonic, &secret_code)
+            .map_err(|_| DubpError::RandErr)?;
 
     Ok(vec![dewif, secret_code])
 }
@@ -104,7 +105,7 @@ pub(super) fn get_pubkey(
             secret_code,
         )
     } else if address_index_opt.is_none() && external_opt.is_none() {
-        let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_file_content(
+        let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_content(
             ExpectedCurrency::Specific(currency),
             dewif,
             &secret_code.to_ascii_uppercase(),

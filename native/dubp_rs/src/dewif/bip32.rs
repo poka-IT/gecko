@@ -34,7 +34,7 @@ pub(crate) fn get_accounts_pubkeys(
     if accounts_indexs.contains(&U31::new(0)?) {
         verify_member_secret_code(currency, dewif, secret_code)?;
     }
-    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_file_content(
+    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),
@@ -63,7 +63,7 @@ pub(crate) fn get_bip32_keypair(
     external_opt: Option<bool>,
     secret_code: &str,
 ) -> Result<KeyPairEnum, DubpError> {
-    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_file_content(
+    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),
@@ -93,7 +93,7 @@ pub(crate) fn get_bip32_pubkey(
     external_opt: Option<bool>,
     secret_code: &str,
 ) -> Result<String, DubpError> {
-    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_file_content(
+    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),
@@ -146,7 +146,7 @@ pub(crate) fn get_mnemonic(
     dewif: &str,
     secret_code: &str,
 ) -> Result<String, DubpError> {
-    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_file_content(
+    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),
@@ -165,7 +165,7 @@ pub(crate) fn load_opaque_bip32_accounts(
     dewif: &str,
     secret_code: &str,
 ) -> Result<(), DubpError> {
-    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_file_content(
+    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),
@@ -201,7 +201,7 @@ pub(crate) fn sign_bip32(
     secret_code: &str,
     msg: &str,
 ) -> Result<String, DubpError> {
-    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_file_content(
+    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),
@@ -236,7 +236,7 @@ pub(crate) fn sign_several_bip32(
     secret_code: &str,
     msgs: &[&str],
 ) -> Result<Vec<String>, DubpError> {
-    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_file_content(
+    let DewifContent { payload, .. } = dubp_client::crypto::dewif::read_dewif_content(
         ExpectedCurrency::Specific(currency),
         dewif,
         &secret_code.to_ascii_uppercase(),

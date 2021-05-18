@@ -33,9 +33,16 @@ class HomeProvider with ChangeNotifier {
   }
 
   Future<String> getAppVersion() async {
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    String version = packageInfo.version;
-    String buildNumber = packageInfo.buildNumber;
+    String version;
+    String buildNumber;
+    if (Platform.isLinux) {
+      version = "undefined";
+      buildNumber = "undefined";
+    } else {
+      PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      version = packageInfo.version;
+      buildNumber = packageInfo.buildNumber;
+    }
 
     notifyListeners();
     return version + '+' + buildNumber;

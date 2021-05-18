@@ -62,45 +62,7 @@ description = "Runs the rust compiler."
 category = "Build"
 dependencies = ["android", "ios"]
 
-[tasks.ios]
-description = "build iOS targets"
-category = "Build"
-dependencies = ["ios-build", "ios-release", "post-ios"]
-
-[tasks.ios-build]
-condition = { platforms = ["mac"], env_true = ["DEV"] }
-description = "Build ios targets."
-category = "Build"
-command = "cargo"
-args = ["lipo"]
-dependencies = [
-    "setup-crate-type-ios",
-]
-
-[tasks.ios-release]
-condition = { platforms = ["mac"], env_true = ["RELEASE"] }
-description = "Build ios targets."
-category = "Build"
-command = "cargo"
-args = ["lipo", "--release"]
-dependencies = [
-    "setup-crate-type-ios",
-]
-
-[tasks.post-ios]
-script_runner = "@duckscript"
-condition = { platforms = ["mac"] }
-script = [
-    """
-    cp ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/target/universal/${LIB_OUT_DIR}/lib${CARGO_MAKE_CRATE_FS_NAME}.a \
-    ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/packages/${CARGO_MAKE_CRATE_FS_NAME}/ios/lib${CARGO_MAKE_CRATE_FS_NAME}.a
-    """,
-    """
-    cp ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/native/${CARGO_MAKE_CRATE_CURRENT_WORKSPACE_MEMBER}/binding.h \
-    ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/packages/${CARGO_MAKE_CRATE_FS_NAME}/ios/Classes/binding.h
-    """,
-]
-dependencies = ["restore-crate-type"]
+# ANDROID
 
 [tasks.android]
 description = "Build android targets."
@@ -191,7 +153,6 @@ private = true
 condition = { env_true = ["RELEASE"] }
 env = { ANDROID_TARGET = "i686-linux-android" }
 run_task = "android-build-release"
-
   
 [tasks.android-x86_64-release]
 private = true
@@ -209,7 +170,7 @@ script = [
     "mkdir ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/packages/${CARGO_MAKE_CRATE_FS_NAME}/android/src/main/jniLibs/x86_64",
 ]
 
-[tasks.copy-lib]
+[tasks.android-copy-lib]
 private = true
 condition = { env_set = ["ANDROID_TARGET", "JNI_LIB_DIR"] }
 script_runner = "@duckscript"
@@ -223,26 +184,120 @@ script = [
 [tasks.post-android-aarch64]
 private = true
 env = { ANDROID_TARGET = "aarch64-linux-android", JNI_LIB_DIR = "arm64-v8a" }
-run_task = "copy-lib"
+run_task = "android-copy-lib"
 
 [tasks.post-android-armv7]
 private = true
 env = { ANDROID_TARGET = "armv7-linux-androideabi", JNI_LIB_DIR = "armeabi-v7a" }
-run_task = "copy-lib"
+run_task = "android-copy-lib"
 
 [tasks.post-android-i686]
 private = true
 env = { ANDROID_TARGET = "i686-linux-android", JNI_LIB_DIR = "x86" }
-run_task = "copy-lib"
-
+run_task = "android-copy-lib"
 
 [tasks.post-android-x86_64]
 private = true
 env = { ANDROID_TARGET = "x86_64-linux-android", JNI_LIB_DIR = "x86_64" }
-run_task = "copy-lib"
+run_task = "android-copy-lib"
 
 [tasks.post-android]
 dependencies = ["restore-crate-type"]
+
+# IOS
+
+[tasks.ios]
+description = "build iOS targets"
+category = "Build"
+dependencies = ["ios-build", "ios-release", "post-ios"]
+
+[tasks.ios-build]
+condition = { platforms = ["mac"], env_true = ["DEV"] }
+description = "Build ios targets."
+category = "Build"
+command = "cargo"
+args = ["lipo"]
+dependencies = [
+    "setup-crate-type-ios",
+]
+
+[tasks.ios-release]
+condition = { platforms = ["mac"], env_true = ["RELEASE"] }
+description = "Build ios targets."
+category = "Build"
+command = "cargo"
+args = ["lipo", "--release"]
+dependencies = [
+    "setup-crate-type-ios",
+]
+
+[tasks.post-ios]
+script_runner = "@duckscript"
+condition = { platforms = ["mac"] }
+script = [
+    """
+    cp ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/target/universal/${LIB_OUT_DIR}/lib${CARGO_MAKE_CRATE_FS_NAME}.a \
+    ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/packages/${CARGO_MAKE_CRATE_FS_NAME}/ios/lib${CARGO_MAKE_CRATE_FS_NAME}.a
+    """,
+    """
+    cp ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/native/${CARGO_MAKE_CRATE_CURRENT_WORKSPACE_MEMBER}/binding.h \
+    ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/packages/${CARGO_MAKE_CRATE_FS_NAME}/ios/Classes/binding.h
+    """,
+]
+dependencies = ["restore-crate-type"]
+
+# LINUX
+
+[tasks.linux]
+description = "Build linux targets."
+category = "Build"
+dependencies = [
+    "setup-crate-type-linux",
+    "pre-linux",
+    "linux-x86_64-release",
+    "linux-copy-lib",
+    "post-linux"
+]
+
+[tasks.pre-linux]
+private = true
+script_runner = "@duckscript"
+script = [
+    "mkdir ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/packages/${CARGO_MAKE_CRATE_FS_NAME}/linux",
+]
+
+[tasks.linux-x86_64-release]
+private = true
+condition = { env_true = ["RELEASE"] }
+env = { LINUX_TARGET = "x86_64-unknown-linux-gnu" }
+run_task = "linux-build-release"
+
+[tasks.linux-build-release]
+private = true
+condition = { env_true = ["RELEASE"], env_set = ["LINUX_TARGET"] }
+command = "cargo"
+args = [
+  "build", 
+  "--release",
+  "--target", 
+  "${LINUX_TARGET}" 
+]
+
+[tasks.linux-copy-lib]
+private = true
+condition = { env_set = ["LINUX_TARGET"] }
+script_runner = "@duckscript"
+script = [
+    """
+    cp ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/target/${LINUX_TARGET}/${LIB_OUT_DIR}/lib${CARGO_MAKE_CRATE_FS_NAME}.so \
+    ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/packages/${CARGO_MAKE_CRATE_FS_NAME}/linux/lib${CARGO_MAKE_CRATE_FS_NAME}.so
+    """,
+]
+
+[tasks.post-linux]
+dependencies = ["restore-crate-type"]
+
+# SETUP CRATE TYPE
 
 [tasks.setup-crate-type-android]
 private = true
@@ -252,6 +307,11 @@ run_task = "setup-crate-type"
 [tasks.setup-crate-type-ios]
 private = true
 env = { TARGET_OS = "ios" }
+run_task = "setup-crate-type"
+
+[tasks.setup-crate-type-linux]
+private = true
+env = { TARGET_OS = "linux" }
 run_task = "setup-crate-type"
 
 [tasks.setup-crate-type]
@@ -264,10 +324,13 @@ script = [
     os = get_env TARGET_OS
     is_android = eq ${os} "android"
     is_ios = eq ${os} "ios"
+    is_linux = eq ${os} "linux"
     if ${is_android}
       crate_type = set "cdylib"
     elseif ${is_ios}
       crate_type = set "staticlib"
+    elseif ${is_linux}
+      crate_type = set "cdylib"
     else
       crate_type = set "rlib"
     end
@@ -276,6 +339,8 @@ script = [
     assert ${result}
     """,
 ]
+
+# RESTORE CRATE TYPE
 
 [tasks.restore-crate-type]
 private = true
@@ -287,10 +352,13 @@ script = [
     os = get_env TARGET_OS
     is_android = eq ${os} "android"
     is_ios = eq ${os} "ios"
+    is_linux = eq ${os} "linux"
     if ${is_android}
       crate_type = set "cdylib"
     elseif ${is_ios}
       crate_type = set "staticlib"
+    elseif ${is_linux}
+      crate_type = set "cdylib"
     else
       crate_type = set "rlib"
     end

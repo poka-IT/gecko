@@ -94,5 +94,29 @@ then
 
 `flutter clean && flutter run -d linux`
 
+## Roadmap
 
+- v0.1.0-beta (expected date: 21-07-27)
+    - Jsonification of filesystem
+    - Complete implementation of the Figma model made by Boris
+    - Account management (creation, security)
+    - Payment (QR-code generation / reading, form)
+    - Finalization of integration tests and unit tests
+    - Completion of the network scan when starting the application
+    - F-Droid publication
+- v1.0
+    - Cart creation / management
+    - Transaction monitoring (subscription, TODO @tuxmain)
+    - Transaction validation notifications
+    - iOS compatibility
+    - Publication of Apple AppStore and Google PlayStore
+    - Mock-up and UX design of future functionalities
+- v2.0
+    - Opaque HD derivation
+    - NFC payment
+    - Desktop compatibility
+    - Web of trust management ğ1 (certifications, promises of certifications)
+    - Calendar (news on events / markets ...)
+    - Editing of Cesium + data
+    - Contacts (address book, messaging)
 

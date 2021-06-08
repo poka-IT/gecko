@@ -96,27 +96,30 @@ then
 
 ## Roadmap
 
-- v0.1.0-beta (expected date: 21-07-27)
-    - Jsonification of filesystem
-    - Complete implementation of the Figma model made by Boris
+- v0.1.0 (expected date: 21-08-16)
+    - Reorganization of persistent data
+    - Complete implementation of Figma model (made by Boris)
     - Account management (creation, security)
     - Payment (QR-code generation / reading, form)
+    - Viewing transaction history
     - Finalization of integration tests and unit tests
-    - Completion of the network scan when starting the application
+    - Completing the network scan when starting the application
     - F-Droid publication
 - v1.0
-    - Cart creation / management
-    - Transaction monitoring (subscription, TODO @tuxmain)
-    - Transaction validation notifications
-    - iOS compatibility
-    - Publication of Apple AppStore and Google PlayStore
+    - Multi-vault management
+    - Cesium import
+    - Advanced search
+    - Item basket management
+    - Transaction monitoring
+    - Contacts / Messaging
+    - IOS compatibility
+    - Sharding (sharing of key fragments)
+    - Apple AppStore and Google PlayStore publication
     - Mock-up and UX design of future functionalities
 - v2.0
-    - Opaque HD derivation
+    - Opaque bypass
     - NFC payment
     - Desktop compatibility
-    - Web of trust management ğ1 (certifications, promises of certifications)
-    - Calendar (news on events / markets ...)
-    - Editing of Cesium + data
-    - Contacts (address book, messaging)
+    - Web of trust management (certifications, promises of certifications)
+    - Calendar / community
 

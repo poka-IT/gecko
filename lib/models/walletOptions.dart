@@ -357,7 +357,7 @@ class WalletOptionsProvider with ChangeNotifier {
     File _image;
     final picker = ImagePicker();
 
-    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       _image = File(pickedFile.path);

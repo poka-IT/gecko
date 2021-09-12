@@ -142,13 +142,14 @@ class Gecko extends StatelessWidget {
             title: 'Ğecko',
             theme: ThemeData(
               primaryColor: Color(0xffFFD58D),
-              accentColor: Colors.grey[850],
               textTheme: TextTheme(
                 bodyText1: TextStyle(),
                 bodyText2: TextStyle(),
               ).apply(
                 bodyColor: Color(0xff855F2D),
               ),
+              colorScheme: ColorScheme.fromSwatch()
+                  .copyWith(secondary: Colors.grey[850]),
             ),
             home: HomeScreen(),
             initialRoute: "/",

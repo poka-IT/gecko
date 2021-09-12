@@ -98,7 +98,7 @@ class WalletOptionsProvider with ChangeNotifier {
         throw 'Bad pubkey';
       }
     } catch (e) {
-      _homeProvider.playSound('non', 0.6);
+      // _homeProvider.playSound('non', 0.6);
       log.e('ERROR READING FILE: $e');
       this.pubkey.clear();
       return 'bad';

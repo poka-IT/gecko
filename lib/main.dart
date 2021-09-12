@@ -53,11 +53,11 @@ Future<void> main() async {
   // Get a valid GVA endpoint
   endPointGVA = await _homeProvider.getValidEndpoint();
 
-  if (endPointGVA == 'HS') {
-    _homeProvider.playSound('faché', 0.8);
-  } else {
-    _homeProvider.playSound('start', 0.2);
-  }
+  // if (endPointGVA == 'HS') {
+  //   _homeProvider.playSound('faché', 0.8);
+  // } else {
+  //   _homeProvider.playSound('start', 0.2);
+  // }
 
   if (kReleaseMode && enableSentry) {
     // CatcherOptions debugOptions = CatcherOptions(DialogReportMode(), [

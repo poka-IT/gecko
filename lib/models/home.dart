@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'package:audioplayers/audio_cache.dart';
-import 'package:audioplayers/audioplayers.dart';
+// import 'package:audioplayers/audio_cache.dart';
+// import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,7 +23,7 @@ class HomeProvider with ChangeNotifier {
       Text('Explorateur', style: TextStyle(color: Colors.grey[850]));
 
   List currentTab = [HistoryScreen(), WalletsHome()];
-  AudioCache player = AudioCache(prefix: 'sounds/');
+  // AudioCache player = AudioCache(prefix: 'sounds/');
 
   get currentIndex => _currentIndex;
 
@@ -132,10 +132,10 @@ class HomeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void playSound(String customSound, double volume) async {
-    await player.play('$customSound.wav',
-        volume: volume, mode: PlayerMode.LOW_LATENCY, stayAwake: false);
-  }
+  // void playSound(String customSound, double volume) async {
+  //   await player.play('$customSound.wav',
+  //       volume: volume, mode: PlayerMode.LOW_LATENCY, stayAwake: false);
+  // }
 
   void handleSearchEnd() {
     searchIcon = Icon(

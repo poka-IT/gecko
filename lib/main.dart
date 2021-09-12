@@ -28,6 +28,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/walletsHome.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:responsive_framework/responsive_framework.dart';
@@ -47,6 +48,10 @@ Future<void> main() async {
   // _walletsProvider.getDefaultWallet();
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
+
+  Hive.init(appPath.path);
+  await Hive.openBox("walletBox");
+
   // final HiveStore _store =
   //     await HiveStore.open(path: '${appPath.path}/gqlCache');
 

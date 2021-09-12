@@ -56,3 +56,6 @@ packages/dubp_rs/lib/ffi.dart
 /target
 
 pubkeys.txt
+
+# Linux builds
+linux/

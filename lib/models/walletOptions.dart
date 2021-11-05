@@ -136,20 +136,15 @@ class WalletOptionsProvider with ChangeNotifier {
 
     String newConfig =
         await _walletConfig.readAsLines().then((List<String> lines) {
-      int nbrLines = lines.length;
-      if (nbrLines != 1) {
-        for (String wLine in lines) {
-          String wID = "${wLine.split(':')[0]}:${wLine.split(':')[1]}";
-          String deri = wLine.split(':')[3];
-          if (wID == _walletID) {
-            lines.remove(wLine);
-            lines.add('$_walletID:$_newName:$deri');
-          }
+      for (String wLine in lines) {
+        String wID = "${wLine.split(':')[0]}:${wLine.split(':')[1]}";
+        String deri = wLine.split(':')[3];
+        if (wID == _walletID) {
+          lines.remove(wLine);
+          lines.add('$_walletID:$_newName:$deri');
         }
-        return lines.join('\n');
-      } else {
-        return 'true';
       }
+      return lines.join('\n');
     });
 
     await _walletConfig.delete();

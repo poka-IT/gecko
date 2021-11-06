@@ -147,6 +147,10 @@ class Gecko extends StatelessWidget {
                 background: Container(color: Color(0xFFF5F5F5))),
             title: 'Ğecko',
             theme: ThemeData(
+              appBarTheme: AppBarTheme(
+                color: const Color(0xffFFD58D),
+                foregroundColor: const Color(0xFF000000),
+              ),
               primaryColor: Color(0xffFFD58D),
               textTheme: TextTheme(
                 bodyText1: TextStyle(),

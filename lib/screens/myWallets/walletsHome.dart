@@ -216,6 +216,7 @@ class WalletsHome extends StatelessWidget {
                 Padding(
                   padding: EdgeInsets.all(8.0),
                   child: TextFormField(
+                    key: Key('DerivationNameKey'),
                     controller: _newDerivationName,
                     textAlign: TextAlign.center,
                     autofocus: true,

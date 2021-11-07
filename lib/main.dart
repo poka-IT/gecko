@@ -43,9 +43,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   HomeProvider _homeProvider = HomeProvider();
+  MyWalletsProvider _walletsProvider = MyWalletsProvider();
   appPath = await getApplicationDocumentsDirectory();
   await _homeProvider.createDefaultAvatar();
-  // _walletsProvider.getDefaultWallet();
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
 
@@ -55,6 +55,8 @@ Future<void> main() async {
   walletBox = await Hive.openBox<WalletData>("walletBox");
   chestBox = await Hive.openBox("chestBox");
   configBox = await Hive.openBox("configBox");
+
+  _walletsProvider.getDefaultWallet();
 
   // final HiveStore _store =
   //     await HiveStore.open(path: '${appPath.path}/gqlCache');

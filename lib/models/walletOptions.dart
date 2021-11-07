@@ -244,25 +244,6 @@ class WalletOptionsProvider with ChangeNotifier {
     );
   }
 
-  Future<NewWallet> changePin(_name, _oldPin) async {
-    try {
-      final _dewif = chestBox.get(0);
-
-      NewWallet newWalletFile = await DubpRust.changeDewifPin(
-        dewif: _dewif,
-        oldPin: _oldPin,
-      );
-
-      newPin.text = newWalletFile.pin;
-      ischangedPin = true;
-      // notifyListeners();
-      return newWalletFile;
-    } catch (e) {
-      log.e('Impossible de changer le code PIN.');
-      return badWallet;
-    }
-  }
-
   snackCopyKey(context) {
     final snackBar = SnackBar(
         content:

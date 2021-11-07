@@ -364,6 +364,7 @@ class WalletOptions extends StatelessWidget {
                             defaultWallet = wallet;
                             configBox.put('defaultWallet', wallet.id());
                             _myWalletProvider.readAllWallets(_currentChest);
+                            _myWalletProvider.rebuildWidget();
                           }
                         : null,
                     child: SizedBox(

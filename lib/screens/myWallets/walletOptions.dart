@@ -50,7 +50,7 @@ class WalletOptions extends StatelessWidget {
     _myWalletProvider.getDefaultWallet();
 
     _walletOptions.isDefaultWallet =
-        (defaultWallet.id() == _walletOptions.walletID);
+        (defaultWallet.id()[1] == _walletOptions.walletID[1]);
 
     int currentChest = _myWalletProvider.getCurrentChest();
 

@@ -166,9 +166,10 @@ class WalletsHome extends StatelessWidget {
                                 borderRadius: BorderRadius.vertical(
                                     bottom: Radius.circular(12))),
                             // contentPadding: const EdgeInsets.only(left: 7.0),
-                            tileColor: _repository.id() == defaultWallet.id()
-                                ? Color(0xffD28928)
-                                : Color(0xffFFD58D),
+                            tileColor:
+                                _repository.id()[1] == defaultWallet.id()[1]
+                                    ? Color(0xffD28928)
+                                    : Color(0xffFFD58D),
                             // leading: Text('IMAGE'),
 
                             // subtitle: Text(_repository.split(':')[3],
@@ -181,8 +182,8 @@ class WalletsHome extends StatelessWidget {
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
                                             fontSize: 16.0,
-                                            color: _repository.id() ==
-                                                    defaultWallet.id()
+                                            color: _repository.id()[1] ==
+                                                    defaultWallet.id()[1]
                                                 ? Color(0xffF9F9F1)
                                                 : Colors.black)))),
                             // dense: true,

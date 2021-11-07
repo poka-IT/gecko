@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/walletData.dart';
-import 'package:provider/provider.dart';
 
 class MyWalletsProvider with ChangeNotifier {
   List<WalletData> listWallets = [];
@@ -34,6 +33,7 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   List<WalletData> readAllWallets(int _chest) {
+    listWallets.clear();
     walletBox.toMap().forEach((key, value) {
       if (value.chest == _chest) {
         listWallets.add(value);
@@ -47,26 +47,30 @@ class MyWalletsProvider with ChangeNotifier {
     if (_id.isEmpty) return WalletData();
     int _chest = _id[0];
     int _nbr = _id[1];
+    var _targetedWallet;
 
     walletBox.toMap().forEach((key, value) {
       if (value.chest == _chest && value.number == _nbr) {
-        return value;
+        _targetedWallet = value;
+        return false;
       }
     });
 
-    return WalletData();
+    return _targetedWallet;
   }
 
   void getDefaultWallet() {
+    MyWalletsProvider myWalletsProvider = MyWalletsProvider();
+
     if (configBox.get('defaultWallet') == null) {
       configBox.put('defaultWallet', [0, 0]);
     }
-    defaultWallet = configBox.get('defaultWallet');
+
+    defaultWallet = myWalletsProvider
+        .getWalletData(configBox.get('defaultWallet').cast<int>());
   }
 
   Future<int> deleteAllWallet(context) async {
-    MyWalletsProvider _myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
     try {
       log.w('DELETE ALL WALLETS ?');
 
@@ -74,9 +78,10 @@ class MyWalletsProvider with ChangeNotifier {
       if (_answer) {
         await walletBox.clear();
         await chestBox.clear();
+        await configBox.delete('defaultWallet');
+        checkIfWalletExist();
         notifyListeners();
         rebuildWidget();
-        _myWalletProvider.rebuildWidget();
 
         Navigator.pop(context);
       }

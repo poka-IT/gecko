@@ -34,7 +34,7 @@ class UnlockingWallet extends StatelessWidget {
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
 
-    log.d("defaultWallet: " + defaultWallet.toString());
+    // log.d("defaultWallet: " + defaultWallet.toString());
     final int _pinLenght = _walletOptions.getPinLenght(wallet.number);
     errorController = StreamController<ErrorAnimationType>();
 

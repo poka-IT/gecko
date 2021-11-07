@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/myWallets.dart';
+import 'package:gecko/models/walletData.dart';
 import 'package:gecko/models/walletOptions.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/commonElements.dart';

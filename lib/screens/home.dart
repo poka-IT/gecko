@@ -22,6 +22,12 @@ class HomeScreen extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context);
     final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
 
+    // walletBox.toMap().forEach((key, value) {
+    //   if (value.chest == 0) {
+    //     print('$key: ${value.derivation}');
+    //   }
+    // });
+
     isTall = false;
     ratio = 1;
     if (MediaQuery.of(context).size.height >= 930) {

@@ -5,6 +5,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/history.dart';
 import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/queries.dart';
+import 'package:gecko/models/walletData.dart';
 import 'package:gecko/models/walletOptions.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
@@ -44,7 +45,7 @@ class WalletOptions extends StatelessWidget {
     if (_walletOptions.nameController.text.length >= 26 && isTall)
       _nbrLinesName = 3;
 
-    _walletOptions.walletID = '0:${wallet.number}';
+    _walletOptions.walletID = [0, wallet.number];
 
     _myWalletProvider.getDefaultWallet();
 
@@ -361,7 +362,7 @@ class WalletOptions extends StatelessWidget {
                     onTap: !_walletOptions.isDefaultWallet
                         ? () {
                             defaultWallet = wallet;
-                            _walletOptions.defAsDefaultWallet(wallet.id());
+                            configBox.put('defaultWallet', wallet.id());
                             _myWalletProvider.readAllWallets(_currentChest);
                           }
                         : null,

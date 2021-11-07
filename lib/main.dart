@@ -22,13 +22,15 @@ import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
 import 'package:gecko/models/myWallets.dart';
+import 'package:gecko/models/walletData.dart';
 import 'package:gecko/models/walletOptions.dart';
 import 'package:gecko/screens/home.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/walletsHome.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:responsive_framework/responsive_framework.dart';
@@ -41,16 +43,18 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   HomeProvider _homeProvider = HomeProvider();
-  MyWalletsProvider _walletsProvider = MyWalletsProvider();
-  await _homeProvider.getAppPath();
+  appPath = await getApplicationDocumentsDirectory();
   await _homeProvider.createDefaultAvatar();
-  await _walletsProvider.initWalletFolder();
   // _walletsProvider.getDefaultWallet();
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
 
-  Hive.init(appPath.path);
-  await Hive.openBox("walletBox");
+  // Configure Hive and open boxes
+  await Hive.initFlutter(appPath.path);
+  Hive.registerAdapter(WalletDataAdapter());
+  walletBox = await Hive.openBox<WalletData>("walletBox");
+  chestBox = await Hive.openBox("chestBox");
+  configBox = await Hive.openBox("configBox");
 
   // final HiveStore _store =
   //     await HiveStore.open(path: '${appPath.path}/gqlCache');

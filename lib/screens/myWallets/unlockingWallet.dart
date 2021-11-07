@@ -1,9 +1,9 @@
 import 'dart:async';
-
 import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/models/history.dart';
 import 'package:gecko/models/myWallets.dart';
+import 'package:gecko/models/walletData.dart';
 import 'package:gecko/models/walletOptions.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';

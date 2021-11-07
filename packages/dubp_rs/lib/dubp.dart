@@ -67,6 +67,7 @@ enum WalletType {
   bip32Ed25519,
 }
 
+// ignore: avoid_classes_with_only_static_members
 /// DUBP Rust utilities
 ///
 /// All the functions of this package are static methods of this

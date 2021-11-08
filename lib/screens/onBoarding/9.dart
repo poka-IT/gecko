@@ -47,7 +47,7 @@ class OnboardingStepEleven extends StatelessWidget {
                           key: Key('goStep10'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
-                            primary: Color(0xffD28928),
+                            primary: orangeC,
                             onPrimary: Colors.white, // foreground
                           ),
                           onPressed: () {

@@ -62,56 +62,12 @@ class OnboardingStepTen extends StatelessWidget {
                   ],
                   textKey: Key('step8'),
                 ),
-
-                // LayoutBuilder(builder: (builder, constraints) {
-                //   // 2
-                //   var hasDetailPage = constraints.maxWidth > 480;
-
-                //   if (hasDetailPage) {
-                //     // 3
-                //     return Row(
-                //       children: [
-                //         // 4
-                //         SizedBox(
-                //           width: 250,
-                //           height: 500,
-                //           child: Text('GRAND'),
-                //         ),
-                //         // 5
-                //         Expanded(
-                //           child: Text('GRAND 2'),
-                //         ),
-                //       ],
-                //     );
-                //   } else {
-                //     // 6
-                //     return Text('PETIT');
-                //   }
-                // }),
-
-                // Expanded(
-                //   child:
-                //       //ScreenTypeLayout with custom breakpoints supplied
-                //       ScreenTypeLayout(
-                //     breakpoints: ScreenBreakpoints(
-                //       tablet: 600,
-                //       desktop: 950,
-                //       watch: 480,
-                //     ),
-                //     mobile: Container(color: Colors.blue),
-                //     tablet: Container(color: Colors.yellow),
-                //     desktop: Container(color: Colors.red),
-                //     watch: Container(color: Colors.purple),
-                //   ),
-                // ),
-
                 SizedBox(height: isTall ? 70 : 10),
-
                 Text('${_generateWalletProvider.nbrWord + 1}',
                     key: Key('askedWord'),
                     style: TextStyle(
                         fontSize: isTall ? 17 : 10,
-                        color: Color(0xffD28928),
+                        color: orangeC,
                         fontWeight: FontWeight.w400)),
                 SizedBox(height: isTall ? 10 : 0),
                 Container(
@@ -162,7 +118,7 @@ class OnboardingStepTen extends StatelessWidget {
                                   key: Key('goStep9'),
                                   style: ElevatedButton.styleFrom(
                                     elevation: 5,
-                                    primary: Color(0xffD28928),
+                                    primary: orangeC,
                                     onPrimary: Colors.white, // foreground
                                   ),
                                   onPressed: () {

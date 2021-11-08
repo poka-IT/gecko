@@ -127,8 +127,8 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                             key: Key('confirmStorage'),
                             style: ElevatedButton.styleFrom(
                               elevation: 12,
-                              primary: Colors.green[
-                                  400], //Color(0xffFFD68E), // background
+                              primary: Colors
+                                  .green[400], //smoothYellow, // background
                               onPrimary: Colors.black, // foreground
                             ),
                             onPressed: (_generateWalletProvider

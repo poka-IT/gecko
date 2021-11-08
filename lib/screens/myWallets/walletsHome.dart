@@ -78,7 +78,7 @@ class WalletsHome extends StatelessWidget {
                                 width: 40,
                                 child: Icon(Icons.person_add_alt_1_rounded,
                                     color: Colors.grey[850])),
-                            backgroundColor: Color(0xffEFEFBF))))),
+                            backgroundColor: floattingYellow)))),
             body: SafeArea(
                 child: !isWalletsExists
                     ? NoKeyChainScreen()
@@ -168,7 +168,7 @@ class WalletsHome extends StatelessWidget {
                             // contentPadding: const EdgeInsets.only(left: 7.0),
                             tileColor:
                                 _repository.id()[1] == defaultWallet.id()[1]
-                                    ? Color(0xffD28928)
+                                    ? orangeC
                                     : Color(0xffFFD58D),
                             // leading: Text('IMAGE'),
 
@@ -231,7 +231,7 @@ class WalletsHome extends StatelessWidget {
                       key: Key('validDerivation'),
                       style: ElevatedButton.styleFrom(
                         elevation: 1,
-                        primary: Color(0xffFFD68E), // background
+                        primary: yellowC, // background
                         onPrimary: Colors.black, // foreground
                       ),
                       onPressed: () async {

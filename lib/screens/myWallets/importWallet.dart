@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/generateWallets.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/myWallets.dart';
@@ -149,7 +150,7 @@ class ImportWalletScreen extends StatelessWidget {
                                       fontWeight: FontWeight.bold)),
                               IconButton(
                                 icon: Icon(Icons.replay),
-                                color: Color(0xffD28928),
+                                color: orangeC,
                                 onPressed: () {
                                   _generateWalletProvider.changePinCode(
                                       reload: true);
@@ -161,7 +162,7 @@ class ImportWalletScreen extends StatelessWidget {
                         SizedBox(height: 30),
                         ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              primary: Color(0xffFFD68E), // background
+                              primary: yellowC, // background
                               onPrimary: Colors.black, // foreground
                             ),
                             onPressed: _generateWalletProvider.canImport &&
@@ -205,8 +206,8 @@ class ImportWalletScreen extends StatelessWidget {
                     SizedBox(
                         width: 30,
                         height: 25,
-                        child: Icon(Icons.info_outline,
-                            size: 22, color: Color(0xffD28928))),
+                        child:
+                            Icon(Icons.info_outline, size: 22, color: orangeC)),
                     SizedBox(height: 1)
                   ]),
                   Text(

@@ -44,7 +44,7 @@ class SettingsScreen extends StatelessWidget {
               child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     elevation: 5,
-                    primary: Color(0xFFFFCA6F), // background
+                    primary: yellowC, // background
                     onPrimary: Colors.black, // foreground
                   ),
                   onPressed: () => Navigator.push(
@@ -65,7 +65,7 @@ class SettingsScreen extends StatelessWidget {
                   key: Key('generateKeychain'),
                   style: ElevatedButton.styleFrom(
                     elevation: 5,
-                    primary: Color(0xFFFFCA6F), // background
+                    primary: yellowC, // background
                     onPrimary: Colors.black, // foreground
                   ),
                   onPressed: !_myWallets.checkIfWalletExist()

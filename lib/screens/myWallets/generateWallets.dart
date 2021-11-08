@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/screens/myWallets/confirmWalletStorage.dart';
 import 'package:flutter/material.dart';
@@ -42,8 +43,8 @@ class GenerateWalletsScreen extends StatelessWidget {
                 width: 40.0,
                 child: Icon(Icons.replay, color: Colors.grey[850]),
               ),
-              backgroundColor: Color(
-                  0xffEFEFBF), //Color(0xffFFD68E), //Color.fromARGB(500, 204, 255, 255),
+              backgroundColor:
+                  floattingYellow, //smoothYellow, //Color.fromARGB(500, 204, 255, 255),
             ))),
         body: Builder(
             builder: (ctx) => SafeArea(
@@ -83,7 +84,7 @@ class GenerateWalletsScreen extends StatelessWidget {
                                   fontWeight: FontWeight.bold)),
                           IconButton(
                             icon: Icon(Icons.replay),
-                            color: Color(0xffD28928),
+                            color: orangeC,
                             onPressed: () {
                               _generateWalletProvider.changePinCode(
                                   reload: false);
@@ -96,7 +97,7 @@ class GenerateWalletsScreen extends StatelessWidget {
                     ElevatedButton(
                         key: Key('storeKeychain'),
                         style: ElevatedButton.styleFrom(
-                          primary: Color(0xffFFD68E), // background
+                          primary: yellowC, // background
                           onPrimary: Colors.black, // foreground
                         ),
                         onPressed: _generateWalletProvider.walletIsGenerated
@@ -153,8 +154,8 @@ class GenerateWalletsScreen extends StatelessWidget {
                     SizedBox(
                         width: 30,
                         height: 25,
-                        child: Icon(Icons.info_outline,
-                            size: 22, color: Color(0xffD28928))),
+                        child:
+                            Icon(Icons.info_outline, size: 22, color: orangeC)),
                     SizedBox(height: 1)
                   ]),
                   Text(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bubble/bubble.dart';
+import 'package:gecko/globals.dart';
 
 class CommonElements {
   // Exemple de Widget
@@ -103,7 +104,7 @@ class CommonElements {
         child: Material(
           color: Color(0xffFFD58D), // button color
           child: InkWell(
-              splashColor: Color(0xffD28928), // inkwell color
+              splashColor: orangeC, // inkwell color
               child: Padding(
                   padding: padding,
                   child: Image(image: image, height: imgHight)),

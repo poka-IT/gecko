@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/screens/commonElements.dart';
 import 'package:gecko/screens/onBoarding/2.dart';
 // import 'package:gecko/models/home.dart';
@@ -39,7 +40,7 @@ class OnboardingStepOne extends StatelessWidget {
                           key: Key('goStep2'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
-                            primary: Color(0xffD28928),
+                            primary: orangeC,
                             onPrimary: Colors.white, // foreground
                           ),
                           onPressed: () {

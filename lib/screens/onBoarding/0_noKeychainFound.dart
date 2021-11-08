@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/screens/commonElements.dart';
 import 'package:gecko/screens/myWallets/importWallet.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
@@ -32,7 +33,7 @@ class NoKeyChainScreen extends StatelessWidget {
                   color: Color(0xffFFD58D), // button color
                   child: InkWell(
                       key: Key('goStep1'),
-                      splashColor: Color(0xffD28928), // inkwell color
+                      splashColor: orangeC, // inkwell color
                       child: Padding(
                           padding: EdgeInsets.all(8),
                           child: Image(
@@ -73,7 +74,7 @@ class NoKeyChainScreen extends StatelessWidget {
                 child: Material(
                   color: Color(0xffFFD58D), // button color
                   child: InkWell(
-                      splashColor: Color(0xffD28928), // inkwell color
+                      splashColor: orangeC, // inkwell color
                       child: Padding(
                         padding: EdgeInsets.all(12),
                         child:

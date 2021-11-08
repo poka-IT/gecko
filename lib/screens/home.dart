@@ -49,7 +49,7 @@ class HomeScreen extends StatelessWidget {
                         height: 130),
                   ]),
                   decoration: BoxDecoration(
-                    color: Color(0xffD28928),
+                    color: orangeC,
                   ),
                 ),
                 ListTile(
@@ -177,8 +177,7 @@ class HomeScreen extends StatelessWidget {
                                     child: Material(
                                       color: Color(0xffFFD58D), // button color
                                       child: InkWell(
-                                          splashColor: Color(
-                                              0xffD28928), // inkwell color
+                                          splashColor: orangeC, // inkwell color
                                           child: Padding(
                                               padding: EdgeInsets.all(22),
                                               child: Image(
@@ -223,8 +222,7 @@ class HomeScreen extends StatelessWidget {
                                     child: Material(
                                       color: Color(0xffFFD58D), // button color
                                       child: InkWell(
-                                          splashColor: Color(
-                                              0xffD28928), // inkwell color
+                                          splashColor: orangeC, // inkwell color
                                           child: Padding(
                                               padding: EdgeInsets.symmetric(
                                                   horizontal: 20, vertical: 16),
@@ -271,8 +269,7 @@ class HomeScreen extends StatelessWidget {
                                     child: Material(
                                       color: Color(0xffFFD58D), // button color
                                       child: InkWell(
-                                          splashColor: Color(
-                                              0xffD28928), // inkwell color
+                                          splashColor: orangeC, // inkwell color
                                           child: Padding(
                                               padding: EdgeInsets.all(23),
                                               child: Image(

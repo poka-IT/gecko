@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/changePin.dart';
 import 'dart:io';
 import 'package:provider/provider.dart';
@@ -69,7 +70,7 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                             fontWeight: FontWeight.bold)),
                     IconButton(
                       icon: Icon(Icons.replay),
-                      color: Color(0xffD28928),
+                      color: orangeC,
                       onPressed: () async {
                         _newWalletFile =
                             await _changePin.changePin(walletName, oldPin);
@@ -85,8 +86,7 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                 child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       elevation: 12,
-                      primary:
-                          Colors.green[400], //Color(0xffFFD68E), // background
+                      primary: Colors.green[400], //smoothYellow, // background
                       onPrimary: Colors.black, // foreground
                     ),
                     onPressed: _changePin.newPin.text != ''

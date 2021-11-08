@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/screens/commonElements.dart';
 import 'package:gecko/screens/onBoarding/12.dart';
@@ -68,7 +69,7 @@ class OnboardingStepThirteen extends StatelessWidget {
                           fontWeight: FontWeight.bold)),
                   IconButton(
                     icon: Icon(Icons.replay),
-                    color: Color(0xffD28928),
+                    color: orangeC,
                     onPressed: () async {
                       generatedWallet = await _generateWalletProvider
                           .changePinCode(reload: false);
@@ -105,7 +106,7 @@ class OnboardingStepThirteen extends StatelessWidget {
                   key: Key('goStep12'),
                   style: ElevatedButton.styleFrom(
                     elevation: 5,
-                    primary: Color(0xffD28928),
+                    primary: orangeC,
                     onPrimary: Colors.white, // foreground
                   ),
                   onPressed: () async {

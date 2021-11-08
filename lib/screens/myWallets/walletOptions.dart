@@ -88,7 +88,7 @@ class WalletOptions extends StatelessWidget {
               child: Column(children: <Widget>[
                 Container(
                   height: isTall ? 15 : 0,
-                  color: Color(0xffFFD68E),
+                  color: yellowC,
                 ),
                 Container(
                     decoration: BoxDecoration(
@@ -96,7 +96,7 @@ class WalletOptions extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Color(0xffFFD68E),
+                        yellowC,
                         Color(0xfffafafa),
                       ],
                     )),
@@ -318,7 +318,7 @@ class WalletOptions extends StatelessWidget {
                                           new BorderRadius.circular(8),
                                     ),
                                     elevation: 1,
-                                    primary: Color(0xffD28928), // background
+                                    primary: orangeC, // background
                                     onPrimary: Colors.black, // foreground
                                   ),
                                   onPressed: () {

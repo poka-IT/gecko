@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/screens/home.dart';
 import 'package:flutter/material.dart';
 // import 'package:gecko/models/home.dart';
@@ -35,8 +36,8 @@ class TemplateScreen extends StatelessWidget {
                 width: 40.0,
                 child: Icon(Icons.home, color: Colors.grey[850]),
               ),
-              backgroundColor: Color(
-                  0xffEFEFBF), //Color(0xffFFD68E), //Color.fromARGB(500, 204, 255, 255),
+              backgroundColor:
+                  floattingYellow, //smoothYellow, //Color.fromARGB(500, 204, 255, 255),
             ))),
         body: SafeArea(
           child: Column(children: <Widget>[
@@ -56,7 +57,7 @@ class TemplateScreen extends StatelessWidget {
             SizedBox(height: 20),
             ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  primary: Color(0xffFFD68E), // background
+                  primary: yellowC, // background
                   onPrimary: Colors.black, // foreground
                 ),
                 onPressed: () {

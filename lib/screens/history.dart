@@ -96,8 +96,8 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                   child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: 3),
                       child: Image.asset('assets/qrcode-scan.png'))),
-              backgroundColor: Color(
-                  0xffEFEFBF), //Color(0xffFFD68E), //Color.fromARGB(500, 204, 255, 255),
+              backgroundColor:
+                  floattingYellow, //smoothYellow, //Color.fromARGB(500, 204, 255, 255),
             ),
           ),
         ),
@@ -302,8 +302,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                 child: Text(
                                     _historyProvider.historySwitchButtun,
                                     style: TextStyle(
-                                        fontSize: 15,
-                                        color: Color(0xffD28928)))),
+                                        fontSize: 15, color: orangeC))),
                             // const Divider(
                             //   color: Colors.grey,
                             //   height: 5,
@@ -377,7 +376,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                   padding: const EdgeInsets.only(top: 15),
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
-                        side: BorderSide(width: 2, color: Color(0xffD28928))),
+                        side: BorderSide(width: 2, color: orangeC)),
                     onPressed: () {
                       // if (_formKey.currentState.validate()) {
                       //   _formKey.currentState.save();

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:dubp/dubp.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -13,9 +12,7 @@ class ChangePinProvider with ChangeNotifier {
 
   Future<NewWallet> changePin(_name, _oldPin) async {
     try {
-      final _walletFile = Directory('${walletsDirectory.path}/$_name');
-      final _dewif =
-          File(_walletFile.path + '/wallet.dewif').readAsLinesSync()[0];
+      final _dewif = chestBox.get(0);
 
       NewWallet newWalletFile = await DubpRust.changeDewifPin(
         dewif: _dewif,
@@ -32,12 +29,9 @@ class ChangePinProvider with ChangeNotifier {
     }
   }
 
-  Future storeWallet(context, _name, _newWalletFile) async {
-    final Directory walletNameDirectory =
-        Directory('${walletsDirectory.path}/$_name');
-    final walletFile = File('${walletNameDirectory.path}/wallet.dewif');
+  Future storeWallet(context, _name, NewWallet _newWalletFile) async {
+    chestBox.put(0, _newWalletFile.dewif);
 
-    walletFile.writeAsString('${_newWalletFile.dewif}');
     Navigator.pop(context);
     return _name;
   }

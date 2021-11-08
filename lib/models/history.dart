@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:dubp/dubp.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -52,10 +50,7 @@ class HistoryProvider with ChangeNotifier {
 
   Future<String> pay(BuildContext context, String pinCode) async {
     // MyWalletsProvider _myWalletProvider = MyWalletsProvider();
-    List dewifList = await File(
-            walletsDirectory.path + '/${defaultWallet.chest}/wallet.dewif')
-        .readAsLines();
-    String dewif = dewifList[0];
+    String dewif = chestBox.get(0);
     try {
       await DubpRust.simplePaymentFromTransparentAccount(
           accountIndex: defaultWallet.derivation,

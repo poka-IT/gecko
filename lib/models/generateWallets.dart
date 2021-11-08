@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:dubp/dubp.dart';
@@ -6,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/walletData.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -38,40 +38,14 @@ class GenerateWalletsProvider with ChangeNotifier {
   bool canImport = false;
   bool isPinChanged = false;
 
-  Future storeHDWChest(
+  void storeHDWChest(
       NewWallet _wallet, String _name, BuildContext context) async {
-    // Directory walletDirectory;
-
-    final Directory hdDirectory = Directory('${walletsDirectory.path}/0');
-    await hdDirectory.create();
-
-    final configFile = File('${hdDirectory.path}/list.conf');
-    File _currentChestFile = File('${walletsDirectory.path}/currentChest.conf');
-
-    final dewifFile = File('${hdDirectory.path}/wallet.dewif');
-
-    // List<String> _lastConfig = [];
-    // _lastConfig = await masterConfigFile.readAsLines();
-    // final int _lastDerivation = int.parse(_lastConfig.last.split(':')[2]);
-    // final int _derivationNbr = _lastDerivation + 3;
-
-    final int _derivationNbr = 3;
-    List _pubkeysTmp = await DubpRust.getBip32DewifAccountsPublicKeys(
-        dewif: _wallet.dewif,
-        secretCode: _wallet.pin,
-        accountsIndex: [_derivationNbr]);
-    String _pubkey = _pubkeysTmp[0];
-
-    await configFile.writeAsString('0:0:$_name:$_derivationNbr:$_pubkey');
-    await dewifFile.writeAsString(_wallet.dewif);
-    bool isCurrentChestExist = _currentChestFile.existsSync();
-    if (isCurrentChestExist) {
-      await _currentChestFile.delete();
-    }
-    await _currentChestFile.create();
-    await _currentChestFile.writeAsString('0');
-
-    return _name;
+    WalletData myWallet =
+        WalletData(chest: 0, number: 0, name: _name, derivation: 3);
+    walletBox.add(myWallet);
+    chestBox.put(0, _wallet.dewif);
+    configBox.put('currentChest', 0);
+    // walletBox.get(1)
   }
 
   void checkAskedWord(String inputWord, String _mnemo) {

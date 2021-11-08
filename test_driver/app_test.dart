@@ -254,13 +254,32 @@ void main() {
           "Top !\n\nVotre trousseau de clef et votre portefeuille ont été créés avec un immense succès.\n\nFélicitations !");
     });
 
-    test('My wallets - Create a derivations, open thems, tap all buttons', (
-        {timeout: Timeout.none}) async {
+    test('My wallets - Rename first derivation', (
+        {timeout: const Duration(seconds: 2)}) async {
       await tapOn('goWalletHome');
 
       expect(await getText('myWallets'), "Mes portefeuilles");
       await sleep(300);
 
+      // Go to first derivation and rename it
+      await driver.tap(find.text('Mon portefeuille courant'));
+      await sleep(300);
+      await tapOn('renameWallet');
+      await sleep(100);
+      await tapOn('walletName');
+      await sleep(100);
+      await driver.enterText('Renommage wallet 1');
+      await sleep(300);
+      await tapOn('renameWallet');
+      await sleep(400);
+      await driver.waitFor(find.text('Renommage wallet 1'), timeout: timeout);
+      // expect(await getText('walletName'), "Renommage wallet 1");
+      await goBack();
+    });
+
+    test('My wallets - Create a derivations, open thems, tap all buttons', (
+        {timeout: const Duration(seconds: 2)}) async {
+      await driver.waitFor(find.text('Renommage wallet 1'), timeout: timeout);
       // Add a second derivation
       await createDerivation('Derivation 2');
 
@@ -301,8 +320,10 @@ void main() {
       await deleteWallet(true);
     });
 
-    test('My wallets - Extra tests', ({timeout: Timeout.none}) async {
+    test('My wallets - Extra tests', (
+        {timeout: const Duration(seconds: 2)}) async {
       // Add derivation 5,6 and 7
+      await driver.waitFor(find.text('Derivation 4'), timeout: timeout);
       await createDerivation('Derivation 5');
       await createDerivation('Derivation 6');
       await createDerivation('Derivation 7');
@@ -377,7 +398,8 @@ void main() {
     });
 
     test('Search - Search Pi profile, navigate in history transactions', (
-        {timeout: Timeout.none}) async {
+        {timeout: const Duration(seconds: 2)}) async {
+      await driver.waitFor(find.text('Derivation 20'), timeout: timeout);
       await goBack();
       await goBack();
       await sleep(200);
@@ -408,7 +430,8 @@ void main() {
     }, timeout: Timeout(Duration(minutes: globalTimeout)));
 
     test('Wallet generation - Fast wallets generations', (
-        {timeout: Timeout.none}) async {
+        {timeout: const Duration(seconds: 2)}) async {
+      await driver.waitFor(find.text('Commentaire:'), timeout: timeout);
       await goBack();
       await goBack();
       await deleteAllWallets();

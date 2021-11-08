@@ -1,51 +1,20 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
-import 'package:provider/provider.dart';
+import 'package:gecko/models/walletData.dart';
 
 class MyWalletsProvider with ChangeNotifier {
   List<WalletData> listWallets = [];
   String pinCode;
   int pinLenght;
 
-  Future initWalletFolder() async {
-    // getDefaultWallet();
-
-    final bool isWalletFolderExist = await walletsDirectory.exists();
-    if (!isWalletFolderExist) {
-      await Directory(walletsDirectory.path).create();
-    }
-
-    File _currentChestFile = File('${walletsDirectory.path}/currentChest.conf');
-
-    await _currentChestFile.create();
-    await _currentChestFile.writeAsString('0');
-
-    final bool isChestsExist =
-        await Directory('${walletsDirectory.path}/0').exists();
-    if (!isChestsExist) {
-      await Directory('${walletsDirectory.path}/0').create();
-      await Directory('${walletsDirectory.path}/1').create();
-      await File('${walletsDirectory.path}/0/list.conf').create();
-      await File('${walletsDirectory.path}/0/order.conf').create();
-      await File('${walletsDirectory.path}/1/list.conf').create();
-      await File('${walletsDirectory.path}/1/order.conf').create();
-      // getDefaultWallet();
-    }
-    await getDefaultWalletAsync();
-  }
-
   int getCurrentChest() {
-    File _currentChestFile = File('${walletsDirectory.path}/currentChest.conf');
-
-    bool isCurrentChestExist = _currentChestFile.existsSync();
-    if (!isCurrentChestExist) {
-      _currentChestFile.createSync();
-      _currentChestFile.writeAsString('0');
+    if (configBox.get('currentChest') == null) {
+      configBox.put('currentChest', 0);
     }
-    return int.parse(_currentChestFile.readAsStringSync());
+
+    return configBox.get('currentChest');
   }
 
   bool checkIfWalletExist() {
@@ -63,89 +32,53 @@ class MyWalletsProvider with ChangeNotifier {
     }
   }
 
-  List readAllWallets(int _chest) {
-    // log.d(walletsDirectory.path);
-
-    listWallets = [];
-
-    File _walletConfig = File('${walletsDirectory.path}/$_chest/list.conf');
-    _walletConfig.readAsLinesSync().forEach((element) {
-      listWallets.add(WalletData(element));
+  List<WalletData> readAllWallets(int _chest) {
+    listWallets.clear();
+    walletBox.toMap().forEach((key, value) {
+      if (value.chest == _chest) {
+        listWallets.add(value);
+      }
     });
 
-    log.i(listWallets.toString());
     return listWallets;
   }
 
-  WalletData getWalletData(String _id) {
-    // log.d(_id);
-    if (_id == '') return WalletData('');
-    int chest = int.parse(_id.split(':')[0]);
-    final _walletConfig = File('${walletsDirectory.path}/$chest/list.conf');
+  WalletData getWalletData(List<int> _id) {
+    if (_id.isEmpty) return WalletData();
+    int _chest = _id[0];
+    int _nbr = _id[1];
+    var _targetedWallet;
 
-    return WalletData(_walletConfig
-        .readAsLinesSync()
-        .firstWhere((element) => element.startsWith(_id)));
-  }
+    walletBox.toMap().forEach((key, value) {
+      if (value.chest == _chest && value.number == _nbr) {
+        _targetedWallet = value;
+        return false;
+      }
+    });
 
-  Future<WalletData> getWalletDataAsync(String _id) async {
-    // log.d(_id);
-    if (_id == '') return WalletData('');
-    int chest = int.parse(_id.split(':')[0]);
-    final _walletConfig = File('${walletsDirectory.path}/$chest/list.conf');
-
-    List configLines = await _walletConfig.readAsLines();
-    //log.d(configLines);
-
-    if (configLines.isEmpty) {
-      return WalletData('');
-    }
-
-    return WalletData(
-        configLines.firstWhere((element) => element.startsWith(_id)));
+    return _targetedWallet;
   }
 
   void getDefaultWallet() {
-    defaultWalletFile = File('${appPath.path}/defaultWallet');
+    MyWalletsProvider myWalletsProvider = MyWalletsProvider();
 
-    if (!defaultWalletFile.existsSync()) {
-      File(defaultWalletFile.path).createSync();
-      defaultWalletFile.writeAsStringSync("0:0");
+    if (configBox.get('defaultWallet') == null) {
+      configBox.put('defaultWallet', [0, 0]);
     }
 
-    defaultWallet = getWalletData(defaultWalletFile.readAsStringSync());
-  }
-
-  Future getDefaultWalletAsync() async {
-    defaultWalletFile = File('${appPath.path}/defaultWallet');
-
-    if (!await defaultWalletFile.exists()) {
-      await File(defaultWalletFile.path).create();
-      await defaultWalletFile.writeAsString("0:0");
-    } else {
-      defaultWallet =
-          await getWalletDataAsync(await defaultWalletFile.readAsString());
-    }
+    defaultWallet = myWalletsProvider
+        .getWalletData(configBox.get('defaultWallet').cast<int>());
   }
 
   Future<int> deleteAllWallet(context) async {
-    MyWalletsProvider _myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
     try {
-      log.w('DELETE THAT ?: $walletsDirectory');
+      log.w('DELETE ALL WALLETS ?');
 
       final bool _answer = await _confirmDeletingAllWallets(context);
       if (_answer) {
-        await walletsDirectory.delete(recursive: true);
-        await defaultWalletFile.delete();
-        await walletsDirectory.create();
-        await initWalletFolder();
-        // await Future.delayed(Duration(milliseconds: 500));
-        // scheduleMicrotask(() {
-        notifyListeners();
-        rebuildWidget();
-        _myWalletProvider.rebuildWidget();
-        // });
+        await walletBox.clear();
+        await chestBox.clear();
+        await configBox.delete('defaultWallet');
 
         Navigator.pop(context);
       }
@@ -187,72 +120,30 @@ class MyWalletsProvider with ChangeNotifier {
   Future<void> generateNewDerivation(context, String _name) async {
     int _newDerivationNbr;
     int _newWalletNbr;
-    final _walletConfig = File('${walletsDirectory.path}/0/list.conf');
+    int _chest = 0;
+    List<WalletData> _walletConfig = readAllWallets(_chest);
 
-    if (await _walletConfig.readAsString() == '') {
+    if (_walletConfig.isEmpty) {
       _newDerivationNbr = 3;
       _newWalletNbr = 0;
     } else {
-      String _lastWallet =
-          await _walletConfig.readAsLines().then((value) => value.last);
-      int _lastDerivation = int.parse(_lastWallet.split(':')[3]);
-      _newDerivationNbr = _lastDerivation + 3;
-
-      int _lastWalletNbr = int.parse(_lastWallet.split(':')[1]);
-      _newWalletNbr = _lastWalletNbr + 1;
+      _newDerivationNbr = _walletConfig.last.derivation + 3;
+      _newWalletNbr = _walletConfig.last.number + 1;
     }
 
-    await _walletConfig.writeAsString(
-        '\n0:$_newWalletNbr:$_name:$_newDerivationNbr',
-        mode: FileMode.append);
+    WalletData newWallet = WalletData(
+        chest: _chest,
+        number: _newWalletNbr,
+        name: _name,
+        derivation: _newDerivationNbr);
+
+    await walletBox.add(newWallet);
 
     notifyListeners();
-
     Navigator.pop(context);
   }
 
   void rebuildWidget() {
     notifyListeners();
-  }
-}
-
-// wallet data contains elements identifying wallet
-class WalletData {
-  int chest;
-  int number;
-  String name;
-  int derivation;
-
-  // constructor from ':'-separated string
-  WalletData(String element) {
-    if (element != '') {
-      List parts = element.split(':');
-
-      this.chest = int.parse(parts[0]);
-      this.number = int.parse(parts[1]);
-      this.name = parts[2];
-      this.derivation = int.parse(parts[3]);
-    }
-  }
-
-  // default wallet
-  static WalletData defaultWallet() {
-    return WalletData("0:0:default:3");
-  }
-
-  // representation of WalletData when debugging
-  @override
-  String toString() {
-    return this.name;
-  }
-
-  // creates the ':'-separated string from the WalletData
-  String inLine() {
-    return "${this.chest}:${this.number}:${this.name}:${this.derivation}";
-  }
-
-  // returns only the id part of the ':'-separated string
-  String id() {
-    return "${this.chest}:${this.number}";
   }
 }

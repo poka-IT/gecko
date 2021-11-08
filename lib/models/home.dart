@@ -11,7 +11,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/screens/history.dart';
 import 'package:gecko/screens/myWallets/walletsHome.dart';
 import 'package:package_info/package_info.dart';
-import 'package:path_provider/path_provider.dart';
 
 class HomeProvider with ChangeNotifier {
   int _currentIndex = 0;
@@ -98,17 +97,6 @@ class HomeProvider with ChangeNotifier {
 
     log.i('ENDPOINT: ' + _endpoint);
     return _endpoint;
-  }
-
-  Future getAppPath() async {
-    appPath = await getApplicationDocumentsDirectory();
-    walletsDirectory = Directory('${appPath.path}/wallets');
-
-    bool isWalletFolderExist = await walletsDirectory.exists();
-
-    if (!isWalletFolderExist) {
-      await Directory(walletsDirectory.path).create();
-    }
   }
 
   Future createDefaultAvatar() async {

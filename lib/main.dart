@@ -22,12 +22,15 @@ import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
 import 'package:gecko/models/myWallets.dart';
+import 'package:gecko/models/walletData.dart';
 import 'package:gecko/models/walletOptions.dart';
 import 'package:gecko/screens/home.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/walletsHome.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:responsive_framework/responsive_framework.dart';
@@ -41,17 +44,26 @@ Future<void> main() async {
 
   HomeProvider _homeProvider = HomeProvider();
   MyWalletsProvider _walletsProvider = MyWalletsProvider();
-  await _homeProvider.getAppPath();
+  appPath = await getApplicationDocumentsDirectory();
   await _homeProvider.createDefaultAvatar();
-  await _walletsProvider.initWalletFolder();
-  // _walletsProvider.getDefaultWallet();
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
+
+  // Configure Hive and open boxes
+  await Hive.initFlutter(appPath.path);
+  Hive.registerAdapter(WalletDataAdapter());
+  walletBox = await Hive.openBox<WalletData>("walletBox");
+  chestBox = await Hive.openBox("chestBox");
+  configBox = await Hive.openBox("configBox");
+
+  _walletsProvider.getDefaultWallet();
+
   // final HiveStore _store =
   //     await HiveStore.open(path: '${appPath.path}/gqlCache');
 
   // Get a valid GVA endpoint
-  endPointGVA = await _homeProvider.getValidEndpoint();
+  endPointGVA = 'https://g1.librelois.fr/gva';
+  // await _homeProvider.getValidEndpoint();
 
   // if (endPointGVA == 'HS') {
   //   _homeProvider.playSound('faché', 0.8);
@@ -141,6 +153,10 @@ class Gecko extends StatelessWidget {
                 background: Container(color: Color(0xFFF5F5F5))),
             title: 'Ğecko',
             theme: ThemeData(
+              appBarTheme: AppBarTheme(
+                color: const Color(0xffFFD58D),
+                foregroundColor: const Color(0xFF000000),
+              ),
               primaryColor: Color(0xffFFD58D),
               textTheme: TextTheme(
                 bodyText1: TextStyle(),

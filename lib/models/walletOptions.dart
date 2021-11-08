@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/myWallets.dart';
+import 'package:gecko/models/walletData.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:truncate/truncate.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
@@ -23,7 +24,7 @@ class WalletOptionsProvider with ChangeNotifier {
   bool isBalanceBlur = true;
   FocusNode walletNameFocus = FocusNode();
   TextEditingController nameController = TextEditingController();
-  String walletID;
+  List<int> walletID;
   bool isDefaultWallet;
 
   Future<NewWallet> get badWallet => null;
@@ -75,14 +76,8 @@ class WalletOptionsProvider with ChangeNotifier {
       context, WalletData _wallet, String _pin, int _pinLenght) async {
     isWalletUnlock = false;
     try {
-      File _walletFile = File('${walletsDirectory.path}/0/wallet.dewif');
-      String _localDewif = await _walletFile.readAsString();
+      String _localDewif = chestBox.get(0);
       String _localPubkey;
-      // log.d("$_localDewif $_pin $_pinLenght ${_wallet.derivation}");
-
-      // String mnemo = await DubpRust.getBip32DewifMnemonic(
-      //     dewif: _localDewif, secretCode: _pin);
-      // log.d(mnemo.toString());
 
       if ((_localPubkey = await _getPubkeyFromDewif(
               _localDewif, _pin, _pinLenght, _wallet.derivation)) !=
@@ -119,8 +114,7 @@ class WalletOptionsProvider with ChangeNotifier {
   int getPinLenght(_walletNbr) {
     String _localDewif;
     if (_walletNbr is int) {
-      File _walletFile = File('${walletsDirectory.path}/0/wallet.dewif');
-      _localDewif = _walletFile.readAsStringSync();
+      _localDewif = chestBox.get(0);
     } else {
       _localDewif = _walletNbr;
     }
@@ -131,29 +125,13 @@ class WalletOptionsProvider with ChangeNotifier {
     return _pinLenght;
   }
 
-  Future _renameWallet(_walletID, _newName) async {
-    final _walletConfig = File('${walletsDirectory.path}/0/list.conf');
+  Future _renameWallet(List<int> _walletID, _newName) async {
+    MyWalletsProvider myWalletClass = MyWalletsProvider();
 
-    String newConfig =
-        await _walletConfig.readAsLines().then((List<String> lines) {
-      int nbrLines = lines.length;
-      if (nbrLines != 1) {
-        for (String wLine in lines) {
-          String wID = "${wLine.split(':')[0]}:${wLine.split(':')[1]}";
-          String deri = wLine.split(':')[3];
-          if (wID == _walletID) {
-            lines.remove(wLine);
-            lines.add('$_walletID:$_newName:$deri');
-          }
-        }
-        return lines.join('\n');
-      } else {
-        return 'true';
-      }
-    });
+    WalletData _walletTarget = myWalletClass.getWalletData(_walletID);
+    _walletTarget.name = _newName;
+    await walletBox.putAt(_walletTarget.key, _walletTarget);
 
-    await _walletConfig.delete();
-    await _walletConfig.writeAsString(newConfig);
     _newWalletName.text = '';
   }
 
@@ -198,7 +176,7 @@ class WalletOptionsProvider with ChangeNotifier {
     );
   }
 
-  Future<bool> editWalletName(_wID) async {
+  Future<bool> editWalletName(List<int> _wID) async {
     bool nameState;
     if (isEditing) {
       if (!nameController.text.contains(':') &&
@@ -218,27 +196,12 @@ class WalletOptionsProvider with ChangeNotifier {
     return nameState;
   }
 
-  Future<int> deleteWallet(context, wallet) async {
+  Future<int> deleteWallet(context, WalletData wallet) async {
     final bool _answer = await _confirmDeletingWallet(context, wallet.name);
 
     if (_answer) {
-      final _walletConfig = File('${walletsDirectory.path}/0/list.conf');
+      walletBox.delete(wallet.key);
 
-      if (wallet.derivation != -1) {
-        String newConfig =
-            await _walletConfig.readAsLines().then((List<String> lines) {
-          lines.removeWhere((element) => element.contains(wallet.inLine()));
-
-          return lines.join('\n');
-        });
-
-        await _walletConfig.delete();
-        await _walletConfig.writeAsString(newConfig);
-      } else {
-        final _walletFile =
-            Directory('${walletsDirectory.path}/${wallet.number}');
-        await _walletFile.delete(recursive: true);
-      }
       Navigator.popUntil(
         context,
         ModalRoute.withName('/mywallets'),
@@ -281,37 +244,6 @@ class WalletOptionsProvider with ChangeNotifier {
     );
   }
 
-  Future<NewWallet> changePin(_name, _oldPin) async {
-    try {
-      final _walletFile = Directory('${walletsDirectory.path}/$_name');
-      final _dewif =
-          File(_walletFile.path + '/wallet.dewif').readAsLinesSync()[0];
-
-      NewWallet newWalletFile = await DubpRust.changeDewifPin(
-        dewif: _dewif,
-        oldPin: _oldPin,
-      );
-
-      newPin.text = newWalletFile.pin;
-      ischangedPin = true;
-      // notifyListeners();
-      return newWalletFile;
-    } catch (e) {
-      log.e('Impossible de changer le code PIN.');
-      return badWallet;
-    }
-  }
-
-  Future storeWallet(context, _name, _newWalletFile) async {
-    final Directory walletNameDirectory =
-        Directory('${walletsDirectory.path}/$_name');
-    final walletFile = File('${walletNameDirectory.path}/wallet.dewif');
-
-    walletFile.writeAsString('${_newWalletFile.dewif}');
-    Navigator.pop(context);
-    return _name;
-  }
-
   snackCopyKey(context) {
     final snackBar = SnackBar(
         content:
@@ -344,13 +276,6 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Future<Uint8List> generateQRcode(String _pubkey) async {
     return await scanner.generateBarCode(_pubkey);
-  }
-
-  void defAsDefaultWallet(String _id) {
-    defaultWalletFile.deleteSync();
-    defaultWalletFile.createSync();
-    defaultWalletFile.writeAsStringSync(_id);
-    notifyListeners();
   }
 
   Future changeAvatar() async {

@@ -5,7 +5,7 @@ stages:
   - package
 
 .env:
-  image: axiomteam/gecko-ci:v0.0.7
+  image: axiomteam/gecko-ci:v0.0.8
   tags:
     - redshift
   before_script:

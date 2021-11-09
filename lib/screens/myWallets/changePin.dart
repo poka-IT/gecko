@@ -92,8 +92,8 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                     onPressed: _changePin.newPin.text != ''
                         ? () {
                             _changePin.newPin.text = '';
-                            _changePin.storeWallet(
-                                context, walletName, _newWalletFile);
+                            _changePin.storeNewPinChest(
+                                context, _newWalletFile);
                           }
                         : null,
                     child: Text('Confirmer', style: TextStyle(fontSize: 28))),

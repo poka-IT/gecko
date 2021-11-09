@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/chestData.dart';
 
 class ChangePinProvider with ChangeNotifier {
   bool ischangedPin = false;
@@ -12,7 +13,7 @@ class ChangePinProvider with ChangeNotifier {
 
   Future<NewWallet> changePin(_name, _oldPin) async {
     try {
-      final _dewif = chestBox.get(0);
+      final _dewif = chestBox.get(configBox.get('currentChest')).dewif;
 
       NewWallet newWalletFile = await DubpRust.changeDewifPin(
         dewif: _dewif,
@@ -29,10 +30,12 @@ class ChangePinProvider with ChangeNotifier {
     }
   }
 
-  Future storeWallet(context, _name, NewWallet _newWalletFile) async {
-    chestBox.put(0, _newWalletFile.dewif);
+  Future storeNewPinChest(context, NewWallet _newWalletFile) async {
+    ChestData currentChest = chestBox.getAt(configBox.get('currentChest'));
+    currentChest.dewif = _newWalletFile.dewif;
+    // currentChest.name = _name;
+    chestBox.add(currentChest);
 
     Navigator.pop(context);
-    return _name;
   }
 }

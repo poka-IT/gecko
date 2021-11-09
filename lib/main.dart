@@ -18,6 +18,7 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/cesiumPlus.dart';
 import 'package:gecko/models/changePin.dart';
+import 'package:gecko/models/chestData.dart';
 import 'package:gecko/models/generateWallets.dart';
 import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
@@ -52,8 +53,9 @@ Future<void> main() async {
   // Configure Hive and open boxes
   await Hive.initFlutter(appPath.path);
   Hive.registerAdapter(WalletDataAdapter());
+  Hive.registerAdapter(ChestDataAdapter());
   walletBox = await Hive.openBox<WalletData>("walletBox");
-  chestBox = await Hive.openBox("chestBox");
+  chestBox = await Hive.openBox<ChestData>("chestBox");
   configBox = await Hive.openBox("configBox");
 
   _walletsProvider.getDefaultWallet();
@@ -162,7 +164,7 @@ class Gecko extends StatelessWidget {
                 bodyText1: TextStyle(),
                 bodyText2: TextStyle(),
               ).apply(
-                bodyColor: Color(0xff855F2D),
+                bodyColor: Color(0xFF000000),
               ),
               colorScheme: ColorScheme.fromSwatch()
                   .copyWith(secondary: Colors.grey[850]),

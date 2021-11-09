@@ -76,7 +76,7 @@ class WalletOptionsProvider with ChangeNotifier {
       context, WalletData _wallet, String _pin, int _pinLenght) async {
     isWalletUnlock = false;
     try {
-      String _localDewif = chestBox.get(0);
+      String _localDewif = chestBox.get(configBox.get('currentChest')).dewif;
       String _localPubkey;
 
       if ((_localPubkey = await _getPubkeyFromDewif(
@@ -114,7 +114,7 @@ class WalletOptionsProvider with ChangeNotifier {
   int getPinLenght(_walletNbr) {
     String _localDewif;
     if (_walletNbr is int) {
-      _localDewif = chestBox.get(0);
+      _localDewif = chestBox.get(configBox.get('currentChest')).dewif;
     } else {
       _localDewif = _walletNbr;
     }

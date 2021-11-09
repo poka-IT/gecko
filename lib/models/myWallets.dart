@@ -22,7 +22,7 @@ class MyWalletsProvider with ChangeNotifier {
       return false;
     }
 
-    final List _walletList = readAllWallets(0);
+    final List _walletList = readAllWallets(getCurrentChest());
 
     if (_walletList.isEmpty) {
       log.i('No wallets detected');
@@ -45,7 +45,7 @@ class MyWalletsProvider with ChangeNotifier {
 
   WalletData getWalletData(List<int> _id) {
     if (_id.isEmpty) return WalletData();
-    int _chest = _id[0];
+    int _chest = _id[getCurrentChest()];
     int _nbr = _id[1];
     var _targetedWallet;
 
@@ -63,7 +63,7 @@ class MyWalletsProvider with ChangeNotifier {
     MyWalletsProvider myWalletsProvider = MyWalletsProvider();
 
     if (configBox.get('defaultWallet') == null) {
-      configBox.put('defaultWallet', [0, 0]);
+      configBox.put('defaultWallet', [getCurrentChest(), 0]);
     }
 
     defaultWallet = myWalletsProvider
@@ -120,7 +120,7 @@ class MyWalletsProvider with ChangeNotifier {
   Future<void> generateNewDerivation(context, String _name) async {
     int _newDerivationNbr;
     int _newWalletNbr;
-    int _chest = 0;
+    int _chest = getCurrentChest();
     List<WalletData> _walletConfig = readAllWallets(_chest);
 
     if (_walletConfig.isEmpty) {

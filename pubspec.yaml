@@ -76,6 +76,7 @@ flutter:
     - images/
     - config/gva_endpoints.json
     - assets/
+    - assets/chests/
     - assets/icon/
     - assets/onBoarding/
     - assets/onBoarding/progress_bar/

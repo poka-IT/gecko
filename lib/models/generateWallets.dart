@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/chestData.dart';
 import 'package:gecko/models/walletData.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -40,11 +41,23 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   void storeHDWChest(
       NewWallet _wallet, String _name, BuildContext context) async {
+    int chestNumber = chestBox.length;
     WalletData myWallet =
-        WalletData(chest: 0, number: 0, name: _name, derivation: 3);
+        WalletData(chest: chestNumber, number: 0, name: _name, derivation: 3);
+
+    String chestName;
+    if (chestNumber == 0) {
+      chestName = 'Coffre à Gecko';
+    } else {
+      chestName = 'Coffre à Gecko ${chestNumber + 1}';
+    }
     walletBox.add(myWallet);
-    chestBox.put(0, _wallet.dewif);
-    configBox.put('currentChest', 0);
+    ChestData thisChest = ChestData(
+      dewif: _wallet.dewif,
+      name: chestName,
+    );
+    chestBox.add(thisChest);
+    configBox.put('currentChest', chestNumber);
     // walletBox.get(1)
   }
 

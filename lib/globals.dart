@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/chestData.dart';
 import 'package:gecko/models/walletData.dart';
 import 'package:hive/hive.dart';
 import 'package:logger/logger.dart';
@@ -14,7 +15,7 @@ SharedPreferences prefs;
 String endPointGVA;
 int ramSys;
 Box<WalletData> walletBox;
-Box chestBox;
+Box<ChestData> chestBox;
 Box configBox;
 
 // String cesiumPod = "https://g1.data.le-sou.org";

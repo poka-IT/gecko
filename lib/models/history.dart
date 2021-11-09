@@ -50,7 +50,7 @@ class HistoryProvider with ChangeNotifier {
 
   Future<String> pay(BuildContext context, String pinCode) async {
     // MyWalletsProvider _myWalletProvider = MyWalletsProvider();
-    String dewif = chestBox.get(0);
+    String dewif = chestBox.get(configBox.get('currentChest')).dewif;
     try {
       await DubpRust.simplePaymentFromTransparentAccount(
           accountIndex: defaultWallet.derivation,

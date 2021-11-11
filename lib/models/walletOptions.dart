@@ -125,7 +125,7 @@ class WalletOptionsProvider with ChangeNotifier {
     return _pinLenght;
   }
 
-  Future _renameWallet(List<int> _walletID, _newName) async {
+  void _renameWallet(List<int> _walletID, _newName) async {
     MyWalletsProvider myWalletClass = MyWalletsProvider();
 
     WalletData _walletTarget = myWalletClass.getWalletData(_walletID);
@@ -176,18 +176,17 @@ class WalletOptionsProvider with ChangeNotifier {
     );
   }
 
-  Future<bool> editWalletName(List<int> _wID) async {
+  bool editWalletName(List<int> _wID) {
     bool nameState;
     if (isEditing) {
       if (!nameController.text.contains(':') &&
           nameController.text.length <= 39) {
-        await _renameWallet(_wID, nameController.text);
+        _renameWallet(_wID, nameController.text);
         nameState = true;
       } else {
         nameState = false;
       }
     } else {
-      walletNameFocus.requestFocus();
       nameState = true;
     }
 

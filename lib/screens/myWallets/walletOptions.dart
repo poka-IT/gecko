@@ -127,6 +127,7 @@ class WalletOptions extends StatelessWidget {
                               width: 260,
                               child: TextField(
                                   key: Key('walletName'),
+                                  autofocus: false,
                                   focusNode: _walletOptions.walletNameFocus,
                                   enabled: _walletOptions.isEditing,
                                   controller: _walletOptions.nameController,
@@ -223,36 +224,11 @@ class WalletOptions extends StatelessWidget {
                             InkWell(
                                 key: Key('renameWallet'),
                                 onTap: () async {
-                                  // _walletOptions.isEditing = true;
-                                  // _walletOptions.reloadBuild();
-                                  // _walletOptions.walletNameFocus
-                                  // .requestFocus();
-                                  _isNewNameValid = await _walletOptions
+                                  _isNewNameValid = _walletOptions
                                       .editWalletName(_walletOptions.walletID);
-                                  //     .then((_) {
-                                  //   _walletOptions.walletNameFocus
-                                  //       .requestFocus();
-                                  //   _walletOptions.reloadBuild();
-                                  // });
-
-                                  //     .then(
-                                  //   (_result) {
-                                  //     if (_result == true) {
-                                  //       WidgetsBinding.instance
-                                  //           .addPostFrameCallback((_) {
-                                  //         _myWalletProvider.listWallets =
-                                  //             _myWalletProvider
-                                  //                 .readAllWallets(
-                                  //                     _currentChest);
-                                  //         _myWalletProvider.rebuildWidget();
-                                  //       });
-                                  //       Navigator.popUntil(
-                                  //         context,
-                                  //         ModalRoute.withName('/mywallets'),
-                                  //       );
-                                  //     }
-                                  //   },
-                                  // );
+                                  await Future.delayed(
+                                      Duration(milliseconds: 30));
+                                  _walletOptions.walletNameFocus.requestFocus();
                                 },
                                 child: ClipRRect(
                                   child: Image.asset(
@@ -262,9 +238,6 @@ class WalletOptions extends StatelessWidget {
                                       width: 20,
                                       height: 20),
                                 )),
-                            // Image.asset(
-                            //   'assets/walletOptions/edit.png',
-                            // ),
                             SizedBox(
                               height: 60,
                             )

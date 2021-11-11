@@ -273,8 +273,4 @@ class HistoryProvider with ChangeNotifier {
   String generateIdenticon(String _pubkey) {
     return Jdenticon.toSvg(_pubkey);
   }
-
-  // num getBalance(_pubkey) {
-  //   getBalance(_pubkey);
-  // }
 }

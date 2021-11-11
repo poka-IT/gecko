@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/myWallets.dart';
+import 'package:gecko/models/queries.dart';
 import 'package:gecko/models/walletData.dart';
 import 'package:gecko/models/walletOptions.dart';
 import 'package:flutter/material.dart';
@@ -8,8 +9,8 @@ import 'package:gecko/screens/commonElements.dart';
 import 'package:gecko/screens/myWallets/chooseChest.dart';
 import 'package:gecko/screens/myWallets/walletOptions.dart';
 import 'package:gecko/screens/onBoarding/0_noKeychainFound.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:assorted_layout_widgets/assorted_layout_widgets.dart';
 
 class WalletsHome extends StatelessWidget {
   final _derivationKey = GlobalKey<FormState>();
@@ -146,7 +147,6 @@ class WalletsHome extends StatelessWidget {
           mainAxisSpacing: 0,
           children: <Widget>[
             for (WalletData _repository in _listWallets)
-              // if (_repository.number.clamp(0, 2) == _repository.number) hasImage = true
               Padding(
                   padding: EdgeInsets.all(16),
                   child: GestureDetector(
@@ -199,6 +199,7 @@ class WalletsHome extends StatelessWidget {
                               scale: 0.5,
                             ),
                           )),
+                          // balanceBuilder(context, _walletOptions.pubkey.text),
                           ListTile(
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.vertical(
@@ -213,17 +214,21 @@ class WalletsHome extends StatelessWidget {
                             // subtitle: Text(_repository.split(':')[3],
                             //     style: TextStyle(fontSize: 12.0, fontFamily: 'Monospace')),
                             title: Center(
-                                child: Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 5),
-                                    child: Text(_repository.name,
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                            fontSize: 16.0,
-                                            color: _repository.id()[1] ==
-                                                    defaultWallet.id()[1]
-                                                ? Color(0xffF9F9F1)
-                                                : Colors.black)))),
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 5),
+                                child: Text(
+                                  '${_repository.name}',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      fontSize: 17.0,
+                                      color: _repository.id()[1] ==
+                                              defaultWallet.id()[1]
+                                          ? Color(0xffF9F9F1)
+                                          : Colors.black,
+                                      fontStyle: FontStyle.italic),
+                                ),
+                              ),
+                            ),
                             // dense: true,
                             onTap: () {
                               Navigator.push(
@@ -253,6 +258,38 @@ class WalletsHome extends StatelessWidget {
       // SliverToBoxAdapter(child: Spacer()),
       SliverToBoxAdapter(child: chestOptions(context)),
     ]);
+  }
+
+  Widget balanceBuilder(context, String _pubkey) {
+    return Query(
+        options: QueryOptions(
+          document: gql(getBalance),
+          variables: {
+            'pubkey': _pubkey,
+          },
+          // pollInterval: Duration(seconds: 1),
+        ),
+        builder: (QueryResult result,
+            {VoidCallback refetch, FetchMore fetchMore}) {
+          if (result.hasException) {
+            return Text(result.exception.toString());
+          }
+
+          if (result.isLoading) {
+            return Text('Loading');
+          }
+          String wBalanceUD;
+          if (result.data['balance'] == null) {
+            wBalanceUD = '0.0';
+          } else {
+            int wBalanceG1 = result.data['balance']['amount'];
+            int currentUD = result.data['currentUd']['amount'];
+            double wBalanceUDBrut = wBalanceG1 / currentUD; // .toString();
+            wBalanceUD =
+                double.parse((wBalanceUDBrut).toStringAsFixed(2)).toString();
+          }
+          return Text(wBalanceUD);
+        });
   }
 
   Widget addNewDerivation(context) {

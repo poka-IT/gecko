@@ -42,8 +42,12 @@ class GenerateWalletsProvider with ChangeNotifier {
   void storeHDWChest(
       NewWallet _wallet, String _name, BuildContext context) async {
     int chestNumber = chestBox.length;
-    WalletData myWallet =
-        WalletData(chest: chestNumber, number: 0, name: _name, derivation: 3);
+    WalletData myWallet = WalletData(
+        chest: chestNumber,
+        number: 0,
+        name: _name,
+        derivation: 3,
+        imageName: '0.png');
 
     String chestName;
     if (chestNumber == 0) {

@@ -16,7 +16,11 @@ class WalletData extends HiveObject {
   @HiveField(3)
   int derivation;
 
-  WalletData({this.chest, this.number, this.name, this.derivation});
+  @HiveField(4)
+  String imageName;
+
+  WalletData(
+      {this.chest, this.number, this.name, this.derivation, this.imageName});
 
   // representation of WalletData when debugging
   @override
@@ -26,7 +30,7 @@ class WalletData extends HiveObject {
 
   // creates the ':'-separated string from the WalletData
   String inLine() {
-    return "${this.chest}:${this.number}:${this.name}:${this.derivation}";
+    return "${this.chest}:${this.number}:${this.name}:${this.derivation}:${this.imageName}";
   }
 
   // returns only the id part of the ':'-separated string

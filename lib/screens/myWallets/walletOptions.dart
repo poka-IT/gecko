@@ -107,7 +107,8 @@ class WalletOptions extends StatelessWidget {
                             await _walletOptions.changeAvatar();
                           },
                           child: Image.asset(
-                            'assets/chopp-gecko2.png',
+                            'assets/avatars/${wallet.imageName}',
+                            width: 110,
                           )),
                       InkWell(
                           onTap: () async {

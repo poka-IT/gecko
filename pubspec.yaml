@@ -53,6 +53,7 @@ dependencies:
   truncate: ^3.0.1
   unorm_dart: ^0.2.0
   xml: ^5.3.0
+  assorted_layout_widgets: ^5.2.1
 
 flutter_icons:
   android: "ic_launcher"
@@ -76,6 +77,7 @@ flutter:
     - images/
     - config/gva_endpoints.json
     - assets/
+    - assets/avatars/
     - assets/chests/
     - assets/icon/
     - assets/onBoarding/

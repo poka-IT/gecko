@@ -130,7 +130,7 @@ class WalletOptionsProvider with ChangeNotifier {
 
     WalletData _walletTarget = myWalletClass.getWalletData(_walletID);
     _walletTarget.name = _newName;
-    await walletBox.putAt(_walletTarget.key, _walletTarget);
+    await walletBox.put(_walletTarget.key, _walletTarget);
 
     _newWalletName.text = '';
   }

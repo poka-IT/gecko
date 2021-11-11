@@ -21,13 +21,14 @@ class WalletDataAdapter extends TypeAdapter<WalletData> {
       number: fields[1] as int,
       name: fields[2] as String,
       derivation: fields[3] as int,
+      imageName: fields[4] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, WalletData obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.chest)
       ..writeByte(1)
@@ -35,7 +36,9 @@ class WalletDataAdapter extends TypeAdapter<WalletData> {
       ..writeByte(2)
       ..write(obj.name)
       ..writeByte(3)
-      ..write(obj.derivation);
+      ..write(obj.derivation)
+      ..writeByte(4)
+      ..write(obj.imageName);
   }
 
   @override

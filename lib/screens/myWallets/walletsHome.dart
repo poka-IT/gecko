@@ -9,6 +9,7 @@ import 'package:gecko/screens/myWallets/chooseChest.dart';
 import 'package:gecko/screens/myWallets/walletOptions.dart';
 import 'package:gecko/screens/onBoarding/0_noKeychainFound.dart';
 import 'package:provider/provider.dart';
+import 'package:assorted_layout_widgets/assorted_layout_widgets.dart';
 
 class WalletsHome extends StatelessWidget {
   final _derivationKey = GlobalKey<FormState>();
@@ -57,9 +58,35 @@ class WalletsHome extends StatelessWidget {
 
   Widget chestOptions(BuildContext context) {
     return Column(children: [
+      SizedBox(height: 50),
       SizedBox(
-          height: 90,
-          child: ElevatedButton(
+          height: 120,
+          width: 445,
+          child: ElevatedButton.icon(
+            icon: Image.asset(
+              'assets/chests/config.png',
+            ),
+            style: ElevatedButton.styleFrom(
+              elevation: 2,
+              primary: floattingYellow, // background
+              onPrimary: Colors.black, // foreground
+            ),
+            onPressed: () => null,
+            label: Text(
+              "       Paramétrer ce coffre",
+              style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.w700,
+                color: Color(0xff8a3c0f),
+              ),
+            ),
+          )),
+      SizedBox(height: 30),
+      SizedBox(
+          height: 120,
+          width: 445,
+          child: ElevatedButton.icon(
+            icon: Image.asset('assets/chests/miniChests.png'),
             style: ElevatedButton.styleFrom(
               elevation: 2,
               primary: floattingYellow, // background
@@ -71,11 +98,16 @@ class WalletsHome extends StatelessWidget {
                 return ChooseChest();
               }),
             ),
-            child: Text(
-              "Changer de coffre",
-              style: TextStyle(fontSize: 16),
+            label: Text(
+              "       Changer de coffre",
+              style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.w700,
+                color: Color(0xff8a3c0f),
+              ),
             ),
-          ))
+          )),
+      SizedBox(height: 30)
     ]);
   }
 
@@ -105,6 +137,7 @@ class WalletsHome extends StatelessWidget {
     List _listWallets = _myWalletProvider.listWallets;
 
     return CustomScrollView(slivers: <Widget>[
+      SliverToBoxAdapter(child: SizedBox(height: 20)),
       SliverGrid.count(
           key: Key('listWallets'),
           crossAxisCount: 2,
@@ -113,92 +146,112 @@ class WalletsHome extends StatelessWidget {
           mainAxisSpacing: 0,
           children: <Widget>[
             for (WalletData _repository in _listWallets)
+              // if (_repository.number.clamp(0, 2) == _repository.number) hasImage = true
               Padding(
-                padding: EdgeInsets.all(16),
-                child: GestureDetector(
-                  onTap: () async {
-                    await _walletOptions.readLocalWallet(context, _repository,
-                        _myWalletProvider.pinCode, _myWalletProvider.pinLenght);
-                    Navigator.push(
-                        context,
-                        SmoothTransition(
-                            page: WalletOptions(
-                          wallet: _repository,
-                        )));
-
-                    // Navigator.push(context,
-                    //     MaterialPageRoute(builder: (context) {
-                    //   return UnlockingWallet(wallet: _repository);
-                    // }));
-                  },
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.all(Radius.circular(12)),
-                    child: Column(children: <Widget>[
-                      Expanded(
-                          child: Container(
-                        width: double.infinity,
-                        height: double.infinity,
-                        decoration: BoxDecoration(
-                            gradient: RadialGradient(
-                          radius: 1,
-                          colors: [
-                            Colors.green[100],
-                            Colors.green[500],
-                          ],
-                        )),
-                        child:
-                            // SvgPicture.asset('assets/chopp-gecko2.png',
-                            //         semanticsLabel: 'Gecko', height: 48),
-                            Image.asset(
-                          'assets/chopp-gecko2.png',
-                        ),
-                      )),
-                      ListTile(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                                bottom: Radius.circular(12))),
-                        // contentPadding: const EdgeInsets.only(left: 7.0),
-                        tileColor: _repository.id()[1] == defaultWallet.id()[1]
-                            ? orangeC
-                            : Color(0xffFFD58D),
-                        // leading: Text('IMAGE'),
-
-                        // subtitle: Text(_repository.split(':')[3],
-                        //     style: TextStyle(fontSize: 12.0, fontFamily: 'Monospace')),
-                        title: Center(
-                            child: Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 5),
-                                child: Text(_repository.name,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                        fontSize: 16.0,
-                                        color: _repository.id()[1] ==
-                                                defaultWallet.id()[1]
-                                            ? Color(0xffF9F9F1)
-                                            : Colors.black)))),
-                        // dense: true,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            SmoothTransition(
+                  padding: EdgeInsets.all(16),
+                  child: GestureDetector(
+                    onTap: () async {
+                      await _walletOptions.readLocalWallet(
+                          context,
+                          _repository,
+                          _myWalletProvider.pinCode,
+                          _myWalletProvider.pinLenght);
+                      Navigator.push(
+                          context,
+                          SmoothTransition(
                               page: WalletOptions(
-                                wallet: _repository,
-                              ),
+                            wallet: _repository,
+                          )));
+
+                      // Navigator.push(context,
+                      //     MaterialPageRoute(builder: (context) {
+                      //   return UnlockingWallet(wallet: _repository);
+                      // }));
+                    },
+                    child: ClipOvalShadow(
+                      shadow: Shadow(
+                        color: Colors.transparent,
+                        offset: Offset(0, 0),
+                        blurRadius: 5,
+                      ),
+                      clipper: CustomClipperOval(),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        child: Column(children: <Widget>[
+                          Expanded(
+                              child: Container(
+                            width: double.infinity,
+                            height: double.infinity,
+                            decoration: BoxDecoration(
+                                gradient: RadialGradient(
+                              radius: 0.6,
+                              colors: [
+                                Colors.green[400],
+                                Color(0xFFE7E7A6),
+                              ],
+                            )),
+                            child:
+                                // SvgPicture.asset('assets/chopp-gecko2.png',
+                                //         semanticsLabel: 'Gecko', height: 48),
+                                Image.asset(
+                              'assets/avatars/${_repository.imageName}',
+                              alignment: Alignment.bottomCenter,
+                              scale: 0.5,
                             ),
-                          );
-                        },
-                      )
-                    ]),
-                  ),
-                ),
-              ),
-            addNewDerivation(context)
+                          )),
+                          ListTile(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    bottom: Radius.circular(12))),
+                            // contentPadding: const EdgeInsets.only(left: 7.0),
+                            tileColor:
+                                _repository.id()[1] == defaultWallet.id()[1]
+                                    ? orangeC
+                                    : Color(0xffFFD58D),
+                            // leading: Text('IMAGE'),
+
+                            // subtitle: Text(_repository.split(':')[3],
+                            //     style: TextStyle(fontSize: 12.0, fontFamily: 'Monospace')),
+                            title: Center(
+                                child: Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 5),
+                                    child: Text(_repository.name,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            fontSize: 16.0,
+                                            color: _repository.id()[1] ==
+                                                    defaultWallet.id()[1]
+                                                ? Color(0xffF9F9F1)
+                                                : Colors.black)))),
+                            // dense: true,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                SmoothTransition(
+                                  page: WalletOptions(
+                                    wallet: _repository,
+                                  ),
+                                ),
+                              );
+                            },
+                          )
+                        ]),
+                      ),
+                    ),
+                  )),
+            addNewDerivation(context),
+            // SizedBox(height: 1),
+            // Padding(
+            //     padding: EdgeInsets.symmetric(horizontal: 35),
+            //     child: Text(
+            //       'Ajouter un portefeuille',
+            //       textAlign: TextAlign.center,
+            //       style: TextStyle(fontSize: 18),
+            //     ))
           ]),
       // SliverToBoxAdapter(child: Spacer()),
-      SliverPadding(
-        padding: EdgeInsets.symmetric(horizontal: 30),
-        sliver: SliverToBoxAdapter(child: chestOptions(context)),
-      ),
+      SliverToBoxAdapter(child: chestOptions(context)),
     ]);
   }
 
@@ -231,7 +284,7 @@ class WalletsHome extends StatelessWidget {
                             color: Color(0xFFFCB437)),
                       )),
                     )),
-              )
+              ),
             ])));
   }
 
@@ -283,5 +336,67 @@ class WalletsHome extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// extension Range on num {
+//   bool isBetween(num from, num to) {
+//     return from < this && this < to;
+//   }
+// }
+
+class CustomClipperOval extends CustomClipper<Rect> {
+  @override
+  Rect getClip(Size size) {
+    return Rect.fromCircle(
+        center: new Offset(size.width / 2, size.width / 2),
+        radius: size.width / 2 + 3);
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Rect> oldClipper) {
+    return false;
+  }
+}
+
+class ClipOvalShadow extends StatelessWidget {
+  final Shadow shadow;
+  final CustomClipper<Rect> clipper;
+  final Widget child;
+
+  ClipOvalShadow({
+    @required this.shadow,
+    @required this.clipper,
+    @required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _ClipOvalShadowPainter(
+        clipper: this.clipper,
+        shadow: this.shadow,
+      ),
+      child: ClipRect(child: child, clipper: this.clipper),
+    );
+  }
+}
+
+class _ClipOvalShadowPainter extends CustomPainter {
+  final Shadow shadow;
+  final CustomClipper<Rect> clipper;
+
+  _ClipOvalShadowPainter({@required this.shadow, @required this.clipper});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    var paint = shadow.toPaint();
+    var clipRect = clipper.getClip(size).shift(Offset(0, 0));
+    canvas.drawOval(clipRect, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return true;
   }
 }

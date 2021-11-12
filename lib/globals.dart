@@ -29,7 +29,7 @@ double ratio;
 var log = Logger();
 
 // Colors
-Color orangeC = Color(0xffD28928);
+Color orangeC = Color(0xffd07316);
 Color yellowC = Color(0xffFFD68E);
 Color floattingYellow = Color(0xffEFEFBF);
 Color backgroundColor = Color(0xFFF5F5F5);

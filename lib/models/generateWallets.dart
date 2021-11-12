@@ -51,9 +51,9 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     String chestName;
     if (chestNumber == 0) {
-      chestName = 'Coffre à Gecko';
+      chestName = 'Coffre à Ğecko';
     } else {
-      chestName = 'Coffre à Gecko ${chestNumber + 1}';
+      chestName = 'Coffre à Ğecko ${chestNumber + 1}';
     }
     walletBox.add(myWallet);
     ChestData thisChest = ChestData(

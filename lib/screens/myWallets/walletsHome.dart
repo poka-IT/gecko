@@ -45,7 +45,7 @@ class WalletsHome extends StatelessWidget {
                   ModalRoute.withName('/'),
                 );
               }),
-          title: Text('Mes portefeuilles',
+          title: Text(chestBox.get(_currentChest).name,
               key: Key('myWallets'), style: TextStyle(color: Colors.grey[850])),
           backgroundColor: Color(0xffFFD58D),
         ),

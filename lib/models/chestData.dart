@@ -10,7 +10,10 @@ class ChestData extends HiveObject {
   @HiveField(2)
   String name;
 
-  ChestData({this.dewif, this.name});
+  @HiveField(3)
+  int defaultWallet;
+
+  ChestData({this.dewif, this.name, this.defaultWallet});
 
   // representation of WalletData when debugging
   @override

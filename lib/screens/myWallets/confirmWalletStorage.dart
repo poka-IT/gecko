@@ -146,7 +146,6 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                                     _myWalletProvider.listWallets =
                                         _myWalletProvider
                                             .readAllWallets(_currentChest);
-                                    _myWalletProvider.getDefaultWallet();
                                     scheduleMicrotask(() {
                                       _walletOptions.reloadBuild();
                                       _myWalletProvider.rebuildWidget();

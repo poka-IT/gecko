@@ -59,11 +59,11 @@ class MyWalletsProvider with ChangeNotifier {
     return _targetedWallet;
   }
 
-  void getDefaultWallet() {
+  void getDefaultWallet(int chest) {
     MyWalletsProvider myWalletsProvider = MyWalletsProvider();
 
-    if (configBox.get('defaultWallet') == null) {
-      configBox.put('defaultWallet', [getCurrentChest(), 0]);
+    if (configBox.get('defaultWallet')[chest] == null) {
+      configBox.put('defaultWallet', [chest, 0]);
     }
 
     defaultWallet = myWalletsProvider

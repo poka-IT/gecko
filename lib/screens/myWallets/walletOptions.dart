@@ -47,8 +47,6 @@ class WalletOptions extends StatelessWidget {
 
     _walletOptions.walletID = [0, wallet.number];
 
-    _myWalletProvider.getDefaultWallet();
-
     _walletOptions.isDefaultWallet =
         (defaultWallet.id()[1] == _walletOptions.walletID[1]);
 

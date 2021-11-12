@@ -122,7 +122,6 @@ class OnboardingStepFourteen extends StatelessWidget {
                 _generateWalletProvider.storeHDWChest(
                     generatedWallet, 'Mon portefeuille courant', context);
                 _myWalletProvider.readAllWallets(_currentChest);
-                _myWalletProvider.getDefaultWallet();
                 scheduleMicrotask(() {
                   _walletOptions.reloadBuild();
                   _myWalletProvider.rebuildWidget();

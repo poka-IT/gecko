@@ -3,16 +3,18 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/models/myWallets.dart';
-import 'package:gecko/models/walletData.dart';
-import 'package:gecko/screens/myWallets/unlockingWallet.dart';
-import 'package:gecko/screens/onBoarding/0_noKeychainFound.dart';
+import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
+import 'package:gecko/screens/onBoarding/0_no_keychain_found.dart';
 import 'dart:ui';
 import 'package:gecko/screens/settings.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
+  const HomeScreen({Key key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -46,7 +48,7 @@ class HomeScreen extends StatelessWidget {
               Expanded(
                   child: ListView(padding: EdgeInsets.zero, children: <Widget>[
                 DrawerHeader(
-                  child: Column(children: <Widget>[
+                  child: Column(children: const <Widget>[
                     SizedBox(height: 0),
                     Image(
                         image: AssetImage('assets/icon/gecko_final.png'),
@@ -57,8 +59,8 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 ListTile(
-                  key: Key('parameters'),
-                  title: Text('Paramètres'),
+                  key: const Key('parameters'),
+                  title: const Text('Paramètres'),
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
@@ -70,34 +72,33 @@ class HomeScreen extends StatelessWidget {
                   },
                 ),
                 ListTile(
-                  title: Text('A propos'),
+                  title: const Text('A propos'),
                   onTap: () {
                     // Update the state of the app.
                     // ...
                   },
                 ),
               ])),
-              Container(
-                  child: Align(
-                      alignment: FractionalOffset.bottomCenter,
-                      child: Text('Ğecko v$appVersion'))),
-              SizedBox(height: 20)
+              Align(
+                  alignment: FractionalOffset.bottomCenter,
+                  child: Text('Ğecko v$appVersion')),
+              const SizedBox(height: 20)
             ],
           ),
         ),
         appBar: AppBar(
           leading: Builder(
               builder: (context) => IconButton(
-                    key: Key('drawerMenu'),
-                    icon: new Icon(Icons.menu, color: Colors.grey[850]),
+                    key: const Key('drawerMenu'),
+                    icon: Icon(Icons.menu, color: Colors.grey[850]),
                     onPressed: () => Scaffold.of(context).openDrawer(),
                   )),
           title: _homeProvider.appBarTitle,
           actions: [
             Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: IconButton(
-                    key: Key('searchIcon'),
+                    key: const Key('searchIcon'),
                     icon: _homeProvider.searchIcon,
                     color: Colors.grey[850],
                     onPressed: () {
@@ -107,7 +108,7 @@ class HomeScreen extends StatelessWidget {
                           color: Colors.grey[850],
                         );
                         _homeProvider.appBarTitle = TextField(
-                          key: Key('searchInput'),
+                          key: const Key('searchInput'),
                           autofocus: true,
                           controller: _homeProvider.searchQuery,
                           onChanged: (text) {
@@ -133,9 +134,9 @@ class HomeScreen extends StatelessWidget {
                       }
                     }))
           ],
-          backgroundColor: Color(0xffFFD58D),
+          backgroundColor: const Color(0xffFFD58D),
         ),
-        backgroundColor: Color(0xffF9F9F1),
+        backgroundColor: const Color(0xffF9F9F1),
         body: Builder(
             builder: (ctx) => StatefulWrapper(
                   onInit: () {
@@ -146,10 +147,10 @@ class HomeScreen extends StatelessWidget {
                   },
                   child: Column(children: <Widget>[
                     Padding(
-                        padding: EdgeInsets.only(top: 20),
+                        padding: const EdgeInsets.only(top: 20),
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
+                            children: const <Widget>[
                               SizedBox(width: 7),
                               Image(
                                   image:
@@ -157,10 +158,10 @@ class HomeScreen extends StatelessWidget {
                                   height: 180),
                             ])),
                     Padding(
-                        padding: EdgeInsets.only(top: 15),
+                        padding: const EdgeInsets.only(top: 15),
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
+                            children: const <Widget>[
                               Text(
                                 "y'a pas de lézard !",
                                 textAlign: TextAlign.center,
@@ -171,7 +172,7 @@ class HomeScreen extends StatelessWidget {
                               )
                             ])),
                     Padding(
-                        padding: EdgeInsets.only(top: 60),
+                        padding: const EdgeInsets.only(top: 60),
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
@@ -179,10 +180,11 @@ class HomeScreen extends StatelessWidget {
                                 Container(
                                   child: ClipOval(
                                     child: Material(
-                                      color: Color(0xffFFD58D), // button color
+                                      color: const Color(
+                                          0xffFFD58D), // button color
                                       child: InkWell(
                                           splashColor: orangeC, // inkwell color
-                                          child: Padding(
+                                          child: const Padding(
                                               padding: EdgeInsets.all(22),
                                               child: Image(
                                                   image: AssetImage(
@@ -194,7 +196,7 @@ class HomeScreen extends StatelessWidget {
                                           }),
                                     ),
                                   ),
-                                  decoration: BoxDecoration(
+                                  decoration: const BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: Colors.white,
                                     boxShadow: [
@@ -206,8 +208,8 @@ class HomeScreen extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                SizedBox(height: 12),
-                                Text(
+                                const SizedBox(height: 12),
+                                const Text(
                                   "Payer par QR-Code",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
@@ -216,7 +218,7 @@ class HomeScreen extends StatelessWidget {
                               ])
                             ])),
                     Padding(
-                        padding: EdgeInsets.only(top: 50),
+                        padding: const EdgeInsets.only(top: 50),
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
@@ -224,10 +226,11 @@ class HomeScreen extends StatelessWidget {
                                 Container(
                                   child: ClipOval(
                                     child: Material(
-                                      color: Color(0xffFFD58D), // button color
+                                      color: const Color(
+                                          0xffFFD58D), // button color
                                       child: InkWell(
                                           splashColor: orangeC, // inkwell color
-                                          child: Padding(
+                                          child: const Padding(
                                               padding: EdgeInsets.symmetric(
                                                   horizontal: 20, vertical: 16),
                                               child: Image(
@@ -245,7 +248,7 @@ class HomeScreen extends StatelessWidget {
                                           }),
                                     ),
                                   ),
-                                  decoration: BoxDecoration(
+                                  decoration: const BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: Colors.white,
                                     boxShadow: [
@@ -257,24 +260,25 @@ class HomeScreen extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                SizedBox(height: 12),
-                                Text(
+                                const SizedBox(height: 12),
+                                const Text(
                                   "Explorer\n",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                       color: Colors.black, fontSize: 16),
                                 )
                               ]),
-                              SizedBox(width: 140),
+                              const SizedBox(width: 140),
                               Column(children: <Widget>[
                                 Container(
                                   child: ClipOval(
-                                    key: Key('manageWallets'),
+                                    key: const Key('manageWallets'),
                                     child: Material(
-                                      color: Color(0xffFFD58D), // button color
+                                      color: const Color(
+                                          0xffFFD58D), // button color
                                       child: InkWell(
                                           splashColor: orangeC, // inkwell color
-                                          child: Padding(
+                                          child: const Padding(
                                               padding: EdgeInsets.all(23),
                                               child: Image(
                                                   image: AssetImage(
@@ -296,12 +300,12 @@ class HomeScreen extends StatelessWidget {
                                                 : Navigator.push(context,
                                                     MaterialPageRoute(
                                                         builder: (context) {
-                                                    return NoKeyChainScreen();
+                                                    return const NoKeyChainScreen();
                                                   }));
                                           }),
                                     ),
                                   ),
-                                  decoration: BoxDecoration(
+                                  decoration: const BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: Colors.white,
                                     boxShadow: [
@@ -313,8 +317,8 @@ class HomeScreen extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                SizedBox(height: 12),
-                                Text(
+                                const SizedBox(height: 12),
+                                const Text(
                                   "Gérer mes\nportefeuilles",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
@@ -351,7 +355,8 @@ class HomeScreen extends StatelessWidget {
 class StatefulWrapper extends StatefulWidget {
   final Function onInit;
   final Widget child;
-  const StatefulWrapper({@required this.onInit, @required this.child});
+  const StatefulWrapper({Key key, @required this.onInit, @required this.child})
+      : super(key: key);
   @override
   _StatefulWrapperState createState() => _StatefulWrapperState();
 }

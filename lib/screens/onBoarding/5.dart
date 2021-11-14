@@ -1,13 +1,17 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/screens/commonElements.dart';
+import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/6.dart';
 
 // ignore: must_be_immutable
 class OnboardingStepSeven extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
   final int progress = 5;
+
+  OnboardingStepSeven({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,15 +26,15 @@ class OnboardingStepSeven extends StatelessWidget {
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeakRich(
               <TextSpan>[
-                TextSpan(text: "Munissez-vous d'"),
-                TextSpan(
+                const TextSpan(text: "Munissez-vous d'"),
+                const TextSpan(
                     text: 'un papier et d’un crayon\n',
                     style: TextStyle(fontWeight: FontWeight.bold)),
-                TextSpan(
+                const TextSpan(
                     text:
                         "afin de pouvoir noter votre phrase de restauration."),
               ],
-              textKey: Key('step5'),
+              textKey: const Key('step5'),
             ),
             Expanded(
                 child: Align(
@@ -53,7 +57,7 @@ class OnboardingStepSeven extends StatelessWidget {
               width: 400,
               height: 62,
               child: ElevatedButton(
-                  key: Key('goStep6'),
+                  key: const Key('goStep6'),
                   style: ElevatedButton.styleFrom(
                     elevation: 5,
                     primary: orangeC,
@@ -66,10 +70,10 @@ class OnboardingStepSeven extends StatelessWidget {
                           page: OnboardingStepEight(), isFast: true),
                     );
                   },
-                  child: Text("J'ai de quoi noter",
+                  child: const Text("J'ai de quoi noter",
                       style: TextStyle(fontSize: 20))),
             ),
-            SizedBox(height: 80),
+            const SizedBox(height: 80),
           ]),
         ));
   }

@@ -1,10 +1,12 @@
+// ignore_for_file: file_names
+
 import 'dart:ui';
 import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/generateWallets.dart';
-import 'package:gecko/screens/commonElements.dart';
+import 'package:gecko/models/generate_wallets.dart';
+import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/9.dart';
 import 'package:provider/provider.dart';
 
@@ -21,7 +23,7 @@ class OnboardingStepTen extends StatelessWidget {
 
   TextEditingController tplController = TextEditingController();
   TextEditingController wordController = TextEditingController();
-  TextEditingController _mnemonicController = TextEditingController();
+  final TextEditingController _mnemonicController = TextEditingController();
 
   final int progress = 7;
 
@@ -31,7 +33,7 @@ class OnboardingStepTen extends StatelessWidget {
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
     CommonElements common = CommonElements();
-    this._mnemonicController.text = generatedMnemonic;
+    _mnemonicController.text = generatedMnemonic;
 
     return WillPopScope(
         onWillPop: () {
@@ -60,11 +62,11 @@ class OnboardingStepTen extends StatelessWidget {
                         text: " de votre phrase de restauration :",
                         style: TextStyle(fontSize: 16 * ratio)),
                   ],
-                  textKey: Key('step8'),
+                  textKey: const Key('step8'),
                 ),
                 SizedBox(height: isTall ? 70 : 10),
                 Text('${_generateWalletProvider.nbrWord + 1}',
-                    key: Key('askedWord'),
+                    key: const Key('askedWord'),
                     style: TextStyle(
                         fontSize: isTall ? 17 : 10,
                         color: orangeC,
@@ -79,10 +81,10 @@ class OnboardingStepTen extends StatelessWidget {
                         )),
                     width: 430,
                     child: TextFormField(
-                        key: Key('inputWord'),
+                        key: const Key('inputWord'),
                         autofocus: true,
                         enabled: !_generateWalletProvider.isAskedWordValid,
-                        controller: this.wordController,
+                        controller: wordController,
                         textInputAction: TextInputAction.next,
                         onChanged: (value) {
                           _generateWalletProvider.checkAskedWord(
@@ -100,7 +102,7 @@ class OnboardingStepTen extends StatelessWidget {
                               : "${_generateWalletProvider.nbrWordAlpha} mot de votre phrase de restauration",
                           fillColor: Colors.grey[300],
                           filled: true,
-                          contentPadding: EdgeInsets.all(12),
+                          contentPadding: const EdgeInsets.all(12),
                         ),
                         style: TextStyle(
                             fontSize: 40.0,
@@ -115,7 +117,7 @@ class OnboardingStepTen extends StatelessWidget {
                               width: 400,
                               height: 62,
                               child: ElevatedButton(
-                                  key: Key('goStep9'),
+                                  key: const Key('goStep9'),
                                   style: ElevatedButton.styleFrom(
                                     elevation: 5,
                                     primary: orangeC,
@@ -129,10 +131,10 @@ class OnboardingStepTen extends StatelessWidget {
                                           isFast: true),
                                     );
                                   },
-                                  child: Text("Continuer",
+                                  child: const Text("Continuer",
                                       style: TextStyle(fontSize: 20))),
                             )))),
-                SizedBox(height: 80),
+                const SizedBox(height: 80),
               ]),
             )));
   }

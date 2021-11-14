@@ -3,8 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/home.dart';
-import 'package:gecko/models/myWallets.dart';
-import 'package:gecko/models/walletData.dart';
+import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/screens/history.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
@@ -42,7 +42,7 @@ class HistoryProvider with ChangeNotifier {
       return 'false';
     }
     if (barcode != null) {
-      this.outputPubkey.text = barcode;
+      outputPubkey.text = barcode;
       isPubkey(context, barcode);
     } else {
       return 'false';
@@ -77,7 +77,7 @@ class HistoryProvider with ChangeNotifier {
   String isPubkey(context, pubkey, {bool goHistory}) {
     HomeProvider _homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
-    final RegExp regExp = new RegExp(
+    final RegExp regExp = RegExp(
       r'^[a-zA-Z0-9]+$',
       caseSensitive: false,
       multiLine: false,
@@ -91,9 +91,9 @@ class HistoryProvider with ChangeNotifier {
       this.pubkey = pubkey;
       getShortPubkey(pubkey);
 
-      this.outputPubkey.text = pubkey;
+      outputPubkey.text = pubkey;
 
-      if (goHistory == null) goHistory = false;
+      goHistory ??= false;
 
       if (goHistory) {
         isHistoryScreen = true;
@@ -144,13 +144,13 @@ class HistoryProvider with ChangeNotifier {
     var transBC = [];
     int i = 0;
 
-    final currentBase = 0;
+    const currentBase = 0;
     double currentUD = 10.54;
 
     for (final trans in txs) {
       var direction = trans['direction'];
       final transaction = trans['node'];
-      var output;
+      String output;
       if (direction == "RECEIVED") {
         for (String line in transaction['outputs']) {
           if (line.contains(_pubkey)) {
@@ -241,15 +241,15 @@ class HistoryProvider with ChangeNotifier {
       } else {
         _message = "Vous êtes connecté au noeud\n${endPointGVA.split('/')[2]}";
       }
-      final snackBar =
-          SnackBar(content: Text(_message), duration: Duration(seconds: 2));
+      final snackBar = SnackBar(
+          content: Text(_message), duration: const Duration(seconds: 2));
       isFirstBuild = false;
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 
   void resetdHistory() {
-    this.outputPubkey.text = '';
+    outputPubkey.text = '';
     notifyListeners();
   }
 
@@ -259,7 +259,7 @@ class HistoryProvider with ChangeNotifier {
   }
 
   snackCopyKey(context) {
-    final snackBar = SnackBar(
+    const snackBar = SnackBar(
         content:
             Text("Cette clé publique a été copié dans votre presse-papier."),
         duration: Duration(seconds: 2));

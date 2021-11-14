@@ -1,13 +1,17 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/screens/commonElements.dart';
+import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/5.dart';
 
 // ignore: must_be_immutable
 class OnboardingStepFive extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
   final int progress = 4;
+
+  OnboardingStepFive({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +26,7 @@ class OnboardingStepFive extends StatelessWidget {
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
               "Par contre, attention :\n\nDans une blockchain, il n’y a pas de procédure de récupération de trousseau.\n\nSi vous perdez votre phrase de restauration, je ne pourrai pas vous la communiquer, et vous ne pourrez donc plus jamais accéder à votre compte.",
-              textKey: Key('step4'),
+              textKey: const Key('step4'),
             ),
             SizedBox(height: isTall ? 30 : 10),
             Image.asset(
@@ -36,7 +40,7 @@ class OnboardingStepFive extends StatelessWidget {
                       width: 400,
                       height: 62,
                       child: ElevatedButton(
-                          key: Key('goStep5'),
+                          key: const Key('goStep5'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
                             primary: orangeC,
@@ -49,10 +53,10 @@ class OnboardingStepFive extends StatelessWidget {
                                   page: OnboardingStepSeven(), isFast: true),
                             );
                           },
-                          child: Text("J'ai compris",
+                          child: const Text("J'ai compris",
                               style: TextStyle(fontSize: 20))),
                     ))),
-            SizedBox(height: 80),
+            const SizedBox(height: 80),
           ]),
         ));
   }

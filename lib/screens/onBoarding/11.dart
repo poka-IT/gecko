@@ -1,10 +1,12 @@
+// ignore_for_file: file_names
+
 import 'dart:ui';
 import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/generateWallets.dart';
-import 'package:gecko/screens/commonElements.dart';
+import 'package:gecko/models/generate_wallets.dart';
+import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/12.dart';
 import 'package:provider/provider.dart';
 
@@ -12,6 +14,8 @@ import 'package:provider/provider.dart';
 class OnboardingStepThirteen extends StatelessWidget {
   NewWallet generatedWallet;
   final int progress = 10;
+
+  OnboardingStepThirteen({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -32,51 +36,49 @@ class OnboardingStepThirteen extends StatelessWidget {
                 // initialData: '...',
                 builder: (context, snapshot) {
                   generatedWallet = snapshot.data;
-                  return Visibility(visible: false, child: Text(''));
+                  return const Visibility(visible: false, child: Text(''));
                 }),
             common.onboardingProgressBar(
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeakRich(
               <TextSpan>[
-                TextSpan(
+                const TextSpan(
                     text:
                         "Et voilà votre code secret !\n\nMémorisez-le ou notez-le, car il vous sera demandé "),
-                TextSpan(
+                const TextSpan(
                     text: 'à chaque fois',
                     style: TextStyle(fontWeight: FontWeight.bold)),
-                TextSpan(
+                const TextSpan(
                     text:
                         " que vous voudrez effectuer un paiement sur cet appareil."),
               ],
-              textKey: Key('step11'),
+              textKey: const Key('step11'),
             ),
-            SizedBox(height: 100),
-            Container(
-              child: Stack(
-                alignment: Alignment.centerRight,
-                children: <Widget>[
-                  TextField(
-                      key: Key('generatedPin'),
-                      enabled: false,
-                      controller: _generateWalletProvider.pin,
-                      maxLines: 1,
-                      textAlign: TextAlign.center,
-                      decoration: InputDecoration(),
-                      style: TextStyle(
-                          letterSpacing: 5,
-                          fontSize: 35.0,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold)),
-                  IconButton(
-                    icon: Icon(Icons.replay),
-                    color: orangeC,
-                    onPressed: () async {
-                      generatedWallet = await _generateWalletProvider
-                          .changePinCode(reload: false);
-                    },
-                  ),
-                ],
-              ),
+            const SizedBox(height: 100),
+            Stack(
+              alignment: Alignment.centerRight,
+              children: <Widget>[
+                TextField(
+                    key: const Key('generatedPin'),
+                    enabled: false,
+                    controller: _generateWalletProvider.pin,
+                    maxLines: 1,
+                    textAlign: TextAlign.center,
+                    decoration: const InputDecoration(),
+                    style: const TextStyle(
+                        letterSpacing: 5,
+                        fontSize: 35.0,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold)),
+                IconButton(
+                  icon: const Icon(Icons.replay),
+                  color: orangeC,
+                  onPressed: () async {
+                    generatedWallet = await _generateWalletProvider
+                        .changePinCode(reload: false);
+                  },
+                ),
+              ],
             ),
             Expanded(
                 child: Align(
@@ -85,25 +87,25 @@ class OnboardingStepThirteen extends StatelessWidget {
                       width: 400,
                       height: 62,
                       child: ElevatedButton(
-                          key: Key('changeSecretCode'),
+                          key: const Key('changeSecretCode'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
-                            primary: Color(0xffFFD58D),
+                            primary: const Color(0xffFFD58D),
                             onPrimary: Colors.black, // foreground
                           ),
                           onPressed: () async {
                             generatedWallet = await _generateWalletProvider
                                 .changePinCode(reload: false);
                           },
-                          child: Text("Choisir un autre code secret",
+                          child: const Text("Choisir un autre code secret",
                               style: TextStyle(fontSize: 20))),
                     ))),
-            SizedBox(height: 25),
+            const SizedBox(height: 25),
             SizedBox(
               width: 400,
               height: 62,
               child: ElevatedButton(
-                  key: Key('goStep12'),
+                  key: const Key('goStep12'),
                   style: ElevatedButton.styleFrom(
                     elevation: 5,
                     primary: orangeC,
@@ -120,10 +122,10 @@ class OnboardingStepThirteen extends StatelessWidget {
                           isFast: true),
                     );
                   },
-                  child: Text("J'ai noté mon code secret",
+                  child: const Text("J'ai noté mon code secret",
                       style: TextStyle(fontSize: 20))),
             ),
-            SizedBox(height: 80),
+            const SizedBox(height: 80),
           ]),
         ));
   }

@@ -1,13 +1,17 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/screens/commonElements.dart';
+import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/11.dart';
 
 // ignore: must_be_immutable
 class OnboardingStepTwelve extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
   final int progress = 9;
+
+  OnboardingStepTwelve({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +26,9 @@ class OnboardingStepTwelve extends StatelessWidget {
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
               "Si un jour vous changez de téléphone, votre code secret sera différent, mais il vous suffira de me redonner votre phrase de restauration pour recréer votre trousseau.",
-              textKey: Key('step10'),
+              textKey: const Key('step10'),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Image.asset(
               'assets/onBoarding/plusieurs-codes-secrets-un-trousseau.png',
               height: 410 * ratio,
@@ -36,7 +40,7 @@ class OnboardingStepTwelve extends StatelessWidget {
                       width: 400,
                       height: 62,
                       child: ElevatedButton(
-                          key: Key('goStep11'),
+                          key: const Key('goStep11'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
                             primary: orangeC,
@@ -49,7 +53,7 @@ class OnboardingStepTwelve extends StatelessWidget {
                                   page: OnboardingStepThirteen(), isFast: true),
                             );
                           },
-                          child: Text("Générer le code secret",
+                          child: const Text("Générer le code secret",
                               style: TextStyle(fontSize: 20))),
                     ))),
             SizedBox(height: isTall ? 80 : 40),

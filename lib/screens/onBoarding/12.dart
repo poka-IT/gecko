@@ -1,13 +1,15 @@
+// ignore_for_file: file_names
+
 import 'dart:async';
 import 'dart:ui';
 import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/generateWallets.dart';
-import 'package:gecko/models/myWallets.dart';
-import 'package:gecko/models/walletOptions.dart';
-import 'package:gecko/screens/commonElements.dart';
+import 'package:gecko/models/generate_wallets.dart';
+import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/models/wallet_options.dart';
+import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/13_congratulations.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +24,7 @@ class OnboardingStepFourteen extends StatelessWidget {
   NewWallet generatedWallet;
   final int progress = 11;
   final formKey = GlobalKey<FormState>();
-  var pinColor = Color(0xFFA4B600);
+  var pinColor = const Color(0xFFA4B600);
   bool hasError = false;
 
   @override
@@ -43,7 +45,7 @@ class OnboardingStepFourteen extends StatelessWidget {
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
               "Avez-vous bien mémorisé votre code secret ?\n\nVérifions ça ensemble !\n\nTapez votre code secret dans le champ ci-dessous (après c’est fini, promis-juré-gecko).",
-              textKey: Key('step12'),
+              textKey: const Key('step12'),
             ),
             SizedBox(height: isTall ? 80 : 10),
             pinForm(context, _walletOptions, _pinLenght, 1, 3)
@@ -70,7 +72,7 @@ class OnboardingStepFourteen extends StatelessWidget {
       child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
           child: PinCodeTextField(
-            key: Key('formKey2'),
+            key: const Key('formKey2'),
             autoFocus: true,
             appContext: context,
             pastedTextStyle: TextStyle(
@@ -98,14 +100,14 @@ class OnboardingStepFourteen extends StatelessWidget {
               activeFillColor: hasError ? Colors.blueAccent : Colors.black,
             ),
             cursorColor: Colors.black,
-            animationDuration: Duration(milliseconds: 300),
-            textStyle: TextStyle(fontSize: 20, height: 1.6),
-            backgroundColor: Color(0xffF9F9F1),
+            animationDuration: const Duration(milliseconds: 300),
+            textStyle: const TextStyle(fontSize: 20, height: 1.6),
+            backgroundColor: const Color(0xffF9F9F1),
             enableActiveFill: false,
             errorAnimationController: errorController,
             controller: _enterPin,
             keyboardType: TextInputType.text,
-            boxShadows: [
+            boxShadows: const [
               BoxShadow(
                 offset: Offset(0, 1),
                 color: Colors.black12,
@@ -140,8 +142,8 @@ class OnboardingStepFourteen extends StatelessWidget {
               }
             },
             onChanged: (value) {
-              if (pinColor != Color(0xFFA4B600)) {
-                pinColor = Color(0xFFA4B600);
+              if (pinColor != const Color(0xFFA4B600)) {
+                pinColor = const Color(0xFFA4B600);
               }
             },
           )),

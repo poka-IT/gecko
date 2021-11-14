@@ -47,8 +47,11 @@ class WalletOptions extends StatelessWidget {
 
     _walletOptions.walletID = [0, wallet.number];
 
+    WalletData defaultWallet =
+        _myWalletProvider.getDefaultWallet(_currentChest);
+
     _walletOptions.isDefaultWallet =
-        (defaultWallet.id()[1] == _walletOptions.walletID[1]);
+        (defaultWallet.number == _walletOptions.walletID[1]);
 
     int currentChest = _myWalletProvider.getCurrentChest();
 
@@ -334,7 +337,8 @@ class WalletOptions extends StatelessWidget {
                     onTap: !_walletOptions.isDefaultWallet
                         ? () {
                             defaultWallet = wallet;
-                            configBox.put('defaultWallet', wallet.id());
+                            chestBox.get(currentChest).defaultWallet =
+                                wallet.number;
                             _myWalletProvider.readAllWallets(_currentChest);
                             _myWalletProvider.rebuildWidget();
                           }

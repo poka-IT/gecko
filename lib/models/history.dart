@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/home.dart';
+import 'package:gecko/models/myWallets.dart';
+import 'package:gecko/models/walletData.dart';
 import 'package:gecko/screens/history.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
@@ -49,8 +51,12 @@ class HistoryProvider with ChangeNotifier {
   }
 
   Future<String> pay(BuildContext context, String pinCode) async {
-    // MyWalletsProvider _myWalletProvider = MyWalletsProvider();
-    String dewif = chestBox.get(configBox.get('currentChest')).dewif;
+    MyWalletsProvider _myWalletModel = MyWalletsProvider();
+    int currentChest = configBox.get('currentChest');
+    WalletData defaultWallet = _myWalletModel.getDefaultWallet(currentChest);
+
+    String dewif = chestBox.get(currentChest).dewif;
+
     try {
       await DubpRust.simplePaymentFromTransparentAccount(
           accountIndex: defaultWallet.derivation,

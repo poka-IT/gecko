@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/cesiumPlus.dart';
 import 'package:gecko/models/home.dart';
+import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/queries.dart';
 import 'package:gecko/models/history.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:gecko/models/walletData.dart';
 import 'package:gecko/screens/myWallets/unlockingWallet.dart';
 import 'dart:ui';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -330,6 +332,10 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
   }
 
   Widget payView(context, HistoryProvider _historyProvider) {
+    MyWalletsProvider _myWalletProvider = MyWalletsProvider();
+    WalletData defaultWallet =
+        _myWalletProvider.getDefaultWallet(configBox.get('currentChest'));
+
     return Stack(
       clipBehavior: Clip.hardEdge,
       children: <Widget>[

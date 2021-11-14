@@ -58,14 +58,6 @@ class UnlockingWallet extends StatelessWidget {
             pinForm(context, _pinLenght, wallet.number, wallet.derivation),
           ]),
         ),
-        GestureDetector(
-            onTap: () {
-              Navigator.popUntil(
-                context,
-                ModalRoute.withName('/'),
-              );
-            },
-            child: Icon(Icons.home))
       ]),
     ));
   }

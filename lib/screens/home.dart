@@ -4,6 +4,7 @@ import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/myWallets.dart';
+import 'package:gecko/models/walletData.dart';
 import 'package:gecko/screens/myWallets/unlockingWallet.dart';
 import 'package:gecko/screens/onBoarding/0_noKeychainFound.dart';
 import 'dart:ui';
@@ -21,6 +22,9 @@ class HomeScreen extends StatelessWidget {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
     final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
+
+    WalletData defaultWallet =
+        _myWalletProvider.getDefaultWallet(configBox.get('currentChest'));
 
     // walletBox.toMap().forEach((key, value) {
     //   if (value.chest == 0) {

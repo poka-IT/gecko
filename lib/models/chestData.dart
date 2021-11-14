@@ -13,9 +13,11 @@ class ChestData extends HiveObject {
   @HiveField(3)
   int defaultWallet;
 
-  ChestData({this.dewif, this.name, this.defaultWallet});
+  @HiveField(4)
+  String imageName;
 
-  // representation of WalletData when debugging
+  ChestData({this.dewif, this.name, this.defaultWallet, this.imageName});
+
   @override
   String toString() {
     return this.name;

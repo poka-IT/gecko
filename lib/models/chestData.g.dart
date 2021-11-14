@@ -20,19 +20,22 @@ class ChestDataAdapter extends TypeAdapter<ChestData> {
       dewif: fields[0] as String,
       name: fields[2] as String,
       defaultWallet: fields[3] as int,
+      imageName: fields[4] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, ChestData obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.dewif)
       ..writeByte(2)
       ..write(obj.name)
       ..writeByte(3)
-      ..write(obj.defaultWallet);
+      ..write(obj.defaultWallet)
+      ..writeByte(4)
+      ..write(obj.imageName);
   }
 
   @override

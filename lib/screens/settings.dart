@@ -68,16 +68,14 @@ class SettingsScreen extends StatelessWidget {
                     primary: yellowC, // background
                     onPrimary: Colors.black, // foreground
                   ),
-                  onPressed: !_myWallets.checkIfWalletExist()
-                      ? () => Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) {
-                              return GenerateWalletsScreen();
-                            }),
-                          ).then((value) => {
-                                if (value == true) {Navigator.pop(context)}
-                              })
-                      : null,
+                  onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) {
+                          return GenerateWalletsScreen();
+                        }),
+                      ).then((value) => {
+                            if (value == true) {Navigator.pop(context)}
+                          }),
                   child: Text("Générer un nouveau trousseau",
                       style: TextStyle(fontSize: 16)))),
           Expanded(

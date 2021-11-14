@@ -136,6 +136,8 @@ class WalletsHome extends StatelessWidget {
     }
 
     List _listWallets = _myWalletProvider.listWallets;
+    WalletData defaultWallet =
+        _myWalletProvider.getDefaultWallet(configBox.get('currentChest'));
 
     return CustomScrollView(slivers: <Widget>[
       SliverToBoxAdapter(child: SizedBox(height: 20)),

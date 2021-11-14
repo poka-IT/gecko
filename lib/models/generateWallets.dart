@@ -57,9 +57,10 @@ class GenerateWalletsProvider with ChangeNotifier {
     }
     walletBox.add(myWallet);
     ChestData thisChest = ChestData(
-      dewif: _wallet.dewif,
-      name: chestName,
-    );
+        dewif: _wallet.dewif,
+        name: chestName,
+        defaultWallet: 0,
+        imageName: '${chestNumber % 8}.png');
     chestBox.add(thisChest);
     configBox.put('currentChest', chestNumber);
     // walletBox.get(1)
@@ -220,7 +221,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     log.d(_walletPubkey);
   }
 
-  Future importWallet(context, _cesiumID, _cesiumPWD) async {
+  Future importCesiumWallet(context, _cesiumID, _cesiumPWD) async {
     // String _walletPubkey = await DubpRust.getLegacyPublicKey(
     //     salt: _cesiumID, password: _cesiumPWD);
     // String shortPubkey = truncate(_walletPubkey, 9,

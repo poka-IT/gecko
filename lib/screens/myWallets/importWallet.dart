@@ -169,7 +169,7 @@ class ImportWalletScreen extends StatelessWidget {
                                     _generateWalletProvider.isPinChanged
                                 ? () {
                                     _generateWalletProvider
-                                        .importWallet(
+                                        .importCesiumWallet(
                                             context,
                                             _generateWalletProvider
                                                 .cesiumID.text,

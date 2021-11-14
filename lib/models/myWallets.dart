@@ -45,7 +45,7 @@ class MyWalletsProvider with ChangeNotifier {
 
   WalletData getWalletData(List<int> _id) {
     if (_id.isEmpty) return WalletData();
-    int _chest = _id[getCurrentChest()];
+    int _chest = _id[0];
     int _nbr = _id[1];
     var _targetedWallet;
 
@@ -59,15 +59,13 @@ class MyWalletsProvider with ChangeNotifier {
     return _targetedWallet;
   }
 
-  void getDefaultWallet(int chest) {
-    MyWalletsProvider myWalletsProvider = MyWalletsProvider();
-
-    if (configBox.get('defaultWallet')[chest] == null) {
-      configBox.put('defaultWallet', [chest, 0]);
+  WalletData getDefaultWallet(int chest) {
+    if (chestBox.isEmpty) {
+      return WalletData(chest: 0, number: 0);
+    } else {
+      int defaultWalletNumber = chestBox.get(chest).defaultWallet;
+      return getWalletData([chest, defaultWalletNumber]);
     }
-
-    defaultWallet = myWalletsProvider
-        .getWalletData(configBox.get('defaultWallet').cast<int>());
   }
 
   Future<int> deleteAllWallet(context) async {

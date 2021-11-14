@@ -16,7 +16,16 @@ class ChestData extends HiveObject {
   @HiveField(4)
   String imageName;
 
-  ChestData({this.dewif, this.name, this.defaultWallet, this.imageName});
+  @HiveField(5)
+  bool isCesium;
+
+  ChestData({
+    this.dewif,
+    this.name,
+    this.defaultWallet,
+    this.imageName,
+    this.isCesium,
+  });
 
   @override
   String toString() {

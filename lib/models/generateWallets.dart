@@ -57,13 +57,14 @@ class GenerateWalletsProvider with ChangeNotifier {
     }
     walletBox.add(myWallet);
     ChestData thisChest = ChestData(
-        dewif: _wallet.dewif,
-        name: chestName,
-        defaultWallet: 0,
-        imageName: '${chestNumber % 8}.png');
+      dewif: _wallet.dewif,
+      name: chestName,
+      defaultWallet: 0,
+      imageName: '${chestNumber % 8}.png',
+      isCesium: false,
+    );
     chestBox.add(thisChest);
     configBox.put('currentChest', chestNumber);
-    // walletBox.get(1)
   }
 
   void checkAskedWord(String inputWord, String _mnemo) {
@@ -221,13 +222,15 @@ class GenerateWalletsProvider with ChangeNotifier {
     log.d(_walletPubkey);
   }
 
-  Future importCesiumWallet(context, _cesiumID, _cesiumPWD) async {
+  Future importCesiumWallet() async {
     // String _walletPubkey = await DubpRust.getLegacyPublicKey(
     //     salt: _cesiumID, password: _cesiumPWD);
     // String shortPubkey = truncate(_walletPubkey, 9,
     //     omission: "...", position: TruncatePosition.end);
     // await storeWallet(
     //     actualWallet, 'Portefeuille Cesium - $shortPubkey', context);
+    // NewWallet myCesiumWallet = await DubpRust.genWalletFromDeprecatedSaltPassword(salt: _cesiumID, password: _cesiumPWD);
+
     cesiumID.text = '';
     cesiumPWD.text = '';
     cesiumPubkey.text = '';
@@ -236,6 +239,18 @@ class GenerateWalletsProvider with ChangeNotifier {
     pin.text = '';
     isCesiumIDVisible = false;
     isCesiumPWDVisible = false;
+
+    ChestData cesiumChest = ChestData(
+        dewif: actualWallet.dewif,
+        name: 'Coffre à Cesium',
+        imageName: 'cesium.png',
+        defaultWallet: 0,
+        isCesium: true);
+
+    int chestNumber = chestBox.length;
+    chestBox.add(cesiumChest);
+    configBox.put('currentChest', chestNumber);
+
     notifyListeners();
   }
 

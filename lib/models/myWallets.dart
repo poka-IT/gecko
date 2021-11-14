@@ -18,13 +18,7 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   bool checkIfWalletExist() {
-    if (appPath == null) {
-      return false;
-    }
-
-    final List _walletList = readAllWallets(getCurrentChest());
-
-    if (_walletList.isEmpty) {
+    if (chestBox.isEmpty) {
       log.i('No wallets detected');
       return false;
     } else {

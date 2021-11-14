@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/chestData.dart';
 import 'package:gecko/models/myWallets.dart';
 import 'package:gecko/models/queries.dart';
 import 'package:gecko/models/walletData.dart';
@@ -21,11 +22,15 @@ class WalletsHome extends StatelessWidget {
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
 
-    final int _currentChest = myWalletProvider.getCurrentChest();
+    final int _currentChestNumber = myWalletProvider.getCurrentChest();
+    final ChestData _currentChest = chestBox.get(_currentChestNumber);
+    bool isWalletsExists;
 
-    myWalletProvider.listWallets =
-        myWalletProvider.readAllWallets(_currentChest);
-    final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
+    if (!_currentChest.isCesium) {
+      myWalletProvider.listWallets =
+          myWalletProvider.readAllWallets(_currentChestNumber);
+      isWalletsExists = myWalletProvider.checkIfWalletExist();
+    }
 
     return WillPopScope(
       onWillPop: () {
@@ -45,16 +50,25 @@ class WalletsHome extends StatelessWidget {
                   ModalRoute.withName('/'),
                 );
               }),
-          title: Text(chestBox.get(_currentChest).name,
+          title: Text(_currentChest.name,
               key: Key('myWallets'), style: TextStyle(color: Colors.grey[850])),
           backgroundColor: Color(0xffFFD58D),
         ),
         body: SafeArea(
-          child:
-              !isWalletsExists ? NoKeyChainScreen() : myWalletsTiles(context),
+          child: !isWalletsExists
+              ? NoKeyChainScreen()
+              : _currentChest.isCesium
+                  ? cesiumWalletOptions(context)
+                  : myWalletsTiles(context),
         ),
       ),
     );
+  }
+
+  Widget cesiumWalletOptions(BuildContext context) {
+    return Column(children: [
+      Center(child: Text('This is a Cesium wallet')),
+    ]);
   }
 
   Widget chestOptions(BuildContext context) {

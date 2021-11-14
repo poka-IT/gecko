@@ -169,15 +169,14 @@ class ImportWalletScreen extends StatelessWidget {
                                     _generateWalletProvider.isPinChanged
                                 ? () {
                                     _generateWalletProvider
-                                        .importCesiumWallet(
-                                            context,
-                                            _generateWalletProvider
-                                                .cesiumID.text,
-                                            _generateWalletProvider
-                                                .cesiumPWD.text)
+                                        .importCesiumWallet()
                                         .then((value) {
                                       _myWalletProvider.rebuildWidget();
                                       _generateWalletProvider.resetImportView();
+                                      Navigator.popUntil(
+                                        context,
+                                        ModalRoute.withName('/'),
+                                      );
                                     });
                                   }
                                 : null,

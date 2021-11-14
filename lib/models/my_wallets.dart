@@ -128,7 +128,7 @@ class MyWalletsProvider with ChangeNotifier {
         number: _newWalletNbr,
         name: _name,
         derivation: _newDerivationNbr,
-        imageName: '${_newWalletNbr % 3}.png');
+        imageName: '${_newWalletNbr % 4}.png');
 
     await walletBox.add(newWallet);
 

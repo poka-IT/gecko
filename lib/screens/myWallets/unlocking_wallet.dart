@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/history.dart';
 import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -37,6 +38,7 @@ class UnlockingWallet extends StatelessWidget {
     // log.d("defaultWallet: " + defaultWallet.toString());
     final int _pinLenght = _walletOptions.getPinLenght(wallet.number);
     errorController = StreamController<ErrorAnimationType>();
+    ChestData currentChest = chestBox.get(wallet.chest);
 
     return Scaffold(
         // backgroundColor: Colors.brown[600],
@@ -45,15 +47,33 @@ class UnlockingWallet extends StatelessWidget {
         const SizedBox(height: 20),
         Expanded(
           child: Column(children: <Widget>[
-            const SizedBox(height: 150),
-            const Text(
-              'Veuillez tapper votre code secret pour dévérouiller votre portefeuille.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 15.0,
-                  color: Colors.black,
-                  fontWeight: FontWeight.w400),
-            ),
+            const SizedBox(height: 50),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+              Image.asset(
+                'assets/chests/${currentChest.imageName}',
+              ),
+              const SizedBox(width: 5),
+              SizedBox(
+                  width: 250,
+                  child: Text(
+                    currentChest.name,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontSize: 25,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w700),
+                  )),
+            ]),
+            const SizedBox(height: 50),
+            const SizedBox(
+                width: 400,
+                child: Text(
+                  'Pour déverrouiller votre coffre, composez votre code secret à l’abri des lézards indiscrets :',
+                  style: TextStyle(
+                      fontSize: 19,
+                      color: Colors.black,
+                      fontWeight: FontWeight.w400),
+                )),
             const SizedBox(height: 50),
             pinForm(context, _pinLenght, wallet.number, wallet.derivation),
           ]),

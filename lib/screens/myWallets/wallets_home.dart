@@ -113,7 +113,7 @@ class WalletsHome extends StatelessWidget {
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (context) {
-                return ChooseChest();
+                return const ChooseChest();
               }),
             ),
             label: const Text(

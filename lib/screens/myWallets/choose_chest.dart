@@ -1,26 +1,34 @@
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:provider/provider.dart';
 
+class ChooseChest extends StatefulWidget {
+  const ChooseChest({Key key}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() {
+    return _ChooseChestState();
+  }
+}
+
 // ignore: must_be_immutable
-class ChooseChest extends StatelessWidget {
+class _ChooseChestState extends State<ChooseChest> {
   TextEditingController tplController = TextEditingController();
   CarouselController buttonCarouselController = CarouselController();
-
-  ChooseChest({Key key}) : super(key: key);
+  int currentChest = configBox.get('currentChest');
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
-
-    int currentChest = configBox.get('currentChest');
 
     return Scaffold(
         appBar: AppBar(
@@ -30,13 +38,14 @@ class ChooseChest extends StatelessWidget {
         )),
         body: SafeArea(
           child: Column(children: <Widget>[
-            const SizedBox(height: 190),
+            SizedBox(height: 160 * ratio),
             CarouselSlider(
               carouselController: buttonCarouselController,
               options: CarouselOptions(
                 height: 210,
                 onPageChanged: (index, reason) {
                   currentChest = index;
+                  setState(() {});
                 },
                 enableInfiniteScroll: false,
                 initialPage: currentChest,
@@ -60,14 +69,29 @@ class ChooseChest extends StatelessWidget {
                 );
               }).toList(),
             ),
-            Image.asset('assets/chests/vector.png'),
-            const SizedBox(height: 15),
-            const Text(
-              'Choisir un autre\ncoffre',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: chestBox.toMap().entries.map((entry) {
+                return GestureDetector(
+                  onTap: () =>
+                      buttonCarouselController.animateToPage(entry.key),
+                  child: Container(
+                    width: 12.0,
+                    height: 12.0,
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 4.0),
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: (Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.black)
+                            .withOpacity(
+                                currentChest == entry.key ? 0.9 : 0.4)),
+                  ),
+                );
+              }).toList(),
             ),
-            const SizedBox(height: 80),
+            SizedBox(height: 80 * ratio),
             SizedBox(
               width: 400,
               height: 70,
@@ -78,11 +102,16 @@ class ChooseChest extends StatelessWidget {
                 ),
                 onPressed: () {
                   configBox.put('currentChest', currentChest);
+                  WalletData defaultWallet = _myWalletProvider
+                      .getDefaultWallet(configBox.get('currentChest'));
                   _myWalletProvider.rebuildWidget();
-                  Navigator.popUntil(
-                    context,
-                    ModalRoute.withName('/mywallets'),
-                  );
+                  Navigator.pushAndRemoveUntil(context,
+                      MaterialPageRoute(builder: (context) {
+                    return UnlockingWallet(
+                      wallet: defaultWallet,
+                      action: "mywallets",
+                    );
+                  }), ModalRoute.withName('/'));
                 },
                 child: Text(
                   'Ouvrir ce coffre',

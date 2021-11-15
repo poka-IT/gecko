@@ -16,6 +16,7 @@
 // ignore_for_file: avoid_print
 
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/cesium_plus.dart';
@@ -103,6 +104,8 @@ Future<void> main() async {
   } else {
     print('Debug mode enabled: No sentry alerte');
 
+    HttpOverrides.global = MyHttpOverrides();
+
     runApp(Gecko(endPointGVA));
   }
 }
@@ -175,5 +178,15 @@ class Gecko extends StatelessWidget {
             },
           ),
         ));
+  }
+}
+
+// This http overriding is needed to fix fail certifcat checking for Duniter node on old Android version
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
   }
 }

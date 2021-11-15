@@ -315,6 +315,11 @@ class WalletsHome extends StatelessWidget {
   }
 
   Widget addNewDerivation(context) {
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context);
+
+    String _newDerivationName =
+        'Portefeuille ${_myWalletProvider.listWallets.last.number + 2}';
     return Padding(
         padding: const EdgeInsets.all(16),
         child: ClipRRect(
@@ -323,12 +328,9 @@ class WalletsHome extends StatelessWidget {
               Expanded(
                 child: InkWell(
                     key: const Key('addDerivation'),
-                    onTap: () {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return addNewDerivationPopup(context);
-                          });
+                    onTap: () async {
+                      await _myWalletProvider.generateNewDerivation(
+                          context, _newDerivationName);
                     },
                     child: Container(
                       width: double.infinity,

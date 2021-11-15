@@ -133,7 +133,6 @@ class MyWalletsProvider with ChangeNotifier {
     await walletBox.add(newWallet);
 
     notifyListeners();
-    Navigator.pop(context);
   }
 
   void rebuildWidget() {

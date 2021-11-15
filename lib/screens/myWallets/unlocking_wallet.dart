@@ -58,7 +58,7 @@ class UnlockingWallet extends StatelessWidget {
             Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
               Image.asset(
                 'assets/chests/${currentChest.imageName}',
-                height: 120 * ratio,
+                height: isTall ? 130 : 100,
               ),
               const SizedBox(width: 5),
               SizedBox(

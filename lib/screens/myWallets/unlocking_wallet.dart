@@ -52,14 +52,13 @@ class UnlockingWallet extends StatelessWidget {
         // backgroundColor: Colors.brown[600],
         body: SafeArea(
       child: Column(children: <Widget>[
-        const SizedBox(height: 20),
         Expanded(
           child: Column(children: <Widget>[
-            const SizedBox(height: 50),
+            SizedBox(height: isTall ? 80 : 20),
             Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
               Image.asset(
                 'assets/chests/${currentChest.imageName}',
-                height: 150,
+                height: 120 * ratio,
               ),
               const SizedBox(width: 5),
               SizedBox(
@@ -73,7 +72,7 @@ class UnlockingWallet extends StatelessWidget {
                         fontWeight: FontWeight.w700),
                   )),
             ]),
-            const SizedBox(height: 50),
+            SizedBox(height: 30 * ratio),
             const SizedBox(
                 width: 400,
                 child: Text(
@@ -83,9 +82,9 @@ class UnlockingWallet extends StatelessWidget {
                       color: Colors.black,
                       fontWeight: FontWeight.w400),
                 )),
-            const SizedBox(height: 50),
+            SizedBox(height: 40 * ratio),
             pinForm(context, _pinLenght),
-            const SizedBox(height: 5),
+            SizedBox(height: 3 * ratio),
             InkWell(
                 key: const Key('chooseChest'),
                 onTap: () {
@@ -127,7 +126,7 @@ class UnlockingWallet extends StatelessWidget {
     return Form(
       key: formKey,
       child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
+          padding: EdgeInsets.symmetric(vertical: 5 * ratio, horizontal: 30),
           child: PinCodeTextField(
             autoFocus: true,
             appContext: context,
@@ -151,7 +150,7 @@ class UnlockingWallet extends StatelessWidget {
               borderWidth: 4,
               shape: PinCodeFieldShape.box,
               borderRadius: BorderRadius.circular(5),
-              fieldHeight: 60,
+              fieldHeight: 50 * ratio,
               fieldWidth: 50,
               activeFillColor: hasError ? Colors.blueAccent : Colors.black,
             ),

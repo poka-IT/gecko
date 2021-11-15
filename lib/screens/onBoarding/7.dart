@@ -196,7 +196,9 @@ class PrintWallet extends StatelessWidget {
         Provider.of<GenerateWalletsProvider>(context);
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: const Text('Imprimer ce trousseau')),
+        appBar: AppBar(
+            toolbarHeight: 60 * ratio,
+            title: const Text('Imprimer ce trousseau')),
         body: PdfPreview(
           build: (format) => _generateWalletProvider.printWallet(sentence),
         ),

@@ -34,10 +34,11 @@ class SettingsScreen extends StatelessWidget {
     // getAppDirectory();
     return Scaffold(
         appBar: AppBar(
+            toolbarHeight: 60 * ratio,
             title: const SizedBox(
-          height: 22,
-          child: Text('Paramètres'),
-        )),
+              height: 22,
+              child: Text('Paramètres'),
+            )),
         body: Column(children: <Widget>[
           const SizedBox(height: 40),
           SizedBox(

@@ -71,6 +71,7 @@ class WalletOptions extends StatelessWidget {
         child: Scaffold(
           resizeToAvoidBottomInset: false,
           appBar: AppBar(
+              toolbarHeight: 60 * ratio,
               leading: IconButton(
                   icon: const Icon(Icons.arrow_back, color: Colors.black),
                   onPressed: () {

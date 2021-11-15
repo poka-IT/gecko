@@ -17,10 +17,11 @@ class TemplateScreen extends StatelessWidget {
     // HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
     return Scaffold(
         appBar: AppBar(
+            toolbarHeight: 60 * ratio,
             title: const SizedBox(
-          height: 22,
-          child: Text('Template screen'),
-        )),
+              height: 22,
+              child: Text('Template screen'),
+            )),
         floatingActionButton: SizedBox(
             height: 80.0,
             width: 80.0,

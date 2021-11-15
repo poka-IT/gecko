@@ -32,10 +32,11 @@ class _ChooseChestState extends State<ChooseChest> {
 
     return Scaffold(
         appBar: AppBar(
+            toolbarHeight: 60 * ratio,
             title: const SizedBox(
-          height: 22,
-          child: Text('Sélectionner mon coffre'),
-        )),
+              height: 22,
+              child: Text('Sélectionner mon coffre'),
+            )),
         body: SafeArea(
           child: Column(children: <Widget>[
             SizedBox(height: 160 * ratio),

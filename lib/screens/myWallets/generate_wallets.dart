@@ -29,10 +29,11 @@ class GenerateWalletsScreen extends StatelessWidget {
 
     return Scaffold(
         appBar: AppBar(
+            toolbarHeight: 60 * ratio,
             title: const SizedBox(
-          height: 22,
-          child: Text('Générer un trousseau'),
-        )),
+              height: 22,
+              child: Text('Générer un trousseau'),
+            )),
         floatingActionButton: SizedBox(
             height: 80.0,
             width: 80.0,
@@ -182,7 +183,9 @@ class PrintWallet extends StatelessWidget {
         Provider.of<GenerateWalletsProvider>(context);
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: const Text('Imprimer ce trousseau')),
+        appBar: AppBar(
+            toolbarHeight: 60 * ratio,
+            title: const Text('Imprimer ce trousseau')),
         body: PdfPreview(
           build: (format) => _generateWalletProvider.printWallet(sentence),
         ),

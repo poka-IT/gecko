@@ -44,6 +44,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
     return Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
+          toolbarHeight: 60 * ratio,
           title: _homeProvider.appBarExplorer,
           actions: [
             Padding(

@@ -44,6 +44,7 @@ class WalletsHome extends StatelessWidget {
       },
       child: Scaffold(
         appBar: AppBar(
+          toolbarHeight: 60 * ratio,
           leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.black),
               onPressed: () {

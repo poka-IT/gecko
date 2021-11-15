@@ -213,6 +213,7 @@ class GeckoSpeechAppBar extends StatelessWidget with PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
+        toolbarHeight: 60 * ratio,
         leading: IconButton(
           icon: SizedBox(
               height: 30,

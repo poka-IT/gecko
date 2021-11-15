@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dubp/dubp.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/generate_wallets.dart';
 import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/models/wallet_options.dart';
@@ -45,6 +46,7 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
         child: Scaffold(
           resizeToAvoidBottomInset: false,
           appBar: AppBar(
+              toolbarHeight: 60 * ratio,
               leading: IconButton(
                   icon: const Icon(Icons.arrow_back, color: Colors.black),
                   onPressed: () {

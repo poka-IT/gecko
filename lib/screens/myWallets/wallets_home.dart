@@ -31,8 +31,8 @@ class WalletsHome extends StatelessWidget {
     if (!_currentChest.isCesium) {
       myWalletProvider.listWallets =
           myWalletProvider.readAllWallets(_currentChestNumber);
-      isWalletsExists = myWalletProvider.checkIfWalletExist();
     }
+    isWalletsExists = myWalletProvider.checkIfWalletExist();
 
     return WillPopScope(
       onWillPop: () {

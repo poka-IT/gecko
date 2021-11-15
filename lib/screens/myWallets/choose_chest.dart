@@ -58,6 +58,7 @@ class _ChooseChestState extends State<ChooseChest> {
                     return Column(children: <Widget>[
                       Image.asset(
                         'assets/chests/${i.value.imageName}',
+                        height: 150,
                       ),
                       const SizedBox(height: 30),
                       Text(
@@ -102,8 +103,8 @@ class _ChooseChestState extends State<ChooseChest> {
                 ),
                 onPressed: () {
                   configBox.put('currentChest', currentChest);
-                  WalletData defaultWallet = _myWalletProvider
-                      .getDefaultWallet(configBox.get('currentChest'));
+                  WalletData defaultWallet =
+                      _myWalletProvider.getDefaultWallet(currentChest);
                   _myWalletProvider.rebuildWidget();
                   Navigator.pushAndRemoveUntil(context,
                       MaterialPageRoute(builder: (context) {

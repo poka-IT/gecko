@@ -7,6 +7,7 @@ import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/wallet_options.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/screens/myWallets/choose_chest.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/globals.dart';
@@ -35,10 +36,17 @@ class UnlockingWallet extends StatelessWidget {
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
 
-    // log.d("defaultWallet: " + defaultWallet.toString());
-    final int _pinLenght = _walletOptions.getPinLenght(wallet.number);
+    int _pinLenght;
+
+    ChestData currentChest = chestBox.get(configBox.get('currentChest'));
+
+    if (currentChest.isCesium) {
+      _pinLenght = _walletOptions.getPinLenght(currentChest.dewif);
+      wallet = WalletData(derivation: -1, chest: currentChest.key);
+    } else {
+      _pinLenght = _walletOptions.getPinLenght(wallet.number);
+    }
     errorController = StreamController<ErrorAnimationType>();
-    ChestData currentChest = chestBox.get(wallet.chest);
 
     return Scaffold(
         // backgroundColor: Colors.brown[600],
@@ -51,6 +59,7 @@ class UnlockingWallet extends StatelessWidget {
             Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
               Image.asset(
                 'assets/chests/${currentChest.imageName}',
+                height: 150,
               ),
               const SizedBox(width: 5),
               SizedBox(
@@ -75,14 +84,35 @@ class UnlockingWallet extends StatelessWidget {
                       fontWeight: FontWeight.w400),
                 )),
             const SizedBox(height: 50),
-            pinForm(context, _pinLenght, wallet.number, wallet.derivation),
+            pinForm(context, _pinLenght),
+            const SizedBox(height: 5),
+            InkWell(
+                key: const Key('chooseChest'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return const ChooseChest();
+                    }),
+                  );
+                },
+                child: SizedBox(
+                  width: 400,
+                  height: 70,
+                  child: Center(
+                      child: Text('Changer de coffre',
+                          style: TextStyle(
+                              fontSize: 22,
+                              color: orangeC,
+                              fontWeight: FontWeight.w600))),
+                )),
           ]),
         ),
       ]),
     ));
   }
 
-  Widget pinForm(context, _pinLenght, int _walletNbr, int _derivation) {
+  Widget pinForm(context, _pinLenght) {
     // var _walletPin = '';
 // ignore: close_sinks
     StreamController<ErrorAnimationType> errorController =
@@ -143,7 +173,7 @@ class UnlockingWallet extends StatelessWidget {
             onCompleted: (_pin) async {
               log.d("Completed");
               _myWalletProvider.pinCode = _pin;
-              final resultWallet = await _walletOptions.readLocalWallet(
+              final String resultWallet = await _walletOptions.readLocalWallet(
                   context, wallet, _pin.toUpperCase(), _pinLenght);
               // _myWalletProvider.pinCode = _pin.toUpperCase();
               _myWalletProvider.pinLenght = _pinLenght;

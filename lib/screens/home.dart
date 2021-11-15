@@ -87,6 +87,7 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         appBar: AppBar(
+          toolbarHeight: 60 * ratio,
           leading: Builder(
               builder: (context) => IconButton(
                     key: const Key('drawerMenu'),

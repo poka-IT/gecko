@@ -1,5 +1,6 @@
 import 'package:dubp/dubp.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/chest_provider.dart';
 import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
 import 'package:flutter/material.dart';
@@ -23,10 +24,9 @@ class HomeScreen extends StatelessWidget {
     HistoryProvider _historyStatic = HistoryProvider('');
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
-    final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
+    Provider.of<ChestProvider>(context);
 
-    WalletData defaultWallet =
-        _myWalletProvider.getDefaultWallet(configBox.get('currentChest'));
+    final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
 
     // walletBox.toMap().forEach((key, value) {
     //   if (value.chest == 0) {
@@ -281,6 +281,9 @@ class HomeScreen extends StatelessWidget {
                                         image: AssetImage('assets/lock.png'),
                                         height: 57)),
                                 onTap: () {
+                                  WalletData defaultWallet =
+                                      _myWalletProvider.getDefaultWallet(
+                                          configBox.get('currentChest'));
                                   isWalletsExists
                                       ? Navigator.push(context,
                                           MaterialPageRoute(builder: (context) {

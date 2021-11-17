@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:image_picker/image_picker.dart';
@@ -24,7 +25,6 @@ class WalletOptionsProvider with ChangeNotifier {
   bool isBalanceBlur = true;
   FocusNode walletNameFocus = FocusNode();
   TextEditingController nameController = TextEditingController();
-  List<int> walletID;
   bool isDefaultWallet;
 
   Future<NewWallet> get badWallet => null;
@@ -125,63 +125,28 @@ class WalletOptionsProvider with ChangeNotifier {
     return _pinLenght;
   }
 
-  void _renameWallet(List<int> _walletID, _newName) async {
-    MyWalletsProvider myWalletClass = MyWalletsProvider();
+  void _renameWallet(List<int> _walletID, _newName, {bool isCesium}) async {
+    if (isCesium) {
+      ChestData _chestTarget = chestBox.get(_walletID[0]);
+      _chestTarget.name = _newName;
+      await chestBox.put(_chestTarget.key, _chestTarget);
+    } else {
+      MyWalletsProvider myWalletClass = MyWalletsProvider();
 
-    WalletData _walletTarget = myWalletClass.getWalletData(_walletID);
-    _walletTarget.name = _newName;
-    await walletBox.put(_walletTarget.key, _walletTarget);
+      WalletData _walletTarget = myWalletClass.getWalletData(_walletID);
+      _walletTarget.name = _newName;
+      await walletBox.put(_walletTarget.key, _walletTarget);
+    }
 
     _newWalletName.text = '';
   }
 
-  Future<bool> renameWalletAlerte(
-      context, _walletName, _walletNbr, _derivation) async {
-    return showDialog<bool>(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Choisissez un nouveau nom pour ce portefeuille'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                TextField(
-                    controller: _newWalletName,
-                    maxLines: 1,
-                    textAlign: TextAlign.center,
-                    decoration: const InputDecoration(),
-                    style: const TextStyle(
-                        fontSize: 14.0,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold)),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text("Valider"),
-              onPressed: () {
-                WidgetsBinding.instance.addPostFrameCallback((_) async {
-                  // await _renameWallet(_walletName, this._newWalletName.text,
-                  //     _walletNbr, _derivation);
-                });
-                // notifyListeners();
-                Navigator.pop(context, true);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  bool editWalletName(List<int> _wID) {
+  bool editWalletName(List<int> _wID, {bool isCesium}) {
     bool nameState;
     if (isEditing) {
       if (!nameController.text.contains(':') &&
           nameController.text.length <= 39) {
-        _renameWallet(_wID, nameController.text);
+        _renameWallet(_wID, nameController.text, isCesium: isCesium);
         nameState = true;
       } else {
         nameState = false;
@@ -281,10 +246,11 @@ class WalletOptionsProvider with ChangeNotifier {
     File _image;
     final picker = ImagePicker();
 
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    XFile pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       _image = File(pickedFile.path);
+      log.i(pickedFile.path);
       return _image;
     } else {
       log.w('No image selected.');

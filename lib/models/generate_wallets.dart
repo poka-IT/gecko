@@ -39,15 +39,14 @@ class GenerateWalletsProvider with ChangeNotifier {
   bool canImport = false;
   bool isPinChanged = false;
 
-  void storeHDWChest(
+  Future storeHDWChest(
       NewWallet _wallet, String _name, BuildContext context) async {
-    int chestNumber = chestBox.length;
-    WalletData myWallet = WalletData(
-        chest: chestNumber,
-        number: 0,
-        name: _name,
-        derivation: 3,
-        imageName: '0.png');
+    int chestNumber = 0;
+    chestBox.toMap().forEach((key, value) {
+      if (!value.isCesium) {
+        chestNumber++;
+      }
+    });
 
     String chestName;
     if (chestNumber == 0) {
@@ -55,7 +54,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     } else {
       chestName = 'Coffre à Ğecko ${chestNumber + 1}';
     }
-    walletBox.add(myWallet);
     ChestData thisChest = ChestData(
       dewif: _wallet.dewif,
       name: chestName,
@@ -63,8 +61,19 @@ class GenerateWalletsProvider with ChangeNotifier {
       imageName: '${chestNumber % 8}.png',
       isCesium: false,
     );
-    chestBox.add(thisChest);
-    configBox.put('currentChest', chestNumber);
+    await chestBox.add(thisChest);
+    int chestKey = chestBox.keys.last;
+
+    WalletData myWallet = WalletData(
+        chest: chestKey,
+        number: 0,
+        name: _name,
+        derivation: 3,
+        imageName: '0.png');
+    await walletBox.add(myWallet);
+
+    await configBox.put('currentChest', chestKey);
+    notifyListeners();
   }
 
   void checkAskedWord(String inputWord, String _mnemo) {
@@ -240,16 +249,31 @@ class GenerateWalletsProvider with ChangeNotifier {
     isCesiumIDVisible = false;
     isCesiumPWDVisible = false;
 
+    int chestNumber = 0;
+    chestBox.toMap().forEach((key, value) {
+      if (value.isCesium) {
+        chestNumber++;
+      }
+    });
+
+    String chestName;
+    if (chestNumber == 0) {
+      chestName = 'Coffre à Césium';
+    } else {
+      chestName = 'Coffre à Césium ${chestNumber + 1}';
+    }
+
     ChestData cesiumChest = ChestData(
         dewif: actualWallet.dewif,
-        name: 'Coffre à Cesium',
+        name: chestName,
         imageName: 'cesium.png',
         defaultWallet: 0,
         isCesium: true);
 
-    int chestNumber = chestBox.length;
-    chestBox.add(cesiumChest);
-    configBox.put('currentChest', chestNumber);
+    await chestBox.add(cesiumChest).then((value) => null);
+    int chestKey = await chestBox.toMap().keys.last;
+    // chestBox.toMap().
+    await configBox.put('currentChest', chestKey);
 
     notifyListeners();
   }

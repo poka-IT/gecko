@@ -56,6 +56,7 @@ dependencies:
   assorted_layout_widgets: ^5.2.1
   carousel_slider: ^4.0.0
   flutter_lints: ^1.0.4
+  confirm_dialog: ^1.0.0
 
 flutter_icons:
   android: "ic_launcher"
@@ -79,6 +80,7 @@ flutter:
     - images/
     - config/gva_endpoints.json
     - assets/
+    - assets/customs/
     - assets/avatars/
     - assets/chests/
     - assets/icon/

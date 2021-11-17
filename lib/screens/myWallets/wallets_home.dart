@@ -7,6 +7,7 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/wallet_options.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/common_elements.dart';
+import 'package:gecko/screens/myWallets/cesium_wallet_options.dart';
 import 'package:gecko/screens/myWallets/choose_chest.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/screens/onBoarding/0_no_keychain_found.dart';
@@ -62,18 +63,18 @@ class WalletsHome extends StatelessWidget {
           child: !isWalletsExists
               ? const NoKeyChainScreen()
               : _currentChest.isCesium
-                  ? cesiumWalletOptions(context)
+                  ? cesiumWalletOptions(context, _currentChest)
                   : myWalletsTiles(context),
         ),
       ),
     );
   }
 
-  Widget cesiumWalletOptions(BuildContext context) {
-    return Column(children: const [
-      Center(child: Text('This is a Cesium wallet')),
-    ]);
-  }
+  // Widget cesiumWalletOptions(BuildContext context) {
+  //   return Column(children: const [
+  //     Center(child: Text('This is a Cesium wallet')),
+  //   ]);
+  // }
 
   Widget chestOptions(BuildContext context) {
     return Column(children: [
@@ -214,11 +215,17 @@ class WalletsHome extends StatelessWidget {
                             child:
                                 // SvgPicture.asset('assets/chopp-gecko2.png',
                                 //         semanticsLabel: 'Gecko', height: 48),
-                                Image.asset(
-                              'assets/avatars/${_repository.imageName}',
-                              alignment: Alignment.bottomCenter,
-                              scale: 0.5,
-                            ),
+                                _repository.imageFile == null
+                                    ? Image.asset(
+                                        'assets/avatars/${_repository.imageName}',
+                                        alignment: Alignment.bottomCenter,
+                                        scale: 0.5,
+                                      )
+                                    : Image.file(
+                                        _repository.imageFile,
+                                        alignment: Alignment.bottomCenter,
+                                        scale: 0.5,
+                                      ),
                           )),
                           // balanceBuilder(context, _walletOptions.pubkey.text),
                           ListTile(

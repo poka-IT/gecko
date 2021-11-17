@@ -23,7 +23,6 @@ class UnlockingWallet extends StatelessWidget {
   // ignore: close_sinks
   StreamController<ErrorAnimationType> errorController;
   final formKey = GlobalKey<FormState>();
-  bool hasError = false;
   var pinColor = const Color(0xffF9F9F1);
   var walletPin = '';
   String resultPay;
@@ -56,10 +55,15 @@ class UnlockingWallet extends StatelessWidget {
           child: Column(children: <Widget>[
             SizedBox(height: isTall ? 80 : 20),
             Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-              Image.asset(
-                'assets/chests/${currentChest.imageName}',
-                height: isTall ? 130 : 100,
-              ),
+              currentChest.imageFile == null
+                  ? Image.asset(
+                      'assets/chests/${currentChest.imageName}',
+                      width: isTall ? 130 : 100,
+                    )
+                  : Image.file(
+                      currentChest.imageFile,
+                      width: isTall ? 130 : 100,
+                    ),
               const SizedBox(width: 5),
               SizedBox(
                   width: 250,
@@ -123,11 +127,14 @@ class UnlockingWallet extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context);
     HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
 
+    FocusNode pinFocus = FocusNode();
+
     return Form(
       key: formKey,
       child: Padding(
           padding: EdgeInsets.symmetric(vertical: 5 * ratio, horizontal: 30),
           child: PinCodeTextField(
+            focusNode: pinFocus,
             autoFocus: true,
             appContext: context,
             pastedTextStyle: TextStyle(
@@ -152,7 +159,7 @@ class UnlockingWallet extends StatelessWidget {
               borderRadius: BorderRadius.circular(5),
               fieldHeight: 50 * ratio,
               fieldWidth: 50,
-              activeFillColor: hasError ? Colors.blueAccent : Colors.black,
+              activeFillColor: Colors.black,
             ),
             cursorColor: Colors.black,
             animationDuration: const Duration(milliseconds: 300),
@@ -180,9 +187,9 @@ class UnlockingWallet extends StatelessWidget {
               if (resultWallet == 'bad') {
                 errorController.add(ErrorAnimationType
                     .shake); // Triggering error shake animation
-                hasError = true;
                 pinColor = Colors.red[600];
                 _walletOptions.reloadBuild();
+                pinFocus.requestFocus();
               } else {
                 pinColor = Colors.green[400];
                 // await Future.delayed(Duration(milliseconds: 50));

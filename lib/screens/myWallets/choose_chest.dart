@@ -45,7 +45,7 @@ class _ChooseChestState extends State<ChooseChest> {
               options: CarouselOptions(
                 height: 210,
                 onPageChanged: (index, reason) {
-                  currentChest = index;
+                  currentChest = chestBox.toMap().keys.toList()[index];
                   setState(() {});
                 },
                 enableInfiniteScroll: false,
@@ -57,10 +57,15 @@ class _ChooseChestState extends State<ChooseChest> {
                 return Builder(
                   builder: (BuildContext context) {
                     return Column(children: <Widget>[
-                      Image.asset(
-                        'assets/chests/${i.value.imageName}',
-                        height: 150,
-                      ),
+                      i.value.imageFile == null
+                          ? Image.asset(
+                              'assets/chests/${i.value.imageName}',
+                              height: 150,
+                            )
+                          : Image.file(
+                              i.value.imageFile,
+                              height: 150,
+                            ),
                       const SizedBox(height: 30),
                       Text(
                         i.value.name,
@@ -71,28 +76,30 @@ class _ChooseChestState extends State<ChooseChest> {
                 );
               }).toList(),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: chestBox.toMap().entries.map((entry) {
-                return GestureDetector(
-                  onTap: () =>
-                      buttonCarouselController.animateToPage(entry.key),
-                  child: Container(
-                    width: 12.0,
-                    height: 12.0,
-                    margin: const EdgeInsets.symmetric(
-                        vertical: 8.0, horizontal: 4.0),
-                    decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: (Theme.of(context).brightness == Brightness.dark
-                                ? Colors.white
-                                : Colors.black)
-                            .withOpacity(
-                                currentChest == entry.key ? 0.9 : 0.4)),
-                  ),
-                );
-              }).toList(),
-            ),
+            if (chestBox.values.toList().length > 1)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: chestBox.toMap().entries.map((entry) {
+                  return GestureDetector(
+                    onTap: () =>
+                        buttonCarouselController.animateToPage(entry.key),
+                    child: Container(
+                      width: 12.0,
+                      height: 12.0,
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 4.0),
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color:
+                              (Theme.of(context).brightness == Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black)
+                                  .withOpacity(
+                                      currentChest == entry.key ? 0.9 : 0.4)),
+                    ),
+                  );
+                }).toList(),
+              ),
             SizedBox(height: 80 * ratio),
             SizedBox(
               width: 400,

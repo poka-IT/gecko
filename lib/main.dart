@@ -22,6 +22,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/cesium_plus.dart';
 import 'package:gecko/models/change_pin.dart';
 import 'package:gecko/models/chest_data.dart';
+import 'package:gecko/models/chest_provider.dart';
 import 'package:gecko/models/generate_wallets.dart';
 import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
@@ -136,6 +137,7 @@ class Gecko extends StatelessWidget {
           ChangeNotifierProvider(create: (_) => HomeProvider()),
           ChangeNotifierProvider(create: (_) => HistoryProvider('')),
           ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
+          ChangeNotifierProvider(create: (_) => ChestProvider()),
           ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
           ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
           ChangeNotifierProvider(create: (_) => ChangePinProvider()),

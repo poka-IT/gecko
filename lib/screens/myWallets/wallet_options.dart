@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -46,13 +47,10 @@ class WalletOptions extends StatelessWidget {
       _nbrLinesName = 3;
     }
 
-    _walletOptions.walletID = [0, wallet.number];
-
     WalletData defaultWallet =
         _myWalletProvider.getDefaultWallet(_currentChest);
 
-    _walletOptions.isDefaultWallet =
-        (defaultWallet.number == _walletOptions.walletID[1]);
+    _walletOptions.isDefaultWallet = (defaultWallet.number == wallet.id()[1]);
 
     int currentChest = _myWalletProvider.getCurrentChest();
 
@@ -107,15 +105,30 @@ class WalletOptions extends StatelessWidget {
                       const SizedBox(width: 25),
                       InkWell(
                           onTap: () async {
-                            await _walletOptions.changeAvatar();
+                            File newAvatar =
+                                await _walletOptions.changeAvatar();
+                            if (newAvatar != null) {
+                              wallet.imageFile = newAvatar;
+                            }
+                            _walletOptions.reloadBuild();
                           },
-                          child: Image.asset(
-                            'assets/avatars/${wallet.imageName}',
-                            width: 110,
-                          )),
+                          child: wallet.imageFile == null
+                              ? Image.asset(
+                                  'assets/avatars/${wallet.imageName}',
+                                  width: 110,
+                                )
+                              : Image.file(
+                                  wallet.imageFile,
+                                  width: 110,
+                                )),
                       InkWell(
                           onTap: () async {
-                            await _walletOptions.changeAvatar();
+                            File newAvatar =
+                                await _walletOptions.changeAvatar();
+                            if (newAvatar != null) {
+                              wallet.imageFile = newAvatar;
+                            }
+                            _walletOptions.reloadBuild();
                           },
                           child: Column(children: <Widget>[
                             Image.asset(
@@ -227,8 +240,9 @@ class WalletOptions extends StatelessWidget {
                             InkWell(
                                 key: const Key('renameWallet'),
                                 onTap: () async {
-                                  _isNewNameValid = _walletOptions
-                                      .editWalletName(_walletOptions.walletID);
+                                  _isNewNameValid =
+                                      _walletOptions.editWalletName(wallet.id(),
+                                          isCesium: false);
                                   await Future.delayed(
                                       const Duration(milliseconds: 30));
                                   _walletOptions.walletNameFocus.requestFocus();

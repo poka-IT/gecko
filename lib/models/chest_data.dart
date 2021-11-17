@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:hive_flutter/hive_flutter.dart';
 
 part 'chest_data.g.dart';
@@ -17,6 +19,9 @@ class ChestData extends HiveObject {
   String imageName;
 
   @HiveField(5)
+  File imageFile;
+
+  @HiveField(6)
   bool isCesium;
 
   ChestData({
@@ -24,6 +29,7 @@ class ChestData extends HiveObject {
     this.name,
     this.defaultWallet,
     this.imageName,
+    this.imageFile,
     this.isCesium,
   });
 

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:hive_flutter/hive_flutter.dart';
 
 part 'wallet_data.g.dart';
@@ -19,8 +21,16 @@ class WalletData extends HiveObject {
   @HiveField(4)
   String imageName;
 
+  @HiveField(5)
+  File imageFile;
+
   WalletData(
-      {this.chest, this.number, this.name, this.derivation, this.imageName});
+      {this.chest,
+      this.number,
+      this.name,
+      this.derivation,
+      this.imageName,
+      this.imageFile});
 
   // representation of WalletData when debugging
   @override
@@ -34,7 +44,7 @@ class WalletData extends HiveObject {
   }
 
   // returns only the id part of the ':'-separated string
-  List id() {
+  List<int> id() {
     return [chest, number];
   }
 }

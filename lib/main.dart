@@ -41,10 +41,12 @@ import 'package:flutter/foundation.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:flutter_driver/driver_extension.dart';
 
 const bool enableSentry = true;
 
 Future<void> main() async {
+  enableFlutterDriverExtension();
   WidgetsFlutterBinding.ensureInitialized();
 
   HomeProvider _homeProvider = HomeProvider();

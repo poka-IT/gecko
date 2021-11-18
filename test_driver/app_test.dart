@@ -113,6 +113,7 @@ void main() {
       await driver.enterText('triche');
       await tapOn('walletName');
       await driver.enterText(name);
+      await sleep(50);
       await tapOn('confirmStorage');
       await sleep(300);
       return pinCode;
@@ -439,8 +440,6 @@ void main() {
       await deleteAllWallets();
       await sleep(100);
       final String pincode = await createNewKeychain('Fast wallet');
-      await sleep(100);
-      await tapOn('manageWallets');
       await sleep(200);
       await driver.enterText(pincode);
       await sleep(100);

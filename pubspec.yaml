@@ -5,7 +5,7 @@ description: Pay with G1.
 # pub.dev using `pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 0.0.2+7
+version: 0.0.2+11
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -20,7 +20,7 @@ dependencies:
     sdk: flutter
   flutter_driver:
     sdk: flutter
-  flutter_launcher_icons: ^0.9.0
+  flutter_launcher_icons: ^0.9.2
   flutter_logs: ^2.1.4
   flutter_svg: ^0.22.0
   graphql_flutter: ^5.0.0
@@ -36,7 +36,7 @@ dependencies:
   path_provider: ^2.0.3
   pdf: ^3.5.0
   permission_handler: 8.1.6
-  pin_code_fields: ^6.0.2
+  pin_code_fields: ^7.3.0
   printing: ^5.6.0
   provider: ^6.0.0
   qrscan: ^0.3.2
@@ -53,11 +53,15 @@ dependencies:
   truncate: ^3.0.1
   unorm_dart: ^0.2.0
   xml: ^5.3.0
+  assorted_layout_widgets: ^5.2.1
+  carousel_slider: ^4.0.0
+  flutter_lints: ^1.0.4
+  confirm_dialog: ^1.0.0
 
 flutter_icons:
   android: "ic_launcher"
   ios: true
-  image_path: "assets/icon/gecko_final.png"
+  image_path: "assets/icon/gecko_flat.png"
   cupertino_icons: ^1.0.0
 
 dev_dependencies:
@@ -76,6 +80,9 @@ flutter:
     - images/
     - config/gva_endpoints.json
     - assets/
+    - assets/customs/
+    - assets/avatars/
+    - assets/chests/
     - assets/icon/
     - assets/onBoarding/
     - assets/onBoarding/progress_bar/

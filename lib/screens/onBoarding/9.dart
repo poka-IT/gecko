@@ -1,13 +1,17 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/screens/commonElements.dart';
+import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/10.dart';
 
 // ignore: must_be_immutable
 class OnboardingStepEleven extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
   final int progress = 8;
+
+  OnboardingStepEleven({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,15 +26,16 @@ class OnboardingStepEleven extends StatelessWidget {
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeakRich(
               <TextSpan>[
-                TextSpan(text: "Super !\n\nJe vais maintenant créer votre "),
-                TextSpan(
+                const TextSpan(
+                    text: "Super !\n\nJe vais maintenant créer votre "),
+                const TextSpan(
                     text: 'code secret.',
                     style: TextStyle(fontWeight: FontWeight.bold)),
-                TextSpan(
+                const TextSpan(
                     text:
                         " \n\nVotre code secret chiffre votre trousseau de clefs, ce qui le rend inutilisable par d’autres, par exemple si vous perdez votre téléphone ou si on vous le vole."),
               ],
-              textKey: Key('step9'),
+              textKey: const Key('step9'),
             ),
             SizedBox(height: isTall ? 50 : 10),
             Image.asset(
@@ -44,7 +49,7 @@ class OnboardingStepEleven extends StatelessWidget {
                       width: 400,
                       height: 62,
                       child: ElevatedButton(
-                          key: Key('goStep10'),
+                          key: const Key('goStep10'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
                             primary: orangeC,
@@ -57,10 +62,10 @@ class OnboardingStepEleven extends StatelessWidget {
                                   page: OnboardingStepTwelve(), isFast: true),
                             );
                           },
-                          child: Text("J'ai compris",
+                          child: const Text("J'ai compris",
                               style: TextStyle(fontSize: 20))),
                     ))),
-            SizedBox(height: 80),
+            const SizedBox(height: 80),
           ]),
         ));
   }

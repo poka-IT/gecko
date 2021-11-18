@@ -13,21 +13,26 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+// ignore_for_file: avoid_print
+
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/cesiumPlus.dart';
-import 'package:gecko/models/changePin.dart';
-import 'package:gecko/models/generateWallets.dart';
+import 'package:gecko/models/cesium_plus.dart';
+import 'package:gecko/models/change_pin.dart';
+import 'package:gecko/models/chest_data.dart';
+import 'package:gecko/models/chest_provider.dart';
+import 'package:gecko/models/generate_wallets.dart';
 import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
-import 'package:gecko/models/myWallets.dart';
-import 'package:gecko/models/walletData.dart';
-import 'package:gecko/models/walletOptions.dart';
+import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/models/wallet_options.dart';
 import 'package:gecko/screens/home.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/screens/myWallets/walletsHome.dart';
+import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
@@ -36,14 +41,15 @@ import 'package:flutter/foundation.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:flutter_driver/driver_extension.dart';
 
-final bool enableSentry = true;
+const bool enableSentry = true;
 
 Future<void> main() async {
+  enableFlutterDriverExtension();
   WidgetsFlutterBinding.ensureInitialized();
 
   HomeProvider _homeProvider = HomeProvider();
-  MyWalletsProvider _walletsProvider = MyWalletsProvider();
   appPath = await getApplicationDocumentsDirectory();
   await _homeProvider.createDefaultAvatar();
   appVersion = await _homeProvider.getAppVersion();
@@ -52,11 +58,10 @@ Future<void> main() async {
   // Configure Hive and open boxes
   await Hive.initFlutter(appPath.path);
   Hive.registerAdapter(WalletDataAdapter());
+  Hive.registerAdapter(ChestDataAdapter());
   walletBox = await Hive.openBox<WalletData>("walletBox");
-  chestBox = await Hive.openBox("chestBox");
+  chestBox = await Hive.openBox<ChestData>("chestBox");
   configBox = await Hive.openBox("configBox");
-
-  _walletsProvider.getDefaultWallet();
 
   // final HiveStore _store =
   //     await HiveStore.open(path: '${appPath.path}/gqlCache');
@@ -102,12 +107,14 @@ Future<void> main() async {
   } else {
     print('Debug mode enabled: No sentry alerte');
 
+    HttpOverrides.global = MyHttpOverrides();
+
     runApp(Gecko(endPointGVA));
   }
 }
 
 class Gecko extends StatelessWidget {
-  Gecko(this.randomEndpoint);
+  const Gecko(this.randomEndpoint, {Key key}) : super(key: key);
   final String randomEndpoint;
 
   @override
@@ -132,6 +139,7 @@ class Gecko extends StatelessWidget {
           ChangeNotifierProvider(create: (_) => HomeProvider()),
           ChangeNotifierProvider(create: (_) => HistoryProvider('')),
           ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
+          ChangeNotifierProvider(create: (_) => ChestProvider()),
           ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
           ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
           ChangeNotifierProvider(create: (_) => ChangePinProvider()),
@@ -146,33 +154,43 @@ class Gecko extends StatelessWidget {
                 minWidth: 480,
                 defaultScale: true,
                 breakpoints: [
-                  ResponsiveBreakpoint.resize(480, name: MOBILE),
-                  ResponsiveBreakpoint.autoScale(800, name: TABLET),
-                  ResponsiveBreakpoint.resize(1000, name: DESKTOP),
+                  const ResponsiveBreakpoint.resize(480, name: MOBILE),
+                  const ResponsiveBreakpoint.autoScale(800, name: TABLET),
+                  const ResponsiveBreakpoint.resize(1000, name: DESKTOP),
                 ],
                 background: Container(color: backgroundColor)),
             title: 'Ğecko',
             theme: ThemeData(
-              appBarTheme: AppBarTheme(
-                color: const Color(0xffFFD58D),
-                foregroundColor: const Color(0xFF000000),
+              appBarTheme: const AppBarTheme(
+                color: Color(0xffFFD58D),
+                foregroundColor: Color(0xFF000000),
               ),
-              primaryColor: Color(0xffFFD58D),
-              textTheme: TextTheme(
+              primaryColor: const Color(0xffFFD58D),
+              textTheme: const TextTheme(
                 bodyText1: TextStyle(),
                 bodyText2: TextStyle(),
               ).apply(
-                bodyColor: Color(0xff855F2D),
+                bodyColor: const Color(0xFF000000),
               ),
               colorScheme: ColorScheme.fromSwatch()
                   .copyWith(secondary: Colors.grey[850]),
             ),
-            home: HomeScreen(),
+            home: const HomeScreen(),
             initialRoute: "/",
             routes: {
               '/mywallets': (context) => WalletsHome(),
             },
           ),
         ));
+  }
+}
+
+// This http overriding is needed to fix fail certifcat checking for Duniter node on old Android version
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
   }
 }

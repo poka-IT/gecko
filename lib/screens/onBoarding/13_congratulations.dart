@@ -1,12 +1,16 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/screens/commonElements.dart';
+import 'package:gecko/screens/common_elements.dart';
 
 // ignore: must_be_immutable
 class OnboardingStepFiveteen extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
   final int progress = 12;
+
+  OnboardingStepFiveteen({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +25,7 @@ class OnboardingStepFiveteen extends StatelessWidget {
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
               "Top !\n\nVotre trousseau de clef et votre portefeuille ont été créés avec un immense succès.\n\nFélicitations !",
-              textKey: Key('step13'),
+              textKey: const Key('step13'),
             ),
             SizedBox(height: isTall ? 20 : 10),
             Image.asset(
@@ -35,7 +39,7 @@ class OnboardingStepFiveteen extends StatelessWidget {
                       width: 400,
                       height: 62,
                       child: ElevatedButton(
-                          key: Key('goWalletHome'),
+                          key: const Key('goWalletHome'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
                             primary: orangeC,
@@ -51,10 +55,10 @@ class OnboardingStepFiveteen extends StatelessWidget {
                               '/mywallets',
                             );
                           },
-                          child: Text("Accéder à mes portefeuilles",
+                          child: const Text("Accéder à mes portefeuilles",
                               style: TextStyle(fontSize: 20))),
                     ))),
-            SizedBox(height: 80),
+            const SizedBox(height: 80),
           ]),
         ));
   }

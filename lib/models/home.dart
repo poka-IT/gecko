@@ -9,14 +9,14 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/screens/history.dart';
-import 'package:gecko/screens/myWallets/walletsHome.dart';
+import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:package_info/package_info.dart';
 
 class HomeProvider with ChangeNotifier {
   int _currentIndex = 0;
   bool isSearching;
-  Icon searchIcon = Icon(Icons.search);
-  final TextEditingController searchQuery = new TextEditingController();
+  Icon searchIcon = const Icon(Icons.search);
+  final TextEditingController searchQuery = TextEditingController();
   Widget appBarTitle = Text('Ğecko', style: TextStyle(color: Colors.grey[850]));
   Widget appBarExplorer =
       Text('Explorateur', style: TextStyle(color: Colors.grey[850]));
@@ -57,7 +57,7 @@ class HomeProvider with ChangeNotifier {
     String _endpoint;
     int _statusCode = 0;
 
-    final _client = new HttpClient();
+    final _client = HttpClient();
     _client.connectionTimeout = const Duration(milliseconds: 1000);
 
     do {

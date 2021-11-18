@@ -1,13 +1,17 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/screens/commonElements.dart';
+import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/4.dart';
 
 // ignore: must_be_immutable
 class OnboardingStepFor extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
   final int progress = 3;
+
+  OnboardingStepFor({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +26,7 @@ class OnboardingStepFor extends StatelessWidget {
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
               "Si un jour vous changez de téléphone, il vous suffira de me redonner votre phrase de restauration pour recréer votre trousseau.",
-              textKey: Key('step3'),
+              textKey: const Key('step3'),
             ),
             SizedBox(height: isTall ? 15 : 0),
             // Row(children: <Widget>[
@@ -41,7 +45,7 @@ class OnboardingStepFor extends StatelessWidget {
                       width: 400,
                       height: 62,
                       child: ElevatedButton(
-                          key: Key('goStep4'),
+                          key: const Key('goStep4'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
                             primary: orangeC,
@@ -54,10 +58,10 @@ class OnboardingStepFor extends StatelessWidget {
                                   page: OnboardingStepFive(), isFast: true),
                             );
                           },
-                          child: Text("J'ai compris",
+                          child: const Text("J'ai compris",
                               style: TextStyle(fontSize: 20))),
                     ))),
-            SizedBox(height: 80),
+            const SizedBox(height: 80),
           ]),
         ));
   }

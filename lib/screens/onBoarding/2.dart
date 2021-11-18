@@ -1,7 +1,9 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/screens/commonElements.dart';
+import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/3.dart';
 // import 'package:gecko/screens/commonElements.dart';
 // import 'package:gecko/models/home.dart';
@@ -11,6 +13,8 @@ import 'package:gecko/screens/onBoarding/3.dart';
 class OnboardingStepTwo extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
   final int progress = 2;
+
+  OnboardingStepTwo({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -25,9 +29,9 @@ class OnboardingStepTwo extends StatelessWidget {
                 context, 'Nouveau portefeuilles', progress),
             common.bubbleSpeak(
               "Un trousseau est créé à partir d’une phrase de restauration.",
-              textKey: Key('step2'),
+              textKey: const Key('step2'),
             ),
-            SizedBox(height: 70),
+            const SizedBox(height: 70),
             Image.asset(
                 'assets/onBoarding/keys-and-wallets-horizontal-plus-phrase.png'),
             Expanded(
@@ -37,7 +41,7 @@ class OnboardingStepTwo extends StatelessWidget {
                       width: 400,
                       height: 62,
                       child: ElevatedButton(
-                        key: Key('goStep3'),
+                        key: const Key('goStep3'),
                         style: ElevatedButton.styleFrom(
                           elevation: 5,
                           primary: orangeC,
@@ -50,10 +54,11 @@ class OnboardingStepTwo extends StatelessWidget {
                                 page: OnboardingStepFor(), isFast: true),
                           );
                         },
-                        child: Text("D'accord", style: TextStyle(fontSize: 20)),
+                        child: const Text("D'accord",
+                            style: TextStyle(fontSize: 20)),
                       ),
                     ))),
-            SizedBox(height: 80),
+            const SizedBox(height: 80),
           ]),
         ));
   }

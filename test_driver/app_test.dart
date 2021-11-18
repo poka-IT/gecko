@@ -1,4 +1,5 @@
-// Imports the Flutter Driver API.
+// ignore_for_file: avoid_print
+
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter_driver/flutter_driver.dart';
@@ -70,13 +71,8 @@ void main() {
     }
 
     // Create a derivation
-    Future createDerivation(String _name) async {
+    Future createDerivation() async {
       await tapOn('addDerivation');
-      await sleep(100);
-
-      await driver.enterText(_name);
-
-      await tapOn('validDerivation');
       await sleep(300);
     }
 
@@ -117,6 +113,7 @@ void main() {
       await driver.enterText('triche');
       await tapOn('walletName');
       await driver.enterText(name);
+      await sleep(50);
       await tapOn('confirmStorage');
       await sleep(300);
       return pinCode;
@@ -125,12 +122,9 @@ void main() {
     // *** Begin of tests *** //
 
     test('OnBoarding - Open wallets management', (
-        {timeout: Timeout.none}) async {
+        {timeout = Timeout.none}) async {
       // await driver.runUnsynchronized(() async { // Needed if we want to manage async drivers
       await driver.tap(manageWalletsFinder);
-
-      print(
-          '####################################################################');
 
       // If a wallet exist, go to delete theme all
       if (!await isPresent(find.byValueKey('goStep1'))) {
@@ -154,7 +148,7 @@ void main() {
     });
 
     test('OnBoarding - Go to create restore sentance', (
-        {timeout: Timeout.none}) async {
+        {timeout = Timeout.none}) async {
       await tapOn('goStep1');
       await tapOn('goStep2');
       await tapOn('goStep3');
@@ -170,7 +164,7 @@ void main() {
     });
 
     test('OnBoarding - Generate sentance and confirme it', (
-        {timeout: Timeout.none}) async {
+        {timeout = Timeout.none}) async {
       await tapOn('goStep7');
 
       while (await getText('word1') == '...') {
@@ -220,7 +214,7 @@ void main() {
       await selectWord();
     });
     test('OnBoarding - Generate secret code and confirm it', (
-        {timeout: Timeout.none}) async {
+        {timeout = Timeout.none}) async {
       expect(await getText('step9'),
           "Super !\n\nJe vais maintenant créer votre code secret. \n\nVotre code secret chiffre votre trousseau de clefs, ce qui le rend inutilisable par d’autres, par exemple si vous perdez votre téléphone ou si on vous le vole.");
 
@@ -233,7 +227,9 @@ void main() {
       }
 
       // Change secret code 4 times
-      for (int i = 0; i < 4; i++) await tapOn('changeSecretCode');
+      for (int i = 0; i < 4; i++) {
+        await tapOn('changeSecretCode');
+      }
 
       await sleep(500);
       pinCode = await getText('generatedPin');
@@ -255,10 +251,10 @@ void main() {
     });
 
     test('My wallets - Rename first derivation', (
-        {timeout: const Duration(seconds: 2)}) async {
+        {timeout = const Duration(seconds: 2)}) async {
       await tapOn('goWalletHome');
 
-      expect(await getText('myWallets'), "Mes portefeuilles");
+      expect(await getText('myWallets'), "Coffre à Ğecko");
       await sleep(300);
 
       // Go to first derivation and rename it
@@ -278,13 +274,13 @@ void main() {
     });
 
     test('My wallets - Create a derivations, open thems, tap all buttons', (
-        {timeout: const Duration(seconds: 2)}) async {
+        {timeout = const Duration(seconds: 2)}) async {
       await driver.waitFor(find.text('Renommage wallet 1'), timeout: timeout);
       // Add a second derivation
-      await createDerivation('Derivation 2');
+      await createDerivation();
 
       // Go to second derivation options
-      await driver.tap(find.text('Derivation 2'));
+      await driver.tap(find.text('Portefeuille 2'));
       await sleep(100);
 
       // Test options
@@ -305,14 +301,14 @@ void main() {
       await goBack();
 
       // Add a third derivation
-      await createDerivation('Derivation 3');
+      await createDerivation();
 
       // Add a fourth derivation
-      await createDerivation('Derivation 4');
+      await createDerivation();
       await sleep(50);
 
       // Go to third derivation options
-      await driver.tap(find.text('Derivation 3'));
+      await driver.tap(find.text('Portefeuille 3'));
       await sleep(100);
       await tapOn('displayBalance');
 
@@ -321,12 +317,12 @@ void main() {
     });
 
     test('My wallets - Extra tests', (
-        {timeout: const Duration(seconds: 2)}) async {
+        {timeout = const Duration(seconds: 2)}) async {
       // Add derivation 5,6 and 7
-      await driver.waitFor(find.text('Derivation 4'), timeout: timeout);
-      await createDerivation('Derivation 5');
-      await createDerivation('Derivation 6');
-      await createDerivation('Derivation 7');
+      await driver.waitFor(find.text('Portefeuille 4'), timeout: timeout);
+      await createDerivation();
+      await createDerivation();
+      await createDerivation();
 
       // Go home and come back to my wallets view
       await goBack();
@@ -338,12 +334,12 @@ void main() {
       await sleep(200);
 
       // Go to derivation 6 and delete it
-      await driver.tap(find.text('Derivation 6'));
+      await driver.tap(find.text('Portefeuille 6'));
       await sleep(100);
       await deleteWallet(true);
 
       // Go to 2nd derivation and check if it's de default
-      await driver.tap(find.text('Derivation 2'));
+      await driver.tap(find.text('Portefeuille 2'));
       await driver.waitFor(find.text('Ce portefeuille est celui par defaut'));
       await tapOn('setDefaultWallet');
       await sleep(100);
@@ -369,37 +365,44 @@ void main() {
       await sleep(400);
       await goBack();
       await driver.waitFor(find.text('Renommage wallet 2'));
-      await createDerivation('Derivation 8');
-      await createDerivation('Derivation 9');
-      await createDerivation('Derivation 10');
-      await createDerivation('Derivation 11');
-      await createDerivation('Derivation 12');
-      await createDerivation('Derivation 13');
-      await createDerivation('Derivation 14');
-      await createDerivation('Derivation 15');
-      await createDerivation('Derivation 16');
-      await createDerivation('Derivation 17');
-      await createDerivation('Derivation 18');
-      await createDerivation('Derivation 19');
-      await createDerivation('Derivation 20');
+      await driver.scrollIntoView(find.text('+'));
+      await createDerivation();
+      await createDerivation();
+      await driver.scrollIntoView(find.text('+'));
+      await createDerivation();
+      await createDerivation();
+      await driver.scrollIntoView(find.text('+'));
+      await createDerivation();
+      await createDerivation();
+      await driver.scrollIntoView(find.text('+'));
+      await createDerivation();
+      await createDerivation();
+      await driver.scrollIntoView(find.text('+'));
+      await createDerivation();
+      await createDerivation();
+      await driver.scrollIntoView(find.text('+'));
+      await createDerivation();
+      await createDerivation();
+      await driver.scrollIntoView(find.text('+'));
+      await createDerivation();
       await sleep(400);
 
       // Scroll the wallet screen until Derivation 20 and open it
       await driver.scrollUntilVisible(
         find.byValueKey('listWallets'),
-        find.text('Derivation 20'),
+        find.text('Portefeuille 20'),
         dyScroll: -300.0,
       );
 
-      await driver.waitFor(find.text('Derivation 20'));
+      await driver.waitFor(find.text('Portefeuille 20'));
       await sleep(400);
-      await driver.tap(find.text('Derivation 20'));
+      await driver.tap(find.text('Portefeuille 20'));
       await tapOn('copyPubkey');
     });
 
     test('Search - Search Pi profile, navigate in history transactions', (
-        {timeout: const Duration(seconds: 2)}) async {
-      await driver.waitFor(find.text('Derivation 20'), timeout: timeout);
+        {timeout = const Duration(seconds: 2)}) async {
+      await driver.waitFor(find.text('Portefeuille 20'), timeout: timeout);
       await goBack();
       await goBack();
       await sleep(200);
@@ -430,19 +433,17 @@ void main() {
     }, timeout: Timeout(Duration(minutes: globalTimeout)));
 
     test('Wallet generation - Fast wallets generations', (
-        {timeout: const Duration(seconds: 2)}) async {
+        {timeout = const Duration(seconds: 2)}) async {
       await driver.waitFor(find.text('Commentaire:'), timeout: timeout);
       await goBack();
       await goBack();
       await deleteAllWallets();
       await sleep(100);
       final String pincode = await createNewKeychain('Fast wallet');
-      await sleep(100);
-      await tapOn('manageWallets');
       await sleep(200);
       await driver.enterText(pincode);
       await sleep(100);
-      await createDerivation('Derivation 2');
+      await createDerivation();
       await sleep(100);
       await driver.tap(find.text('Fast wallet'));
       await driver.waitFor(find.text('Fast wallet'));

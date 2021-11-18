@@ -1,8 +1,10 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/generateWallets.dart';
-import 'package:gecko/screens/commonElements.dart';
+import 'package:gecko/models/generate_wallets.dart';
+import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/8.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +13,8 @@ import 'package:provider/provider.dart';
 class OnboardingStepNine extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
   final int progress = 6;
+
+  OnboardingStepNine({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +33,7 @@ class OnboardingStepNine extends StatelessWidget {
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
               "C'est le moment de noter votre phrase !",
-              textKey: Key('step7'),
+              textKey: const Key('step7'),
               long: 60,
             ),
             SizedBox(height: isTall ? 100 : 70),
@@ -56,24 +60,24 @@ class OnboardingStepNine extends StatelessWidget {
                       width: 400,
                       height: 62,
                       child: ElevatedButton(
-                          key: Key('generateMnemonic'),
+                          key: const Key('generateMnemonic'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
-                            primary: Color(0xffFFD58D),
+                            primary: const Color(0xffFFD58D),
                             onPrimary: Colors.black, // foreground
                           ),
                           onPressed: () {
                             _generateWalletProvider.reloadBuild();
                           },
-                          child: Text("Choisir une autre phrase",
+                          child: const Text("Choisir une autre phrase",
                               style: TextStyle(fontSize: 20))),
                     ))),
-            SizedBox(height: 25),
+            const SizedBox(height: 25),
             SizedBox(
               width: 400,
               height: 62,
               child: ElevatedButton(
-                  key: Key('goStep8'),
+                  key: const Key('goStep8'),
                   style: ElevatedButton.styleFrom(
                     elevation: 5,
                     primary: orangeC,
@@ -97,10 +101,10 @@ class OnboardingStepNine extends StatelessWidget {
                           isFast: true),
                     );
                   },
-                  child: Text("J'ai noté ma phrase",
+                  child: const Text("J'ai noté ma phrase",
                       style: TextStyle(fontSize: 20))),
             ),
-            SizedBox(height: 80),
+            const SizedBox(height: 80),
           ]),
         ));
   }
@@ -112,7 +116,7 @@ Widget sentanceArray(BuildContext context) {
 
   return FutureBuilder(
       future: _generateWalletProvider.generateWordList(),
-      initialData: [
+      initialData: const [
         '1:...',
         '2:...',
         '3:...',
@@ -129,16 +133,16 @@ Widget sentanceArray(BuildContext context) {
       builder: (context, formatedArray) {
         // print(formatedArray.data);
         return Container(
-            padding: EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Container(
                 decoration: BoxDecoration(
                     border: Border.all(color: Colors.black),
                     color: Colors.grey[300],
-                    borderRadius: BorderRadius.all(
-                      const Radius.circular(10),
+                    borderRadius: const BorderRadius.all(
+                      Radius.circular(10),
                     )),
                 // color: Colors.grey[300],
-                padding: EdgeInsets.all(20),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.max,
@@ -150,14 +154,14 @@ Widget sentanceArray(BuildContext context) {
                         arrayCell(formatedArray.data[2]),
                         arrayCell(formatedArray.data[3]),
                       ]),
-                      SizedBox(height: 15),
+                      const SizedBox(height: 15),
                       Row(children: <Widget>[
                         arrayCell(formatedArray.data[4]),
                         arrayCell(formatedArray.data[5]),
                         arrayCell(formatedArray.data[6]),
                         arrayCell(formatedArray.data[7]),
                       ]),
-                      SizedBox(height: 15),
+                      const SizedBox(height: 15),
                       Row(children: <Widget>[
                         arrayCell(formatedArray.data[8]),
                         arrayCell(formatedArray.data[9]),
@@ -169,20 +173,20 @@ Widget sentanceArray(BuildContext context) {
 }
 
 Widget arrayCell(dataWord) {
-  return Container(
+  return SizedBox(
       width: 102,
       child: Column(children: <Widget>[
-        Text(dataWord.split(':')[0], style: TextStyle(fontSize: 14)),
-        SizedBox(height: 2),
+        Text(dataWord.split(':')[0], style: const TextStyle(fontSize: 14)),
+        const SizedBox(height: 2),
         Text(dataWord.split(':')[1],
             key: Key('word${dataWord.split(':')[0]}'),
-            style: TextStyle(fontSize: 19, color: Colors.black)),
+            style: const TextStyle(fontSize: 19, color: Colors.black)),
       ]));
 }
 
 // ignore: must_be_immutable
 class PrintWallet extends StatelessWidget {
-  PrintWallet(this.sentence);
+  const PrintWallet(this.sentence, {Key key}) : super(key: key);
 
   final String sentence;
 
@@ -192,7 +196,9 @@ class PrintWallet extends StatelessWidget {
         Provider.of<GenerateWalletsProvider>(context);
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: Text('Imprimer ce trousseau')),
+        appBar: AppBar(
+            toolbarHeight: 60 * ratio,
+            title: const Text('Imprimer ce trousseau')),
         body: PdfPreview(
           build: (format) => _generateWalletProvider.printWallet(sentence),
         ),

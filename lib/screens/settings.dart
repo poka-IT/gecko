@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/models/home.dart';
-import 'package:gecko/models/myWallets.dart';
-import 'package:gecko/screens/myWallets/generateWallets.dart';
+import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/screens/myWallets/generate_wallets.dart';
 import 'dart:io';
-import 'package:gecko/screens/myWallets/importWallet.dart';
+import 'package:gecko/screens/myWallets/import_wallet.dart';
 import 'package:gecko/globals.dart';
 import 'package:provider/provider.dart';
 
@@ -22,7 +22,9 @@ class SettingsScreen extends StatelessWidget {
   var pinColor = Colors.grey[300];
   Directory appPath;
 
-  MyWalletsProvider _myWallets = MyWalletsProvider();
+  final MyWalletsProvider _myWallets = MyWalletsProvider();
+
+  SettingsScreen({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -32,12 +34,13 @@ class SettingsScreen extends StatelessWidget {
     // getAppDirectory();
     return Scaffold(
         appBar: AppBar(
-            title: SizedBox(
-          height: 22,
-          child: Text('Paramètres'),
-        )),
+            toolbarHeight: 60 * ratio,
+            title: const SizedBox(
+              height: 22,
+              child: Text('Paramètres'),
+            )),
         body: Column(children: <Widget>[
-          SizedBox(height: 40),
+          const SizedBox(height: 40),
           SizedBox(
               height: 70,
               width: 500,
@@ -50,35 +53,31 @@ class SettingsScreen extends StatelessWidget {
                   onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) {
-                          return ImportWalletScreen();
+                          return const ImportWalletScreen();
                         }),
                       ).then((value) => {
                             if (value == true) {Navigator.pop(context)}
                           }),
-                  child: Text("Importer un portefeuille Cesium",
+                  child: const Text("Importer un portefeuille Cesium",
                       style: TextStyle(fontSize: 16)))),
-          SizedBox(height: 30),
+          const SizedBox(height: 30),
           SizedBox(
               height: 70,
               width: 500,
               child: ElevatedButton(
-                  key: Key('generateKeychain'),
+                  key: const Key('generateKeychain'),
                   style: ElevatedButton.styleFrom(
                     elevation: 5,
                     primary: yellowC, // background
                     onPrimary: Colors.black, // foreground
                   ),
-                  onPressed: !_myWallets.checkIfWalletExist()
-                      ? () => Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) {
-                              return GenerateWalletsScreen();
-                            }),
-                          ).then((value) => {
-                                if (value == true) {Navigator.pop(context)}
-                              })
-                      : null,
-                  child: Text("Générer un nouveau trousseau",
+                  onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) {
+                          return GenerateFastChestScreen();
+                        }),
+                      ),
+                  child: const Text("Générer un nouveau trousseau",
                       style: TextStyle(fontSize: 16)))),
           Expanded(
               child: Align(
@@ -87,7 +86,7 @@ class SettingsScreen extends StatelessWidget {
                       height: 100,
                       width: 500,
                       child: ElevatedButton(
-                          key: Key('deleteAllWallets'),
+                          key: const Key('deleteAllWallets'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
                             primary: Colors.redAccent, // background
@@ -99,9 +98,9 @@ class SettingsScreen extends StatelessWidget {
                                     .deleteAllWallet(context)
                                     .then((v) => _homeProvider.rebuildWidget())
                               },
-                          child: Text("EFFACER TOUS MES PORTEFEUILLES",
+                          child: const Text("EFFACER TOUS MES PORTEFEUILLES",
                               style: TextStyle(fontSize: 20)))))),
-          SizedBox(height: 50),
+          const SizedBox(height: 50),
         ]));
   }
 }

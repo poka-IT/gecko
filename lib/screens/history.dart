@@ -1,13 +1,15 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/cesiumPlus.dart';
+import 'package:gecko/models/cesium_plus.dart';
 import 'package:gecko/models/home.dart';
+import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/models/queries.dart';
 import 'package:gecko/models/history.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:gecko/screens/myWallets/unlockingWallet.dart';
+import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'dart:ui';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
@@ -20,7 +22,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
   final nRepositories = 20;
   // HistoryProvider _historyProvider;
   final _formKey = GlobalKey<FormState>();
-  FocusNode _pubkeyFocus = FocusNode();
+  final FocusNode _pubkeyFocus = FocusNode();
   List cesiumData;
   final double avatarsSize = 80;
 
@@ -28,22 +30,25 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
   FetchMoreOptions opts;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  HistoryScreen({Key key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
     HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
-    this._outputPubkey.text = _historyProvider.pubkey;
+    _outputPubkey.text = _historyProvider.pubkey;
     log.i('Build pubkey : ' + _historyProvider.pubkey);
     WidgetsBinding.instance.addPostFrameCallback((_) {});
 
     return Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
+          toolbarHeight: 60 * ratio,
           title: _homeProvider.appBarExplorer,
           actions: [
             Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: IconButton(
                     icon: _homeProvider.searchIcon,
                     color: Colors.grey[850],
@@ -79,9 +84,9 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                       }
                     }))
           ],
-          backgroundColor: Color(0xffFFD58D),
+          backgroundColor: const Color(0xffFFD58D),
         ),
-        floatingActionButton: Container(
+        floatingActionButton: SizedBox(
           height: 80.0,
           width: 80.0,
           child: FittedBox(
@@ -90,11 +95,11 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
               onPressed: () async {
                 await _historyProvider.scan(context);
               },
-              child: Container(
+              child: SizedBox(
                   height: 40.0,
                   width: 40.0,
                   child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 3),
+                      padding: const EdgeInsets.symmetric(horizontal: 3),
                       child: Image.asset('assets/qrcode-scan.png'))),
               backgroundColor:
                   floattingYellow, //smoothYellow, //Color.fromARGB(500, 204, 255, 255),
@@ -102,7 +107,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
           ),
         ),
         body: Column(children: <Widget>[
-          SizedBox(height: 0),
+          const SizedBox(height: 0),
           if (_historyProvider.pubkey != '')
             historyQuery(context, _historyProvider),
         ]));
@@ -137,7 +142,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
 
             if (result.hasException) {
               log.e('Error GVA: ' + result.exception.toString());
-              return Column(children: <Widget>[
+              return Column(children: const <Widget>[
                 SizedBox(height: 50),
                 Text(
                   "Aucun noeud GVA valide n'a pu être trouvé.\nVeuillez réessayer ultérieurement.",
@@ -169,10 +174,10 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                 child: Builder(
                     builder: (context) => Expanded(
                             child: ListView(
-                          key: Key('listTransactions'),
+                          key: const Key('listTransactions'),
                           controller: scrollController,
                           children: <Widget>[
-                            SizedBox(height: 20),
+                            const SizedBox(height: 20),
                             if (_historyProvider.pubkey != '')
                               Row(
                                   mainAxisAlignment:
@@ -212,7 +217,8 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                                 if (_avatar.hasData) {
                                                   return SingleChildScrollView(
                                                       padding:
-                                                          EdgeInsets.all(0.0),
+                                                          const EdgeInsets.all(
+                                                              0.0),
                                                       child: Image.file(
                                                           _avatar.data[0],
                                                           height: avatarsSize));
@@ -223,7 +229,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                                     height: avatarsSize);
                                               })),
                                     GestureDetector(
-                                      key: Key('copyPubkey'),
+                                      key: const Key('copyPubkey'),
                                       onTap: () {
                                         Clipboard.setData(ClipboardData(
                                             text: _historyProvider.pubkey));
@@ -232,7 +238,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                       child: Text(
                                           _historyProvider.getShortPubkey(
                                               _historyProvider.pubkey),
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                               fontSize: 22,
                                               fontWeight: FontWeight.w800,
                                               fontFamily: 'Monospace')),
@@ -255,7 +261,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                             ],
                                           ),
                                         )),
-                                    SizedBox(width: 0)
+                                    const SizedBox(width: 0)
                                   ]),
                             if (_isFirstExec)
                               Row(
@@ -272,25 +278,22 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                                 _historyProvider.pubkey),
                                             initialData: '...',
                                             builder: (context, snapshot) {
-                                              return Text(
-                                                  snapshot.data != null
-                                                      ? snapshot.data
-                                                      : '-',
-                                                  style:
-                                                      TextStyle(fontSize: 20));
+                                              return Text(snapshot.data ?? '-',
+                                                  style: const TextStyle(
+                                                      fontSize: 20));
                                             }))
                                   ]),
-                            SizedBox(height: 18),
+                            const SizedBox(height: 18),
                             if (_isFirstExec)
                               Container(
                                   padding:
                                       const EdgeInsets.fromLTRB(0, 0, 0, 0),
                                   child: Text(balance.toString() + ' Ğ1',
                                       textAlign: TextAlign.center,
-                                      style: TextStyle(fontSize: 18.0))),
-                            SizedBox(height: 20),
+                                      style: const TextStyle(fontSize: 18.0))),
+                            const SizedBox(height: 20),
                             ElevatedButton(
-                                key: Key('switchPayHistory'),
+                                key: const Key('switchPayHistory'),
                                 style: ElevatedButton.styleFrom(
                                   elevation: 1,
                                   primary: Colors.grey[50], // background
@@ -330,6 +333,10 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
   }
 
   Widget payView(context, HistoryProvider _historyProvider) {
+    MyWalletsProvider _myWalletProvider = MyWalletsProvider();
+    WalletData defaultWallet =
+        _myWalletProvider.getDefaultWallet(configBox.get('currentChest'));
+
     return Stack(
       clipBehavior: Clip.hardEdge,
       children: <Widget>[
@@ -338,32 +345,32 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              SizedBox(height: 20),
-              Text('Commentaire:', style: TextStyle(fontSize: 20.0)),
+              const SizedBox(height: 20),
+              const Text('Commentaire:', style: TextStyle(fontSize: 20.0)),
               Padding(
-                  padding: EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(8.0),
                   child: TextField(
                       controller: _historyProvider.payComment,
                       maxLines: 2,
                       textAlign: TextAlign.center,
-                      decoration: InputDecoration(),
-                      style: TextStyle(
+                      decoration: const InputDecoration(),
+                      style: const TextStyle(
                           fontSize: 22,
                           color: Colors.black,
                           fontWeight: FontWeight.bold))),
-              SizedBox(height: 20),
-              Text('Montant (DU/Ğ1):', style: TextStyle(fontSize: 20.0)),
+              const SizedBox(height: 20),
+              const Text('Montant (DU/Ğ1):', style: TextStyle(fontSize: 20.0)),
               Padding(
-                padding: EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(8.0),
                 child: TextFormField(
-                  style: TextStyle(fontSize: 22),
+                  style: const TextStyle(fontSize: 22),
                   controller: _historyProvider.payAmount,
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
-                    contentPadding:
-                        EdgeInsets.symmetric(vertical: 25.0, horizontal: 10.0),
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 25.0, horizontal: 10.0),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0)),
                   ),
@@ -406,7 +413,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
     int keyID = 0;
 
     return _historyProvider.transBC == null
-        ? Text('Aucune transaction à afficher.')
+        ? const Text('Aucune transaction à afficher.')
         : Column(children: <Widget>[
             for (var repository in _historyProvider.transBC)
               Padding(
@@ -421,14 +428,14 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                               fontWeight: FontWeight.w700),
                           textAlign: TextAlign.center),
                       title: Text(repository[3],
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 15.0, fontFamily: 'Monospace'),
                           textAlign: TextAlign.center),
                       subtitle: Text(repository[6] != '' ? repository[6] : '-',
-                          style: TextStyle(fontSize: 12.0),
+                          style: const TextStyle(fontSize: 12.0),
                           textAlign: TextAlign.center),
                       trailing: Text("${repository[4]} Ğ1",
-                          style: TextStyle(fontSize: 14.0),
+                          style: const TextStyle(fontSize: 14.0),
                           textAlign: TextAlign.justify),
                       dense: true,
                       isThreeLine: false,
@@ -439,14 +446,14 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
             if (result.isLoading)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
+                children: const <Widget>[
                   CircularProgressIndicator(),
                 ],
               ),
             // if (_historyProvider.isTheEnd) // What I did before ...
             if (!_historyProvider.pageInfo['hasPreviousPage'])
               Column(
-                children: <Widget>[
+                children: const <Widget>[
                   SizedBox(height: 15),
                   Text("Début de l'historique.",
                       textAlign: TextAlign.center,

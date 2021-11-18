@@ -1,7 +1,9 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/screens/commonElements.dart';
+import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/2.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:provider/provider.dart';
@@ -10,6 +12,8 @@ import 'package:gecko/screens/onBoarding/2.dart';
 class OnboardingStepOne extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
   final int progress = 1;
+
+  OnboardingStepOne({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -24,8 +28,8 @@ class OnboardingStepOne extends StatelessWidget {
                 context, 'Nouveau portefeuilles', progress),
             common.bubbleSpeak(
                 "Il semblerait que vous n’ayez pas encore de trousseau.\n\nUn trousseau vous permet de gérer un ou plusieurs portefeuilles.",
-                textKey: Key('step1')),
-            SizedBox(height: 90),
+                textKey: const Key('step1')),
+            const SizedBox(height: 90),
             Image.asset(
               'assets/onBoarding/keys-and-wallets-horizontal.png',
               height: 200,
@@ -37,7 +41,7 @@ class OnboardingStepOne extends StatelessWidget {
                       width: 400,
                       height: 62,
                       child: ElevatedButton(
-                          key: Key('goStep2'),
+                          key: const Key('goStep2'),
                           style: ElevatedButton.styleFrom(
                             elevation: 5,
                             primary: orangeC,
@@ -49,10 +53,10 @@ class OnboardingStepOne extends StatelessWidget {
                                 FaderTransition(
                                     page: OnboardingStepTwo(), isFast: true));
                           },
-                          child: Text('Créer mon trousseau',
+                          child: const Text('Créer mon trousseau',
                               style: TextStyle(fontSize: 20))),
                     ))),
-            SizedBox(height: 80),
+            const SizedBox(height: 80),
           ]),
         ));
   }

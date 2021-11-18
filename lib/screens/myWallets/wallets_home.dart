@@ -63,7 +63,8 @@ class WalletsHome extends StatelessWidget {
           child: !isWalletsExists
               ? const NoKeyChainScreen()
               : _currentChest.isCesium
-                  ? cesiumWalletOptions(context, _currentChest)
+                  ? cesiumWalletOptions(
+                      context, _currentChest, myWalletProvider)
                   : myWalletsTiles(context),
         ),
       ),

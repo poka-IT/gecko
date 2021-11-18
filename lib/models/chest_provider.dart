@@ -12,15 +12,19 @@ class ChestProvider with ChangeNotifier {
     final bool _answer = await _confirmDeletingChest(context, _chest.name);
 
     if (_answer) {
-      chestBox.delete(_chest.key);
-      int lastChest = chestBox.toMap().keys.first;
-      configBox.put('currentChest', lastChest);
-      notifyListeners();
+      await chestBox.delete(_chest.key);
+      if (chestBox.isEmpty) {
+        await configBox.put('currentChest', 0);
+      } else {
+        int lastChest = chestBox.toMap().keys.first;
+        await configBox.put('currentChest', lastChest);
+      }
 
       Navigator.popUntil(
         context,
         ModalRoute.withName('/'),
       );
+      notifyListeners();
     }
   }
 

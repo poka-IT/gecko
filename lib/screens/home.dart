@@ -174,7 +174,7 @@ class HomeScreen extends StatelessWidget {
                   ]),
             ),
             Padding(
-              padding: EdgeInsets.only(top: isTall ? 70 : 60),
+              padding: EdgeInsets.only(top: isTall ? 100 : 60),
               child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[

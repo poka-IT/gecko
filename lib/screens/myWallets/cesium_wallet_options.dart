@@ -6,8 +6,10 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/chest_provider.dart';
 import 'package:gecko/models/history.dart';
+import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/models/queries.dart';
 import 'package:gecko/models/wallet_options.dart';
+import 'package:gecko/screens/myWallets/change_pin.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
@@ -15,11 +17,13 @@ import 'package:flutter/services.dart';
 int _nbrLinesName = 1;
 bool _isNewNameValid = false;
 
-Widget cesiumWalletOptions(BuildContext context, ChestData cesiumWallet) {
+Widget cesiumWalletOptions(BuildContext context, ChestData cesiumWallet,
+    MyWalletsProvider _myWalletProvider) {
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   WalletOptionsProvider _walletOptions =
       Provider.of<WalletOptionsProvider>(context);
-  ChestProvider _chestProvider = Provider.of<ChestProvider>(context);
+  ChestProvider _chestProvider =
+      Provider.of<ChestProvider>(context, listen: false);
   HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
 
   final String shortPubkey =
@@ -231,7 +235,7 @@ Widget cesiumWalletOptions(BuildContext context, ChestData cesiumWallet) {
                     Image.asset(
                       'assets/walletOptions/key.png',
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 20),
                     Text("${shortPubkey.split(':')[0]}:",
                         style: const TextStyle(
                             fontSize: 22,
@@ -284,25 +288,63 @@ Widget cesiumWalletOptions(BuildContext context, ChestData cesiumWallet) {
                     Image.asset(
                       'assets/walletOptions/clock.png',
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 22),
                     const Text('Historique des transactions',
                         style: TextStyle(fontSize: 20, color: Colors.black)),
                   ]))),
-          SizedBox(height: 12 * ratio),
+          SizedBox(height: 7 * ratio),
           InkWell(
-              key: const Key('deleteWallet'),
-              onTap: () async {
-                await _chestProvider.deleteChest(context, cesiumWallet);
-              },
+            key: const Key('changePin'),
+            onTap: () async {
+              // await _chestProvider.changePin(context, cesiumWallet);
+              _myWalletProvider.pinCode = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) {
+                    return ChangePinScreen(
+                      walletName: cesiumWallet.name,
+                      walletProvider: _myWalletProvider,
+                    );
+                  },
+                ),
+              );
+            },
+            child: SizedBox(
+                height: 50,
+                child: Row(children: <Widget>[
+                  const SizedBox(width: 28),
+                  Image.asset(
+                    'assets/chests/secret_code.png',
+                  ),
+                  const SizedBox(width: 18),
+                  const Text('Changer mon code secret',
+                      style: TextStyle(fontSize: 20, color: Colors.black)),
+                ])),
+          ),
+          SizedBox(height: 7 * ratio),
+          InkWell(
+            key: const Key('deleteWallet'),
+            onTap: () async {
+              await _chestProvider.deleteChest(context, cesiumWallet);
+            },
+            child: SizedBox(
+              height: 50,
               child: Row(children: <Widget>[
                 const SizedBox(width: 33),
                 Image.asset(
                   'assets/walletOptions/trash.png',
                 ),
-                const SizedBox(width: 14),
-                const Text('Supprimer ce coffre',
-                    style: TextStyle(fontSize: 20, color: Color(0xffD80000))),
-              ])),
+                const SizedBox(width: 25),
+                const Text(
+                  'Supprimer ce coffre',
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Color(0xffD80000),
+                  ),
+                ),
+              ]),
+            ),
+          ),
         ]),
       ),
     ),

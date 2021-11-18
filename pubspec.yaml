@@ -5,7 +5,7 @@ description: Pay with G1.
 # pub.dev using `pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 0.0.2+11
+version: 0.0.3+1
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -80,6 +80,7 @@ flutter:
     - images/
     - config/gva_endpoints.json
     - assets/
+    - assets/home/
     - assets/customs/
     - assets/avatars/
     - assets/chests/

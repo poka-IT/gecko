@@ -287,7 +287,7 @@ class WalletOptions extends StatelessWidget {
                           Image.asset(
                             'assets/walletOptions/key.png',
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 20),
                           Text("${shortPubkey.split(':')[0]}:",
                               style: const TextStyle(
                                   fontSize: 22,
@@ -341,7 +341,7 @@ class WalletOptions extends StatelessWidget {
                           Image.asset(
                             'assets/walletOptions/clock.png',
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 22),
                           const Text('Historique des transactions',
                               style:
                                   TextStyle(fontSize: 20, color: Colors.black)),
@@ -368,7 +368,7 @@ class WalletOptions extends StatelessWidget {
                               child: Image.asset(
                                 'assets/walletOptions/android-checkmark.png',
                               )),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 22),
                           Text(
                               _walletOptions.isDefaultWallet
                                   ? 'Ce portefeuille est celui par defaut'
@@ -400,7 +400,7 @@ class WalletOptions extends StatelessWidget {
                         Image.asset(
                           'assets/walletOptions/trash.png',
                         ),
-                        const SizedBox(width: 14),
+                        const SizedBox(width: 24),
                         const Text('Supprimer ce portefeuille',
                             style: TextStyle(
                                 fontSize: 20, color: Color(0xffD80000))),

@@ -74,11 +74,9 @@ class SettingsScreen extends StatelessWidget {
                   onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) {
-                          return GenerateWalletsScreen();
+                          return GenerateFastChestScreen();
                         }),
-                      ).then((value) => {
-                            if (value == true) {Navigator.pop(context)}
-                          }),
+                      ),
                   child: const Text("Générer un nouveau trousseau",
                       style: TextStyle(fontSize: 16)))),
           Expanded(

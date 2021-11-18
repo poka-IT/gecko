@@ -8,6 +8,7 @@ import 'package:gecko/models/wallet_options.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/cesium_wallet_options.dart';
+import 'package:gecko/screens/myWallets/chest_options.dart';
 import 'package:gecko/screens/myWallets/choose_chest.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/screens/onBoarding/0_no_keychain_found.dart';
@@ -77,7 +78,8 @@ class WalletsHome extends StatelessWidget {
   //   ]);
   // }
 
-  Widget chestOptions(BuildContext context) {
+  Widget chestOptions(
+      BuildContext context, MyWalletsProvider _myWalletProvider) {
     return Column(children: [
       const SizedBox(height: 50),
       SizedBox(
@@ -92,7 +94,12 @@ class WalletsHome extends StatelessWidget {
               primary: floattingYellow, // background
               onPrimary: Colors.black, // foreground
             ),
-            onPressed: () => null,
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) {
+                return ChestOptions(walletProvider: _myWalletProvider);
+              }),
+            ),
             label: const Text(
               "       Paramétrer ce coffre",
               style: TextStyle(
@@ -286,7 +293,7 @@ class WalletsHome extends StatelessWidget {
             //     ))
           ]),
       // SliverToBoxAdapter(child: Spacer()),
-      SliverToBoxAdapter(child: chestOptions(context)),
+      SliverToBoxAdapter(child: chestOptions(context, _myWalletProvider)),
     ]);
   }
 

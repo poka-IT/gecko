@@ -7,6 +7,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/generate_wallets.dart';
 import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/models/wallet_options.dart';
+import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
@@ -152,8 +153,15 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                                       _walletOptions.reloadBuild();
                                       _myWalletProvider.rebuildWidget();
                                     });
-                                    Navigator.popUntil(
-                                        context, ModalRoute.withName('/'));
+                                    Navigator.pushAndRemoveUntil(context,
+                                        MaterialPageRoute(builder: (context) {
+                                      return UnlockingWallet(
+                                        wallet:
+                                            _myWalletProvider.getDefaultWallet(
+                                                configBox.get('currentChest')),
+                                        action: "mywallets",
+                                      );
+                                    }), ModalRoute.withName('/'));
                                   }
                                 : null,
                             child: const Text('Confirmer',

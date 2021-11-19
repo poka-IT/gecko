@@ -217,8 +217,9 @@ void main() {
         {timeout = Timeout.none}) async {
       expect(await getText('step9'),
           "Super !\n\nJe vais maintenant créer votre code secret. \n\nVotre code secret chiffre votre trousseau de clefs, ce qui le rend inutilisable par d’autres, par exemple si vous perdez votre téléphone ou si on vous le vole.");
-
+      await sleep(800);
       await tapOn('goStep10');
+      await sleep(50);
       await tapOn('goStep11');
 
       while (await getText('generatedPin') == '') {

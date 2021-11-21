@@ -36,7 +36,6 @@ class UnlockingWallet extends StatelessWidget {
         Provider.of<WalletOptionsProvider>(context);
 
     int _pinLenght;
-
     ChestData currentChest = chestBox.get(configBox.get('currentChest'));
 
     if (currentChest.isCesium) {
@@ -53,7 +52,7 @@ class UnlockingWallet extends StatelessWidget {
       child: Column(children: <Widget>[
         Expanded(
           child: Column(children: <Widget>[
-            SizedBox(height: isTall ? 80 : 20),
+            SizedBox(height: isTall ? 100 : 20),
             Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
               currentChest.imageFile == null
                   ? Image.asset(

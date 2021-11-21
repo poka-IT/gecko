@@ -380,27 +380,30 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                 ),
               ),
               Padding(
-                  padding: const EdgeInsets.only(top: 15),
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                        side: BorderSide(width: 2, color: orangeC)),
-                    onPressed: () {
-                      // if (_formKey.currentState.validate()) {
-                      //   _formKey.currentState.save();
-                      // }
-                      // _historyProvider.pay(payAmount.text, payComment.text);
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return UnlockingWallet(
-                            wallet: defaultWallet, action: "pay");
-                      }));
-                    },
-                    child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Text("PAYER",
-                            style: TextStyle(
-                                fontSize: 25, color: Colors.grey[850]))),
-                  ))
+                padding: const EdgeInsets.only(top: 15),
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                      side: BorderSide(width: 2, color: orangeC)),
+                  onPressed: () {
+                    // if (_formKey.currentState.validate()) {
+                    //   _formKey.currentState.save();
+                    // }
+                    // _historyProvider.pay(payAmount.text, payComment.text);
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return UnlockingWallet(
+                          wallet: defaultWallet, action: "pay");
+                    }));
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Text(
+                      "PAYER",
+                      style: TextStyle(fontSize: 25, color: Colors.grey[850]),
+                    ),
+                  ),
+                ),
+              )
             ],
           ),
         ),

@@ -34,17 +34,18 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-            toolbarHeight: 60 * ratio,
-            leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () {
-                  _changePin.newPin.text = '';
-                  Navigator.of(context).pop();
-                }),
-            title: SizedBox(
-              height: 22,
-              child: Text(walletName),
-            )),
+          toolbarHeight: 60 * ratio,
+          leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: () {
+                _changePin.newPin.text = '';
+                Navigator.of(context).pop();
+              }),
+          title: SizedBox(
+            height: 22,
+            child: Text(walletName),
+          ),
+        ),
         body: Center(
           child: SafeArea(
             child: Column(children: <Widget>[

@@ -5,7 +5,7 @@ import 'package:gecko/models/home.dart';
 import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/screens/myWallets/generate_wallets.dart';
 import 'dart:io';
-import 'package:gecko/screens/myWallets/import_wallet.dart';
+import 'package:gecko/screens/myWallets/import_cesium_wallet.dart';
 import 'package:gecko/globals.dart';
 import 'package:provider/provider.dart';
 

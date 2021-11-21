@@ -24,7 +24,7 @@ class ImportWalletScreen extends StatelessWidget {
 
     return WillPopScope(
         onWillPop: () {
-          _generateWalletProvider.resetImportView();
+          _generateWalletProvider.resetCesiumImportView();
           return Future<bool>.value(true);
         },
         child: Scaffold(
@@ -33,7 +33,7 @@ class ImportWalletScreen extends StatelessWidget {
                 leading: IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.black),
                     onPressed: () {
-                      _generateWalletProvider.resetImportView();
+                      _generateWalletProvider.resetCesiumImportView();
                       Navigator.of(context).pop();
                     }),
                 title: const SizedBox(
@@ -171,7 +171,8 @@ class ImportWalletScreen extends StatelessWidget {
                                         .importCesiumWallet()
                                         .then((value) {
                                       _myWalletProvider.rebuildWidget();
-                                      _generateWalletProvider.resetImportView();
+                                      _generateWalletProvider
+                                          .resetCesiumImportView();
                                       Navigator.popUntil(
                                         context,
                                         ModalRoute.withName('/'),

@@ -71,6 +71,7 @@ class MyWalletsProvider with ChangeNotifier {
         await walletBox.clear();
         await chestBox.clear();
         await configBox.delete('defaultWallet');
+        rebuildWidget();
 
         Navigator.pop(context);
       }

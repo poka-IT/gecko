@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/models/home.dart';
 import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
 import 'dart:ui';
@@ -484,7 +485,14 @@ Widget welcomeHome(context) {
                     style: OutlinedButton.styleFrom(
                         side: BorderSide(width: 4, color: orangeC)),
                     onPressed: () {
-                      Navigator.push(context, null);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return const RestoreChest();
+                          },
+                        ),
+                      );
                     },
                     child: Text(
                       "Restaurer mes portefeuilles",

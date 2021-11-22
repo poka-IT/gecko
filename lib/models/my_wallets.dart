@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/screens/home.dart';
 
 class MyWalletsProvider with ChangeNotifier {
   List<WalletData> listWallets = [];
@@ -71,9 +72,13 @@ class MyWalletsProvider with ChangeNotifier {
         await walletBox.clear();
         await chestBox.clear();
         await configBox.delete('defaultWallet');
-        rebuildWidget();
+        // await Future.delayed(const Duration(milliseconds: 50));
+        // notifyListeners();
 
-        Navigator.pop(context);
+        await Navigator.of(context).pushNamedAndRemoveUntil(
+          '/',
+          ModalRoute.withName('/'),
+        );
       }
       return 0;
     } catch (e) {

@@ -46,7 +46,7 @@ class ChestOptions extends StatelessWidget {
               key: const Key('changePin'),
               onTap: () async {
                 // await _chestProvider.changePin(context, cesiumWallet);
-                walletProvider.pinCode = await Navigator.push(
+                String pinResult = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) {
@@ -57,6 +57,10 @@ class ChestOptions extends StatelessWidget {
                     },
                   ),
                 );
+
+                if (pinResult != null) {
+                  walletProvider.pinCode = pinResult;
+                }
               },
               child: SizedBox(
                   height: 50,

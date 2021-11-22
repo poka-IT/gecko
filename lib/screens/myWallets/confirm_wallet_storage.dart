@@ -137,7 +137,7 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                             onPressed: (_generateWalletProvider
                                         .isAskedWordValid &&
                                     walletName.text != '')
-                                ? () {
+                                ? () async {
                                     _generateWalletProvider.storeHDWChest(
                                         generatedWallet,
                                         walletName.text,
@@ -149,16 +149,16 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                                     _myWalletProvider.listWallets =
                                         _myWalletProvider
                                             .readAllWallets(_currentChest);
-                                    scheduleMicrotask(() {
-                                      _walletOptions.reloadBuild();
-                                      _myWalletProvider.rebuildWidget();
-                                    });
+                                    await Future.delayed(
+                                        const Duration(milliseconds: 50));
+                                    _myWalletProvider.rebuildWidget();
                                     Navigator.pushAndRemoveUntil(context,
                                         MaterialPageRoute(builder: (context) {
                                       return UnlockingWallet(
                                         wallet:
                                             _myWalletProvider.getDefaultWallet(
-                                                configBox.get('currentChest')),
+                                          configBox.get('currentChest'),
+                                        ),
                                         action: "mywallets",
                                       );
                                     }), ModalRoute.withName('/'));

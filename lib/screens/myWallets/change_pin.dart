@@ -49,6 +49,13 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
         body: Center(
           child: SafeArea(
             child: Column(children: <Widget>[
+              StatefulWrapper(
+                onInit: () async {
+                  _newWalletFile =
+                      await _changePin.changePin(walletProvider.pinCode);
+                },
+                child: Container(),
+              ),
               const SizedBox(height: 80),
               Text(
                 'Choisissez un code secret autogénéré :',
@@ -110,5 +117,29 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
         ),
       ),
     );
+  }
+}
+
+class StatefulWrapper extends StatefulWidget {
+  final Function onInit;
+  final Widget child;
+  const StatefulWrapper({Key key, @required this.onInit, @required this.child})
+      : super(key: key);
+  @override
+  _StatefulWrapperState createState() => _StatefulWrapperState();
+}
+
+class _StatefulWrapperState extends State<StatefulWrapper> {
+  @override
+  void initState() {
+    if (widget.onInit != null) {
+      widget.onInit();
+    }
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
   }
 }

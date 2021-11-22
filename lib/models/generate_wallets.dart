@@ -330,12 +330,19 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   bool isBipWord(String word) {
     notifyListeners();
+
+    // Needed for bad encoding of UTF-8
+    word = word.replaceAll('é', 'é');
+    word = word.replaceAll('è', 'è');
     return bip39Words.contains(word);
   }
 
   bool isBipWordsList(List words) {
     bool isValid = true;
     for (String word in words) {
+      // Needed for bad encoding of UTF-8
+      word = word.replaceAll('é', 'é');
+      word = word.replaceAll('è', 'è');
       if (!bip39Words.contains(word)) {
         isValid = false;
       }
@@ -383,15 +390,13 @@ class GenerateWalletsProvider with ChangeNotifier {
   Future<bool> isSentenceValid() async {
     String inputMnemonic =
         '${cellController0.text} ${cellController1.text} ${cellController2.text} ${cellController3.text} ${cellController4.text} ${cellController5.text} ${cellController6.text} ${cellController7.text} ${cellController8.text} ${cellController9.text} ${cellController10.text} ${cellController11.text}';
-    //TODO: Fix bad accent management
 
-    // inputMnemonic = inputMnemonic.replaceAll('é', 'eM-LM-^A');
-    // inputMnemonic = inputMnemonic.replaceAll('è', 'eM-LM-^@');
+    // Needed for bad encoding of UTF-8
+    inputMnemonic = inputMnemonic.replaceAll('é', 'é');
+    inputMnemonic = inputMnemonic.replaceAll('è', 'è');
 
     NewWallet generatedWallet =
         await generateWallet(inputMnemonic, isImport: true);
-
-    log.d(inputMnemonic);
 
     if (generatedWallet == null) {
       return false;

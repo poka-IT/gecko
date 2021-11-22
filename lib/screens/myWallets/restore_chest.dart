@@ -18,6 +18,8 @@ class RestoreChest extends StatelessWidget {
     GenerateWalletsProvider generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context, listen: false);
 
+    generateWalletProvider.actualWallet = null;
+
     return WillPopScope(
       onWillPop: () {
         generateWalletProvider.resetImportView();
@@ -124,7 +126,7 @@ class RestoreChest extends StatelessWidget {
         key: const Key('importText'),
         textAlign: TextAlign.justify,
         style: const TextStyle(
-            color: Colors.black, fontSize: 21, fontWeight: FontWeight.w400),
+            color: Colors.black, fontSize: 19, fontWeight: FontWeight.w400),
       ),
     );
   }

@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
-import 'package:gecko/models/home.dart';
 import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/screens/myWallets/generate_wallets.dart';
 import 'dart:io';
 import 'package:gecko/screens/myWallets/import_cesium_wallet.dart';
 import 'package:gecko/globals.dart';
-import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class SettingsScreen extends StatelessWidget {
@@ -29,7 +27,6 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
 
     // getAppDirectory();
     return Scaffold(

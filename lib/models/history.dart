@@ -2,14 +2,12 @@ import 'package:dubp/dubp.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/home.dart';
 import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/screens/history.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:provider/provider.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'dart:math';
 import 'package:intl/intl.dart';
@@ -74,8 +72,6 @@ class HistoryProvider with ChangeNotifier {
   }
 
   String isPubkey(context, pubkey, {bool goHistory}) {
-    HomeProvider _homeProvider =
-        Provider.of<HomeProvider>(context, listen: false);
     final RegExp regExp = RegExp(
       r'^[a-zA-Z0-9]+$',
       caseSensitive: false,
@@ -102,7 +98,6 @@ class HistoryProvider with ChangeNotifier {
         historySwitchButtun = "Voir l'historique";
       }
 
-      _homeProvider.handleSearchEnd();
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) {

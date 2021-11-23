@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/generate_wallets.dart';
 import 'package:gecko/models/my_wallets.dart';
-import 'package:gecko/models/wallet_options.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:provider/provider.dart';
 
@@ -33,8 +32,6 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
         Provider.of<GenerateWalletsProvider>(context);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
-    WalletOptionsProvider _walletOptions =
-        Provider.of<WalletOptionsProvider>(context);
     final int _currentChest = _myWalletProvider.getCurrentChest();
 
     _mnemonicController.text = generatedMnemonic;

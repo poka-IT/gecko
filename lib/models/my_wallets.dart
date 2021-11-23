@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/screens/home.dart';
 
 class MyWalletsProvider with ChangeNotifier {
   List<WalletData> listWallets = [];

@@ -10,6 +10,7 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
+import 'package:gecko/screens/search.dart';
 import 'dart:ui';
 import 'package:gecko/screens/settings.dart';
 import 'package:flutter/services.dart';
@@ -205,18 +206,18 @@ Widget geckHome(context) {
                       color: orangeC, // button color
                       child: InkWell(
                           child: const Padding(
-                              padding: EdgeInsets.all(18),
-                              child: Image(
-                                  image: AssetImage('assets/home/loupe.png'),
-                                  height: 70)),
+                            padding: EdgeInsets.all(18),
+                            child: Image(
+                                image: AssetImage('assets/home/loupe.png'),
+                                height: 70),
+                          ),
                           onTap: () {
-                            // Navigator.push(
-                            //   context,
-                            //   MaterialPageRoute(
-                            //       builder: (context) {
-                            //     return TemplateScreen();
-                            //   }),
-                            // );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) {
+                                return const SearchScreen();
+                              }),
+                            );
                           }),
                     ),
                   ),

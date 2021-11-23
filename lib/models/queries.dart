@@ -62,3 +62,27 @@ const String getBalance = r'''
       }
     }
   ''';
+
+const String getWallets = r'''
+query ($number: Int!, $cursor: String) {
+  wallets(pagination: {ord: ASC, pageSize: $number, cursor: $cursor}) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      node {
+        script
+        balance {
+          amount
+          base
+        }
+        idty {
+          isMember
+          username
+        }
+      }
+    }
+  }
+}
+''';

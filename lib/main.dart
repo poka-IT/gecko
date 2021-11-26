@@ -23,6 +23,7 @@ import 'package:gecko/models/cesium_plus.dart';
 import 'package:gecko/models/change_pin.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/chest_provider.dart';
+import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/generate_wallets.dart';
 import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
@@ -58,9 +59,12 @@ Future<void> main() async {
   await Hive.initFlutter(appPath.path);
   Hive.registerAdapter(WalletDataAdapter());
   Hive.registerAdapter(ChestDataAdapter());
+  Hive.registerAdapter(G1WalletsListAdapter());
+  Hive.registerAdapter(IdAdapter());
   walletBox = await Hive.openBox<WalletData>("walletBox");
   chestBox = await Hive.openBox<ChestData>("chestBox");
   configBox = await Hive.openBox("configBox");
+  g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
 
   // final HiveStore _store =
   //     await HiveStore.open(path: '${appPath.path}/gqlCache');

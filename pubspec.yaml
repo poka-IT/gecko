@@ -5,7 +5,7 @@ description: Pay with G1.
 # pub.dev using `pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 0.0.3+3
+version: 0.0.3+5
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -26,7 +26,7 @@ dependencies:
   graphql_flutter: ^5.0.0
   hive: ^2.0.4
   hive_flutter: ^1.1.0
-  http: ^0.13.0
+  http: ^0.13.4
   image_gallery_saver: ^1.6.9
   image_picker: ^0.8.4
   intl: ^0.17.0

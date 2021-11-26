@@ -187,47 +187,48 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                   children: [
                                     if (_isFirstExec)
                                       Container(
-                                          padding: const EdgeInsets.fromLTRB(
-                                              20, 0, 30, 0),
-                                          child: FutureBuilder(
-                                              future:
-                                                  _cesiumPlusProvider.getAvatar(
-                                                      _historyProvider.pubkey),
-                                              initialData: [
-                                                File(appPath.path +
-                                                    '/default_avatar.png')
-                                              ],
-                                              builder: (BuildContext context,
-                                                  AsyncSnapshot<List> _avatar) {
-                                                cesiumData = _avatar.data;
-                                                // _cesiumPlusProvider.isComplete = true;
-                                                if (_avatar.connectionState !=
-                                                    ConnectionState.done) {
-                                                  return Image.file(
-                                                      File(appPath.path +
-                                                          '/default_avatar.png'),
-                                                      height: avatarsSize);
-                                                }
-                                                if (_avatar.hasError) {
-                                                  return Image.file(
-                                                      File(appPath.path +
-                                                          '/default_avatar.png'),
-                                                      height: avatarsSize);
-                                                }
-                                                if (_avatar.hasData) {
-                                                  return SingleChildScrollView(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              0.0),
-                                                      child: Image.file(
-                                                          _avatar.data[0],
-                                                          height: avatarsSize));
-                                                }
+                                        padding: const EdgeInsets.fromLTRB(
+                                            20, 0, 30, 0),
+                                        child: FutureBuilder(
+                                            future:
+                                                _cesiumPlusProvider.getAvatar(
+                                                    _historyProvider.pubkey),
+                                            initialData: [
+                                              File(appPath.path +
+                                                  '/default_avatar.png')
+                                            ],
+                                            builder: (BuildContext context,
+                                                AsyncSnapshot<List> _avatar) {
+                                              cesiumData = _avatar.data;
+                                              // _cesiumPlusProvider.isComplete = true;
+                                              if (_avatar.connectionState !=
+                                                  ConnectionState.done) {
                                                 return Image.file(
                                                     File(appPath.path +
                                                         '/default_avatar.png'),
                                                     height: avatarsSize);
-                                              })),
+                                              }
+                                              if (_avatar.hasError) {
+                                                return Image.file(
+                                                    File(appPath.path +
+                                                        '/default_avatar.png'),
+                                                    height: avatarsSize);
+                                              }
+                                              if (_avatar.hasData) {
+                                                return SingleChildScrollView(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            0.0),
+                                                    child: Image.file(
+                                                        _avatar.data[0],
+                                                        height: avatarsSize));
+                                              }
+                                              return Image.file(
+                                                  File(appPath.path +
+                                                      '/default_avatar.png'),
+                                                  height: avatarsSize);
+                                            }),
+                                      ),
                                     GestureDetector(
                                       key: const Key('copyPubkey'),
                                       onTap: () {
@@ -270,18 +271,19 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Container(
-                                        padding: const EdgeInsets.fromLTRB(
-                                            0, 0, 0, 0),
-                                        // padding: const EdgeInsets.,
-                                        child: FutureBuilder(
-                                            future: _cesiumPlusProvider.getName(
-                                                _historyProvider.pubkey),
-                                            initialData: '...',
-                                            builder: (context, snapshot) {
-                                              return Text(snapshot.data ?? '-',
-                                                  style: const TextStyle(
-                                                      fontSize: 20));
-                                            }))
+                                      padding:
+                                          const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                                      // padding: const EdgeInsets.,
+                                      child: FutureBuilder(
+                                          future: _cesiumPlusProvider
+                                              .getName(_historyProvider.pubkey),
+                                          initialData: '...',
+                                          builder: (context, snapshot) {
+                                            return Text(snapshot.data ?? '-',
+                                                style: const TextStyle(
+                                                    fontSize: 20));
+                                          }),
+                                    )
                                   ]),
                             const SizedBox(height: 18),
                             if (_isFirstExec)
@@ -420,32 +422,33 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
         : Column(children: <Widget>[
             for (var repository in _historyProvider.transBC)
               Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 5.0),
-                  child: ListTile(
-                      key: Key('transaction${keyID++}'),
-                      contentPadding: const EdgeInsets.all(5.0),
-                      leading: Text(repository[1].toString(),
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[800],
-                              fontWeight: FontWeight.w700),
-                          textAlign: TextAlign.center),
-                      title: Text(repository[3],
-                          style: const TextStyle(
-                              fontSize: 15.0, fontFamily: 'Monospace'),
-                          textAlign: TextAlign.center),
-                      subtitle: Text(repository[6] != '' ? repository[6] : '-',
-                          style: const TextStyle(fontSize: 12.0),
-                          textAlign: TextAlign.center),
-                      trailing: Text("${repository[4]} Ğ1",
-                          style: const TextStyle(fontSize: 14.0),
-                          textAlign: TextAlign.justify),
-                      dense: true,
-                      isThreeLine: false,
-                      onTap: () {
-                        // this._outputPubkey.text = repository[2];
-                        _historyProvider.isPubkey(context, repository[2]);
-                      })),
+                padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                child: ListTile(
+                    key: Key('transaction${keyID++}'),
+                    contentPadding: const EdgeInsets.all(5.0),
+                    leading: Text(repository[1].toString(),
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[800],
+                            fontWeight: FontWeight.w700),
+                        textAlign: TextAlign.center),
+                    title: Text(repository[3],
+                        style: const TextStyle(
+                            fontSize: 15.0, fontFamily: 'Monospace'),
+                        textAlign: TextAlign.center),
+                    subtitle: Text(repository[6] != '' ? repository[6] : '-',
+                        style: const TextStyle(fontSize: 12.0),
+                        textAlign: TextAlign.center),
+                    trailing: Text("${repository[4]} Ğ1",
+                        style: const TextStyle(fontSize: 14.0),
+                        textAlign: TextAlign.justify),
+                    dense: true,
+                    isThreeLine: false,
+                    onTap: () {
+                      // this._outputPubkey.text = repository[2];
+                      _historyProvider.isPubkey(context, repository[2]);
+                    }),
+              ),
             if (result.isLoading)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,

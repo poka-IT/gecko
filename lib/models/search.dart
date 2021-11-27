@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 class SearchProvider with ChangeNotifier {
   TextEditingController searchController = TextEditingController();
   List searchResult = [];
-  final cacheDuring = 0 * 60 * 1000; //First number is minutes
+  final cacheDuring = 20 * 60 * 1000; //First number is minutes
   int cacheTime = 0;
 
   void rebuildWidget() {
@@ -33,7 +33,9 @@ class SearchProvider with ChangeNotifier {
     g1WalletsBox.toMap().forEach((key, value) {
       if ((value.id != null &&
               value.id.username != null &&
-              value.id.username.contains(searchController.text)) ||
+              value.id.username
+                  .toLowerCase()
+                  .contains(searchController.text)) ||
           value.pubkey.contains(searchController.text)) {
         searchResult.add(value);
         return;

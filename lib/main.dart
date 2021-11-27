@@ -79,6 +79,8 @@ Future<void> main() async {
   //   _homeProvider.playSound('start', 0.2);
   // }
 
+  HttpOverrides.global = MyHttpOverrides();
+
   if (kReleaseMode && enableSentry) {
     // CatcherOptions debugOptions = CatcherOptions(DialogReportMode(), [
     //   SentryHandler(SentryClient(SentryOptions(
@@ -109,8 +111,6 @@ Future<void> main() async {
     //     ));
   } else {
     print('Debug mode enabled: No sentry alerte');
-
-    HttpOverrides.global = MyHttpOverrides();
 
     runApp(Gecko(endPointGVA));
   }

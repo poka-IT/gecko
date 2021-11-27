@@ -23,7 +23,6 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
   // HistoryProvider _historyProvider;
   final _formKey = GlobalKey<FormState>();
   final FocusNode _pubkeyFocus = FocusNode();
-  List cesiumData;
   final double avatarsSize = 80;
 
   FetchMore fetchMore;
@@ -199,7 +198,6 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                             ],
                                             builder: (BuildContext context,
                                                 AsyncSnapshot<List> _avatar) {
-                                              cesiumData = _avatar.data;
                                               // _cesiumPlusProvider.isComplete = true;
                                               if (_avatar.connectionState !=
                                                   ConnectionState.done) {
@@ -447,6 +445,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                     onTap: () {
                       // this._outputPubkey.text = repository[2];
                       _historyProvider.isPubkey(context, repository[2]);
+                      Navigator.pop(context);
                     }),
               ),
             if (result.isLoading)

@@ -24,6 +24,7 @@ import 'package:gecko/models/change_pin.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/chest_provider.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:gecko/models/g1_wallets_list_live.dart';
 import 'package:gecko/models/generate_wallets.dart';
 import 'package:gecko/models/history.dart';
 import 'package:gecko/models/home.dart';
@@ -61,10 +62,19 @@ Future<void> main() async {
   Hive.registerAdapter(ChestDataAdapter());
   Hive.registerAdapter(G1WalletsListAdapter());
   Hive.registerAdapter(IdAdapter());
+  Hive.registerAdapter(G1WalletsListLiveAdapter());
+  Hive.registerAdapter(DataAdapter());
+  Hive.registerAdapter(WalletsAdapter());
+  Hive.registerAdapter(EdgesAdapter());
+  Hive.registerAdapter(NodeAdapter());
+  Hive.registerAdapter(BalanceAdapter());
+  Hive.registerAdapter(IdtyAdapter());
+  Hive.registerAdapter(PageInfoAdapter());
   walletBox = await Hive.openBox<WalletData>("walletBox");
   chestBox = await Hive.openBox<ChestData>("chestBox");
   configBox = await Hive.openBox("configBox");
   g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
+  g1WalletsBoxLive = await Hive.openBox<G1WalletsListLive>("g1WalletsBoxLive");
 
   // final HiveStore _store =
   //     await HiveStore.open(path: '${appPath.path}/gqlCache');

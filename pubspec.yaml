@@ -5,7 +5,7 @@ description: Pay with G1.
 # pub.dev using `pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 0.0.3+5
+version: 0.0.3+6
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -57,6 +57,7 @@ dependencies:
   carousel_slider: ^4.0.0
   flutter_lints: ^1.0.4
   confirm_dialog: ^1.0.0
+  infinite_scroll_pagination: ^3.1.0
 
 flutter_icons:
   android: "ic_launcher"

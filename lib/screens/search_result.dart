@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
@@ -66,9 +65,10 @@ class SearchResultScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             FutureBuilder(
-                future: _searchProvider.searchBlockchain(),
-                initialData: const [],
-                builder: (context, snapshot) {
+              future: _searchProvider.searchBlockchain(),
+              // initialData: const [],
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
                   return Expanded(
                     child: ListView(children: <Widget>[
                       for (G1WalletsList g1Wallet in snapshot.data)
@@ -129,7 +129,17 @@ class SearchResultScreen extends StatelessWidget {
                         ),
                     ]),
                   );
-                }),
+                }
+                return Center(
+                  heightFactor: 5,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    backgroundColor: yellowC,
+                    color: orangeC,
+                  ),
+                );
+              },
+            ),
             // Text(
             //   _searchProvider.searchResult.toString(),
             // )

@@ -8,7 +8,6 @@ import 'package:path_provider/path_provider.dart';
 
 class CesiumPlusProvider with ChangeNotifier {
   TextEditingController cesiumName = TextEditingController();
-  int iAvatar = 0;
   bool isComplete = false;
 
   Future<List> _buildQuery(_pubkey) async {
@@ -95,9 +94,8 @@ class CesiumPlusProvider with ChangeNotifier {
         responseJson['hits']['hits'][0]['_source']['avatar']['_content'];
 
     var avatarFile =
-        File('${(await getTemporaryDirectory()).path}/avatar$iAvatar.png');
+        File('${(await getTemporaryDirectory()).path}/avatar_$_pubkey.png');
     await avatarFile.writeAsBytes(base64.decode(_avatar));
-    iAvatar++;
     isComplete = true;
 
     return [avatarFile];

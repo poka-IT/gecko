@@ -8,7 +8,8 @@ import 'package:path_provider/path_provider.dart';
 
 class CesiumPlusProvider with ChangeNotifier {
   TextEditingController cesiumName = TextEditingController();
-  bool isComplete = false;
+  Image defaultAvatar(double size) =>
+      Image.asset(('assets/icon_user.png'), height: size);
 
   Future<List> _buildQuery(_pubkey) async {
     var queryGetAvatar = json.encode({
@@ -77,27 +78,34 @@ class CesiumPlusProvider with ChangeNotifier {
     return _name;
   }
 
-  Future<List> getAvatar(String _pubkey) async {
+  Future<Image> getAvatar(String _pubkey, double size) async {
     List queryOptions = await _buildQuery(_pubkey);
-    final response = await http.post((Uri.parse(queryOptions[0])),
-        body: queryOptions[1], headers: queryOptions[2]);
+
+    http.Response response;
+    try {
+      response = await http.post((Uri.parse(queryOptions[0])),
+          body: queryOptions[1], headers: queryOptions[2]);
+    } catch (e) {
+      log.e(e);
+    }
     final responseJson = json.decode(response.body);
-    if (responseJson['hits']['hits'].toString() == '[]') {
-      return [File(appPath.path + '/default_avatar.png')];
+
+    if (responseJson['hits']['hits'].toString() == '[]' ||
+        !responseJson['hits']['hits'][0]['_source'].containsKey("avatar")) {
+      return defaultAvatar(size);
     }
-    final bool avatarExist =
-        responseJson['hits']['hits'][0]['_source'].containsKey("avatar");
-    if (!avatarExist) {
-      return [File(appPath.path + '/default_avatar.png')];
-    }
+
     final _avatar =
         responseJson['hits']['hits'][0]['_source']['avatar']['_content'];
 
     var avatarFile =
         File('${(await getTemporaryDirectory()).path}/avatar_$_pubkey.png');
     await avatarFile.writeAsBytes(base64.decode(_avatar));
-    isComplete = true;
 
-    return [avatarFile];
+    return Image.file(
+      avatarFile,
+      height: size,
+      fit: BoxFit.cover,
+    );
   }
 }

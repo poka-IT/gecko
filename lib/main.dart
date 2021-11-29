@@ -51,7 +51,6 @@ Future<void> main() async {
 
   HomeProvider _homeProvider = HomeProvider();
   appPath = await getApplicationDocumentsDirectory();
-  await _homeProvider.createDefaultAvatar();
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
 

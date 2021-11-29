@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/screens/history.dart';
+import 'package:gecko/screens/wallet_view.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -81,7 +81,7 @@ class HistoryProvider with ChangeNotifier {
     if (regExp.hasMatch(pubkey) == true &&
         pubkey.length > 42 &&
         pubkey.length < 45) {
-      log.d("C'est une pubkey !!!");
+      log.d("C'est une pubkey !");
 
       this.pubkey = pubkey;
       getShortPubkey(pubkey);
@@ -101,7 +101,7 @@ class HistoryProvider with ChangeNotifier {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) {
-          return HistoryScreen();
+          return WalletViewScreen();
         }),
       );
       notifyListeners();
@@ -238,6 +238,7 @@ class HistoryProvider with ChangeNotifier {
 
   snackCopyKey(context) {
     const snackBar = SnackBar(
+        padding: EdgeInsets.all(20),
         content:
             Text("Cette clé publique a été copié dans votre presse-papier."),
         duration: Duration(seconds: 2));

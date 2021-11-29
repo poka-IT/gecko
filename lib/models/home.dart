@@ -100,16 +100,6 @@ class HomeProvider with ChangeNotifier {
     return _endpoint;
   }
 
-  Future createDefaultAvatar() async {
-    File defaultAvatar = File(appPath.path + '/default_avatar.png');
-    final bool isAvatarExist = await defaultAvatar.exists();
-    if (!isAvatarExist) {
-      final byteData = await rootBundle.load('assets/icon_user.png');
-      await defaultAvatar.writeAsBytes(byteData.buffer
-          .asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
-    }
-  }
-
   T getRandomElement<T>(List<T> list) {
     final random = Random();
     var i = random.nextInt(list.length);

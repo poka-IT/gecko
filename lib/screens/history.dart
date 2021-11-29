@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/cesium_plus.dart';
@@ -191,40 +190,36 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                         child: FutureBuilder(
                                             future:
                                                 _cesiumPlusProvider.getAvatar(
-                                                    _historyProvider.pubkey),
-                                            initialData: [
-                                              File(appPath.path +
-                                                  '/default_avatar.png')
-                                            ],
+                                                    _historyProvider.pubkey,
+                                                    55),
                                             builder: (BuildContext context,
-                                                AsyncSnapshot<List> _avatar) {
-                                              // _cesiumPlusProvider.isComplete = true;
+                                                AsyncSnapshot<Image> _avatar) {
                                               if (_avatar.connectionState !=
-                                                  ConnectionState.done) {
-                                                return Image.file(
-                                                    File(appPath.path +
-                                                        '/default_avatar.png'),
-                                                    height: avatarsSize);
-                                              }
-                                              if (_avatar.hasError) {
-                                                return Image.file(
-                                                    File(appPath.path +
-                                                        '/default_avatar.png'),
-                                                    height: avatarsSize);
+                                                      ConnectionState.done ||
+                                                  _avatar.hasError) {
+                                                return Stack(children: [
+                                                  _cesiumPlusProvider
+                                                      .defaultAvatar(55),
+                                                  Positioned(
+                                                    top: 8,
+                                                    right: 0,
+                                                    width: 12,
+                                                    height: 12,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                      strokeWidth: 1,
+                                                      color: orangeC,
+                                                    ),
+                                                  ),
+                                                ]);
                                               }
                                               if (_avatar.hasData) {
-                                                return SingleChildScrollView(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            0.0),
-                                                    child: Image.file(
-                                                        _avatar.data[0],
-                                                        height: avatarsSize));
+                                                return ClipOval(
+                                                  child: _avatar.data,
+                                                );
                                               }
-                                              return Image.file(
-                                                  File(appPath.path +
-                                                      '/default_avatar.png'),
-                                                  height: avatarsSize);
+                                              return _cesiumPlusProvider
+                                                  .defaultAvatar(55);
                                             }),
                                       ),
                                     GestureDetector(
@@ -448,7 +443,8 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                       Navigator.pop(context);
                     }),
               ),
-            if (result.isLoading)
+            if (result.isLoading &&
+                _historyProvider.pageInfo['hasPreviousPage'])
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: const <Widget>[

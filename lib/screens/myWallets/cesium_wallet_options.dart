@@ -89,8 +89,9 @@ Widget cesiumWalletOptions(BuildContext context, ChestData cesiumWallet,
                     child: Column(children: <Widget>[
                       Image.asset(
                         'assets/walletOptions/camera.png',
+                        height: 40,
                       ),
-                      const SizedBox(height: 100)
+                      const SizedBox(height: 80)
                     ])),
                 Column(children: <Widget>[
                   Row(children: <Widget>[
@@ -175,15 +176,17 @@ Widget cesiumWalletOptions(BuildContext context, ChestData cesiumWallet,
                       ),
                       const SizedBox(height: 5),
                       InkWell(
-                          key: const Key('displayBalance'),
-                          onTap: () {
-                            _walletOptions.bluringBalance();
-                          },
-                          child: Image.asset(
-                            _walletOptions.isBalanceBlur
-                                ? 'assets/walletOptions/icon_oeuil.png'
-                                : 'assets/walletOptions/icon_oeuil_close.png',
-                          )),
+                        key: const Key('displayBalance'),
+                        onTap: () {
+                          _walletOptions.bluringBalance();
+                        },
+                        child: Image.asset(
+                          _walletOptions.isBalanceBlur
+                              ? 'assets/walletOptions/icon_oeuil.png'
+                              : 'assets/walletOptions/icon_oeuil_close.png',
+                          height: 35,
+                        ),
+                      ),
                     ]),
                     const SizedBox(width: 0),
                     Column(children: <Widget>[
@@ -234,6 +237,7 @@ Widget cesiumWalletOptions(BuildContext context, ChestData cesiumWallet,
                     const SizedBox(width: 30),
                     Image.asset(
                       'assets/walletOptions/key.png',
+                      height: 45,
                     ),
                     const SizedBox(width: 20),
                     Text("${shortPubkey.split(':')[0]}:",
@@ -267,6 +271,7 @@ Widget cesiumWalletOptions(BuildContext context, ChestData cesiumWallet,
                             child: Row(children: <Widget>[
                               Image.asset(
                                 'assets/walletOptions/copy-white.png',
+                                height: 25,
                               ),
                               const SizedBox(width: 7),
                               Text('Copier',
@@ -287,6 +292,7 @@ Widget cesiumWalletOptions(BuildContext context, ChestData cesiumWallet,
                     const SizedBox(width: 30),
                     Image.asset(
                       'assets/walletOptions/clock.png',
+                      height: 45,
                     ),
                     const SizedBox(width: 22),
                     const Text('Historique des transactions',
@@ -312,11 +318,12 @@ Widget cesiumWalletOptions(BuildContext context, ChestData cesiumWallet,
             child: SizedBox(
                 height: 50,
                 child: Row(children: <Widget>[
-                  const SizedBox(width: 28),
+                  const SizedBox(width: 31),
                   Image.asset(
                     'assets/chests/secret_code.png',
+                    height: 24,
                   ),
-                  const SizedBox(width: 18),
+                  const SizedBox(width: 20),
                   const Text('Changer mon code secret',
                       style: TextStyle(fontSize: 20, color: Colors.black)),
                 ])),
@@ -333,8 +340,9 @@ Widget cesiumWalletOptions(BuildContext context, ChestData cesiumWallet,
                 const SizedBox(width: 33),
                 Image.asset(
                   'assets/walletOptions/trash.png',
+                  height: 45,
                 ),
-                const SizedBox(width: 25),
+                const SizedBox(width: 21),
                 const Text(
                   'Supprimer ce coffre',
                   style: TextStyle(

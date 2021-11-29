@@ -5,6 +5,9 @@ import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/cesium_plus.dart';
 import 'package:gecko/models/history.dart';
+import 'package:gecko/models/queries.dart';
+import 'package:gecko/screens/avatar_fullscreen.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:provider/provider.dart';
@@ -34,7 +37,7 @@ class WalletViewScreen extends StatelessWidget {
         body: SafeArea(
           child: Column(children: <Widget>[
             Container(
-              height: isTall ? 30 : 10,
+              height: 10,
               color: yellowC,
             ),
             Container(
@@ -69,7 +72,36 @@ class WalletViewScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 15),
+                        const SizedBox(height: 10),
+                        Query(
+                          options: QueryOptions(
+                            document: gql(getId),
+                            variables: {
+                              'pubkey': _historyProvider.pubkey,
+                            },
+                          ),
+                          builder: (QueryResult result,
+                              {VoidCallback refetch, FetchMore fetchMore}) {
+                            if (result.isLoading || result.hasException) {
+                              return const Text('...');
+                            } else if (result.data['idty'] == null ||
+                                result.data['idty']['username'] == null) {
+                              return const Text('');
+                            } else {
+                              return SizedBox(
+                                width: 230,
+                                child: Text(
+                                  result?.data['idty']['username'] ?? '',
+                                  style: const TextStyle(
+                                    fontSize: 27,
+                                    color: Color(0xff814C00),
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 25),
                         FutureBuilder(
                             future: _cesiumPlusProvider
                                 .getName(_historyProvider.pubkey),
@@ -80,7 +112,7 @@ class WalletViewScreen extends StatelessWidget {
                                 child: Text(
                                   snapshot.data ?? '-',
                                   style: const TextStyle(
-                                      fontSize: 20, color: Color(0xff814C00)),
+                                      fontSize: 18, color: Colors.black),
                                 ),
                               );
                             }),
@@ -113,8 +145,19 @@ class WalletViewScreen extends StatelessWidget {
                             ]);
                           }
                           if (_avatar.hasData) {
-                            return ClipOval(
-                              child: _avatar.data,
+                            return GestureDetector(
+                              key: const Key('openAvatar'),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) {
+                                    return AvatarFullscreen(_avatar.data);
+                                  }),
+                                );
+                              },
+                              child: ClipOval(
+                                child: _avatar.data,
+                              ),
                             );
                           }
                           return ClipOval(
@@ -122,7 +165,7 @@ class WalletViewScreen extends StatelessWidget {
                                 _cesiumPlusProvider.defaultAvatar(_avatarSize),
                           );
                         }),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 25),
                   ]),
                 ]),
               ),

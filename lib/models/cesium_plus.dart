@@ -105,7 +105,7 @@ class CesiumPlusProvider with ChangeNotifier {
     return Image.file(
       avatarFile,
       height: size,
-      fit: BoxFit.cover,
+      fit: BoxFit.fitWidth,
     );
   }
 }

@@ -86,3 +86,12 @@ query ($number: Int!, $cursor: String) {
   }
 }
 ''';
+
+const String getId = r'''
+query ($pubkey: PubKeyGva!) {
+  idty(pubkey: $pubkey) {
+    isMember
+    username
+  }
+}
+''';

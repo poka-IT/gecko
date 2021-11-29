@@ -131,8 +131,9 @@ class WalletOptions extends StatelessWidget {
                         child: Column(children: <Widget>[
                           Image.asset(
                             'assets/walletOptions/camera.png',
+                            height: 40,
                           ),
-                          const SizedBox(height: 100)
+                          const SizedBox(height: 80)
                         ])),
                     Column(children: <Widget>[
                       Row(children: <Widget>[
@@ -221,15 +222,17 @@ class WalletOptions extends StatelessWidget {
                           ),
                           const SizedBox(height: 5),
                           InkWell(
-                              key: const Key('displayBalance'),
-                              onTap: () {
-                                _walletOptions.bluringBalance();
-                              },
-                              child: Image.asset(
-                                _walletOptions.isBalanceBlur
-                                    ? 'assets/walletOptions/icon_oeuil.png'
-                                    : 'assets/walletOptions/icon_oeuil_close.png',
-                              )),
+                            key: const Key('displayBalance'),
+                            onTap: () {
+                              _walletOptions.bluringBalance();
+                            },
+                            child: Image.asset(
+                              _walletOptions.isBalanceBlur
+                                  ? 'assets/walletOptions/icon_oeuil.png'
+                                  : 'assets/walletOptions/icon_oeuil_close.png',
+                              height: 35,
+                            ),
+                          ),
                         ]),
                         const SizedBox(width: 0),
                         Column(children: <Widget>[
@@ -282,6 +285,7 @@ class WalletOptions extends StatelessWidget {
                     const SizedBox(width: 30),
                     Image.asset(
                       'assets/walletOptions/key.png',
+                      height: 45,
                     ),
                     const SizedBox(width: 20),
                     Text("${shortPubkey.split(':')[0]}:",
@@ -315,6 +319,7 @@ class WalletOptions extends StatelessWidget {
                         child: Row(children: <Widget>[
                           Image.asset(
                             'assets/walletOptions/copy-white.png',
+                            height: 25,
                           ),
                           const SizedBox(width: 7),
                           Text(
@@ -341,6 +346,7 @@ class WalletOptions extends StatelessWidget {
                     const SizedBox(width: 30),
                     Image.asset(
                       'assets/walletOptions/clock.png',
+                      height: 45,
                     ),
                     const SizedBox(width: 22),
                     const Text('Historique des transactions',
@@ -369,6 +375,7 @@ class WalletOptions extends StatelessWidget {
                           .grey[_walletOptions.isDefaultWallet ? 300 : 500],
                       child: Image.asset(
                         'assets/walletOptions/android-checkmark.png',
+                        height: 25,
                       ),
                     ),
                     const SizedBox(width: 22),
@@ -399,11 +406,12 @@ class WalletOptions extends StatelessWidget {
                         }
                       : null,
                   child: Row(children: <Widget>[
-                    const SizedBox(width: 33),
+                    const SizedBox(width: 30),
                     Image.asset(
                       'assets/walletOptions/trash.png',
+                      height: 45,
                     ),
-                    const SizedBox(width: 24),
+                    const SizedBox(width: 19),
                     const Text('Supprimer ce portefeuille',
                         style:
                             TextStyle(fontSize: 20, color: Color(0xffD80000))),

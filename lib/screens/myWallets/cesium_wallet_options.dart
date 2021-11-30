@@ -5,11 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/chest_provider.dart';
-import 'package:gecko/models/history.dart';
+import 'package:gecko/models/wallets_profiles.dart';
 import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/models/queries.dart';
 import 'package:gecko/models/wallet_options.dart';
 import 'package:gecko/screens/myWallets/change_pin.dart';
+import 'package:gecko/screens/wallet_view.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
@@ -24,7 +25,8 @@ Widget cesiumWalletOptions(BuildContext context, ChestData cesiumWallet,
       Provider.of<WalletOptionsProvider>(context);
   ChestProvider _chestProvider =
       Provider.of<ChestProvider>(context, listen: false);
-  HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
+  WalletsProfilesProvider _historyProvider =
+      Provider.of<WalletsProfilesProvider>(context);
 
   final String shortPubkey =
       _walletOptions.getShortPubkey(_walletOptions.pubkey.text);
@@ -283,8 +285,15 @@ Widget cesiumWalletOptions(BuildContext context, ChestData cesiumWallet,
           InkWell(
               key: const Key('displayHistory'),
               onTap: () {
-                _historyProvider.isPubkey(ctx, _walletOptions.pubkey.text,
-                    goHistory: true);
+                if (_historyProvider.isPubkey(
+                    context, _walletOptions.pubkey.text)) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return const WalletViewScreen();
+                    }),
+                  );
+                }
               },
               child: SizedBox(
                   height: 50,

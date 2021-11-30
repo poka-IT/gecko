@@ -19,14 +19,17 @@ class SearchProvider with ChangeNotifier {
     searchResult.clear();
     int searchTime = DateTime.now().millisecondsSinceEpoch;
 
-    if (cacheTime + cacheDuring <= searchTime) {
+    if (cacheTime + 0 <= searchTime) {
       g1WalletsBox.clear();
       final url = Uri.parse('https://g1-stats.axiom-team.fr/data/forbes.json');
       final response = await http.get(url);
 
       List<G1WalletsList> _listWallets = _parseG1Wallets(response.body);
+      Map<String, G1WalletsList> _mapWallets = {
+        for (var e in _listWallets) e.pubkey: e
+      };
 
-      await g1WalletsBox.addAll(_listWallets);
+      await g1WalletsBox.putAll(_mapWallets);
       cacheTime = DateTime.now().millisecondsSinceEpoch;
     }
 

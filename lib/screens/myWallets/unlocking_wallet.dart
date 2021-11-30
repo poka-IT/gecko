@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/models/chest_data.dart';
-import 'package:gecko/models/history.dart';
+import 'package:gecko/models/wallets_profiles.dart';
 import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/wallet_options.dart';
@@ -124,7 +124,8 @@ class UnlockingWallet extends StatelessWidget {
         Provider.of<WalletOptionsProvider>(context);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
-    HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
+    WalletsProfilesProvider _historyProvider =
+        Provider.of<WalletsProfilesProvider>(context);
 
     FocusNode pinFocus = FocusNode();
 

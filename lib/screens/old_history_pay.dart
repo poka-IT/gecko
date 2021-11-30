@@ -4,11 +4,12 @@ import 'package:gecko/models/cesium_plus.dart';
 import 'package:gecko/models/home.dart';
 import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/models/queries.dart';
-import 'package:gecko/models/history.dart';
+import 'package:gecko/models/wallets_profiles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
+import 'package:gecko/screens/wallet_view.dart';
 import 'dart:ui';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
@@ -33,7 +34,8 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
+    WalletsProfilesProvider _historyProvider =
+        Provider.of<WalletsProfilesProvider>(context);
     HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
     _outputPubkey.text = _historyProvider.pubkey;
     log.i('Build pubkey : ' + _historyProvider.pubkey);
@@ -61,10 +63,14 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                           controller: _homeProvider.searchQuery,
                           onChanged: (text) {
                             log.d("Clé tappé: $text");
-                            final String searchResult =
-                                _historyProvider.isPubkey(context, text);
-                            if (searchResult != '') {
+                            if (_historyProvider.isPubkey(context, text)) {
                               _homeProvider.currentIndex = 0;
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) {
+                                  return const WalletViewScreen();
+                                }),
+                              );
                             }
                           },
                           style: TextStyle(
@@ -111,7 +117,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
         ]));
   }
 
-  Widget historyQuery(context, HistoryProvider _historyProvider) {
+  Widget historyQuery(context, WalletsProfilesProvider _historyProvider) {
     _pubkeyFocus.unfocus();
     // HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
     CesiumPlusProvider _cesiumPlusProvider =
@@ -327,7 +333,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
     ));
   }
 
-  Widget payView(context, HistoryProvider _historyProvider) {
+  Widget payView(context, WalletsProfilesProvider _historyProvider) {
     MyWalletsProvider _myWalletProvider = MyWalletsProvider();
     WalletData defaultWallet =
         _myWalletProvider.getDefaultWallet(configBox.get('currentChest'));
@@ -407,7 +413,10 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
   }
 
   Widget historyView(context, result) {
-    HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
+    WalletsProfilesProvider _historyProvider =
+        Provider.of<WalletsProfilesProvider>(context);
+    HomeProvider _homeProvider =
+        Provider.of<HomeProvider>(context, listen: false);
     int keyID = 0;
 
     return _historyProvider.transBC == null
@@ -438,8 +447,15 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                     dense: true,
                     isThreeLine: false,
                     onTap: () {
-                      // this._outputPubkey.text = repository[2];
-                      _historyProvider.isPubkey(context, repository[2]);
+                      if (_historyProvider.isPubkey(context, repository[2])) {
+                        _homeProvider.currentIndex = 0;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) {
+                            return const WalletViewScreen();
+                          }),
+                        );
+                      }
                       Navigator.pop(context);
                     }),
               ),

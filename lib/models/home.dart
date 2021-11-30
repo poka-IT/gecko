@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
-import 'package:gecko/screens/history.dart';
+import 'package:gecko/screens/old_history_pay.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:package_info/package_info.dart';
 

@@ -25,7 +25,7 @@ import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/chest_provider.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/generate_wallets.dart';
-import 'package:gecko/models/history.dart';
+import 'package:gecko/models/wallets_profiles.dart';
 import 'package:gecko/models/home.dart';
 import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/models/search.dart';
@@ -139,7 +139,7 @@ class Gecko extends StatelessWidget {
         providers: [
           // Provider(create: (context) => HistoryProvider()),
           ChangeNotifierProvider(create: (_) => HomeProvider()),
-          ChangeNotifierProvider(create: (_) => HistoryProvider('')),
+          ChangeNotifierProvider(create: (_) => WalletsProfilesProvider('')),
           ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
           ChangeNotifierProvider(create: (_) => ChestProvider()),
           ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),

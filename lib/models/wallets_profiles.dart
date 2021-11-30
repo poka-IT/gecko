@@ -15,10 +15,11 @@ import 'package:truncate/truncate.dart';
 import 'package:crypto/crypto.dart';
 import 'package:fast_base58/fast_base58.dart';
 
-class HistoryProvider with ChangeNotifier {
+class WalletsProfilesProvider with ChangeNotifier {
+  WalletsProfilesProvider(this.pubkey);
+
   String pubkey = '';
   String pubkeyShort = '';
-  HistoryProvider(this.pubkey);
   final TextEditingController outputPubkey = TextEditingController();
   List transBC;
   String fetchMoreCursor;
@@ -38,9 +39,14 @@ class HistoryProvider with ChangeNotifier {
       log.e(e);
       return 'false';
     }
-    if (barcode != null) {
+    if (barcode != null && isPubkey(context, barcode)) {
       outputPubkey.text = barcode;
-      isPubkey(context, barcode);
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) {
+          return const WalletViewScreen();
+        }),
+      );
     } else {
       return 'false';
     }
@@ -71,7 +77,7 @@ class HistoryProvider with ChangeNotifier {
     }
   }
 
-  String isPubkey(context, pubkey, {bool goHistory}) {
+  bool isPubkey(context, pubkey) {
     final RegExp regExp = RegExp(
       r'^[a-zA-Z0-9]+$',
       caseSensitive: false,
@@ -84,32 +90,22 @@ class HistoryProvider with ChangeNotifier {
       log.d("C'est une pubkey !");
 
       this.pubkey = pubkey;
-      getShortPubkey(pubkey);
+      // getShortPubkey(pubkey);
 
-      outputPubkey.text = pubkey;
+      // outputPubkey.text = pubkey;
 
-      goHistory ??= false;
+      // Navigator.push(
+      //   context,
+      //   MaterialPageRoute(builder: (context) {
+      //     return const WalletViewScreen();
+      //   }),
+      // );
+      // notifyListeners();
 
-      if (goHistory) {
-        isHistoryScreen = true;
-        historySwitchButtun = "Payer";
-      } else {
-        isHistoryScreen = false;
-        historySwitchButtun = "Voir l'historique";
-      }
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) {
-          return WalletViewScreen();
-        }),
-      );
-      notifyListeners();
-
-      return pubkey;
+      return true;
+    } else {
+      return false;
     }
-
-    return '';
   }
 
   String getShortPubkey(String pubkey) {

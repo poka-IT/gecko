@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 part 'g1_wallets_list.g.dart';
@@ -13,7 +14,10 @@ class G1WalletsList {
   @HiveField(3)
   Id id;
 
-  G1WalletsList({this.pubkey, this.balance, this.id});
+  @HiveField(4)
+  Image avatar;
+
+  G1WalletsList({this.pubkey, this.balance, this.id, this.avatar});
 
   G1WalletsList.fromJson(Map<String, dynamic> json) {
     pubkey = json['pubkey'];

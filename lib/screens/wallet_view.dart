@@ -1,39 +1,68 @@
 import 'dart:ui';
-
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/cesium_plus.dart';
-import 'package:gecko/models/history.dart';
+import 'package:gecko/models/wallets_profiles.dart';
 import 'package:gecko/models/queries.dart';
+// import 'package:gecko/models/wallet_options.dart';
 import 'package:gecko/screens/avatar_fullscreen.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
-// import 'package:gecko/models/home.dart';
-// import 'package:provider/provider.dart';
 
-// ignore: must_be_immutable
 class WalletViewScreen extends StatelessWidget {
-  TextEditingController tplController = TextEditingController();
-
-  WalletViewScreen({Key key}) : super(key: key);
+  const WalletViewScreen({this.pubkey, this.username, this.avatar, Key key})
+      : super(key: key);
+  final String pubkey;
+  final String username;
+  final Image avatar;
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
+    WalletsProfilesProvider _historyProvider =
+        Provider.of<WalletsProfilesProvider>(context);
     CesiumPlusProvider _cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context);
+    // WalletOptionsProvider _walletOptions = WalletOptionsProvider();
     double _avatarSize = 150;
 
     return Scaffold(
         appBar: AppBar(
-            elevation: 0,
-            toolbarHeight: 60 * ratio,
-            title: const SizedBox(
-              height: 22,
-              child: Text('Voir un portefeuille'),
-            )),
+          elevation: 0,
+          toolbarHeight: 60 * ratio,
+          title: const SizedBox(
+            height: 22,
+            child: Text('Voir un portefeuille'),
+          ),
+          // actions: [
+          //   FutureBuilder(
+          //     future: _walletOptions.generateQRcode(_historyProvider.pubkey),
+          //     builder: (context, snapshot) {
+          //       return snapshot.data != null
+          //           ? GestureDetector(
+          //               key: const Key('openAvatar'),
+          //               onTap: () {
+          //                 Navigator.push(
+          //                   context,
+          //                   MaterialPageRoute(builder: (context) {
+          //                     return AvatarFullscreen(
+          //                       Image.memory(snapshot.data),
+          //                       title: 'QrCode du profil',
+          //                     );
+          //                   }),
+          //                 );
+          //                 // isAvatarView = !isAvatarView;
+          //                 // _historyProvider.resetdHistory();
+          //               },
+          //               child: Image.memory(snapshot.data, height: 40 * ratio),
+          //             )
+          //           : const Text('-', style: TextStyle(fontSize: 20));
+          //     },
+          //   ),
+          //   const SizedBox(width: 75)
+          // ],
+        ),
         body: SafeArea(
           child: Column(children: <Widget>[
             Container(
@@ -56,51 +85,62 @@ class WalletViewScreen extends StatelessWidget {
                   Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        GestureDetector(
-                          key: const Key('copyPubkey'),
-                          onTap: () {
-                            Clipboard.setData(
-                                ClipboardData(text: _historyProvider.pubkey));
-                            _historyProvider.snackCopyKey(context);
-                          },
-                          child: Text(
-                            _historyProvider
-                                .getShortPubkey(_historyProvider.pubkey),
-                            style: const TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.w800,
+                        Row(children: [
+                          GestureDetector(
+                            key: const Key('copyPubkey'),
+                            onTap: () {
+                              Clipboard.setData(ClipboardData(
+                                  text: pubkey ?? _historyProvider.pubkey));
+                              _historyProvider.snackCopyKey(context);
+                            },
+                            child: Text(
+                              _historyProvider.getShortPubkey(
+                                  pubkey ?? _historyProvider.pubkey),
+                              style: const TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
                           ),
-                        ),
+                        ]),
                         const SizedBox(height: 10),
-                        Query(
-                          options: QueryOptions(
-                            document: gql(getId),
-                            variables: {
-                              'pubkey': _historyProvider.pubkey,
+                        if (username == null)
+                          Query(
+                            options: QueryOptions(
+                              document: gql(getId),
+                              variables: {
+                                'pubkey': _historyProvider.pubkey,
+                              },
+                            ),
+                            builder: (QueryResult result,
+                                {VoidCallback refetch, FetchMore fetchMore}) {
+                              if (result.isLoading || result.hasException) {
+                                return const Text('...');
+                              } else if (result.data['idty'] == null ||
+                                  result.data['idty']['username'] == null) {
+                                return const Text('');
+                              } else {
+                                return SizedBox(
+                                  width: 230,
+                                  child: Text(
+                                    result?.data['idty']['username'] ?? '',
+                                    style: const TextStyle(
+                                      fontSize: 27,
+                                      color: Color(0xff814C00),
+                                    ),
+                                  ),
+                                );
+                              }
                             },
                           ),
-                          builder: (QueryResult result,
-                              {VoidCallback refetch, FetchMore fetchMore}) {
-                            if (result.isLoading || result.hasException) {
-                              return const Text('...');
-                            } else if (result.data['idty'] == null ||
-                                result.data['idty']['username'] == null) {
-                              return const Text('');
-                            } else {
-                              return SizedBox(
-                                width: 230,
-                                child: Text(
-                                  result?.data['idty']['username'] ?? '',
-                                  style: const TextStyle(
-                                    fontSize: 27,
-                                    color: Color(0xff814C00),
-                                  ),
-                                ),
-                              );
-                            }
-                          },
-                        ),
+                        if (username != null)
+                          Text(
+                            username,
+                            style: const TextStyle(
+                              fontSize: 27,
+                              color: Color(0xff814C00),
+                            ),
+                          ),
                         const SizedBox(height: 25),
                         FutureBuilder(
                             future: _cesiumPlusProvider
@@ -120,51 +160,72 @@ class WalletViewScreen extends StatelessWidget {
                       ]),
                   const Spacer(),
                   Column(children: <Widget>[
-                    FutureBuilder(
-                        future: _cesiumPlusProvider.getAvatar(
-                            _historyProvider.pubkey, _avatarSize),
-                        builder: (BuildContext context,
-                            AsyncSnapshot<Image> _avatar) {
-                          if (_avatar.connectionState != ConnectionState.done ||
-                              _avatar.hasError) {
-                            return Stack(children: [
-                              ClipOval(
-                                child: _cesiumPlusProvider
-                                    .defaultAvatar(_avatarSize),
-                              ),
-                              Positioned(
-                                top: 16.5,
-                                right: 47.5,
-                                width: 55,
-                                height: 55,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 6,
-                                  color: orangeC,
+                    if (avatar == null)
+                      FutureBuilder(
+                          future: _cesiumPlusProvider.getAvatar(
+                              _historyProvider.pubkey, _avatarSize),
+                          builder: (BuildContext context,
+                              AsyncSnapshot<Image> _avatar) {
+                            if (_avatar.connectionState !=
+                                    ConnectionState.done ||
+                                _avatar.hasError) {
+                              return Stack(children: [
+                                ClipOval(
+                                  child: _cesiumPlusProvider
+                                      .defaultAvatar(_avatarSize),
                                 ),
-                              ),
-                            ]);
-                          }
-                          if (_avatar.hasData) {
-                            return GestureDetector(
-                              key: const Key('openAvatar'),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) {
-                                    return AvatarFullscreen(_avatar.data);
-                                  }),
-                                );
-                              },
-                              child: ClipOval(
-                                child: _avatar.data,
-                              ),
+                                Positioned(
+                                  top: 16.5,
+                                  right: 47.5,
+                                  width: 55,
+                                  height: 55,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 6,
+                                    color: orangeC,
+                                  ),
+                                ),
+                              ]);
+                            }
+                            if (_avatar.hasData) {
+                              return GestureDetector(
+                                key: const Key('openAvatar'),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) {
+                                      return AvatarFullscreen(_avatar.data);
+                                    }),
+                                  );
+                                },
+                                child: ClipOval(
+                                  child: _avatar.data,
+                                ),
+                              );
+                            }
+                            return ClipOval(
+                              child: _cesiumPlusProvider
+                                  .defaultAvatar(_avatarSize),
                             );
-                          }
-                          return ClipOval(
-                            child:
-                                _cesiumPlusProvider.defaultAvatar(_avatarSize),
+                          }),
+                    if (avatar != null)
+                      GestureDetector(
+                        key: const Key('openAvatar'),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) {
+                              return AvatarFullscreen(avatar);
+                            }),
                           );
-                        }),
+                        },
+                        child: ClipOval(
+                          child: Image(
+                            image: avatar.image,
+                            height: _avatarSize,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
                     const SizedBox(height: 25),
                   ]),
                 ]),
@@ -230,6 +291,29 @@ class WalletViewScreen extends StatelessWidget {
                 ),
               ]),
             ]),
+            // FutureBuilder(
+            //   future: _walletOptions.generateQRcode(_historyProvider.pubkey),
+            //   builder: (context, snapshot) {
+            //     return snapshot.data != null
+            //         ? GestureDetector(
+            //             key: const Key('openQrcode'),
+            //             onTap: () {
+            //               Navigator.push(
+            //                 context,
+            //                 MaterialPageRoute(builder: (context) {
+            //                   return AvatarFullscreen(
+            //                     Image.memory(snapshot.data),
+            //                     title: 'QrCode du profil',
+            //                     color: Colors.white,
+            //                   );
+            //                 }),
+            //               );
+            //             },
+            //             child: Image.memory(snapshot.data, height: 60 * ratio),
+            //           )
+            //         : const Text('-', style: TextStyle(fontSize: 20));
+            //   },
+            // ),
             const Spacer(),
             Container(
               height: 120,

@@ -2,7 +2,7 @@ import 'package:bubble/bubble.dart';
 import 'package:dubp/dubp.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_provider.dart';
-import 'package:gecko/models/history.dart';
+import 'package:gecko/models/wallets_profiles.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/home.dart';
 import 'package:gecko/models/my_wallets.dart';
@@ -123,7 +123,8 @@ Widget geckHome(context) {
   MyWalletsProvider _myWalletProvider = Provider.of<MyWalletsProvider>(context);
   Provider.of<ChestProvider>(context);
 
-  HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
+  WalletsProfilesProvider _historyProvider =
+      Provider.of<WalletsProfilesProvider>(context);
   final double statusBarHeight = MediaQuery.of(context).padding.top;
   return Container(
     decoration: const BoxDecoration(

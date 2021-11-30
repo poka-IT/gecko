@@ -8,8 +8,11 @@ import 'package:flutter/material.dart';
 class AvatarFullscreen extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
 
-  AvatarFullscreen(this.avatar, {Key key}) : super(key: key);
+  AvatarFullscreen(this.avatar, {this.title, this.color, Key key})
+      : super(key: key);
   final Image avatar;
+  final String title;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +21,7 @@ class AvatarFullscreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
           elevation: 0,
-          backgroundColor: Colors.black,
+          backgroundColor: color ?? Colors.black,
           toolbarHeight: 60 * ratio,
           leading: IconButton(
               icon: Icon(Icons.arrow_back, color: orangeC),
@@ -28,14 +31,14 @@ class AvatarFullscreen extends StatelessWidget {
           title: SizedBox(
             height: 22,
             child: Text(
-              'Photo de profil',
+              title ?? 'Photo de profil',
               style: TextStyle(color: orangeC),
             ),
           )),
       body: SafeArea(
         child: SizedBox.expand(
           child: Container(
-            color: Colors.black,
+            color: color ?? Colors.black,
             // alignment: Alignment.center,
             // height: MediaQuery.of(context).size.height,
             // width: MediaQuery.of(context).size.width,

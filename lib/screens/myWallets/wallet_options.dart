@@ -3,11 +3,12 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/history.dart';
+import 'package:gecko/models/wallets_profiles.dart';
 import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/models/queries.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/wallet_options.dart';
+import 'package:gecko/screens/wallet_view.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
@@ -27,7 +28,8 @@ class WalletOptions extends StatelessWidget {
         Provider.of<WalletOptionsProvider>(context);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
-    HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
+    WalletsProfilesProvider _historyProvider =
+        Provider.of<WalletsProfilesProvider>(context);
 
     final int _currentChest = _myWalletProvider.getCurrentChest();
     final String shortPubkey =
@@ -263,14 +265,14 @@ class WalletOptions extends StatelessWidget {
                   ])),
               SizedBox(height: 4 * ratio),
               FutureBuilder(
-                  future:
-                      _walletOptions.generateQRcode(_walletOptions.pubkey.text),
-                  builder: (context, snapshot) {
-                    return snapshot.data != null
-                        ? Image.memory(snapshot.data,
-                            height: isTall ? 300 : 270)
-                        : const Text('-', style: TextStyle(fontSize: 20));
-                  }),
+                future:
+                    _walletOptions.generateQRcode(_walletOptions.pubkey.text),
+                builder: (context, snapshot) {
+                  return snapshot.data != null
+                      ? Image.memory(snapshot.data, height: isTall ? 300 : 270)
+                      : const Text('-', style: TextStyle(fontSize: 20));
+                },
+              ),
               SizedBox(height: 15 * ratio),
               GestureDetector(
                 key: const Key('copyPubkey'),
@@ -337,8 +339,15 @@ class WalletOptions extends StatelessWidget {
               InkWell(
                 key: const Key('displayHistory'),
                 onTap: () {
-                  _historyProvider.isPubkey(ctx, _walletOptions.pubkey.text,
-                      goHistory: true);
+                  if (_historyProvider.isPubkey(
+                      context, _walletOptions.pubkey.text)) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return const WalletViewScreen();
+                      }),
+                    );
+                  }
                 },
                 child: SizedBox(
                   height: 50,

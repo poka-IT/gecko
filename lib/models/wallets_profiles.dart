@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dubp/dubp.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +16,7 @@ import 'package:intl/intl.dart';
 import 'package:truncate/truncate.dart';
 import 'package:crypto/crypto.dart';
 import 'package:fast_base58/fast_base58.dart';
+import 'package:http/http.dart' as http;
 
 class WalletsProfilesProvider with ChangeNotifier {
   WalletsProfilesProvider(this.pubkey);
@@ -253,5 +256,21 @@ class WalletsProfilesProvider with ChangeNotifier {
 
   String generateIdenticon(String _pubkey) {
     return Jdenticon.toSvg(_pubkey);
+  }
+
+  Future<num> getBalance(String _pubkey) async {
+    num balance;
+    final url = Uri.parse(
+        '$endPointGVA?query={%20balance(script:%20%22$_pubkey%22)%20{%20amount%20base%20}%20}');
+    final response = await http.get(url);
+    final result = json.decode(response.body);
+
+    if (result['data']['balance'] == null) {
+      balance = 0.0;
+    } else {
+      balance = removeDecimalZero(result['data']['balance']['amount'] / 100);
+    }
+
+    return balance;
   }
 }

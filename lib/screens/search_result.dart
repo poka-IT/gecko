@@ -14,9 +14,10 @@ class SearchResultScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    SearchProvider _searchProvider = Provider.of<SearchProvider>(context);
+    SearchProvider _searchProvider =
+        Provider.of<SearchProvider>(context, listen: false);
     CesiumPlusProvider _cesiumPlusProvider =
-        Provider.of<CesiumPlusProvider>(context);
+        Provider.of<CesiumPlusProvider>(context, listen: false);
     WalletsProfilesProvider _walletsProfilesClass =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
 

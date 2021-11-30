@@ -16,7 +16,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 // ignore: must_be_immutable
-class HistoryScreen extends StatelessWidget with ChangeNotifier {
+class OldHistoryScreen extends StatelessWidget with ChangeNotifier {
   final TextEditingController _outputPubkey = TextEditingController();
   ScrollController scrollController = ScrollController();
   final nRepositories = 20;
@@ -29,7 +29,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
   FetchMoreOptions opts;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  HistoryScreen({Key key}) : super(key: key);
+  OldHistoryScreen({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

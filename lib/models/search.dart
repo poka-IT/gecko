@@ -19,7 +19,7 @@ class SearchProvider with ChangeNotifier {
     searchResult.clear();
     int searchTime = DateTime.now().millisecondsSinceEpoch;
 
-    if (cacheTime + 0 <= searchTime) {
+    if (cacheTime + cacheDuring <= searchTime) {
       g1WalletsBox.clear();
       final url = Uri.parse('https://g1-stats.axiom-team.fr/data/forbes.json');
       final response = await http.get(url);

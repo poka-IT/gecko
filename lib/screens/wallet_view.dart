@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:gecko/models/cesium_plus.dart';
 import 'package:gecko/models/wallets_profiles.dart';
 import 'package:gecko/models/queries.dart';
-// import 'package:gecko/models/wallet_options.dart';
 import 'package:gecko/screens/avatar_fullscreen.dart';
+import 'package:gecko/screens/common_elements.dart';
+import 'package:gecko/screens/history.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -21,11 +22,9 @@ class WalletViewScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     WalletsProfilesProvider _historyProvider =
-        Provider.of<WalletsProfilesProvider>(context);
+        Provider.of<WalletsProfilesProvider>(context, listen: false);
     CesiumPlusProvider _cesiumPlusProvider =
-        Provider.of<CesiumPlusProvider>(context);
-    // WalletOptionsProvider _walletOptions = WalletOptionsProvider();
-    double _avatarSize = 150;
+        Provider.of<CesiumPlusProvider>(context, listen: false);
 
     return Scaffold(
         appBar: AppBar(
@@ -65,172 +64,7 @@ class WalletViewScreen extends StatelessWidget {
         ),
         body: SafeArea(
           child: Column(children: <Widget>[
-            Container(
-              height: 10,
-              color: yellowC,
-            ),
-            Container(
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  yellowC,
-                  const Color(0xFFE7811A),
-                ],
-              )),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: Row(children: <Widget>[
-                  Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Row(children: [
-                          GestureDetector(
-                            key: const Key('copyPubkey'),
-                            onTap: () {
-                              Clipboard.setData(ClipboardData(
-                                  text: pubkey ?? _historyProvider.pubkey));
-                              _historyProvider.snackCopyKey(context);
-                            },
-                            child: Text(
-                              _historyProvider.getShortPubkey(
-                                  pubkey ?? _historyProvider.pubkey),
-                              style: const TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                        ]),
-                        const SizedBox(height: 10),
-                        if (username == null)
-                          Query(
-                            options: QueryOptions(
-                              document: gql(getId),
-                              variables: {
-                                'pubkey': _historyProvider.pubkey,
-                              },
-                            ),
-                            builder: (QueryResult result,
-                                {VoidCallback refetch, FetchMore fetchMore}) {
-                              if (result.isLoading || result.hasException) {
-                                return const Text('...');
-                              } else if (result.data['idty'] == null ||
-                                  result.data['idty']['username'] == null) {
-                                return const Text('');
-                              } else {
-                                return SizedBox(
-                                  width: 230,
-                                  child: Text(
-                                    result?.data['idty']['username'] ?? '',
-                                    style: const TextStyle(
-                                      fontSize: 27,
-                                      color: Color(0xff814C00),
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
-                          ),
-                        if (username != null)
-                          Text(
-                            username,
-                            style: const TextStyle(
-                              fontSize: 27,
-                              color: Color(0xff814C00),
-                            ),
-                          ),
-                        const SizedBox(height: 25),
-                        FutureBuilder(
-                            future: _cesiumPlusProvider
-                                .getName(_historyProvider.pubkey),
-                            initialData: '...',
-                            builder: (context, snapshot) {
-                              return SizedBox(
-                                width: 230,
-                                child: Text(
-                                  snapshot.data ?? '-',
-                                  style: const TextStyle(
-                                      fontSize: 18, color: Colors.black),
-                                ),
-                              );
-                            }),
-                        const SizedBox(height: 30),
-                      ]),
-                  const Spacer(),
-                  Column(children: <Widget>[
-                    if (avatar == null)
-                      FutureBuilder(
-                          future: _cesiumPlusProvider.getAvatar(
-                              _historyProvider.pubkey, _avatarSize),
-                          builder: (BuildContext context,
-                              AsyncSnapshot<Image> _avatar) {
-                            if (_avatar.connectionState !=
-                                    ConnectionState.done ||
-                                _avatar.hasError) {
-                              return Stack(children: [
-                                ClipOval(
-                                  child: _cesiumPlusProvider
-                                      .defaultAvatar(_avatarSize),
-                                ),
-                                Positioned(
-                                  top: 16.5,
-                                  right: 47.5,
-                                  width: 55,
-                                  height: 55,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 6,
-                                    color: orangeC,
-                                  ),
-                                ),
-                              ]);
-                            }
-                            if (_avatar.hasData) {
-                              return GestureDetector(
-                                key: const Key('openAvatar'),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) {
-                                      return AvatarFullscreen(_avatar.data);
-                                    }),
-                                  );
-                                },
-                                child: ClipOval(
-                                  child: _avatar.data,
-                                ),
-                              );
-                            }
-                            return ClipOval(
-                              child: _cesiumPlusProvider
-                                  .defaultAvatar(_avatarSize),
-                            );
-                          }),
-                    if (avatar != null)
-                      GestureDetector(
-                        key: const Key('openAvatar'),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) {
-                              return AvatarFullscreen(avatar);
-                            }),
-                          );
-                        },
-                        child: ClipOval(
-                          child: Image(
-                            image: avatar.image,
-                            height: _avatarSize,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    const SizedBox(height: 25),
-                  ]),
-                ]),
-              ),
-            ),
+            headerProfileView(context, _historyProvider, _cesiumPlusProvider),
             SizedBox(height: isTall ? 60 : 30),
             Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
               Column(children: <Widget>[
@@ -249,7 +83,16 @@ class WalletViewScreen extends StatelessWidget {
                                       'assets/walletOptions/clock.png'),
                                   height: 90)),
                           onTap: () {
-                            null;
+                            Navigator.push(
+                              context,
+                              FaderTransition(
+                                  page: HistoryScreen(
+                                    pubkey: pubkey ?? _historyProvider.pubkey,
+                                    username: username,
+                                    avatar: avatar,
+                                  ),
+                                  isFast: false),
+                            );
                           }),
                     ),
                   ),
@@ -351,5 +194,177 @@ class WalletViewScreen extends StatelessWidget {
             SizedBox(height: isTall ? 100 : 50)
           ]),
         ));
+  }
+
+  Widget headerProfileView(
+      BuildContext context,
+      WalletsProfilesProvider _historyProvider,
+      CesiumPlusProvider _cesiumPlusProvider) {
+    const double _avatarSize = 140;
+
+    return Column(children: <Widget>[
+      Container(
+        height: 10,
+        color: yellowC,
+      ),
+      Container(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            yellowC,
+            const Color(0xFFE7811A),
+          ],
+        )),
+        child: Padding(
+          padding: const EdgeInsets.only(left: 30, right: 40),
+          child: Row(children: <Widget>[
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
+                Widget>[
+              Row(children: [
+                GestureDetector(
+                  key: const Key('copyPubkey'),
+                  onTap: () {
+                    Clipboard.setData(
+                        ClipboardData(text: pubkey ?? _historyProvider.pubkey));
+                    _historyProvider.snackCopyKey(context);
+                  },
+                  child: Text(
+                    _historyProvider
+                        .getShortPubkey(pubkey ?? _historyProvider.pubkey),
+                    style: const TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ]),
+              const SizedBox(height: 10),
+              if (username == null)
+                Query(
+                  options: QueryOptions(
+                    document: gql(getId),
+                    variables: {
+                      'pubkey': _historyProvider.pubkey,
+                    },
+                  ),
+                  builder: (QueryResult result,
+                      {VoidCallback refetch, FetchMore fetchMore}) {
+                    if (result.isLoading || result.hasException) {
+                      return const Text('...');
+                    } else if (result.data['idty'] == null ||
+                        result.data['idty']['username'] == null) {
+                      return const Text('');
+                    } else {
+                      return SizedBox(
+                        width: 230,
+                        child: Text(
+                          result?.data['idty']['username'] ?? '',
+                          style: const TextStyle(
+                            fontSize: 27,
+                            color: Color(0xff814C00),
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              if (username != null)
+                Text(
+                  username,
+                  style: const TextStyle(
+                    fontSize: 27,
+                    color: Color(0xff814C00),
+                  ),
+                ),
+              const SizedBox(height: 25),
+              FutureBuilder(
+                  future: _cesiumPlusProvider.getName(_historyProvider.pubkey),
+                  initialData: '...',
+                  builder: (context, snapshot) {
+                    return SizedBox(
+                      width: 230,
+                      child: Text(
+                        snapshot.data ?? '-',
+                        style:
+                            const TextStyle(fontSize: 18, color: Colors.black),
+                      ),
+                    );
+                  }),
+              const SizedBox(height: 30),
+            ]),
+            const Spacer(),
+            Column(children: <Widget>[
+              if (avatar == null)
+                FutureBuilder(
+                    future: _cesiumPlusProvider.getAvatar(
+                        _historyProvider.pubkey, _avatarSize),
+                    builder:
+                        (BuildContext context, AsyncSnapshot<Image> _avatar) {
+                      if (_avatar.connectionState != ConnectionState.done ||
+                          _avatar.hasError) {
+                        return Stack(children: [
+                          ClipOval(
+                            child:
+                                _cesiumPlusProvider.defaultAvatar(_avatarSize),
+                          ),
+                          Positioned(
+                            top: 16.5,
+                            right: 47.5,
+                            width: 55,
+                            height: 55,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 6,
+                              color: orangeC,
+                            ),
+                          ),
+                        ]);
+                      }
+                      if (_avatar.hasData) {
+                        return GestureDetector(
+                          key: const Key('openAvatar'),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) {
+                                return AvatarFullscreen(_avatar.data);
+                              }),
+                            );
+                          },
+                          child: ClipOval(
+                            child: _avatar.data,
+                          ),
+                        );
+                      }
+                      return ClipOval(
+                        child: _cesiumPlusProvider.defaultAvatar(_avatarSize),
+                      );
+                    }),
+              if (avatar != null)
+                GestureDetector(
+                  key: const Key('openAvatar'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return AvatarFullscreen(avatar);
+                      }),
+                    );
+                  },
+                  child: ClipOval(
+                    child: Image(
+                      image: avatar.image,
+                      height: _avatarSize,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 25),
+            ]),
+          ]),
+        ),
+      ),
+    ]);
   }
 }

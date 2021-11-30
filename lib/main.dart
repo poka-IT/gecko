@@ -69,7 +69,8 @@ Future<void> main() async {
   //     await HiveStore.open(path: '${appPath.path}/gqlCache');
 
   // Get a valid GVA endpoint
-  endPointGVA = 'https://g1.librelois.fr/gva';
+  // endPointGVA = 'https://g1.librelois.fr/gva';
+  endPointGVA = 'https://duniter-g1.p2p.legal/gva';
   // await _homeProvider.getValidEndpoint();
 
   // if (endPointGVA == 'HS') {

@@ -5,7 +5,7 @@ description: Pay with G1.
 # pub.dev using `pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 0.0.3+9
+version: 0.0.3+10
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -56,6 +56,7 @@ dependencies:
   truncate: ^3.0.1
   unorm_dart: ^0.2.0
   xml: ^5.3.0
+  pull_to_refresh: ^2.0.0
 
 flutter_icons:
   android: "ic_launcher"

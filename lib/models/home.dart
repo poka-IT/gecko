@@ -21,7 +21,7 @@ class HomeProvider with ChangeNotifier {
   Widget appBarExplorer =
       Text('Explorateur', style: TextStyle(color: Colors.grey[850]));
 
-  List currentTab = [HistoryScreen(), WalletsHome()];
+  List currentTab = [OldHistoryScreen(), WalletsHome()];
   bool isFirstBuild = true;
   // AudioCache player = AudioCache(prefix: 'sounds/');
 

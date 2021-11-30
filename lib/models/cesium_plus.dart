@@ -79,6 +79,10 @@ class CesiumPlusProvider with ChangeNotifier {
   }
 
   Future<Image> getAvatar(String _pubkey, double size) async {
+    if (g1WalletsBox.get(_pubkey).avatar != null) {
+      return g1WalletsBox.get(_pubkey).avatar;
+    }
+
     List queryOptions = await _buildQuery(_pubkey);
 
     http.Response response;

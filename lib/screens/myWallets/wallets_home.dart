@@ -7,7 +7,6 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/wallet_options.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/common_elements.dart';
-import 'package:gecko/screens/myWallets/cesium_wallet_options.dart';
 import 'package:gecko/screens/myWallets/chest_options.dart';
 import 'package:gecko/screens/myWallets/choose_chest.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
@@ -27,10 +26,8 @@ class WalletsHome extends StatelessWidget {
 
     final int _currentChestNumber = myWalletProvider.getCurrentChest();
     final ChestData _currentChest = chestBox.get(_currentChestNumber);
-    if (!_currentChest.isCesium) {
-      myWalletProvider.listWallets =
-          myWalletProvider.readAllWallets(_currentChestNumber);
-    }
+    myWalletProvider.listWallets =
+        myWalletProvider.readAllWallets(_currentChestNumber);
 
     return WillPopScope(
       onWillPop: () {
@@ -57,9 +54,7 @@ class WalletsHome extends StatelessWidget {
           backgroundColor: const Color(0xffFFD58D),
         ),
         body: SafeArea(
-          child: _currentChest.isCesium
-              ? cesiumWalletOptions(context, _currentChest, myWalletProvider)
-              : myWalletsTiles(context),
+          child: myWalletsTiles(context),
         ),
       ),
     );

@@ -7,6 +7,7 @@ import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/wallet_options.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/screens/myWallets/cesium_wallet_options.dart';
 import 'package:gecko/screens/myWallets/choose_chest.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
@@ -86,7 +87,7 @@ class UnlockingWallet extends StatelessWidget {
                       fontWeight: FontWeight.w400),
                 )),
             SizedBox(height: 40 * ratio),
-            pinForm(context, _pinLenght),
+            pinForm(context, _pinLenght, currentChest),
             SizedBox(height: 3 * ratio),
             InkWell(
                 key: const Key('chooseChest'),
@@ -114,7 +115,7 @@ class UnlockingWallet extends StatelessWidget {
     ));
   }
 
-  Widget pinForm(context, _pinLenght) {
+  Widget pinForm(context, _pinLenght, ChestData currentChest) {
     // var _walletPin = '';
 // ignore: close_sinks
     StreamController<ErrorAnimationType> errorController =
@@ -194,7 +195,16 @@ class UnlockingWallet extends StatelessWidget {
                 pinColor = Colors.green[400];
                 // await Future.delayed(Duration(milliseconds: 50));
                 if (action == "mywallets") {
-                  Navigator.pushNamed(formKey.currentContext, '/mywallets');
+                  currentChest.isCesium
+                      ? Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) {
+                            return CesiumWalletOptions(
+                                cesiumWallet: currentChest);
+                          }),
+                        )
+                      : Navigator.pushNamed(
+                          formKey.currentContext, '/mywallets');
                 } else if (action == "pay") {
                   resultPay =
                       await _historyProvider.pay(context, _pin.toUpperCase());

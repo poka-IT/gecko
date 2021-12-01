@@ -61,6 +61,10 @@ class CesiumPlusProvider with ChangeNotifier {
   Future<String> getName(String _pubkey) async {
     String _name;
 
+    if (g1WalletsBox.get(_pubkey).csName != null) {
+      return g1WalletsBox.get(_pubkey).csName;
+    }
+
     List queryOptions = await _buildQuery(_pubkey);
     final response = await http.post((Uri.parse(queryOptions[0])),
         body: queryOptions[1], headers: queryOptions[2]);
@@ -75,6 +79,8 @@ class CesiumPlusProvider with ChangeNotifier {
     }
     _name = responseJson['hits']['hits'][0]['_source']['title'];
 
+    g1WalletsBox.get(_pubkey).csName = _name;
+
     return _name;
   }
 
@@ -82,6 +88,8 @@ class CesiumPlusProvider with ChangeNotifier {
     if (g1WalletsBox.get(_pubkey).avatar != null) {
       return g1WalletsBox.get(_pubkey).avatar;
     }
+
+    log.d(_pubkey);
 
     List queryOptions = await _buildQuery(_pubkey);
 
@@ -106,10 +114,14 @@ class CesiumPlusProvider with ChangeNotifier {
         File('${(await getTemporaryDirectory()).path}/avatar_$_pubkey.png');
     await avatarFile.writeAsBytes(base64.decode(_avatar));
 
-    return Image.file(
+    final finalAvatar = Image.file(
       avatarFile,
       height: size,
       fit: BoxFit.fitWidth,
     );
+
+    g1WalletsBox.get(_pubkey).avatar = finalAvatar;
+
+    return finalAvatar;
   }
 }

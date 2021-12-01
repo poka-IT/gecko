@@ -12,7 +12,6 @@ import 'dart:ui';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 // ignore: must_be_immutable
 class HistoryScreen extends StatelessWidget with ChangeNotifier {
@@ -37,8 +36,10 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     CesiumPlusProvider _cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
-    log.i('Build pubkey : ' + _historyProvider.pubkey);
+    log.i('Build pubkey : ' + pubkey);
     WidgetsBinding.instance.addPostFrameCallback((_) {});
+
+    _historyProvider.balance = _historyProvider.transBC = null;
 
     return Scaffold(
         key: _scaffoldKey,
@@ -52,8 +53,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
         ),
         body: Column(children: <Widget>[
           headerProfileView(context, _historyProvider, _cesiumPlusProvider),
-          if (_historyProvider.pubkey != '')
-            historyQuery(context, _historyProvider, _cesiumPlusProvider),
+          historyQuery(context, _historyProvider, _cesiumPlusProvider),
         ]));
   }
 
@@ -61,8 +61,6 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
       CesiumPlusProvider _cesiumPlusProvider) {
     WalletsProfilesProvider _historyProvider =
         Provider.of<WalletsProfilesProvider>(context, listen: true);
-    RefreshController _refreshController =
-        RefreshController(initialRefresh: false);
     return Expanded(
         child: Column(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -72,12 +70,14 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
           options: QueryOptions(
             document: gql(getHistory),
             variables: <String, dynamic>{
-              'pubkey': _historyProvider.pubkey,
+              'pubkey': pubkey,
               'number': nRepositories,
               'cursor': null
             },
           ),
           builder: (QueryResult result, {fetchMore, refetch}) {
+            // log.d(result.data);
+
             if (result.isLoading && result.data == null) {
               return const Center(
                 child: CircularProgressIndicator(),
@@ -90,13 +90,24 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                 SizedBox(height: 50),
                 Text(
                   "Aucun noeud GVA valide n'a pu être trouvé.\nVeuillez réessayer ultérieurement.",
-                  style: TextStyle(fontSize: 17.0),
+                  style: TextStyle(fontSize: 18),
+                )
+              ]);
+            } else if (result.data == null) {
+              return Column(children: const <Widget>[
+                SizedBox(height: 50),
+                Text(
+                  "Aucune donnée à afficher.",
+                  style: TextStyle(fontSize: 18),
                 )
               ]);
             }
 
-            if (result.data == null && result.exception.toString() == null) {
-              return const Text('Aucune donnée à afficher.');
+            if (result.data['balance'] == null) {
+              _historyProvider.balance = 0.0;
+            } else {
+              _historyProvider.balance = _historyProvider
+                  .removeDecimalZero(result.data['balance']['amount'] / 100);
             }
 
             opts = _historyProvider.checkQueryResult(result, opts, pubkey);
@@ -105,25 +116,18 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
             return NotificationListener(
                 child: Builder(
                   builder: (context) => Expanded(
-                    child: SmartRefresher(
-                      enablePullUp: false,
-                      controller: _refreshController,
-                      onRefresh: () {
-                        _historyProvider.resetdHistory();
-                        _refreshController.refreshCompleted();
-                      },
-                      child: ListView(
-                        key: const Key('listTransactions'),
-                        controller: scrollController,
-                        children: <Widget>[historyView(context, result)],
-                      ),
+                    child: ListView(
+                      key: const Key('listTransactions'),
+                      controller: scrollController,
+                      children: <Widget>[historyView(context, result)],
                     ),
                   ),
                 ),
                 onNotification: (t) {
                   if (t is ScrollEndNotification &&
                       scrollController.position.pixels >=
-                          scrollController.position.maxScrollExtent * 0.7) {
+                          scrollController.position.maxScrollExtent * 0.7 &&
+                      _historyProvider.pageInfo['hasPreviousPage']) {
                     fetchMore(opts);
                   }
                   return true;
@@ -139,48 +143,15 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
         Provider.of<WalletsProfilesProvider>(context, listen: false);
 
     return _historyProvider.transBC == null
-        ? const Text('Aucune transaction à afficher.')
+        ? Column(children: const <Widget>[
+            SizedBox(height: 50),
+            Text(
+              "Aucune transaction à afficher.",
+              style: TextStyle(fontSize: 18),
+            )
+          ])
         : Column(children: <Widget>[
             getTransactionTile(context, _historyProvider),
-            // for (var repository in _historyProvider.transBC)
-            // if (repository[1].toString().split(' ')[0] == '22-11-21')
-            //   const Text("Aujourd'hui"),
-            // Padding(
-            //   padding: const EdgeInsets.symmetric(horizontal: 5.0),
-            //   child: ListTile(
-            //       key: Key('transaction${keyID++}'),
-            //       contentPadding: const EdgeInsets.all(5.0),
-            //       leading: Text(repository[1],
-            //           style: TextStyle(
-            //               fontSize: 12,
-            //               color: Colors.grey[800],
-            //               fontWeight: FontWeight.w700),
-            //           textAlign: TextAlign.center),
-            //       title: Text(repository[3],
-            //           style: const TextStyle(
-            //               fontSize: 15.0, fontFamily: 'Monospace'),
-            //           textAlign: TextAlign.center),
-            //       subtitle: Text(repository[6] != '' ? repository[6] : '-',
-            //           style: const TextStyle(fontSize: 12.0),
-            //           textAlign: TextAlign.center),
-            //       trailing: Text("${repository[4]} Ğ1",
-            //           style: const TextStyle(fontSize: 14.0),
-            //           textAlign: TextAlign.justify),
-            //       dense: true,
-            //       isThreeLine: false,
-            //       onTap: () {
-            //         if (_historyProvider.isPubkey(context, repository[2])) {
-            //           _homeProvider.currentIndex = 0;
-            //           Navigator.push(
-            //             context,
-            //             MaterialPageRoute(builder: (context) {
-            //               return const WalletViewScreen();
-            //             }),
-            //           );
-            //         }
-            //         Navigator.pop(context);
-            //       }),
-            // ),
             if (result.isLoading &&
                 _historyProvider.pageInfo['hasPreviousPage'])
               Row(
@@ -189,7 +160,6 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                   CircularProgressIndicator(),
                 ],
               ),
-            // if (_historyProvider.isTheEnd) // What I did before ...
             if (!_historyProvider.pageInfo['hasPreviousPage'])
               Column(
                 children: const <Widget>[
@@ -213,6 +183,10 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
     String dateDelimiter;
     String lastDateDelimiter;
     const double _avatarSize = 200;
+
+    bool isTody = false;
+    bool isYesterday = false;
+    bool isThisWeek = false;
 
     const Map<int, String> monthsInYear = {
       1: "Janvier",
@@ -242,7 +216,6 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
       } else {
         dateForm = "${date.day} ${monthsInYear[date.month]}";
       }
-      log.d(dateForm);
 
       int weekNumber(DateTime date) {
         int dayOfYear = int.parse(DateFormat("D").format(date));
@@ -250,17 +223,30 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
       }
 
       if (DateTime(date.year, date.month, date.day) ==
-          DateTime(now.year, now.month, now.day)) {
+              DateTime(now.year, now.month, now.day) &&
+          !isTody) {
         dateDelimiter = lastDateDelimiter = "Aujourd'hui";
+        isTody = true;
       } else if (DateTime(date.year, date.month, date.day) ==
-          DateTime(now.year, now.month, now.day - 1)) {
+              DateTime(now.year, now.month, now.day - 1) &&
+          !isYesterday) {
         dateDelimiter = lastDateDelimiter = "Hier";
+        isYesterday = true;
       } else if (weekNumber(date) == weekNumber(now) &&
           date.year == now.year &&
-          lastDateDelimiter != "Cette semaine") {
+          lastDateDelimiter != "Cette semaine" &&
+          DateTime(date.year, date.month, date.day) !=
+              DateTime(now.year, now.month, now.day - 1) &&
+          !isThisWeek) {
         dateDelimiter = lastDateDelimiter = "Cette semaine";
+        isThisWeek = true;
       } else if (lastDateDelimiter != monthsInYear[date.month] &&
-          lastDateDelimiter != "${monthsInYear[date.month]} ${date.year}") {
+          lastDateDelimiter != "${monthsInYear[date.month]} ${date.year}" &&
+          DateTime(date.year, date.month, date.day) !=
+              DateTime(now.year, now.month, now.day) &&
+          DateTime(date.year, date.month, date.day) !=
+              DateTime(now.year, now.month, now.day - 1) &&
+          !(weekNumber(date) == weekNumber(now) && date.year == now.year)) {
         if (date.year == now.year) {
           dateDelimiter = lastDateDelimiter = monthsInYear[date.month];
         } else {
@@ -377,11 +363,11 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) {
-                          return const WalletViewScreen();
+                          return WalletViewScreen(pubkey: repository[2]);
                         }),
                       );
                     }
-                    Navigator.pop(context);
+                    // Navigator.pop(context);
                   }),
         ),
       ]);
@@ -422,13 +408,11 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                           GestureDetector(
                             key: const Key('copyPubkey'),
                             onTap: () {
-                              Clipboard.setData(ClipboardData(
-                                  text: pubkey ?? _historyProvider.pubkey));
+                              Clipboard.setData(ClipboardData(text: pubkey));
                               _historyProvider.snackCopyKey(context);
                             },
                             child: Text(
-                              _historyProvider.getShortPubkey(
-                                  pubkey ?? _historyProvider.pubkey),
+                              _historyProvider.getShortPubkey(pubkey),
                               style: const TextStyle(
                                 fontSize: 30,
                                 fontWeight: FontWeight.w800,
@@ -442,7 +426,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                             options: QueryOptions(
                               document: gql(getId),
                               variables: {
-                                'pubkey': _historyProvider.pubkey,
+                                'pubkey': pubkey,
                               },
                             ),
                             builder: (QueryResult result,
@@ -467,11 +451,14 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                             },
                           ),
                         if (username != null)
-                          Text(
-                            username,
-                            style: const TextStyle(
-                              fontSize: 27,
-                              color: Color(0xff814C00),
+                          SizedBox(
+                            width: 230,
+                            child: Text(
+                              username,
+                              style: const TextStyle(
+                                fontSize: 27,
+                                color: Color(0xff814C00),
+                              ),
                             ),
                           ),
                         const SizedBox(height: 25),
@@ -497,24 +484,22 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
             Column(children: <Widget>[
               if (avatar == null)
                 FutureBuilder(
-                    future: _cesiumPlusProvider.getAvatar(
-                        _historyProvider.pubkey, _avatarSize),
+                    future: _cesiumPlusProvider.getAvatar(pubkey, _avatarSize),
                     builder:
                         (BuildContext context, AsyncSnapshot<Image> _avatar) {
-                      if (_avatar.connectionState != ConnectionState.done ||
-                          _avatar.hasError) {
+                      if (_avatar.connectionState != ConnectionState.done) {
                         return Stack(children: [
                           ClipOval(
                             child:
                                 _cesiumPlusProvider.defaultAvatar(_avatarSize),
                           ),
                           Positioned(
-                            top: 16.5,
-                            right: 47.5,
-                            width: 55,
-                            height: 55,
+                            top: 15,
+                            right: 45,
+                            width: 51,
+                            height: 51,
                             child: CircularProgressIndicator(
-                              strokeWidth: 6,
+                              strokeWidth: 5,
                               color: orangeC,
                             ),
                           ),
@@ -532,7 +517,11 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                             );
                           },
                           child: ClipOval(
-                            child: _avatar.data,
+                            child: Image(
+                              image: _avatar.data.image,
+                              height: _avatarSize,
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         );
                       }

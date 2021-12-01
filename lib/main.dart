@@ -65,6 +65,8 @@ Future<void> main() async {
   configBox = await Hive.openBox("configBox");
   g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
 
+  g1WalletsBox.clear();
+
   // final HiveStore _store =
   //     await HiveStore.open(path: '${appPath.path}/gqlCache');
 

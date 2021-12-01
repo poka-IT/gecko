@@ -68,7 +68,7 @@ class OldHistoryScreen extends StatelessWidget with ChangeNotifier {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) {
-                                  return const WalletViewScreen();
+                                  return WalletViewScreen(pubkey: text);
                                 }),
                               );
                             }
@@ -452,7 +452,7 @@ class OldHistoryScreen extends StatelessWidget with ChangeNotifier {
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) {
-                            return const WalletViewScreen();
+                            return WalletViewScreen(pubkey: repository[2]);
                           }),
                         );
                       }

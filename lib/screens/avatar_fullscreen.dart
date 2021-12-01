@@ -42,7 +42,10 @@ class AvatarFullscreen extends StatelessWidget {
             // alignment: Alignment.center,
             // height: MediaQuery.of(context).size.height,
             // width: MediaQuery.of(context).size.width,
-            child: avatar,
+            child: Image(
+                image: avatar.image,
+                height: avatar.height,
+                fit: BoxFit.fitWidth),
           ),
         ),
       ),

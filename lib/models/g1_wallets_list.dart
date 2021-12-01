@@ -17,7 +17,24 @@ class G1WalletsList {
   @HiveField(4)
   Image avatar;
 
-  G1WalletsList({this.pubkey, this.balance, this.id, this.avatar});
+  @HiveField(5)
+  String username;
+
+  @HiveField(6)
+  String csName;
+
+  @HiveField(7)
+  bool isMembre;
+
+  G1WalletsList({
+    this.pubkey,
+    this.balance,
+    this.id,
+    this.avatar,
+    this.username,
+    this.csName,
+    this.isMembre,
+  });
 
   G1WalletsList.fromJson(Map<String, dynamic> json) {
     pubkey = json['pubkey'];

@@ -332,16 +332,14 @@ class CesiumWalletOptions extends StatelessWidget {
               InkWell(
                   key: const Key('displayHistory'),
                   onTap: () {
-                    if (_historyProvider.isPubkey(
-                        context, _walletOptions.pubkey.text)) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) {
-                          return HistoryScreen(
-                              pubkey: _walletOptions.pubkey.text);
-                        }),
-                      );
-                    }
+                    _historyProvider.nPage = 1;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return HistoryScreen(
+                            pubkey: _walletOptions.pubkey.text);
+                      }),
+                    );
                   },
                   child: SizedBox(
                       height: 50,

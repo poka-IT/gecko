@@ -30,7 +30,7 @@ class WalletsProfilesProvider with ChangeNotifier {
   TextEditingController payAmount = TextEditingController();
   TextEditingController payComment = TextEditingController();
   num balance;
-  int nRepositories = 10;
+  int nRepositories = 20;
   int nPage = 1;
 
   Future scan(context) async {
@@ -199,7 +199,7 @@ class WalletsProfilesProvider with ChangeNotifier {
     if (fetchMoreCursor == null) nPage = 1;
 
     if (nPage == 1) {
-      nRepositories = 30;
+      nRepositories = 40;
     } else if (nPage == 2) {
       nRepositories = 100;
     }

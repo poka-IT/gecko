@@ -7,6 +7,7 @@ import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/models/queries.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/wallet_options.dart';
+import 'package:gecko/models/wallets_profiles.dart';
 import 'package:gecko/screens/history.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
@@ -25,6 +26,8 @@ class WalletOptions extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
+    WalletsProfilesProvider _historyProvider =
+        Provider.of<WalletsProfilesProvider>(context, listen: false);
 
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
@@ -354,6 +357,7 @@ class WalletOptions extends StatelessWidget {
                   InkWell(
                     key: const Key('displayHistory'),
                     onTap: () {
+                      _historyProvider.nPage = 1;
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) {

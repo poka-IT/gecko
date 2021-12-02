@@ -59,6 +59,7 @@ class WalletViewScreen extends StatelessWidget {
                                       'assets/walletOptions/clock.png'),
                                   height: 90)),
                           onTap: () {
+                            _historyProvider.nPage = 1;
                             Navigator.push(
                               context,
                               FaderTransition(

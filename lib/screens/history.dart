@@ -1,7 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/cesium_plus.dart';
-import 'package:gecko/models/home.dart';
 import 'package:gecko/models/queries.dart';
 import 'package:gecko/models/wallets_profiles.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +17,6 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
   HistoryScreen({@required this.pubkey, this.avatar, this.username, Key key})
       : super(key: key);
   final ScrollController scrollController = ScrollController();
-  final nRepositories = 20;
   final double avatarsSize = 80;
   final String pubkey;
   final String username;
@@ -53,14 +51,14 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
         ),
         body: Column(children: <Widget>[
           headerProfileView(context, _historyProvider, _cesiumPlusProvider),
-          historyQuery(context, _historyProvider, _cesiumPlusProvider),
+          historyQuery(context, _cesiumPlusProvider),
         ]));
   }
 
-  Widget historyQuery(context, WalletsProfilesProvider _historyProvider2,
-      CesiumPlusProvider _cesiumPlusProvider) {
+  Widget historyQuery(context, CesiumPlusProvider _cesiumPlusProvider) {
     WalletsProfilesProvider _historyProvider =
         Provider.of<WalletsProfilesProvider>(context, listen: true);
+
     return Expanded(
         child: Column(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -71,13 +69,11 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
             document: gql(getHistory),
             variables: <String, dynamic>{
               'pubkey': pubkey,
-              'number': nRepositories,
+              'number': 10,
               'cursor': null
             },
           ),
           builder: (QueryResult result, {fetchMore, refetch}) {
-            // log.d(result.data);
-
             if (result.isLoading && result.data == null) {
               return const Center(
                 child: CircularProgressIndicator(),
@@ -110,7 +106,10 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                   .removeDecimalZero(result.data['balance']['amount'] / 100);
             }
 
-            opts = _historyProvider.checkQueryResult(result, opts, pubkey);
+            if (result.isNotLoading) {
+              // log.d(result.data);
+              opts = _historyProvider.checkQueryResult(result, opts, pubkey);
+            }
 
             // Build history list
             return NotificationListener(
@@ -175,8 +174,6 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
 
   Widget getTransactionTile(
       BuildContext context, WalletsProfilesProvider _historyProvider) {
-    HomeProvider _homeProvider =
-        Provider.of<HomeProvider>(context, listen: false);
     CesiumPlusProvider _cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
     int keyID = 0;
@@ -358,15 +355,14 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                   dense: false,
                   isThreeLine: false,
                   onTap: () {
-                    if (_historyProvider.isPubkey(context, repository[2])) {
-                      _homeProvider.currentIndex = 0;
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) {
-                          return WalletViewScreen(pubkey: repository[2]);
-                        }),
-                      );
-                    }
+                    _historyProvider.nPage = 1;
+                    // _cesiumPlusProvider.avatarCancelToken.cancel('cancelled');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return WalletViewScreen(pubkey: repository[2]);
+                      }),
+                    );
                     // Navigator.pop(context);
                   }),
         ),

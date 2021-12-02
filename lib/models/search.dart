@@ -1,9 +1,8 @@
-import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
-import 'package:http/http.dart' as http;
 
 class SearchProvider with ChangeNotifier {
   TextEditingController searchController = TextEditingController();
@@ -21,10 +20,26 @@ class SearchProvider with ChangeNotifier {
 
     if (cacheTime + cacheDuring <= searchTime) {
       g1WalletsBox.clear();
-      final url = Uri.parse('https://g1-stats.axiom-team.fr/data/forbes.json');
-      final response = await http.get(url);
+      // final url = Uri.parse('https://g1-stats.axiom-team.fr/data/forbes.json');
+      // final response = await http.get(url);
 
-      List<G1WalletsList> _listWallets = _parseG1Wallets(response.body);
+      var dio = Dio();
+      Response response;
+      try {
+        response = await dio.get(
+          'https://g1-stats.axiom-team.fr/data/forbes.json',
+          options: Options(
+            sendTimeout: 5000,
+            receiveTimeout: 10000,
+          ),
+        );
+        // response = await http.post((Uri.parse(queryOptions[0])),
+        //     body: queryOptions[1], headers: queryOptions[2]);
+      } catch (e) {
+        log.e(e);
+      }
+
+      List<G1WalletsList> _listWallets = _parseG1Wallets(response.data);
       Map<String, G1WalletsList> _mapWallets = {
         for (var e in _listWallets) e.pubkey: e
       };
@@ -49,8 +64,8 @@ class SearchProvider with ChangeNotifier {
   }
 }
 
-List<G1WalletsList> _parseG1Wallets(String responseBody) {
-  final parsed = jsonDecode(responseBody).cast<Map<String, dynamic>>();
+List<G1WalletsList> _parseG1Wallets(var responseBody) {
+  final parsed = responseBody.cast<Map<String, dynamic>>();
 
   return parsed
       .map<G1WalletsList>((json) => G1WalletsList.fromJson(json))

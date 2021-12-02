@@ -65,9 +65,9 @@ class WalletViewScreen extends StatelessWidget {
                                   page: HistoryScreen(
                                     pubkey: pubkey,
                                     username: username ??
-                                        g1WalletsBox.get(pubkey).username,
+                                        g1WalletsBox.get(pubkey)?.username,
                                     avatar: avatar ??
-                                        g1WalletsBox.get(pubkey).avatar,
+                                        g1WalletsBox.get(pubkey)?.avatar,
                                   ),
                                   isFast: false),
                             );
@@ -98,8 +98,7 @@ class WalletViewScreen extends StatelessWidget {
                                   image: AssetImage('assets/copy_key.png'),
                                   height: 90)),
                           onTap: () {
-                            Clipboard.setData(
-                                ClipboardData(text: _historyProvider.pubkey));
+                            Clipboard.setData(ClipboardData(text: pubkey));
                             _historyProvider.snackCopyKey(context);
                           }),
                     ),
@@ -201,101 +200,103 @@ class WalletViewScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.only(left: 30, right: 40),
           child: Row(children: <Widget>[
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
-                Widget>[
-              Row(children: [
-                GestureDetector(
-                  key: const Key('copyPubkey'),
-                  onTap: () {
-                    Clipboard.setData(ClipboardData(text: pubkey));
-                    _historyProvider.snackCopyKey(context);
-                  },
-                  child: Text(
-                    _historyProvider.getShortPubkey(pubkey),
-                    style: const TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-              ]),
-              const SizedBox(height: 10),
-              if (username == null && g1WalletsBox.get(pubkey).username == null)
-                Query(
-                  options: QueryOptions(
-                    document: gql(getId),
-                    variables: {
-                      'pubkey': _historyProvider.pubkey,
-                    },
-                  ),
-                  builder: (QueryResult result,
-                      {VoidCallback refetch, FetchMore fetchMore}) {
-                    if (result.isLoading || result.hasException) {
-                      return const Text('...');
-                    } else if (result.data['idty'] == null ||
-                        result.data['idty']['username'] == null) {
-                      g1WalletsBox.get(pubkey).username = '';
-                      return const Text('');
-                    } else {
-                      g1WalletsBox.get(pubkey).username =
-                          result?.data['idty']['username'] ?? '';
-                      return SizedBox(
-                        width: 230,
-                        child: Text(
-                          result?.data['idty']['username'] ?? '',
-                          style: const TextStyle(
-                            fontSize: 27,
-                            color: Color(0xff814C00),
-                          ),
+            Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Row(children: [
+                    GestureDetector(
+                      key: const Key('copyPubkey'),
+                      onTap: () {
+                        Clipboard.setData(ClipboardData(text: pubkey));
+                        _historyProvider.snackCopyKey(context);
+                      },
+                      child: Text(
+                        _historyProvider.getShortPubkey(pubkey),
+                        style: const TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w800,
                         ),
-                      );
-                    }
-                  },
-                ),
-              if (username == null && g1WalletsBox.get(pubkey).username != null)
-                SizedBox(
-                  width: 230,
-                  child: Text(
-                    g1WalletsBox.get(pubkey).username,
-                    style: const TextStyle(
-                      fontSize: 27,
-                      color: Color(0xff814C00),
+                      ),
                     ),
-                  ),
-                ),
-              if (username != null)
-                SizedBox(
-                  width: 230,
-                  child: Text(
-                    username,
-                    style: const TextStyle(
-                      fontSize: 27,
-                      color: Color(0xff814C00),
+                  ]),
+                  const SizedBox(height: 10),
+                  if (username == null &&
+                      g1WalletsBox.get(pubkey)?.username == null)
+                    Query(
+                      options: QueryOptions(
+                        document: gql(getId),
+                        variables: {
+                          'pubkey': pubkey,
+                        },
+                      ),
+                      builder: (QueryResult result,
+                          {VoidCallback refetch, FetchMore fetchMore}) {
+                        if (result.isLoading || result.hasException) {
+                          return const Text('...');
+                        } else if (result.data['idty'] == null ||
+                            result.data['idty']['username'] == null) {
+                          g1WalletsBox.get(pubkey)?.username = '';
+                          return const Text('');
+                        } else {
+                          g1WalletsBox.get(pubkey)?.username =
+                              result?.data['idty']['username'] ?? '';
+                          return SizedBox(
+                            width: 230,
+                            child: Text(
+                              result?.data['idty']['username'] ?? '',
+                              style: const TextStyle(
+                                fontSize: 27,
+                                color: Color(0xff814C00),
+                              ),
+                            ),
+                          );
+                        }
+                      },
                     ),
-                  ),
-                ),
-              const SizedBox(height: 25),
-              FutureBuilder(
-                  future: _cesiumPlusProvider.getName(_historyProvider.pubkey),
-                  initialData: '...',
-                  builder: (context, snapshot) {
-                    return SizedBox(
+                  if (username == null &&
+                      g1WalletsBox.get(pubkey)?.username != null)
+                    SizedBox(
                       width: 230,
                       child: Text(
-                        snapshot.data ?? '-',
-                        style:
-                            const TextStyle(fontSize: 18, color: Colors.black),
+                        g1WalletsBox.get(pubkey)?.username,
+                        style: const TextStyle(
+                          fontSize: 27,
+                          color: Color(0xff814C00),
+                        ),
                       ),
-                    );
-                  }),
-              const SizedBox(height: 30),
-            ]),
+                    ),
+                  if (username != null)
+                    SizedBox(
+                      width: 230,
+                      child: Text(
+                        username,
+                        style: const TextStyle(
+                          fontSize: 27,
+                          color: Color(0xff814C00),
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 25),
+                  FutureBuilder(
+                      future: _cesiumPlusProvider.getName(pubkey),
+                      initialData: '...',
+                      builder: (context, snapshot) {
+                        return SizedBox(
+                          width: 230,
+                          child: Text(
+                            snapshot.data ?? '-',
+                            style: const TextStyle(
+                                fontSize: 18, color: Colors.black),
+                          ),
+                        );
+                      }),
+                  const SizedBox(height: 30),
+                ]),
             const Spacer(),
             Column(children: <Widget>[
               if (avatar == null)
                 FutureBuilder(
-                    future: _cesiumPlusProvider.getAvatar(
-                        _historyProvider.pubkey, _avatarSize),
+                    future: _cesiumPlusProvider.getAvatar(pubkey, _avatarSize),
                     builder:
                         (BuildContext context, AsyncSnapshot<Image> _avatar) {
                       if (_avatar.connectionState != ConnectionState.done) {

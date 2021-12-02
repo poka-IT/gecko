@@ -113,13 +113,16 @@ class _ChooseChestState extends State<ChooseChest> {
                   WalletData defaultWallet =
                       _myWalletProvider.getDefaultWallet(currentChest);
                   _myWalletProvider.rebuildWidget();
-                  Navigator.pushAndRemoveUntil(context,
-                      MaterialPageRoute(builder: (context) {
-                    return UnlockingWallet(
-                      wallet: defaultWallet,
-                      action: "mywallets",
-                    );
-                  }), ModalRoute.withName('/'));
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return UnlockingWallet(
+                        wallet: defaultWallet,
+                        action: "mywallets",
+                      );
+                    }),
+                    ModalRoute.withName('/'),
+                  );
                 },
                 child: Text(
                   'Ouvrir ce coffre',

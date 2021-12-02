@@ -35,6 +35,8 @@ import 'package:gecko/screens/home.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
+import 'package:gecko/screens/search.dart';
+import 'package:gecko/screens/search_result.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
@@ -139,55 +141,58 @@ class Gecko extends StatelessWidget {
     // HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
     // HistoryProvider('').snackNode(context);
     return MultiProvider(
-        providers: [
-          // Provider(create: (context) => HistoryProvider()),
-          ChangeNotifierProvider(create: (_) => HomeProvider()),
-          ChangeNotifierProvider(create: (_) => WalletsProfilesProvider('')),
-          ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
-          ChangeNotifierProvider(create: (_) => ChestProvider()),
-          ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
-          ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
-          ChangeNotifierProvider(create: (_) => ChangePinProvider()),
-          ChangeNotifierProvider(create: (_) => SearchProvider()),
-          ChangeNotifierProvider(create: (_) => CesiumPlusProvider())
-        ],
-        child: GraphQLProvider(
-          client: _client,
-          child: MaterialApp(
-            builder: (context, widget) => ResponsiveWrapper.builder(
-                BouncingScrollWrapper.builder(context, widget),
-                maxWidth: 1200,
-                minWidth: 480,
-                defaultScale: true,
-                breakpoints: [
-                  const ResponsiveBreakpoint.resize(480, name: MOBILE),
-                  const ResponsiveBreakpoint.autoScale(800, name: TABLET),
-                  const ResponsiveBreakpoint.resize(1000, name: DESKTOP),
-                ],
-                background: Container(color: backgroundColor)),
-            title: 'Ğecko',
-            theme: ThemeData(
-              appBarTheme: const AppBarTheme(
-                color: Color(0xffFFD58D),
-                foregroundColor: Color(0xFF000000),
-              ),
-              primaryColor: const Color(0xffFFD58D),
-              textTheme: const TextTheme(
-                bodyText1: TextStyle(),
-                bodyText2: TextStyle(),
-              ).apply(
-                bodyColor: const Color(0xFF000000),
-              ),
-              colorScheme: ColorScheme.fromSwatch()
-                  .copyWith(secondary: Colors.grey[850]),
+      providers: [
+        // Provider(create: (context) => HistoryProvider()),
+        ChangeNotifierProvider(create: (_) => HomeProvider()),
+        ChangeNotifierProvider(create: (_) => WalletsProfilesProvider('')),
+        ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
+        ChangeNotifierProvider(create: (_) => ChestProvider()),
+        ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
+        ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
+        ChangeNotifierProvider(create: (_) => ChangePinProvider()),
+        ChangeNotifierProvider(create: (_) => SearchProvider()),
+        ChangeNotifierProvider(create: (_) => CesiumPlusProvider())
+      ],
+      child: GraphQLProvider(
+        client: _client,
+        child: MaterialApp(
+          builder: (context, widget) => ResponsiveWrapper.builder(
+              BouncingScrollWrapper.builder(context, widget),
+              maxWidth: 1200,
+              minWidth: 480,
+              defaultScale: true,
+              breakpoints: [
+                const ResponsiveBreakpoint.resize(480, name: MOBILE),
+                const ResponsiveBreakpoint.autoScale(800, name: TABLET),
+                const ResponsiveBreakpoint.resize(1000, name: DESKTOP),
+              ],
+              background: Container(color: backgroundColor)),
+          title: 'Ğecko',
+          theme: ThemeData(
+            appBarTheme: const AppBarTheme(
+              color: Color(0xffFFD58D),
+              foregroundColor: Color(0xFF000000),
             ),
-            home: const HomeScreen(),
-            initialRoute: "/",
-            routes: {
-              '/mywallets': (context) => WalletsHome(),
-            },
+            primaryColor: const Color(0xffFFD58D),
+            textTheme: const TextTheme(
+              bodyText1: TextStyle(),
+              bodyText2: TextStyle(),
+            ).apply(
+              bodyColor: const Color(0xFF000000),
+            ),
+            colorScheme:
+                ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]),
           ),
-        ));
+          home: const HomeScreen(),
+          initialRoute: "/",
+          routes: {
+            '/mywallets': (context) => WalletsHome(),
+            '/search': (context) => const SearchScreen(),
+            '/searchResult': (context) => const SearchResultScreen(),
+          },
+        ),
+      ),
+    );
   }
 }
 

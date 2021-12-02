@@ -30,6 +30,8 @@ class WalletsProfilesProvider with ChangeNotifier {
   TextEditingController payAmount = TextEditingController();
   TextEditingController payComment = TextEditingController();
   num balance;
+  int nRepositories = 10;
+  int nPage = 1;
 
   Future scan(context) async {
     await Permission.camera.request();
@@ -193,11 +195,21 @@ class WalletsProfilesProvider with ChangeNotifier {
         (result.data['txsHistoryBc']['both']['edges'] as List<dynamic>);
 
     pageInfo = result.data['txsHistoryBc']['both']['pageInfo'];
-
     fetchMoreCursor = pageInfo['endCursor'];
+    if (fetchMoreCursor == null) nPage = 1;
+
+    if (nPage == 1) {
+      nRepositories = 30;
+    } else if (nPage == 2) {
+      nRepositories = 100;
+    }
+    log.d(nPage);
+    log.d(nRepositories);
+    nPage++;
+
     if (fetchMoreCursor != null) {
       opts = FetchMoreOptions(
-        variables: {'cursor': fetchMoreCursor},
+        variables: {'cursor': fetchMoreCursor, 'number': nRepositories},
         updateQuery: (previousResultData, fetchMoreResultData) {
           final List<dynamic> repos = [
             ...previousResultData['txsHistoryBc']['both']['edges']

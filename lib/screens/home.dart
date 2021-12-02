@@ -235,7 +235,7 @@ Widget geckHome(context) {
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  "Rechercher un\nportfeuille",
+                  "Rechercher un\nportefeuille",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       color: Colors.white,
@@ -473,7 +473,7 @@ Widget welcomeHome(context) {
                       );
                     },
                     child: const Text(
-                      'Créer un portfeuille',
+                      'Créer un portefeuille',
                       style:
                           TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
                     ),

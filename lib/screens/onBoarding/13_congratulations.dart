@@ -46,13 +46,10 @@ class OnboardingStepFiveteen extends StatelessWidget {
                             onPrimary: Colors.white, // foreground
                           ),
                           onPressed: () {
-                            Navigator.popUntil(
-                              context,
-                              ModalRoute.withName('/'),
-                            );
-                            Navigator.pushNamed(
+                            Navigator.pushNamedAndRemoveUntil(
                               context,
                               '/mywallets',
+                              ModalRoute.withName('/'),
                             );
                           },
                           child: const Text("Accéder à mes portefeuilles",

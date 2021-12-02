@@ -1,15 +1,18 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+// import 'package:http/http.dart' as http;
 
 class CesiumPlusProvider with ChangeNotifier {
   TextEditingController cesiumName = TextEditingController();
   Image defaultAvatar(double size) =>
       Image.asset(('assets/icon_user.png'), height: size);
+
+  CancelToken avatarCancelToken = CancelToken();
 
   Future<List> _buildQuery(_pubkey) async {
     var queryGetAvatar = json.encode({
@@ -66,18 +69,34 @@ class CesiumPlusProvider with ChangeNotifier {
     }
 
     List queryOptions = await _buildQuery(_pubkey);
-    final response = await http.post((Uri.parse(queryOptions[0])),
-        body: queryOptions[1], headers: queryOptions[2]);
-    final responseJson = json.decode(response.body);
-    if (responseJson['hits']['hits'].toString() == '[]') {
+
+    var dio = Dio();
+    Response response;
+    try {
+      response = await dio.post(
+        queryOptions[0],
+        data: queryOptions[1],
+        options: Options(
+          headers: queryOptions[2],
+          sendTimeout: 3000,
+          receiveTimeout: 5000,
+        ),
+      );
+      // response = await http.post((Uri.parse(queryOptions[0])),
+      //     body: queryOptions[1], headers: queryOptions[2]);
+    } catch (e) {
+      log.e(e);
+    }
+
+    if (response.data['hits']['hits'].toString() == '[]') {
       return '';
     }
     final bool _nameExist =
-        responseJson['hits']['hits'][0]['_source'].containsKey("title");
+        response.data['hits']['hits'][0]['_source'].containsKey("title");
     if (!_nameExist) {
       return '';
     }
-    _name = responseJson['hits']['hits'][0]['_source']['title'];
+    _name = response.data['hits']['hits'][0]['_source']['title'];
 
     g1WalletsBox.get(_pubkey).csName = _name;
 
@@ -88,27 +107,39 @@ class CesiumPlusProvider with ChangeNotifier {
     if (g1WalletsBox.get(_pubkey).avatar != null) {
       return g1WalletsBox.get(_pubkey).avatar;
     }
+    var dio = Dio();
 
-    log.d(_pubkey);
+    // log.d(_pubkey);
 
     List queryOptions = await _buildQuery(_pubkey);
 
-    http.Response response;
+    Response response;
     try {
-      response = await http.post((Uri.parse(queryOptions[0])),
-          body: queryOptions[1], headers: queryOptions[2]);
+      response = await dio
+          .post(queryOptions[0],
+              data: queryOptions[1],
+              options: Options(
+                headers: queryOptions[2],
+                sendTimeout: 4000,
+                receiveTimeout: 15000,
+              ),
+              cancelToken: avatarCancelToken)
+          .timeout(
+            const Duration(seconds: 15),
+          );
+      // response = await http.post((Uri.parse(queryOptions[0])),
+      //     body: queryOptions[1], headers: queryOptions[2]);
     } catch (e) {
       log.e(e);
     }
-    final responseJson = json.decode(response.body);
 
-    if (responseJson['hits']['hits'].toString() == '[]' ||
-        !responseJson['hits']['hits'][0]['_source'].containsKey("avatar")) {
+    if (response.data['hits']['hits'].toString() == '[]' ||
+        !response.data['hits']['hits'][0]['_source'].containsKey("avatar")) {
       return defaultAvatar(size);
     }
 
     final _avatar =
-        responseJson['hits']['hits'][0]['_source']['avatar']['_content'];
+        response.data['hits']['hits'][0]['_source']['avatar']['_content'];
 
     var avatarFile =
         File('${(await getTemporaryDirectory()).path}/avatar_$_pubkey.png');

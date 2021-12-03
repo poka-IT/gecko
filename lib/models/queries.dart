@@ -29,14 +29,12 @@ const String getHistory = r'''
                 issuers
                 comment
                 outputs
-                writtenTime
             }
             sending {
                 currency
                 issuers
                 comment
                 outputs
-                writtenTime
             }
       }
       currentUd {

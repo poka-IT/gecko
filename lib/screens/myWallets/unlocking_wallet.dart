@@ -95,7 +95,7 @@ class UnlockingWallet extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) {
-                      return const ChooseChest();
+                      return ChooseChest(action: action);
                     }),
                   );
                 },
@@ -103,11 +103,14 @@ class UnlockingWallet extends StatelessWidget {
                   width: 400,
                   height: 70,
                   child: Center(
-                      child: Text('Changer de coffre',
-                          style: TextStyle(
-                              fontSize: 22,
-                              color: orangeC,
-                              fontWeight: FontWeight.w600))),
+                    child: Text(
+                      'Changer de coffre',
+                      style: TextStyle(
+                          fontSize: 22,
+                          color: orangeC,
+                          fontWeight: FontWeight.w600),
+                    ),
+                  ),
                 )),
           ]),
         ),
@@ -222,6 +225,7 @@ class UnlockingWallet extends StatelessWidget {
   }
 
   Future<bool> _paymentsResult(context) {
+    if (resultPay != "Success") log.i(resultPay);
     return showDialog<bool>(
       context: context,
       barrierDismissible: true, // user must tap button!

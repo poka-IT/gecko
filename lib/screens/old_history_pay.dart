@@ -63,7 +63,7 @@ class OldHistoryScreen extends StatelessWidget with ChangeNotifier {
                           controller: _homeProvider.searchQuery,
                           onChanged: (text) {
                             log.d("Clé tappé: $text");
-                            if (_historyProvider.isPubkey(context, text)) {
+                            if (_historyProvider.isPubkey(text)) {
                               _homeProvider.currentIndex = 0;
                               Navigator.push(
                                 context,
@@ -390,11 +390,13 @@ class OldHistoryScreen extends StatelessWidget with ChangeNotifier {
                     //   _formKey.currentState.save();
                     // }
                     // _historyProvider.pay(payAmount.text, payComment.text);
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) {
-                      return UnlockingWallet(
-                          wallet: defaultWallet, action: "pay");
-                    }));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return UnlockingWallet(
+                            wallet: defaultWallet, action: "pay");
+                      }),
+                    );
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(12),
@@ -447,7 +449,7 @@ class OldHistoryScreen extends StatelessWidget with ChangeNotifier {
                     dense: true,
                     isThreeLine: false,
                     onTap: () {
-                      if (_historyProvider.isPubkey(context, repository[2])) {
+                      if (_historyProvider.isPubkey(repository[2])) {
                         _homeProvider.currentIndex = 0;
                         Navigator.push(
                           context,

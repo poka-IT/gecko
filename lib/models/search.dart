@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:gecko/models/wallets_profiles.dart';
 
 class SearchProvider with ChangeNotifier {
   TextEditingController searchController = TextEditingController();
@@ -17,6 +18,7 @@ class SearchProvider with ChangeNotifier {
   Future<List> searchBlockchain() async {
     searchResult.clear();
     int searchTime = DateTime.now().millisecondsSinceEpoch;
+    WalletsProfilesProvider _walletProfiles = WalletsProfilesProvider('pubkey');
 
     if (cacheTime + cacheDuring <= searchTime) {
       g1WalletsBox.clear();
@@ -59,6 +61,11 @@ class SearchProvider with ChangeNotifier {
         return;
       }
     });
+
+    if (searchResult.isEmpty &&
+        _walletProfiles.isPubkey(searchController.text)) {
+      searchResult = [G1WalletsList(pubkey: searchController.text)];
+    }
 
     return searchResult;
   }

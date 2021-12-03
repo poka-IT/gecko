@@ -42,7 +42,7 @@ class WalletsProfilesProvider with ChangeNotifier {
       log.e(e);
       return 'false';
     }
-    if (barcode != null && isPubkey(context, barcode)) {
+    if (barcode != null && isPubkey(barcode)) {
       outputPubkey.text = barcode;
       Navigator.push(
         context,
@@ -62,10 +62,17 @@ class WalletsProfilesProvider with ChangeNotifier {
     WalletData defaultWallet = _myWalletModel.getDefaultWallet(currentChest);
 
     String dewif = chestBox.get(currentChest).dewif;
+    int derivation;
+
+    if (chestBox.get(currentChest).isCesium) {
+      derivation = 0;
+    } else {
+      derivation = defaultWallet.derivation;
+    }
 
     try {
       await DubpRust.simplePaymentFromTransparentAccount(
-          accountIndex: defaultWallet.derivation,
+          accountIndex: derivation,
           amount: double.parse(payAmount.text),
           txComment: payComment.text,
           dewif: dewif,
@@ -80,7 +87,7 @@ class WalletsProfilesProvider with ChangeNotifier {
     }
   }
 
-  bool isPubkey(context, pubkey) {
+  bool isPubkey(pubkey) {
     final RegExp regExp = RegExp(
       r'^[a-zA-Z0-9]+$',
       caseSensitive: false,
@@ -193,6 +200,8 @@ class WalletsProfilesProvider with ChangeNotifier {
   FetchMoreOptions checkQueryResult(result, opts, _pubkey) {
     final List<dynamic> blockchainTX =
         (result.data['txsHistoryBc']['both']['edges'] as List<dynamic>);
+    // final List<dynamic> mempoolTX =
+    //     (result.data['txsHistoryMp']['receiving'] as List<dynamic>);
 
     pageInfo = result.data['txsHistoryBc']['both']['pageInfo'];
     fetchMoreCursor = pageInfo['endCursor'];

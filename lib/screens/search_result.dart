@@ -77,7 +77,7 @@ class SearchResultScreen extends StatelessWidget {
                               contentPadding: const EdgeInsets.all(5),
                               leading: g1WalletsBox
                                           .get(g1Wallet.pubkey)
-                                          .avatar !=
+                                          ?.avatar !=
                                       null
                                   ? ClipOval(
                                       child: g1WalletsBox
@@ -150,7 +150,7 @@ class SearchResultScreen extends StatelessWidget {
                                       pubkey: g1Wallet.pubkey,
                                       username: g1WalletsBox
                                           .get(g1Wallet.pubkey)
-                                          .id
+                                          ?.id
                                           ?.username,
                                       avatar: g1WalletsBox
                                           .get(g1Wallet.pubkey)

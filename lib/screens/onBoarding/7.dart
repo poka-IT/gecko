@@ -51,6 +51,7 @@ class OnboardingStepNine extends StatelessWidget {
               },
               child: Image.asset(
                 'assets/printer.png',
+                height: 35,
               ),
             ),
             Expanded(

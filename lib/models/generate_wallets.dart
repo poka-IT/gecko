@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/bip39_words.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:pdf/pdf.dart';
@@ -38,6 +39,21 @@ class GenerateWalletsProvider with ChangeNotifier {
   bool isCesiumPWDVisible = false;
   bool canImport = false;
   bool isPinChanged = false;
+
+  // Import Chest
+  TextEditingController cellController0 = TextEditingController();
+  TextEditingController cellController1 = TextEditingController();
+  TextEditingController cellController2 = TextEditingController();
+  TextEditingController cellController3 = TextEditingController();
+  TextEditingController cellController4 = TextEditingController();
+  TextEditingController cellController5 = TextEditingController();
+  TextEditingController cellController6 = TextEditingController();
+  TextEditingController cellController7 = TextEditingController();
+  TextEditingController cellController8 = TextEditingController();
+  TextEditingController cellController9 = TextEditingController();
+  TextEditingController cellController10 = TextEditingController();
+  TextEditingController cellController11 = TextEditingController();
+  bool isFirstTimeSentenceComplete = true;
 
   Future storeHDWChest(
       NewWallet _wallet, String _name, BuildContext context) async {
@@ -140,7 +156,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   Future<String> generateMnemonic() async {
     try {
       generatedMnemonic = await DubpRust.genMnemonic(language: Language.french);
-      actualWallet = await generateWallet(generatedMnemonic);
+      actualWallet = await generateWallet(generatedMnemonic, isImport: false);
       walletIsGenerated = true;
     } catch (e) {
       log.e(e);
@@ -148,7 +164,8 @@ class GenerateWalletsProvider with ChangeNotifier {
     return generatedMnemonic;
   }
 
-  Future<NewWallet> generateWallet(generatedMnemonic) async {
+  Future<NewWallet> generateWallet(String generatedMnemonic,
+      {@required bool isImport}) async {
     try {
       actualWallet = await DubpRust.genWalletFromMnemonic(
         language: Language.french,
@@ -159,8 +176,10 @@ class GenerateWalletsProvider with ChangeNotifier {
       log.e(e);
     }
 
-    mnemonicController.text = generatedMnemonic;
-    pin.text = actualWallet.pin;
+    if (!isImport) {
+      mnemonicController.text = generatedMnemonic;
+      pin.text = actualWallet.pin;
+    }
     // notifyListeners();
 
     return actualWallet;
@@ -288,15 +307,9 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void resetImportView() {
-    cesiumID.text = '';
-    cesiumPWD.text = '';
-    cesiumPubkey.text = '';
-    pin.text = '';
-    canImport = false;
-    isPinChanged = false;
-    isCesiumIDVisible = false;
-    isCesiumPWDVisible = false;
+  void resetCesiumImportView() {
+    cesiumID.text = cesiumPWD.text = cesiumPubkey.text = pin.text = '';
+    canImport = isPinChanged = isCesiumIDVisible = isCesiumPWDVisible = false;
     actualWallet = null;
     notifyListeners();
   }
@@ -313,6 +326,83 @@ class GenerateWalletsProvider with ChangeNotifier {
     }
 
     return _wordsList;
+  }
+
+  bool isBipWord(String word) {
+    notifyListeners();
+
+    // Needed for bad encoding of UTF-8
+    word = word.replaceAll('é', 'é');
+    word = word.replaceAll('è', 'è');
+    return bip39Words.contains(word);
+  }
+
+  bool isBipWordsList(List words) {
+    bool isValid = true;
+    for (String word in words) {
+      // Needed for bad encoding of UTF-8
+      word = word.replaceAll('é', 'é');
+      word = word.replaceAll('è', 'è');
+      if (!bip39Words.contains(word)) {
+        isValid = false;
+      }
+    }
+    return isValid;
+  }
+
+  void resetImportView() {
+    cellController0.text = cellController1.text = cellController2.text =
+        cellController3.text = cellController4.text = cellController5.text =
+            cellController6.text = cellController7.text = cellController8.text =
+                cellController9.text =
+                    cellController10.text = cellController11.text = '';
+    isFirstTimeSentenceComplete = true;
+    notifyListeners();
+  }
+
+  bool isSentenceComplete(BuildContext context) {
+    if (isBipWordsList(
+      [
+        cellController0.text,
+        cellController1.text,
+        cellController2.text,
+        cellController3.text,
+        cellController4.text,
+        cellController5.text,
+        cellController6.text,
+        cellController7.text,
+        cellController8.text,
+        cellController9.text,
+        cellController10.text,
+        cellController11.text
+      ],
+    )) {
+      if (isFirstTimeSentenceComplete) {
+        FocusScope.of(context).unfocus();
+      }
+      isFirstTimeSentenceComplete = false;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Future<bool> isSentenceValid() async {
+    String inputMnemonic =
+        '${cellController0.text} ${cellController1.text} ${cellController2.text} ${cellController3.text} ${cellController4.text} ${cellController5.text} ${cellController6.text} ${cellController7.text} ${cellController8.text} ${cellController9.text} ${cellController10.text} ${cellController11.text}';
+
+    // Needed for bad encoding of UTF-8
+    inputMnemonic = inputMnemonic.replaceAll('é', 'é');
+    inputMnemonic = inputMnemonic.replaceAll('è', 'è');
+
+    NewWallet generatedWallet =
+        await generateWallet(inputMnemonic, isImport: true);
+
+    if (generatedWallet == null) {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   void reloadBuild() {

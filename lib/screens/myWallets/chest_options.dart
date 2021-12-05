@@ -46,7 +46,7 @@ class ChestOptions extends StatelessWidget {
               key: const Key('changePin'),
               onTap: () async {
                 // await _chestProvider.changePin(context, cesiumWallet);
-                walletProvider.pinCode = await Navigator.push(
+                String pinResult = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) {
@@ -57,6 +57,10 @@ class ChestOptions extends StatelessWidget {
                     },
                   ),
                 );
+
+                if (pinResult != null) {
+                  walletProvider.pinCode = pinResult;
+                }
               },
               child: SizedBox(
                   height: 50,
@@ -64,6 +68,7 @@ class ChestOptions extends StatelessWidget {
                     const SizedBox(width: 28),
                     Image.asset(
                       'assets/chests/secret_code.png',
+                      height: 25,
                     ),
                     const SizedBox(width: 18),
                     const Text('Changer mon code secret',
@@ -79,11 +84,12 @@ class ChestOptions extends StatelessWidget {
               child: SizedBox(
                 height: 50,
                 child: Row(children: <Widget>[
-                  const SizedBox(width: 33),
+                  const SizedBox(width: 30),
                   Image.asset(
                     'assets/walletOptions/trash.png',
+                    height: 45,
                   ),
-                  const SizedBox(width: 24),
+                  const SizedBox(width: 20),
                   const Text(
                     'Supprimer ce coffre',
                     style: TextStyle(

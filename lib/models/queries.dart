@@ -29,14 +29,12 @@ const String getHistory = r'''
                 issuers
                 comment
                 outputs
-                writtenTime
             }
             sending {
                 currency
                 issuers
                 comment
                 outputs
-                writtenTime
             }
       }
       currentUd {
@@ -62,3 +60,36 @@ const String getBalance = r'''
       }
     }
   ''';
+
+const String getWallets = r'''
+query ($number: Int!, $cursor: String) {
+  wallets(pagination: {ord: ASC, pageSize: $number, cursor: $cursor}) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      node {
+        script
+        balance {
+          amount
+          base
+        }
+        idty {
+          isMember
+          username
+        }
+      }
+    }
+  }
+}
+''';
+
+const String getId = r'''
+query ($pubkey: PubKeyGva!) {
+  idty(pubkey: $pubkey) {
+    isMember
+    username
+  }
+}
+''';

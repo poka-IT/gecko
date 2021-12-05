@@ -9,7 +9,8 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:provider/provider.dart';
 
 class ChooseChest extends StatefulWidget {
-  const ChooseChest({Key key}) : super(key: key);
+  const ChooseChest({this.action, Key key}) : super(key: key);
+  final String action;
 
   @override
   State<StatefulWidget> createState() {
@@ -28,6 +29,8 @@ class _ChooseChestState extends State<ChooseChest> {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
+
+    log.d(widget.action);
 
     return Scaffold(
         appBar: AppBar(
@@ -113,13 +116,16 @@ class _ChooseChestState extends State<ChooseChest> {
                   WalletData defaultWallet =
                       _myWalletProvider.getDefaultWallet(currentChest);
                   _myWalletProvider.rebuildWidget();
-                  Navigator.pushAndRemoveUntil(context,
-                      MaterialPageRoute(builder: (context) {
-                    return UnlockingWallet(
-                      wallet: defaultWallet,
-                      action: "mywallets",
-                    );
-                  }), ModalRoute.withName('/'));
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return UnlockingWallet(
+                        wallet: defaultWallet,
+                        action: widget.action ?? "mywallets",
+                      );
+                    }),
+                    ModalRoute.withName('/'),
+                  );
                 },
                 child: Text(
                   'Ouvrir ce coffre',

@@ -7,11 +7,9 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/wallet_options.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/common_elements.dart';
-import 'package:gecko/screens/myWallets/cesium_wallet_options.dart';
 import 'package:gecko/screens/myWallets/chest_options.dart';
 import 'package:gecko/screens/myWallets/choose_chest.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
-import 'package:gecko/screens/onBoarding/0_no_keychain_found.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -28,13 +26,8 @@ class WalletsHome extends StatelessWidget {
 
     final int _currentChestNumber = myWalletProvider.getCurrentChest();
     final ChestData _currentChest = chestBox.get(_currentChestNumber);
-    bool isWalletsExists;
-
-    if (!_currentChest.isCesium) {
-      myWalletProvider.listWallets =
-          myWalletProvider.readAllWallets(_currentChestNumber);
-    }
-    isWalletsExists = myWalletProvider.checkIfWalletExist();
+    myWalletProvider.listWallets =
+        myWalletProvider.readAllWallets(_currentChestNumber);
 
     return WillPopScope(
       onWillPop: () {
@@ -61,12 +54,7 @@ class WalletsHome extends StatelessWidget {
           backgroundColor: const Color(0xffFFD58D),
         ),
         body: SafeArea(
-          child: !isWalletsExists
-              ? const NoKeyChainScreen()
-              : _currentChest.isCesium
-                  ? cesiumWalletOptions(
-                      context, _currentChest, myWalletProvider)
-                  : myWalletsTiles(context),
+          child: myWalletsTiles(context),
         ),
       ),
     );

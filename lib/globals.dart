@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/chest_data.dart';
+import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:hive/hive.dart';
 import 'package:logger/logger.dart';
@@ -16,9 +17,10 @@ int ramSys;
 Box<WalletData> walletBox;
 Box<ChestData> chestBox;
 Box configBox;
+Box<G1WalletsList> g1WalletsBox;
 
-// String cesiumPod = "https://g1.data.le-sou.org";
-String cesiumPod = "https://g1.data.e-is.pro";
+String cesiumPod = "https://g1.data.le-sou.org";
+// String cesiumPod = "https://g1.data.e-is.pro";
 
 // Responsive ratios
 bool isTall;

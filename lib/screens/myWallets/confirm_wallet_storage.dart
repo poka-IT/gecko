@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/generate_wallets.dart';
 import 'package:gecko/models/my_wallets.dart';
-import 'package:gecko/models/wallet_options.dart';
+import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
@@ -32,8 +32,6 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
         Provider.of<GenerateWalletsProvider>(context);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
-    WalletOptionsProvider _walletOptions =
-        Provider.of<WalletOptionsProvider>(context);
     final int _currentChest = _myWalletProvider.getCurrentChest();
 
     _mnemonicController.text = generatedMnemonic;
@@ -136,7 +134,7 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                             onPressed: (_generateWalletProvider
                                         .isAskedWordValid &&
                                     walletName.text != '')
-                                ? () {
+                                ? () async {
                                     _generateWalletProvider.storeHDWChest(
                                         generatedWallet,
                                         walletName.text,
@@ -148,12 +146,19 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                                     _myWalletProvider.listWallets =
                                         _myWalletProvider
                                             .readAllWallets(_currentChest);
-                                    scheduleMicrotask(() {
-                                      _walletOptions.reloadBuild();
-                                      _myWalletProvider.rebuildWidget();
-                                    });
-                                    Navigator.popUntil(
-                                        context, ModalRoute.withName('/'));
+                                    await Future.delayed(
+                                        const Duration(milliseconds: 50));
+                                    _myWalletProvider.rebuildWidget();
+                                    Navigator.pushAndRemoveUntil(context,
+                                        MaterialPageRoute(builder: (context) {
+                                      return UnlockingWallet(
+                                        wallet:
+                                            _myWalletProvider.getDefaultWallet(
+                                          configBox.get('currentChest'),
+                                        ),
+                                        action: "mywallets",
+                                      );
+                                    }), ModalRoute.withName('/'));
                                   }
                                 : null,
                             child: const Text('Confirmer',

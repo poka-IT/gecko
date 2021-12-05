@@ -23,16 +23,20 @@ import 'package:gecko/models/cesium_plus.dart';
 import 'package:gecko/models/change_pin.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/chest_provider.dart';
+import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/generate_wallets.dart';
-import 'package:gecko/models/history.dart';
+import 'package:gecko/models/wallets_profiles.dart';
 import 'package:gecko/models/home.dart';
 import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/models/search.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/wallet_options.dart';
 import 'package:gecko/screens/home.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
+import 'package:gecko/screens/search.dart';
+import 'package:gecko/screens/search_result.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
@@ -41,17 +45,14 @@ import 'package:flutter/foundation.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:flutter_driver/driver_extension.dart';
 
 const bool enableSentry = true;
 
 Future<void> main() async {
-  enableFlutterDriverExtension();
   WidgetsFlutterBinding.ensureInitialized();
 
   HomeProvider _homeProvider = HomeProvider();
   appPath = await getApplicationDocumentsDirectory();
-  await _homeProvider.createDefaultAvatar();
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
 
@@ -59,15 +60,21 @@ Future<void> main() async {
   await Hive.initFlutter(appPath.path);
   Hive.registerAdapter(WalletDataAdapter());
   Hive.registerAdapter(ChestDataAdapter());
+  Hive.registerAdapter(G1WalletsListAdapter());
+  Hive.registerAdapter(IdAdapter());
   walletBox = await Hive.openBox<WalletData>("walletBox");
   chestBox = await Hive.openBox<ChestData>("chestBox");
   configBox = await Hive.openBox("configBox");
+  g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
+
+  g1WalletsBox.clear();
 
   // final HiveStore _store =
   //     await HiveStore.open(path: '${appPath.path}/gqlCache');
 
   // Get a valid GVA endpoint
-  endPointGVA = 'https://g1.librelois.fr/gva';
+  // endPointGVA = 'https://g1.librelois.fr/gva';
+  endPointGVA = 'https://duniter-g1.p2p.legal/gva';
   // await _homeProvider.getValidEndpoint();
 
   // if (endPointGVA == 'HS') {
@@ -75,6 +82,8 @@ Future<void> main() async {
   // } else {
   //   _homeProvider.playSound('start', 0.2);
   // }
+
+  HttpOverrides.global = MyHttpOverrides();
 
   if (kReleaseMode && enableSentry) {
     // CatcherOptions debugOptions = CatcherOptions(DialogReportMode(), [
@@ -107,8 +116,6 @@ Future<void> main() async {
   } else {
     print('Debug mode enabled: No sentry alerte');
 
-    HttpOverrides.global = MyHttpOverrides();
-
     runApp(Gecko(endPointGVA));
   }
 }
@@ -134,54 +141,58 @@ class Gecko extends StatelessWidget {
     // HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
     // HistoryProvider('').snackNode(context);
     return MultiProvider(
-        providers: [
-          // Provider(create: (context) => HistoryProvider()),
-          ChangeNotifierProvider(create: (_) => HomeProvider()),
-          ChangeNotifierProvider(create: (_) => HistoryProvider('')),
-          ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
-          ChangeNotifierProvider(create: (_) => ChestProvider()),
-          ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
-          ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
-          ChangeNotifierProvider(create: (_) => ChangePinProvider()),
-          ChangeNotifierProvider(create: (_) => CesiumPlusProvider())
-        ],
-        child: GraphQLProvider(
-          client: _client,
-          child: MaterialApp(
-            builder: (context, widget) => ResponsiveWrapper.builder(
-                BouncingScrollWrapper.builder(context, widget),
-                maxWidth: 1200,
-                minWidth: 480,
-                defaultScale: true,
-                breakpoints: [
-                  const ResponsiveBreakpoint.resize(480, name: MOBILE),
-                  const ResponsiveBreakpoint.autoScale(800, name: TABLET),
-                  const ResponsiveBreakpoint.resize(1000, name: DESKTOP),
-                ],
-                background: Container(color: backgroundColor)),
-            title: 'Ğecko',
-            theme: ThemeData(
-              appBarTheme: const AppBarTheme(
-                color: Color(0xffFFD58D),
-                foregroundColor: Color(0xFF000000),
-              ),
-              primaryColor: const Color(0xffFFD58D),
-              textTheme: const TextTheme(
-                bodyText1: TextStyle(),
-                bodyText2: TextStyle(),
-              ).apply(
-                bodyColor: const Color(0xFF000000),
-              ),
-              colorScheme: ColorScheme.fromSwatch()
-                  .copyWith(secondary: Colors.grey[850]),
+      providers: [
+        // Provider(create: (context) => HistoryProvider()),
+        ChangeNotifierProvider(create: (_) => HomeProvider()),
+        ChangeNotifierProvider(create: (_) => WalletsProfilesProvider('')),
+        ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
+        ChangeNotifierProvider(create: (_) => ChestProvider()),
+        ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
+        ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
+        ChangeNotifierProvider(create: (_) => ChangePinProvider()),
+        ChangeNotifierProvider(create: (_) => SearchProvider()),
+        ChangeNotifierProvider(create: (_) => CesiumPlusProvider())
+      ],
+      child: GraphQLProvider(
+        client: _client,
+        child: MaterialApp(
+          builder: (context, widget) => ResponsiveWrapper.builder(
+              BouncingScrollWrapper.builder(context, widget),
+              maxWidth: 1200,
+              minWidth: 480,
+              defaultScale: true,
+              breakpoints: [
+                const ResponsiveBreakpoint.resize(480, name: MOBILE),
+                const ResponsiveBreakpoint.autoScale(800, name: TABLET),
+                const ResponsiveBreakpoint.resize(1000, name: DESKTOP),
+              ],
+              background: Container(color: backgroundColor)),
+          title: 'Ğecko',
+          theme: ThemeData(
+            appBarTheme: const AppBarTheme(
+              color: Color(0xffFFD58D),
+              foregroundColor: Color(0xFF000000),
             ),
-            home: const HomeScreen(),
-            initialRoute: "/",
-            routes: {
-              '/mywallets': (context) => WalletsHome(),
-            },
+            primaryColor: const Color(0xffFFD58D),
+            textTheme: const TextTheme(
+              bodyText1: TextStyle(),
+              bodyText2: TextStyle(),
+            ).apply(
+              bodyColor: const Color(0xFF000000),
+            ),
+            colorScheme:
+                ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]),
           ),
-        ));
+          home: const HomeScreen(),
+          initialRoute: "/",
+          routes: {
+            '/mywallets': (context) => WalletsHome(),
+            '/search': (context) => const SearchScreen(),
+            '/searchResult': (context) => const SearchResultScreen(),
+          },
+        ),
+      ),
+    );
   }
 }
 

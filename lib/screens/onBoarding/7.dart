@@ -51,6 +51,7 @@ class OnboardingStepNine extends StatelessWidget {
               },
               child: Image.asset(
                 'assets/printer.png',
+                height: 35,
               ),
             ),
             Expanded(
@@ -133,55 +134,63 @@ Widget sentanceArray(BuildContext context) {
       builder: (context, formatedArray) {
         // print(formatedArray.data);
         return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Container(
-                decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black),
-                    color: Colors.grey[300],
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(10),
-                    )),
-                // color: Colors.grey[300],
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Row(children: <Widget>[
-                        arrayCell(formatedArray.data[0]),
-                        arrayCell(formatedArray.data[1]),
-                        arrayCell(formatedArray.data[2]),
-                        arrayCell(formatedArray.data[3]),
-                      ]),
-                      const SizedBox(height: 15),
-                      Row(children: <Widget>[
-                        arrayCell(formatedArray.data[4]),
-                        arrayCell(formatedArray.data[5]),
-                        arrayCell(formatedArray.data[6]),
-                        arrayCell(formatedArray.data[7]),
-                      ]),
-                      const SizedBox(height: 15),
-                      Row(children: <Widget>[
-                        arrayCell(formatedArray.data[8]),
-                        arrayCell(formatedArray.data[9]),
-                        arrayCell(formatedArray.data[10]),
-                        arrayCell(formatedArray.data[11]),
-                      ]),
-                    ])));
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Container(
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.black),
+                color: Colors.grey[300],
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(10),
+                )),
+            // color: Colors.grey[300],
+            padding: const EdgeInsets.all(20),
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Row(children: <Widget>[
+                    arrayCell(formatedArray.data[0]),
+                    arrayCell(formatedArray.data[1]),
+                    arrayCell(formatedArray.data[2]),
+                    arrayCell(formatedArray.data[3]),
+                  ]),
+                  const SizedBox(height: 15),
+                  Row(children: <Widget>[
+                    arrayCell(formatedArray.data[4]),
+                    arrayCell(formatedArray.data[5]),
+                    arrayCell(formatedArray.data[6]),
+                    arrayCell(formatedArray.data[7]),
+                  ]),
+                  const SizedBox(height: 15),
+                  Row(children: <Widget>[
+                    arrayCell(formatedArray.data[8]),
+                    arrayCell(formatedArray.data[9]),
+                    arrayCell(formatedArray.data[10]),
+                    arrayCell(formatedArray.data[11]),
+                  ]),
+                ]),
+          ),
+        );
       });
 }
 
 Widget arrayCell(dataWord) {
   return SizedBox(
-      width: 102,
-      child: Column(children: <Widget>[
-        Text(dataWord.split(':')[0], style: const TextStyle(fontSize: 14)),
-        const SizedBox(height: 2),
-        Text(dataWord.split(':')[1],
-            key: Key('word${dataWord.split(':')[0]}'),
-            style: const TextStyle(fontSize: 19, color: Colors.black)),
-      ]));
+    width: 102,
+    child: Column(children: <Widget>[
+      Text(
+        dataWord.split(':')[0],
+        style: const TextStyle(fontSize: 14),
+      ),
+      const SizedBox(height: 2),
+      Text(
+        dataWord.split(':')[1],
+        key: Key('word${dataWord.split(':')[0]}'),
+        style: const TextStyle(fontSize: 19, color: Colors.black),
+      ),
+    ]),
+  );
 }
 
 // ignore: must_be_immutable

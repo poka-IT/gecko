@@ -34,14 +34,15 @@ class CommonElements {
       margin: const BubbleEdges.fromLTRB(10, 0, 20, 10),
       // nip: BubbleNip.leftTop,
       child: RichText(
-          key: textKey,
-          text: TextSpan(
-            style: const TextStyle(
-              fontSize: 18.0,
-              color: Colors.black,
-            ),
-            children: text,
-          )),
+        key: textKey,
+        text: TextSpan(
+          style: const TextStyle(
+            fontSize: 18.0,
+            color: Colors.black,
+          ),
+          children: text,
+        ),
+      ),
     );
   }
 

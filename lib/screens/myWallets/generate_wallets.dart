@@ -1,10 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/generate_wallets.dart';
-import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/screens/myWallets/confirm_wallet_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 import 'package:super_tooltip/super_tooltip.dart';
@@ -28,8 +26,6 @@ class GenerateFastChestScreen extends StatelessWidget {
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
     _generateWalletProvider.generateMnemonic();
-
-    MyWalletsProvider _myWalletClass = MyWalletsProvider();
 
     return Scaffold(
         appBar: AppBar(
@@ -122,14 +118,17 @@ class GenerateFastChestScreen extends StatelessWidget {
                                 );
                                 await Future.delayed(
                                     const Duration(milliseconds: 20));
-                                await Navigator.pushAndRemoveUntil(context,
-                                    MaterialPageRoute(builder: (context) {
-                                  return UnlockingWallet(
-                                    wallet: _myWalletClass.getDefaultWallet(
-                                        configBox.get('currentChest')),
-                                    action: "mywallets",
-                                  );
-                                }), ModalRoute.withName('/'));
+                                // if (_generateWalletProvider.hasBeenStored) {
+                                //   _generateWalletProvider.hasBeenStored = false;
+                                //   await Navigator.pushAndRemoveUntil(context,
+                                //       MaterialPageRoute(builder: (context) {
+                                //     return UnlockingWallet(
+                                //       wallet: _myWalletClass.getDefaultWallet(
+                                //           configBox.get('currentChest')),
+                                //       action: "mywallets",
+                                //     );
+                                //   }), ModalRoute.withName('/'));
+                                // }
                               }
                             : null,
                         child: const Text('Enregistrer ce trousseau',

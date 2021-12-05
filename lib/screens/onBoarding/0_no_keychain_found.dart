@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/screens/common_elements.dart';
-import 'package:gecko/screens/myWallets/import_wallet.dart';
+import 'package:gecko/screens/myWallets/import_cesium_wallet.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
 
 class NoKeyChainScreen extends StatelessWidget {

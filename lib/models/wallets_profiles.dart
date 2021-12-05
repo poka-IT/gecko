@@ -2,14 +2,12 @@ import 'package:dubp/dubp.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/home.dart';
 import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/screens/history.dart';
+import 'package:gecko/screens/wallet_view.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:provider/provider.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'dart:math';
 import 'package:intl/intl.dart';
@@ -17,13 +15,13 @@ import 'package:truncate/truncate.dart';
 import 'package:crypto/crypto.dart';
 import 'package:fast_base58/fast_base58.dart';
 
-class HistoryProvider with ChangeNotifier {
+class WalletsProfilesProvider with ChangeNotifier {
+  WalletsProfilesProvider(this.pubkey);
+
   String pubkey = '';
   String pubkeyShort = '';
-  HistoryProvider(this.pubkey);
   final TextEditingController outputPubkey = TextEditingController();
   List transBC;
-  bool isFirstBuild = true;
   String fetchMoreCursor;
   Map pageInfo;
   bool isHistoryScreen = false;
@@ -31,6 +29,9 @@ class HistoryProvider with ChangeNotifier {
   String rawSvg;
   TextEditingController payAmount = TextEditingController();
   TextEditingController payComment = TextEditingController();
+  num balance;
+  int nRepositories = 20;
+  int nPage = 1;
 
   Future scan(context) async {
     await Permission.camera.request();
@@ -41,9 +42,14 @@ class HistoryProvider with ChangeNotifier {
       log.e(e);
       return 'false';
     }
-    if (barcode != null) {
+    if (barcode != null && isPubkey(barcode)) {
       outputPubkey.text = barcode;
-      isPubkey(context, barcode);
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) {
+          return WalletViewScreen(pubkey: pubkey);
+        }),
+      );
     } else {
       return 'false';
     }
@@ -56,10 +62,17 @@ class HistoryProvider with ChangeNotifier {
     WalletData defaultWallet = _myWalletModel.getDefaultWallet(currentChest);
 
     String dewif = chestBox.get(currentChest).dewif;
+    int derivation;
+
+    if (chestBox.get(currentChest).isCesium) {
+      derivation = 0;
+    } else {
+      derivation = defaultWallet.derivation;
+    }
 
     try {
       await DubpRust.simplePaymentFromTransparentAccount(
-          accountIndex: defaultWallet.derivation,
+          accountIndex: derivation,
           amount: double.parse(payAmount.text),
           txComment: payComment.text,
           dewif: dewif,
@@ -74,9 +87,7 @@ class HistoryProvider with ChangeNotifier {
     }
   }
 
-  String isPubkey(context, pubkey, {bool goHistory}) {
-    HomeProvider _homeProvider =
-        Provider.of<HomeProvider>(context, listen: false);
+  bool isPubkey(pubkey) {
     final RegExp regExp = RegExp(
       r'^[a-zA-Z0-9]+$',
       caseSensitive: false,
@@ -86,36 +97,25 @@ class HistoryProvider with ChangeNotifier {
     if (regExp.hasMatch(pubkey) == true &&
         pubkey.length > 42 &&
         pubkey.length < 45) {
-      log.d("C'est une pubkey !!!");
+      log.d("C'est une pubkey !");
 
       this.pubkey = pubkey;
-      getShortPubkey(pubkey);
+      // getShortPubkey(pubkey);
 
-      outputPubkey.text = pubkey;
+      // outputPubkey.text = pubkey;
 
-      goHistory ??= false;
+      // Navigator.push(
+      //   context,
+      //   MaterialPageRoute(builder: (context) {
+      //     return const WalletViewScreen();
+      //   }),
+      // );
+      // notifyListeners();
 
-      if (goHistory) {
-        isHistoryScreen = true;
-        historySwitchButtun = "Payer";
-      } else {
-        isHistoryScreen = false;
-        historySwitchButtun = "Voir l'historique";
-      }
-
-      _homeProvider.handleSearchEnd();
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) {
-          return HistoryScreen();
-        }),
-      );
-      notifyListeners();
-
-      return pubkey;
+      return true;
+    } else {
+      return false;
     }
-
-    return '';
   }
 
   String getShortPubkey(String pubkey) {
@@ -200,13 +200,25 @@ class HistoryProvider with ChangeNotifier {
   FetchMoreOptions checkQueryResult(result, opts, _pubkey) {
     final List<dynamic> blockchainTX =
         (result.data['txsHistoryBc']['both']['edges'] as List<dynamic>);
+    // final List<dynamic> mempoolTX =
+    //     (result.data['txsHistoryMp']['receiving'] as List<dynamic>);
 
     pageInfo = result.data['txsHistoryBc']['both']['pageInfo'];
-
     fetchMoreCursor = pageInfo['endCursor'];
+    if (fetchMoreCursor == null) nPage = 1;
+
+    if (nPage == 1) {
+      nRepositories = 40;
+    } else if (nPage == 2) {
+      nRepositories = 100;
+    }
+    log.d(nPage);
+    log.d(nRepositories);
+    nPage++;
+
     if (fetchMoreCursor != null) {
       opts = FetchMoreOptions(
-        variables: {'cursor': fetchMoreCursor},
+        variables: {'cursor': fetchMoreCursor, 'number': nRepositories},
         updateQuery: (previousResultData, fetchMoreResultData) {
           final List<dynamic> repos = [
             ...previousResultData['txsHistoryBc']['both']['edges']
@@ -232,22 +244,6 @@ class HistoryProvider with ChangeNotifier {
     return opts;
   }
 
-  void snackNode(context) {
-    if (isFirstBuild) {
-      String _message;
-      if (endPointGVA == 'HS') {
-        _message =
-            "Aucun noeud Duniter disponible, veuillez réessayer ultérieurement";
-      } else {
-        _message = "Vous êtes connecté au noeud\n${endPointGVA.split('/')[2]}";
-      }
-      final snackBar = SnackBar(
-          content: Text(_message), duration: const Duration(seconds: 2));
-      isFirstBuild = false;
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    }
-  }
-
   void resetdHistory() {
     outputPubkey.text = '';
     notifyListeners();
@@ -260,6 +256,7 @@ class HistoryProvider with ChangeNotifier {
 
   snackCopyKey(context) {
     const snackBar = SnackBar(
+        padding: EdgeInsets.all(20),
         content:
             Text("Cette clé publique a été copié dans votre presse-papier."),
         duration: Duration(seconds: 2));
@@ -278,5 +275,28 @@ class HistoryProvider with ChangeNotifier {
 
   String generateIdenticon(String _pubkey) {
     return Jdenticon.toSvg(_pubkey);
+  }
+
+  // Future<num> getBalance(String _pubkey) async {
+  //   final url = Uri.parse(
+  //       '$endPointGVA?query={%20balance(script:%20%22$_pubkey%22)%20{%20amount%20base%20}%20}');
+  //   final response = await http.get(url);
+  //   final result = json.decode(response.body);
+
+  //   if (result['data']['balance'] == null) {
+  //     balance = 0.0;
+  //   } else {
+  //     balance = removeDecimalZero(result['data']['balance']['amount'] / 100);
+  //   }
+
+  //   return balance;
+  // }
+
+  Future<num> getBalance(String _pubkey) async {
+    while (balance == null) {
+      await Future.delayed(const Duration(milliseconds: 50));
+    }
+
+    return balance;
   }
 }

@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
-import 'package:gecko/screens/history.dart';
+import 'package:gecko/screens/old_history_pay.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:package_info/package_info.dart';
 
@@ -21,7 +21,8 @@ class HomeProvider with ChangeNotifier {
   Widget appBarExplorer =
       Text('Explorateur', style: TextStyle(color: Colors.grey[850]));
 
-  List currentTab = [HistoryScreen(), WalletsHome()];
+  List currentTab = [OldHistoryScreen(), WalletsHome()];
+  bool isFirstBuild = true;
   // AudioCache player = AudioCache(prefix: 'sounds/');
 
   get currentIndex => _currentIndex;
@@ -99,16 +100,6 @@ class HomeProvider with ChangeNotifier {
     return _endpoint;
   }
 
-  Future createDefaultAvatar() async {
-    File defaultAvatar = File(appPath.path + '/default_avatar.png');
-    final bool isAvatarExist = await defaultAvatar.exists();
-    if (!isAvatarExist) {
-      final byteData = await rootBundle.load('assets/icon_user.png');
-      await defaultAvatar.writeAsBytes(byteData.buffer
-          .asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
-    }
-  }
-
   T getRandomElement<T>(List<T> list) {
     final random = Random();
     var i = random.nextInt(list.length);
@@ -137,6 +128,22 @@ class HomeProvider with ChangeNotifier {
     searchQuery.clear();
 
     notifyListeners();
+  }
+
+  void snackNode(context) {
+    if (isFirstBuild) {
+      String _message;
+      if (endPointGVA == 'HS') {
+        _message =
+            "Aucun noeud Duniter disponible, veuillez réessayer ultérieurement";
+      } else {
+        _message = "Vous êtes connecté au noeud\n${endPointGVA.split('/')[2]}";
+      }
+      final snackBar = SnackBar(
+          content: Text(_message), duration: const Duration(seconds: 2));
+      isFirstBuild = false;
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
   }
 
   void rebuildWidget() {

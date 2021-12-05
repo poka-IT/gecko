@@ -5,13 +5,16 @@ description: Pay with G1.
 # pub.dev using `pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 0.0.2+11
+version: 0.0.3+13
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
 
 dependencies:
+  assorted_layout_widgets: ^5.2.1
   bubble: ^1.2.1
+  carousel_slider: ^4.0.0
+  confirm_dialog: ^1.0.0
   crypto: ^3.0.1
   dubp:
     path: packages/dubp_rs
@@ -21,14 +24,16 @@ dependencies:
   flutter_driver:
     sdk: flutter
   flutter_launcher_icons: ^0.9.2
+  flutter_lints: ^1.0.4
   flutter_logs: ^2.1.4
   flutter_svg: ^0.22.0
   graphql_flutter: ^5.0.0
   hive: ^2.0.4
   hive_flutter: ^1.1.0
-  http: ^0.13.0
+  http: ^0.13.4
   image_gallery_saver: ^1.6.9
   image_picker: ^0.8.4
+  infinite_scroll_pagination: ^3.1.0
   intl: ^0.17.0
   jdenticon_dart: ^2.0.0
   logger: ^1.1.0
@@ -38,7 +43,7 @@ dependencies:
   permission_handler: 8.1.6
   pin_code_fields: ^7.3.0
   printing: ^5.6.0
-  provider: ^6.0.0
+  provider: ^6.0.1
   qrscan: ^0.3.2
   responsive_builder: ^0.4.1
   responsive_framework: ^0.1.4
@@ -48,15 +53,11 @@ dependencies:
   super_tooltip: ^1.0.1
   sync_http: ^0.3.0
   test: ^1.17.10
-  # test_api: ^0.4.7
-  # test: ^1.19.3
   truncate: ^3.0.1
   unorm_dart: ^0.2.0
   xml: ^5.3.0
-  assorted_layout_widgets: ^5.2.1
-  carousel_slider: ^4.0.0
-  flutter_lints: ^1.0.4
-  confirm_dialog: ^1.0.0
+  pull_to_refresh: ^2.0.0
+  dio: ^4.0.4
 
 flutter_icons:
   android: "ic_launcher"
@@ -65,12 +66,12 @@ flutter_icons:
   cupertino_icons: ^1.0.0
 
 dev_dependencies:
+  build_runner: ^2.1.2
   flutter_test:
     sdk: flutter
+  hive_generator: ^1.1.1
   integration_test:
     sdk: flutter
-  hive_generator: ^1.1.1
-  build_runner: ^2.1.2
 
 # The following section is specific to Flutter.
 flutter:
@@ -80,6 +81,7 @@ flutter:
     - images/
     - config/gva_endpoints.json
     - assets/
+    - assets/home/
     - assets/customs/
     - assets/avatars/
     - assets/chests/

@@ -11,7 +11,6 @@ import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
 import 'package:gecko/screens/search.dart';
-import 'dart:ui';
 import 'package:gecko/screens/settings.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';

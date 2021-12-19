@@ -38,7 +38,6 @@ import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/search_result.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:responsive_framework/responsive_framework.dart';
@@ -51,12 +50,11 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   HomeProvider _homeProvider = HomeProvider();
-  appPath = await getApplicationDocumentsDirectory();
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
 
   // Configure Hive and open boxes
-  await Hive.initFlutter(appPath.path);
+  await Hive.initFlutter();
   Hive.registerAdapter(WalletDataAdapter());
   Hive.registerAdapter(ChestDataAdapter());
   Hive.registerAdapter(G1WalletsListAdapter());
@@ -185,7 +183,7 @@ class Gecko extends StatelessWidget {
           home: const HomeScreen(),
           initialRoute: "/",
           routes: {
-            '/mywallets': (context) => WalletsHome(),
+            '/mywallets': (context) => const WalletsHome(),
             '/search': (context) => const SearchScreen(),
             '/searchResult': (context) => const SearchResultScreen(),
           },

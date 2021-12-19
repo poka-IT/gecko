@@ -164,8 +164,7 @@ class ImportWalletScreen extends StatelessWidget {
                               primary: yellowC, // background
                               onPrimary: Colors.black, // foreground
                             ),
-                            onPressed: _generateWalletProvider.canImport &&
-                                    _generateWalletProvider.isPinChanged
+                            onPressed: _generateWalletProvider.canImport
                                 ? () {
                                     _generateWalletProvider
                                         .importCesiumWallet()

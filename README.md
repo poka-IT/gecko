@@ -65,9 +65,27 @@ In a dart file (e.g. `lib/main.dart`), type the `F5` key to build the code. The 
 
 #### Linux
 
-Build debug for linux:
+Install dependancies:
+
+`sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev`
+
+Then build debug for linux:
 
 `flutter run -d linux`
+
+If you get this error:
+
+```
+flutter /usr/share/cmake-3.16/Modules/FindPkgConfig.cmake:643 (_pkg_check_modules_internal)
+```
+
+Please try:
+
+`sudo apt install liblzma-dev`
+
+then
+
+`flutter clean && flutter run -d linux`
 
 ## Roadmap
 

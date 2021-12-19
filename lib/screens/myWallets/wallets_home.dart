@@ -14,9 +14,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
 class WalletsHome extends StatelessWidget {
-  final _derivationKey = GlobalKey<FormState>();
-
-  WalletsHome({Key key}) : super(key: key);
+  const WalletsHome({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -167,8 +165,8 @@ class WalletsHome extends StatelessWidget {
               Padding(
                   padding: const EdgeInsets.all(16),
                   child: GestureDetector(
-                    onTap: () async {
-                      await _walletOptions.readLocalWallet(
+                    onTap: () {
+                      _walletOptions.readLocalWallet(
                           context,
                           _repository,
                           _myWalletProvider.pinCode,
@@ -350,56 +348,6 @@ class WalletsHome extends StatelessWidget {
                     )),
               ),
             ])));
-  }
-
-  Widget addNewDerivationPopup(context) {
-    final TextEditingController _newDerivationName = TextEditingController();
-    MyWalletsProvider _myWalletProvider =
-        Provider.of<MyWalletsProvider>(context);
-
-    return AlertDialog(
-      content: Stack(
-        clipBehavior: Clip.hardEdge,
-        children: <Widget>[
-          Form(
-            key: _derivationKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                const Text('Nom du portefeuille:'),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextFormField(
-                    key: const Key('DerivationNameKey'),
-                    controller: _newDerivationName,
-                    textAlign: TextAlign.center,
-                    autofocus: true,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton(
-                      key: const Key('validDerivation'),
-                      style: ElevatedButton.styleFrom(
-                        elevation: 1,
-                        primary: yellowC, // background
-                        onPrimary: Colors.black, // foreground
-                      ),
-                      onPressed: () async {
-                        await _myWalletProvider
-                            .generateNewDerivation(
-                                context, _newDerivationName.text)
-                            .then((_) => _newDerivationName.text == '');
-                      },
-                      child: const Text("Créer")),
-                )
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 

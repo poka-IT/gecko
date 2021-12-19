@@ -25,7 +25,6 @@ class GenerateFastChestScreen extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
-    _generateWalletProvider.genMnemonic();
 
     return Scaffold(
         appBar: AppBar(
@@ -40,7 +39,7 @@ class GenerateFastChestScreen extends StatelessWidget {
             child: FittedBox(
                 child: FloatingActionButton(
               heroTag: "buttonGenerateWallet",
-              onPressed: () => _generateWalletProvider.genMnemonic(),
+              onPressed: () => _generateWalletProvider.generateWordList(),
               child: SizedBox(
                 height: 40.0,
                 width: 40.0,
@@ -89,7 +88,7 @@ class GenerateFastChestScreen extends StatelessWidget {
                           color: orangeC,
                           onPressed: () {
                             _generateWalletProvider.changePinCode(
-                                reload: false);
+                                reload: true);
                           },
                         ),
                       ],

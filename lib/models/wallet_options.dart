@@ -28,8 +28,8 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Future<NewWallet> get badWallet => null;
 
-  Future _getPubkeyFromDewif(
-      String _dewif, _pin, int _pinLenght, int derivation) async {
+  String _getPubkeyFromDewif(
+      String _dewif, _pin, int _pinLenght, int derivation) {
     String _pubkey;
     RegExp regExp = RegExp(
       r'^[A-Z0-9]+$',
@@ -45,6 +45,7 @@ class WalletOptionsProvider with ChangeNotifier {
       try {
         final _wallet = HdWallet.fromDewif(_dewif, _pin);
         _pubkey = _wallet.getPubkey(derivation);
+        log.d(_pubkey);
         pubkey.text = _pubkey;
         notifyListeners();
 
@@ -70,14 +71,14 @@ class WalletOptionsProvider with ChangeNotifier {
     }
   }
 
-  Future readLocalWallet(
-      context, WalletData _wallet, String _pin, int _pinLenght) async {
+  String readLocalWallet(
+      context, WalletData _wallet, String _pin, int _pinLenght) {
     isWalletUnlock = false;
     try {
       String _localDewif = chestBox.get(_wallet.chest).dewif;
       String _localPubkey;
 
-      if ((_localPubkey = await _getPubkeyFromDewif(
+      if ((_localPubkey = _getPubkeyFromDewif(
               _localDewif, _pin, _pinLenght, _wallet.derivation)) !=
           'false') {
         pubkey.text = _localPubkey;
@@ -91,21 +92,6 @@ class WalletOptionsProvider with ChangeNotifier {
       log.e('ERROR READING FILE: $e');
       pubkey.clear();
       return 'bad';
-    }
-  }
-
-  Future checkPinOK(String _createdDewif, String _pin, int _pinLenght) async {
-    isWalletUnlock = false;
-    try {
-      if (await _getPubkeyFromDewif(_createdDewif, _pin, _pinLenght, 3) !=
-          'false') {
-        return true;
-      } else {
-        throw false;
-      }
-    } catch (e) {
-      log.e('ERROR READING FILE: $e');
-      return false;
     }
   }
 

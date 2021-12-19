@@ -180,7 +180,7 @@ class UnlockingWallet extends StatelessWidget {
             onCompleted: (_pin) async {
               log.d("Completed");
               _myWalletProvider.pinCode = _pin;
-              final String resultWallet = await _walletOptions.readLocalWallet(
+              final String resultWallet = _walletOptions.readLocalWallet(
                   context, wallet, _pin.toUpperCase(), _pinLenght);
               // _myWalletProvider.pinCode = _pin.toUpperCase();
               _myWalletProvider.pinLenght = _pinLenght;

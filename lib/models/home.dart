@@ -10,6 +10,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/screens/old_history_pay.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:package_info/package_info.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class HomeProvider with ChangeNotifier {
   int _currentIndex = 0;
@@ -20,7 +21,7 @@ class HomeProvider with ChangeNotifier {
   Widget appBarExplorer =
       Text('Explorateur', style: TextStyle(color: Colors.grey[850]));
 
-  List currentTab = [OldHistoryScreen(), WalletsHome()];
+  List currentTab = [OldHistoryScreen(), const WalletsHome()];
   bool isFirstBuild = true;
   // AudioCache player = AudioCache(prefix: 'sounds/');
 
@@ -34,7 +35,7 @@ class HomeProvider with ChangeNotifier {
   Future<String> getAppVersion() async {
     String version;
     String buildNumber;
-    if (Platform.isLinux) {
+    if (kIsWeb || Platform.isLinux) {
       version = "undefined";
       buildNumber = "undefined";
     } else {

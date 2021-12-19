@@ -92,7 +92,7 @@ class RestoreChest extends StatelessWidget {
                         await Navigator.push(
                           context,
                           FaderTransition(
-                              page: OnboardingStepThirteen(), isFast: true),
+                              page: const OnboardingStepThirteen(), isFast: true),
                         );
                       } else {
                         await badMnemonicPopup(context);

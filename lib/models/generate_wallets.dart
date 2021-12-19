@@ -37,7 +37,6 @@ class GenerateWalletsProvider with ChangeNotifier {
   bool isCesiumIDVisible = false;
   bool isCesiumPWDVisible = false;
   bool canImport = false;
-  bool isPinChanged = false;
 
   // Import Chest
   TextEditingController cellController0 = TextEditingController();
@@ -152,17 +151,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<String> genMnemonic() async {
-    try {
-      generatedMnemonic = generateMnemonic(lang: 'french');
-      actualWallet = await generateWallet(generatedMnemonic, isImport: false);
-      walletIsGenerated = true;
-    } catch (e) {
-      log.e(e);
-    }
-    return generatedMnemonic;
-  }
-
   Future<NewWallet> generateWallet(String generatedMnemonic,
       {@required bool isImport}) async {
     try {
@@ -182,18 +170,13 @@ class GenerateWalletsProvider with ChangeNotifier {
     return actualWallet;
   }
 
-  Future<NewWallet> changePinCode({bool reload}) async {
-    actualWallet = Dewif().changePassword(
-      dewif: actualWallet.dewif,
-      oldPassword: actualWallet.password,
-    );
-
-    pin.text = actualWallet.password;
-    isPinChanged = true;
+  String changePinCode({bool reload}) {
+    
+    pin.text = randomSecretCode(5);
     if (reload) {
       notifyListeners();
     }
-    return actualWallet;
+    return pin.text;
   }
 
   Future<Uint8List> printWallet(String _title) async {
@@ -243,7 +226,6 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     cesiumPubkey.text = _walletPubkey;
     pin.text = actualWallet.password;
-    isPinChanged = true;
     log.d(_walletPubkey);
   }
 
@@ -260,7 +242,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     cesiumPWD.text = '';
     cesiumPubkey.text = '';
     canImport = false;
-    isPinChanged = false;
     pin.text = '';
     isCesiumIDVisible = false;
     isCesiumPWDVisible = false;
@@ -306,18 +287,18 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   void resetCesiumImportView() {
     cesiumID.text = cesiumPWD.text = cesiumPubkey.text = pin.text = '';
-    canImport = isPinChanged = isCesiumIDVisible = isCesiumPWDVisible = false;
+    canImport = isCesiumIDVisible = isCesiumPWDVisible = false;
     actualWallet = null;
     notifyListeners();
   }
 
-  Future<List<String>> generateWordList() async {
-    final String _sentance = await genMnemonic();
+  List<String> generateWordList() {
+    generatedMnemonic = generateMnemonic(lang: 'french');
     List<String> _wordsList = [];
     String word;
     int _nbr = 1;
 
-    for (word in _sentance.split(' ')) {
+    for (word in generatedMnemonic.split(' ')) {
       _wordsList.add("$_nbr:$word");
       _nbr++;
     }

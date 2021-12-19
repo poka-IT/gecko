@@ -17,10 +17,8 @@ import 'package:provider/provider.dart';
 class OnboardingStepFourteen extends StatelessWidget {
   OnboardingStepFourteen({
     Key validationKey,
-    @required this.generatedWallet,
   }) : super(key: validationKey);
 
-  NewWallet generatedWallet;
   final int progress = 11;
   final formKey = GlobalKey<FormState>();
   var pinColor = const Color(0xFFA4B600);
@@ -29,12 +27,12 @@ class OnboardingStepFourteen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    // GenerateWalletsProvider _generateWalletProvider =
-    //     Provider.of<GenerateWalletsProvider>(context);
+    GenerateWalletsProvider _generateWalletProvider =
+        Provider.of<GenerateWalletsProvider>(context);
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
     CommonElements common = CommonElements();
-    final int _pinLenght = _walletOptions.getPinLenght(generatedWallet.dewif);
+    final int _pinLenght = _generateWalletProvider.pin.text.length;
 
     return Scaffold(
         extendBodyBehindAppBar: true,
@@ -113,13 +111,16 @@ class OnboardingStepFourteen extends StatelessWidget {
                 blurRadius: 10,
               )
             ],
-            onCompleted: (_pin) async {
+            onCompleted: (_pin) {
               _myWalletProvider.pinCode = _pin;
               _myWalletProvider.pinLenght = _pinLenght;
-              final bool resultWallet = await _walletOptions.checkPinOK(
-                  generatedWallet.dewif, _pin.toUpperCase(), _pinLenght);
-              if (resultWallet) {
+              log.d(_pin + ' || ' + _generateWalletProvider.pin.text);
+              if (_pin.toUpperCase() == _generateWalletProvider.pin.text) {
                 pinColor = Colors.green[500];
+                NewWallet generatedWallet = Dewif().generateDewif(
+                    _generateWalletProvider.generatedMnemonic,
+                    _generateWalletProvider.pin.text,
+                    lang: 'french');
                 _generateWalletProvider.storeHDWChest(
                     generatedWallet, 'Mon portefeuille courant', context);
                 _myWalletProvider.readAllWallets(_currentChest);

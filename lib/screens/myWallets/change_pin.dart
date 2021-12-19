@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:dubp/dubp.dart';
+import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/change_pin.dart';

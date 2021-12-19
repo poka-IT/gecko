@@ -2,7 +2,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
-import 'package:dubp/dubp.dart';
+import 'package:durt/durt.dart';
 import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -43,9 +43,8 @@ class WalletOptionsProvider with ChangeNotifier {
     }
     if (derivation != -1) {
       try {
-        List _pubkeysTmp = await DubpRust.getBip32DewifAccountsPublicKeys(
-            dewif: _dewif, secretCode: _pin, accountsIndex: [derivation]);
-        _pubkey = _pubkeysTmp[0];
+        final _wallet = HdWallet.fromDewif(_dewif, _pin);
+        _pubkey = _wallet.getPubkey(derivation);
         pubkey.text = _pubkey;
         notifyListeners();
 
@@ -58,7 +57,7 @@ class WalletOptionsProvider with ChangeNotifier {
       }
     } else {
       try {
-        _pubkey = await DubpRust.getDewifPublicKey(dewif: _dewif, pin: _pin);
+        _pubkey = CesiumWallet.fromDewif(_dewif, _pin).pubkey;
         pubkey.text = _pubkey;
         notifyListeners();
         return _pubkey;
@@ -111,17 +110,18 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   int getPinLenght(_walletNbr) {
-    String _localDewif;
-    if (_walletNbr is int || _walletNbr == null) {
-      _localDewif = chestBox.get(configBox.get('currentChest')).dewif;
-    } else {
-      _localDewif = _walletNbr;
-    }
+    // TODO: Get real Dewif lenght
+    // String _localDewif;
+    // if (_walletNbr is int || _walletNbr == null) {
+    //   _localDewif = chestBox.get(configBox.get('currentChest')).dewif;
+    // } else {
+    //   _localDewif = _walletNbr;
+    // }
 
-    final int _pinLenght = DubpRust.getDewifSecretCodeLen(
-        dewif: _localDewif, secretCodeType: SecretCodeType.letters);
+    // final int _pinLenght = DubpRust.getDewifSecretCodeLen(
+    //     dewif: _localDewif, secretCodeType: SecretCodeType.letters);
 
-    return _pinLenght;
+    return 5;
   }
 
   void _renameWallet(List<int> _walletID, _newName, {bool isCesium}) async {

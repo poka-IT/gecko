@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallets_profiles.dart';
@@ -27,8 +26,6 @@ class UnlockingWallet extends StatelessWidget {
   var pinColor = const Color(0xffF9F9F1);
   var walletPin = '';
   String resultPay;
-
-  Future<NewWallet> get badWallet => null;
 
   @override
   Widget build(BuildContext context) {
@@ -225,15 +222,15 @@ class UnlockingWallet extends StatelessWidget {
   }
 
   Future<bool> _paymentsResult(context) {
-    if (resultPay != "Success") log.i(resultPay);
+    if (resultPay != "success") log.i(resultPay);
     return showDialog<bool>(
       context: context,
       barrierDismissible: true, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(resultPay == "Success"
+          title: Text(resultPay == "success"
               ? 'Paiement effecuté avec succès !'
-              : "Une erreur s'est produite lors du paiement"),
+              : "Une erreur s'est produite lors du paiement:\n$resultPay"),
           content: const SingleChildScrollView(child: Text('')),
           actions: <Widget>[
             TextButton(

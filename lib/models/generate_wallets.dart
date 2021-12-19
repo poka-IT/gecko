@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'dart:typed_data';
-import 'package:dubp/dubp.dart';
+import 'package:durt/durt.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -152,9 +152,9 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<String> generateMnemonic() async {
+  Future<String> genMnemonic() async {
     try {
-      generatedMnemonic = await DubpRust.genMnemonic(language: Language.french);
+      generatedMnemonic = generateMnemonic(lang: 'french');
       actualWallet = await generateWallet(generatedMnemonic, isImport: false);
       walletIsGenerated = true;
     } catch (e) {
@@ -166,18 +166,16 @@ class GenerateWalletsProvider with ChangeNotifier {
   Future<NewWallet> generateWallet(String generatedMnemonic,
       {@required bool isImport}) async {
     try {
-      actualWallet = await DubpRust.genWalletFromMnemonic(
-        language: Language.french,
-        mnemonic: generatedMnemonic,
-        secretCodeType: SecretCodeType.letters,
-      );
+      actualWallet = Dewif().generateDewif(
+          generatedMnemonic, randomSecretCode(5),
+          lang: 'french');
     } catch (e) {
       log.e(e);
     }
 
     if (!isImport) {
       mnemonicController.text = generatedMnemonic;
-      pin.text = actualWallet.pin;
+      pin.text = actualWallet.password;
     }
     // notifyListeners();
 
@@ -185,12 +183,12 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   Future<NewWallet> changePinCode({bool reload}) async {
-    actualWallet = await DubpRust.changeDewifPin(
+    actualWallet = Dewif().changePassword(
       dewif: actualWallet.dewif,
-      oldPin: actualWallet.pin,
+      oldPassword: actualWallet.password,
     );
 
-    pin.text = actualWallet.pin;
+    pin.text = actualWallet.password;
     isPinChanged = true;
     if (reload) {
       notifyListeners();
@@ -238,13 +236,13 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   Future<void> generateCesiumWalletPubkey(
       String _cesiumID, String _cesiumPWD) async {
-    actualWallet = await DubpRust.genWalletFromDeprecatedSaltPassword(
-        salt: _cesiumID, password: _cesiumPWD);
-    String _walletPubkey = await DubpRust.getLegacyPublicKey(
-        salt: _cesiumID, password: _cesiumPWD);
+    var cesiumWallet = CesiumWallet(_cesiumID, _cesiumPWD);
+    actualWallet =
+        Dewif().generateCesiumDewif(cesiumWallet.seed, randomSecretCode(5));
+    String _walletPubkey = cesiumWallet.pubkey;
 
     cesiumPubkey.text = _walletPubkey;
-    pin.text = actualWallet.pin;
+    pin.text = actualWallet.password;
     isPinChanged = true;
     log.d(_walletPubkey);
   }
@@ -314,7 +312,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   Future<List<String>> generateWordList() async {
-    final String _sentance = await generateMnemonic();
+    final String _sentance = await genMnemonic();
     List<String> _wordsList = [];
     String word;
     int _nbr = 1;

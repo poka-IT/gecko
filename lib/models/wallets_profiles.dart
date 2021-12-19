@@ -1,4 +1,4 @@
-import 'package:dubp/dubp.dart';
+import 'package:durt/durt.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/my_wallets.dart';
@@ -64,26 +64,20 @@ class WalletsProfilesProvider with ChangeNotifier {
     int derivation;
 
     if (chestBox.get(currentChest).isCesium) {
-      derivation = 0;
+      derivation = -1;
     } else {
       derivation = defaultWallet.derivation;
     }
 
-    try {
-      await DubpRust.simplePaymentFromTransparentAccount(
-          accountIndex: derivation,
-          amount: double.parse(payAmount.text),
-          txComment: payComment.text,
-          dewif: dewif,
-          gvaEndpoint: endPointGVA,
-          secretCode: pinCode,
-          recipient: pubkey);
-      return "Success";
-    } catch (e) {
-      log.e("ERROR DUBP PAYMENTS");
-      log.e(e);
-      return "Payments errors: $e";
-    }
+    String result = await Gva(node: endPointGVA).pay(
+        recipient: pubkey,
+        amount: double.parse(payAmount.text),
+        dewif: dewif,
+        password: pinCode,
+        comment: payComment.text,
+        derivation: derivation);
+
+    return result;
   }
 
   bool isPubkey(pubkey) {

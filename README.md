@@ -1,6 +1,6 @@
 # Ğecko
 
-Ğecko is a transaction client owned by [Axiom-Team association] and written in Dart. It is fast and secure thanks to native code compilation, Rust cryptography bindings and Duniter's new GraphQL API (GVA). It is not intended to manage member accounts, but rather simple wallets.
+Ğecko is a transaction client owned by [Axiom-Team association] and written in Dart. It is fast and secure thanks to native code compilation. It is not intended to manage member accounts, but rather simple wallets.
 
 The development is quite early, you can participate in the discussion [on the Duniter forum](https://forum.duniter.org/t/gecko-nouveau-client-de-paiements-1-sur-mobile-en-cours-de-developpement-dart-flutter/7857) (mostly FR)
 
@@ -27,7 +27,6 @@ To contribute to the code, we advise you to install the following development en
   - Android NDK
 1. Flutter SDK
 1. VSCode/Codium Flutter extension
-1. Rust toolchain
 
 This will take about 12GB on your drive and 30 min of your time (with a good connection). Don't hesitate to ask on the forum for a peer-coding session if you are stuck. 
 
@@ -58,12 +57,6 @@ Flutter is a powerfull SDK to develop Android apps. [Install it](https://flutter
 We are using VSCode and therefore document the process for this IDE. Of course you're free to use whatever you want.
 Clone the ğecko repo and open a dart file (e.g. `lib/main.dart`). VSCode will suggest you to insall relevant extensions.
 
-### Rust toolchain
-
-After installing Rust with the standard [rustup install script](https://www.rust-lang.org/tools/install),
-follow the instructions to build Rust dependencies [in this separate README](./packages/dubp_rs/README.md).
-If you installed a 32bits VM, use the 32bits build command.
-
 ### Build the app
 
 In a dart file (e.g. `lib/main.dart`), type the `F5` key to build the code. The app should open automatically in your VM which is running.
@@ -72,27 +65,9 @@ In a dart file (e.g. `lib/main.dart`), type the `F5` key to build the code. The 
 
 #### Linux
 
-Install dependancies:
-
-`sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev`
-
-Then build debug for linux:
+Build debug for linux:
 
 `flutter run -d linux`
-
-If you get this error:
-
-```
-flutter /usr/share/cmake-3.16/Modules/FindPkgConfig.cmake:643 (_pkg_check_modules_internal)
-```
-
-Please try:
-
-`sudo apt install liblzma-dev`
-
-then
-
-`flutter clean && flutter run -d linux`
 
 ## Roadmap
 

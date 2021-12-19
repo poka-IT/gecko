@@ -1,4 +1,4 @@
-import 'package:dubp/dubp.dart';
+import 'package:durt/durt.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
@@ -14,12 +14,12 @@ class ChangePinProvider with ChangeNotifier {
     try {
       final _dewif = chestBox.get(configBox.get('currentChest')).dewif;
 
-      NewWallet newWalletFile = await DubpRust.changeDewifPin(
+      NewWallet newWalletFile = Dewif().changePassword(
         dewif: _dewif,
-        oldPin: _oldPin.toUpperCase(),
+        oldPassword: _oldPin.toUpperCase(),
       );
 
-      newPin.text = pinToGive = newWalletFile.pin;
+      newPin.text = pinToGive = newWalletFile.password;
       ischangedPin = true;
       notifyListeners();
       return newWalletFile;

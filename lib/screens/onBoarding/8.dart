@@ -1,6 +1,4 @@
 // ignore_for_file: file_names
-
-import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -14,12 +12,9 @@ class OnboardingStepTen extends StatelessWidget {
   OnboardingStepTen({
     Key validationKey,
     @required this.generatedMnemonic,
-    @required this.generatedWallet,
   }) : super(key: validationKey);
 
   String generatedMnemonic;
-  NewWallet generatedWallet;
-
   TextEditingController tplController = TextEditingController();
   TextEditingController wordController = TextEditingController();
   final TextEditingController _mnemonicController = TextEditingController();

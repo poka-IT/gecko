@@ -1,5 +1,4 @@
 import 'package:bubble/bubble.dart';
-import 'package:dubp/dubp.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_provider.dart';
 import 'package:gecko/models/wallets_profiles.dart';
@@ -86,7 +85,6 @@ class HomeScreen extends StatelessWidget {
         builder: (ctx) => StatefulWrapper(
             onInit: () {
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                DubpRust.setup();
                 if (isWalletsExists) homeClass.snackNode(ctx);
               });
             },

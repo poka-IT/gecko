@@ -1,3 +1,0 @@
-[alias]
-bd = "make android-dev32"
-br = "make"

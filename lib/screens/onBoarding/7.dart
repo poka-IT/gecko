@@ -96,9 +96,7 @@ class OnboardingStepNine extends StatelessWidget {
                       FaderTransition(
                           page: OnboardingStepTen(
                               generatedMnemonic:
-                                  _generateWalletProvider.generatedMnemonic,
-                              generatedWallet:
-                                  _generateWalletProvider.actualWallet),
+                                  _generateWalletProvider.generatedMnemonic),
                           isFast: true),
                     );
                   },

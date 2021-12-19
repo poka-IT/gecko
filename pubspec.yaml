@@ -82,7 +82,6 @@ flutter:
     - config/gva_endpoints.json
     - assets/
     - assets/home/
-    - assets/customs/
     - assets/avatars/
     - assets/chests/
     - assets/icon/

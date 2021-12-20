@@ -17,7 +17,6 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
   final String walletName;
   final MyWalletsProvider walletProvider;
   Directory appPath;
-  NewWallet _newWalletFile;
 
   @override
   Widget build(BuildContext context) {
@@ -49,9 +48,8 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
           child: SafeArea(
             child: Column(children: <Widget>[
               StatefulWrapper(
-                onInit: () async {
-                  _newWalletFile =
-                      await _changePin.changePin(walletProvider.pinCode);
+                onInit: () {
+                  _changePin.newPin.text = randomSecretCode(5);
                 },
                 child: Container(),
               ),
@@ -82,8 +80,7 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                     icon: const Icon(Icons.replay),
                     color: orangeC,
                     onPressed: () async {
-                      _newWalletFile =
-                          await _changePin.changePin(walletProvider.pinCode);
+                      _changePin.newPin.text = randomSecretCode(5);
                     },
                   ),
                 ],
@@ -98,13 +95,14 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                     primary: Colors.green[400], //smoothYellow, // background
                     onPrimary: Colors.black, // foreground
                   ),
-                  onPressed: _changePin.newPin.text != ''
-                      ? () {
-                          _changePin.newPin.text = '';
-                          _changePin.storeNewPinChest(context, _newWalletFile);
-                          walletProvider.pinCode = _changePin.newPin.text;
-                        }
-                      : null,
+                  onPressed: () {
+                    NewWallet _newWalletFile = _changePin.changePin(
+                        walletProvider.pinCode,
+                        newCustomPin: _changePin.newPin.text);
+                    _changePin.newPin.text = '';
+                    _changePin.storeNewPinChest(context, _newWalletFile);
+                    walletProvider.pinCode = _changePin.newPin.text;
+                  },
                   child: const Text(
                     'Confirmer',
                     style: TextStyle(fontSize: 28),

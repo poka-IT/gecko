@@ -13,6 +13,7 @@ import 'package:gecko/screens/myWallets/change_pin.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 int _nbrLinesName = 1;
 bool _isNewNameValid = false;
@@ -262,15 +263,11 @@ class CesiumWalletOptions extends StatelessWidget {
                 );
               }),
               SizedBox(height: 4 * ratio),
-              FutureBuilder(
-                  future:
-                      _walletOptions.generateQRcode(_walletOptions.pubkey.text),
-                  builder: (context, snapshot) {
-                    return snapshot.data != null
-                        ? Image.memory(snapshot.data,
-                            height: isTall ? 300 : 270)
-                        : const Text('-', style: TextStyle(fontSize: 20));
-                  }),
+              QrImage(
+                data: _walletOptions.pubkey.text,
+                version: QrVersions.auto,
+                size: isTall ? 300 : 270,
+              ),
               SizedBox(height: 15 * ratio),
               GestureDetector(
                   key: const Key('copyPubkey'),

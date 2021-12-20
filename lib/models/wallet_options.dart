@@ -1,6 +1,4 @@
-// import 'dart:ffi';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:durt/durt.dart';
 import 'package:fast_base58/fast_base58.dart';
@@ -12,7 +10,6 @@ import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:truncate/truncate.dart';
-import 'package:qrscan/qrscan.dart' as scanner;
 
 class WalletOptionsProvider with ChangeNotifier {
   TextEditingController pubkey = TextEditingController();
@@ -30,7 +27,6 @@ class WalletOptionsProvider with ChangeNotifier {
 
   String _getPubkeyFromDewif(
       String _dewif, _pin, int _pinLenght, int derivation) {
-    String _pubkey;
     RegExp regExp = RegExp(
       r'^[A-Z0-9]+$',
       caseSensitive: false,
@@ -44,12 +40,11 @@ class WalletOptionsProvider with ChangeNotifier {
     if (derivation != -1) {
       try {
         final _wallet = HdWallet.fromDewif(_dewif, _pin);
-        _pubkey = _wallet.getPubkey(derivation);
-        log.d(_pubkey);
-        pubkey.text = _pubkey;
+        pubkey.text = _wallet.getPubkey(derivation);
+        log.d(pubkey.text);
         notifyListeners();
 
-        return _pubkey;
+        return pubkey.text;
       } catch (e) {
         log.w('Bad PIN code !\n' + e);
         notifyListeners();
@@ -58,10 +53,9 @@ class WalletOptionsProvider with ChangeNotifier {
       }
     } else {
       try {
-        _pubkey = CesiumWallet.fromDewif(_dewif, _pin).pubkey;
-        pubkey.text = _pubkey;
+        pubkey.text = CesiumWallet.fromDewif(_dewif, _pin).pubkey;
         notifyListeners();
-        return _pubkey;
+        return pubkey.text;
       } catch (e) {
         log.w('Bad PIN code !\n' + e);
         notifyListeners();
@@ -83,10 +77,14 @@ class WalletOptionsProvider with ChangeNotifier {
           'false') {
         pubkey.text = _localPubkey;
         isWalletUnlock = true;
+        log.d(pubkey.text);
         return _localDewif;
       } else {
         throw 'Bad pubkey';
       }
+    } on ChecksumException catch (e) {
+      log.e(e.cause);
+      return 'bad';
     } catch (e) {
       // _homeProvider.playSound('non', 0.6);
       log.e('ERROR READING FILE: $e');
@@ -202,7 +200,6 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   String getShortPubkey(String pubkey) {
-    log.d(pubkey);
     List<int> pubkeyByte = Base58Decode(pubkey);
     Digest pubkeyS256 = sha256.convert(sha256.convert(pubkeyByte).bytes);
     String pubkeyCheksum = Base58Encode(pubkeyS256.bytes);
@@ -221,10 +218,6 @@ class WalletOptionsProvider with ChangeNotifier {
   void bluringBalance() {
     isBalanceBlur = !isBalanceBlur;
     notifyListeners();
-  }
-
-  Future<Uint8List> generateQRcode(String _pubkey) async {
-    return await scanner.generateBarCode(_pubkey);
   }
 
   Future changeAvatar() async {

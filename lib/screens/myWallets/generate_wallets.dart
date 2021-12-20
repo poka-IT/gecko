@@ -1,3 +1,4 @@
+import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/generate_wallets.dart';
@@ -26,6 +27,13 @@ class GenerateFastChestScreen extends StatelessWidget {
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
 
+    if (_generateWalletProvider.mnemonicController.text == '') {
+      _generateWalletProvider.generateWordList();
+      _generateWalletProvider.mnemonicController.text =
+          _generateWalletProvider.generatedMnemonic;
+      _generateWalletProvider.pin.text = randomSecretCode(5);
+    }
+
     return Scaffold(
         appBar: AppBar(
             toolbarHeight: 60 * ratio,
@@ -39,7 +47,11 @@ class GenerateFastChestScreen extends StatelessWidget {
             child: FittedBox(
                 child: FloatingActionButton(
               heroTag: "buttonGenerateWallet",
-              onPressed: () => _generateWalletProvider.generateWordList(),
+              onPressed: () {
+                _generateWalletProvider.generateWordList();
+                _generateWalletProvider.mnemonicController.text =
+                    _generateWalletProvider.generatedMnemonic;
+              },
               child: SizedBox(
                 height: 40.0,
                 width: 40.0,
@@ -87,8 +99,7 @@ class GenerateFastChestScreen extends StatelessWidget {
                           icon: const Icon(Icons.replay),
                           color: orangeC,
                           onPressed: () {
-                            _generateWalletProvider.changePinCode(
-                                reload: true);
+                            _generateWalletProvider.changePinCode(reload: true);
                           },
                         ),
                       ],
@@ -104,6 +115,12 @@ class GenerateFastChestScreen extends StatelessWidget {
                             ? () async {
                                 _generateWalletProvider.nbrWord =
                                     _generateWalletProvider.getRandomInt();
+                                _generateWalletProvider.actualWallet = Dewif()
+                                    .generateDewif(
+                                        _generateWalletProvider
+                                            .generatedMnemonic,
+                                        _generateWalletProvider.pin.text,
+                                        lang: 'french');
                                 await Navigator.push(
                                   context,
                                   MaterialPageRoute(builder: (context) {
@@ -115,19 +132,6 @@ class GenerateFastChestScreen extends StatelessWidget {
                                             .actualWallet);
                                   }),
                                 );
-                                await Future.delayed(
-                                    const Duration(milliseconds: 20));
-                                // if (_generateWalletProvider.hasBeenStored) {
-                                //   _generateWalletProvider.hasBeenStored = false;
-                                //   await Navigator.pushAndRemoveUntil(context,
-                                //       MaterialPageRoute(builder: (context) {
-                                //     return UnlockingWallet(
-                                //       wallet: _myWalletClass.getDefaultWallet(
-                                //           configBox.get('currentChest')),
-                                //       action: "mywallets",
-                                //     );
-                                //   }), ModalRoute.withName('/'));
-                                // }
                               }
                             : null,
                         child: const Text('Enregistrer ce trousseau',

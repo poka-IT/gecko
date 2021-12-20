@@ -11,6 +11,7 @@ import 'package:gecko/screens/history.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 // ignore: must_be_immutable
 class WalletOptions extends StatelessWidget {
@@ -27,9 +28,10 @@ class WalletOptions extends StatelessWidget {
         Provider.of<WalletOptionsProvider>(context, listen: false);
     WalletsProfilesProvider _historyProvider =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
-
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
+
+    log.d(_walletOptions.pubkey.text);
 
     final int _currentChest = _myWalletProvider.getCurrentChest();
     final String shortPubkey =
@@ -278,14 +280,10 @@ class WalletOptions extends StatelessWidget {
                 );
               }),
               SizedBox(height: 4 * ratio),
-              FutureBuilder(
-                future:
-                    _walletOptions.generateQRcode(_walletOptions.pubkey.text),
-                builder: (context, snapshot) {
-                  return snapshot.data != null
-                      ? Image.memory(snapshot.data, height: isTall ? 300 : 270)
-                      : const Text('-', style: TextStyle(fontSize: 20));
-                },
+              QrImage(
+                data: _walletOptions.pubkey.text,
+                version: QrVersions.auto,
+                size: isTall ? 300 : 270,
               ),
               SizedBox(height: 15 * ratio),
               Consumer<WalletOptionsProvider>(

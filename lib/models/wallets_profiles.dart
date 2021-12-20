@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:durt/durt.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -33,7 +35,9 @@ class WalletsProfilesProvider with ChangeNotifier {
   int nPage = 1;
 
   Future scan(context) async {
-    await Permission.camera.request();
+    if (Platform.isAndroid || Platform.isIOS) {
+      await Permission.camera.request();
+    }
     String barcode;
     try {
       barcode = await scanner.scan();
@@ -205,8 +209,6 @@ class WalletsProfilesProvider with ChangeNotifier {
     } else if (nPage == 2) {
       nRepositories = 100;
     }
-    log.d(nPage);
-    log.d(nRepositories);
     nPage++;
 
     if (fetchMoreCursor != null) {

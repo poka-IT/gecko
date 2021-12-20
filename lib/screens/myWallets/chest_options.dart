@@ -69,8 +69,10 @@ class ChestOptions extends StatelessWidget {
                       height: 25,
                     ),
                     const SizedBox(width: 18),
-                    const Text('Changer mon code secret',
-                        style: TextStyle(fontSize: 20, color: Colors.black)),
+                    const Text(
+                      'Changer mon code secret',
+                      style: TextStyle(fontSize: 20, color: Colors.black),
+                    ),
                   ])),
             ),
             SizedBox(height: 10 * ratio),

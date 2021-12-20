@@ -9,8 +9,10 @@ import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/screens/old_history_pay.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:package_info/package_info.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:path_provider/path_provider.dart' as pp;
 
 class HomeProvider with ChangeNotifier {
   int _currentIndex = 0;
@@ -30,6 +32,25 @@ class HomeProvider with ChangeNotifier {
   set currentIndex(int index) {
     _currentIndex = index;
     notifyListeners();
+  }
+
+  Future<void> initHive() async {
+    Directory hivePath;
+
+    if (Platform.isLinux || Platform.isMacOS) {
+      final home = Platform.environment['HOME'];
+      hivePath = Directory('$home/.gecko/db');
+    } else if (Platform.isWindows) {
+      final home = Platform.environment['UserProfile'];
+      hivePath = Directory('$home/.gecko/db');
+    } else if (Platform.isAndroid || Platform.isIOS || kIsWeb) {
+      final home = await pp.getApplicationDocumentsDirectory();
+      hivePath = Directory('${home.path}/db');
+    }
+    if (!await hivePath.exists()) {
+      await hivePath.create(recursive: true);
+    }
+    await Hive.initFlutter(hivePath.path);
   }
 
   Future<String> getAppVersion() async {

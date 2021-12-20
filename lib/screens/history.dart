@@ -72,7 +72,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
             },
           ),
           builder: (QueryResult result, {fetchMore, refetch}) {
-            if (result.isLoading && result.data == null) {
+            if (result.isLoading && result?.data == null) {
               return const Center(
                 child: CircularProgressIndicator(),
               );
@@ -87,7 +87,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                   style: TextStyle(fontSize: 18),
                 )
               ]);
-            } else if (result.data == null) {
+            } else if (result?.data == null) {
               return Column(children: const <Widget>[
                 SizedBox(height: 50),
                 Text(
@@ -97,7 +97,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
               ]);
             }
 
-            if (result.data['balance'] == null) {
+            if (result?.data['balance'] == null) {
               _historyProvider.balance = 0.0;
             } else {
               _historyProvider.balance = _historyProvider
@@ -124,7 +124,9 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                   if (t is ScrollEndNotification &&
                       scrollController.position.pixels >=
                           scrollController.position.maxScrollExtent * 0.7 &&
-                      _historyProvider.pageInfo['hasPreviousPage']) {
+                      _historyProvider.pageInfo['hasPreviousPage'] &&
+                      result.isNotLoading) {
+                    log.d('FETCHMORE !!');
                     fetchMore(opts);
                   }
                   return true;
@@ -295,8 +297,8 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                             }
                             if (_avatar.hasData) {
                               g1WalletsBox.get(repository[2]).avatar =
-                                  _avatar.data;
-                              return ClipOval(child: _avatar.data);
+                                  _avatar?.data;
+                              return ClipOval(child: _avatar?.data);
                             } else {
                               g1WalletsBox.get(repository[2]).avatar =
                                   _cesiumPlusProvider
@@ -427,8 +429,8 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                                 {VoidCallback refetch, FetchMore fetchMore}) {
                               if (result.isLoading || result.hasException) {
                                 return const Text('...');
-                              } else if (result.data['idty'] == null ||
-                                  result.data['idty']['username'] == null) {
+                              } else if (result?.data['idty'] == null ||
+                                  result?.data['idty']['username'] == null) {
                                 return const Text('');
                               } else {
                                 return SizedBox(
@@ -466,7 +468,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                           return const Text('...');
                         }
                         return Text(
-                          "${_balance.data.toString()} Ğ1",
+                          "${_balance?.data.toString()} Ğ1",
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                               fontSize: 22, fontWeight: FontWeight.w500),
@@ -506,13 +508,13 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) {
-                                return AvatarFullscreen(_avatar.data);
+                                return AvatarFullscreen(_avatar?.data);
                               }),
                             );
                           },
                           child: ClipOval(
                             child: Image(
-                              image: _avatar.data.image,
+                              image: _avatar?.data?.image,
                               height: _avatarSize,
                               fit: BoxFit.cover,
                             ),

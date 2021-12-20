@@ -1,6 +1,5 @@
 import 'package:durt/durt.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
 import 'package:gecko/globals.dart';
 
 class ChangePinProvider with ChangeNotifier {
@@ -8,23 +7,23 @@ class ChangePinProvider with ChangeNotifier {
   TextEditingController newPin = TextEditingController();
   String pinToGive;
 
-  Future<NewWallet> get badWallet => null;
+  NewWallet get badWallet => null;
 
-  Future<NewWallet> changePin(String _oldPin) async {
+  NewWallet changePin(String _oldPin, {String newCustomPin}) {
     try {
       final _dewif = chestBox.get(configBox.get('currentChest')).dewif;
 
       NewWallet newWalletFile = Dewif().changePassword(
-        dewif: _dewif,
-        oldPassword: _oldPin.toUpperCase(),
-      );
+          dewif: _dewif,
+          oldPassword: _oldPin.toUpperCase(),
+          newPassword: newCustomPin);
 
       newPin.text = pinToGive = newWalletFile.password;
       ischangedPin = true;
-      notifyListeners();
+      // notifyListeners();
       return newWalletFile;
     } catch (e) {
-      log.e('Impossible de changer le code PIN.');
+      log.e('Impossible de changer le code PIN: $e');
       return badWallet;
     }
   }

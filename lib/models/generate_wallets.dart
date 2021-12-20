@@ -37,6 +37,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   bool isCesiumIDVisible = false;
   bool isCesiumPWDVisible = false;
   bool canImport = false;
+  CesiumWallet cesiumWallet;
 
   // Import Chest
   TextEditingController cellController0 = TextEditingController();
@@ -171,7 +172,6 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   String changePinCode({bool reload}) {
-    
     pin.text = randomSecretCode(5);
     if (reload) {
       notifyListeners();
@@ -219,17 +219,14 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   Future<void> generateCesiumWalletPubkey(
       String _cesiumID, String _cesiumPWD) async {
-    var cesiumWallet = CesiumWallet(_cesiumID, _cesiumPWD);
-    actualWallet =
-        Dewif().generateCesiumDewif(cesiumWallet.seed, randomSecretCode(5));
+    cesiumWallet = CesiumWallet(_cesiumID, _cesiumPWD);
     String _walletPubkey = cesiumWallet.pubkey;
 
     cesiumPubkey.text = _walletPubkey;
-    pin.text = actualWallet.password;
     log.d(_walletPubkey);
   }
 
-  Future importCesiumWallet() async {
+  Future<int> importCesiumWallet() async {
     // String _walletPubkey = await DubpRust.getLegacyPublicKey(
     //     salt: _cesiumID, password: _cesiumPWD);
     // String shortPubkey = truncate(_walletPubkey, 9,
@@ -242,7 +239,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     cesiumPWD.text = '';
     cesiumPubkey.text = '';
     canImport = false;
-    pin.text = '';
     isCesiumIDVisible = false;
     isCesiumPWDVisible = false;
 
@@ -260,8 +256,12 @@ class GenerateWalletsProvider with ChangeNotifier {
       chestName = 'Coffre à Césium ${chestNumber + 1}';
     }
 
+    log.d(pin.text);
+    NewWallet cesiumDewif =
+        Dewif().generateCesiumDewif(cesiumWallet.seed, pin.text);
+
     ChestData cesiumChest = ChestData(
-        dewif: actualWallet.dewif,
+        dewif: cesiumDewif.dewif,
         name: chestName,
         imageName: 'cesium.png',
         defaultWallet: 0,
@@ -272,7 +272,8 @@ class GenerateWalletsProvider with ChangeNotifier {
     // chestBox.toMap().
     await configBox.put('currentChest', chestKey);
 
-    notifyListeners();
+    pin.text = '';
+    return chestKey;
   }
 
   void cesiumIDisVisible() {

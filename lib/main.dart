@@ -43,18 +43,24 @@ import 'package:flutter/foundation.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:window_size/window_size.dart';
 
 const bool enableSentry = true;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    setWindowTitle('Ğecko');
+    setWindowMinSize(const Size(600, 800));
+    setWindowMaxSize(const Size(800, 1000));
+  }
 
   HomeProvider _homeProvider = HomeProvider();
+  await _homeProvider.initHive();
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
 
   // Configure Hive and open boxes
-  await Hive.initFlutter();
   Hive.registerAdapter(WalletDataAdapter());
   Hive.registerAdapter(ChestDataAdapter());
   Hive.registerAdapter(G1WalletsListAdapter());

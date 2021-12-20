@@ -103,7 +103,7 @@ class CesiumPlusProvider with ChangeNotifier {
   }
 
   Future<Image> getAvatar(String _pubkey, double size) async {
-    if (g1WalletsBox.get(_pubkey).avatar != null) {
+    if (g1WalletsBox.get(_pubkey)?.avatar != null) {
       return g1WalletsBox.get(_pubkey).avatar;
     }
     var dio = Dio();

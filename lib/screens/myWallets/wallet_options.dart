@@ -213,9 +213,9 @@ class WalletOptions extends StatelessWidget {
                                 ImageFiltered(
                                   imageFilter: ImageFilter.blur(
                                       sigmaX:
-                                          walletProvider.isBalanceBlur ? 6 : 0,
+                                          walletProvider.isBalanceBlur ? 6 : 0.001,
                                       sigmaY:
-                                          walletProvider.isBalanceBlur ? 5 : 0),
+                                          walletProvider.isBalanceBlur ? 5 : 0.001),
                                   child: Text(
                                     wBalanceUD,
                                     style: TextStyle(

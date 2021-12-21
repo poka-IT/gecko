@@ -7,8 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
-import 'package:gecko/screens/old_history_pay.dart';
-import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:package_info/package_info.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -23,7 +21,6 @@ class HomeProvider with ChangeNotifier {
   Widget appBarExplorer =
       Text('Explorateur', style: TextStyle(color: Colors.grey[850]));
 
-  List currentTab = [OldHistoryScreen(), const WalletsHome()];
   bool isFirstBuild = true;
   // AudioCache player = AudioCache(prefix: 'sounds/');
 
@@ -37,20 +34,24 @@ class HomeProvider with ChangeNotifier {
   Future<void> initHive() async {
     Directory hivePath;
 
-    if (Platform.isLinux || Platform.isMacOS) {
-      final home = Platform.environment['HOME'];
-      hivePath = Directory('$home/.gecko/db');
-    } else if (Platform.isWindows) {
-      final home = Platform.environment['UserProfile'];
-      hivePath = Directory('$home/.gecko/db');
-    } else if (Platform.isAndroid || Platform.isIOS || kIsWeb) {
-      final home = await pp.getApplicationDocumentsDirectory();
-      hivePath = Directory('${home.path}/db');
+    if (!kIsWeb) {
+      if (Platform.isLinux || Platform.isMacOS) {
+        final home = Platform.environment['HOME'];
+        hivePath = Directory('$home/.gecko/db');
+      } else if (Platform.isWindows) {
+        final home = Platform.environment['UserProfile'];
+        hivePath = Directory('$home/.gecko/db');
+      } else if (Platform.isAndroid || Platform.isIOS) {
+        final home = await pp.getApplicationDocumentsDirectory();
+        hivePath = Directory('${home.path}/db');
+      }
+      if (!await hivePath.exists()) {
+        await hivePath.create(recursive: true);
+      }
+      await Hive.initFlutter(hivePath.path);
+    } else {
+      await Hive.initFlutter();
     }
-    if (!await hivePath.exists()) {
-      await hivePath.create(recursive: true);
-    }
-    await Hive.initFlutter(hivePath.path);
   }
 
   Future<String> getAppVersion() async {

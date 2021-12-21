@@ -197,10 +197,12 @@ class CesiumWalletOptions extends StatelessWidget {
                               return Row(children: <Widget>[
                                 ImageFiltered(
                                   imageFilter: ImageFilter.blur(
-                                      sigmaX:
-                                          _walletOptions.isBalanceBlur ? 6 : 0,
-                                      sigmaY:
-                                          _walletOptions.isBalanceBlur ? 5 : 0),
+                                      sigmaX: _walletOptions.isBalanceBlur
+                                          ? 6
+                                          : 0.001,
+                                      sigmaY: _walletOptions.isBalanceBlur
+                                          ? 5
+                                          : 0.001),
                                   child: Text(wBalanceUD,
                                       style: TextStyle(
                                           fontSize: isTall ? 20 : 18,

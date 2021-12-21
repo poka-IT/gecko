@@ -126,7 +126,6 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                           scrollController.position.maxScrollExtent * 0.7 &&
                       _historyProvider.pageInfo['hasPreviousPage'] &&
                       result.isNotLoading) {
-                    log.d('FETCHMORE !!');
                     fetchMore(opts);
                   }
                   return true;

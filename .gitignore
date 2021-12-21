@@ -47,7 +47,11 @@ android/key.properties
 # Rust things
 /target
 
-pubkeys.txt
-
 # Linux builds
 linux/
+
+# Custom
+scripts/private/
+AppDir/
+appimage-builder-cache/
+AppImageBuilder.yml

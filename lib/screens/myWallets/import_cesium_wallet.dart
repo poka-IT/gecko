@@ -23,7 +23,7 @@ class ImportWalletScreen extends StatelessWidget {
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
     MyWalletsProvider _myWalletProvider =
-        Provider.of<MyWalletsProvider>(context);
+        Provider.of<MyWalletsProvider>(context, listen: false);
 
     _generateWalletProvider.pin.text = randomSecretCode(5);
     return WillPopScope(
@@ -94,7 +94,7 @@ class ImportWalletScreen extends StatelessWidget {
                     if (_debounce?.isActive ?? false) {
                       _debounce.cancel();
                     }
-                    _debounce = Timer(const Duration(milliseconds: 200), () {
+                    _debounce = Timer(const Duration(milliseconds: 600), () {
                       walletProvider
                           .generateCesiumWalletPubkey(
                               walletProvider.cesiumID.text, text)

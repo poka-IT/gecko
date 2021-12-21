@@ -200,6 +200,11 @@ class PrintWallet extends StatelessWidget {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
+            leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () {
+                  Navigator.pop(context);
+                }),
             toolbarHeight: 60 * ratio,
             title: const Text('Imprimer ce trousseau')),
         body: PdfPreview(

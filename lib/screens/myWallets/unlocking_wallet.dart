@@ -32,6 +32,7 @@ class UnlockingWallet extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
+    final double statusBarHeight = MediaQuery.of(context).padding.top;
 
     int _pinLenght;
     ChestData currentChest = chestBox.get(configBox.get('currentChest'));
@@ -47,71 +48,88 @@ class UnlockingWallet extends StatelessWidget {
     return Scaffold(
         // backgroundColor: Colors.brown[600],
         body: SafeArea(
-      child: Column(children: <Widget>[
-        Expanded(
-          child: Column(children: <Widget>[
-            SizedBox(height: isTall ? 100 : 20),
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-              currentChest.imageFile == null
-                  ? Image.asset(
-                      'assets/chests/${currentChest.imageName}',
-                      width: isTall ? 130 : 100,
-                    )
-                  : Image.file(
-                      currentChest.imageFile,
-                      width: isTall ? 130 : 100,
-                    ),
-              const SizedBox(width: 5),
-              SizedBox(
-                  width: 250,
-                  child: Text(
-                    currentChest.name,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        fontSize: 25,
-                        color: Colors.black,
-                        fontWeight: FontWeight.w700),
-                  )),
-            ]),
-            SizedBox(height: 30 * ratio),
-            const SizedBox(
-                width: 400,
-                child: Text(
-                  'Pour déverrouiller votre coffre, composez votre code secret à l’abri des lézards indiscrets :',
-                  style: TextStyle(
-                      fontSize: 19,
-                      color: Colors.black,
-                      fontWeight: FontWeight.w400),
-                )),
-            SizedBox(height: 40 * ratio),
-            pinForm(context, _pinLenght, currentChest),
-            SizedBox(height: 3 * ratio),
-            InkWell(
-                key: const Key('chooseChest'),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) {
-                      return ChooseChest(action: action);
-                    }),
-                  );
-                },
-                child: SizedBox(
-                  width: 400,
-                  height: 70,
-                  child: Center(
-                    child: Text(
-                      'Changer de coffre',
-                      style: TextStyle(
-                          fontSize: 22,
-                          color: orangeC,
-                          fontWeight: FontWeight.w600),
-                    ),
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Stack(children: <Widget>[
+            Positioned(
+              top: statusBarHeight + 10,
+              left: 15,
+              child: Builder(
+                builder: (context) => IconButton(
+                  key: const Key('popButton'),
+                  icon: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.black,
+                    size: 25,
                   ),
-                )),
-          ]),
-        ),
-      ]),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+            ),Column(children: <Widget>[
+                SizedBox(height: isTall ? 100 : 20),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      currentChest.imageFile == null
+                          ? Image.asset(
+                              'assets/chests/${currentChest.imageName}',
+                              width: isTall ? 130 : 100,
+                            )
+                          : Image.file(
+                              currentChest.imageFile,
+                              width: isTall ? 130 : 100,
+                            ),
+                      const SizedBox(width: 5),
+                      SizedBox(
+                          width: 250,
+                          child: Text(
+                            currentChest.name,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                fontSize: 25,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w700),
+                          )),
+                    ]),
+                SizedBox(height: 30 * ratio),
+                const SizedBox(
+                    width: 400,
+                    child: Text(
+                      'Pour déverrouiller votre coffre, composez votre code secret à l’abri des lézards indiscrets :',
+                      style: TextStyle(
+                          fontSize: 19,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w400),
+                    )),
+                SizedBox(height: 40 * ratio),
+                pinForm(context, _pinLenght, currentChest),
+                SizedBox(height: 3 * ratio),
+                InkWell(
+                    key: const Key('chooseChest'),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) {
+                          return ChooseChest(action: action);
+                        }),
+                      );
+                    },
+                    child: SizedBox(
+                      width: 400,
+                      height: 70,
+                      child: Center(
+                        child: Text(
+                          'Changer de coffre',
+                          style: TextStyle(
+                              fontSize: 22,
+                              color: orangeC,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    )),
+              ]),
+          ]),]),
     ));
   }
 

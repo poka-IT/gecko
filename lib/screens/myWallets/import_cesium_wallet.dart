@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/generate_wallets.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/wallet_options.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
@@ -21,6 +22,8 @@ class ImportWalletScreen extends StatelessWidget {
         Provider.of<GenerateWalletsProvider>(context, listen: false);
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context);
 
     _generateWalletProvider.pin.text = randomSecretCode(5);
     return WillPopScope(
@@ -177,7 +180,7 @@ class ImportWalletScreen extends StatelessWidget {
                       ? () async {
                           final chestKey =
                               await walletProvider.importCesiumWallet();
-                          walletProvider.reloadBuild();
+                          _myWalletProvider.rebuildWidget();
 
                           await Navigator.pushAndRemoveUntil(
                             context,

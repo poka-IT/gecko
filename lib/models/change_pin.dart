@@ -13,6 +13,7 @@ class ChangePinProvider with ChangeNotifier {
     try {
       final _dewif = chestBox.get(configBox.get('currentChest')).dewif;
 
+      // TODO: Durt: Detect if CesiumWallet
       NewWallet newWalletFile = Dewif().changePassword(
           dewif: _dewif,
           oldPassword: _oldPin.toUpperCase(),

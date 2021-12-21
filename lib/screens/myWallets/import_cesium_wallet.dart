@@ -56,7 +56,7 @@ class ImportWalletScreen extends StatelessWidget {
                     if (_debounce?.isActive ?? false) {
                       _debounce.cancel();
                     }
-                    _debounce = Timer(const Duration(milliseconds: 200), () {
+                    _debounce = Timer(const Duration(milliseconds: 600), () {
                       walletProvider
                           .generateCesiumWalletPubkey(
                               text, walletProvider.cesiumPWD.text)

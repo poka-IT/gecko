@@ -5,7 +5,7 @@ description: Pay with G1.
 # pub.dev using `pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 0.0.4+2
+version: 0.0.4+3
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -47,7 +47,7 @@ dependencies:
   printing: ^5.6.0
   provider: ^6.0.1
   qrscan: ^0.3.2
-  qr_code_scanner: ^0.6.1
+  # qr_code_scanner: ^0.6.1
   qr_flutter: ^4.0.0
   responsive_builder: ^0.4.1
   responsive_framework: ^0.1.4

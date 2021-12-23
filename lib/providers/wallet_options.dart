@@ -108,6 +108,11 @@ class WalletOptionsProvider with ChangeNotifier {
     return pinLength;
   }
 
+  Future<double> getBalance(String pubkey, {bool isUd = false}) async {
+    final node = Gva(node: endPointGVA);
+    return await node.balance(pubkey, ud: isUd);
+  }
+
   void _renameWallet(List<int?> _walletID, _newName,
       {required bool isCesium}) async {
     if (isCesium) {
@@ -145,10 +150,9 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Future<int> deleteWallet(context, WalletData wallet) async {
-    final bool _answer =
-        await (_confirmDeletingWallet(context, wallet.name) as FutureOr<bool>);
+    final bool? _answer = await (_confirmDeletingWallet(context, wallet.name));
 
-    if (_answer) {
+    if (_answer!) {
       walletBox.delete(wallet.key);
 
       Navigator.popUntil(

@@ -8,39 +8,46 @@ class CommonElements {
     return const Text('Coucou');
   }
 
-  Widget bubbleSpeak(String text, {double? long, Key? textKey}) {
-    return Bubble(
-      padding: long == null
-          ? const BubbleEdges.all(18)
-          : BubbleEdges.symmetric(horizontal: long, vertical: 30),
-      elevation: 5,
-      color: Colors.white,
-      margin: const BubbleEdges.fromLTRB(10, 0, 20, 10),
-      // nip: BubbleNip.leftTop,
-      child: Text(
-        text,
-        key: textKey,
-        style: const TextStyle(
-            color: Colors.black, fontSize: 18, fontWeight: FontWeight.w400),
+  Widget bubbleSpeak(String text,
+      {double? long, Key? textKey, bool isMaxWidth = true}) {
+    return SizedBox(
+      width: isMaxWidth ? double.infinity : 300,
+      child: Bubble(
+        padding: long == null
+            ? const BubbleEdges.all(18)
+            : BubbleEdges.symmetric(horizontal: long, vertical: 30),
+        elevation: 5,
+        color: Colors.white,
+        margin: const BubbleEdges.fromLTRB(10, 0, 20, 10),
+        // nip: BubbleNip.leftTop,
+        child: Text(
+          text,
+          key: textKey,
+          style: const TextStyle(
+              color: Colors.black, fontSize: 18, fontWeight: FontWeight.w400),
+        ),
       ),
     );
   }
 
   Widget bubbleSpeakRich(List<TextSpan> text, {Key? textKey}) {
-    return Bubble(
-      padding: const BubbleEdges.all(18),
-      elevation: 5,
-      color: Colors.white,
-      margin: const BubbleEdges.fromLTRB(10, 0, 20, 10),
-      // nip: BubbleNip.leftTop,
-      child: RichText(
-        key: textKey,
-        text: TextSpan(
-          style: const TextStyle(
-            fontSize: 18.0,
-            color: Colors.black,
+    return SizedBox(
+      width: double.infinity,
+      child: Bubble(
+        padding: const BubbleEdges.all(18),
+        elevation: 5,
+        color: Colors.white,
+        margin: const BubbleEdges.fromLTRB(10, 0, 20, 10),
+        // nip: BubbleNip.leftTop,
+        child: RichText(
+          key: textKey,
+          text: TextSpan(
+            style: const TextStyle(
+              fontSize: 18.0,
+              color: Colors.black,
+            ),
+            children: text,
           ),
-          children: text,
         ),
       ),
     );

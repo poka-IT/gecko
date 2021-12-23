@@ -68,11 +68,12 @@ class WalletsHome extends StatelessWidget {
     return Column(children: [
       const SizedBox(height: 50),
       SizedBox(
-          height: 120,
-          width: 445,
+          height: 90,
+          width: 420,
           child: ElevatedButton.icon(
             icon: Image.asset(
               'assets/chests/config.png',
+              height: 60,
             ),
             style: ElevatedButton.styleFrom(
               elevation: 2,
@@ -86,9 +87,9 @@ class WalletsHome extends StatelessWidget {
               }),
             ),
             label: const Text(
-              "       Paramétrer ce coffre",
+              "    Paramétrer ce coffre",
               style: TextStyle(
-                fontSize: 25,
+                fontSize: 22,
                 fontWeight: FontWeight.w700,
                 color: Color(0xff8a3c0f),
               ),
@@ -96,10 +97,13 @@ class WalletsHome extends StatelessWidget {
           )),
       const SizedBox(height: 30),
       SizedBox(
-          height: 120,
-          width: 445,
+          height: 90,
+          width: 420,
           child: ElevatedButton.icon(
-            icon: Image.asset('assets/chests/miniChests.png'),
+            icon: Image.asset(
+              'assets/chests/miniChests.png',
+              height: 70,
+            ),
             style: ElevatedButton.styleFrom(
               elevation: 2,
               primary: floattingYellow, // background
@@ -112,9 +116,9 @@ class WalletsHome extends StatelessWidget {
               }),
             ),
             label: const Text(
-              "       Changer de coffre",
+              "     Changer de coffre",
               style: TextStyle(
-                fontSize: 25,
+                fontSize: 22,
                 fontWeight: FontWeight.w700,
                 color: Color(0xff8a3c0f),
               ),
@@ -148,12 +152,20 @@ class WalletsHome extends StatelessWidget {
     List _listWallets = _myWalletProvider.listWallets;
     WalletData? defaultWallet =
         _myWalletProvider.getDefaultWallet(configBox.get('currentChest'));
+    final double screenWidth = MediaQuery.of(context).size.width;
+    int nTule = 2;
+
+    if (screenWidth >= 900) {
+      nTule = 4;
+    } else if (screenWidth >= 650) {
+      nTule = 3;
+    }
 
     return CustomScrollView(slivers: <Widget>[
       const SliverToBoxAdapter(child: SizedBox(height: 20)),
       SliverGrid.count(
           key: const Key('listWallets'),
-          crossAxisCount: 2,
+          crossAxisCount: nTule,
           childAspectRatio: 1,
           crossAxisSpacing: 0,
           mainAxisSpacing: 0,

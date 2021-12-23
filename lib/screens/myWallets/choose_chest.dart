@@ -53,7 +53,7 @@ class _ChooseChestState extends State<ChooseChest> {
                 enableInfiniteScroll: false,
                 initialPage: currentChest!,
                 enlargeCenterPage: true,
-                viewportFraction: 0.6,
+                viewportFraction: 0.5,
               ),
               items: chestBox.toMap().entries.map((i) {
                 return Builder(

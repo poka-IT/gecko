@@ -43,8 +43,8 @@ class OnboardingStepSeven extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.only(bottom: 90),
                   child: common.bubbleSpeak(
-                    "Moi, j’ai déjà essayé de\nmémoriser une phrase de\nrestauration, mais je n’ai\npas une mémoire\nd’éléphant.",
-                  ),
+                      "Moi, j’ai déjà essayé de\nmémoriser une phrase de\nrestauration, mais je n’ai\npas une mémoire\nd’éléphant.",
+                      isMaxWidth: false),
                 ),
                 Image.asset(
                   'assets/onBoarding/chopp-gecko.png',

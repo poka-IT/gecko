@@ -112,7 +112,7 @@ class OnboardingStepFourteen extends StatelessWidget {
               )
             ],
             onCompleted: (_pin) async {
-              _myWalletProvider.pinCode = _pin;
+              _myWalletProvider.pinCode = _pin.toUpperCase();
               _myWalletProvider.pinLenght = _pinLenght;
               log.d(_pin + ' || ' + _generateWalletProvider.pin.text);
               if (_pin.toUpperCase() == _generateWalletProvider.pin.text) {
@@ -124,10 +124,12 @@ class OnboardingStepFourteen extends StatelessWidget {
                 await _generateWalletProvider.storeHDWChest(
                     generatedWallet, 'Mon portefeuille courant', context);
                 _myWalletProvider.readAllWallets(_currentChest);
-                scheduleMicrotask(() {
-                  _walletOptions.reloadBuild();
-                  _myWalletProvider.rebuildWidget();
-                });
+                // scheduleMicrotask(() {
+                _walletOptions.reloadBuild();
+                //   _myWalletProvider.rebuildWidget();
+                // });
+                _generateWalletProvider.generatedMnemonic =
+                    _generateWalletProvider.pin.text = '';
                 Navigator.push(
                   context,
                   FaderTransition(

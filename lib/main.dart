@@ -51,7 +51,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     setWindowTitle('Ğecko');
-    setWindowMinSize(const Size(600, 800));
+    setWindowMinSize(const Size(400, 700));
     setWindowMaxSize(const Size(800, 1000));
   }
 

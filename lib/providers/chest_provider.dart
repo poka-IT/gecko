@@ -9,9 +9,9 @@ class ChestProvider with ChangeNotifier {
   }
 
   Future deleteChest(context, ChestData _chest) async {
-    final bool _answer = await (_confirmDeletingChest(context, _chest.name) as FutureOr<bool>);
+    final bool? _answer = await (_confirmDeletingChest(context, _chest.name));
 
-    if (_answer) {
+    if (_answer!) {
       await chestBox.delete(_chest.key);
       if (chestBox.isEmpty) {
         await configBox.put('currentChest', 0);

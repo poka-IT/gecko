@@ -14,6 +14,7 @@ class SearchScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     SearchProvider _searchProvider = Provider.of<SearchProvider>(context);
+    final double screenHeight = MediaQuery.of(context).size.height;
 
     return WillPopScope(
         onWillPop: () {
@@ -101,7 +102,7 @@ class SearchScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const Spacer(flex: 1),
+              Spacer(flex: screenHeight <= 800 ? 1 : 2),
             ]),
           ),
         ));

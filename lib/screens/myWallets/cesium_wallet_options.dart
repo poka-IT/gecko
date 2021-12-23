@@ -106,7 +106,7 @@ class CesiumWalletOptions extends StatelessWidget {
                     const SizedBox(width: 25),
                     InkWell(
                       onTap: () async {
-                        File newAvatar = await (_walletOptions.changeAvatar() as FutureOr<File>);
+                        File newAvatar = await (_walletOptions.changeAvatar());
                           cesiumWallet.imageFile = newAvatar;
                         _walletOptions.reloadBuild();
                       },
@@ -119,7 +119,7 @@ class CesiumWalletOptions extends StatelessWidget {
                     ),
                     InkWell(
                         onTap: () async {
-                          File newAvatar = await (_walletOptions.changeAvatar() as FutureOr<File>);
+                          File newAvatar = await (_walletOptions.changeAvatar());
                             cesiumWallet.imageFile = newAvatar;
                           _walletOptions.reloadBuild();
                         },

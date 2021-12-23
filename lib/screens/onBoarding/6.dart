@@ -29,7 +29,7 @@ class OnboardingStepEight extends StatelessWidget {
               "J’ai généré votre phrase de restauration !\nTâchez de la garder bien secrète, car elle permet à quiconque la connaît d’accéder à tous vos portefeuilles.",
               textKey: const Key('step6'),
             ),
-            SizedBox(height: isTall ? 61 : 31),
+            SizedBox(height: isTall ? 70 : 40),
             // SizedBox(height: 30),
             sentanceArray(context),
             // ),
@@ -63,9 +63,10 @@ class OnboardingStepEight extends StatelessWidget {
 }
 
 Widget sentanceArray(BuildContext context) {
-  return Container(
+  return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Container(
+          constraints: const BoxConstraints(maxWidth: 450),
           decoration: BoxDecoration(
               border: Border.all(color: Colors.black),
               color: Colors.grey[300],
@@ -116,7 +117,7 @@ Widget arrayCell(dataWord) {
           ImageFiltered(
             imageFilter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
             child: Text(dataWord.split(':')[1],
-                style: const TextStyle(fontSize: 20, color: Colors.black)),
+                style: const TextStyle(fontSize: 19, color: Colors.black)),
           )
         ],
       ));

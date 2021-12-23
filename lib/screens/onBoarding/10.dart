@@ -31,7 +31,7 @@ class OnboardingStepTwelve extends StatelessWidget {
             const SizedBox(height: 10),
             Image.asset(
               'assets/onBoarding/plusieurs-codes-secrets-un-trousseau.png',
-              height: 410 * ratio,
+              height: isTall ? 410 : 380,
             ),
             Expanded(
                 child: Align(
@@ -57,7 +57,7 @@ class OnboardingStepTwelve extends StatelessWidget {
                           child: const Text("Générer le code secret",
                               style: TextStyle(fontSize: 20))),
                     ))),
-            SizedBox(height: isTall ? 80 : 40),
+            const SizedBox(height: 80),
           ]),
         ));
   }

@@ -440,9 +440,9 @@ void main() {
       await goBack();
       await deleteAllWallets();
       await sleep(100);
-      final String pincode = await (createNewKeychain('Fast wallet') as FutureOr<String>);
+      final String? pincode = await (createNewKeychain('Fast wallet'));
       await sleep(200);
-      await driver!.enterText(pincode);
+      await driver!.enterText(pincode!);
       await sleep(100);
       await createDerivation();
       await sleep(100);

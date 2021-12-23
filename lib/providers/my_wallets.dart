@@ -65,8 +65,8 @@ class MyWalletsProvider with ChangeNotifier {
     try {
       log.w('DELETE ALL WALLETS ?');
 
-      final bool _answer = await (_confirmDeletingAllWallets(context) as FutureOr<bool>);
-      if (_answer) {
+      final bool? _answer = await (_confirmDeletingAllWallets(context));
+      if (_answer!) {
         await walletBox.clear();
         await chestBox.clear();
         await configBox.delete('defaultWallet');

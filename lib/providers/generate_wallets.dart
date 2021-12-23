@@ -316,9 +316,9 @@ class GenerateWalletsProvider with ChangeNotifier {
     return bip39Words.contains(word);
   }
 
-  bool isBipWordsList(List words) {
+  bool isBipWordsList(List<String> words) {
     bool isValid = true;
-    for (String word in words as Iterable<String>) {
+    for (String word in words) {
       // Needed for bad encoding of UTF-8
       word = word.replaceAll('é', 'é');
       word = word.replaceAll('è', 'è');
@@ -380,6 +380,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     if (generatedWallet == null) {
       return false;
     } else {
+      generatedMnemonic = inputMnemonic;
       return true;
     }
   }

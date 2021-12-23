@@ -115,9 +115,10 @@ Widget sentanceArray(BuildContext context) {
 
   List formatedArray = _generateWalletProvider.generateWordList();
 
-  return Container(
+  return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 12),
     child: Container(
+      constraints: const BoxConstraints(maxWidth: 450),
       decoration: BoxDecoration(
           border: Border.all(color: Colors.black),
           color: Colors.grey[300],
@@ -187,6 +188,11 @@ class PrintWallet extends StatelessWidget {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
+            leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () {
+                  Navigator.pop(context);
+                }),
             toolbarHeight: 60 * ratio,
             title: const Text('Imprimer ce trousseau')),
         body: PdfPreview(

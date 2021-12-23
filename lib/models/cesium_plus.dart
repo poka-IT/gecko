@@ -8,7 +8,7 @@ import 'package:path_provider/path_provider.dart';
 
 class CesiumPlusProvider with ChangeNotifier {
   TextEditingController cesiumName = TextEditingController();
-  Image defaultAvatar(double size) =>
+  Image defaultAvatar(double? size) =>
       Image.asset(('assets/icon_user.png'), height: size);
 
   CancelToken avatarCancelToken = CancelToken();
@@ -60,17 +60,17 @@ class CesiumPlusProvider with ChangeNotifier {
     return [podRequest, queryGetAvatar, headers];
   }
 
-  Future<String> getName(String _pubkey) async {
-    String _name;
+  Future<String?> getName(String? _pubkey) async {
+    String? _name;
 
-    if (g1WalletsBox.get(_pubkey).csName != null) {
-      return g1WalletsBox.get(_pubkey).csName;
+    if (g1WalletsBox.get(_pubkey)!.csName != null) {
+      return g1WalletsBox.get(_pubkey)!.csName;
     }
 
     List queryOptions = await _buildQuery(_pubkey);
 
     var dio = Dio();
-    Response response;
+    late Response response;
     try {
       response = await dio.post(
         queryOptions[0],
@@ -97,14 +97,14 @@ class CesiumPlusProvider with ChangeNotifier {
     }
     _name = response.data['hits']['hits'][0]['_source']['title'];
 
-    g1WalletsBox.get(_pubkey).csName = _name;
+    g1WalletsBox.get(_pubkey)!.csName = _name;
 
     return _name;
   }
 
-  Future<Image> getAvatar(String _pubkey, double size) async {
+  Future<Image?> getAvatar(String? _pubkey, double size) async {
     if (g1WalletsBox.get(_pubkey)?.avatar != null) {
-      return g1WalletsBox.get(_pubkey).avatar;
+      return g1WalletsBox.get(_pubkey)!.avatar;
     }
     var dio = Dio();
 
@@ -112,7 +112,7 @@ class CesiumPlusProvider with ChangeNotifier {
 
     List queryOptions = await _buildQuery(_pubkey);
 
-    Response response;
+    late Response response;
     try {
       response = await dio
           .post(queryOptions[0],
@@ -150,7 +150,7 @@ class CesiumPlusProvider with ChangeNotifier {
       fit: BoxFit.fitWidth,
     );
 
-    g1WalletsBox.get(_pubkey).avatar = finalAvatar;
+    g1WalletsBox.get(_pubkey)!.avatar = finalAvatar;
 
     return finalAvatar;
   }

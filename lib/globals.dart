@@ -8,23 +8,23 @@ import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Files paths
-Directory appPath;
+Directory? appPath;
 
-String appVersion;
-SharedPreferences prefs;
-String endPointGVA;
-int ramSys;
-Box<WalletData> walletBox;
-Box<ChestData> chestBox;
-Box configBox;
-Box<G1WalletsList> g1WalletsBox;
+String? appVersion;
+SharedPreferences? prefs;
+String? endPointGVA;
+int? ramSys;
+late Box<WalletData> walletBox;
+late Box<ChestData> chestBox;
+late Box configBox;
+late Box<G1WalletsList> g1WalletsBox;
 
 String cesiumPod = "https://g1.data.le-sou.org";
 // String cesiumPod = "https://g1.data.e-is.pro";
 
 // Responsive ratios
-bool isTall;
-double ratio;
+late bool isTall;
+late double ratio;
 
 // Logger
 var log = Logger();

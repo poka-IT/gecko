@@ -14,7 +14,7 @@ class OnboardingStepNine extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
   final int progress = 6;
 
-  OnboardingStepNine({Key key}) : super(key: key);
+  OnboardingStepNine({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -176,9 +176,9 @@ Widget arrayCell(dataWord) {
 
 // ignore: must_be_immutable
 class PrintWallet extends StatelessWidget {
-  const PrintWallet(this.sentence, {Key key}) : super(key: key);
+  const PrintWallet(this.sentence, {Key? key}) : super(key: key);
 
-  final String sentence;
+  final String? sentence;
 
   @override
   Widget build(BuildContext context) {

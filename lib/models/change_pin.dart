@@ -5,13 +5,13 @@ import 'package:gecko/globals.dart';
 class ChangePinProvider with ChangeNotifier {
   bool ischangedPin = false;
   TextEditingController newPin = TextEditingController();
-  String pinToGive;
+  String? pinToGive;
 
-  NewWallet get badWallet => null;
+  NewWallet? get badWallet => null;
 
-  NewWallet changePin(String _oldPin, {String newCustomPin}) {
+  NewWallet? changePin(String _oldPin, {String? newCustomPin}) {
     try {
-      final _dewif = chestBox.get(configBox.get('currentChest')).dewif;
+      final _dewif = chestBox.get(configBox.get('currentChest'))!.dewif!;
 
       // TODO: Durt: Detect if CesiumWallet
       NewWallet newWalletFile = Dewif().changePassword(
@@ -34,7 +34,7 @@ class ChangePinProvider with ChangeNotifier {
     // currentChest.dewif = _newWalletFile.dewif;
     // await chestBox.add(currentChest);
 
-    chestBox.get(configBox.get('currentChest')).dewif = _newWalletFile.dewif;
+    chestBox.get(configBox.get('currentChest'))!.dewif = _newWalletFile.dewif;
 
     Navigator.pop(context, pinToGive);
     pinToGive = '';

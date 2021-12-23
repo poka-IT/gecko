@@ -10,11 +10,11 @@ import 'package:provider/provider.dart';
 // ignore: must_be_immutable
 class OnboardingStepTen extends StatelessWidget {
   OnboardingStepTen({
-    Key validationKey,
-    @required this.generatedMnemonic,
+    Key? validationKey,
+    required this.generatedMnemonic,
   }) : super(key: validationKey);
 
-  String generatedMnemonic;
+  String? generatedMnemonic;
   TextEditingController tplController = TextEditingController();
   TextEditingController wordController = TextEditingController();
   final TextEditingController _mnemonicController = TextEditingController();
@@ -27,7 +27,7 @@ class OnboardingStepTen extends StatelessWidget {
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
     CommonElements common = CommonElements();
-    _mnemonicController.text = generatedMnemonic;
+    _mnemonicController.text = generatedMnemonic!;
 
     return WillPopScope(
         onWillPop: () {
@@ -70,7 +70,7 @@ class OnboardingStepTen extends StatelessWidget {
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(7),
                         border: Border.all(
-                          color: Colors.grey[600],
+                          color: Colors.grey[600]!,
                           width: 3,
                         )),
                     width: 430,

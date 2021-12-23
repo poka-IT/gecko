@@ -15,16 +15,16 @@ import "package:unorm_dart/unorm_dart.dart" as unorm;
 class GenerateWalletsProvider with ChangeNotifier {
   GenerateWalletsProvider();
   // NewWallet generatedWallet;
-  NewWallet actualWallet;
+  NewWallet? actualWallet;
 
   FocusNode walletNameFocus = FocusNode();
-  Color askedWordColor = Colors.black;
+  Color? askedWordColor = Colors.black;
   bool isAskedWordValid = false;
 
-  int nbrWord;
-  String nbrWordAlpha;
+  late int nbrWord;
+  String? nbrWordAlpha;
 
-  String generatedMnemonic;
+  String? generatedMnemonic;
   bool walletIsGenerated = true;
 
   TextEditingController mnemonicController = TextEditingController();
@@ -37,7 +37,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   bool isCesiumIDVisible = false;
   bool isCesiumPWDVisible = false;
   bool canImport = false;
-  CesiumWallet cesiumWallet;
+  late CesiumWallet cesiumWallet;
 
   // Import Chest
   TextEditingController cellController0 = TextEditingController();
@@ -58,7 +58,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       NewWallet _wallet, String _name, BuildContext context) async {
     int chestNumber = 0;
     chestBox.toMap().forEach((key, value) {
-      if (!value.isCesium) {
+      if (!value.isCesium!) {
         chestNumber++;
       }
     });
@@ -77,7 +77,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       isCesium: false,
     );
     await chestBox.add(thisChest);
-    int chestKey = chestBox.keys.last;
+    int? chestKey = chestBox.keys.last;
 
     WalletData myWallet = WalletData(
         chest: chestKey,
@@ -128,7 +128,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     return rng.nextInt(12);
   }
 
-  String intToString(int _nbr) {
+  String? intToString(int _nbr) {
     Map nbrToString = {};
     nbrToString[1] = 'Premier';
     nbrToString[2] = 'Deuxième';
@@ -152,8 +152,8 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<NewWallet> generateWallet(String generatedMnemonic,
-      {@required bool isImport}) async {
+  Future<NewWallet?> generateWallet(String generatedMnemonic,
+      {required bool isImport}) async {
     try {
       actualWallet = Dewif().generateDewif(
           generatedMnemonic, randomSecretCode(5),
@@ -164,14 +164,14 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     if (!isImport) {
       mnemonicController.text = generatedMnemonic;
-      pin.text = actualWallet.password;
+      pin.text = actualWallet!.password;
     }
     // notifyListeners();
 
     return actualWallet;
   }
 
-  String changePinCode({bool reload}) {
+  String changePinCode({required bool reload}) {
     pin.text = randomSecretCode(5);
     if (reload) {
       notifyListeners();
@@ -179,7 +179,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     return pin.text;
   }
 
-  Future<Uint8List> printWallet(String _title) async {
+  Future<Uint8List> printWallet(String? _title) async {
     final ByteData fontData =
         await rootBundle.load("assets/OpenSans-Regular.ttf");
     final pw.Font ttf = pw.Font.ttf(fontData.buffer.asByteData());
@@ -197,7 +197,7 @@ class GenerateWalletsProvider with ChangeNotifier {
             pw.Text("Phrase de restauration:",
                 style: pw.TextStyle(fontSize: 20, font: ttf)),
             pw.SizedBox(height: 10),
-            pw.Text(_title,
+            pw.Text(_title!,
                 style: pw.TextStyle(fontSize: 15, font: ttf),
                 textAlign: pw.TextAlign.center),
             pw.Expanded(
@@ -226,7 +226,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     log.d(_walletPubkey);
   }
 
-  Future<int> importCesiumWallet() async {
+  Future<int?> importCesiumWallet() async {
     // String _walletPubkey = await DubpRust.getLegacyPublicKey(
     //     salt: _cesiumID, password: _cesiumPWD);
     // String shortPubkey = truncate(_walletPubkey, 9,
@@ -244,7 +244,7 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     int chestNumber = 0;
     chestBox.toMap().forEach((key, value) {
-      if (value.isCesium) {
+      if (value.isCesium!) {
         chestNumber++;
       }
     });
@@ -268,7 +268,7 @@ class GenerateWalletsProvider with ChangeNotifier {
         isCesium: true);
 
     await chestBox.add(cesiumChest).then((value) => null);
-    int chestKey = await chestBox.toMap().keys.last;
+    int? chestKey = await chestBox.toMap().keys.last;
     // chestBox.toMap().
     await configBox.put('currentChest', chestKey);
 
@@ -299,7 +299,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     String word;
     int _nbr = 1;
 
-    for (word in generatedMnemonic.split(' ')) {
+    for (word in generatedMnemonic!.split(' ')) {
       _wordsList.add("$_nbr:$word");
       _nbr++;
     }
@@ -318,7 +318,7 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   bool isBipWordsList(List words) {
     bool isValid = true;
-    for (String word in words) {
+    for (String word in words as Iterable<String>) {
       // Needed for bad encoding of UTF-8
       word = word.replaceAll('é', 'é');
       word = word.replaceAll('è', 'è');
@@ -374,7 +374,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     inputMnemonic = inputMnemonic.replaceAll('é', 'é');
     inputMnemonic = inputMnemonic.replaceAll('è', 'è');
 
-    NewWallet generatedWallet =
+    NewWallet? generatedWallet =
         await generateWallet(inputMnemonic, isImport: true);
 
     if (generatedWallet == null) {

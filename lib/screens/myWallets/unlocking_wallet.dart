@@ -15,17 +15,17 @@ import 'package:gecko/globals.dart';
 // ignore: must_be_immutable
 class UnlockingWallet extends StatelessWidget {
   UnlockingWallet(
-      {Key keyUnlockWallet, @required this.wallet, @required this.action})
+      {Key? keyUnlockWallet, required this.wallet, required this.action})
       : super(key: keyUnlockWallet);
-  WalletData wallet;
+  WalletData? wallet;
   String action;
 
   // ignore: close_sinks
-  StreamController<ErrorAnimationType> errorController;
+  StreamController<ErrorAnimationType>? errorController;
   final formKey = GlobalKey<FormState>();
-  var pinColor = const Color(0xffF9F9F1);
+  Color? pinColor = const Color(0xffF9F9F1);
   var walletPin = '';
-  String resultPay;
+  String? resultPay;
 
   @override
   Widget build(BuildContext context) {
@@ -35,13 +35,13 @@ class UnlockingWallet extends StatelessWidget {
     final double statusBarHeight = MediaQuery.of(context).padding.top;
 
     int _pinLenght;
-    ChestData currentChest = chestBox.get(configBox.get('currentChest'));
+    ChestData currentChest = chestBox.get(configBox.get('currentChest'))!;
 
-    if (currentChest.isCesium) {
+    if (currentChest.isCesium!) {
       _pinLenght = _walletOptions.getPinLenght(currentChest.dewif);
       wallet = WalletData(derivation: -1, chest: currentChest.key);
     } else {
-      _pinLenght = _walletOptions.getPinLenght(wallet.number);
+      _pinLenght = _walletOptions.getPinLenght(wallet!.number);
     }
     errorController = StreamController<ErrorAnimationType>();
 
@@ -77,14 +77,14 @@ class UnlockingWallet extends StatelessWidget {
                               width: isTall ? 130 : 100,
                             )
                           : Image.file(
-                              currentChest.imageFile,
+                              currentChest.imageFile!,
                               width: isTall ? 130 : 100,
                             ),
                       const SizedBox(width: 5),
                       SizedBox(
                           width: 250,
                           child: Text(
-                            currentChest.name,
+                            currentChest.name!,
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                                 fontSize: 25,
@@ -165,7 +165,7 @@ class UnlockingWallet extends StatelessWidget {
             obscuringCharacter: '*',
             animationType: AnimationType.fade,
             validator: (v) {
-              if (v.length < _pinLenght) {
+              if (v!.length < _pinLenght) {
                 return "Votre code PIN fait $_pinLenght caractères";
               } else {
                 return null;
@@ -198,8 +198,8 @@ class UnlockingWallet extends StatelessWidget {
             onCompleted: (_pin) async {
               log.d("Completed");
               _myWalletProvider.pinCode = _pin;
-              final String resultWallet = _walletOptions.readLocalWallet(
-                  context, wallet, _pin.toUpperCase(), _pinLenght);
+              final String? resultWallet = _walletOptions.readLocalWallet(
+                  context, wallet!, _pin.toUpperCase(), _pinLenght);
               // _myWalletProvider.pinCode = _pin.toUpperCase();
               _myWalletProvider.pinLenght = _pinLenght;
 
@@ -213,7 +213,7 @@ class UnlockingWallet extends StatelessWidget {
                 pinColor = Colors.green[400];
                 // await Future.delayed(Duration(milliseconds: 50));
                 if (action == "mywallets") {
-                  currentChest.isCesium
+                  currentChest.isCesium!
                       ? Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) {
@@ -222,7 +222,7 @@ class UnlockingWallet extends StatelessWidget {
                           }),
                         )
                       : Navigator.pushNamed(
-                          formKey.currentContext, '/mywallets');
+                          formKey.currentContext!, '/mywallets');
                 } else if (action == "pay") {
                   resultPay =
                       await _historyProvider.pay(context, _pin.toUpperCase());
@@ -239,7 +239,7 @@ class UnlockingWallet extends StatelessWidget {
     );
   }
 
-  Future<bool> _paymentsResult(context) {
+  Future<bool?> _paymentsResult(context) {
     if (resultPay != "success") log.i(resultPay);
     return showDialog<bool>(
       context: context,

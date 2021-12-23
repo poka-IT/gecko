@@ -10,13 +10,13 @@ import 'package:provider/provider.dart';
 // ignore: must_be_immutable
 class ChangePinScreen extends StatelessWidget with ChangeNotifier {
   ChangePinScreen(
-      {Key keyMyWallets,
-      @required this.walletName,
-      @required this.walletProvider})
+      {Key? keyMyWallets,
+      required this.walletName,
+      required this.walletProvider})
       : super(key: keyMyWallets);
-  final String walletName;
+  final String? walletName;
   final MyWalletsProvider walletProvider;
-  Directory appPath;
+  Directory? appPath;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +41,7 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
               }),
           title: SizedBox(
             height: 22,
-            child: Text(walletName),
+            child: Text(walletName!),
           ),
         ),
         body: Center(
@@ -98,7 +98,7 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                   onPressed: () {
                     NewWallet _newWalletFile = _changePin.changePin(
                         walletProvider.pinCode,
-                        newCustomPin: _changePin.newPin.text);
+                        newCustomPin: _changePin.newPin.text)!;
                     _changePin.newPin.text = '';
                     _changePin.storeNewPinChest(context, _newWalletFile);
                     walletProvider.pinCode = _changePin.newPin.text;
@@ -120,7 +120,7 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
 class StatefulWrapper extends StatefulWidget {
   final Function onInit;
   final Widget child;
-  const StatefulWrapper({Key key, @required this.onInit, @required this.child})
+  const StatefulWrapper({Key? key, required this.onInit, required this.child})
       : super(key: key);
   @override
   _StatefulWrapperState createState() => _StatefulWrapperState();
@@ -129,9 +129,7 @@ class StatefulWrapper extends StatefulWidget {
 class _StatefulWrapperState extends State<StatefulWrapper> {
   @override
   void initState() {
-    if (widget.onInit != null) {
-      widget.onInit();
-    }
+    widget.onInit();
     super.initState();
   }
 

@@ -15,19 +15,19 @@ void main() {
     final manageWalletsFinder = find.byValueKey('manageWallets');
     // final buttonFinder = find.byValueKey('increment');
 
-    FlutterDriver driver;
-    String pinCode;
+    FlutterDriver? driver;
+    String? pinCode;
 
     // Connect to the Flutter driver before running any tests.
     setUpAll(() async {
       driver = await FlutterDriver.connect();
-      await driver.waitUntilFirstFrameRasterized();
+      await driver!.waitUntilFirstFrameRasterized();
     });
 
     // Close the connection to the driver after the tests have completed.
     tearDownAll(() async {
       if (driver != null) {
-        driver.close();
+        driver!.close();
       }
     });
 
@@ -35,12 +35,12 @@ void main() {
 
     // Function to tap the widget by key
     Future tapOn(String key) async {
-      await driver.tap(find.byValueKey(key));
+      await driver!.tap(find.byValueKey(key));
     }
 
     // Easy get text
     Future<String> getText(String text) async {
-      return await driver.getText(find.byValueKey(
+      return await driver!.getText(find.byValueKey(
         text,
       ));
     }
@@ -63,7 +63,7 @@ void main() {
     Future<bool> isPresent(SerializableFinder byValueKey,
         {Duration timeout = const Duration(seconds: 1)}) async {
       try {
-        await driver.waitFor(byValueKey, timeout: timeout);
+        await driver!.waitFor(byValueKey, timeout: timeout);
         return true;
       } catch (exception) {
         return false;
@@ -97,7 +97,7 @@ void main() {
     }
 
     // Fast creation of new Keychain
-    Future<String> createNewKeychain(String name) async {
+    Future<String?> createNewKeychain(String name) async {
       await tapOn('drawerMenu');
       await sleep(300);
       await tapOn('parameters');
@@ -110,9 +110,9 @@ void main() {
       pinCode = await getText('generatedPin');
       await tapOn('storeKeychain');
       await sleep(100);
-      await driver.enterText('triche');
+      await driver!.enterText('triche');
       await tapOn('walletName');
-      await driver.enterText(name);
+      await driver!.enterText(name);
       await sleep(50);
       await tapOn('confirmStorage');
       await sleep(300);
@@ -124,7 +124,7 @@ void main() {
     test('OnBoarding - Open wallets management', (
         {timeout = Timeout.none}) async {
       // await driver.runUnsynchronized(() async { // Needed if we want to manage async drivers
-      await driver.tap(manageWalletsFinder);
+      await driver!.tap(manageWalletsFinder);
 
       // If a wallet exist, go to delete theme all
       if (!await isPresent(find.byValueKey('goStep1'))) {
@@ -132,7 +132,7 @@ void main() {
 
         await deleteAllWallets();
 
-        await driver.tap(manageWalletsFinder);
+        await driver!.tap(manageWalletsFinder);
       }
 
       // Get the SerializableFinder for text widget with key 'textOnboarding'
@@ -143,7 +143,7 @@ void main() {
       await sleep(100);
 
       // Verify onboarding is starting, with text
-      expect(await driver.getText(textOnboarding),
+      expect(await driver!.getText(textOnboarding),
           "Je ne connais pour l’instant aucun de vos portefeuilles.\n\nVous pouvez en créer un nouveau, ou bien importer un portefeuille Cesium existant.");
     });
 
@@ -157,7 +157,7 @@ void main() {
       await tapOn('goStep6');
 
       expect(
-          await driver.getText(find.byValueKey(
+          await driver!.getText(find.byValueKey(
             'step6',
           )),
           "J’ai généré votre phrase de restauration !\nTâchez de la garder bien secrète, car elle permet à quiconque la connaît d’accéder à tous vos portefeuilles.");
@@ -189,10 +189,10 @@ void main() {
         )];
 
         // Enter the expected word
-        await driver.enterText(goodWord);
+        await driver!.enterText(goodWord);
 
         // Check if word is valid
-        await driver.waitFor(find.text("C'est le bon mot !"));
+        await driver!.waitFor(find.text("C'est le bon mot !"));
 
         // Continue onboarding workflow
         await tapOn('goStep9');
@@ -245,7 +245,7 @@ void main() {
       // await tapOn('formKey2');
 
       //Enter good secret code
-      await driver.enterText(pinCode);
+      await driver!.enterText(pinCode!);
 
       expect(await getText('step13'),
           "Top !\n\nVotre trousseau de clef et votre portefeuille ont été créés avec un immense succès.\n\nFélicitations !");
@@ -259,29 +259,29 @@ void main() {
       await sleep(300);
 
       // Go to first derivation and rename it
-      await driver.tap(find.text('Mon portefeuille courant'));
+      await driver!.tap(find.text('Mon portefeuille courant'));
       await sleep(300);
       await tapOn('renameWallet');
       await sleep(100);
       await tapOn('walletName');
       await sleep(100);
-      await driver.enterText('Renommage wallet 1');
+      await driver!.enterText('Renommage wallet 1');
       await sleep(300);
       await tapOn('renameWallet');
       await sleep(400);
-      await driver.waitFor(find.text('Renommage wallet 1'), timeout: timeout);
+      await driver!.waitFor(find.text('Renommage wallet 1'), timeout: timeout);
       // expect(await getText('walletName'), "Renommage wallet 1");
       await goBack();
     });
 
     test('My wallets - Create a derivations, open thems, tap all buttons', (
         {timeout = const Duration(seconds: 2)}) async {
-      await driver.waitFor(find.text('Renommage wallet 1'), timeout: timeout);
+      await driver!.waitFor(find.text('Renommage wallet 1'), timeout: timeout);
       // Add a second derivation
       await createDerivation();
 
       // Go to second derivation options
-      await driver.tap(find.text('Portefeuille 2'));
+      await driver!.tap(find.text('Portefeuille 2'));
       await sleep(100);
 
       // Test options
@@ -297,7 +297,7 @@ void main() {
       await tapOn('setDefaultWallet');
       await sleep(50);
       await tapOn('copyPubkey');
-      await driver.waitFor(find
+      await driver!.waitFor(find
           .text('Cette clé publique a été copié dans votre presse-papier.'));
       await goBack();
 
@@ -309,7 +309,7 @@ void main() {
       await sleep(50);
 
       // Go to third derivation options
-      await driver.tap(find.text('Portefeuille 3'));
+      await driver!.tap(find.text('Portefeuille 3'));
       await sleep(100);
       await tapOn('displayBalance');
 
@@ -320,7 +320,7 @@ void main() {
     test('My wallets - Extra tests', (
         {timeout = const Duration(seconds: 2)}) async {
       // Add derivation 5,6 and 7
-      await driver.waitFor(find.text('Portefeuille 4'), timeout: timeout);
+      await driver!.waitFor(find.text('Portefeuille 4'), timeout: timeout);
       await createDerivation();
       await createDerivation();
       await createDerivation();
@@ -331,27 +331,27 @@ void main() {
       await tapOn('manageWallets');
       await sleep(200);
       //Enter secret code
-      await driver.enterText(pinCode);
+      await driver!.enterText(pinCode!);
       await sleep(200);
 
       // Go to derivation 6 and delete it
-      await driver.tap(find.text('Portefeuille 6'));
+      await driver!.tap(find.text('Portefeuille 6'));
       await sleep(100);
       await deleteWallet(true);
 
       // Go to 2nd derivation and check if it's de default
-      await driver.tap(find.text('Portefeuille 2'));
-      await driver.waitFor(find.text('Ce portefeuille est celui par defaut'));
+      await driver!.tap(find.text('Portefeuille 2'));
+      await driver!.waitFor(find.text('Ce portefeuille est celui par defaut'));
       await tapOn('setDefaultWallet');
       await sleep(100);
-      await driver.waitFor(find.text('Ce portefeuille est celui par defaut'));
+      await driver!.waitFor(find.text('Ce portefeuille est celui par defaut'));
       await sleep(300);
 
       // Display history, copy pubkey, go back and rename wallet name
       await tapOn('displayHistory');
       await sleep(400);
       await tapOn('copyPubkey');
-      await driver.waitFor(find
+      await driver!.waitFor(find
           .text('Cette clé publique a été copié dans votre presse-papier.'));
       await sleep(800);
       await goBack();
@@ -360,70 +360,70 @@ void main() {
       await sleep(100);
       await tapOn('walletName');
       await sleep(100);
-      await driver.enterText('Renommage wallet 2');
+      await driver!.enterText('Renommage wallet 2');
       await sleep(300);
       await tapOn('renameWallet');
       await sleep(400);
       await goBack();
-      await driver.waitFor(find.text('Renommage wallet 2'));
-      await driver.scrollIntoView(find.text('+'));
+      await driver!.waitFor(find.text('Renommage wallet 2'));
+      await driver!.scrollIntoView(find.text('+'));
       await createDerivation();
       await createDerivation();
-      await driver.scrollIntoView(find.text('+'));
+      await driver!.scrollIntoView(find.text('+'));
       await createDerivation();
       await createDerivation();
-      await driver.scrollIntoView(find.text('+'));
+      await driver!.scrollIntoView(find.text('+'));
       await createDerivation();
       await createDerivation();
-      await driver.scrollIntoView(find.text('+'));
+      await driver!.scrollIntoView(find.text('+'));
       await createDerivation();
       await createDerivation();
-      await driver.scrollIntoView(find.text('+'));
+      await driver!.scrollIntoView(find.text('+'));
       await createDerivation();
       await createDerivation();
-      await driver.scrollIntoView(find.text('+'));
+      await driver!.scrollIntoView(find.text('+'));
       await createDerivation();
       await createDerivation();
-      await driver.scrollIntoView(find.text('+'));
+      await driver!.scrollIntoView(find.text('+'));
       await createDerivation();
       await sleep(400);
 
       // Scroll the wallet screen until Derivation 20 and open it
-      await driver.scrollUntilVisible(
+      await driver!.scrollUntilVisible(
         find.byValueKey('listWallets'),
         find.text('Portefeuille 20'),
         dyScroll: -300.0,
       );
 
-      await driver.waitFor(find.text('Portefeuille 20'));
+      await driver!.waitFor(find.text('Portefeuille 20'));
       await sleep(400);
-      await driver.tap(find.text('Portefeuille 20'));
+      await driver!.tap(find.text('Portefeuille 20'));
       await tapOn('copyPubkey');
     });
 
     test('Search - Search Pi profile, navigate in history transactions', (
         {timeout = const Duration(seconds: 2)}) async {
-      await driver.waitFor(find.text('Portefeuille 20'), timeout: timeout);
+      await driver!.waitFor(find.text('Portefeuille 20'), timeout: timeout);
       await goBack();
       await goBack();
       await sleep(200);
       await tapOn('searchIcon');
       await sleep(400);
-      await driver.enterText('D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU');
+      await driver!.enterText('D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU');
       await sleep(100);
       await tapOn('copyPubkey');
       await sleep(500);
       await tapOn('switchPayHistory');
       await sleep(1200);
       // await driver.scrollIntoView(find.byValueKey('listTransactions'));
-      await driver.scrollUntilVisible(
+      await driver!.scrollUntilVisible(
         find.byValueKey('listTransactions'),
         find.byValueKey('transaction35'),
         dyScroll: -600.0,
       );
       await sleep(100);
       await tapOn('transaction33');
-      await driver.waitFor(find.text('Commentaire:'));
+      await driver!.waitFor(find.text('Commentaire:'));
 
       // Want to paste pubkey copied, but doesn't work actualy with flutter driver: https://github.com/flutter/flutter/issues/47448
       // final ClipboardData pubkeyCopied =
@@ -435,19 +435,19 @@ void main() {
 
     test('Wallet generation - Fast wallets generations', (
         {timeout = const Duration(seconds: 2)}) async {
-      await driver.waitFor(find.text('Commentaire:'), timeout: timeout);
+      await driver!.waitFor(find.text('Commentaire:'), timeout: timeout);
       await goBack();
       await goBack();
       await deleteAllWallets();
       await sleep(100);
-      final String pincode = await createNewKeychain('Fast wallet');
+      final String pincode = await (createNewKeychain('Fast wallet') as FutureOr<String>);
       await sleep(200);
-      await driver.enterText(pincode);
+      await driver!.enterText(pincode);
       await sleep(100);
       await createDerivation();
       await sleep(100);
-      await driver.tap(find.text('Fast wallet'));
-      await driver.waitFor(find.text('Fast wallet'));
+      await driver!.tap(find.text('Fast wallet'));
+      await driver!.waitFor(find.text('Fast wallet'));
       // Wait 3 seconds at the end
       await sleep(3000);
     });

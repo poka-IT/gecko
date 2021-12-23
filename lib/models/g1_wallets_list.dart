@@ -6,25 +6,25 @@ part 'g1_wallets_list.g.dart';
 @HiveType(typeId: 2)
 class G1WalletsList {
   @HiveField(0)
-  String pubkey;
+  String? pubkey;
 
   @HiveField(1)
-  double balance;
+  double? balance;
 
   @HiveField(3)
-  Id id;
+  Id? id;
 
   @HiveField(4)
-  Image avatar;
+  Image? avatar;
 
   @HiveField(5)
-  String username;
+  String? username;
 
   @HiveField(6)
-  String csName;
+  String? csName;
 
   @HiveField(7)
-  bool isMembre;
+  bool? isMembre;
 
   G1WalletsList({
     this.pubkey,
@@ -47,7 +47,7 @@ class G1WalletsList {
     data['pubkey'] = pubkey;
     data['balance'] = balance;
     if (id != null) {
-      data['id'] = id.toJson();
+      data['id'] = id!.toJson();
     }
     return data;
   }
@@ -55,8 +55,8 @@ class G1WalletsList {
 
 @HiveType(typeId: 3)
 class Id {
-  bool isMember;
-  String username;
+  bool? isMember;
+  String? username;
 
   Id({this.isMember, this.username});
 

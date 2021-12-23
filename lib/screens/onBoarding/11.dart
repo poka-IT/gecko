@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 class OnboardingStepThirteen extends StatelessWidget {
   final int progress = 10;
 
-  const OnboardingStepThirteen({Key key}) : super(key: key);
+  const OnboardingStepThirteen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

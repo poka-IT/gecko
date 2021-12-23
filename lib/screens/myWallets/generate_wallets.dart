@@ -10,7 +10,7 @@ import 'package:super_tooltip/super_tooltip.dart';
 
 // ignore: must_be_immutable
 class GenerateFastChestScreen extends StatelessWidget {
-  SuperTooltip tooltip;
+  SuperTooltip? tooltip;
   bool hasError = false;
   String validPin = 'NO PIN';
   String currentText = "";
@@ -19,7 +19,7 @@ class GenerateFastChestScreen extends StatelessWidget {
   final GlobalKey _toolTipSentence = GlobalKey();
   final GlobalKey _toolTipSecret = GlobalKey();
 
-  GenerateFastChestScreen({Key key}) : super(key: key);
+  GenerateFastChestScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +30,7 @@ class GenerateFastChestScreen extends StatelessWidget {
     if (_generateWalletProvider.mnemonicController.text == '') {
       _generateWalletProvider.generateWordList();
       _generateWalletProvider.mnemonicController.text =
-          _generateWalletProvider.generatedMnemonic;
+          _generateWalletProvider.generatedMnemonic!;
       _generateWalletProvider.pin.text = randomSecretCode(5);
     }
 
@@ -50,7 +50,7 @@ class GenerateFastChestScreen extends StatelessWidget {
               onPressed: () {
                 _generateWalletProvider.generateWordList();
                 _generateWalletProvider.mnemonicController.text =
-                    _generateWalletProvider.generatedMnemonic;
+                    _generateWalletProvider.generatedMnemonic!;
               },
               child: SizedBox(
                 height: 40.0,
@@ -118,7 +118,7 @@ class GenerateFastChestScreen extends StatelessWidget {
                                 _generateWalletProvider.actualWallet = Dewif()
                                     .generateDewif(
                                         _generateWalletProvider
-                                            .generatedMnemonic,
+                                            .generatedMnemonic!,
                                         _generateWalletProvider.pin.text,
                                         lang: 'french');
                                 await Navigator.push(
@@ -189,9 +189,9 @@ class GenerateFastChestScreen extends StatelessWidget {
 
 // ignore: must_be_immutable
 class PrintWallet extends StatelessWidget {
-  const PrintWallet(this.sentence, {Key key}) : super(key: key);
+  const PrintWallet(this.sentence, {Key? key}) : super(key: key);
 
-  final String sentence;
+  final String? sentence;
 
   @override
   Widget build(BuildContext context) {

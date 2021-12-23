@@ -8,7 +8,7 @@ class CommonElements {
     return const Text('Coucou');
   }
 
-  Widget bubbleSpeak(String text, {double long, Key textKey}) {
+  Widget bubbleSpeak(String text, {double? long, Key? textKey}) {
     return Bubble(
       padding: long == null
           ? const BubbleEdges.all(18)
@@ -26,7 +26,7 @@ class CommonElements {
     );
   }
 
-  Widget bubbleSpeakRich(List<TextSpan> text, {Key textKey}) {
+  Widget bubbleSpeakRich(List<TextSpan> text, {Key? textKey}) {
     return Bubble(
       padding: const BubbleEdges.all(18),
       elevation: 5,
@@ -130,7 +130,7 @@ class CommonElements {
 }
 
 class SmoothTransition extends PageRouteBuilder {
-  final Widget page;
+  final Widget? page;
   SmoothTransition({this.page})
       : super(
           pageBuilder: (
@@ -141,8 +141,8 @@ class SmoothTransition extends PageRouteBuilder {
               TweenAnimationBuilder(
             duration: const Duration(seconds: 5),
             tween: Tween(begin: 200, end: 200),
-            builder: (BuildContext context, dynamic value, Widget child) {
-              return page;
+            builder: (BuildContext context, dynamic value, Widget? child) {
+              return page!;
             },
           ),
         );
@@ -152,7 +152,7 @@ class FaderTransition extends PageRouteBuilder {
   final Widget page;
   final bool isFast;
 
-  FaderTransition({@required this.page, @required this.isFast})
+  FaderTransition({required this.page, required this.isFast})
       : super(
           pageBuilder: (
             BuildContext context,
@@ -175,7 +175,7 @@ class FaderTransition extends PageRouteBuilder {
 }
 
 class SlideLeftRoute extends PageRouteBuilder {
-  final Widget page;
+  final Widget? page;
   SlideLeftRoute({this.page})
       : super(
           pageBuilder: (
@@ -183,7 +183,7 @@ class SlideLeftRoute extends PageRouteBuilder {
             Animation<double> animation,
             Animation<double> secondaryAnimation,
           ) =>
-              page,
+              page!,
           transitionsBuilder: (
             BuildContext context,
             Animation<double> animation,
@@ -207,7 +207,7 @@ class GeckoSpeechAppBar extends StatelessWidget with PreferredSizeWidget {
 
   GeckoSpeechAppBar(
     this.title, {
-    Key key,
+    Key? key,
   })  : preferredSize = const Size.fromHeight(105.4),
         super(key: key);
 

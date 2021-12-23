@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -20,7 +21,7 @@ bool _isNewNameValid = false;
 
 class CesiumWalletOptions extends StatelessWidget {
   const CesiumWalletOptions(
-      {Key key, Key keyMyWallets, @required this.cesiumWallet})
+      {Key? key, Key? keyMyWallets, required this.cesiumWallet})
       : super(key: key);
 
   final ChestData cesiumWallet;
@@ -40,9 +41,8 @@ class CesiumWalletOptions extends StatelessWidget {
     final String shortPubkey =
         _walletOptions.getShortPubkey(_walletOptions.pubkey.text);
 
-    if (_walletOptions.nameController.text == null ||
-        _isNewNameValid == false) {
-      _walletOptions.nameController.text = cesiumWallet.name;
+    if (_isNewNameValid == false) {
+      _walletOptions.nameController.text = cesiumWallet.name!;
     } else {
       cesiumWallet.name = _walletOptions.nameController.text;
     }
@@ -106,10 +106,8 @@ class CesiumWalletOptions extends StatelessWidget {
                     const SizedBox(width: 25),
                     InkWell(
                       onTap: () async {
-                        File newAvatar = await _walletOptions.changeAvatar();
-                        if (newAvatar != null) {
+                        File newAvatar = await (_walletOptions.changeAvatar() as FutureOr<File>);
                           cesiumWallet.imageFile = newAvatar;
-                        }
                         _walletOptions.reloadBuild();
                       },
                       child: cesiumWallet.imageFile == null
@@ -117,14 +115,12 @@ class CesiumWalletOptions extends StatelessWidget {
                               'assets/chests/${cesiumWallet.imageName}',
                               width: 110,
                             )
-                          : Image.file(cesiumWallet.imageFile, width: 110),
+                          : Image.file(cesiumWallet.imageFile!, width: 110),
                     ),
                     InkWell(
                         onTap: () async {
-                          File newAvatar = await _walletOptions.changeAvatar();
-                          if (newAvatar != null) {
+                          File newAvatar = await (_walletOptions.changeAvatar() as FutureOr<File>);
                             cesiumWallet.imageFile = newAvatar;
-                          }
                           _walletOptions.reloadBuild();
                         },
                         child: Column(children: <Widget>[
@@ -170,7 +166,7 @@ class CesiumWalletOptions extends StatelessWidget {
                               // pollInterval: Duration(seconds: 1),
                             ),
                             builder: (QueryResult result,
-                                {VoidCallback refetch, FetchMore fetchMore}) {
+                                {VoidCallback? refetch, FetchMore? fetchMore}) {
                               if (result.hasException) {
                                 return Text(result.exception.toString());
                               }
@@ -181,13 +177,13 @@ class CesiumWalletOptions extends StatelessWidget {
 
                               // List repositories = result.data['viewer']['repositories']['nodes'];
                               String wBalanceUD;
-                              if (result.data['balance'] == null) {
+                              if (result.data!['balance'] == null) {
                                 wBalanceUD = '0.0';
                               } else {
                                 int wBalanceG1 =
-                                    result.data['balance']['amount'];
+                                    result.data!['balance']['amount'];
                                 int currentUD =
-                                    result.data['currentUd']['amount'];
+                                    result.data!['currentUd']['amount'];
                                 double wBalanceUDBrut =
                                     wBalanceG1 / currentUD; // .toString();
                                 wBalanceUD = double.parse(
@@ -357,7 +353,7 @@ class CesiumWalletOptions extends StatelessWidget {
                 key: const Key('changePin'),
                 onTap: () async {
                   // await _chestProvider.changePin(context, cesiumWallet);
-                  String newPin = await Navigator.push(
+                  String? newPin = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) {

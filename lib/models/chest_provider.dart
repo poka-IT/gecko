@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
@@ -8,14 +9,14 @@ class ChestProvider with ChangeNotifier {
   }
 
   Future deleteChest(context, ChestData _chest) async {
-    final bool _answer = await _confirmDeletingChest(context, _chest.name);
+    final bool _answer = await (_confirmDeletingChest(context, _chest.name) as FutureOr<bool>);
 
     if (_answer) {
       await chestBox.delete(_chest.key);
       if (chestBox.isEmpty) {
         await configBox.put('currentChest', 0);
       } else {
-        int lastChest = chestBox.toMap().keys.first;
+        int? lastChest = chestBox.toMap().keys.first;
         await configBox.put('currentChest', lastChest);
       }
 
@@ -27,7 +28,7 @@ class ChestProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> _confirmDeletingChest(context, String _walletName) async {
+  Future<bool?> _confirmDeletingChest(context, String? _walletName) async {
     return showDialog<bool>(
       context: context,
       barrierDismissible: true, // user must tap button!

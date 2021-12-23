@@ -8,7 +8,7 @@ import 'package:gecko/screens/myWallets/change_pin.dart';
 import 'package:provider/provider.dart';
 
 class ChestOptions extends StatelessWidget {
-  const ChestOptions({Key keyMyWallets, @required this.walletProvider})
+  const ChestOptions({Key? keyMyWallets, required this.walletProvider})
       : super(key: keyMyWallets);
   final MyWalletsProvider walletProvider;
 
@@ -18,7 +18,7 @@ class ChestOptions extends StatelessWidget {
     ChestProvider _chestProvider =
         Provider.of<ChestProvider>(context, listen: false);
 
-    ChestData currentChest = chestBox.get(configBox.get('currentChest'));
+    ChestData currentChest = chestBox.get(configBox.get('currentChest'))!;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -34,7 +34,7 @@ class ChestOptions extends StatelessWidget {
               }),
           title: SizedBox(
             height: 22,
-            child: Text(currentChest.name),
+            child: Text(currentChest.name!),
           )),
       body: Builder(
         builder: (ctx) => SafeArea(
@@ -44,7 +44,7 @@ class ChestOptions extends StatelessWidget {
               key: const Key('changePin'),
               onTap: () async {
                 // await _chestProvider.changePin(context, cesiumWallet);
-                String pinResult = await Navigator.push(
+                String? pinResult = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) {

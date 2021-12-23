@@ -19,18 +19,18 @@ import 'package:fast_base58/fast_base58.dart';
 class WalletsProfilesProvider with ChangeNotifier {
   WalletsProfilesProvider(this.pubkey);
 
-  String pubkey = '';
+  String? pubkey = '';
   String pubkeyShort = '';
   final TextEditingController outputPubkey = TextEditingController();
-  List transBC;
-  String fetchMoreCursor;
-  Map pageInfo;
+  List? transBC;
+  String? fetchMoreCursor;
+  Map? pageInfo;
   bool isHistoryScreen = false;
   String historySwitchButtun = "Voir l'historique";
-  String rawSvg;
+  String? rawSvg;
   TextEditingController payAmount = TextEditingController();
   TextEditingController payComment = TextEditingController();
-  num balance;
+  num? balance;
   int nRepositories = 20;
   int nPage = 1;
 
@@ -38,7 +38,7 @@ class WalletsProfilesProvider with ChangeNotifier {
     if (Platform.isAndroid || Platform.isIOS) {
       await Permission.camera.request();
     }
-    String barcode;
+    String? barcode;
     try {
       barcode = await scanner.scan();
     } catch (e) {
@@ -61,20 +61,20 @@ class WalletsProfilesProvider with ChangeNotifier {
 
   Future<String> pay(BuildContext context, String pinCode) async {
     MyWalletsProvider _myWalletModel = MyWalletsProvider();
-    int currentChest = configBox.get('currentChest');
-    WalletData defaultWallet = _myWalletModel.getDefaultWallet(currentChest);
+    int? currentChest = configBox.get('currentChest');
+    WalletData? defaultWallet = _myWalletModel.getDefaultWallet(currentChest);
 
-    String dewif = chestBox.get(currentChest).dewif;
-    int derivation;
+    String dewif = chestBox.get(currentChest)!.dewif!;
+    int? derivation;
 
-    if (chestBox.get(currentChest).isCesium) {
+    if (chestBox.get(currentChest)!.isCesium!) {
       derivation = -1;
     } else {
-      derivation = defaultWallet.derivation;
+      derivation = defaultWallet!.derivation;
     }
 
-    String result = await Gva(node: endPointGVA).pay(
-        recipient: pubkey,
+    String result = await Gva(node: endPointGVA!).pay(
+        recipient: pubkey!,
         amount: double.parse(payAmount.text),
         dewif: dewif,
         password: pinCode,
@@ -147,7 +147,7 @@ class WalletsProfilesProvider with ChangeNotifier {
     for (final trans in txs) {
       var direction = trans['direction'];
       final transaction = trans['node'];
-      String output;
+      String? output;
       if (direction == "RECEIVED") {
         for (String line in transaction['outputs']) {
           if (line.contains(_pubkey)) {
@@ -194,14 +194,14 @@ class WalletsProfilesProvider with ChangeNotifier {
     return transBC;
   }
 
-  FetchMoreOptions checkQueryResult(result, opts, _pubkey) {
-    final List<dynamic> blockchainTX =
-        (result.data['txsHistoryBc']['both']['edges'] as List<dynamic>);
+  FetchMoreOptions? checkQueryResult(result, opts, _pubkey) {
+    final List<dynamic>? blockchainTX =
+        (result.data['txsHistoryBc']['both']['edges'] as List<dynamic>?);
     // final List<dynamic> mempoolTX =
     //     (result.data['txsHistoryMp']['receiving'] as List<dynamic>);
 
     pageInfo = result.data['txsHistoryBc']['both']['pageInfo'];
-    fetchMoreCursor = pageInfo['endCursor'];
+    fetchMoreCursor = pageInfo!['endCursor'];
     if (fetchMoreCursor == null) nPage = 1;
 
     if (nPage == 1) {
@@ -216,9 +216,9 @@ class WalletsProfilesProvider with ChangeNotifier {
         variables: {'cursor': fetchMoreCursor, 'number': nRepositories},
         updateQuery: (previousResultData, fetchMoreResultData) {
           final List<dynamic> repos = [
-            ...previousResultData['txsHistoryBc']['both']['edges']
+            ...previousResultData!['txsHistoryBc']['both']['edges']
                 as List<dynamic>,
-            ...fetchMoreResultData['txsHistoryBc']['both']['edges']
+            ...fetchMoreResultData!['txsHistoryBc']['both']['edges']
                 as List<dynamic>
           ];
 
@@ -287,7 +287,7 @@ class WalletsProfilesProvider with ChangeNotifier {
   //   return balance;
   // }
 
-  Future<num> getBalance(String _pubkey) async {
+  Future<num?> getBalance(String? _pubkey) async {
     while (balance == null) {
       await Future.delayed(const Duration(milliseconds: 50));
     }

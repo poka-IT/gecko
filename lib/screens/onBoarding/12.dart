@@ -16,12 +16,12 @@ import 'package:provider/provider.dart';
 // ignore: must_be_immutable
 class OnboardingStepFourteen extends StatelessWidget {
   OnboardingStepFourteen({
-    Key validationKey,
+    Key? validationKey,
   }) : super(key: validationKey);
 
   final int progress = 11;
   final formKey = GlobalKey<FormState>();
-  var pinColor = const Color(0xFFA4B600);
+  Color? pinColor = const Color(0xFFA4B600);
   bool hasError = false;
 
   @override
@@ -62,7 +62,7 @@ class OnboardingStepFourteen extends StatelessWidget {
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
 
-    final int _currentChest = _myWalletProvider.getCurrentChest();
+    final int? _currentChest = _myWalletProvider.getCurrentChest();
 
     return Form(
       key: formKey,
@@ -81,7 +81,7 @@ class OnboardingStepFourteen extends StatelessWidget {
             obscuringCharacter: '*',
             animationType: AnimationType.fade,
             validator: (v) {
-              if (v.length < _pinLenght) {
+              if (v!.length < _pinLenght) {
                 return "Votre code PIN fait $_pinLenght caractères";
               } else {
                 return null;
@@ -118,7 +118,7 @@ class OnboardingStepFourteen extends StatelessWidget {
               if (_pin.toUpperCase() == _generateWalletProvider.pin.text) {
                 pinColor = Colors.green[500];
                 NewWallet generatedWallet = Dewif().generateDewif(
-                    _generateWalletProvider.generatedMnemonic,
+                    _generateWalletProvider.generatedMnemonic!,
                     _generateWalletProvider.pin.text,
                     lang: 'french');
                 _generateWalletProvider.storeHDWChest(

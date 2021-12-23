@@ -8,7 +8,7 @@ import 'package:gecko/screens/myWallets/import_cesium_wallet.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
 
 class NoKeyChainScreen extends StatelessWidget {
-  const NoKeyChainScreen({Key key}) : super(key: key);
+  const NoKeyChainScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

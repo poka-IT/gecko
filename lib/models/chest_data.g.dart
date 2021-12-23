@@ -17,12 +17,12 @@ class ChestDataAdapter extends TypeAdapter<ChestData> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return ChestData(
-      dewif: fields[0] as String,
-      name: fields[2] as String,
-      defaultWallet: fields[3] as int,
-      imageName: fields[4] as String,
-      imageFile: fields[5] as File,
-      isCesium: fields[6] as bool,
+      dewif: fields[0] as String?,
+      name: fields[2] as String?,
+      defaultWallet: fields[3] as int?,
+      imageName: fields[4] as String?,
+      imageFile: fields[5] as File?,
+      isCesium: fields[6] as bool?,
     );
   }
 

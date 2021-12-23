@@ -11,7 +11,7 @@ class OnboardingStepTwelve extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
   final int progress = 9;
 
-  OnboardingStepTwelve({Key key}) : super(key: key);
+  OnboardingStepTwelve({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

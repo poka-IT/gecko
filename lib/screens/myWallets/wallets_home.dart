@@ -13,7 +13,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
 class WalletsHome extends StatelessWidget {
-  const WalletsHome({Key key}) : super(key: key);
+  const WalletsHome({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,8 +21,8 @@ class WalletsHome extends StatelessWidget {
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
 
-    final int _currentChestNumber = myWalletProvider.getCurrentChest();
-    final ChestData _currentChest = chestBox.get(_currentChestNumber);
+    final int? _currentChestNumber = myWalletProvider.getCurrentChest();
+    final ChestData _currentChest = chestBox.get(_currentChestNumber)!;
     myWalletProvider.listWallets =
         myWalletProvider.readAllWallets(_currentChestNumber);
 
@@ -45,7 +45,7 @@ class WalletsHome extends StatelessWidget {
                   ModalRoute.withName('/'),
                 );
               }),
-          title: Text(_currentChest.name,
+          title: Text(_currentChest.name!,
               key: const Key('myWallets'),
               style: TextStyle(color: Colors.grey[850])),
           backgroundColor: const Color(0xffFFD58D),
@@ -146,7 +146,7 @@ class WalletsHome extends StatelessWidget {
     }
 
     List _listWallets = _myWalletProvider.listWallets;
-    WalletData defaultWallet =
+    WalletData? defaultWallet =
         _myWalletProvider.getDefaultWallet(configBox.get('currentChest'));
 
     return CustomScrollView(slivers: <Widget>[
@@ -158,7 +158,7 @@ class WalletsHome extends StatelessWidget {
           crossAxisSpacing: 0,
           mainAxisSpacing: 0,
           children: <Widget>[
-            for (WalletData _repository in _listWallets)
+            for (WalletData _repository in _listWallets as Iterable<WalletData>)
               Padding(
                   padding: const EdgeInsets.all(16),
                   child: GestureDetector(
@@ -196,7 +196,7 @@ class WalletsHome extends StatelessWidget {
                                 gradient: RadialGradient(
                               radius: 0.6,
                               colors: [
-                                Colors.green[400],
+                                Colors.green[400]!,
                                 const Color(0xFFE7E7A6),
                               ],
                             )),
@@ -210,7 +210,7 @@ class WalletsHome extends StatelessWidget {
                                         scale: 0.5,
                                       )
                                     : Image.file(
-                                        _repository.imageFile,
+                                        _repository.imageFile!,
                                         alignment: Alignment.bottomCenter,
                                         scale: 0.5,
                                       ),
@@ -222,7 +222,7 @@ class WalletsHome extends StatelessWidget {
                                     bottom: Radius.circular(12))),
                             // contentPadding: const EdgeInsets.only(left: 7.0),
                             tileColor:
-                                _repository.id()[1] == defaultWallet.id()[1]
+                                _repository.id()[1] == defaultWallet!.id()[1]
                                     ? orangeC
                                     : const Color(0xffFFD58D),
                             // leading: Text('IMAGE'),
@@ -234,7 +234,7 @@ class WalletsHome extends StatelessWidget {
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 5),
                                 child: Text(
-                                  _repository.name,
+                                  _repository.name!,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                       fontSize: 17.0,
@@ -287,7 +287,7 @@ class WalletsHome extends StatelessWidget {
           // pollInterval: Duration(seconds: 1),
         ),
         builder: (QueryResult result,
-            {VoidCallback refetch, FetchMore fetchMore}) {
+            {VoidCallback? refetch, FetchMore? fetchMore}) {
           if (result.hasException) {
             return Text(result.exception.toString());
           }
@@ -296,11 +296,11 @@ class WalletsHome extends StatelessWidget {
             return const Text('Loading');
           }
           String wBalanceUD;
-          if (result.data['balance'] == null) {
+          if (result.data!['balance'] == null) {
             wBalanceUD = '0.0';
           } else {
-            int wBalanceG1 = result.data['balance']['amount'];
-            int currentUD = result.data['currentUd']['amount'];
+            int wBalanceG1 = result.data!['balance']['amount'];
+            int currentUD = result.data!['currentUd']['amount'];
             double wBalanceUDBrut = wBalanceG1 / currentUD; // .toString();
             wBalanceUD =
                 double.parse((wBalanceUDBrut).toStringAsFixed(2)).toString();
@@ -314,7 +314,7 @@ class WalletsHome extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context);
 
     String _newDerivationName =
-        'Portefeuille ${_myWalletProvider.listWallets.last.number + 2}';
+        'Portefeuille ${_myWalletProvider.listWallets.last.number! + 2}';
     return Padding(
         padding: const EdgeInsets.all(16),
         child: ClipRRect(
@@ -371,10 +371,10 @@ class ClipOvalShadow extends StatelessWidget {
   final Widget child;
 
   const ClipOvalShadow({
-    Key key,
-    @required this.shadow,
-    @required this.clipper,
-    @required this.child,
+    Key? key,
+    required this.shadow,
+    required this.clipper,
+    required this.child,
   }) : super(key: key);
 
   @override
@@ -393,7 +393,7 @@ class _ClipOvalShadowPainter extends CustomPainter {
   final Shadow shadow;
   final CustomClipper<Rect> clipper;
 
-  _ClipOvalShadowPainter({@required this.shadow, @required this.clipper});
+  _ClipOvalShadowPainter({required this.shadow, required this.clipper});
 
   @override
   void paint(Canvas canvas, Size size) {

@@ -8,11 +8,11 @@ import 'package:flutter/material.dart';
 class AvatarFullscreen extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
 
-  AvatarFullscreen(this.avatar, {this.title, this.color, Key key})
+  AvatarFullscreen(this.avatar, {this.title, this.color, Key? key})
       : super(key: key);
-  final Image avatar;
-  final String title;
-  final Color color;
+  final Image? avatar;
+  final String? title;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -43,8 +43,8 @@ class AvatarFullscreen extends StatelessWidget {
             // height: MediaQuery.of(context).size.height,
             // width: MediaQuery.of(context).size.width,
             child: Image(
-                image: avatar.image,
-                height: avatar.height,
+                image: avatar!.image,
+                height: avatar!.height,
                 fit: BoxFit.fitWidth),
           ),
         ),

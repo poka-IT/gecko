@@ -9,20 +9,20 @@ import 'package:gecko/globals.dart';
 
 // ignore: must_be_immutable
 class SettingsScreen extends StatelessWidget {
-  String generatedMnemonic;
+  String? generatedMnemonic;
   bool walletIsGenerated = false;
-  NewWallet actualWallet;
-  String newWalletName;
+  NewWallet? actualWallet;
+  String? newWalletName;
 
   bool hasError = false;
   String validPin = 'NO PIN';
   String currentText = "";
   var pinColor = Colors.grey[300];
-  Directory appPath;
+  Directory? appPath;
 
   final MyWalletsProvider _myWallets = MyWalletsProvider();
 
-  SettingsScreen({Key key}) : super(key: key);
+  SettingsScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

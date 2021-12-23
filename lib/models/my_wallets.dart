@@ -5,10 +5,10 @@ import 'package:gecko/models/wallet_data.dart';
 
 class MyWalletsProvider with ChangeNotifier {
   List<WalletData> listWallets = [];
-  String pinCode;
-  int pinLenght;
+  late String pinCode;
+  int? pinLenght;
 
-  int getCurrentChest() {
+  int? getCurrentChest() {
     if (configBox.get('currentChest') == null) {
       configBox.put('currentChest', 0);
     }
@@ -25,7 +25,7 @@ class MyWalletsProvider with ChangeNotifier {
     }
   }
 
-  List<WalletData> readAllWallets(int _chest) {
+  List<WalletData> readAllWallets(int? _chest) {
     listWallets.clear();
     walletBox.toMap().forEach((key, value) {
       if (value.chest == _chest) {
@@ -36,11 +36,11 @@ class MyWalletsProvider with ChangeNotifier {
     return listWallets;
   }
 
-  WalletData getWalletData(List<int> _id) {
+  WalletData? getWalletData(List<int?> _id) {
     if (_id.isEmpty) return WalletData();
-    int _chest = _id[0];
-    int _nbr = _id[1];
-    WalletData _targetedWallet;
+    int? _chest = _id[0];
+    int? _nbr = _id[1];
+    WalletData? _targetedWallet;
 
     walletBox.toMap().forEach((key, value) {
       if (value.chest == _chest && value.number == _nbr) {
@@ -52,11 +52,11 @@ class MyWalletsProvider with ChangeNotifier {
     return _targetedWallet;
   }
 
-  WalletData getDefaultWallet(int chest) {
+  WalletData? getDefaultWallet(int? chest) {
     if (chestBox.isEmpty) {
       return WalletData(chest: 0, number: 0);
     } else {
-      int defaultWalletNumber = chestBox.get(chest).defaultWallet;
+      int? defaultWalletNumber = chestBox.get(chest)!.defaultWallet;
       return getWalletData([chest, defaultWalletNumber]);
     }
   }
@@ -65,7 +65,7 @@ class MyWalletsProvider with ChangeNotifier {
     try {
       log.w('DELETE ALL WALLETS ?');
 
-      final bool _answer = await _confirmDeletingAllWallets(context);
+      final bool _answer = await (_confirmDeletingAllWallets(context) as FutureOr<bool>);
       if (_answer) {
         await walletBox.clear();
         await chestBox.clear();
@@ -84,7 +84,7 @@ class MyWalletsProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> _confirmDeletingAllWallets(context) async {
+  Future<bool?> _confirmDeletingAllWallets(context) async {
     return showDialog<bool>(
       context: context,
       barrierDismissible: true, // user must tap button!
@@ -116,15 +116,15 @@ class MyWalletsProvider with ChangeNotifier {
   Future<void> generateNewDerivation(context, String _name) async {
     int _newDerivationNbr;
     int _newWalletNbr;
-    int _chest = getCurrentChest();
+    int? _chest = getCurrentChest();
     List<WalletData> _walletConfig = readAllWallets(_chest);
 
     if (_walletConfig.isEmpty) {
       _newDerivationNbr = 3;
       _newWalletNbr = 0;
     } else {
-      _newDerivationNbr = _walletConfig.last.derivation + 3;
-      _newWalletNbr = _walletConfig.last.number + 1;
+      _newDerivationNbr = _walletConfig.last.derivation! + 3;
+      _newWalletNbr = _walletConfig.last.number! + 1;
     }
 
     WalletData newWallet = WalletData(

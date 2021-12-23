@@ -15,7 +15,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key key}) : super(key: key);
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +84,7 @@ class HomeScreen extends StatelessWidget {
       body: Builder(
         builder: (ctx) => StatefulWrapper(
             onInit: () {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
+              WidgetsBinding.instance!.addPostFrameCallback((_) {
                 if (isWalletsExists) homeClass.snackNode(ctx);
               });
             },
@@ -254,7 +254,7 @@ Widget geckHome(context) {
                                   image: AssetImage('assets/home/wallet.png'),
                                   height: 75)),
                           onTap: () {
-                            WalletData defaultWallet =
+                            WalletData? defaultWallet =
                                 _myWalletProvider.getDefaultWallet(
                                     configBox.get('currentChest'));
                             Navigator.push(
@@ -513,7 +513,7 @@ Widget welcomeHome(context) {
 class StatefulWrapper extends StatefulWidget {
   final Function onInit;
   final Widget child;
-  const StatefulWrapper({Key key, @required this.onInit, @required this.child})
+  const StatefulWrapper({Key? key, required this.onInit, required this.child})
       : super(key: key);
   @override
   _StatefulWrapperState createState() => _StatefulWrapperState();
@@ -522,9 +522,7 @@ class StatefulWrapper extends StatefulWidget {
 class _StatefulWrapperState extends State<StatefulWrapper> {
   @override
   void initState() {
-    if (widget.onInit != null) {
-      widget.onInit();
-    }
+    widget.onInit();
     super.initState();
   }
 
@@ -534,7 +532,7 @@ class _StatefulWrapperState extends State<StatefulWrapper> {
   }
 }
 
-Widget bubbleSpeak(String text, {double long, Key textKey}) {
+Widget bubbleSpeak(String text, {double? long, Key? textKey}) {
   return Bubble(
     padding: long == null
         ? const BubbleEdges.all(20)

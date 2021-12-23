@@ -11,13 +11,13 @@ import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:provider/provider.dart';
 
 class ImportWalletScreen extends StatelessWidget {
-  const ImportWalletScreen({Key key}) : super(key: key);
+  const ImportWalletScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     GlobalKey _toolTipSecret = GlobalKey();
-    Timer _debounce;
+    Timer? _debounce;
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context, listen: false);
     WalletOptionsProvider _walletOptions =
@@ -54,7 +54,7 @@ class ImportWalletScreen extends StatelessWidget {
                   autofocus: true,
                   onChanged: (text) {
                     if (_debounce?.isActive ?? false) {
-                      _debounce.cancel();
+                      _debounce!.cancel();
                     }
                     _debounce = Timer(const Duration(milliseconds: 600), () {
                       walletProvider
@@ -92,7 +92,7 @@ class ImportWalletScreen extends StatelessWidget {
                 return TextFormField(
                   onChanged: (text) {
                     if (_debounce?.isActive ?? false) {
-                      _debounce.cancel();
+                      _debounce!.cancel();
                     }
                     _debounce = Timer(const Duration(milliseconds: 600), () {
                       walletProvider

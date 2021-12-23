@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 class TemplateScreen extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
 
-  TemplateScreen({Key key}) : super(key: key);
+  TemplateScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

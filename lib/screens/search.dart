@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 // import 'package:provider/provider.dart';
 
 class SearchScreen extends StatelessWidget {
-  const SearchScreen({Key key}) : super(key: key);
+  const SearchScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -59,11 +59,11 @@ class SearchScreen extends StatelessWidget {
                     ),
                     border: OutlineInputBorder(
                         borderSide:
-                            BorderSide(color: Colors.grey[500], width: 2),
+                            BorderSide(color: Colors.grey[500]!, width: 2),
                         borderRadius: BorderRadius.circular(8)),
                     focusedBorder: OutlineInputBorder(
                       borderSide:
-                          BorderSide(color: Colors.grey[500], width: 2.5),
+                          BorderSide(color: Colors.grey[500]!, width: 2.5),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     contentPadding: const EdgeInsets.all(20),

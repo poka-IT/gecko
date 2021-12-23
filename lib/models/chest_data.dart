@@ -7,22 +7,22 @@ part 'chest_data.g.dart';
 @HiveType(typeId: 1)
 class ChestData extends HiveObject {
   @HiveField(0)
-  String dewif;
+  String? dewif;
 
   @HiveField(2)
-  String name;
+  String? name;
 
   @HiveField(3)
-  int defaultWallet;
+  int? defaultWallet;
 
   @HiveField(4)
-  String imageName;
+  String? imageName;
 
   @HiveField(5)
-  File imageFile;
+  File? imageFile;
 
   @HiveField(6)
-  bool isCesium;
+  bool? isCesium;
 
   ChestData({
     this.dewif,
@@ -35,6 +35,6 @@ class ChestData extends HiveObject {
 
   @override
   String toString() {
-    return name;
+    return name!;
   }
 }

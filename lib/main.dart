@@ -124,14 +124,14 @@ Future<void> main() async {
 }
 
 class Gecko extends StatelessWidget {
-  const Gecko(this.randomEndpoint, {Key key}) : super(key: key);
-  final String randomEndpoint;
+  const Gecko(this.randomEndpoint, {Key? key}) : super(key: key);
+  final String? randomEndpoint;
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     final _httpLink = HttpLink(
-      randomEndpoint,
+      randomEndpoint!,
     );
 
     final _client = ValueNotifier(
@@ -160,7 +160,7 @@ class Gecko extends StatelessWidget {
         client: _client,
         child: MaterialApp(
           builder: (context, widget) => ResponsiveWrapper.builder(
-              BouncingScrollWrapper.builder(context, widget),
+              BouncingScrollWrapper.builder(context, widget!),
               maxWidth: 1200,
               minWidth: 480,
               defaultScale: true,
@@ -202,7 +202,7 @@ class Gecko extends StatelessWidget {
 // This http overriding is needed to fix fail certifcat checking for Duniter node on old Android version
 class MyHttpOverrides extends HttpOverrides {
   @override
-  HttpClient createHttpClient(SecurityContext context) {
+  HttpClient createHttpClient(SecurityContext? context) {
     return super.createHttpClient(context)
       ..badCertificateCallback =
           (X509Certificate cert, String host, int port) => true;

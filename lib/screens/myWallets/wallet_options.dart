@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -15,7 +16,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 // ignore: must_be_immutable
 class WalletOptions extends StatelessWidget {
-  WalletOptions({Key keyMyWallets, @required this.wallet})
+  WalletOptions({Key? keyMyWallets, required this.wallet})
       : super(key: keyMyWallets);
   WalletData wallet;
   int _nbrLinesName = 1;
@@ -33,13 +34,12 @@ class WalletOptions extends StatelessWidget {
 
     log.d(_walletOptions.pubkey.text);
 
-    final int _currentChest = _myWalletProvider.getCurrentChest();
+    final int? _currentChest = _myWalletProvider.getCurrentChest();
     final String shortPubkey =
         _walletOptions.getShortPubkey(_walletOptions.pubkey.text);
 
-    if (_walletOptions.nameController.text == null ||
-        _isNewNameValid == false) {
-      _walletOptions.nameController.text = wallet.name;
+    if (_isNewNameValid == false) {
+      _walletOptions.nameController.text = wallet.name!;
     } else {
       wallet.name = _walletOptions.nameController.text;
     }
@@ -52,11 +52,11 @@ class WalletOptions extends StatelessWidget {
     }
 
     WalletData defaultWallet =
-        _myWalletProvider.getDefaultWallet(_currentChest);
+        _myWalletProvider.getDefaultWallet(_currentChest)!;
 
     _walletOptions.isDefaultWallet = (defaultWallet.number == wallet.id()[1]);
 
-    int currentChest = _myWalletProvider.getCurrentChest();
+    int? currentChest = _myWalletProvider.getCurrentChest();
 
     log.d("Wallet options: $currentChest:${wallet.number}");
 
@@ -116,10 +116,8 @@ class WalletOptions extends StatelessWidget {
                     const SizedBox(width: 25),
                     InkWell(
                       onTap: () async {
-                        File newAvatar = await walletProvider.changeAvatar();
-                        if (newAvatar != null) {
+                        File newAvatar = await (walletProvider.changeAvatar() as FutureOr<File>);
                           wallet.imageFile = newAvatar;
-                        }
                         walletProvider.reloadBuild();
                       },
                       child: wallet.imageFile == null
@@ -128,16 +126,14 @@ class WalletOptions extends StatelessWidget {
                               width: 110,
                             )
                           : Image.file(
-                              wallet.imageFile,
+                              wallet.imageFile!,
                               width: 110,
                             ),
                     ),
                     InkWell(
                         onTap: () async {
-                          File newAvatar = await walletProvider.changeAvatar();
-                          if (newAvatar != null) {
+                          File newAvatar = await (walletProvider.changeAvatar() as FutureOr<File>);
                             wallet.imageFile = newAvatar;
-                          }
                           walletProvider.reloadBuild();
                         },
                         child: Column(children: <Widget>[
@@ -183,7 +179,7 @@ class WalletOptions extends StatelessWidget {
                               // pollInterval: Duration(seconds: 1),
                             ),
                             builder: (QueryResult result,
-                                {VoidCallback refetch, FetchMore fetchMore}) {
+                                {VoidCallback? refetch, FetchMore? fetchMore}) {
                               if (result.hasException) {
                                 return Text(result.exception.toString());
                               }
@@ -194,15 +190,15 @@ class WalletOptions extends StatelessWidget {
 
                               // List repositories = result.data['viewer']['repositories']['nodes'];
                               String wBalanceUD;
-                              if (result.data['balance'] == null) {
+                              if (result.data!['balance'] == null) {
                                 wBalanceUD = '0.0';
                               } else if (result.hasException) {
                                 wBalanceUD = '?';
                               } else {
                                 int wBalanceG1 =
-                                    result.data['balance']['amount'];
+                                    result.data!['balance']['amount'];
                                 int currentUD =
-                                    result.data['currentUd']['amount'];
+                                    result.data!['currentUd']['amount'];
                                 double wBalanceUDBrut =
                                     wBalanceG1 / currentUD; // .toString();
                                 wBalanceUD = double.parse(
@@ -366,7 +362,7 @@ class WalletOptions extends StatelessWidget {
                                       width: 110,
                                     )
                                   : Image.file(
-                                      wallet.imageFile,
+                                      wallet.imageFile!,
                                       width: 110,
                                     ));
                         }),
@@ -393,7 +389,7 @@ class WalletOptions extends StatelessWidget {
                     onTap: !walletProvider.isDefaultWallet
                         ? () {
                             defaultWallet = wallet;
-                            chestBox.get(currentChest).defaultWallet =
+                            chestBox.get(currentChest)!.defaultWallet =
                                 wallet.number;
                             _myWalletProvider.readAllWallets(_currentChest);
                             _myWalletProvider.rebuildWidget();
@@ -432,7 +428,7 @@ class WalletOptions extends StatelessWidget {
                           ? () async {
                               await walletProvider.deleteWallet(
                                   context, wallet);
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                              WidgetsBinding.instance!.addPostFrameCallback((_) {
                                 _myWalletProvider.listWallets =
                                     _myWalletProvider
                                         .readAllWallets(_currentChest);

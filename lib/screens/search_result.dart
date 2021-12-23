@@ -9,7 +9,7 @@ import 'package:gecko/screens/wallet_view.dart';
 import 'package:provider/provider.dart';
 
 class SearchResultScreen extends StatelessWidget {
-  const SearchResultScreen({Key key}) : super(key: key);
+  const SearchResultScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -64,11 +64,11 @@ class SearchResultScreen extends StatelessWidget {
             const SizedBox(height: 20),
             FutureBuilder(
               future: _searchProvider.searchBlockchain(),
-              builder: (context, snapshot) {
+              builder: (context, AsyncSnapshot<List?> snapshot) {
                 if (snapshot.connectionState == ConnectionState.done) {
                   return Expanded(
                     child: ListView(children: <Widget>[
-                      for (G1WalletsList g1Wallet in snapshot.data)
+                      for (G1WalletsList g1Wallet in snapshot.data ?? [])
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 5),
                           child: ListTile(
@@ -81,13 +81,13 @@ class SearchResultScreen extends StatelessWidget {
                                       null
                                   ? ClipOval(
                                       child: g1WalletsBox
-                                          .get(g1Wallet.pubkey)
+                                          .get(g1Wallet.pubkey)!
                                           .avatar)
                                   : FutureBuilder(
                                       future: _cesiumPlusProvider.getAvatar(
                                           g1Wallet.pubkey, _avatarSize),
                                       builder: (BuildContext context,
-                                          AsyncSnapshot<Image> _avatar) {
+                                          AsyncSnapshot<Image?> _avatar) {
                                         if (_avatar.connectionState !=
                                                 ConnectionState.done ||
                                             _avatar.hasError) {
@@ -108,12 +108,12 @@ class SearchResultScreen extends StatelessWidget {
                                         }
                                         if (_avatar.hasData) {
                                           g1WalletsBox
-                                              .get(g1Wallet.pubkey)
+                                              .get(g1Wallet.pubkey)!
                                               .avatar = _avatar.data;
                                           return ClipOval(child: _avatar.data);
                                         } else {
                                           g1WalletsBox
-                                                  .get(g1Wallet.pubkey)
+                                                  .get(g1Wallet.pubkey)!
                                                   .avatar =
                                               _cesiumPlusProvider
                                                   .defaultAvatar(_avatarSize);
@@ -124,7 +124,7 @@ class SearchResultScreen extends StatelessWidget {
                               title: Row(children: <Widget>[
                                 Text(
                                     _walletsProfilesClass
-                                        .getShortPubkey(g1Wallet.pubkey),
+                                        .getShortPubkey(g1Wallet.pubkey!),
                                     style: const TextStyle(
                                         fontSize: 18,
                                         fontFamily: 'Monospace',
@@ -132,7 +132,7 @@ class SearchResultScreen extends StatelessWidget {
                                     textAlign: TextAlign.center),
                               ]),
                               subtitle: Row(children: <Widget>[
-                                Text(g1Wallet?.id?.username ?? '',
+                                Text(g1Wallet.id?.username ?? '',
                                     style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w500),

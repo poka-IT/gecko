@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 // import 'package:provider/provider.dart';
 
 class RestoreChest extends StatelessWidget {
-  const RestoreChest({Key key}) : super(key: key);
+  const RestoreChest({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -160,7 +160,7 @@ class RestoreChest extends StatelessWidget {
     );
   }
 
-  Future<bool> badMnemonicPopup(BuildContext context) async {
+  Future<bool?> badMnemonicPopup(BuildContext context) async {
     return showDialog<bool>(
       context: context,
       barrierDismissible: true, // user must tap button!

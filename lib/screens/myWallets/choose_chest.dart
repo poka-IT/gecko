@@ -9,8 +9,8 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:provider/provider.dart';
 
 class ChooseChest extends StatefulWidget {
-  const ChooseChest({this.action, Key key}) : super(key: key);
-  final String action;
+  const ChooseChest({this.action, Key? key}) : super(key: key);
+  final String? action;
 
   @override
   State<StatefulWidget> createState() {
@@ -22,7 +22,7 @@ class ChooseChest extends StatefulWidget {
 class _ChooseChestState extends State<ChooseChest> {
   TextEditingController tplController = TextEditingController();
   CarouselController buttonCarouselController = CarouselController();
-  int currentChest = configBox.get('currentChest');
+  int? currentChest = configBox.get('currentChest');
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +51,7 @@ class _ChooseChestState extends State<ChooseChest> {
                   setState(() {});
                 },
                 enableInfiniteScroll: false,
-                initialPage: currentChest,
+                initialPage: currentChest!,
                 enlargeCenterPage: true,
                 viewportFraction: 0.6,
               ),
@@ -65,12 +65,12 @@ class _ChooseChestState extends State<ChooseChest> {
                               height: 150,
                             )
                           : Image.file(
-                              i.value.imageFile,
+                              i.value.imageFile!,
                               height: 150,
                             ),
                       const SizedBox(height: 30),
                       Text(
-                        i.value.name,
+                        i.value.name!,
                         style: const TextStyle(fontSize: 21),
                       ),
                     ]);
@@ -113,7 +113,7 @@ class _ChooseChestState extends State<ChooseChest> {
                 ),
                 onPressed: () {
                   configBox.put('currentChest', currentChest);
-                  WalletData defaultWallet =
+                  WalletData? defaultWallet =
                       _myWalletProvider.getDefaultWallet(currentChest);
                   _myWalletProvider.rebuildWidget();
                   Navigator.pushAndRemoveUntil(

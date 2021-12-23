@@ -13,8 +13,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart' as pp;
 
 class HomeProvider with ChangeNotifier {
-  int _currentIndex = 0;
-  bool isSearching;
+  bool? isSearching;
   Icon searchIcon = const Icon(Icons.search);
   final TextEditingController searchQuery = TextEditingController();
   Widget appBarTitle = Text('Ğecko', style: TextStyle(color: Colors.grey[850]));
@@ -24,15 +23,8 @@ class HomeProvider with ChangeNotifier {
   bool isFirstBuild = true;
   // AudioCache player = AudioCache(prefix: 'sounds/');
 
-  get currentIndex => _currentIndex;
-
-  set currentIndex(int index) {
-    _currentIndex = index;
-    notifyListeners();
-  }
-
   Future<void> initHive() async {
-    Directory hivePath;
+    late Directory hivePath;
 
     if (!kIsWeb) {
       if (Platform.isLinux || Platform.isMacOS) {
@@ -70,14 +62,14 @@ class HomeProvider with ChangeNotifier {
     return version + '+' + buildNumber;
   }
 
-  Future<String> getValidEndpoint() async {
+  Future<String?> getValidEndpoint() async {
     List _listEndpoints = await rootBundle
         .loadString('config/gva_endpoints.json')
         .then((jsonStr) => jsonDecode(jsonStr));
     _listEndpoints.shuffle();
 
     int i = 0;
-    String _endpoint;
+    String? _endpoint;
     int _statusCode = 0;
 
     final _client = HttpClient();
@@ -118,7 +110,7 @@ class HomeProvider with ChangeNotifier {
       }
     } while (_statusCode != 400);
 
-    log.i('ENDPOINT: ' + _endpoint);
+    log.i('ENDPOINT: ' + _endpoint!);
     return _endpoint;
   }
 
@@ -159,7 +151,7 @@ class HomeProvider with ChangeNotifier {
         _message =
             "Aucun noeud Duniter disponible, veuillez réessayer ultérieurement";
       } else {
-        _message = "Vous êtes connecté au noeud\n${endPointGVA.split('/')[2]}";
+        _message = "Vous êtes connecté au noeud\n${endPointGVA!.split('/')[2]}";
       }
       final snackBar = SnackBar(
           content: Text(_message), duration: const Duration(seconds: 2));

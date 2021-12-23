@@ -15,11 +15,11 @@ import 'package:provider/provider.dart';
 
 class WalletViewScreen extends StatelessWidget {
   const WalletViewScreen(
-      {@required this.pubkey, this.username, this.avatar, Key key})
+      {required this.pubkey, this.username, this.avatar, Key? key})
       : super(key: key);
-  final String pubkey;
-  final String username;
-  final Image avatar;
+  final String? pubkey;
+  final String? username;
+  final Image? avatar;
   final double buttonSize = 100;
   final double buttonFontSize = 18;
 
@@ -186,7 +186,7 @@ class WalletViewScreen extends StatelessWidget {
     //     Provider.of<WalletsProfilesProvider>(context);
     const double shapeSize = 20;
     MyWalletsProvider _myWalletProvider = MyWalletsProvider();
-    WalletData defaultWallet =
+    WalletData? defaultWallet =
         _myWalletProvider.getDefaultWallet(configBox.get('currentChest'));
 
     showModalBottomSheet<void>(
@@ -257,7 +257,7 @@ class WalletViewScreen extends StatelessWidget {
                               //     borderRadius: BorderRadius.circular(8)),
                               focusedBorder: OutlineInputBorder(
                                 borderSide: BorderSide(
-                                    color: Colors.grey[500], width: 2),
+                                    color: Colors.grey[500]!, width: 2),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               contentPadding: const EdgeInsets.all(20),
@@ -342,7 +342,7 @@ class WalletViewScreen extends StatelessWidget {
                         _historyProvider.snackCopyKey(context);
                       },
                       child: Text(
-                        _historyProvider.getShortPubkey(pubkey),
+                        _historyProvider.getShortPubkey(pubkey!),
                         style: const TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.w800,
@@ -361,20 +361,20 @@ class WalletViewScreen extends StatelessWidget {
                         },
                       ),
                       builder: (QueryResult result,
-                          {VoidCallback refetch, FetchMore fetchMore}) {
+                          {VoidCallback? refetch, FetchMore? fetchMore}) {
                         if (result.isLoading || result.hasException) {
                           return const Text('...');
-                        } else if (result.data['idty'] == null ||
-                            result.data['idty']['username'] == null) {
+                        } else if (result.data!['idty'] == null ||
+                            result.data!['idty']['username'] == null) {
                           g1WalletsBox.get(pubkey)?.username = '';
                           return const Text('');
                         } else {
                           g1WalletsBox.get(pubkey)?.username =
-                              result?.data['idty']['username'] ?? '';
+                              result.data!['idty']['username'] ?? '';
                           return SizedBox(
                             width: 230,
                             child: Text(
-                              result?.data['idty']['username'] ?? '',
+                              result.data!['idty']['username'] ?? '',
                               style: const TextStyle(
                                 fontSize: 27,
                                 color: Color(0xff814C00),
@@ -389,7 +389,7 @@ class WalletViewScreen extends StatelessWidget {
                     SizedBox(
                       width: 230,
                       child: Text(
-                        g1WalletsBox.get(pubkey)?.username,
+                        g1WalletsBox.get(pubkey)?.username ?? '',
                         style: const TextStyle(
                           fontSize: 27,
                           color: Color(0xff814C00),
@@ -400,7 +400,7 @@ class WalletViewScreen extends StatelessWidget {
                     SizedBox(
                       width: 230,
                       child: Text(
-                        username,
+                        username!,
                         style: const TextStyle(
                           fontSize: 27,
                           color: Color(0xff814C00),
@@ -415,7 +415,7 @@ class WalletViewScreen extends StatelessWidget {
                         return SizedBox(
                           width: 230,
                           child: Text(
-                            snapshot.data ?? '-',
+                            snapshot.data.toString(),
                             style: const TextStyle(
                                 fontSize: 18, color: Colors.black),
                           ),
@@ -429,7 +429,7 @@ class WalletViewScreen extends StatelessWidget {
                 FutureBuilder(
                     future: _cesiumPlusProvider.getAvatar(pubkey, _avatarSize),
                     builder:
-                        (BuildContext context, AsyncSnapshot<Image> _avatar) {
+                        (BuildContext context, AsyncSnapshot<Image?> _avatar) {
                       if (_avatar.connectionState != ConnectionState.done) {
                         return Stack(children: [
                           ClipOval(
@@ -461,7 +461,7 @@ class WalletViewScreen extends StatelessWidget {
                           },
                           child: ClipOval(
                             child: Image(
-                              image: _avatar.data.image,
+                              image: _avatar.data!.image,
                               height: _avatarSize,
                               fit: BoxFit.cover,
                             ),
@@ -485,7 +485,7 @@ class WalletViewScreen extends StatelessWidget {
                   },
                   child: ClipOval(
                     child: Image(
-                      image: avatar.image,
+                      image: avatar!.image,
                       height: _avatarSize,
                       fit: BoxFit.cover,
                     ),

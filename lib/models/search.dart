@@ -25,7 +25,7 @@ class SearchProvider with ChangeNotifier {
       // final response = await http.get(url);
 
       var dio = Dio();
-      Response response;
+      late Response response;
       try {
         response = await dio.get(
           'https://g1-stats.axiom-team.fr/data/forbes.json',
@@ -40,8 +40,8 @@ class SearchProvider with ChangeNotifier {
         log.e(e);
       }
 
-      List<G1WalletsList> _listWallets = _parseG1Wallets(response.data);
-      Map<String, G1WalletsList> _mapWallets = {
+      List<G1WalletsList> _listWallets = _parseG1Wallets(response.data)!;
+      Map<String?, G1WalletsList> _mapWallets = {
         for (var e in _listWallets) e.pubkey: e
       };
 
@@ -51,11 +51,11 @@ class SearchProvider with ChangeNotifier {
 
     g1WalletsBox.toMap().forEach((key, value) {
       if ((value.id != null &&
-              value.id.username != null &&
-              value.id.username
+              value.id!.username != null &&
+              value.id!.username!
                   .toLowerCase()
                   .contains(searchController.text)) ||
-          value.pubkey.contains(searchController.text)) {
+          value.pubkey!.contains(searchController.text)) {
         searchResult.add(value);
         return;
       }
@@ -70,7 +70,7 @@ class SearchProvider with ChangeNotifier {
   }
 }
 
-List<G1WalletsList> _parseG1Wallets(var responseBody) {
+List<G1WalletsList>? _parseG1Wallets(var responseBody) {
   final parsed = responseBody.cast<Map<String, dynamic>>();
 
   return parsed

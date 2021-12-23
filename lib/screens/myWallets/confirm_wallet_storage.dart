@@ -11,13 +11,13 @@ import 'package:provider/provider.dart';
 // ignore: must_be_immutable
 class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
   ConfirmStoreWallet({
-    Key validationKey,
-    @required this.generatedMnemonic,
-    @required this.generatedWallet,
+    Key? validationKey,
+    required this.generatedMnemonic,
+    required this.generatedWallet,
   }) : super(key: validationKey);
 
-  String generatedMnemonic;
-  NewWallet generatedWallet;
+  String? generatedMnemonic;
+  NewWallet? generatedWallet;
 
   final TextEditingController _mnemonicController = TextEditingController();
   final TextEditingController _inputRestoreWord = TextEditingController();
@@ -31,9 +31,9 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
         Provider.of<GenerateWalletsProvider>(context);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
-    final int _currentChest = _myWalletProvider.getCurrentChest();
+    final int? _currentChest = _myWalletProvider.getCurrentChest();
 
-    _mnemonicController.text = generatedMnemonic;
+    _mnemonicController.text = generatedMnemonic!;
     return WillPopScope(
         onWillPop: () {
           _generateWalletProvider.isAskedWordValid = false;
@@ -135,7 +135,7 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                                     walletName.text != '')
                                 ? () async {
                                     _generateWalletProvider.storeHDWChest(
-                                        generatedWallet,
+                                        generatedWallet!,
                                         walletName.text,
                                         context);
                                     _generateWalletProvider.isAskedWordValid =

@@ -21,12 +21,12 @@ class WalletOptionsProvider with ChangeNotifier {
   bool isBalanceBlur = true;
   FocusNode walletNameFocus = FocusNode();
   TextEditingController nameController = TextEditingController();
-  bool isDefaultWallet;
+  late bool isDefaultWallet;
 
-  Future<NewWallet> get badWallet => null;
+  Future<NewWallet>? get badWallet => null;
 
   String _getPubkeyFromDewif(
-      String _dewif, _pin, int _pinLenght, int derivation) {
+      String? _dewif, _pin, int _pinLenght, int? derivation) {
     RegExp regExp = RegExp(
       r'^[A-Z0-9]+$',
       caseSensitive: false,
@@ -39,25 +39,25 @@ class WalletOptionsProvider with ChangeNotifier {
     }
     if (derivation != -1) {
       try {
-        final _wallet = HdWallet.fromDewif(_dewif, _pin);
-        pubkey.text = _wallet.getPubkey(derivation);
+        final _wallet = HdWallet.fromDewif(_dewif!, _pin);
+        pubkey.text = _wallet.getPubkey(derivation!);
         log.d(pubkey.text);
         notifyListeners();
 
         return pubkey.text;
       } catch (e) {
-        log.w('Bad PIN code !\n' + e);
+        log.w('Bad PIN code !\n' + e.toString());
         notifyListeners();
 
         return 'false';
       }
     } else {
       try {
-        pubkey.text = CesiumWallet.fromDewif(_dewif, _pin).pubkey;
+        pubkey.text = CesiumWallet.fromDewif(_dewif!, _pin).pubkey;
         notifyListeners();
         return pubkey.text;
       } catch (e) {
-        log.w('Bad PIN code !\n' + e);
+        log.w('Bad PIN code !\n' + e.toString());
         notifyListeners();
 
         return 'false';
@@ -65,11 +65,11 @@ class WalletOptionsProvider with ChangeNotifier {
     }
   }
 
-  String readLocalWallet(
+  String? readLocalWallet(
       context, WalletData _wallet, String _pin, int _pinLenght) {
     isWalletUnlock = false;
     try {
-      String _localDewif = chestBox.get(_wallet.chest).dewif;
+      String? _localDewif = chestBox.get(_wallet.chest)!.dewif;
       String _localPubkey;
 
       if ((_localPubkey = _getPubkeyFromDewif(
@@ -108,15 +108,15 @@ class WalletOptionsProvider with ChangeNotifier {
     return 5;
   }
 
-  void _renameWallet(List<int> _walletID, _newName, {bool isCesium}) async {
+  void _renameWallet(List<int?> _walletID, _newName, {required bool isCesium}) async {
     if (isCesium) {
-      ChestData _chestTarget = chestBox.get(_walletID[0]);
+      ChestData _chestTarget = chestBox.get(_walletID[0])!;
       _chestTarget.name = _newName;
       await chestBox.put(_chestTarget.key, _chestTarget);
     } else {
       MyWalletsProvider myWalletClass = MyWalletsProvider();
 
-      WalletData _walletTarget = myWalletClass.getWalletData(_walletID);
+      WalletData _walletTarget = myWalletClass.getWalletData(_walletID)!;
       _walletTarget.name = _newName;
       await walletBox.put(_walletTarget.key, _walletTarget);
     }
@@ -124,12 +124,12 @@ class WalletOptionsProvider with ChangeNotifier {
     _newWalletName.text = '';
   }
 
-  bool editWalletName(List<int> _wID, {bool isCesium}) {
+  bool editWalletName(List<int?> _wID, {bool? isCesium}) {
     bool nameState;
     if (isEditing) {
       if (!nameController.text.contains(':') &&
           nameController.text.length <= 39) {
-        _renameWallet(_wID, nameController.text, isCesium: isCesium);
+        _renameWallet(_wID, nameController.text, isCesium: isCesium!);
         nameState = true;
       } else {
         nameState = false;
@@ -144,7 +144,7 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Future<int> deleteWallet(context, WalletData wallet) async {
-    final bool _answer = await _confirmDeletingWallet(context, wallet.name);
+    final bool _answer = await (_confirmDeletingWallet(context, wallet.name) as FutureOr<bool>);
 
     if (_answer) {
       walletBox.delete(wallet.key);
@@ -157,7 +157,7 @@ class WalletOptionsProvider with ChangeNotifier {
     return 0;
   }
 
-  Future<bool> _confirmDeletingWallet(context, _walletName) async {
+  Future<bool?> _confirmDeletingWallet(context, _walletName) async {
     return showDialog<bool>(
       context: context,
       barrierDismissible: true, // user must tap button!
@@ -224,7 +224,7 @@ class WalletOptionsProvider with ChangeNotifier {
     File _image;
     final picker = ImagePicker();
 
-    XFile pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       _image = File(pickedFile.path);

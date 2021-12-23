@@ -1,10 +1,10 @@
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/models/cesium_plus.dart';
+import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
-import 'package:gecko/models/wallets_profiles.dart';
-import 'package:gecko/models/search.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers/search.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:provider/provider.dart';
 

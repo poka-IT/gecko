@@ -1,10 +1,10 @@
 import 'package:bubble/bubble.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/chest_provider.dart';
-import 'package:gecko/models/wallets_profiles.dart';
+import 'package:gecko/providers/chest_provider.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/models/home.dart';
-import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/providers/home.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';

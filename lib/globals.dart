@@ -10,10 +10,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 // Files paths
 Directory? appPath;
 
-String? appVersion;
-SharedPreferences? prefs;
-String? endPointGVA;
-int? ramSys;
+late String appVersion;
+late SharedPreferences prefs;
+late String endPointGVA;
+const int pinLength = 5;
+
 late Box<WalletData> walletBox;
 late Box<ChestData> chestBox;
 late Box configBox;

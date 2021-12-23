@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
-import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/queries.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:flutter/material.dart';

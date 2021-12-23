@@ -8,9 +8,9 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:package_info/package_info.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart' as pp;
+import 'package:package_info_plus/package_info_plus.dart';
 
 class HomeProvider with ChangeNotifier {
   bool? isSearching;
@@ -49,14 +49,9 @@ class HomeProvider with ChangeNotifier {
   Future<String> getAppVersion() async {
     String version;
     String buildNumber;
-    if (kIsWeb || Platform.isLinux) {
-      version = "undefined";
-      buildNumber = "undefined";
-    } else {
-      PackageInfo packageInfo = await PackageInfo.fromPlatform();
-      version = packageInfo.version;
-      buildNumber = packageInfo.buildNumber;
-    }
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    version = packageInfo.version;
+    buildNumber = packageInfo.buildNumber;
 
     notifyListeners();
     return version + '+' + buildNumber;
@@ -151,7 +146,7 @@ class HomeProvider with ChangeNotifier {
         _message =
             "Aucun noeud Duniter disponible, veuillez réessayer ultérieurement";
       } else {
-        _message = "Vous êtes connecté au noeud\n${endPointGVA!.split('/')[2]}";
+        _message = "Vous êtes connecté au noeud\n${endPointGVA.split('/')[2]}";
       }
       final snackBar = SnackBar(
           content: Text(_message), duration: const Duration(seconds: 2));

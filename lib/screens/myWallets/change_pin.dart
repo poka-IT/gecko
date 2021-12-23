@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/change_pin.dart';
-import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/providers/change_pin.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'dart:io';
 import 'package:provider/provider.dart';
 
@@ -49,7 +49,7 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
             child: Column(children: <Widget>[
               StatefulWrapper(
                 onInit: () {
-                  _changePin.newPin.text = randomSecretCode(5);
+                  _changePin.newPin.text = randomSecretCode(pinLength);
                 },
                 child: Container(),
               ),
@@ -80,7 +80,7 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                     icon: const Icon(Icons.replay),
                     color: orangeC,
                     onPressed: () async {
-                      _changePin.newPin.text = randomSecretCode(5);
+                      _changePin.newPin.text = randomSecretCode(pinLength);
                     },
                   ),
                 ],
@@ -95,12 +95,12 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                     primary: Colors.green[400], //smoothYellow, // background
                     onPrimary: Colors.black, // foreground
                   ),
-                  onPressed: () {
-                    NewWallet _newWalletFile = _changePin.changePin(
+                  onPressed: () async {
+                    NewWallet? _newWalletFile = await _changePin.changePin(
                         walletProvider.pinCode,
-                        newCustomPin: _changePin.newPin.text)!;
+                        newCustomPin: _changePin.newPin.text);
                     _changePin.newPin.text = '';
-                    _changePin.storeNewPinChest(context, _newWalletFile);
+                    _changePin.storeNewPinChest(context, _newWalletFile!);
                     walletProvider.pinCode = _changePin.newPin.text;
                   },
                   child: const Text(

@@ -2,11 +2,11 @@ import 'dart:async';
 import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/generate_wallets.dart';
+import 'package:gecko/providers/generate_wallets.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/models/wallet_options.dart';
+import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:provider/provider.dart';
 
@@ -25,7 +25,7 @@ class ImportWalletScreen extends StatelessWidget {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
-    _generateWalletProvider.pin.text = randomSecretCode(5);
+    _generateWalletProvider.pin.text = randomSecretCode(pinLength);
     return WillPopScope(
       onWillPop: () {
         _generateWalletProvider.resetCesiumImportView();

@@ -155,8 +155,8 @@ class GenerateWalletsProvider with ChangeNotifier {
   Future<NewWallet?> generateWallet(String generatedMnemonic,
       {required bool isImport}) async {
     try {
-      actualWallet = Dewif().generateDewif(
-          generatedMnemonic, randomSecretCode(5),
+      actualWallet = await Dewif().generateDewif(
+          generatedMnemonic, randomSecretCode(pinLength),
           lang: 'french');
     } catch (e) {
       log.e(e);
@@ -172,7 +172,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   String changePinCode({required bool reload}) {
-    pin.text = randomSecretCode(5);
+    pin.text = randomSecretCode(pinLength);
     if (reload) {
       notifyListeners();
     }
@@ -258,7 +258,7 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     log.d(pin.text);
     NewWallet cesiumDewif =
-        Dewif().generateCesiumDewif(cesiumWallet.seed, pin.text);
+        await Dewif().generateCesiumDewif(cesiumWallet.seed, pin.text);
 
     ChestData cesiumChest = ChestData(
         dewif: cesiumDewif.dewif,

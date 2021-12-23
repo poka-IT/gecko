@@ -9,16 +9,22 @@ class ChangePinProvider with ChangeNotifier {
 
   NewWallet? get badWallet => null;
 
-  NewWallet? changePin(String _oldPin, {String? newCustomPin}) {
+  Future<NewWallet?> changePin(String _oldPin, {String? newCustomPin}) async {
+    final NewWallet newWalletFile;
     try {
-      final _dewif = chestBox.get(configBox.get('currentChest'))!.dewif!;
+      final _chest = chestBox.get(configBox.get('currentChest'))!;
 
-      // TODO: Durt: Detect if CesiumWallet
-      NewWallet newWalletFile = Dewif().changePassword(
-          dewif: _dewif,
-          oldPassword: _oldPin.toUpperCase(),
-          newPassword: newCustomPin);
-
+      if (_chest.isCesium!) {
+        newWalletFile = await Dewif().changeCesiumPassword(
+            dewif: _chest.dewif!,
+            oldPassword: _oldPin.toUpperCase(),
+            newPassword: newCustomPin);
+      } else {
+        newWalletFile = await Dewif().changePassword(
+            dewif: _chest.dewif!,
+            oldPassword: _oldPin.toUpperCase(),
+            newPassword: newCustomPin);
+      }
       newPin.text = pinToGive = newWalletFile.password;
       ischangedPin = true;
       // notifyListeners();

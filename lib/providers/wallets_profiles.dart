@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:durt/durt.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -73,7 +73,7 @@ class WalletsProfilesProvider with ChangeNotifier {
       derivation = defaultWallet!.derivation;
     }
 
-    String result = await Gva(node: endPointGVA!).pay(
+    String result = await Gva(node: endPointGVA).pay(
         recipient: pubkey!,
         amount: double.parse(payAmount.text),
         dewif: dewif,

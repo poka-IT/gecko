@@ -3,8 +3,8 @@ import 'package:durt/durt.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/generate_wallets.dart';
-import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/providers/generate_wallets.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:provider/provider.dart';
 

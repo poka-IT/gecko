@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
-import 'package:gecko/models/wallets_profiles.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
 
 class SearchProvider with ChangeNotifier {
   TextEditingController searchController = TextEditingController();

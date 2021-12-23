@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
-import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:truncate/truncate.dart';
@@ -94,7 +94,7 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   int getPinLenght(_walletNbr) {
-    // TODO: Get real Dewif lenght
+    // TODOo: Get real Dewif lenght
     // String _localDewif;
     // if (_walletNbr is int || _walletNbr == null) {
     //   _localDewif = chestBox.get(configBox.get('currentChest')).dewif;
@@ -105,10 +105,11 @@ class WalletOptionsProvider with ChangeNotifier {
     // final int _pinLenght = DubpRust.getDewifSecretCodeLen(
     //     dewif: _localDewif, secretCodeType: SecretCodeType.letters);
 
-    return 5;
+    return pinLength;
   }
 
-  void _renameWallet(List<int?> _walletID, _newName, {required bool isCesium}) async {
+  void _renameWallet(List<int?> _walletID, _newName,
+      {required bool isCesium}) async {
     if (isCesium) {
       ChestData _chestTarget = chestBox.get(_walletID[0])!;
       _chestTarget.name = _newName;
@@ -144,7 +145,8 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Future<int> deleteWallet(context, WalletData wallet) async {
-    final bool _answer = await (_confirmDeletingWallet(context, wallet.name) as FutureOr<bool>);
+    final bool _answer =
+        await (_confirmDeletingWallet(context, wallet.name) as FutureOr<bool>);
 
     if (_answer) {
       walletBox.delete(wallet.key);

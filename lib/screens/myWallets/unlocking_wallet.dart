@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:gecko/models/chest_data.dart';
-import 'package:gecko/models/wallets_profiles.dart';
-import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/models/wallet_options.dart';
+import 'package:gecko/providers/wallet_options.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/cesium_wallet_options.dart';
 import 'package:gecko/screens/myWallets/choose_chest.dart';
@@ -52,21 +52,22 @@ class UnlockingWallet extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Stack(children: <Widget>[
-            Positioned(
-              top: statusBarHeight + 10,
-              left: 15,
-              child: Builder(
-                builder: (context) => IconButton(
-                  key: const Key('popButton'),
-                  icon: const Icon(
-                    Icons.arrow_back,
-                    color: Colors.black,
-                    size: 25,
+              Positioned(
+                top: statusBarHeight + 10,
+                left: 15,
+                child: Builder(
+                  builder: (context) => IconButton(
+                    key: const Key('popButton'),
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.black,
+                      size: 25,
+                    ),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                  onPressed: () => Navigator.pop(context),
                 ),
               ),
-            ),Column(children: <Widget>[
+              Column(children: <Widget>[
                 SizedBox(height: isTall ? 100 : 20),
                 Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -129,7 +130,8 @@ class UnlockingWallet extends StatelessWidget {
                       ),
                     )),
               ]),
-          ]),]),
+            ]),
+          ]),
     ));
   }
 

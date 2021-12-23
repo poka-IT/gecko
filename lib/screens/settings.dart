@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
-import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/generate_wallets.dart';
 import 'dart:io';
 import 'package:gecko/screens/myWallets/import_cesium_wallet.dart';

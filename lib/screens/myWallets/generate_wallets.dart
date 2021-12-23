@@ -1,7 +1,7 @@
 import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/generate_wallets.dart';
+import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/screens/myWallets/confirm_wallet_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
@@ -31,7 +31,7 @@ class GenerateFastChestScreen extends StatelessWidget {
       _generateWalletProvider.generateWordList();
       _generateWalletProvider.mnemonicController.text =
           _generateWalletProvider.generatedMnemonic!;
-      _generateWalletProvider.pin.text = randomSecretCode(5);
+      _generateWalletProvider.pin.text = randomSecretCode(pinLength);
     }
 
     return Scaffold(
@@ -115,8 +115,8 @@ class GenerateFastChestScreen extends StatelessWidget {
                             ? () async {
                                 _generateWalletProvider.nbrWord =
                                     _generateWalletProvider.getRandomInt();
-                                _generateWalletProvider.actualWallet = Dewif()
-                                    .generateDewif(
+                                _generateWalletProvider.actualWallet =
+                                    await Dewif().generateDewif(
                                         _generateWalletProvider
                                             .generatedMnemonic!,
                                         _generateWalletProvider.pin.text,

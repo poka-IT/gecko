@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/models/search.dart';
+import 'package:gecko/providers/search.dart';
 import 'package:gecko/screens/search_result.dart';
 import 'package:provider/provider.dart';
 // import 'package:gecko/models/home.dart';

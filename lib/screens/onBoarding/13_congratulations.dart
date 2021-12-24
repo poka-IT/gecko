@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/screens/common_elements.dart';
+import 'package:gecko/screens/myWallets/wallets_home.dart';
 
 // ignore: must_be_immutable
 class OnboardingStepFiveteen extends StatelessWidget {
@@ -33,28 +34,32 @@ class OnboardingStepFiveteen extends StatelessWidget {
               height: isTall ? 400 : 300,
             ),
             Expanded(
-                child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: SizedBox(
-                      width: 400,
-                      height: 62,
-                      child: ElevatedButton(
-                          key: const Key('goWalletHome'),
-                          style: ElevatedButton.styleFrom(
-                            elevation: 5,
-                            primary: orangeC,
-                            onPrimary: Colors.white, // foreground
-                          ),
-                          onPressed: () {
-                            Navigator.pushNamedAndRemoveUntil(
-                              context,
-                              '/mywallets',
-                              ModalRoute.withName('/'),
-                            );
-                          },
-                          child: const Text("Accéder à mes portefeuilles",
-                              style: TextStyle(fontSize: 20))),
-                    ))),
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: SizedBox(
+                  width: 400,
+                  height: 62,
+                  child: ElevatedButton(
+                      key: const Key('goWalletHome'),
+                      style: ElevatedButton.styleFrom(
+                        elevation: 5,
+                        primary: orangeC,
+                        onPrimary: Colors.white, // foreground
+                      ),
+                      onPressed: () {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) {
+                            return const WalletsHome();
+                          }),
+                          ModalRoute.withName('/'),
+                        );
+                      },
+                      child: const Text("Accéder à mes portefeuilles",
+                          style: TextStyle(fontSize: 20))),
+                ),
+              ),
+            ),
             const SizedBox(height: 80),
           ]),
         ));

@@ -120,7 +120,7 @@ class GenerateFastChestScreen extends StatelessWidget {
                                         _generateWalletProvider
                                             .generatedMnemonic!,
                                         _generateWalletProvider.pin.text,
-                                        lang: 'french');
+                                        lang: appLang);
                                 await Navigator.push(
                                   context,
                                   MaterialPageRoute(builder: (context) {

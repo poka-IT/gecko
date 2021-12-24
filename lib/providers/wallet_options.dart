@@ -39,7 +39,7 @@ class WalletOptionsProvider with ChangeNotifier {
     }
     if (derivation != -1) {
       try {
-        final _wallet = HdWallet.fromDewif(_dewif!, _pin);
+        final _wallet = HdWallet.fromDewif(_dewif!, _pin, lang: appLang);
         pubkey.text = _wallet.getPubkey(derivation!);
         log.d(pubkey.text);
         notifyListeners();
@@ -66,15 +66,23 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   String? readLocalWallet(
-      context, WalletData _wallet, String _pin, int _pinLenght) {
+      context, WalletData _wallet, String _pin, int _pinLenght,
+      {String? mnemonic}) {
     isWalletUnlock = false;
+    final String _localPubkey;
+
     try {
       String? _localDewif = chestBox.get(_wallet.chest)!.dewif;
-      String _localPubkey;
 
-      if ((_localPubkey = _getPubkeyFromDewif(
-              _localDewif, _pin, _pinLenght, _wallet.derivation)) !=
-          'false') {
+      if (mnemonic == null) {
+        _localPubkey = _getPubkeyFromDewif(
+            _localDewif, _pin.toUpperCase(), _pinLenght, _wallet.derivation);
+      } else {
+        final _hdwallet = HdWallet.fromMnemonic(mnemonic);
+        _localPubkey = _hdwallet.getPubkey(_wallet.derivation!);
+      }
+
+      if (_localPubkey != 'false') {
         pubkey.text = _localPubkey;
         isWalletUnlock = true;
         log.d(pubkey.text);

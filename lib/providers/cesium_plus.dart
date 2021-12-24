@@ -60,11 +60,11 @@ class CesiumPlusProvider with ChangeNotifier {
     return [podRequest, queryGetAvatar, headers];
   }
 
-  Future<String?> getName(String? _pubkey) async {
+  Future<String> getName(String? _pubkey) async {
     String? _name;
 
     if (g1WalletsBox.get(_pubkey)!.csName != null) {
-      return g1WalletsBox.get(_pubkey)!.csName;
+      return g1WalletsBox.get(_pubkey)!.csName!;
     }
 
     List queryOptions = await _buildQuery(_pubkey);
@@ -97,6 +97,7 @@ class CesiumPlusProvider with ChangeNotifier {
     }
     _name = response.data['hits']['hits'][0]['_source']['title'];
 
+    _name ??= '';
     g1WalletsBox.get(_pubkey)!.csName = _name;
 
     return _name;

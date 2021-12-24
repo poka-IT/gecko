@@ -295,11 +295,11 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                               ]);
                             }
                             if (_avatar.hasData) {
-                              g1WalletsBox.get(repository[2])!.avatar =
+                              g1WalletsBox.get(repository[2])?.avatar =
                                   _avatar.data;
                               return ClipOval(child: _avatar.data);
                             } else {
-                              g1WalletsBox.get(repository[2])!.avatar =
+                              g1WalletsBox.get(repository[2])?.avatar =
                                   _cesiumPlusProvider
                                       .defaultAvatar(repository[2]);
                               return _cesiumPlusProvider
@@ -308,7 +308,8 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                           })
                       : ClipOval(
                           child: Image(
-                            image: g1WalletsBox.get(repository[2])!.avatar!.image,
+                            image:
+                                g1WalletsBox.get(repository[2])!.avatar!.image,
                             height: _avatarSize,
                           ),
                         ),

@@ -5,6 +5,7 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/queries.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/chest_options.dart';
 import 'package:gecko/screens/myWallets/choose_chest.dart';
@@ -131,7 +132,8 @@ class WalletsHome extends StatelessWidget {
   Widget myWalletsTiles(BuildContext context) {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
-
+    WalletOptionsProvider _walletOptions =
+        Provider.of<WalletOptionsProvider>(context, listen: false);
     final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
 
     if (!isWalletsExists) {
@@ -175,6 +177,8 @@ class WalletsHome extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   child: GestureDetector(
                     onTap: () {
+                      _walletOptions.readLocalWallet(context, _repository,
+                          _myWalletProvider.pinCode, pinLength);
                       Navigator.push(
                         context,
                         SmoothTransition(
@@ -260,6 +264,11 @@ class WalletsHome extends StatelessWidget {
                             ),
                             // dense: true,
                             onTap: () {
+                              _walletOptions.readLocalWallet(
+                                  context,
+                                  _repository,
+                                  _myWalletProvider.pinCode,
+                                  pinLength);
                               Navigator.push(
                                 context,
                                 SmoothTransition(

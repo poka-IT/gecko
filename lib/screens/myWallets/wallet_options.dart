@@ -27,8 +27,6 @@ class WalletOptions extends StatelessWidget {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
 
-        
-    _walletOptions.pubkey.text = 
     log.d(_walletOptions.pubkey.text);
 
     final int _currentChest = _myWalletProvider.getCurrentChest()!;
@@ -39,10 +37,7 @@ class WalletOptions extends StatelessWidget {
       onWillPop: () {
         _walletOptions.isEditing = false;
         _walletOptions.isBalanceBlur = true;
-        Navigator.popUntil(
-          context,
-          ModalRoute.withName('/mywallets'),
-        );
+        Navigator.pop(context);
         return Future<bool>.value(true);
       },
       child: Scaffold(
@@ -55,10 +50,7 @@ class WalletOptions extends StatelessWidget {
               onPressed: () {
                 _walletOptions.isEditing = false;
                 _walletOptions.isBalanceBlur = true;
-                Navigator.popUntil(
-                  context,
-                  ModalRoute.withName('/mywallets'),
-                );
+                Navigator.pop(context);
               }),
           title: SizedBox(
             height: 22,
@@ -88,6 +80,7 @@ class WalletOptions extends StatelessWidget {
                     ],
                   )),
                   child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: <Widget>[
                         const Spacer(),
@@ -138,8 +131,7 @@ class WalletOptions extends StatelessWidget {
       children: <Widget>[
         InkWell(
           onTap: () async {
-            File newAvatar =
-                await (walletProvider.changeAvatar());
+            File newAvatar = await (walletProvider.changeAvatar());
             wallet.imageFile = newAvatar;
             walletProvider.reloadBuild();
           },
@@ -155,10 +147,10 @@ class WalletOptions extends StatelessWidget {
         ),
         Positioned(
           right: 0,
+          top: 0,
           child: InkWell(
             onTap: () async {
-              File newAvatar =
-                  await (walletProvider.changeAvatar());
+              File newAvatar = await (walletProvider.changeAvatar());
               wallet.imageFile = newAvatar;
               walletProvider.reloadBuild();
             },
@@ -174,13 +166,6 @@ class WalletOptions extends StatelessWidget {
 
   Widget walletName(WalletOptionsProvider walletProvider,
       WalletOptionsProvider _walletOptions) {
-    int _nbrLinesName = 1;
-    _walletOptions.nameController.text.length >= 15
-        ? _nbrLinesName = 2
-        : _nbrLinesName = 1;
-    if (_walletOptions.nameController.text.length >= 26 && isTall) {
-      _nbrLinesName = 3;
-    }
     bool _isNewNameValid = false;
     if (_isNewNameValid == false) {
       _walletOptions.nameController.text = wallet.name!;
@@ -197,7 +182,8 @@ class WalletOptions extends StatelessWidget {
           focusNode: walletProvider.walletNameFocus,
           enabled: walletProvider.isEditing,
           controller: walletProvider.nameController,
-          maxLines: _nbrLinesName,
+          minLines: 1,
+          maxLines: 3,
           textAlign: TextAlign.center,
           decoration: const InputDecoration(
             border: InputBorder.none,
@@ -207,10 +193,10 @@ class WalletOptions extends StatelessWidget {
             contentPadding: EdgeInsets.all(15.0),
           ),
           style: TextStyle(
-              fontSize: isTall ? 27 : 23,
-              color: Colors.black,
-              fontWeight: FontWeight.w400,
-              fontFamily: 'Monospace'),
+            fontSize: isTall ? 27 : 23,
+            color: Colors.black,
+            fontWeight: FontWeight.w400,
+          ),
         ),
         Positioned(
           right: 0,
@@ -253,7 +239,7 @@ class WalletOptions extends StatelessWidget {
                   sigmaX: walletProvider.isBalanceBlur ? 6 : 0,
                   sigmaY: walletProvider.isBalanceBlur ? 5 : 0),
               child: Text(
-                _balance.data.toString() + ' DU',
+                _balance.data.toString() + ' Ğ1',
                 style: TextStyle(
                   fontSize: isTall ? 20 : 18,
                 ),

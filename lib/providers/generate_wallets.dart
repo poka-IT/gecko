@@ -157,7 +157,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     try {
       actualWallet = await Dewif().generateDewif(
           generatedMnemonic, randomSecretCode(pinLength),
-          lang: 'french');
+          lang: appLang);
     } catch (e) {
       log.e(e);
     }
@@ -294,7 +294,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   List<String> generateWordList() {
-    generatedMnemonic = generateMnemonic(lang: 'french');
+    generatedMnemonic = generateMnemonic(lang: appLang);
     List<String> _wordsList = [];
     String word;
     int _nbr = 1;
@@ -333,8 +333,8 @@ class GenerateWalletsProvider with ChangeNotifier {
     cellController0.text = cellController1.text = cellController2.text =
         cellController3.text = cellController4.text = cellController5.text =
             cellController6.text = cellController7.text = cellController8.text =
-                cellController9.text =
-                    cellController10.text = cellController11.text = '';
+                cellController9.text = cellController10.text =
+                    cellController11.text = '';
     isFirstTimeSentenceComplete = true;
     notifyListeners();
   }

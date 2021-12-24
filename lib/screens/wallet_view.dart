@@ -248,7 +248,7 @@ class WalletViewScreen extends StatelessWidget {
                             // onChanged: (v) => _searchProvider.rebuildWidget(),
                             decoration: InputDecoration(
                               hintText: '0.00',
-                              suffix: const Text('DU/Ğ1'),
+                              suffix: const Text('Ğ1'),
                               filled: true,
                               fillColor: Colors.transparent,
                               // border: OutlineInputBorder(

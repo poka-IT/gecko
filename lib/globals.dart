@@ -14,6 +14,7 @@ late String appVersion;
 late SharedPreferences prefs;
 late String endPointGVA;
 const int pinLength = 5;
+const String appLang = 'french';
 
 late Box<WalletData> walletBox;
 late Box<ChestData> chestBox;

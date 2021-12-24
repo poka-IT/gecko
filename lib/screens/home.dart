@@ -411,19 +411,21 @@ Widget welcomeHome(context) {
             ]),
       ),
       Expanded(
-          flex: 1,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  Colors.black.withOpacity(0.9),
-                ],
-              ),
+        flex: 1,
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.transparent,
+                Colors.black.withOpacity(0.9),
+              ],
             ),
-            child: Center(
+          ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
               child: Column(children: <Widget>[
                 const Spacer(),
                 Row(children: <Widget>[
@@ -505,7 +507,9 @@ Widget welcomeHome(context) {
                 SizedBox(height: isTall ? 100 : 50)
               ]),
             ),
-          ))
+          ),
+        ),
+      )
     ]),
   );
 }

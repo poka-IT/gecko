@@ -120,16 +120,15 @@ class OnboardingStepFourteen extends StatelessWidget {
                 NewWallet generatedWallet = await Dewif().generateDewif(
                     _generateWalletProvider.generatedMnemonic!,
                     _generateWalletProvider.pin.text,
-                    lang: 'french');
+                    lang: appLang);
                 await _generateWalletProvider.storeHDWChest(
                     generatedWallet, 'Mon portefeuille courant', context);
                 _myWalletProvider.readAllWallets(_currentChest);
                 // scheduleMicrotask(() {
-                _walletOptions.reloadBuild();
-                //   _myWalletProvider.rebuildWidget();
+                // _walletOptions.reloadBuild();
+                _myWalletProvider.rebuildWidget();
                 // });
-                _generateWalletProvider.generatedMnemonic =
-                    _generateWalletProvider.pin.text = '';
+                _generateWalletProvider.generatedMnemonic = '';
                 Navigator.push(
                   context,
                   FaderTransition(

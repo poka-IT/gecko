@@ -8,6 +8,7 @@ import 'package:gecko/providers/wallet_options.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/cesium_wallet_options.dart';
 import 'package:gecko/screens/myWallets/choose_chest.dart';
+import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/globals.dart';
@@ -223,8 +224,12 @@ class UnlockingWallet extends StatelessWidget {
                                 cesiumWallet: currentChest);
                           }),
                         )
-                      : Navigator.pushNamed(
-                          formKey.currentContext!, '/mywallets');
+                      : Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) {
+                            return const WalletsHome();
+                          }),
+                        );
                 } else if (action == "pay") {
                   resultPay =
                       await _historyProvider.pay(context, _pin.toUpperCase());

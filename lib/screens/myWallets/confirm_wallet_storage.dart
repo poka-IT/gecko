@@ -148,6 +148,9 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                                     await Future.delayed(
                                         const Duration(milliseconds: 50));
                                     _myWalletProvider.rebuildWidget();
+                                    _generateWalletProvider.pin.text = '';
+                                    _generateWalletProvider
+                                        .mnemonicController.text = '';
                                     Navigator.pushAndRemoveUntil(context,
                                         MaterialPageRoute(builder: (context) {
                                       return UnlockingWallet(

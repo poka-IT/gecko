@@ -192,6 +192,7 @@ class ImportWalletScreen extends StatelessWidget {
                             }),
                             ModalRoute.withName('/'),
                           );
+                          _generateWalletProvider.resetCesiumImportView();
                         }
                       : null,
                   child: const Text(

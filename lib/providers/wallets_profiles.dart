@@ -79,7 +79,8 @@ class WalletsProfilesProvider with ChangeNotifier {
         dewif: dewif,
         password: pinCode,
         comment: payComment.text,
-        derivation: derivation);
+        derivation: derivation,
+        lang: appLang);
 
     return result;
   }

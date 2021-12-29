@@ -8,39 +8,46 @@ class CommonElements {
     return const Text('Coucou');
   }
 
-  Widget bubbleSpeak(String text, {double long, Key textKey}) {
-    return Bubble(
-      padding: long == null
-          ? const BubbleEdges.all(18)
-          : BubbleEdges.symmetric(horizontal: long, vertical: 30),
-      elevation: 5,
-      color: Colors.white,
-      margin: const BubbleEdges.fromLTRB(10, 0, 20, 10),
-      // nip: BubbleNip.leftTop,
-      child: Text(
-        text,
-        key: textKey,
-        style: const TextStyle(
-            color: Colors.black, fontSize: 18, fontWeight: FontWeight.w400),
+  Widget bubbleSpeak(String text,
+      {double? long, Key? textKey, bool isMaxWidth = true}) {
+    return SizedBox(
+      width: isMaxWidth ? double.infinity : 300,
+      child: Bubble(
+        padding: long == null
+            ? const BubbleEdges.all(18)
+            : BubbleEdges.symmetric(horizontal: long, vertical: 30),
+        elevation: 5,
+        color: Colors.white,
+        margin: const BubbleEdges.fromLTRB(10, 0, 20, 10),
+        // nip: BubbleNip.leftTop,
+        child: Text(
+          text,
+          key: textKey,
+          style: const TextStyle(
+              color: Colors.black, fontSize: 18, fontWeight: FontWeight.w400),
+        ),
       ),
     );
   }
 
-  Widget bubbleSpeakRich(List<TextSpan> text, {Key textKey}) {
-    return Bubble(
-      padding: const BubbleEdges.all(18),
-      elevation: 5,
-      color: Colors.white,
-      margin: const BubbleEdges.fromLTRB(10, 0, 20, 10),
-      // nip: BubbleNip.leftTop,
-      child: RichText(
-        key: textKey,
-        text: TextSpan(
-          style: const TextStyle(
-            fontSize: 18.0,
-            color: Colors.black,
+  Widget bubbleSpeakRich(List<TextSpan> text, {Key? textKey}) {
+    return SizedBox(
+      width: double.infinity,
+      child: Bubble(
+        padding: const BubbleEdges.all(18),
+        elevation: 5,
+        color: Colors.white,
+        margin: const BubbleEdges.fromLTRB(10, 0, 20, 10),
+        // nip: BubbleNip.leftTop,
+        child: RichText(
+          key: textKey,
+          text: TextSpan(
+            style: const TextStyle(
+              fontSize: 18.0,
+              color: Colors.black,
+            ),
+            children: text,
           ),
-          children: text,
         ),
       ),
     );
@@ -130,7 +137,7 @@ class CommonElements {
 }
 
 class SmoothTransition extends PageRouteBuilder {
-  final Widget page;
+  final Widget? page;
   SmoothTransition({this.page})
       : super(
           pageBuilder: (
@@ -141,8 +148,8 @@ class SmoothTransition extends PageRouteBuilder {
               TweenAnimationBuilder(
             duration: const Duration(seconds: 5),
             tween: Tween(begin: 200, end: 200),
-            builder: (BuildContext context, dynamic value, Widget child) {
-              return page;
+            builder: (BuildContext context, dynamic value, Widget? child) {
+              return page!;
             },
           ),
         );
@@ -152,7 +159,7 @@ class FaderTransition extends PageRouteBuilder {
   final Widget page;
   final bool isFast;
 
-  FaderTransition({@required this.page, @required this.isFast})
+  FaderTransition({required this.page, required this.isFast})
       : super(
           pageBuilder: (
             BuildContext context,
@@ -175,7 +182,7 @@ class FaderTransition extends PageRouteBuilder {
 }
 
 class SlideLeftRoute extends PageRouteBuilder {
-  final Widget page;
+  final Widget? page;
   SlideLeftRoute({this.page})
       : super(
           pageBuilder: (
@@ -183,7 +190,7 @@ class SlideLeftRoute extends PageRouteBuilder {
             Animation<double> animation,
             Animation<double> secondaryAnimation,
           ) =>
-              page,
+              page!,
           transitionsBuilder: (
             BuildContext context,
             Animation<double> animation,
@@ -207,7 +214,7 @@ class GeckoSpeechAppBar extends StatelessWidget with PreferredSizeWidget {
 
   GeckoSpeechAppBar(
     this.title, {
-    Key key,
+    Key? key,
   })  : preferredSize = const Size.fromHeight(105.4),
         super(key: key);
 

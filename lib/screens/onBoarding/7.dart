@@ -3,7 +3,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/generate_wallets.dart';
+import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/8.dart';
 import 'package:printing/printing.dart';
@@ -14,7 +14,7 @@ class OnboardingStepNine extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
   final int progress = 6;
 
-  OnboardingStepNine({Key key}) : super(key: key);
+  OnboardingStepNine({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -96,9 +96,7 @@ class OnboardingStepNine extends StatelessWidget {
                       FaderTransition(
                           page: OnboardingStepTen(
                               generatedMnemonic:
-                                  _generateWalletProvider.generatedMnemonic,
-                              generatedWallet:
-                                  _generateWalletProvider.actualWallet),
+                                  _generateWalletProvider.generatedMnemonic),
                           isFast: true),
                     );
                   },
@@ -115,64 +113,48 @@ Widget sentanceArray(BuildContext context) {
   GenerateWalletsProvider _generateWalletProvider =
       Provider.of<GenerateWalletsProvider>(context);
 
-  return FutureBuilder(
-      future: _generateWalletProvider.generateWordList(),
-      initialData: const [
-        '1:...',
-        '2:...',
-        '3:...',
-        '4:...',
-        '5:...',
-        '6:...',
-        '7:...',
-        '8:...',
-        '9:...',
-        '10:...',
-        '11:...',
-        '12:...',
-      ],
-      builder: (context, formatedArray) {
-        // print(formatedArray.data);
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Container(
-            decoration: BoxDecoration(
-                border: Border.all(color: Colors.black),
-                color: Colors.grey[300],
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(10),
-                )),
-            // color: Colors.grey[300],
-            padding: const EdgeInsets.all(20),
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Row(children: <Widget>[
-                    arrayCell(formatedArray.data[0]),
-                    arrayCell(formatedArray.data[1]),
-                    arrayCell(formatedArray.data[2]),
-                    arrayCell(formatedArray.data[3]),
-                  ]),
-                  const SizedBox(height: 15),
-                  Row(children: <Widget>[
-                    arrayCell(formatedArray.data[4]),
-                    arrayCell(formatedArray.data[5]),
-                    arrayCell(formatedArray.data[6]),
-                    arrayCell(formatedArray.data[7]),
-                  ]),
-                  const SizedBox(height: 15),
-                  Row(children: <Widget>[
-                    arrayCell(formatedArray.data[8]),
-                    arrayCell(formatedArray.data[9]),
-                    arrayCell(formatedArray.data[10]),
-                    arrayCell(formatedArray.data[11]),
-                  ]),
-                ]),
-          ),
-        );
-      });
+  List formatedArray = _generateWalletProvider.generateWordList();
+
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 12),
+    child: Container(
+      constraints: const BoxConstraints(maxWidth: 450),
+      decoration: BoxDecoration(
+          border: Border.all(color: Colors.black),
+          color: Colors.grey[300],
+          borderRadius: const BorderRadius.all(
+            Radius.circular(10),
+          )),
+      // color: Colors.grey[300],
+      padding: const EdgeInsets.all(20),
+      child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.max,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Row(children: <Widget>[
+              arrayCell(formatedArray[0]),
+              arrayCell(formatedArray[1]),
+              arrayCell(formatedArray[2]),
+              arrayCell(formatedArray[3]),
+            ]),
+            const SizedBox(height: 15),
+            Row(children: <Widget>[
+              arrayCell(formatedArray[4]),
+              arrayCell(formatedArray[5]),
+              arrayCell(formatedArray[6]),
+              arrayCell(formatedArray[7]),
+            ]),
+            const SizedBox(height: 15),
+            Row(children: <Widget>[
+              arrayCell(formatedArray[8]),
+              arrayCell(formatedArray[9]),
+              arrayCell(formatedArray[10]),
+              arrayCell(formatedArray[11]),
+            ]),
+          ]),
+    ),
+  );
 }
 
 Widget arrayCell(dataWord) {
@@ -195,9 +177,9 @@ Widget arrayCell(dataWord) {
 
 // ignore: must_be_immutable
 class PrintWallet extends StatelessWidget {
-  const PrintWallet(this.sentence, {Key key}) : super(key: key);
+  const PrintWallet(this.sentence, {Key? key}) : super(key: key);
 
-  final String sentence;
+  final String? sentence;
 
   @override
   Widget build(BuildContext context) {
@@ -206,6 +188,11 @@ class PrintWallet extends StatelessWidget {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
+            leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () {
+                  Navigator.pop(context);
+                }),
             toolbarHeight: 60 * ratio,
             title: const Text('Imprimer ce trousseau')),
         body: PdfPreview(

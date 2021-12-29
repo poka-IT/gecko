@@ -13,8 +13,6 @@ echo "Nom du build final: ${APPNAME}-${VERSION}+${BUILD}.apk"
 ## To build Rust dependancies
 # cargo br
 
-echo "To compile Rust binding, exec: cargo br"
-
 flutter clean
 if [[ $1 == "bundle" ]]; then
 	flutter build appbundle --release --target-platform android-arm,android-arm64 --build-name $VERSION --build-number $BUILD

@@ -19,18 +19,18 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/cesium_plus.dart';
-import 'package:gecko/models/change_pin.dart';
+import 'package:gecko/providers/cesium_plus.dart';
+import 'package:gecko/providers/change_pin.dart';
 import 'package:gecko/models/chest_data.dart';
-import 'package:gecko/models/chest_provider.dart';
+import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
-import 'package:gecko/models/generate_wallets.dart';
-import 'package:gecko/models/wallets_profiles.dart';
-import 'package:gecko/models/home.dart';
-import 'package:gecko/models/my_wallets.dart';
-import 'package:gecko/models/search.dart';
+import 'package:gecko/providers/generate_wallets.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers/home.dart';
+import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/providers/search.dart';
 import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/models/wallet_options.dart';
+import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/home.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
@@ -38,25 +38,29 @@ import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/search_result.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:window_size/window_size.dart';
 
 const bool enableSentry = true;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+    setWindowTitle('Ğecko');
+    setWindowMinSize(const Size(400, 700));
+    setWindowMaxSize(const Size(800, 1000));
+  }
 
   HomeProvider _homeProvider = HomeProvider();
-  appPath = await getApplicationDocumentsDirectory();
+  await _homeProvider.initHive();
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
 
   // Configure Hive and open boxes
-  await Hive.initFlutter(appPath.path);
   Hive.registerAdapter(WalletDataAdapter());
   Hive.registerAdapter(ChestDataAdapter());
   Hive.registerAdapter(G1WalletsListAdapter());
@@ -120,14 +124,14 @@ Future<void> main() async {
 }
 
 class Gecko extends StatelessWidget {
-  const Gecko(this.randomEndpoint, {Key key}) : super(key: key);
-  final String randomEndpoint;
+  const Gecko(this.randomEndpoint, {Key? key}) : super(key: key);
+  final String? randomEndpoint;
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     final _httpLink = HttpLink(
-      randomEndpoint,
+      randomEndpoint!,
     );
 
     final _client = ValueNotifier(
@@ -156,7 +160,7 @@ class Gecko extends StatelessWidget {
         client: _client,
         child: MaterialApp(
           builder: (context, widget) => ResponsiveWrapper.builder(
-              BouncingScrollWrapper.builder(context, widget),
+              BouncingScrollWrapper.builder(context, widget!),
               maxWidth: 1200,
               minWidth: 480,
               defaultScale: true,
@@ -185,7 +189,7 @@ class Gecko extends StatelessWidget {
           home: const HomeScreen(),
           initialRoute: "/",
           routes: {
-            '/mywallets': (context) => WalletsHome(),
+            '/mywallets': (context) => const WalletsHome(),
             '/search': (context) => const SearchScreen(),
             '/searchResult': (context) => const SearchResultScreen(),
           },
@@ -198,7 +202,7 @@ class Gecko extends StatelessWidget {
 // This http overriding is needed to fix fail certifcat checking for Duniter node on old Android version
 class MyHttpOverrides extends HttpOverrides {
   @override
-  HttpClient createHttpClient(SecurityContext context) {
+  HttpClient createHttpClient(SecurityContext? context) {
     return super.createHttpClient(context)
       ..badCertificateCallback =
           (X509Certificate cert, String host, int port) => true;

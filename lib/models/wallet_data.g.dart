@@ -17,12 +17,12 @@ class WalletDataAdapter extends TypeAdapter<WalletData> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return WalletData(
-      chest: fields[0] as int,
-      number: fields[1] as int,
-      name: fields[2] as String,
-      derivation: fields[3] as int,
-      imageName: fields[4] as String,
-      imageFile: fields[5] as File,
+      chest: fields[0] as int?,
+      number: fields[1] as int?,
+      name: fields[2] as String?,
+      derivation: fields[3] as int?,
+      imageName: fields[4] as String?,
+      imageFile: fields[5] as File?,
     );
   }
 

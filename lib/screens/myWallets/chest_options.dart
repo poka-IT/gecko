@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:flutter/services.dart';
-import 'package:gecko/models/chest_provider.dart';
-import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/providers/chest_provider.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/change_pin.dart';
 import 'package:provider/provider.dart';
 
 class ChestOptions extends StatelessWidget {
-  const ChestOptions({Key keyMyWallets, @required this.walletProvider})
+  const ChestOptions({Key? keyMyWallets, required this.walletProvider})
       : super(key: keyMyWallets);
   final MyWalletsProvider walletProvider;
 
@@ -18,7 +18,7 @@ class ChestOptions extends StatelessWidget {
     ChestProvider _chestProvider =
         Provider.of<ChestProvider>(context, listen: false);
 
-    ChestData currentChest = chestBox.get(configBox.get('currentChest'));
+    ChestData currentChest = chestBox.get(configBox.get('currentChest'))!;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -34,7 +34,7 @@ class ChestOptions extends StatelessWidget {
               }),
           title: SizedBox(
             height: 22,
-            child: Text(currentChest.name),
+            child: Text(currentChest.name!),
           )),
       body: Builder(
         builder: (ctx) => SafeArea(
@@ -44,7 +44,7 @@ class ChestOptions extends StatelessWidget {
               key: const Key('changePin'),
               onTap: () async {
                 // await _chestProvider.changePin(context, cesiumWallet);
-                String pinResult = await Navigator.push(
+                String? pinResult = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) {
@@ -69,8 +69,10 @@ class ChestOptions extends StatelessWidget {
                       height: 25,
                     ),
                     const SizedBox(width: 18),
-                    const Text('Changer mon code secret',
-                        style: TextStyle(fontSize: 20, color: Colors.black)),
+                    const Text(
+                      'Changer mon code secret',
+                      style: TextStyle(fontSize: 20, color: Colors.black),
+                    ),
                   ])),
             ),
             SizedBox(height: 10 * ratio),

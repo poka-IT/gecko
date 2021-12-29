@@ -1,10 +1,10 @@
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/models/cesium_plus.dart';
-import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/providers/cesium_plus.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/models/wallets_profiles.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/models/queries.dart';
 import 'package:gecko/screens/avatar_fullscreen.dart';
 import 'package:gecko/screens/common_elements.dart';
@@ -15,11 +15,11 @@ import 'package:provider/provider.dart';
 
 class WalletViewScreen extends StatelessWidget {
   const WalletViewScreen(
-      {@required this.pubkey, this.username, this.avatar, Key key})
+      {required this.pubkey, this.username, this.avatar, Key? key})
       : super(key: key);
-  final String pubkey;
-  final String username;
-  final Image avatar;
+  final String? pubkey;
+  final String? username;
+  final Image? avatar;
   final double buttonSize = 100;
   final double buttonFontSize = 18;
 
@@ -30,6 +30,8 @@ class WalletViewScreen extends StatelessWidget {
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     CesiumPlusProvider _cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
+
+    _historyProvider.pubkey = pubkey!;
 
     return Scaffold(
         resizeToAvoidBottomInset: true,
@@ -185,8 +187,9 @@ class WalletViewScreen extends StatelessWidget {
     // WalletsProfilesProvider _walletViewProvider =
     //     Provider.of<WalletsProfilesProvider>(context);
     const double shapeSize = 20;
-    MyWalletsProvider _myWalletProvider = MyWalletsProvider();
-    WalletData defaultWallet =
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
+    WalletData? defaultWallet =
         _myWalletProvider.getDefaultWallet(configBox.get('currentChest'));
 
     showModalBottomSheet<void>(
@@ -199,111 +202,120 @@ class WalletViewScreen extends StatelessWidget {
         isScrollControlled: true,
         context: context,
         builder: (BuildContext context) {
-          return Padding(
-            padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom),
-            child: Container(
-              height: 400,
-              decoration: const ShapeDecoration(
-                color: Color(0xffffeed1),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(shapeSize),
-                    topLeft: Radius.circular(shapeSize),
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom),
+              child: Container(
+                height: 400,
+                decoration: const ShapeDecoration(
+                  color: Color(0xffffeed1),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(shapeSize),
+                      topLeft: Radius.circular(shapeSize),
+                    ),
                   ),
                 ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        const Text(
+                          'Effectuer un virement',
+                          style: TextStyle(
+                              fontSize: 26, fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          'Saisissez dans le champ ci-dessous le montant à virer.',
+                          style: TextStyle(
+                              fontSize: 19,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey[600]),
+                        ),
+                        const Spacer(),
+                        Center(
+                          child: Column(children: <Widget>[
+                            TextField(
+                              controller: _walletViewProvider.payAmount,
+                              autofocus: true,
+                              maxLines: 1,
+                              textAlign: TextAlign.center,
+                              keyboardType: TextInputType.number,
+                              onChanged: (_) => setState(() {}),
+                              inputFormatters: <TextInputFormatter>[
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'^\d+\.?\d{0,2}')),
+                              ],
+                              // onChanged: (v) => _searchProvider.rebuildWidget(),
+                              decoration: InputDecoration(
+                                hintText: '0.00',
+                                suffix: const Text('Ğ1'),
+                                filled: true,
+                                fillColor: Colors.transparent,
+                                // border: OutlineInputBorder(
+                                //     borderSide:
+                                //         BorderSide(color: Colors.grey[500], width: 2),
+                                //     borderRadius: BorderRadius.circular(8)),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: Colors.grey[500]!, width: 2),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                contentPadding: const EdgeInsets.all(20),
+                              ),
+                              style: const TextStyle(
+                                fontSize: 40,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 40),
+                            // const Spacer(),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 60,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 4,
+                                  primary: orangeC, // background
+                                  onPrimary: Colors.white, // foreground
+                                ),
+                                onPressed:
+                                    _walletViewProvider.payAmount.text != ''
+                                        ? () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) {
+                                                  return UnlockingWallet(
+                                                      wallet: defaultWallet,
+                                                      action: "pay");
+                                                },
+                                              ),
+                                            );
+                                          }
+                                        : null,
+                                child: const Text(
+                                  'Effectuer le virement',
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                          ]),
+                        ),
+                      ]),
+                ),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      const Text(
-                        'Effectuer un virement',
-                        style: TextStyle(
-                            fontSize: 26, fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        'Saisissez dans le champ ci-dessous le montant à virer de ... vers ...',
-                        style: TextStyle(
-                            fontSize: 19,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey[600]),
-                      ),
-                      const Spacer(),
-                      Center(
-                        child: Column(children: <Widget>[
-                          TextField(
-                            controller: _walletViewProvider.payAmount,
-                            autofocus: true,
-                            maxLines: 1,
-                            textAlign: TextAlign.center,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: <TextInputFormatter>[
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r'^\d+\.?\d{0,2}')),
-                            ],
-                            // onChanged: (v) => _searchProvider.rebuildWidget(),
-                            decoration: InputDecoration(
-                              hintText: '0.00',
-                              suffix: const Text('DU/Ğ1'),
-                              filled: true,
-                              fillColor: Colors.transparent,
-                              // border: OutlineInputBorder(
-                              //     borderSide:
-                              //         BorderSide(color: Colors.grey[500], width: 2),
-                              //     borderRadius: BorderRadius.circular(8)),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                    color: Colors.grey[500], width: 2),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              contentPadding: const EdgeInsets.all(20),
-                            ),
-                            style: const TextStyle(
-                              fontSize: 40,
-                              color: Colors.black,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 40),
-                          // const Spacer(),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 60,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                elevation: 4,
-                                primary: orangeC, // background
-                                onPrimary: Colors.white, // foreground
-                              ),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) {
-                                      return UnlockingWallet(
-                                          wallet: defaultWallet, action: "pay");
-                                    },
-                                  ),
-                                );
-                              },
-                              child: const Text(
-                                'Effectuer le virement',
-                                style: TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                        ]),
-                      ),
-                    ]),
-              ),
-            ),
-          );
+            );
+          });
         }).then((value) => _walletViewProvider.payAmount.text = '');
   }
 
@@ -342,7 +354,7 @@ class WalletViewScreen extends StatelessWidget {
                         _historyProvider.snackCopyKey(context);
                       },
                       child: Text(
-                        _historyProvider.getShortPubkey(pubkey),
+                        _historyProvider.getShortPubkey(pubkey!),
                         style: const TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.w800,
@@ -361,20 +373,20 @@ class WalletViewScreen extends StatelessWidget {
                         },
                       ),
                       builder: (QueryResult result,
-                          {VoidCallback refetch, FetchMore fetchMore}) {
+                          {VoidCallback? refetch, FetchMore? fetchMore}) {
                         if (result.isLoading || result.hasException) {
                           return const Text('...');
-                        } else if (result.data['idty'] == null ||
-                            result.data['idty']['username'] == null) {
+                        } else if (result.data!['idty'] == null ||
+                            result.data!['idty']['username'] == null) {
                           g1WalletsBox.get(pubkey)?.username = '';
                           return const Text('');
                         } else {
                           g1WalletsBox.get(pubkey)?.username =
-                              result?.data['idty']['username'] ?? '';
+                              result.data!['idty']['username'] ?? '';
                           return SizedBox(
                             width: 230,
                             child: Text(
-                              result?.data['idty']['username'] ?? '',
+                              result.data!['idty']['username'] ?? '',
                               style: const TextStyle(
                                 fontSize: 27,
                                 color: Color(0xff814C00),
@@ -389,7 +401,7 @@ class WalletViewScreen extends StatelessWidget {
                     SizedBox(
                       width: 230,
                       child: Text(
-                        g1WalletsBox.get(pubkey)?.username,
+                        g1WalletsBox.get(pubkey)?.username ?? '',
                         style: const TextStyle(
                           fontSize: 27,
                           color: Color(0xff814C00),
@@ -400,7 +412,7 @@ class WalletViewScreen extends StatelessWidget {
                     SizedBox(
                       width: 230,
                       child: Text(
-                        username,
+                        username!,
                         style: const TextStyle(
                           fontSize: 27,
                           color: Color(0xff814C00),
@@ -415,7 +427,7 @@ class WalletViewScreen extends StatelessWidget {
                         return SizedBox(
                           width: 230,
                           child: Text(
-                            snapshot.data ?? '-',
+                            snapshot.data.toString(),
                             style: const TextStyle(
                                 fontSize: 18, color: Colors.black),
                           ),
@@ -429,7 +441,7 @@ class WalletViewScreen extends StatelessWidget {
                 FutureBuilder(
                     future: _cesiumPlusProvider.getAvatar(pubkey, _avatarSize),
                     builder:
-                        (BuildContext context, AsyncSnapshot<Image> _avatar) {
+                        (BuildContext context, AsyncSnapshot<Image?> _avatar) {
                       if (_avatar.connectionState != ConnectionState.done) {
                         return Stack(children: [
                           ClipOval(
@@ -461,7 +473,7 @@ class WalletViewScreen extends StatelessWidget {
                           },
                           child: ClipOval(
                             child: Image(
-                              image: _avatar.data.image,
+                              image: _avatar.data!.image,
                               height: _avatarSize,
                               fit: BoxFit.cover,
                             ),
@@ -485,7 +497,7 @@ class WalletViewScreen extends StatelessWidget {
                   },
                   child: ClipOval(
                     child: Image(
-                      image: avatar.image,
+                      image: avatar!.image,
                       height: _avatarSize,
                       fit: BoxFit.cover,
                     ),

@@ -1,19 +1,20 @@
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/models/search.dart';
+import 'package:gecko/providers/search.dart';
 import 'package:gecko/screens/search_result.dart';
 import 'package:provider/provider.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:provider/provider.dart';
 
 class SearchScreen extends StatelessWidget {
-  const SearchScreen({Key key}) : super(key: key);
+  const SearchScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     SearchProvider _searchProvider = Provider.of<SearchProvider>(context);
+    final double screenHeight = MediaQuery.of(context).size.height;
 
     return WillPopScope(
         onWillPop: () {
@@ -59,11 +60,11 @@ class SearchScreen extends StatelessWidget {
                     ),
                     border: OutlineInputBorder(
                         borderSide:
-                            BorderSide(color: Colors.grey[500], width: 2),
+                            BorderSide(color: Colors.grey[500]!, width: 2),
                         borderRadius: BorderRadius.circular(8)),
                     focusedBorder: OutlineInputBorder(
                       borderSide:
-                          BorderSide(color: Colors.grey[500], width: 2.5),
+                          BorderSide(color: Colors.grey[500]!, width: 2.5),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     contentPadding: const EdgeInsets.all(20),
@@ -101,7 +102,7 @@ class SearchScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const Spacer(flex: 1),
+              Spacer(flex: screenHeight <= 800 ? 1 : 2),
             ]),
           ),
         ));

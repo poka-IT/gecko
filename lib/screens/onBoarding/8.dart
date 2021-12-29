@@ -1,10 +1,8 @@
 // ignore_for_file: file_names
-
-import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/generate_wallets.dart';
+import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/9.dart';
 import 'package:provider/provider.dart';
@@ -12,14 +10,11 @@ import 'package:provider/provider.dart';
 // ignore: must_be_immutable
 class OnboardingStepTen extends StatelessWidget {
   OnboardingStepTen({
-    Key validationKey,
-    @required this.generatedMnemonic,
-    @required this.generatedWallet,
+    Key? validationKey,
+    required this.generatedMnemonic,
   }) : super(key: validationKey);
 
-  String generatedMnemonic;
-  NewWallet generatedWallet;
-
+  String? generatedMnemonic;
   TextEditingController tplController = TextEditingController();
   TextEditingController wordController = TextEditingController();
   final TextEditingController _mnemonicController = TextEditingController();
@@ -32,7 +27,7 @@ class OnboardingStepTen extends StatelessWidget {
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
     CommonElements common = CommonElements();
-    _mnemonicController.text = generatedMnemonic;
+    _mnemonicController.text = generatedMnemonic!;
 
     return WillPopScope(
         onWillPop: () {
@@ -75,7 +70,7 @@ class OnboardingStepTen extends StatelessWidget {
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(7),
                         border: Border.all(
-                          color: Colors.grey[600],
+                          color: Colors.grey[600]!,
                           width: 3,
                         )),
                     width: 430,

@@ -1,14 +1,16 @@
 import 'dart:async';
-import 'package:dubp/dubp.dart';
+import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/models/chest_data.dart';
-import 'package:gecko/models/wallets_profiles.dart';
-import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/models/wallet_options.dart';
+import 'package:gecko/providers/wallet_options.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/cesium_wallet_options.dart';
 import 'package:gecko/screens/myWallets/choose_chest.dart';
+import 'package:gecko/screens/myWallets/choose_wallet.dart';
+import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/globals.dart';
@@ -16,105 +18,122 @@ import 'package:gecko/globals.dart';
 // ignore: must_be_immutable
 class UnlockingWallet extends StatelessWidget {
   UnlockingWallet(
-      {Key keyUnlockWallet, @required this.wallet, @required this.action})
+      {Key? keyUnlockWallet, required this.wallet, required this.action})
       : super(key: keyUnlockWallet);
-  WalletData wallet;
+  WalletData? wallet;
   String action;
 
   // ignore: close_sinks
-  StreamController<ErrorAnimationType> errorController;
+  StreamController<ErrorAnimationType>? errorController;
   final formKey = GlobalKey<FormState>();
-  var pinColor = const Color(0xffF9F9F1);
+  Color? pinColor = const Color(0xffF9F9F1);
   var walletPin = '';
-  String resultPay;
-
-  Future<NewWallet> get badWallet => null;
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
+    final double statusBarHeight = MediaQuery.of(context).padding.top;
 
     int _pinLenght;
-    ChestData currentChest = chestBox.get(configBox.get('currentChest'));
+    ChestData currentChest = chestBox.get(configBox.get('currentChest'))!;
 
-    if (currentChest.isCesium) {
+    if (currentChest.isCesium!) {
       _pinLenght = _walletOptions.getPinLenght(currentChest.dewif);
       wallet = WalletData(derivation: -1, chest: currentChest.key);
     } else {
-      _pinLenght = _walletOptions.getPinLenght(wallet.number);
+      _pinLenght = _walletOptions.getPinLenght(wallet!.number);
     }
     errorController = StreamController<ErrorAnimationType>();
 
     return Scaffold(
         // backgroundColor: Colors.brown[600],
         body: SafeArea(
-      child: Column(children: <Widget>[
-        Expanded(
-          child: Column(children: <Widget>[
-            SizedBox(height: isTall ? 100 : 20),
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-              currentChest.imageFile == null
-                  ? Image.asset(
-                      'assets/chests/${currentChest.imageName}',
-                      width: isTall ? 130 : 100,
-                    )
-                  : Image.file(
-                      currentChest.imageFile,
-                      width: isTall ? 130 : 100,
-                    ),
-              const SizedBox(width: 5),
-              SizedBox(
-                  width: 250,
-                  child: Text(
-                    currentChest.name,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        fontSize: 25,
-                        color: Colors.black,
-                        fontWeight: FontWeight.w700),
-                  )),
-            ]),
-            SizedBox(height: 30 * ratio),
-            const SizedBox(
-                width: 400,
-                child: Text(
-                  'Pour déverrouiller votre coffre, composez votre code secret à l’abri des lézards indiscrets :',
-                  style: TextStyle(
-                      fontSize: 19,
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Stack(children: <Widget>[
+              Positioned(
+                top: statusBarHeight + 10,
+                left: 15,
+                child: Builder(
+                  builder: (context) => IconButton(
+                    key: const Key('popButton'),
+                    icon: const Icon(
+                      Icons.arrow_back,
                       color: Colors.black,
-                      fontWeight: FontWeight.w400),
-                )),
-            SizedBox(height: 40 * ratio),
-            pinForm(context, _pinLenght, currentChest),
-            SizedBox(height: 3 * ratio),
-            InkWell(
-                key: const Key('chooseChest'),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) {
-                      return ChooseChest(action: action);
-                    }),
-                  );
-                },
-                child: SizedBox(
-                  width: 400,
-                  height: 70,
-                  child: Center(
-                    child: Text(
-                      'Changer de coffre',
-                      style: TextStyle(
-                          fontSize: 22,
-                          color: orangeC,
-                          fontWeight: FontWeight.w600),
+                      size: 25,
                     ),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                )),
+                ),
+              ),
+              Column(children: <Widget>[
+                SizedBox(height: isTall ? 100 : 20),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      currentChest.imageFile == null
+                          ? Image.asset(
+                              'assets/chests/${currentChest.imageName}',
+                              width: isTall ? 130 : 100,
+                            )
+                          : Image.file(
+                              currentChest.imageFile!,
+                              width: isTall ? 130 : 100,
+                            ),
+                      const SizedBox(width: 5),
+                      SizedBox(
+                          width: 250,
+                          child: Text(
+                            currentChest.name!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                fontSize: 25,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w700),
+                          )),
+                    ]),
+                SizedBox(height: 30 * ratio),
+                const SizedBox(
+                    width: 400,
+                    child: Text(
+                      'Pour déverrouiller votre coffre, composez votre code secret à l’abri des lézards indiscrets :',
+                      style: TextStyle(
+                          fontSize: 19,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w400),
+                    )),
+                SizedBox(height: 40 * ratio),
+                pinForm(context, _pinLenght, currentChest),
+                SizedBox(height: 3 * ratio),
+                InkWell(
+                    key: const Key('chooseChest'),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) {
+                          return ChooseChest(action: action);
+                        }),
+                      );
+                    },
+                    child: SizedBox(
+                      width: 400,
+                      height: 70,
+                      child: Center(
+                        child: Text(
+                          'Changer de coffre',
+                          style: TextStyle(
+                              fontSize: 22,
+                              color: orangeC,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    )),
+              ]),
+            ]),
           ]),
-        ),
-      ]),
     ));
   }
 
@@ -150,7 +169,7 @@ class UnlockingWallet extends StatelessWidget {
             obscuringCharacter: '*',
             animationType: AnimationType.fade,
             validator: (v) {
-              if (v.length < _pinLenght) {
+              if (v!.length < _pinLenght) {
                 return "Votre code PIN fait $_pinLenght caractères";
               } else {
                 return null;
@@ -183,35 +202,65 @@ class UnlockingWallet extends StatelessWidget {
             onCompleted: (_pin) async {
               log.d("Completed");
               _myWalletProvider.pinCode = _pin;
-              final String resultWallet = await _walletOptions.readLocalWallet(
-                  context, wallet, _pin.toUpperCase(), _pinLenght);
+
+              if (currentChest.isCesium!) {
+                try {
+                  String _localDewif = chestBox.get(wallet!.chest)!.dewif!;
+                  final cesiumWallet =
+                      CesiumWallet.fromDewif(_localDewif, _pin.toUpperCase());
+                  _walletOptions.pubkey.text = cesiumWallet.pubkey;
+                  _myWalletProvider.cesiumSeed = cesiumWallet.seed;
+                  _myWalletProvider.mnemonic = 'cesium';
+                } catch (e) {
+                  log.e(e);
+                  _myWalletProvider.mnemonic = 'bad';
+                }
+              } else {
+                _myWalletProvider.mnemonic = _myWalletProvider.dewifToMnemonic(
+                    context, wallet!, _pin.toUpperCase());
+              }
+              // final String? resultWallet = _walletOptions.readLocalWallet(
+              //     context, wallet!, _pin.toUpperCase(), _pinLenght);
               // _myWalletProvider.pinCode = _pin.toUpperCase();
               _myWalletProvider.pinLenght = _pinLenght;
 
-              if (resultWallet == 'bad') {
+              if (_myWalletProvider.mnemonic == 'bad') {
+                await Future.delayed(const Duration(milliseconds: 50));
                 errorController.add(ErrorAnimationType
                     .shake); // Triggering error shake animation
                 pinColor = Colors.red[600];
+                _myWalletProvider.pinCode = _myWalletProvider.mnemonic = '';
                 _walletOptions.reloadBuild();
                 pinFocus.requestFocus();
               } else {
                 pinColor = Colors.green[400];
-                // await Future.delayed(Duration(milliseconds: 50));
                 if (action == "mywallets") {
-                  currentChest.isCesium
+                  currentChest.isCesium!
                       ? Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) {
                             return CesiumWalletOptions(
                                 cesiumWallet: currentChest);
                           }),
-                        )
-                      : Navigator.pushNamed(
-                          formKey.currentContext, '/mywallets');
+                        ).then((value) => _myWalletProvider.mnemonic = '')
+                      : Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) {
+                            return const WalletsHome();
+                          }),
+                        ).then((value) => _myWalletProvider.cesiumSeed.clear());
                 } else if (action == "pay") {
-                  resultPay =
-                      await _historyProvider.pay(context, _pin.toUpperCase());
-                  await _paymentsResult(context);
+                  if (currentChest.isCesium!) {
+                    final resultPay = await _historyProvider.pay(context);
+                    await paymentsResult(context, resultPay);
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return ChooseWalletScreen();
+                      }),
+                    );
+                  }
                 }
               }
             },
@@ -221,33 +270,6 @@ class UnlockingWallet extends StatelessWidget {
               }
             },
           )),
-    );
-  }
-
-  Future<bool> _paymentsResult(context) {
-    if (resultPay != "Success") log.i(resultPay);
-    return showDialog<bool>(
-      context: context,
-      barrierDismissible: true, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(resultPay == "Success"
-              ? 'Paiement effecuté avec succès !'
-              : "Une erreur s'est produite lors du paiement"),
-          content: const SingleChildScrollView(child: Text('')),
-          actions: <Widget>[
-            TextButton(
-              child: const Text("OK"),
-              onPressed: () {
-                Navigator.popUntil(
-                  context,
-                  ModalRoute.withName('/'),
-                );
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 }

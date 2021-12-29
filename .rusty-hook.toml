@@ -1,5 +1,0 @@
-[hooks]
-pre-commit = "cargo fmt -- --check && flutter format --set-exit-if-changed lib packages/dubp_rs/lib/dubp.dart"
-
-[logging]
-verbose = true

@@ -1,20 +1,17 @@
 // ignore_for_file: file_names
-
-import 'package:dubp/dubp.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/generate_wallets.dart';
+import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/12.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class OnboardingStepThirteen extends StatelessWidget {
-  NewWallet generatedWallet;
   final int progress = 10;
 
-  OnboardingStepThirteen({Key key}) : super(key: key);
+  const OnboardingStepThirteen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -24,19 +21,13 @@ class OnboardingStepThirteen extends StatelessWidget {
     // MyWalletsProvider myWalletProvider =
     //     Provider.of<MyWalletsProvider>(context);
     CommonElements common = CommonElements();
-    _generateWalletProvider.pin.text = '';
+    _generateWalletProvider.pin.text =
+        _generateWalletProvider.changePinCode(reload: false);
 
     return Scaffold(
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(children: <Widget>[
-            FutureBuilder(
-                future: _generateWalletProvider.changePinCode(reload: false),
-                // initialData: '...',
-                builder: (context, snapshot) {
-                  generatedWallet = snapshot.data;
-                  return const Visibility(visible: false, child: Text(''));
-                }),
             common.onboardingProgressBar(
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeakRich(
@@ -72,9 +63,8 @@ class OnboardingStepThirteen extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.replay),
                   color: orangeC,
-                  onPressed: () async {
-                    generatedWallet = await _generateWalletProvider
-                        .changePinCode(reload: false);
+                  onPressed: () {
+                    _generateWalletProvider.changePinCode(reload: true);
                   },
                 ),
               ],
@@ -92,9 +82,8 @@ class OnboardingStepThirteen extends StatelessWidget {
                             primary: const Color(0xffFFD58D),
                             onPrimary: Colors.black, // foreground
                           ),
-                          onPressed: () async {
-                            generatedWallet = await _generateWalletProvider
-                                .changePinCode(reload: false);
+                          onPressed: () {
+                            _generateWalletProvider.changePinCode(reload: true);
                           },
                           child: const Text("Choisir un autre code secret",
                               style: TextStyle(fontSize: 20))),
@@ -116,9 +105,7 @@ class OnboardingStepThirteen extends StatelessWidget {
                     Navigator.push(
                       context,
                       FaderTransition(
-                          page: OnboardingStepFourteen(
-                              generatedWallet: generatedWallet),
-                          isFast: true),
+                          page: OnboardingStepFourteen(), isFast: true),
                     );
                   },
                   child: const Text("J'ai noté mon code secret",

@@ -1,13 +1,13 @@
 // ignore_for_file: file_names
 
 import 'dart:async';
-import 'package:dubp/dubp.dart';
+import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/generate_wallets.dart';
-import 'package:gecko/models/my_wallets.dart';
-import 'package:gecko/models/wallet_options.dart';
+import 'package:gecko/providers/generate_wallets.dart';
+import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/13_congratulations.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -16,25 +16,23 @@ import 'package:provider/provider.dart';
 // ignore: must_be_immutable
 class OnboardingStepFourteen extends StatelessWidget {
   OnboardingStepFourteen({
-    Key validationKey,
-    @required this.generatedWallet,
+    Key? validationKey,
   }) : super(key: validationKey);
 
-  NewWallet generatedWallet;
   final int progress = 11;
   final formKey = GlobalKey<FormState>();
-  var pinColor = const Color(0xFFA4B600);
+  Color? pinColor = const Color(0xFFA4B600);
   bool hasError = false;
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    // GenerateWalletsProvider _generateWalletProvider =
-    //     Provider.of<GenerateWalletsProvider>(context);
+    GenerateWalletsProvider _generateWalletProvider =
+        Provider.of<GenerateWalletsProvider>(context);
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
     CommonElements common = CommonElements();
-    final int _pinLenght = _walletOptions.getPinLenght(generatedWallet.dewif);
+    final int _pinLenght = _generateWalletProvider.pin.text.length;
 
     return Scaffold(
         extendBodyBehindAppBar: true,
@@ -64,7 +62,7 @@ class OnboardingStepFourteen extends StatelessWidget {
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
 
-    final int _currentChest = _myWalletProvider.getCurrentChest();
+    final int? _currentChest = _myWalletProvider.getCurrentChest();
 
     return Form(
       key: formKey,
@@ -83,7 +81,7 @@ class OnboardingStepFourteen extends StatelessWidget {
             obscuringCharacter: '*',
             animationType: AnimationType.fade,
             validator: (v) {
-              if (v.length < _pinLenght) {
+              if (v!.length < _pinLenght) {
                 return "Votre code PIN fait $_pinLenght caractères";
               } else {
                 return null;
@@ -114,19 +112,23 @@ class OnboardingStepFourteen extends StatelessWidget {
               )
             ],
             onCompleted: (_pin) async {
-              _myWalletProvider.pinCode = _pin;
+              _myWalletProvider.pinCode = _pin.toUpperCase();
               _myWalletProvider.pinLenght = _pinLenght;
-              final bool resultWallet = await _walletOptions.checkPinOK(
-                  generatedWallet.dewif, _pin.toUpperCase(), _pinLenght);
-              if (resultWallet) {
+              log.d(_pin + ' || ' + _generateWalletProvider.pin.text);
+              if (_pin.toUpperCase() == _generateWalletProvider.pin.text) {
                 pinColor = Colors.green[500];
-                _generateWalletProvider.storeHDWChest(
+                NewWallet generatedWallet = await Dewif().generateDewif(
+                    _generateWalletProvider.generatedMnemonic!,
+                    _generateWalletProvider.pin.text,
+                    lang: appLang);
+                await _generateWalletProvider.storeHDWChest(
                     generatedWallet, 'Mon portefeuille courant', context);
                 _myWalletProvider.readAllWallets(_currentChest);
-                scheduleMicrotask(() {
-                  _walletOptions.reloadBuild();
-                  _myWalletProvider.rebuildWidget();
-                });
+                // scheduleMicrotask(() {
+                // _walletOptions.reloadBuild();
+                _myWalletProvider.rebuildWidget();
+                // });
+                _generateWalletProvider.generatedMnemonic = '';
                 Navigator.push(
                   context,
                   FaderTransition(

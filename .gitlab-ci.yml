@@ -8,9 +8,6 @@ stages:
   image: axiomteam/gecko-ci:v0.0.8
   tags:
     - redshift
-  before_script:
-    - rustup show
-    - rustc --version && cargo --version
 
 format:
   extends: .env
@@ -20,10 +17,6 @@ format:
     - if: $CI_COMMIT_TAG || $CI_MERGE_REQUEST_ID
     - when: manual
   stage: format
-  script:
-    - cargo fmt -- --version
-    - cargo fmt -- --check
-    - flutter format --set-exit-if-changed lib packages/dubp_rs/lib/dubp.dart
 
 build_and_test:
   extends: .env
@@ -35,11 +28,8 @@ build_and_test:
   stage: build_and_test
   tags:
     - redshift
-  script: 
-    - RUSTFLAGS="-D warnings" cargo make
-    - cd packages/dubp_rs && flutter pub get && cd ../..
+  script:
     - flutter analyze
-    - cargo test
     # - flutter test
 
 lint:
@@ -50,9 +40,6 @@ lint:
     - if: $CI_COMMIT_TAG || $CI_MERGE_REQUEST_ID
     - when: manual
   stage: quality
-  script:
-    - cargo clippy -- -V
-    - cargo clippy --all --tests -- -D warnings --verbose
     
 audit_dependencies:
   extends: .env
@@ -62,9 +49,6 @@ audit_dependencies:
     - if: $CI_COMMIT_TAG || $CI_MERGE_REQUEST_ID
     - when: manual
   stage: quality
-  script:
-    - cargo deny -V
-    - cargo deny check
 
 releases:test:
   extends: .env

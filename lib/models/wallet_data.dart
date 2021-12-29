@@ -7,22 +7,22 @@ part 'wallet_data.g.dart';
 @HiveType(typeId: 0)
 class WalletData extends HiveObject {
   @HiveField(0)
-  int chest;
+  int? chest;
 
   @HiveField(1)
-  int number;
+  int? number;
 
   @HiveField(2)
-  String name;
+  String? name;
 
   @HiveField(3)
-  int derivation;
+  int? derivation;
 
   @HiveField(4)
-  String imageName;
+  String? imageName;
 
   @HiveField(5)
-  File imageFile;
+  File? imageFile;
 
   WalletData(
       {this.chest,
@@ -35,7 +35,7 @@ class WalletData extends HiveObject {
   // representation of WalletData when debugging
   @override
   String toString() {
-    return name;
+    return name!;
   }
 
   // creates the ':'-separated string from the WalletData
@@ -44,7 +44,7 @@ class WalletData extends HiveObject {
   }
 
   // returns only the id part of the ':'-separated string
-  List<int> id() {
+  List<int?> id() {
     return [chest, number];
   }
 }

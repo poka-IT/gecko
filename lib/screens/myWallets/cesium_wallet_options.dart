@@ -1,25 +1,26 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
-import 'package:gecko/models/chest_provider.dart';
-import 'package:gecko/models/wallets_profiles.dart';
-import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/providers/chest_provider.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/queries.dart';
-import 'package:gecko/models/wallet_options.dart';
+import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/history.dart';
 import 'package:gecko/screens/myWallets/change_pin.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
-int _nbrLinesName = 1;
 bool _isNewNameValid = false;
 
 class CesiumWalletOptions extends StatelessWidget {
   const CesiumWalletOptions(
-      {Key key, Key keyMyWallets, @required this.cesiumWallet})
+      {Key? key, Key? keyMyWallets, required this.cesiumWallet})
       : super(key: key);
 
   final ChestData cesiumWallet;
@@ -39,18 +40,10 @@ class CesiumWalletOptions extends StatelessWidget {
     final String shortPubkey =
         _walletOptions.getShortPubkey(_walletOptions.pubkey.text);
 
-    if (_walletOptions.nameController.text == null ||
-        _isNewNameValid == false) {
-      _walletOptions.nameController.text = cesiumWallet.name;
+    if (_isNewNameValid == false) {
+      _walletOptions.nameController.text = cesiumWallet.name!;
     } else {
       cesiumWallet.name = _walletOptions.nameController.text;
-    }
-
-    _walletOptions.nameController.text.length >= 15
-        ? _nbrLinesName = 2
-        : _nbrLinesName = 1;
-    if (_walletOptions.nameController.text.length >= 26 && isTall) {
-      _nbrLinesName = 3;
     }
 
     return WillPopScope(
@@ -101,40 +94,40 @@ class CesiumWalletOptions extends StatelessWidget {
                       const Color(0xfffafafa),
                     ],
                   )),
-                  child: Row(children: <Widget>[
-                    const SizedBox(width: 25),
-                    InkWell(
-                      onTap: () async {
-                        File newAvatar = await _walletOptions.changeAvatar();
-                        if (newAvatar != null) {
-                          cesiumWallet.imageFile = newAvatar;
-                        }
-                        _walletOptions.reloadBuild();
-                      },
-                      child: cesiumWallet.imageFile == null
-                          ? Image.asset(
-                              'assets/chests/${cesiumWallet.imageName}',
-                              width: 110,
-                            )
-                          : Image.file(cesiumWallet.imageFile, width: 110),
-                    ),
-                    InkWell(
-                        onTap: () async {
-                          File newAvatar = await _walletOptions.changeAvatar();
-                          if (newAvatar != null) {
+                  child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: <Widget>[
+                        const Spacer(flex: 1),
+                        InkWell(
+                          onTap: () async {
+                            File newAvatar =
+                                await (_walletOptions.changeAvatar());
                             cesiumWallet.imageFile = newAvatar;
-                          }
-                          _walletOptions.reloadBuild();
-                        },
-                        child: Column(children: <Widget>[
-                          Image.asset(
-                            'assets/walletOptions/camera.png',
-                            height: 40,
-                          ),
-                          const SizedBox(height: 80)
-                        ])),
-                    Column(children: <Widget>[
-                      Row(children: <Widget>[
+                            _walletOptions.reloadBuild();
+                          },
+                          child: cesiumWallet.imageFile == null
+                              ? Image.asset(
+                                  'assets/chests/${cesiumWallet.imageName}',
+                                  width: 110,
+                                )
+                              : Image.file(cesiumWallet.imageFile!, width: 110),
+                        ),
+                        InkWell(
+                            onTap: () async {
+                              File newAvatar =
+                                  await (_walletOptions.changeAvatar());
+                              cesiumWallet.imageFile = newAvatar;
+                              _walletOptions.reloadBuild();
+                            },
+                            child: Column(children: <Widget>[
+                              Image.asset(
+                                'assets/walletOptions/camera.png',
+                                height: 40,
+                              ),
+                              const SizedBox(height: 80)
+                            ])),
+                        const Spacer(flex: 1),
                         Column(children: <Widget>[
                           SizedBox(
                             width: 260,
@@ -144,7 +137,8 @@ class CesiumWalletOptions extends StatelessWidget {
                                 focusNode: _walletOptions.walletNameFocus,
                                 enabled: _walletOptions.isEditing,
                                 controller: _walletOptions.nameController,
-                                maxLines: _nbrLinesName,
+                                minLines: 1,
+                                maxLines: 3,
                                 textAlign: TextAlign.center,
                                 decoration: const InputDecoration(
                                   border: InputBorder.none,
@@ -154,10 +148,10 @@ class CesiumWalletOptions extends StatelessWidget {
                                   contentPadding: EdgeInsets.all(15.0),
                                 ),
                                 style: TextStyle(
-                                    fontSize: isTall ? 27 : 23,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w400,
-                                    fontFamily: 'Monospace')),
+                                  fontSize: isTall ? 27 : 23,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w400,
+                                )),
                           ),
                           SizedBox(height: isTall ? 5 : 0),
                           Query(
@@ -169,7 +163,7 @@ class CesiumWalletOptions extends StatelessWidget {
                               // pollInterval: Duration(seconds: 1),
                             ),
                             builder: (QueryResult result,
-                                {VoidCallback refetch, FetchMore fetchMore}) {
+                                {VoidCallback? refetch, FetchMore? fetchMore}) {
                               if (result.hasException) {
                                 return Text(result.exception.toString());
                               }
@@ -180,13 +174,13 @@ class CesiumWalletOptions extends StatelessWidget {
 
                               // List repositories = result.data['viewer']['repositories']['nodes'];
                               String wBalanceUD;
-                              if (result.data['balance'] == null) {
+                              if (result.data!['balance'] == null) {
                                 wBalanceUD = '0.0';
                               } else {
                                 int wBalanceG1 =
-                                    result.data['balance']['amount'];
+                                    result.data!['balance']['amount'];
                                 int currentUD =
-                                    result.data['currentUd']['amount'];
+                                    result.data!['currentUd']['amount'];
                                 double wBalanceUDBrut =
                                     wBalanceG1 / currentUD; // .toString();
                                 wBalanceUD = double.parse(
@@ -196,10 +190,12 @@ class CesiumWalletOptions extends StatelessWidget {
                               return Row(children: <Widget>[
                                 ImageFiltered(
                                   imageFilter: ImageFilter.blur(
-                                      sigmaX:
-                                          _walletOptions.isBalanceBlur ? 6 : 0,
-                                      sigmaY:
-                                          _walletOptions.isBalanceBlur ? 5 : 0),
+                                      sigmaX: _walletOptions.isBalanceBlur
+                                          ? 6
+                                          : 0.001,
+                                      sigmaY: _walletOptions.isBalanceBlur
+                                          ? 5
+                                          : 0.001),
                                   child: Text(wBalanceUD,
                                       style: TextStyle(
                                           fontSize: isTall ? 20 : 18,
@@ -232,7 +228,6 @@ class CesiumWalletOptions extends StatelessWidget {
                             ),
                           ),
                         ]),
-                        const SizedBox(width: 0),
                         Column(children: <Widget>[
                           InkWell(
                               key: const Key('renameWallet'),
@@ -255,22 +250,17 @@ class CesiumWalletOptions extends StatelessWidget {
                           const SizedBox(
                             height: 60,
                           )
-                        ])
+                        ]),
+                        const Spacer(flex: 3),
                       ]),
-                    ]),
-                  ]),
                 );
               }),
               SizedBox(height: 4 * ratio),
-              FutureBuilder(
-                  future:
-                      _walletOptions.generateQRcode(_walletOptions.pubkey.text),
-                  builder: (context, snapshot) {
-                    return snapshot.data != null
-                        ? Image.memory(snapshot.data,
-                            height: isTall ? 300 : 270)
-                        : const Text('-', style: TextStyle(fontSize: 20));
-                  }),
+              QrImage(
+                data: _walletOptions.pubkey.text,
+                version: QrVersions.auto,
+                size: isTall ? 300 : 270,
+              ),
               SizedBox(height: 15 * ratio),
               GestureDetector(
                   key: const Key('copyPubkey'),
@@ -358,7 +348,7 @@ class CesiumWalletOptions extends StatelessWidget {
                 key: const Key('changePin'),
                 onTap: () async {
                   // await _chestProvider.changePin(context, cesiumWallet);
-                  String newPin = await Navigator.push(
+                  String? newPin = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) {

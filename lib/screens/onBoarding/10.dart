@@ -11,7 +11,7 @@ class OnboardingStepTwelve extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
   final int progress = 9;
 
-  OnboardingStepTwelve({Key key}) : super(key: key);
+  OnboardingStepTwelve({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,7 @@ class OnboardingStepTwelve extends StatelessWidget {
             const SizedBox(height: 10),
             Image.asset(
               'assets/onBoarding/plusieurs-codes-secrets-un-trousseau.png',
-              height: 410 * ratio,
+              height: isTall ? 410 : 380,
             ),
             Expanded(
                 child: Align(
@@ -50,13 +50,14 @@ class OnboardingStepTwelve extends StatelessWidget {
                             Navigator.push(
                               context,
                               FaderTransition(
-                                  page: OnboardingStepThirteen(), isFast: true),
+                                  page: const OnboardingStepThirteen(),
+                                  isFast: true),
                             );
                           },
                           child: const Text("Générer le code secret",
                               style: TextStyle(fontSize: 20))),
                     ))),
-            SizedBox(height: isTall ? 80 : 40),
+            const SizedBox(height: 80),
           ]),
         ));
   }

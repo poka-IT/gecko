@@ -19,13 +19,13 @@ class G1WalletsListAdapter extends TypeAdapter<G1WalletsList> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return G1WalletsList(
-      pubkey: fields[0] as String,
-      balance: fields[1] as double,
-      id: fields[3] as Id,
-      avatar: fields[4] as Image,
-      username: fields[5] as String,
-      csName: fields[6] as String,
-      isMembre: fields[7] as bool,
+      pubkey: fields[0] as String?,
+      balance: fields[1] as double?,
+      id: fields[3] as Id?,
+      avatar: fields[4] as Image?,
+      username: fields[5] as String?,
+      csName: fields[6] as String?,
+      isMembre: fields[7] as bool?,
     );
   }
 

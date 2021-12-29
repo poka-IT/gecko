@@ -1,6 +1,7 @@
+import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/generate_wallets.dart';
+import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/screens/myWallets/confirm_wallet_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
@@ -9,7 +10,7 @@ import 'package:super_tooltip/super_tooltip.dart';
 
 // ignore: must_be_immutable
 class GenerateFastChestScreen extends StatelessWidget {
-  SuperTooltip tooltip;
+  SuperTooltip? tooltip;
   bool hasError = false;
   String validPin = 'NO PIN';
   String currentText = "";
@@ -18,18 +19,37 @@ class GenerateFastChestScreen extends StatelessWidget {
   final GlobalKey _toolTipSentence = GlobalKey();
   final GlobalKey _toolTipSecret = GlobalKey();
 
-  GenerateFastChestScreen({Key key}) : super(key: key);
+  GenerateFastChestScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
-    _generateWalletProvider.generateMnemonic();
 
-    return Scaffold(
+    if (_generateWalletProvider.mnemonicController.text == '') {
+      _generateWalletProvider.generateWordList();
+      _generateWalletProvider.mnemonicController.text =
+          _generateWalletProvider.generatedMnemonic!;
+      _generateWalletProvider.pin.text = randomSecretCode(pinLength);
+    }
+
+    return WillPopScope(
+      onWillPop: () {
+        _generateWalletProvider.pin.text = '';
+        _generateWalletProvider.mnemonicController.text = '';
+        return Future<bool>.value(true);
+      },
+      child: Scaffold(
         appBar: AppBar(
             toolbarHeight: 60 * ratio,
+            leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () {
+                  _generateWalletProvider.pin.text = '';
+                  _generateWalletProvider.mnemonicController.text = '';
+                  Navigator.of(context).pop();
+                }),
             title: const SizedBox(
               height: 22,
               child: Text('Générer un trousseau'),
@@ -40,7 +60,11 @@ class GenerateFastChestScreen extends StatelessWidget {
             child: FittedBox(
                 child: FloatingActionButton(
               heroTag: "buttonGenerateWallet",
-              onPressed: () => _generateWalletProvider.generateMnemonic(),
+              onPressed: () {
+                _generateWalletProvider.generateWordList();
+                _generateWalletProvider.mnemonicController.text =
+                    _generateWalletProvider.generatedMnemonic!;
+              },
               child: SizedBox(
                 height: 40.0,
                 width: 40.0,
@@ -50,103 +74,96 @@ class GenerateFastChestScreen extends StatelessWidget {
                   floattingYellow, //smoothYellow, //Color.fromARGB(500, 204, 255, 255),
             ))),
         body: Builder(
-            builder: (ctx) => SafeArea(
-                  child: Column(children: <Widget>[
-                    const SizedBox(height: 20),
-                    toolTips(_toolTipSentence, 'Phrase de restauration:',
-                        "Notez et gardez cette phrase précieusement sur un papier, elle vous servira à restaurer votre portefeuille sur un autre appareil"),
-                    TextField(
-                        enabled: false,
-                        controller: _generateWalletProvider.mnemonicController,
-                        maxLines: 3,
-                        textAlign: TextAlign.center,
-                        decoration: const InputDecoration(
-                          contentPadding: EdgeInsets.all(15.0),
-                        ),
-                        style: const TextStyle(
-                            fontSize: 22.0,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w400)),
-                    const SizedBox(height: 8),
-                    toolTips(_toolTipSecret, 'Code secret:',
-                        "Retenez bien votre code secret, il vous sera demandé à chaque paiement, ainsi que pour configurer votre portefeuille"),
-                    Stack(
-                      alignment: Alignment.centerRight,
-                      children: <Widget>[
-                        TextField(
-                            key: const Key('generatedPin'),
-                            enabled: false,
-                            controller: _generateWalletProvider.pin,
-                            maxLines: 1,
-                            textAlign: TextAlign.center,
-                            decoration: const InputDecoration(),
-                            style: const TextStyle(
-                                fontSize: 30.0,
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold)),
-                        IconButton(
-                          icon: const Icon(Icons.replay),
-                          color: orangeC,
-                          onPressed: () {
-                            _generateWalletProvider.changePinCode(
-                                reload: false);
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                        key: const Key('storeKeychain'),
-                        style: ElevatedButton.styleFrom(
-                          primary: yellowC, // background
-                          onPrimary: Colors.black, // foreground
-                        ),
-                        onPressed: _generateWalletProvider.walletIsGenerated
-                            ? () async {
-                                _generateWalletProvider.nbrWord =
-                                    _generateWalletProvider.getRandomInt();
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) {
-                                    return ConfirmStoreWallet(
-                                        generatedMnemonic:
-                                            _generateWalletProvider
-                                                .generatedMnemonic,
-                                        generatedWallet: _generateWalletProvider
-                                            .actualWallet);
-                                  }),
-                                );
-                                await Future.delayed(
-                                    const Duration(milliseconds: 20));
-                                // if (_generateWalletProvider.hasBeenStored) {
-                                //   _generateWalletProvider.hasBeenStored = false;
-                                //   await Navigator.pushAndRemoveUntil(context,
-                                //       MaterialPageRoute(builder: (context) {
-                                //     return UnlockingWallet(
-                                //       wallet: _myWalletClass.getDefaultWallet(
-                                //           configBox.get('currentChest')),
-                                //       action: "mywallets",
-                                //     );
-                                //   }), ModalRoute.withName('/'));
-                                // }
-                              }
-                            : null,
-                        child: const Text('Enregistrer ce trousseau',
-                            style: TextStyle(fontSize: 20))),
-                    const SizedBox(height: 20),
-                    GestureDetector(
-                        onTap: () {
-                          Navigator.push(
+          builder: (ctx) => SafeArea(
+            child: Column(children: <Widget>[
+              const SizedBox(height: 20),
+              toolTips(_toolTipSentence, 'Phrase de restauration:',
+                  "Notez et gardez cette phrase précieusement sur un papier, elle vous servira à restaurer votre portefeuille sur un autre appareil"),
+              TextField(
+                  enabled: false,
+                  controller: _generateWalletProvider.mnemonicController,
+                  maxLines: 3,
+                  textAlign: TextAlign.center,
+                  decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.all(15.0),
+                  ),
+                  style: const TextStyle(
+                      fontSize: 22.0,
+                      color: Colors.black,
+                      fontWeight: FontWeight.w400)),
+              const SizedBox(height: 8),
+              toolTips(_toolTipSecret, 'Code secret:',
+                  "Retenez bien votre code secret, il vous sera demandé à chaque paiement, ainsi que pour configurer votre portefeuille"),
+              Stack(
+                alignment: Alignment.centerRight,
+                children: <Widget>[
+                  TextField(
+                      key: const Key('generatedPin'),
+                      enabled: false,
+                      controller: _generateWalletProvider.pin,
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                      decoration: const InputDecoration(),
+                      style: const TextStyle(
+                          fontSize: 30.0,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold)),
+                  IconButton(
+                    icon: const Icon(Icons.replay),
+                    color: orangeC,
+                    onPressed: () {
+                      _generateWalletProvider.changePinCode(reload: true);
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                  key: const Key('storeKeychain'),
+                  style: ElevatedButton.styleFrom(
+                    primary: yellowC, // background
+                    onPrimary: Colors.black, // foreground
+                  ),
+                  onPressed: _generateWalletProvider.walletIsGenerated
+                      ? () async {
+                          _generateWalletProvider.nbrWord =
+                              _generateWalletProvider.getRandomInt();
+                          _generateWalletProvider.actualWallet = await Dewif()
+                              .generateDewif(
+                                  _generateWalletProvider.generatedMnemonic!,
+                                  _generateWalletProvider.pin.text,
+                                  lang: appLang);
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) {
-                              return PrintWallet(
-                                  _generateWalletProvider.generatedMnemonic);
+                              return ConfirmStoreWallet(
+                                  generatedMnemonic:
+                                      _generateWalletProvider.generatedMnemonic,
+                                  generatedWallet:
+                                      _generateWalletProvider.actualWallet);
                             }),
                           );
-                        },
-                        child: const Icon(Icons.print))
-                  ]),
-                )));
+                        }
+                      : null,
+                  child: const Text('Enregistrer ce trousseau',
+                      style: TextStyle(fontSize: 20))),
+              const SizedBox(height: 20),
+              GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return PrintWallet(
+                            _generateWalletProvider.generatedMnemonic);
+                      }),
+                    );
+                  },
+                  child: const Icon(Icons.print))
+            ]),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget toolTips(_key, _text, _message) {
@@ -186,9 +203,9 @@ class GenerateFastChestScreen extends StatelessWidget {
 
 // ignore: must_be_immutable
 class PrintWallet extends StatelessWidget {
-  const PrintWallet(this.sentence, {Key key}) : super(key: key);
+  const PrintWallet(this.sentence, {Key? key}) : super(key: key);
 
-  final String sentence;
+  final String? sentence;
 
   @override
   Widget build(BuildContext context) {
@@ -197,6 +214,11 @@ class PrintWallet extends StatelessWidget {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
+            leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () {
+                  Navigator.pop(context);
+                }),
             toolbarHeight: 60 * ratio,
             title: const Text('Imprimer ce trousseau')),
         body: PdfPreview(

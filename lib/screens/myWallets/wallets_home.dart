@@ -1,11 +1,12 @@
+import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
-import 'package:gecko/models/my_wallets.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/queries.dart';
 import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/models/wallet_options.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/chest_options.dart';
 import 'package:gecko/screens/myWallets/choose_chest.dart';
@@ -14,9 +15,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
 class WalletsHome extends StatelessWidget {
-  final _derivationKey = GlobalKey<FormState>();
-
-  WalletsHome({Key key}) : super(key: key);
+  const WalletsHome({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -24,13 +23,14 @@ class WalletsHome extends StatelessWidget {
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
 
-    final int _currentChestNumber = myWalletProvider.getCurrentChest();
-    final ChestData _currentChest = chestBox.get(_currentChestNumber);
+    final int? _currentChestNumber = myWalletProvider.getCurrentChest();
+    final ChestData _currentChest = chestBox.get(_currentChestNumber)!;
     myWalletProvider.listWallets =
         myWalletProvider.readAllWallets(_currentChestNumber);
 
     return WillPopScope(
       onWillPop: () {
+        myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
         Navigator.popUntil(
           context,
           ModalRoute.withName('/'),
@@ -43,12 +43,13 @@ class WalletsHome extends StatelessWidget {
           leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.black),
               onPressed: () {
+                myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
                 Navigator.popUntil(
                   context,
                   ModalRoute.withName('/'),
                 );
               }),
-          title: Text(_currentChest.name,
+          title: Text(_currentChest.name!,
               key: const Key('myWallets'),
               style: TextStyle(color: Colors.grey[850])),
           backgroundColor: const Color(0xffFFD58D),
@@ -71,11 +72,12 @@ class WalletsHome extends StatelessWidget {
     return Column(children: [
       const SizedBox(height: 50),
       SizedBox(
-          height: 120,
-          width: 445,
+          height: 90,
+          width: 420,
           child: ElevatedButton.icon(
             icon: Image.asset(
               'assets/chests/config.png',
+              height: 60,
             ),
             style: ElevatedButton.styleFrom(
               elevation: 2,
@@ -89,9 +91,9 @@ class WalletsHome extends StatelessWidget {
               }),
             ),
             label: const Text(
-              "       Paramétrer ce coffre",
+              "    Paramétrer ce coffre",
               style: TextStyle(
-                fontSize: 25,
+                fontSize: 22,
                 fontWeight: FontWeight.w700,
                 color: Color(0xff8a3c0f),
               ),
@@ -99,10 +101,13 @@ class WalletsHome extends StatelessWidget {
           )),
       const SizedBox(height: 30),
       SizedBox(
-          height: 120,
-          width: 445,
+          height: 90,
+          width: 420,
           child: ElevatedButton.icon(
-            icon: Image.asset('assets/chests/miniChests.png'),
+            icon: Image.asset(
+              'assets/chests/miniChests.png',
+              height: 70,
+            ),
             style: ElevatedButton.styleFrom(
               elevation: 2,
               primary: floattingYellow, // background
@@ -115,9 +120,9 @@ class WalletsHome extends StatelessWidget {
               }),
             ),
             label: const Text(
-              "       Changer de coffre",
+              "     Changer de coffre",
               style: TextStyle(
-                fontSize: 25,
+                fontSize: 22,
                 fontWeight: FontWeight.w700,
                 color: Color(0xff8a3c0f),
               ),
@@ -131,8 +136,7 @@ class WalletsHome extends StatelessWidget {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
     WalletOptionsProvider _walletOptions =
-        Provider.of<WalletOptionsProvider>(context);
-
+        Provider.of<WalletOptionsProvider>(context, listen: false);
     final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
 
     if (!isWalletsExists) {
@@ -151,34 +155,44 @@ class WalletsHome extends StatelessWidget {
     }
 
     List _listWallets = _myWalletProvider.listWallets;
-    WalletData defaultWallet =
+    WalletData? defaultWallet =
         _myWalletProvider.getDefaultWallet(configBox.get('currentChest'));
+    final double screenWidth = MediaQuery.of(context).size.width;
+    int nTule = 2;
+
+    if (screenWidth >= 900) {
+      nTule = 4;
+    } else if (screenWidth >= 650) {
+      nTule = 3;
+    }
 
     return CustomScrollView(slivers: <Widget>[
       const SliverToBoxAdapter(child: SizedBox(height: 20)),
       SliverGrid.count(
           key: const Key('listWallets'),
-          crossAxisCount: 2,
+          crossAxisCount: nTule,
           childAspectRatio: 1,
           crossAxisSpacing: 0,
           mainAxisSpacing: 0,
           children: <Widget>[
-            for (WalletData _repository in _listWallets)
+            for (WalletData _repository in _listWallets as Iterable<WalletData>)
               Padding(
                   padding: const EdgeInsets.all(16),
                   child: GestureDetector(
-                    onTap: () async {
-                      await _walletOptions.readLocalWallet(
-                          context,
-                          _repository,
-                          _myWalletProvider.pinCode,
-                          _myWalletProvider.pinLenght);
+                    onTap: () {
+                      // _walletOptions.readLocalWallet(context, _repository,
+                      //     _myWalletProvider.pinCode, pinLength);
+                      _walletOptions.pubkey.text =
+                          HdWallet.fromMnemonic(_myWalletProvider.mnemonic)
+                              .getPubkey(_repository.derivation!);
                       Navigator.push(
-                          context,
-                          SmoothTransition(
-                              page: WalletOptions(
+                        context,
+                        SmoothTransition(
+                          page: WalletOptions(
                             wallet: _repository,
-                          )));
+                          ),
+                        ),
+                      );
 
                       // Navigator.push(context,
                       //     MaterialPageRoute(builder: (context) {
@@ -204,7 +218,7 @@ class WalletsHome extends StatelessWidget {
                                 gradient: RadialGradient(
                               radius: 0.6,
                               colors: [
-                                Colors.green[400],
+                                Colors.green[400]!,
                                 const Color(0xFFE7E7A6),
                               ],
                             )),
@@ -218,7 +232,7 @@ class WalletsHome extends StatelessWidget {
                                         scale: 0.5,
                                       )
                                     : Image.file(
-                                        _repository.imageFile,
+                                        _repository.imageFile!,
                                         alignment: Alignment.bottomCenter,
                                         scale: 0.5,
                                       ),
@@ -230,7 +244,7 @@ class WalletsHome extends StatelessWidget {
                                     bottom: Radius.circular(12))),
                             // contentPadding: const EdgeInsets.only(left: 7.0),
                             tileColor:
-                                _repository.id()[1] == defaultWallet.id()[1]
+                                _repository.id()[1] == defaultWallet!.id()[1]
                                     ? orangeC
                                     : const Color(0xffFFD58D),
                             // leading: Text('IMAGE'),
@@ -242,7 +256,7 @@ class WalletsHome extends StatelessWidget {
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 5),
                                 child: Text(
-                                  _repository.name,
+                                  _repository.name!,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                       fontSize: 17.0,
@@ -256,6 +270,15 @@ class WalletsHome extends StatelessWidget {
                             ),
                             // dense: true,
                             onTap: () {
+                              // _walletOptions.readLocalWallet(
+                              //     context,
+                              //     _repository,
+                              //     _myWalletProvider.pinCode,
+                              //     pinLength);
+                              _walletOptions.pubkey.text =
+                                  HdWallet.fromMnemonic(
+                                          _myWalletProvider.mnemonic)
+                                      .getPubkey(_repository.derivation!);
                               Navigator.push(
                                 context,
                                 SmoothTransition(
@@ -295,7 +318,7 @@ class WalletsHome extends StatelessWidget {
           // pollInterval: Duration(seconds: 1),
         ),
         builder: (QueryResult result,
-            {VoidCallback refetch, FetchMore fetchMore}) {
+            {VoidCallback? refetch, FetchMore? fetchMore}) {
           if (result.hasException) {
             return Text(result.exception.toString());
           }
@@ -304,11 +327,11 @@ class WalletsHome extends StatelessWidget {
             return const Text('Loading');
           }
           String wBalanceUD;
-          if (result.data['balance'] == null) {
+          if (result.data!['balance'] == null) {
             wBalanceUD = '0.0';
           } else {
-            int wBalanceG1 = result.data['balance']['amount'];
-            int currentUD = result.data['currentUd']['amount'];
+            int wBalanceG1 = result.data!['balance']['amount'];
+            int currentUD = result.data!['currentUd']['amount'];
             double wBalanceUDBrut = wBalanceG1 / currentUD; // .toString();
             wBalanceUD =
                 double.parse((wBalanceUDBrut).toStringAsFixed(2)).toString();
@@ -322,7 +345,7 @@ class WalletsHome extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context);
 
     String _newDerivationName =
-        'Portefeuille ${_myWalletProvider.listWallets.last.number + 2}';
+        'Portefeuille ${_myWalletProvider.listWallets.last.number! + 2}';
     return Padding(
         padding: const EdgeInsets.all(16),
         child: ClipRRect(
@@ -350,56 +373,6 @@ class WalletsHome extends StatelessWidget {
                     )),
               ),
             ])));
-  }
-
-  Widget addNewDerivationPopup(context) {
-    final TextEditingController _newDerivationName = TextEditingController();
-    MyWalletsProvider _myWalletProvider =
-        Provider.of<MyWalletsProvider>(context);
-
-    return AlertDialog(
-      content: Stack(
-        clipBehavior: Clip.hardEdge,
-        children: <Widget>[
-          Form(
-            key: _derivationKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                const Text('Nom du portefeuille:'),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextFormField(
-                    key: const Key('DerivationNameKey'),
-                    controller: _newDerivationName,
-                    textAlign: TextAlign.center,
-                    autofocus: true,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton(
-                      key: const Key('validDerivation'),
-                      style: ElevatedButton.styleFrom(
-                        elevation: 1,
-                        primary: yellowC, // background
-                        onPrimary: Colors.black, // foreground
-                      ),
-                      onPressed: () async {
-                        await _myWalletProvider
-                            .generateNewDerivation(
-                                context, _newDerivationName.text)
-                            .then((_) => _newDerivationName.text == '');
-                      },
-                      child: const Text("Créer")),
-                )
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 
@@ -429,10 +402,10 @@ class ClipOvalShadow extends StatelessWidget {
   final Widget child;
 
   const ClipOvalShadow({
-    Key key,
-    @required this.shadow,
-    @required this.clipper,
-    @required this.child,
+    Key? key,
+    required this.shadow,
+    required this.clipper,
+    required this.child,
   }) : super(key: key);
 
   @override
@@ -451,7 +424,7 @@ class _ClipOvalShadowPainter extends CustomPainter {
   final Shadow shadow;
   final CustomClipper<Rect> clipper;
 
-  _ClipOvalShadowPainter({@required this.shadow, @required this.clipper});
+  _ClipOvalShadowPainter({required this.shadow, required this.clipper});
 
   @override
   void paint(Canvas canvas, Size size) {

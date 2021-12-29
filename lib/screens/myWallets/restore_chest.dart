@@ -2,7 +2,7 @@ import 'package:bubble/bubble.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/models/generate_wallets.dart';
+import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/11.dart';
 import 'package:provider/provider.dart';
@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 // import 'package:provider/provider.dart';
 
 class RestoreChest extends StatelessWidget {
-  const RestoreChest({Key key}) : super(key: key);
+  const RestoreChest({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +92,7 @@ class RestoreChest extends StatelessWidget {
                         await Navigator.push(
                           context,
                           FaderTransition(
-                              page: OnboardingStepThirteen(), isFast: true),
+                              page: const OnboardingStepThirteen(), isFast: true),
                         );
                       } else {
                         await badMnemonicPopup(context);
@@ -160,7 +160,7 @@ class RestoreChest extends StatelessWidget {
     );
   }
 
-  Future<bool> badMnemonicPopup(BuildContext context) async {
+  Future<bool?> badMnemonicPopup(BuildContext context) async {
     return showDialog<bool>(
       context: context,
       barrierDismissible: true, // user must tap button!

@@ -16,7 +16,6 @@ import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-int _nbrLinesName = 1;
 bool _isNewNameValid = false;
 
 class CesiumWalletOptions extends StatelessWidget {
@@ -45,13 +44,6 @@ class CesiumWalletOptions extends StatelessWidget {
       _walletOptions.nameController.text = cesiumWallet.name!;
     } else {
       cesiumWallet.name = _walletOptions.nameController.text;
-    }
-
-    _walletOptions.nameController.text.length >= 15
-        ? _nbrLinesName = 2
-        : _nbrLinesName = 1;
-    if (_walletOptions.nameController.text.length >= 26 && isTall) {
-      _nbrLinesName = 3;
     }
 
     return WillPopScope(
@@ -102,36 +94,40 @@ class CesiumWalletOptions extends StatelessWidget {
                       const Color(0xfffafafa),
                     ],
                   )),
-                  child: Row(children: <Widget>[
-                    const SizedBox(width: 25),
-                    InkWell(
-                      onTap: () async {
-                        File newAvatar = await (_walletOptions.changeAvatar());
-                          cesiumWallet.imageFile = newAvatar;
-                        _walletOptions.reloadBuild();
-                      },
-                      child: cesiumWallet.imageFile == null
-                          ? Image.asset(
-                              'assets/chests/${cesiumWallet.imageName}',
-                              width: 110,
-                            )
-                          : Image.file(cesiumWallet.imageFile!, width: 110),
-                    ),
-                    InkWell(
-                        onTap: () async {
-                          File newAvatar = await (_walletOptions.changeAvatar());
+                  child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: <Widget>[
+                        const Spacer(flex: 1),
+                        InkWell(
+                          onTap: () async {
+                            File newAvatar =
+                                await (_walletOptions.changeAvatar());
                             cesiumWallet.imageFile = newAvatar;
-                          _walletOptions.reloadBuild();
-                        },
-                        child: Column(children: <Widget>[
-                          Image.asset(
-                            'assets/walletOptions/camera.png',
-                            height: 40,
-                          ),
-                          const SizedBox(height: 80)
-                        ])),
-                    Column(children: <Widget>[
-                      Row(children: <Widget>[
+                            _walletOptions.reloadBuild();
+                          },
+                          child: cesiumWallet.imageFile == null
+                              ? Image.asset(
+                                  'assets/chests/${cesiumWallet.imageName}',
+                                  width: 110,
+                                )
+                              : Image.file(cesiumWallet.imageFile!, width: 110),
+                        ),
+                        InkWell(
+                            onTap: () async {
+                              File newAvatar =
+                                  await (_walletOptions.changeAvatar());
+                              cesiumWallet.imageFile = newAvatar;
+                              _walletOptions.reloadBuild();
+                            },
+                            child: Column(children: <Widget>[
+                              Image.asset(
+                                'assets/walletOptions/camera.png',
+                                height: 40,
+                              ),
+                              const SizedBox(height: 80)
+                            ])),
+                        const Spacer(flex: 1),
                         Column(children: <Widget>[
                           SizedBox(
                             width: 260,
@@ -141,7 +137,8 @@ class CesiumWalletOptions extends StatelessWidget {
                                 focusNode: _walletOptions.walletNameFocus,
                                 enabled: _walletOptions.isEditing,
                                 controller: _walletOptions.nameController,
-                                maxLines: _nbrLinesName,
+                                minLines: 1,
+                                maxLines: 3,
                                 textAlign: TextAlign.center,
                                 decoration: const InputDecoration(
                                   border: InputBorder.none,
@@ -151,10 +148,10 @@ class CesiumWalletOptions extends StatelessWidget {
                                   contentPadding: EdgeInsets.all(15.0),
                                 ),
                                 style: TextStyle(
-                                    fontSize: isTall ? 27 : 23,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w400,
-                                    fontFamily: 'Monospace')),
+                                  fontSize: isTall ? 27 : 23,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w400,
+                                )),
                           ),
                           SizedBox(height: isTall ? 5 : 0),
                           Query(
@@ -231,7 +228,6 @@ class CesiumWalletOptions extends StatelessWidget {
                             ),
                           ),
                         ]),
-                        const SizedBox(width: 0),
                         Column(children: <Widget>[
                           InkWell(
                               key: const Key('renameWallet'),
@@ -254,10 +250,9 @@ class CesiumWalletOptions extends StatelessWidget {
                           const SizedBox(
                             height: 60,
                           )
-                        ])
+                        ]),
+                        const Spacer(flex: 3),
                       ]),
-                    ]),
-                  ]),
                 );
               }),
               SizedBox(height: 4 * ratio),

@@ -1,3 +1,4 @@
+import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
@@ -29,6 +30,7 @@ class WalletsHome extends StatelessWidget {
 
     return WillPopScope(
       onWillPop: () {
+        myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
         Navigator.popUntil(
           context,
           ModalRoute.withName('/'),
@@ -41,6 +43,7 @@ class WalletsHome extends StatelessWidget {
           leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.black),
               onPressed: () {
+                myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
                 Navigator.popUntil(
                   context,
                   ModalRoute.withName('/'),
@@ -177,8 +180,11 @@ class WalletsHome extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   child: GestureDetector(
                     onTap: () {
-                      _walletOptions.readLocalWallet(context, _repository,
-                          _myWalletProvider.pinCode, pinLength);
+                      // _walletOptions.readLocalWallet(context, _repository,
+                      //     _myWalletProvider.pinCode, pinLength);
+                      _walletOptions.pubkey.text =
+                          HdWallet.fromMnemonic(_myWalletProvider.mnemonic)
+                              .getPubkey(_repository.derivation!);
                       Navigator.push(
                         context,
                         SmoothTransition(
@@ -264,11 +270,15 @@ class WalletsHome extends StatelessWidget {
                             ),
                             // dense: true,
                             onTap: () {
-                              _walletOptions.readLocalWallet(
-                                  context,
-                                  _repository,
-                                  _myWalletProvider.pinCode,
-                                  pinLength);
+                              // _walletOptions.readLocalWallet(
+                              //     context,
+                              //     _repository,
+                              //     _myWalletProvider.pinCode,
+                              //     pinLength);
+                              _walletOptions.pubkey.text =
+                                  HdWallet.fromMnemonic(
+                                          _myWalletProvider.mnemonic)
+                                      .getPubkey(_repository.derivation!);
                               Navigator.push(
                                 context,
                                 SmoothTransition(

@@ -83,17 +83,15 @@ class WalletOptions extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: <Widget>[
-                        const Spacer(),
+                        const Spacer(flex: 1),
                         avatar(walletProvider),
-                        const Spacer(),
+                        const Spacer(flex: 1),
                         Column(children: <Widget>[
                           walletName(walletProvider, _walletOptions),
                           SizedBox(height: isTall ? 5 : 0),
                           balance(walletProvider),
                         ]),
-                        const Spacer(),
-                        const Spacer(),
-                        const Spacer(),
+                        const Spacer(flex: 3),
                       ]),
                 );
               }),

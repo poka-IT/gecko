@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
@@ -8,6 +9,7 @@ import 'package:gecko/providers/wallet_options.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/cesium_wallet_options.dart';
 import 'package:gecko/screens/myWallets/choose_chest.dart';
+import 'package:gecko/screens/myWallets/choose_wallet.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
@@ -26,7 +28,6 @@ class UnlockingWallet extends StatelessWidget {
   final formKey = GlobalKey<FormState>();
   Color? pinColor = const Color(0xffF9F9F1);
   var walletPin = '';
-  String? resultPay;
 
   @override
   Widget build(BuildContext context) {
@@ -201,20 +202,38 @@ class UnlockingWallet extends StatelessWidget {
             onCompleted: (_pin) async {
               log.d("Completed");
               _myWalletProvider.pinCode = _pin;
-              final String? resultWallet = _walletOptions.readLocalWallet(
-                  context, wallet!, _pin.toUpperCase(), _pinLenght);
+
+              if (currentChest.isCesium!) {
+                try {
+                  String _localDewif = chestBox.get(wallet!.chest)!.dewif!;
+                  final cesiumWallet =
+                      CesiumWallet.fromDewif(_localDewif, _pin.toUpperCase());
+                  _walletOptions.pubkey.text = cesiumWallet.pubkey;
+                  _myWalletProvider.cesiumSeed = cesiumWallet.seed;
+                  _myWalletProvider.mnemonic = 'cesium';
+                } catch (e) {
+                  log.e(e);
+                  _myWalletProvider.mnemonic = 'bad';
+                }
+              } else {
+                _myWalletProvider.mnemonic = _myWalletProvider.dewifToMnemonic(
+                    context, wallet!, _pin.toUpperCase());
+              }
+              // final String? resultWallet = _walletOptions.readLocalWallet(
+              //     context, wallet!, _pin.toUpperCase(), _pinLenght);
               // _myWalletProvider.pinCode = _pin.toUpperCase();
               _myWalletProvider.pinLenght = _pinLenght;
 
-              if (resultWallet == 'bad') {
+              if (_myWalletProvider.mnemonic == 'bad') {
+                await Future.delayed(const Duration(milliseconds: 50));
                 errorController.add(ErrorAnimationType
                     .shake); // Triggering error shake animation
                 pinColor = Colors.red[600];
+                _myWalletProvider.pinCode = _myWalletProvider.mnemonic = '';
                 _walletOptions.reloadBuild();
                 pinFocus.requestFocus();
               } else {
                 pinColor = Colors.green[400];
-                // await Future.delayed(Duration(milliseconds: 50));
                 if (action == "mywallets") {
                   currentChest.isCesium!
                       ? Navigator.push(
@@ -223,17 +242,25 @@ class UnlockingWallet extends StatelessWidget {
                             return CesiumWalletOptions(
                                 cesiumWallet: currentChest);
                           }),
-                        )
+                        ).then((value) => _myWalletProvider.mnemonic = '')
                       : Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) {
                             return const WalletsHome();
                           }),
-                        );
+                        ).then((value) => _myWalletProvider.cesiumSeed.clear());
                 } else if (action == "pay") {
-                  resultPay =
-                      await _historyProvider.pay(context, _pin.toUpperCase());
-                  await _paymentsResult(context);
+                  if (currentChest.isCesium!) {
+                    final resultPay = await _historyProvider.pay(context);
+                    await paymentsResult(context, resultPay);
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return ChooseWalletScreen();
+                      }),
+                    );
+                  }
                 }
               }
             },
@@ -243,33 +270,6 @@ class UnlockingWallet extends StatelessWidget {
               }
             },
           )),
-    );
-  }
-
-  Future<bool?> _paymentsResult(context) {
-    if (resultPay != "success") log.i(resultPay);
-    return showDialog<bool>(
-      context: context,
-      barrierDismissible: true, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(resultPay == "success"
-              ? 'Paiement effecuté avec succès !'
-              : "Une erreur s'est produite lors du paiement:\n$resultPay"),
-          content: const SingleChildScrollView(child: Text('')),
-          actions: <Widget>[
-            TextButton(
-              child: const Text("OK"),
-              onPressed: () {
-                Navigator.popUntil(
-                  context,
-                  ModalRoute.withName('/'),
-                );
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 }

@@ -4,11 +4,11 @@ import 'package:durt/durt.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'dart:math';
 import 'package:intl/intl.dart';
@@ -59,28 +59,31 @@ class WalletsProfilesProvider with ChangeNotifier {
     return barcode;
   }
 
-  Future<String> pay(BuildContext context, String pinCode) async {
-    MyWalletsProvider _myWalletModel = MyWalletsProvider();
+  Future<String> pay(BuildContext context, {int? derivation}) async {
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
     int? currentChest = configBox.get('currentChest');
-    WalletData? defaultWallet = _myWalletModel.getDefaultWallet(currentChest);
-
-    String dewif = chestBox.get(currentChest)!.dewif!;
-    int? derivation;
+    String result;
 
     if (chestBox.get(currentChest)!.isCesium!) {
-      derivation = -1;
+      result = await Gva(node: endPointGVA).pay(
+          recipient: pubkey!,
+          amount: double.parse(payAmount.text),
+          cesiumSeed: _myWalletProvider.cesiumSeed,
+          comment: payComment.text,
+          derivation: -1,
+          lang: appLang);
     } else {
-      derivation = defaultWallet!.derivation;
+      derivation ??=
+          _myWalletProvider.getDefaultWallet(currentChest)!.derivation!;
+      result = await Gva(node: endPointGVA).pay(
+          recipient: pubkey!,
+          amount: double.parse(payAmount.text),
+          mnemonic: _myWalletProvider.mnemonic,
+          comment: payComment.text,
+          derivation: derivation,
+          lang: appLang);
     }
-
-    String result = await Gva(node: endPointGVA).pay(
-        recipient: pubkey!,
-        amount: double.parse(payAmount.text),
-        dewif: dewif,
-        password: pinCode,
-        comment: payComment.text,
-        derivation: derivation,
-        lang: appLang);
 
     return result;
   }

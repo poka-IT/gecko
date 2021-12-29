@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:durt/durt.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
@@ -6,6 +9,8 @@ import 'package:gecko/models/wallet_data.dart';
 class MyWalletsProvider with ChangeNotifier {
   List<WalletData> listWallets = [];
   late String pinCode;
+  late String mnemonic;
+  late Uint8List cesiumSeed;
   int? pinLenght;
 
   int? getCurrentChest() {
@@ -14,6 +19,24 @@ class MyWalletsProvider with ChangeNotifier {
     }
 
     return configBox.get('currentChest');
+  }
+
+  String dewifToMnemonic(context, WalletData _wallet, String _pin) {
+    String _mnemonic;
+
+    try {
+      String _localDewif = chestBox.get(_wallet.chest)!.dewif!;
+      _mnemonic = Dewif()
+          .mnemonicFromDewif(_localDewif, _pin.toUpperCase(), lang: appLang);
+    } on ChecksumException catch (e) {
+      log.e(e.cause);
+      return 'bad';
+    } catch (e) {
+      // _homeProvider.playSound('non', 0.6);
+      log.e('ERROR READING FILE: $e');
+      return 'bad';
+    }
+    return _mnemonic;
   }
 
   bool checkIfWalletExist() {

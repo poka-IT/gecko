@@ -65,13 +65,11 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
               ),
-              ListTile(
-                title: const Text('A propos'),
-                onTap: () {
-                  // Update the state of the app.
-                  // ...
-                },
-              ),
+              // ListTile(
+              //   title: const Text('A propos'),
+              //   onTap: () {
+              //   },
+              // ),
             ])),
             Align(
                 alignment: FractionalOffset.bottomCenter,

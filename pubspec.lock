@@ -301,7 +301,7 @@ packages:
       name: durt
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.1.5+7"
+    version: "0.1.6"
   fake_async:
     dependency: transitive
     description:

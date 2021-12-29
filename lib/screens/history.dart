@@ -218,30 +218,28 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
         return ((dayOfYear - date.weekday + 10) / 7).floor();
       }
 
-      if (DateTime(date.year, date.month, date.day) ==
-              DateTime(now.year, now.month, now.day) &&
-          !isTody) {
+      final transactionDate = DateTime(date.year, date.month, date.day);
+      final todayDate = DateTime(now.year, now.month, now.day);
+      final yesterdayDate = DateTime(now.year, now.month, now.day - 1);
+
+      if (transactionDate == todayDate && !isTody) {
         dateDelimiter = lastDateDelimiter = "Aujourd'hui";
         isTody = true;
-      } else if (DateTime(date.year, date.month, date.day) ==
-              DateTime(now.year, now.month, now.day - 1) &&
-          !isYesterday) {
+      } else if (transactionDate == yesterdayDate && !isYesterday) {
         dateDelimiter = lastDateDelimiter = "Hier";
         isYesterday = true;
       } else if (weekNumber(date) == weekNumber(now) &&
           date.year == now.year &&
           lastDateDelimiter != "Cette semaine" &&
-          DateTime(date.year, date.month, date.day) !=
-              DateTime(now.year, now.month, now.day - 1) &&
+          transactionDate != yesterdayDate &&
+          transactionDate != todayDate &&
           !isThisWeek) {
         dateDelimiter = lastDateDelimiter = "Cette semaine";
         isThisWeek = true;
       } else if (lastDateDelimiter != monthsInYear[date.month] &&
           lastDateDelimiter != "${monthsInYear[date.month]} ${date.year}" &&
-          DateTime(date.year, date.month, date.day) !=
-              DateTime(now.year, now.month, now.day) &&
-          DateTime(date.year, date.month, date.day) !=
-              DateTime(now.year, now.month, now.day - 1) &&
+          transactionDate != todayDate &&
+          transactionDate != yesterdayDate &&
           !(weekNumber(date) == weekNumber(now) && date.year == now.year)) {
         if (date.year == now.year) {
           dateDelimiter = lastDateDelimiter = monthsInYear[date.month];

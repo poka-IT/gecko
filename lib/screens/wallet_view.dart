@@ -31,6 +31,8 @@ class WalletViewScreen extends StatelessWidget {
     CesiumPlusProvider _cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
 
+    _historyProvider.pubkey = pubkey!;
+
     return Scaffold(
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
@@ -185,7 +187,8 @@ class WalletViewScreen extends StatelessWidget {
     // WalletsProfilesProvider _walletViewProvider =
     //     Provider.of<WalletsProfilesProvider>(context);
     const double shapeSize = 20;
-    MyWalletsProvider _myWalletProvider = MyWalletsProvider();
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
     WalletData? defaultWallet =
         _myWalletProvider.getDefaultWallet(configBox.get('currentChest'));
 
@@ -199,111 +202,120 @@ class WalletViewScreen extends StatelessWidget {
         isScrollControlled: true,
         context: context,
         builder: (BuildContext context) {
-          return Padding(
-            padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom),
-            child: Container(
-              height: 400,
-              decoration: const ShapeDecoration(
-                color: Color(0xffffeed1),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(shapeSize),
-                    topLeft: Radius.circular(shapeSize),
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom),
+              child: Container(
+                height: 400,
+                decoration: const ShapeDecoration(
+                  color: Color(0xffffeed1),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(shapeSize),
+                      topLeft: Radius.circular(shapeSize),
+                    ),
                   ),
                 ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        const Text(
+                          'Effectuer un virement',
+                          style: TextStyle(
+                              fontSize: 26, fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          'Saisissez dans le champ ci-dessous le montant à virer.',
+                          style: TextStyle(
+                              fontSize: 19,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey[600]),
+                        ),
+                        const Spacer(),
+                        Center(
+                          child: Column(children: <Widget>[
+                            TextField(
+                              controller: _walletViewProvider.payAmount,
+                              autofocus: true,
+                              maxLines: 1,
+                              textAlign: TextAlign.center,
+                              keyboardType: TextInputType.number,
+                              onChanged: (_) => setState(() {}),
+                              inputFormatters: <TextInputFormatter>[
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'^\d+\.?\d{0,2}')),
+                              ],
+                              // onChanged: (v) => _searchProvider.rebuildWidget(),
+                              decoration: InputDecoration(
+                                hintText: '0.00',
+                                suffix: const Text('Ğ1'),
+                                filled: true,
+                                fillColor: Colors.transparent,
+                                // border: OutlineInputBorder(
+                                //     borderSide:
+                                //         BorderSide(color: Colors.grey[500], width: 2),
+                                //     borderRadius: BorderRadius.circular(8)),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: Colors.grey[500]!, width: 2),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                contentPadding: const EdgeInsets.all(20),
+                              ),
+                              style: const TextStyle(
+                                fontSize: 40,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 40),
+                            // const Spacer(),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 60,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 4,
+                                  primary: orangeC, // background
+                                  onPrimary: Colors.white, // foreground
+                                ),
+                                onPressed:
+                                    _walletViewProvider.payAmount.text != ''
+                                        ? () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) {
+                                                  return UnlockingWallet(
+                                                      wallet: defaultWallet,
+                                                      action: "pay");
+                                                },
+                                              ),
+                                            );
+                                          }
+                                        : null,
+                                child: const Text(
+                                  'Effectuer le virement',
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                          ]),
+                        ),
+                      ]),
+                ),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      const Text(
-                        'Effectuer un virement',
-                        style: TextStyle(
-                            fontSize: 26, fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        'Saisissez dans le champ ci-dessous le montant à virer de ... vers ...',
-                        style: TextStyle(
-                            fontSize: 19,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey[600]),
-                      ),
-                      const Spacer(),
-                      Center(
-                        child: Column(children: <Widget>[
-                          TextField(
-                            controller: _walletViewProvider.payAmount,
-                            autofocus: true,
-                            maxLines: 1,
-                            textAlign: TextAlign.center,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: <TextInputFormatter>[
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r'^\d+\.?\d{0,2}')),
-                            ],
-                            // onChanged: (v) => _searchProvider.rebuildWidget(),
-                            decoration: InputDecoration(
-                              hintText: '0.00',
-                              suffix: const Text('Ğ1'),
-                              filled: true,
-                              fillColor: Colors.transparent,
-                              // border: OutlineInputBorder(
-                              //     borderSide:
-                              //         BorderSide(color: Colors.grey[500], width: 2),
-                              //     borderRadius: BorderRadius.circular(8)),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                    color: Colors.grey[500]!, width: 2),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              contentPadding: const EdgeInsets.all(20),
-                            ),
-                            style: const TextStyle(
-                              fontSize: 40,
-                              color: Colors.black,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 40),
-                          // const Spacer(),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 60,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                elevation: 4,
-                                primary: orangeC, // background
-                                onPrimary: Colors.white, // foreground
-                              ),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) {
-                                      return UnlockingWallet(
-                                          wallet: defaultWallet, action: "pay");
-                                    },
-                                  ),
-                                );
-                              },
-                              child: const Text(
-                                'Effectuer le virement',
-                                style: TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                        ]),
-                      ),
-                    ]),
-              ),
-            ),
-          );
+            );
+          });
         }).then((value) => _walletViewProvider.payAmount.text = '');
   }
 

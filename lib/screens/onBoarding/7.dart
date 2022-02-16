@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/generate_wallets.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/8.dart';
 import 'package:printing/printing.dart';
@@ -21,6 +22,8 @@ class OnboardingStepNine extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context);
     CommonElements common = CommonElements();
 
     // _generateWalletProvider.generateMnemonic();
@@ -90,6 +93,8 @@ class OnboardingStepNine extends StatelessWidget {
                     _generateWalletProvider.nbrWordAlpha =
                         _generateWalletProvider
                             .intToString(_generateWalletProvider.nbrWord + 1);
+                    _myWalletProvider.mnemonic =
+                        _generateWalletProvider.generatedMnemonic!;
 
                     Navigator.push(
                       context,

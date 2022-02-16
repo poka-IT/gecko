@@ -96,7 +96,7 @@ class WalletOptions extends StatelessWidget {
                 );
               }),
               SizedBox(height: 4 * ratio),
-              QrImage(
+              QrImageWidget(
                 data: _walletOptions.pubkey.text,
                 version: QrVersions.auto,
                 size: isTall ? 300 : 270,

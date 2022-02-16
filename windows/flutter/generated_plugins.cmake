@@ -4,8 +4,10 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   connectivity_plus_windows
+  desktop_window
   printing
   sentry_flutter
+  window_size
 )
 
 set(PLUGIN_BUNDLED_LIBRARIES)

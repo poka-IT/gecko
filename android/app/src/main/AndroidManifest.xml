@@ -9,9 +9,12 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <application android:requestLegacyExternalStorage="true"
+    <application
+        android:requestLegacyExternalStorage="true"
         android:name="${applicationName}"
-        android:label="Ğecko">
+        android:label="Ğecko"
+        android:usesCleartextTraffic="true">
+        <!-- TODO: Remove usesCleartextTraffic for production mode ! kopa -->
         <!-- android:icon="@mipmap/ic_launcher"> -->
         <activity
             android:requestLegacyExternalStorage="true"

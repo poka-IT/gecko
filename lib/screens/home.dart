@@ -12,6 +12,7 @@ import 'package:gecko/screens/onBoarding/1.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/settings.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/screens/substrate_sandbox.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -176,9 +177,28 @@ Widget geckHome(context) {
                     ),
                   ],
                 ),
-              )
+              ),
             ]),
       ),
+      const SizedBox(height: 15),
+      Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            primary: yellowC, // background
+            onPrimary: Colors.black, // foreground
+          ),
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) {
+              return const SubstrateSandBox();
+            }),
+          ),
+          child: const Text(
+            'SUBSTRATE SANDBOX',
+            style: TextStyle(fontSize: 20),
+          ),
+        ),
+      ]),
       Expanded(
         flex: 1,
         child: Container(

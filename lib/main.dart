@@ -25,6 +25,7 @@ import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/providers/generate_wallets.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -154,7 +155,8 @@ class Gecko extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
         ChangeNotifierProvider(create: (_) => ChangePinProvider()),
         ChangeNotifierProvider(create: (_) => SearchProvider()),
-        ChangeNotifierProvider(create: (_) => CesiumPlusProvider())
+        ChangeNotifierProvider(create: (_) => CesiumPlusProvider()),
+        ChangeNotifierProvider(create: (_) => SubstrateSdk())
       ],
       child: GraphQLProvider(
         client: _client,
@@ -178,8 +180,8 @@ class Gecko extends StatelessWidget {
             ),
             primaryColor: const Color(0xffFFD58D),
             textTheme: const TextTheme(
-              bodyText1: TextStyle(),
-              bodyText2: TextStyle(),
+              bodyText1: TextStyle(fontSize: 20),
+              bodyText2: TextStyle(fontSize: 18),
             ).apply(
               bodyColor: const Color(0xFF000000),
             ),

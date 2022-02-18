@@ -43,56 +43,87 @@ class SubstrateSandBox extends StatelessWidget {
                       Text(
                           'Noeud "${_sub.sdk.api.connectedNode!.name}", bloc N°${_sub.blocNumber}'),
                     const SizedBox(height: 20),
-                    const Text('Liste des trousseaux:'),
+                    Row(children: [
+                      const Text('Liste des trousseaux:'),
+                      const Spacer(),
+                      InkWell(
+                        child: Image.asset(
+                          'assets/walletOptions/trash.png',
+                          height: 35,
+                        ),
+                        onTap: () async {
+                          await keystoreBox.clear();
+                          _sub.reload();
+                        },
+                      ),
+                      const SizedBox(width: 10),
+                    ]),
+
                     Text(keystoreBox.isEmpty
                         ? '-'
                         : _sub.getKeyStoreAddress().toString()),
-                    const SizedBox(height: 40),
-                    const Text('Trousseau:'),
-                    TextField(
-                      controller: _sub.jsonKeystore,
-                      onChanged: (_) => _sub.reload(),
-                      minLines: 5,
-                      maxLines: 5,
-                    ),
+                    // const SizedBox(height: 40),
+                    // const Text('Trousseau:'),
+                    // TextField(
+                    //   controller: _sub.jsonKeystore,
+                    //   onChanged: (_) => _sub.reload(),
+                    //   minLines: 5,
+                    //   maxLines: 5,
+                    // ),
                     const SizedBox(height: 20),
-                    const Text('Mot de passe:'),
+                    const Text('Mot de passe du trousseau:'),
                     TextField(
                       controller: _sub.keystorePassword,
                       obscureText: true,
                       obscuringCharacter: '•',
                       onChanged: (_) => _sub.reload(),
                     ),
-                    const SizedBox(height: 20),
-                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          primary: yellowC, // background
-                          onPrimary: Colors.black, // foreground
-                        ),
-                        onPressed: _sub.jsonKeystore.text.isNotEmpty &&
-                                _sub.keystorePassword.text.isNotEmpty
-                            ? () async => await _sub.importFromKeystore()
-                            : null,
-                        child: const Text(
-                          'Importer la trousseau',
-                          style: TextStyle(fontSize: 20),
-                        ),
-                      ),
-                      const SizedBox(height: 40),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          primary: yellowC, // background
-                          onPrimary: Colors.black, // foreground
-                        ),
-                        onPressed: () async =>
-                            print(await _sub.generateMnemonic()),
-                        child: const Text(
-                          'Générer un mnemonic',
-                          style: TextStyle(fontSize: 20),
-                        ),
-                      ),
-                    ]),
+                    Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 20, width: double.infinity),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              primary: yellowC, // background
+                              onPrimary: Colors.black, // foreground
+                            ),
+                            onPressed: _sub.keystorePassword.text.isNotEmpty
+                                ? () async {
+                                    await _sub.importFromKeystore();
+                                    _sub.importIsLoading = false;
+                                    _sub.reload();
+                                  }
+                                : null,
+                            child: const Text(
+                              'Importer le trousseau depuis le presse-papier',
+                              style: TextStyle(fontSize: 20),
+                            ),
+                          ),
+                          if (_sub.importIsLoading)
+                            const CircularProgressIndicator(),
+                          const SizedBox(height: 20),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              primary: yellowC, // background
+                              onPrimary: Colors.black, // foreground
+                            ),
+                            onPressed: () async {
+                              await _sub.generateMnemonic();
+                            },
+                            child: const Text(
+                              'Générer un mnemonic',
+                              style: TextStyle(fontSize: 20),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: 400,
+                            child: Text(
+                              _sub.generatedMnemonic,
+                              textAlign: TextAlign.center,
+                            ),
+                          )
+                        ])
                   ]),
             );
           }),

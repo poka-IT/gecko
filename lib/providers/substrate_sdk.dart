@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -14,9 +13,11 @@ class SubstrateSdk with ChangeNotifier {
 
   final WalletSDK sdk = WalletSDK();
   final Keyring keyring = Keyring();
+  String generatedMnemonic = '';
   bool sdkReady = false;
   bool sdkLoading = false;
   bool nodeConnected = false;
+  bool importIsLoading = false;
   int blocNumber = 0;
 
   TextEditingController jsonKeystore = TextEditingController();
@@ -44,7 +45,6 @@ class SubstrateSdk with ChangeNotifier {
     );
     if (res != null) {
       nodeConnected = true;
-      print("Connecté au noeud ${sdk.api.connectedNode!.name}");
       notifyListeners();
     }
 
@@ -56,23 +56,38 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<void> importFromKeystore() async {
-    final json = await sdk.api.keyring.importAccount(
+    importIsLoading = true;
+    notifyListeners();
+    final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+    if (clipboardData?.text != null) jsonKeystore.text = clipboardData!.text!;
+    final json = await sdk.api.keyring
+        .importAccount(
       keyring,
       keyType: KeyType.keystore,
       key: jsonKeystore.text.replaceAll("'", "\\'"),
       name: 'testKey',
       password: keystorePassword.text,
-    );
-    final acc = await sdk.api.keyring.addAccount(
+    )
+        .catchError((e) {
+      importIsLoading = false;
+      notifyListeners();
+    });
+    final acc = await sdk.api.keyring
+        .addAccount(
       keyring,
       keyType: KeyType.mnemonic,
       acc: json!,
       password: keystorePassword.text,
-    );
+    )
+        .catchError((e) {
+      importIsLoading = false;
+      notifyListeners();
+    });
 
     // await keystoreBox.clear();
     await keystoreBox.add(acc.toJson());
     Clipboard.setData(ClipboardData(text: jsonEncode(acc.toJson())));
+    importIsLoading = false;
     notifyListeners();
   }
 
@@ -93,6 +108,8 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<String> generateMnemonic() async {
     final gen = await sdk.api.keyring.generateMnemonic(42);
+    generatedMnemonic = gen.mnemonic!;
+    notifyListeners();
     return gen.mnemonic!;
   }
 }

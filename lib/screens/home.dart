@@ -1,5 +1,6 @@
 import 'package:bubble/bubble.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/stateful_wrapper.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:flutter/material.dart';
@@ -532,27 +533,6 @@ Widget welcomeHome(context) {
   );
 }
 
-class StatefulWrapper extends StatefulWidget {
-  final Function onInit;
-  final Widget child;
-  const StatefulWrapper({Key? key, required this.onInit, required this.child})
-      : super(key: key);
-  @override
-  _StatefulWrapperState createState() => _StatefulWrapperState();
-}
-
-class _StatefulWrapperState extends State<StatefulWrapper> {
-  @override
-  void initState() {
-    widget.onInit();
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return widget.child;
-  }
-}
 
 Widget bubbleSpeak(String text, {double? long, Key? textKey}) {
   return Bubble(

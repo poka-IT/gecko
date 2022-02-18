@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/stateful_wrapper.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:provider/provider.dart';
 
@@ -33,32 +34,46 @@ class SubstrateSandBox extends StatelessWidget {
                       'Noeud connecté ?: ${_sub.nodeConnected} (${_sub.subNode})'),
                   if (_sub.nodeConnected)
                     Text('Numéro de bloc: ${_sub.blocNumber}'),
+                  const SizedBox(height: 20),
+                  const Text('List des trousseaux:'),
+                  Text(keystoreBox.isEmpty
+                      ? '-'
+                      : keystoreBox.toMap().entries.toString()),
+                  const SizedBox(height: 20),
+                  const Text('Trousseau:'),
+                  TextField(
+                    controller: _sub.jsonKeystore,
+                    onChanged: (_) => _sub.reload(),
+                    minLines: 5,
+                    maxLines: 5,
+                  ),
+                  const SizedBox(height: 20),
+                  const Text('Mot de passe:'),
+                  TextField(
+                    controller: _sub.keystorePassword,
+                    onChanged: (_) => _sub.reload(),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        primary: yellowC, // background
+                        onPrimary: Colors.black, // foreground
+                      ),
+                      onPressed: _sub.jsonKeystore.text.isNotEmpty &&
+                              _sub.keystorePassword.text.isNotEmpty
+                          ? () async => await _sub.importFromKeystore()
+                          : null,
+                      child: const Text(
+                        'Importer la trousseau',
+                        style: TextStyle(fontSize: 20),
+                      ),
+                    ),
+                  ]),
                 ]);
           }),
         ),
       ),
     );
-  }
-}
-
-class StatefulWrapper extends StatefulWidget {
-  final Function onInit;
-  final Widget child;
-  const StatefulWrapper({Key? key, required this.onInit, required this.child})
-      : super(key: key);
-  @override
-  _StatefulWrapperState createState() => _StatefulWrapperState();
-}
-
-class _StatefulWrapperState extends State<StatefulWrapper> {
-  @override
-  void initState() {
-    widget.onInit();
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return widget.child;
   }
 }

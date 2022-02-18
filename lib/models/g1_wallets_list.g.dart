@@ -1,7 +1,5 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-// ignore_for_file: unused_local_variable
-
 part of 'g1_wallets_list.dart';
 
 // **************************************************************************
@@ -66,10 +64,6 @@ class IdAdapter extends TypeAdapter<Id> {
 
   @override
   Id read(BinaryReader reader) {
-    final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{
-      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
-    };
     return Id();
   }
 

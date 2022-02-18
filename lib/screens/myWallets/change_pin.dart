@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/stateful_wrapper.dart';
 import 'package:gecko/providers/change_pin.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'dart:io';
@@ -114,27 +115,5 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
         ),
       ),
     );
-  }
-}
-
-class StatefulWrapper extends StatefulWidget {
-  final Function onInit;
-  final Widget child;
-  const StatefulWrapper({Key? key, required this.onInit, required this.child})
-      : super(key: key);
-  @override
-  _StatefulWrapperState createState() => _StatefulWrapperState();
-}
-
-class _StatefulWrapperState extends State<StatefulWrapper> {
-  @override
-  void initState() {
-    widget.onInit();
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return widget.child;
   }
 }

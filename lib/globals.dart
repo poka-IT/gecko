@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:gecko/models/keystore_data.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:hive/hive.dart';
 import 'package:logger/logger.dart';
@@ -20,6 +21,7 @@ late Box<WalletData> walletBox;
 late Box<ChestData> chestBox;
 late Box configBox;
 late Box<G1WalletsList> g1WalletsBox;
+late Box<KeyStoreData> keystoreBox;
 
 String cesiumPod = "https://g1.data.le-sou.org";
 // String cesiumPod = "https://g1.data.e-is.pro";

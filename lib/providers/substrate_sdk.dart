@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:gecko/globals.dart';
+import 'package:gecko/models/keystore_data.dart';
+import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:polkawallet_sdk/polkawallet_sdk.dart';
 import 'package:polkawallet_sdk/storage/keyring.dart';
@@ -12,6 +15,9 @@ class SubstrateSdk with ChangeNotifier {
   bool sdkReady = false;
   bool nodeConnected = false;
   int blocNumber = 0;
+
+  TextEditingController jsonKeystore = TextEditingController();
+  TextEditingController keystorePassword = TextEditingController();
 
   Future<void> initApi() async {
     await keyring.init([0, 2]);
@@ -41,5 +47,29 @@ class SubstrateSdk with ChangeNotifier {
       blocNumber = int.parse(res.toString());
       notifyListeners();
     });
+  }
+
+  Future<void> importFromKeystore() async {
+    final json = await sdk.api.keyring.importAccount(
+      keyring,
+      keyType: KeyType.keystore,
+      key: jsonKeystore.text,
+      name: 'testKey',
+      password: keystorePassword.text,
+    );
+    final acc = await sdk.api.keyring.addAccount(
+      keyring,
+      keyType: KeyType.mnemonic,
+      acc: json!,
+      password: keystorePassword.text,
+    );
+
+    KeyStoreData _keystore = KeyStoreData(keystore: acc);
+    await keystoreBox.add(_keystore);
+    notifyListeners();
+  }
+
+  void reload() {
+    notifyListeners();
   }
 }

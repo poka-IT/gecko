@@ -2,6 +2,7 @@ import 'package:bubble/bubble.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/stateful_wrapper.dart';
 import 'package:gecko/providers/chest_provider.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/home.dart';
@@ -27,6 +28,7 @@ class HomeScreen extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context);
     Provider.of<ChestProvider>(context);
     HomeProvider homeClass = HomeProvider();
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
 
@@ -84,7 +86,9 @@ class HomeScreen extends StatelessWidget {
       body: Builder(
         builder: (ctx) => StatefulWrapper(
             onInit: () {
-              WidgetsBinding.instance!.addPostFrameCallback((_) {
+              WidgetsBinding.instance!.addPostFrameCallback((_) async {
+                if (!_sub.sdkReady && !_sub.sdkLoading) await _sub.initApi();
+                if (_sub.sdkReady && !_sub.nodeConnected) await _sub.connectNode();
                 if (isWalletsExists) homeClass.snackNode(ctx);
               });
             },
@@ -532,7 +536,6 @@ Widget welcomeHome(context) {
     ]),
   );
 }
-
 
 Widget bubbleSpeak(String text, {double? long, Key? textKey}) {
   return Bubble(

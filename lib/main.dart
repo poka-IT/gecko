@@ -19,7 +19,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/keystore_data.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/change_pin.dart';
 import 'package:gecko/models/chest_data.dart';
@@ -40,7 +39,6 @@ import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/search_result.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:polkawallet_sdk/storage/types/keyPairData.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:responsive_framework/responsive_framework.dart';
@@ -68,13 +66,13 @@ Future<void> main() async {
   Hive.registerAdapter(ChestDataAdapter());
   Hive.registerAdapter(G1WalletsListAdapter());
   Hive.registerAdapter(IdAdapter());
-  Hive.registerAdapter(KeyStoreDataAdapter());
-  Hive.registerAdapter(KeyPairData());
+  // Hive.registerAdapter(KeyStoreDataAdapter());
+
   walletBox = await Hive.openBox<WalletData>("walletBox");
   chestBox = await Hive.openBox<ChestData>("chestBox");
   configBox = await Hive.openBox("configBox");
   g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
-  keystoreBox = await Hive.openBox<KeyStoreData>("keystoreBox");
+  keystoreBox = await Hive.openBox("keystoreBox");
 
   g1WalletsBox.clear();
 
@@ -185,7 +183,7 @@ class Gecko extends StatelessWidget {
             ),
             primaryColor: const Color(0xffFFD58D),
             textTheme: const TextTheme(
-              bodyText1: TextStyle(fontSize: 20),
+              bodyText1: TextStyle(fontSize: 16),
               bodyText2: TextStyle(fontSize: 18),
             ).apply(
               bodyColor: const Color(0xFF000000),

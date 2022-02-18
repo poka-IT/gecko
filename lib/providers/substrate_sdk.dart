@@ -1,6 +1,8 @@
+import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/keystore_data.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:polkawallet_sdk/polkawallet_sdk.dart';
@@ -13,6 +15,7 @@ class SubstrateSdk with ChangeNotifier {
   final WalletSDK sdk = WalletSDK();
   final Keyring keyring = Keyring();
   bool sdkReady = false;
+  bool sdkLoading = false;
   bool nodeConnected = false;
   int blocNumber = 0;
 
@@ -20,10 +23,12 @@ class SubstrateSdk with ChangeNotifier {
   TextEditingController keystorePassword = TextEditingController();
 
   Future<void> initApi() async {
+    sdkLoading = true;
     await keyring.init([0, 2]);
 
     await sdk.init(keyring);
     sdkReady = true;
+    sdkLoading = false;
     notifyListeners();
   }
 
@@ -39,6 +44,7 @@ class SubstrateSdk with ChangeNotifier {
     );
     if (res != null) {
       nodeConnected = true;
+      print("Connecté au noeud ${sdk.api.connectedNode!.name}");
       notifyListeners();
     }
 
@@ -53,7 +59,7 @@ class SubstrateSdk with ChangeNotifier {
     final json = await sdk.api.keyring.importAccount(
       keyring,
       keyType: KeyType.keystore,
-      key: jsonKeystore.text,
+      key: jsonKeystore.text.replaceAll("'", "\\'"),
       name: 'testKey',
       password: keystorePassword.text,
     );
@@ -64,12 +70,29 @@ class SubstrateSdk with ChangeNotifier {
       password: keystorePassword.text,
     );
 
-    KeyStoreData _keystore = KeyStoreData(keystore: acc);
-    await keystoreBox.add(_keystore);
+    // await keystoreBox.clear();
+    await keystoreBox.add(acc.toJson());
+    Clipboard.setData(ClipboardData(text: jsonEncode(acc.toJson())));
     notifyListeners();
   }
 
   void reload() {
     notifyListeners();
+  }
+
+  List getKeyStoreAddress() {
+    List result = [];
+
+    for (var element in keystoreBox.values) {
+      // Clipboard.setData(ClipboardData(text: jsonEncode(element)));
+      result.add(element['address']);
+    }
+
+    return result;
+  }
+
+  Future<String> generateMnemonic() async {
+    final gen = await sdk.api.keyring.generateMnemonic(42);
+    return gen.mnemonic!;
   }
 }

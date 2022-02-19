@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart' as pp;
@@ -146,7 +147,7 @@ class HomeProvider with ChangeNotifier {
         _message =
             "Aucun noeud Duniter disponible, veuillez réessayer ultérieurement";
       } else {
-        _message = "Vous êtes connecté au noeud\n${endPointGVA.split('/')[2]}";
+        _message = "Vous êtes connecté au noeud\n${SubstrateSdk().subNode}";
       }
       final snackBar = SnackBar(
           content: Text(_message), duration: const Duration(seconds: 2));

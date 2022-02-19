@@ -1,15 +1,20 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:crypto/crypto.dart';
+import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gecko/globals.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:polkawallet_sdk/api/types/networkParams.dart';
+import 'package:polkawallet_sdk/api/types/txInfoData.dart';
 import 'package:polkawallet_sdk/polkawallet_sdk.dart';
 import 'package:polkawallet_sdk/storage/keyring.dart';
+import 'package:truncate/truncate.dart';
 
 class SubstrateSdk with ChangeNotifier {
-  final String subNode = '192.168.1.85:9944';
+  final List subNode = ['127.0.0.1:9944', '192.168.1.85:9944'];
   final bool isSsl = false;
+  final int ss58 = 42;
 
   final WalletSDK sdk = WalletSDK();
   final Keyring keyring = Keyring();
@@ -25,7 +30,8 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<void> initApi() async {
     sdkLoading = true;
-    await keyring.init([0, 2]);
+    await keyring.init([ss58]);
+    keyring.setSS58(ss58);
 
     await sdk.init(keyring);
     sdkReady = true;
@@ -35,14 +41,18 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<void> connectNode() async {
     final String socketKind = isSsl ? 'wss' : 'ws';
-    final node = NetworkParams();
-    node.name = 'pokaniter';
-    node.endpoint = '$socketKind://$subNode';
-    node.ss58 = 42;
-    final res = await sdk.api.connectNode(keyring, [node]).timeout(
-      const Duration(seconds: 10),
-      onTimeout: () => null,
-    );
+    List<NetworkParams> node = [];
+    for (final sn in subNode) {
+      final n = NetworkParams();
+      n.name = 'duniter';
+      n.endpoint = '$socketKind://$sn';
+      n.ss58 = ss58;
+      node.add(n);
+    }
+    final res = await sdk.api.connectNode(keyring, node).timeout(
+          const Duration(seconds: 10),
+          onTimeout: () => null,
+        );
     if (res != null) {
       nodeConnected = true;
       notifyListeners();
@@ -55,7 +65,17 @@ class SubstrateSdk with ChangeNotifier {
     });
   }
 
-  Future<void> importFromKeystore() async {
+  Future<bool> importAccount({bool fromMnemonic = false}) async {
+    final KeyType keytype;
+    final String keyToImport;
+    if (fromMnemonic) {
+      keytype = KeyType.mnemonic;
+      keyToImport = generatedMnemonic;
+    } else {
+      keytype = KeyType.keystore;
+      keyToImport = jsonKeystore.text.replaceAll("'", "\\'");
+    }
+
     importIsLoading = true;
     notifyListeners();
     final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
@@ -63,8 +83,8 @@ class SubstrateSdk with ChangeNotifier {
     final json = await sdk.api.keyring
         .importAccount(
       keyring,
-      keyType: KeyType.keystore,
-      key: jsonKeystore.text.replaceAll("'", "\\'"),
+      keyType: keytype,
+      key: keyToImport,
       name: 'testKey',
       password: keystorePassword.text,
     )
@@ -72,44 +92,119 @@ class SubstrateSdk with ChangeNotifier {
       importIsLoading = false;
       notifyListeners();
     });
-    final acc = await sdk.api.keyring
-        .addAccount(
-      keyring,
-      keyType: KeyType.mnemonic,
-      acc: json!,
-      password: keystorePassword.text,
-    )
-        .catchError((e) {
+    if (json == null) return false;
+    try {
+      final acc = await sdk.api.keyring.addAccount(
+        keyring,
+        keyType: KeyType.mnemonic,
+        acc: json,
+        password: keystorePassword.text,
+      );
+      Clipboard.setData(ClipboardData(text: jsonEncode(acc.toJson())));
+    } catch (e) {
       importIsLoading = false;
       notifyListeners();
-    });
+    }
 
     // await keystoreBox.clear();
-    await keystoreBox.add(acc.toJson());
-    Clipboard.setData(ClipboardData(text: jsonEncode(acc.toJson())));
+    // await keystoreBox.add(acc.toJson());
     importIsLoading = false;
+    await Future.delayed(const Duration(milliseconds: 20));
     notifyListeners();
+    return true;
   }
 
   void reload() {
     notifyListeners();
   }
 
-  List getKeyStoreAddress() {
-    List result = [];
+  Future<List<AddressInfo>> getKeyStoreAddress() async {
+    List<AddressInfo> result = [];
 
-    for (var element in keystoreBox.values) {
+    // sdk.api.account.unsubscribeBalance();
+    for (var element in keyring.allAccounts) {
       // Clipboard.setData(ClipboardData(text: jsonEncode(element)));
-      result.add(element['address']);
+      final account = AddressInfo(address: element.address);
+      // await sdk.api.account.subscribeBalance(element.address, (p0) {
+      //   account.balance = int.parse(p0.freeBalance) / 100;
+      // });
+      // sdk.api.setting.unsubscribeBestNumber();
+      if (nodeConnected) {
+        final brutBalance = await sdk.api.account.queryBalance(element.address);
+        account.balance = int.parse(brutBalance!.freeBalance) / 100;
+      }
+      result.add(account);
     }
 
     return result;
   }
 
-  Future<String> generateMnemonic() async {
-    final gen = await sdk.api.keyring.generateMnemonic(42);
-    generatedMnemonic = gen.mnemonic!;
-    notifyListeners();
-    return gen.mnemonic!;
+  Future<void> deleteAllAccounts() async {
+    for (var account in keyring.allAccounts) {
+      await sdk.api.keyring.deleteAccount(keyring, account);
+    }
   }
+
+  Future<bool> generateMnemonic() async {
+    final gen = await sdk.api.keyring.generateMnemonic(ss58);
+    generatedMnemonic = gen.mnemonic!;
+
+    final res = await importAccount(fromMnemonic: true);
+
+    return res;
+  }
+
+  pay(BuildContext context, String address, double amount,
+      String password) async {
+    final sender = TxSenderData(
+      keyring.current.address,
+      keyring.current.pubKey,
+    );
+    final txInfo = TxInfoData('balances', 'transfer', sender);
+    try {
+      final hash = await sdk.api.tx.signAndSend(
+        txInfo,
+        [address, amount * 100],
+        password,
+        onStatusChange: (status) {
+          print('status: ' + status);
+          if (status == 'Ready') {
+            snack(context, 'Paiement effectué avec succès !');
+          }
+        },
+      );
+      print(hash.toString());
+    } catch (err) {
+      print(err.toString());
+    }
+  }
+}
+
+void snack(BuildContext context, String message, {int duration = 2}) {
+  final snackBar =
+      SnackBar(content: Text(message), duration: Duration(seconds: duration));
+  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+}
+
+class AddressInfo {
+  final String? address;
+  double balance;
+
+  AddressInfo({@required this.address, this.balance = 0});
+}
+
+String getShortPubkey(String pubkey) {
+  List<int> pubkeyByte = Base58Decode(pubkey);
+  Digest pubkeyS256 = sha256.convert(sha256.convert(pubkeyByte).bytes);
+  String pubkeyCheksum = Base58Encode(pubkeyS256.bytes);
+  String pubkeyChecksumShort =
+      truncate(pubkeyCheksum, 3, omission: "", position: TruncatePosition.end);
+
+  String pubkeyShort = truncate(pubkey, 5,
+          omission: String.fromCharCode(0x2026),
+          position: TruncatePosition.end) +
+      truncate(pubkey, 4, omission: "", position: TruncatePosition.start) +
+      ':$pubkeyChecksumShort';
+
+  return pubkeyShort;
 }

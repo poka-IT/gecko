@@ -52,30 +52,50 @@ class SubstrateSandBox extends StatelessWidget {
                           height: 35,
                         ),
                         onTap: () async {
-                          await keystoreBox.clear();
+                          await _sub.deleteAllAccounts();
                           _sub.reload();
                         },
                       ),
                       const SizedBox(width: 10),
                     ]),
-
-                    Text(keystoreBox.isEmpty
-                        ? '-'
-                        : _sub.getKeyStoreAddress().toString()),
-                    // const SizedBox(height: 40),
-                    // const Text('Trousseau:'),
-                    // TextField(
-                    //   controller: _sub.jsonKeystore,
-                    //   onChanged: (_) => _sub.reload(),
-                    //   minLines: 5,
-                    //   maxLines: 5,
-                    // ),
+                    FutureBuilder(
+                        future: _sub.getKeyStoreAddress(),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<List<AddressInfo>> _data) {
+                          return Column(children: [
+                            for (final AddressInfo e in _data.data!)
+                              Row(children: [
+                                InkWell(
+                                  onTap: () => _sub.keyring.setCurrent(_sub
+                                      .keyring.keyPairs
+                                      .firstWhere((element) =>
+                                          element.address == e.address!)),
+                                  child: Text(
+                                    getShortPubkey(e.address!),
+                                    style: const TextStyle(
+                                        fontFamily: 'Monospace'),
+                                  ),
+                                ),
+                                const SizedBox(width: 20),
+                                InkWell(
+                                  onTap: () async => await _sub.pay(
+                                      context,
+                                      e.address!,
+                                      10,
+                                      _sub.keystorePassword.text),
+                                  child: Text("${e.balance.toString()} ğdev"),
+                                )
+                              ])
+                          ]);
+                        }),
                     const SizedBox(height: 20),
                     const Text('Mot de passe du trousseau:'),
                     TextField(
                       controller: _sub.keystorePassword,
                       obscureText: true,
                       obscuringCharacter: '•',
+                      enableSuggestions: false,
+                      autocorrect: false,
                       onChanged: (_) => _sub.reload(),
                     ),
                     Column(
@@ -89,9 +109,14 @@ class SubstrateSandBox extends StatelessWidget {
                             ),
                             onPressed: _sub.keystorePassword.text.isNotEmpty
                                 ? () async {
-                                    await _sub.importFromKeystore();
+                                    final res = await _sub.importAccount();
                                     _sub.importIsLoading = false;
                                     _sub.reload();
+                                    snack(
+                                        context,
+                                        res
+                                            ? 'Portefeuille importé'
+                                            : 'Le format de trousseau est invalide');
                                   }
                                 : null,
                             child: const Text(
@@ -108,10 +133,17 @@ class SubstrateSandBox extends StatelessWidget {
                               onPrimary: Colors.black, // foreground
                             ),
                             onPressed: () async {
-                              await _sub.generateMnemonic();
+                              final res = await _sub.generateMnemonic();
+                              _sub.importIsLoading = false;
+                              _sub.reload();
+                              snack(
+                                  context,
+                                  res
+                                      ? 'Portefeuille importé'
+                                      : 'Le format de trousseau est invalide');
                             },
                             child: const Text(
-                              'Générer un mnemonic',
+                              "Générer un mnemonic et l'importer",
                               style: TextStyle(fontSize: 20),
                             ),
                           ),

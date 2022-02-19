@@ -72,7 +72,7 @@ Future<void> main() async {
   chestBox = await Hive.openBox<ChestData>("chestBox");
   configBox = await Hive.openBox("configBox");
   g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
-  keystoreBox = await Hive.openBox("keystoreBox");
+  // keystoreBox = await Hive.openBox("keystoreBox");
 
   g1WalletsBox.clear();
 

@@ -79,6 +79,7 @@ flutter_icons:
   ios: true
   image_path: "assets/icon/gecko_flat.png"
   cupertino_icons: ^1.0.0
+  remove_alpha_ios: true
 
 dev_dependencies:
   build_runner: ^2.1.2

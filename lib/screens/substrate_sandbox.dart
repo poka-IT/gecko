@@ -32,11 +32,9 @@ class SubstrateSandBox extends StatelessWidget {
                   children: <Widget>[
                     Text('js-api chargé ?: ${_sub.sdkReady}'),
                     InkWell(
-                        onTap: !_sub.nodeConnected
-                            ? () async {
+                        onTap:  () async {
                                 await _sub.connectNode();
-                              }
-                            : null,
+                              },
                         child: Text(
                             'Noeud connecté ?: ${_sub.nodeConnected} (${_sub.subNode})')),
                     if (_sub.nodeConnected)
@@ -63,29 +61,39 @@ class SubstrateSandBox extends StatelessWidget {
                         builder: (BuildContext context,
                             AsyncSnapshot<List<AddressInfo>> _data) {
                           return Column(children: [
-                            for (final AddressInfo e in _data.data!)
-                              Row(children: [
-                                InkWell(
-                                  onTap: () => _sub.keyring.setCurrent(_sub
-                                      .keyring.keyPairs
-                                      .firstWhere((element) =>
-                                          element.address == e.address!)),
-                                  child: Text(
-                                    getShortPubkey(e.address!),
-                                    style: const TextStyle(
-                                        fontFamily: 'Monospace'),
+                            if (_data.data != null)
+                              for (final AddressInfo e in _data.data!)
+                                Row(children: [
+                                  InkWell(
+                                    onTap: () => _sub.keyring.setCurrent(_sub
+                                        .keyring.keyPairs
+                                        .firstWhere((element) =>
+                                            element.address == e.address!)),
+                                    child: Text(
+                                      getShortPubkey(e.address!),
+                                      style: const TextStyle(
+                                          fontFamily: 'Monospace'),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 20),
-                                InkWell(
-                                  onTap: () async => await _sub.pay(
-                                      context,
-                                      e.address!,
-                                      10,
-                                      _sub.keystorePassword.text),
-                                  child: Text("${e.balance.toString()} ğdev"),
-                                )
-                              ])
+                                  const SizedBox(width: 20),
+                                  InkWell(
+                                    onTap: () async => await _sub.pay(
+                                        context,
+                                        e.address!,
+                                        10,
+                                        _sub.keystorePassword.text),
+                                    child: Text("${e.balance.toString()} ğdev"),
+                                  ),
+                                  const SizedBox(width: 20),
+                                  InkWell(
+                                    onTap: () async => await _sub.derive(
+                                        context,
+                                        e.address!,
+                                        3,
+                                        _sub.keystorePassword.text),
+                                    child: const Text("Dériver"),
+                                  )
+                                ])
                           ]);
                         }),
                     const SizedBox(height: 20),

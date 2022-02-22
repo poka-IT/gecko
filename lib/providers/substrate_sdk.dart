@@ -20,7 +20,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:aes_ecb_pkcs5_flutter/aes_ecb_pkcs5_flutter.dart';
 
 class SubstrateSdk with ChangeNotifier {
-  final List subNode = ['127.0.0.1:9944', '192.168.1.85:9944'];
+  final List subNode = ['127.0.0.1:9944', '192.168.1.45:9944'];
   final bool isSsl = false;
   final int ss58 = 42;
 

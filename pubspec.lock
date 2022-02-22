@@ -965,9 +965,11 @@ packages:
   polkawallet_sdk:
     dependency: "direct main"
     description:
-      name: polkawallet_sdk
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "."
+      ref: fixAndroidActivityVersion
+      resolved-ref: bcb33239d99605258361951f447ab097ff03208a
+      url: "git://github.com/poka-IT/sdk.git"
+    source: git
     version: "0.4.1"
   pool:
     dependency: transitive

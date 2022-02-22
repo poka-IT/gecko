@@ -1,8 +1,6 @@
 // ignore_for_file: avoid_print
 
 import 'dart:convert';
-import "package:hex/hex.dart";
-import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/material.dart';
@@ -13,11 +11,9 @@ import 'package:polkawallet_sdk/api/types/txInfoData.dart';
 import 'package:polkawallet_sdk/polkawallet_sdk.dart';
 import 'package:polkawallet_sdk/storage/keyring.dart';
 import 'package:polkawallet_sdk/storage/localStorage.dart';
-import 'package:polkawallet_sdk/utils/index.dart';
 import 'package:polkawallet_sdk/utils/localStorage.dart';
 import 'package:truncate/truncate.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:aes_ecb_pkcs5_flutter/aes_ecb_pkcs5_flutter.dart';
 
 class SubstrateSdk with ChangeNotifier {
   final List subNode = ['127.0.0.1:9944', '192.168.1.45:9944'];
@@ -75,6 +71,13 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<bool> importAccount(
       {bool fromMnemonic = false, String derivePath = ''}) async {
+    // toy exercise immense month enter answer table prefer speed cycle gold phone
+    final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+    if (clipboardData!.text!.split(' ').length == 12) {
+      fromMnemonic = true;
+      generatedMnemonic = clipboardData.text!;
+    }
+
     final KeyType keytype;
     final String keyToImport;
     if (fromMnemonic) {
@@ -87,8 +90,7 @@ class SubstrateSdk with ChangeNotifier {
 
     importIsLoading = true;
     notifyListeners();
-    final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
-    if (clipboardData?.text != null) jsonKeystore.text = clipboardData!.text!;
+    if (clipboardData.text != null) jsonKeystore.text = clipboardData.text!;
     var json = await sdk.api.keyring
         .importAccount(keyring,
             keyType: keytype,
@@ -103,20 +105,18 @@ class SubstrateSdk with ChangeNotifier {
     if (json == null) return false;
     print(json);
     try {
-      final acc = await sdk.api.keyring.addAccount(
+      await sdk.api.keyring.addAccount(
         keyring,
-        keyType: KeyType.mnemonic,
+        keyType: keytype,
         acc: json,
         password: keystorePassword.text,
       );
-      Clipboard.setData(ClipboardData(text: jsonEncode(acc.toJson())));
+      // Clipboard.setData(ClipboardData(text: jsonEncode(acc.toJson())));
     } catch (e) {
       importIsLoading = false;
       notifyListeners();
     }
 
-    // await keystoreBox.clear();
-    // await keystoreBox.add(acc.toJson());
     importIsLoading = false;
     await Future.delayed(const Duration(milliseconds: 20));
     notifyListeners();
@@ -154,13 +154,13 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
-  Future<bool> generateMnemonic() async {
+  Future<String> generateMnemonic() async {
     final gen = await sdk.api.keyring.generateMnemonic(ss58);
     generatedMnemonic = gen.mnemonic!;
 
-    final res = await importAccount(fromMnemonic: true);
-
-    return res;
+    // final res = await importAccount(fromMnemonic: true);
+    await Clipboard.setData(ClipboardData(text: generatedMnemonic));
+    return gen.mnemonic!;
   }
 
   pay(BuildContext context, String address, double amount,
@@ -188,44 +188,17 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
-  derive(BuildContext context, String address, double amount,
-      String password) async {
+  derive(
+      BuildContext context, String address, int number, String password) async {
     final keypair =
         keyring.keyPairs.firstWhere((element) => element.address == address);
 
-    // KeyringStorage _storage = KeyringStorage();
-    // print(_storage.encryptedMnemonics.val);
+    final seedMap =
+        await keyring.store.getDecryptedSeed(keypair.pubKey, password);
+    print(seedMap);
+    generatedMnemonic = seedMap!['seed'];
 
-    // final keyPairs = [].val('keyPairs', getBox: _storage);
-    // final encryptedRawSeeds = {}.val('encryptedRawSeeds', getBox: _storage);
-
-    print(await sdk.api.keyring.getDecryptedSeed(keyring, password));
-    print(await keyring.store.getDecryptedSeed(keypair.pubKey, password));
-    print(
-        await keyring.store.checkSeedExist(KeyType.keystore, keypair.pubKey!));
-
-    print(
-        await keyring.store.checkSeedExist(KeyType.mnemonic, keypair.pubKey!));
-
-    _storage() => GetStorage(sdk_storage_key);
-    final encryptedMnemonics = {}.val('encryptedMnemonics', getBox: _storage);
-
-    // await keyring.store.updateEncryptedSeed(keypair.pubKey, password, '012');
-    final enc = encryptedMnemonics.val[keypair.pubKey!];
-    // final key = Encrypt.passwordToEncryptKey(password);
-    // const enc =
-    //     '69E16A6F8CD15799FC036B3D71FC3C53EFCEDB6A2D4F2A743555809DC5B48D6FC25E96E5CFF8E7DF4FCE1AE9AFC61A0D85CDCAD945C5371F11DEBA1BF362B8124A4C8D264A05AC1D72F5A9566D0D3B35';
-
-    final LocalStorage _storageOld = LocalStorage();
-
-    print(enc);
-    print(await _storageOld.getAccountList());
-    print(await _storageOld.getSeeds('keystore'));
-    // print(await FlutterAesEcbPkcs5.decryptString(enc, key));
-
-    // generatedMnemonic = keypair.encoded;
-
-    // importAccount();
+    importAccount(fromMnemonic: true, derivePath: '/$number');
   }
 }
 

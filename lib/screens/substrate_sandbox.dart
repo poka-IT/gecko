@@ -32,9 +32,9 @@ class SubstrateSandBox extends StatelessWidget {
                   children: <Widget>[
                     Text('js-api chargé ?: ${_sub.sdkReady}'),
                     InkWell(
-                        onTap:  () async {
-                                await _sub.connectNode();
-                              },
+                        onTap: () async {
+                          await _sub.connectNode();
+                        },
                         child: Text(
                             'Noeud connecté ?: ${_sub.nodeConnected} (${_sub.subNode})')),
                     if (_sub.nodeConnected)
@@ -128,7 +128,7 @@ class SubstrateSandBox extends StatelessWidget {
                                   }
                                 : null,
                             child: const Text(
-                              'Importer le trousseau depuis le presse-papier',
+                              'Importer depuis le presse-papier',
                               style: TextStyle(fontSize: 20),
                             ),
                           ),
@@ -144,14 +144,10 @@ class SubstrateSandBox extends StatelessWidget {
                               final res = await _sub.generateMnemonic();
                               _sub.importIsLoading = false;
                               _sub.reload();
-                              snack(
-                                  context,
-                                  res
-                                      ? 'Portefeuille importé'
-                                      : 'Le format de trousseau est invalide');
+                              snack(context, 'Le mnemonic a été copié');
                             },
                             child: const Text(
-                              "Générer un mnemonic et l'importer",
+                              "Générer un mnemonic et le copier",
                               style: TextStyle(fontSize: 20),
                             ),
                           ),

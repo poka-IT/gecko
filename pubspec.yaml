@@ -73,6 +73,7 @@ dependencies:
   durt: ^0.1.6
   package_info_plus: ^1.3.0
   polkawallet_sdk: #^0.4.1 ## Wait for merging PR: https://github.com/polkawallet-io/sdk/pull/19
+    # path: ../substrate-sdk
     git:
       url: git://github.com/poka-IT/sdk.git
       ref: fixAndroidActivityVersion

@@ -94,7 +94,7 @@ class SubstrateSandBox extends StatelessWidget {
                                     child: const Text("Dériver"),
                                   )
                                 ])
-                          ]);
+                          ]); 
                         }),
                     const SizedBox(height: 20),
                     const Text('Mot de passe du trousseau:'),
@@ -141,7 +141,7 @@ class SubstrateSandBox extends StatelessWidget {
                               onPrimary: Colors.black, // foreground
                             ),
                             onPressed: () async {
-                              final res = await _sub.generateMnemonic();
+                              await _sub.generateMnemonic();
                               _sub.importIsLoading = false;
                               _sub.reload();
                               snack(context, 'Le mnemonic a été copié');

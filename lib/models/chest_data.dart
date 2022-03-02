@@ -9,6 +9,9 @@ class ChestData extends HiveObject {
   @HiveField(0)
   String? dewif;
 
+  @HiveField(1)
+  String? rootAddress;
+
   @HiveField(2)
   String? name;
 
@@ -26,6 +29,7 @@ class ChestData extends HiveObject {
 
   ChestData({
     this.dewif,
+    this.rootAddress,
     this.name,
     this.defaultWallet,
     this.imageName,

@@ -1,6 +1,5 @@
 // ignore_for_file: avoid_print
 
-import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/material.dart';
@@ -10,13 +9,10 @@ import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:polkawallet_sdk/api/types/txInfoData.dart';
 import 'package:polkawallet_sdk/polkawallet_sdk.dart';
 import 'package:polkawallet_sdk/storage/keyring.dart';
-import 'package:polkawallet_sdk/storage/localStorage.dart';
-import 'package:polkawallet_sdk/utils/localStorage.dart';
 import 'package:truncate/truncate.dart';
-import 'package:get_storage/get_storage.dart';
 
 class SubstrateSdk with ChangeNotifier {
-  final List subNode = ['127.0.0.1:9944', '192.168.1.45:9944'];
+  final List subNode = ['127.0.0.1:9944', '192.168.1.72:9944'];
   final bool isSsl = false;
   final int ss58 = 42;
 
@@ -97,7 +93,8 @@ class SubstrateSdk with ChangeNotifier {
             key: keyToImport,
             name: 'testKey',
             password: keystorePassword.text,
-            derivePath: derivePath)
+            derivePath: derivePath,
+            cryptoType: CryptoType.sr25519)
         .catchError((e) {
       importIsLoading = false;
       notifyListeners();
@@ -178,7 +175,7 @@ class SubstrateSdk with ChangeNotifier {
         onStatusChange: (status) {
           print('status: ' + status);
           if (status == 'Ready') {
-            snack(context, 'Paiement effectué avec succès !');
+            snack(context, 'Transaction terminé');
           }
         },
       );
@@ -196,7 +193,15 @@ class SubstrateSdk with ChangeNotifier {
     final seedMap =
         await keyring.store.getDecryptedSeed(keypair.pubKey, password);
     print(seedMap);
-    generatedMnemonic = seedMap!['seed'];
+    if (seedMap!['type'] != 'mnemonic') return;
+    final List seedList = seedMap['seed'].split('/');
+    generatedMnemonic = seedList[0];
+    int sourceDerivation = -1; // To get derivation number of this account
+    if (seedList.length > 1) {
+      sourceDerivation = int.parse(seedMap['seed'].split('/')[1]);
+    }
+    print(generatedMnemonic);
+    print(sourceDerivation);
 
     importAccount(fromMnemonic: true, derivePath: '/$number');
   }

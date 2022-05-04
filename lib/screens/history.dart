@@ -33,7 +33,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
     CesiumPlusProvider _cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
     log.i('Build pubkey : ' + pubkey!);
-    WidgetsBinding.instance!.addPostFrameCallback((_) {});
+    WidgetsBinding.instance?.addPostFrameCallback((_) {});
 
     _historyProvider.balance = _historyProvider.transBC = null;
 

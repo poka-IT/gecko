@@ -69,6 +69,20 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
               ),
+              ListTile(
+                key: const Key('substrateSandbox'),
+                title: const Text('SUBSTRATE SANDBOX'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return const SubstrateSandBox();
+                    }),
+                  );
+                },
+              ),
+
               // ListTile(
               //   title: const Text('A propos'),
               //   onTap: () {
@@ -86,9 +100,11 @@ class HomeScreen extends StatelessWidget {
       body: Builder(
         builder: (ctx) => StatefulWrapper(
             onInit: () {
-              WidgetsBinding.instance!.addPostFrameCallback((_) async {
+              WidgetsBinding.instance?.addPostFrameCallback((_) async {
                 if (!_sub.sdkReady && !_sub.sdkLoading) await _sub.initApi();
-                if (_sub.sdkReady && !_sub.nodeConnected) await _sub.connectNode();
+                if (_sub.sdkReady && !_sub.nodeConnected) {
+                  await _sub.connectNode();
+                }
                 if (isWalletsExists) homeClass.snackNode(ctx);
               });
             },
@@ -186,24 +202,6 @@ Widget geckHome(context) {
             ]),
       ),
       const SizedBox(height: 15),
-      Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            primary: yellowC, // background
-            onPrimary: Colors.black, // foreground
-          ),
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) {
-              return const SubstrateSandBox();
-            }),
-          ),
-          child: const Text(
-            'SUBSTRATE SANDBOX',
-            style: TextStyle(fontSize: 20),
-          ),
-        ),
-      ]),
       Expanded(
         flex: 1,
         child: Container(

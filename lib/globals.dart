@@ -14,7 +14,7 @@ late String appVersion;
 late SharedPreferences prefs;
 late String endPointGVA;
 const int pinLength = 5;
-const String appLang = 'french';
+const String appLang = 'english';
 
 late Box<WalletData> walletBox;
 late Box<ChestData> chestBox;
@@ -37,3 +37,6 @@ Color orangeC = const Color(0xffd07316);
 Color yellowC = const Color(0xffFFD68E);
 Color floattingYellow = const Color(0xffEFEFBF);
 Color backgroundColor = const Color(0xFFF5F5F5);
+
+// Substrate settings
+const int ss58 = 42;

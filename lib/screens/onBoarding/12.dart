@@ -1,12 +1,12 @@
 // ignore_for_file: file_names
 
 import 'dart:async';
-import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/13_congratulations.dart';
@@ -61,6 +61,7 @@ class OnboardingStepFourteen extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context);
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
+    SubstrateSdk _sdk = Provider.of<SubstrateSdk>(context, listen: false);
 
     final int? _currentChest = _myWalletProvider.getCurrentChest();
 
@@ -117,12 +118,11 @@ class OnboardingStepFourteen extends StatelessWidget {
               log.d(_pin + ' || ' + _generateWalletProvider.pin.text);
               if (_pin.toUpperCase() == _generateWalletProvider.pin.text) {
                 pinColor = Colors.green[500];
-                NewWallet generatedWallet = await Dewif().generateDewif(
-                    _generateWalletProvider.generatedMnemonic!,
-                    _generateWalletProvider.pin.text,
-                    lang: appLang);
+                final address = await _sdk.importAccount(
+                    fromMnemonic: true,
+                    mnemonic: _generateWalletProvider.generatedMnemonic!);
                 await _generateWalletProvider.storeHDWChest(
-                    generatedWallet, 'Mon portefeuille courant', context);
+                    address, 'Mon portefeuille courant', context);
                 _myWalletProvider.readAllWallets(_currentChest);
                 // scheduleMicrotask(() {
                 // _walletOptions.reloadBuild();

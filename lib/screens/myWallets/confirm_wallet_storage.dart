@@ -135,7 +135,7 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                                     walletName.text != '')
                                 ? () async {
                                     _generateWalletProvider.storeHDWChest(
-                                        generatedWallet!,
+                                        generatedWallet!.dewif,
                                         walletName.text,
                                         context);
                                     _generateWalletProvider.isAskedWordValid =

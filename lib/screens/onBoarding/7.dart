@@ -118,7 +118,21 @@ Widget sentanceArray(BuildContext context) {
   GenerateWalletsProvider _generateWalletProvider =
       Provider.of<GenerateWalletsProvider>(context);
 
-  List formatedArray = _generateWalletProvider.generateWordList();
+  // List formatedArray = _generateWalletProvider.generateWordList();
+  // List formatedArray = [
+  //   '0:',
+  //   '1:',
+  //   '2:',
+  //   '3:',
+  //   '4:',
+  //   '5:',
+  //   '6:',
+  //   '7:',
+  //   '8:',
+  //   '9:',
+  //   '10:',
+  //   '11:',
+  // ];
 
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -132,32 +146,40 @@ Widget sentanceArray(BuildContext context) {
           )),
       // color: Colors.grey[300],
       padding: const EdgeInsets.all(20),
-      child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Row(children: <Widget>[
-              arrayCell(formatedArray[0]),
-              arrayCell(formatedArray[1]),
-              arrayCell(formatedArray[2]),
-              arrayCell(formatedArray[3]),
-            ]),
-            const SizedBox(height: 15),
-            Row(children: <Widget>[
-              arrayCell(formatedArray[4]),
-              arrayCell(formatedArray[5]),
-              arrayCell(formatedArray[6]),
-              arrayCell(formatedArray[7]),
-            ]),
-            const SizedBox(height: 15),
-            Row(children: <Widget>[
-              arrayCell(formatedArray[8]),
-              arrayCell(formatedArray[9]),
-              arrayCell(formatedArray[10]),
-              arrayCell(formatedArray[11]),
-            ]),
-          ]),
+      child: FutureBuilder(
+          future: _generateWalletProvider.generateWordList(context),
+          builder: (BuildContext context, AsyncSnapshot<List> _data) {
+            if (!_data.hasData) {
+              return const Text('');
+            } else {
+              return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Row(children: <Widget>[
+                      arrayCell(_data.data![0]),
+                      arrayCell(_data.data![1]),
+                      arrayCell(_data.data![2]),
+                      arrayCell(_data.data![3]),
+                    ]),
+                    const SizedBox(height: 15),
+                    Row(children: <Widget>[
+                      arrayCell(_data.data![4]),
+                      arrayCell(_data.data![5]),
+                      arrayCell(_data.data![6]),
+                      arrayCell(_data.data![7]),
+                    ]),
+                    const SizedBox(height: 15),
+                    Row(children: <Widget>[
+                      arrayCell(_data.data![8]),
+                      arrayCell(_data.data![9]),
+                      arrayCell(_data.data![10]),
+                      arrayCell(_data.data![11]),
+                    ]),
+                  ]);
+            }
+          }),
     ),
   );
 }

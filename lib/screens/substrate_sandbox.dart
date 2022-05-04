@@ -122,7 +122,7 @@ class SubstrateSandBox extends StatelessWidget {
                                     _sub.reload();
                                     snack(
                                         context,
-                                        res
+                                        res != ''
                                             ? 'Portefeuille importé'
                                             : 'Le format de trousseau est invalide');
                                   }

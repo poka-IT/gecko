@@ -28,7 +28,7 @@ class GenerateFastChestScreen extends StatelessWidget {
         Provider.of<GenerateWalletsProvider>(context);
 
     if (_generateWalletProvider.mnemonicController.text == '') {
-      _generateWalletProvider.generateWordList();
+      _generateWalletProvider.generateWordList(context);
       _generateWalletProvider.mnemonicController.text =
           _generateWalletProvider.generatedMnemonic!;
       _generateWalletProvider.pin.text = randomSecretCode(pinLength);
@@ -61,7 +61,7 @@ class GenerateFastChestScreen extends StatelessWidget {
                 child: FloatingActionButton(
               heroTag: "buttonGenerateWallet",
               onPressed: () {
-                _generateWalletProvider.generateWordList();
+                _generateWalletProvider.generateWordList(context);
                 _generateWalletProvider.mnemonicController.text =
                     _generateWalletProvider.generatedMnemonic!;
               },

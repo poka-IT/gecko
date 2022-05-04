@@ -9,10 +9,11 @@ import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:polkawallet_sdk/api/types/txInfoData.dart';
 import 'package:polkawallet_sdk/polkawallet_sdk.dart';
 import 'package:polkawallet_sdk/storage/keyring.dart';
+import 'package:polkawallet_sdk/storage/types/keyPairData.dart';
 import 'package:truncate/truncate.dart';
 
 class SubstrateSdk with ChangeNotifier {
-  final List subNode = ['127.0.0.1:9944', '192.168.1.72:9944'];
+  final List subNode = ['192.168.1.72:9944'];
   final bool isSsl = false;
   final int ss58 = 42;
 
@@ -65,11 +66,16 @@ class SubstrateSdk with ChangeNotifier {
     });
   }
 
-  Future<bool> importAccount(
-      {bool fromMnemonic = false, String derivePath = ''}) async {
+  Future<String> importAccount(
+      {String mnemonic = '',
+      bool fromMnemonic = false,
+      String derivePath = ''}) async {
     // toy exercise immense month enter answer table prefer speed cycle gold phone
     final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
-    if (clipboardData!.text!.split(' ').length == 12) {
+    if (mnemonic != '') {
+      fromMnemonic = true;
+      generatedMnemonic = mnemonic;
+    } else if (clipboardData!.text!.split(' ').length == 12) {
       fromMnemonic = true;
       generatedMnemonic = clipboardData.text!;
     }
@@ -86,7 +92,7 @@ class SubstrateSdk with ChangeNotifier {
 
     importIsLoading = true;
     notifyListeners();
-    if (clipboardData.text != null) jsonKeystore.text = clipboardData.text!;
+    if (clipboardData?.text != null) jsonKeystore.text = clipboardData!.text!;
     var json = await sdk.api.keyring
         .importAccount(keyring,
             keyType: keytype,
@@ -99,10 +105,11 @@ class SubstrateSdk with ChangeNotifier {
       importIsLoading = false;
       notifyListeners();
     });
-    if (json == null) return false;
+    if (json == null) return '';
     print(json);
+    late KeyPairData? keyPairData;
     try {
-      await sdk.api.keyring.addAccount(
+      keyPairData = await sdk.api.keyring.addAccount(
         keyring,
         keyType: keytype,
         acc: json,
@@ -117,7 +124,7 @@ class SubstrateSdk with ChangeNotifier {
     importIsLoading = false;
     await Future.delayed(const Duration(milliseconds: 20));
     notifyListeners();
-    return true;
+    return keyPairData!.address!;
   }
 
   void reload() {
@@ -151,7 +158,7 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
-  Future<String> generateMnemonic() async {
+  Future<String> generateMnemonic({String lang = 'english'}) async {
     final gen = await sdk.api.keyring.generateMnemonic(ss58);
     generatedMnemonic = gen.mnemonic!;
 

@@ -1,21 +1,23 @@
 import 'dart:math';
 import 'dart:typed_data';
-import 'package:durt/durt.dart';
+import 'package:durt/durt.dart' as durt;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/bip39_words.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:provider/provider.dart';
 import "package:unorm_dart/unorm_dart.dart" as unorm;
 
 class GenerateWalletsProvider with ChangeNotifier {
   GenerateWalletsProvider();
   // NewWallet generatedWallet;
-  NewWallet? actualWallet;
+  durt.NewWallet? actualWallet;
 
   FocusNode walletNameFocus = FocusNode();
   Color? askedWordColor = Colors.black;
@@ -37,7 +39,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   bool isCesiumIDVisible = false;
   bool isCesiumPWDVisible = false;
   bool canImport = false;
-  late CesiumWallet cesiumWallet;
+  late durt.CesiumWallet cesiumWallet;
 
   // Import Chest
   TextEditingController cellController0 = TextEditingController();
@@ -55,7 +57,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   bool isFirstTimeSentenceComplete = true;
 
   Future storeHDWChest(
-      NewWallet _wallet, String _name, BuildContext context) async {
+      String address, String _name, BuildContext context) async {
     int chestNumber = 0;
     chestBox.toMap().forEach((key, value) {
       if (!value.isCesium!) {
@@ -70,7 +72,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       chestName = 'Coffre à Ğecko ${chestNumber + 1}';
     }
     ChestData thisChest = ChestData(
-      dewif: _wallet.dewif,
+      dewif: address,
       name: chestName,
       defaultWallet: 0,
       imageName: '${chestNumber % 8}.png',
@@ -152,11 +154,11 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<NewWallet?> generateWallet(String generatedMnemonic,
+  Future<durt.NewWallet?> generateWallet(String generatedMnemonic,
       {required bool isImport}) async {
     try {
-      actualWallet = await Dewif().generateDewif(
-          generatedMnemonic, randomSecretCode(pinLength),
+      actualWallet = await durt.Dewif().generateDewif(
+          generatedMnemonic, durt.randomSecretCode(pinLength),
           lang: appLang);
     } catch (e) {
       log.e(e);
@@ -172,7 +174,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   String changePinCode({required bool reload}) {
-    pin.text = randomSecretCode(pinLength);
+    pin.text = durt.randomSecretCode(pinLength);
     if (reload) {
       notifyListeners();
     }
@@ -219,7 +221,7 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   Future<void> generateCesiumWalletPubkey(
       String _cesiumID, String _cesiumPWD) async {
-    cesiumWallet = CesiumWallet(_cesiumID, _cesiumPWD);
+    cesiumWallet = durt.CesiumWallet(_cesiumID, _cesiumPWD);
     String _walletPubkey = cesiumWallet.pubkey;
 
     cesiumPubkey.text = _walletPubkey;
@@ -257,8 +259,8 @@ class GenerateWalletsProvider with ChangeNotifier {
     }
 
     log.d(pin.text);
-    NewWallet cesiumDewif =
-        await Dewif().generateCesiumDewif(cesiumWallet.seed, pin.text);
+    durt.NewWallet cesiumDewif =
+        await durt.Dewif().generateCesiumDewif(cesiumWallet.seed, pin.text);
 
     ChestData cesiumChest = ChestData(
         dewif: cesiumDewif.dewif,
@@ -293,8 +295,11 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  List<String> generateWordList() {
-    generatedMnemonic = generateMnemonic(lang: appLang);
+  Future<List<String>> generateWordList(BuildContext context) async {
+    SubstrateSdk _sdk =
+        Provider.of<SubstrateSdk>(context, listen: false);
+
+    generatedMnemonic = await _sdk.generateMnemonic(lang: appLang);
     List<String> _wordsList = [];
     String word;
     int _nbr = 1;
@@ -333,8 +338,8 @@ class GenerateWalletsProvider with ChangeNotifier {
     cellController0.text = cellController1.text = cellController2.text =
         cellController3.text = cellController4.text = cellController5.text =
             cellController6.text = cellController7.text = cellController8.text =
-                cellController9.text = cellController10.text =
-                    cellController11.text = '';
+                cellController9.text =
+                    cellController10.text = cellController11.text = '';
     isFirstTimeSentenceComplete = true;
     notifyListeners();
   }
@@ -374,7 +379,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     inputMnemonic = inputMnemonic.replaceAll('é', 'é');
     inputMnemonic = inputMnemonic.replaceAll('è', 'è');
 
-    NewWallet? generatedWallet =
+    durt.NewWallet? generatedWallet =
         await generateWallet(inputMnemonic, isImport: true);
 
     if (generatedWallet == null) {

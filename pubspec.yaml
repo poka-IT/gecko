@@ -17,7 +17,7 @@ dependencies:
     sdk: flutter
   window_size:
     git:
-      url: git://github.com/google/flutter-desktop-embedding.git
+      url: https://github.com/google/flutter-desktop-embedding.git
       path: plugins/window_size
   assorted_layout_widgets: ^5.2.1
   bubble: ^1.2.1
@@ -28,7 +28,11 @@ dependencies:
   flutter_lints: ^1.0.4
   flutter_logs: ^2.1.4
   flutter_svg: ^0.22.0
-  graphql_flutter: ^5.0.0
+  graphql_flutter: #^5.1.0
+    git:
+      url: https://github.com/Quantit-Github/graphql-flutter.git
+      path: packages/graphql_flutter
+      ref: f1ccb2d # commit hash
   hive: ^2.0.4
   hive_flutter: ^1.1.0
   http: ^0.13.4
@@ -42,25 +46,28 @@ dependencies:
   pdf: ^3.7.1
   permission_handler: ^8.3.0
   pin_code_fields: ^7.3.0
-  printing: ^5.8.0
+  printing: #^5.8.0
+    git: 
+      url: https://github.com/DavBfr/dart_pdf.git
+      path: printing
   provider: ^6.0.1
   # qrscan: ^0.3.2
   qrscan:
     git:
-      url: git://github.com/leyan95/qrcode_scanner.git
+      url: https://github.com/leyan95/qrcode_scanner.git
       ref: master # branch name
   # qr_code_scanner: ^0.6.1
   # qr_flutter: ^4.0.0
   qr_flutter:
     git:
-      url: git://github.com/insinfo/qr.flutter.git
+      url: https://github.com/insinfo/qr.flutter.git
       ref: master # branch name
   responsive_builder: ^0.4.1
   responsive_framework: ^0.1.4
-  sentry: 6.3.0
-  sentry_flutter: 6.3.0
+  sentry: 6.5.1
+  sentry_flutter: ^6.5.1
   shared_preferences: ^2.0.7
-  super_tooltip: ^1.0.1
+  # super_tooltip: ^1.0.1
   sync_http: ^0.3.0
   test: ^1.17.10
   truncate: ^3.0.1

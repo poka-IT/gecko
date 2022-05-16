@@ -6,11 +6,9 @@ import 'package:gecko/screens/myWallets/confirm_wallet_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
-import 'package:super_tooltip/super_tooltip.dart';
 
 // ignore: must_be_immutable
 class GenerateFastChestScreen extends StatelessWidget {
-  SuperTooltip? tooltip;
   bool hasError = false;
   String validPin = 'NO PIN';
   String currentText = "";

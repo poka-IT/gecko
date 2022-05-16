@@ -100,7 +100,7 @@ class HomeScreen extends StatelessWidget {
       body: Builder(
         builder: (ctx) => StatefulWrapper(
             onInit: () {
-              WidgetsBinding.instance?.addPostFrameCallback((_) async {
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
                 if (!_sub.sdkReady && !_sub.sdkLoading) await _sub.initApi();
                 if (_sub.sdkReady && !_sub.nodeConnected) {
                   await _sub.connectNode();

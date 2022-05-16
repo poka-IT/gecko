@@ -422,7 +422,7 @@ class WalletOptions extends StatelessWidget {
       onTap: !walletProvider.isDefaultWallet
           ? () async {
               await walletProvider.deleteWallet(context, wallet);
-              WidgetsBinding.instance?.addPostFrameCallback((_) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
                 _myWalletProvider.listWallets =
                     _myWalletProvider.readAllWallets(_currentChest);
                 _myWalletProvider.rebuildWidget();

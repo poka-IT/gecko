@@ -151,9 +151,6 @@ class SubstrateSdk with ChangeNotifier {
       // sdk.api.setting.unsubscribeBestNumber();
       account.balance = await getBalance(element.address!);
       result.add(account);
-      print('waaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
-      print(element.indexInfo);
-      print(element.memo);
     }
 
     return result;
@@ -207,7 +204,7 @@ class SubstrateSdk with ChangeNotifier {
     return gen.mnemonic!;
   }
 
-  pay(BuildContext context, String address, double amount,
+  Future<bool> pay(BuildContext context, String address, double amount,
       String password) async {
     final sender = TxSenderData(
       keyring.current.address,
@@ -227,8 +224,10 @@ class SubstrateSdk with ChangeNotifier {
         },
       );
       print(hash.toString());
+      return true;
     } catch (err) {
       print(err.toString());
+      return false;
     }
   }
 

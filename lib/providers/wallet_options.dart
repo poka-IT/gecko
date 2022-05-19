@@ -17,7 +17,7 @@ class WalletOptionsProvider with ChangeNotifier {
   bool ischangedPin = false;
   TextEditingController newPin = TextEditingController();
   bool isEditing = false;
-  bool isBalanceBlur = true;
+  bool isBalanceBlur = false;
   FocusNode walletNameFocus = FocusNode();
   TextEditingController nameController = TextEditingController();
   late bool isDefaultWallet;
@@ -174,7 +174,7 @@ class WalletOptionsProvider with ChangeNotifier {
   String? getAddress(int chest, int derivation) {
     String? _address;
     walletBox.toMap().forEach((key, value) {
-      if (value.chest == chest) {
+      if (value.chest == chest && value.derivation == derivation) {
         _address = value.address!;
         return;
       }

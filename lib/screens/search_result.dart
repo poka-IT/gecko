@@ -107,9 +107,11 @@ class SearchResultScreen extends StatelessWidget {
                                           ]);
                                         }
                                         if (_avatar.hasData) {
-                                          g1WalletsBox
-                                              .get(g1Wallet.pubkey)!
-                                              .avatar = _avatar.data;
+                                          final _w =
+                                              g1WalletsBox.get(g1Wallet.pubkey);
+                                          if (_w != null) {
+                                            _w.avatar = _avatar.data;
+                                          }
                                           return ClipOval(child: _avatar.data);
                                         } else {
                                           g1WalletsBox

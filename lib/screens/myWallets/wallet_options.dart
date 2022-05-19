@@ -37,7 +37,7 @@ class WalletOptions extends StatelessWidget {
     return WillPopScope(
       onWillPop: () {
         _walletOptions.isEditing = false;
-        _walletOptions.isBalanceBlur = true;
+        _walletOptions.isBalanceBlur = false;
         Navigator.pop(context);
         return Future<bool>.value(true);
       },
@@ -50,7 +50,7 @@ class WalletOptions extends StatelessWidget {
               icon: const Icon(Icons.arrow_back, color: Colors.black),
               onPressed: () {
                 _walletOptions.isEditing = false;
-                _walletOptions.isBalanceBlur = true;
+                _walletOptions.isBalanceBlur = false;
                 Navigator.pop(context);
               }),
           title: SizedBox(
@@ -90,7 +90,7 @@ class WalletOptions extends StatelessWidget {
                         Column(children: <Widget>[
                           walletName(walletProvider, _walletOptions),
                           SizedBox(height: isTall ? 5 : 0),
-                          balance(walletProvider),
+                          balance(context, walletProvider),
                         ]),
                         const Spacer(flex: 3),
                       ]),
@@ -221,44 +221,49 @@ class WalletOptions extends StatelessWidget {
     );
   }
 
-  Widget balance(WalletOptionsProvider walletProvider) {
-    SubstrateSdk _sdk = SubstrateSdk();
+  Widget balance(BuildContext context, WalletOptionsProvider walletProvider) {
+    String balanceCache = '';
+
     return Column(children: <Widget>[
-      FutureBuilder(
-          future: _sdk.getBalance(walletProvider.address.text),
-          builder: (BuildContext context, AsyncSnapshot<num?> _balance) {
-            if (_balance.connectionState != ConnectionState.done ||
-                _balance.hasError) {
-              return Text('',
+      Consumer<SubstrateSdk>(builder: (context, _sdk, _) {
+        return FutureBuilder(
+            future: _sdk.getBalance(walletProvider.address.text),
+            builder: (BuildContext context, AsyncSnapshot<num?> _balance) {
+              if (_balance.connectionState != ConnectionState.done ||
+                  _balance.hasError) {
+                return Text(balanceCache,
+                    style: TextStyle(
+                      fontSize: isTall ? 20 : 18,
+                    ));
+              }
+              balanceCache = "${_balance.data.toString()} Ğ1";
+              return ImageFiltered(
+                imageFilter: ImageFilter.blur(
+                    sigmaX: walletProvider.isBalanceBlur ? 6 : 0,
+                    sigmaY: walletProvider.isBalanceBlur ? 5 : 0),
+                child: Text(
+                  _balance.data.toString() + ' Ğ1',
                   style: TextStyle(
                     fontSize: isTall ? 20 : 18,
-                  ));
-            }
-            return ImageFiltered(
-              imageFilter: ImageFilter.blur(
-                  sigmaX: walletProvider.isBalanceBlur ? 6 : 0,
-                  sigmaY: walletProvider.isBalanceBlur ? 5 : 0),
-              child: Text(
-                _balance.data.toString() + ' Ğ1',
-                style: TextStyle(
-                  fontSize: isTall ? 20 : 18,
+                  ),
                 ),
-              ),
-            );
-          }),
-      const SizedBox(height: 5),
-      InkWell(
-        key: const Key('displayBalance'),
-        onTap: () {
-          walletProvider.bluringBalance();
-        },
-        child: Image.asset(
-          walletProvider.isBalanceBlur
-              ? 'assets/walletOptions/icon_oeuil.png'
-              : 'assets/walletOptions/icon_oeuil_close.png',
-          height: 35,
-        ),
-      ),
+              );
+            });
+      }),
+
+      const SizedBox(height: 15),
+      // InkWell(
+      //   key: const Key('displayBalance'),
+      //   onTap: () {
+      //     walletProvider.bluringBalance();
+      //   },
+      //   child: Image.asset(
+      //     walletProvider.isBalanceBlur
+      //         ? 'assets/walletOptions/icon_oeuil.png'
+      //         : 'assets/walletOptions/icon_oeuil_close.png',
+      //     height: 35,
+      //   ),
+      // ),
     ]);
   }
 

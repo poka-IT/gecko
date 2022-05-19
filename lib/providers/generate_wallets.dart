@@ -390,6 +390,34 @@ class GenerateWalletsProvider with ChangeNotifier {
     }
   }
 
+  Future pasteMnemonic(BuildContext context) async {
+    final sentence = await Clipboard.getData('text/plain');
+    int nbr = 0;
+
+    List cells = [
+      cellController0,
+      cellController1,
+      cellController2,
+      cellController3,
+      cellController4,
+      cellController5,
+      cellController6,
+      cellController7,
+      cellController8,
+      cellController9,
+      cellController10,
+      cellController11
+    ];
+    for (var word in sentence!.text!.split(' ')) {
+      bool isValid = isBipWord(word);
+
+      if (isValid) {
+        cells[nbr].text = word;
+      }
+      nbr++;
+    }
+  }
+
   void reloadBuild() {
     notifyListeners();
   }

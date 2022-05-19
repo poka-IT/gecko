@@ -97,7 +97,7 @@ class WalletsProfilesProvider with ChangeNotifier {
 
     if (regExp.hasMatch(pubkey) == true &&
         pubkey.length > 42 &&
-        pubkey.length < 45) {
+        pubkey.length < 50) {
       log.d("C'est une pubkey !");
 
       this.pubkey = pubkey;

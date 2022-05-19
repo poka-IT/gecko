@@ -120,7 +120,9 @@ class OnboardingStepFourteen extends StatelessWidget {
                 pinColor = Colors.green[500];
                 final address = await _sdk.importAccount(
                     fromMnemonic: true,
-                    mnemonic: _generateWalletProvider.generatedMnemonic!);
+                    mnemonic: _generateWalletProvider.generatedMnemonic!,
+                    derivePath: '/3',
+                    password: _generateWalletProvider.pin.text);
                 await _generateWalletProvider.storeHDWChest(
                     address, 'Mon portefeuille courant', context);
                 _myWalletProvider.readAllWallets(_currentChest);

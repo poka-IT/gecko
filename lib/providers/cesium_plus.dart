@@ -63,7 +63,7 @@ class CesiumPlusProvider with ChangeNotifier {
   Future<String> getName(String? _pubkey) async {
     String? _name;
 
-    if (g1WalletsBox.get(_pubkey)!.csName != null) {
+    if (g1WalletsBox.get(_pubkey)?.csName != null) {
       return g1WalletsBox.get(_pubkey)!.csName!;
     }
 

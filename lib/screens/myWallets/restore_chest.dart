@@ -92,7 +92,8 @@ class RestoreChest extends StatelessWidget {
                         await Navigator.push(
                           context,
                           FaderTransition(
-                              page: const OnboardingStepThirteen(), isFast: true),
+                              page: const OnboardingStepThirteen(),
+                              isFast: true),
                         );
                       } else {
                         await badMnemonicPopup(context);
@@ -107,6 +108,30 @@ class RestoreChest extends StatelessWidget {
                 ),
                 // SizedBox(height: isTall ? 80 : 80),
               ))
+            else
+              Column(children: [
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: 150,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      elevation: 4,
+                      primary: yellowC, // background
+                      onPrimary: Colors.black, // foreground
+                    ),
+                    onPressed: () {
+                      generateWalletProvider.pasteMnemonic(context);
+                    },
+                    child: const Text(
+                      'Coller depuis le\npresse-papier',
+                      textAlign: TextAlign.center,
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                    ),
+                  ),
+                )
+              ])
           ]),
         ),
       ),

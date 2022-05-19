@@ -4,7 +4,6 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/wallet_options.dart';
@@ -144,8 +143,6 @@ class UnlockingWallet extends StatelessWidget {
         Provider.of<WalletOptionsProvider>(context);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
-    WalletsProfilesProvider _historyProvider =
-        Provider.of<WalletsProfilesProvider>(context);
 
     SubstrateSdk _sdk = Provider.of<SubstrateSdk>(context, listen: false);
 
@@ -232,8 +229,10 @@ class UnlockingWallet extends StatelessWidget {
                         ).then((value) => _myWalletProvider.cesiumSeed.clear());
                 } else if (action == "pay") {
                   if (currentChest.isCesium!) {
-                    final resultPay = await _historyProvider.pay(context);
-                    await paymentsResult(context, resultPay);
+                    //TODO: implement substrate pay
+                    // final resultPay = await _historyProvider.pay(context);
+                    // final resultPay = await _sdk.pay(context);
+                    // await paymentsResult(context, resultPay);
                   } else {
                     Navigator.push(
                       context,

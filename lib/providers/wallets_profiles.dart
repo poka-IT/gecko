@@ -1,14 +1,10 @@
 import 'dart:io';
-
-import 'package:durt/durt.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:provider/provider.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'dart:math';
 import 'package:intl/intl.dart';
@@ -59,34 +55,24 @@ class WalletsProfilesProvider with ChangeNotifier {
     return barcode;
   }
 
-  Future<String> pay(BuildContext context, {int? derivation}) async {
-    MyWalletsProvider _myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
-    int? currentChest = configBox.get('currentChest');
-    String result;
+  // Future<String> pay(BuildContext context, {int? derivation}) async {
+  //   MyWalletsProvider _myWalletProvider =
+  //       Provider.of<MyWalletsProvider>(context, listen: false);
+  //   int? currentChest = configBox.get('currentChest');
+  //   String result;
 
-    if (chestBox.get(currentChest)!.isCesium!) {
-      result = await Gva(node: endPointGVA).pay(
-          recipient: pubkey!,
-          amount: double.parse(payAmount.text),
-          cesiumSeed: _myWalletProvider.cesiumSeed,
-          comment: payComment.text,
-          derivation: -1,
-          lang: appLang);
-    } else {
-      derivation ??=
-          _myWalletProvider.getDefaultWallet(currentChest)!.derivation!;
-      result = await Gva(node: endPointGVA).pay(
-          recipient: pubkey!,
-          amount: double.parse(payAmount.text),
-          mnemonic: _myWalletProvider.mnemonic,
-          comment: payComment.text,
-          derivation: derivation,
-          lang: appLang);
-    }
+  //     derivation ??=
+  //         _myWalletProvider.getDefaultWallet(currentChest)!.derivation!;
+  //     result = await Gva(node: endPointGVA).pay(
+  //         recipient: pubkey!,
+  //         amount: double.parse(payAmount.text),
+  //         mnemonic: _myWalletProvider.mnemonic,
+  //         comment: payComment.text,
+  //         derivation: derivation,
+  //         lang: appLang);
 
-    return result;
-  }
+  //   return result;
+  // }
 
   bool isPubkey(pubkey) {
     final RegExp regExp = RegExp(

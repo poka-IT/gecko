@@ -191,6 +191,7 @@ class WalletViewScreen extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context, listen: false);
     WalletData? defaultWallet =
         _myWalletProvider.getDefaultWallet(configBox.get('currentChest'));
+    _walletViewProvider.outputPubkey.text = pubkey!;
 
     showModalBottomSheet<void>(
         shape: const RoundedRectangleBorder(

@@ -22,6 +22,8 @@ class UnlockingWallet extends StatelessWidget {
       {Key? keyUnlockWallet, required this.wallet, required this.action})
       : super(key: keyUnlockWallet);
   WalletData? wallet;
+  late int currentChestNumber;
+  late ChestData currentChest;
   String action;
 
   // ignore: close_sinks
@@ -37,10 +39,9 @@ class UnlockingWallet extends StatelessWidget {
         Provider.of<WalletOptionsProvider>(context);
     // final double statusBarHeight = MediaQuery.of(context).padding.top;
 
-    int _pinLenght;
-    ChestData currentChest = chestBox.get(configBox.get('currentChest'))!;
-
-    _pinLenght = _walletOptions.getPinLenght(wallet!.number);
+    currentChestNumber = configBox.get('currentChest');
+    currentChest = chestBox.get(currentChestNumber)!;
+    int _pinLenght = _walletOptions.getPinLenght(wallet!.number);
     errorController = StreamController<ErrorAnimationType>();
 
     return Scaffold(
@@ -102,7 +103,7 @@ class UnlockingWallet extends StatelessWidget {
                           fontWeight: FontWeight.w400),
                     )),
                 SizedBox(height: 40 * ratio),
-                pinForm(context, _pinLenght, currentChest),
+                pinForm(context, _pinLenght),
                 SizedBox(height: 3 * ratio),
                 InkWell(
                     key: const Key('chooseChest'),
@@ -133,7 +134,7 @@ class UnlockingWallet extends StatelessWidget {
     ));
   }
 
-  Widget pinForm(context, _pinLenght, ChestData currentChest) {
+  Widget pinForm(context, _pinLenght) {
     // var _walletPin = '';
 // ignore: close_sinks
     StreamController<ErrorAnimationType> errorController =
@@ -228,19 +229,13 @@ class UnlockingWallet extends StatelessWidget {
                           }),
                         ).then((value) => _myWalletProvider.cesiumSeed.clear());
                 } else if (action == "pay") {
-                  if (currentChest.isCesium!) {
-                    //TODO: implement substrate pay
-                    // final resultPay = await _historyProvider.pay(context);
-                    // final resultPay = await _sdk.pay(context);
-                    // await paymentsResult(context, resultPay);
-                  } else {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return ChooseWalletScreen();
-                      }),
-                    );
-                  }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return ChooseWalletScreen(
+                          chest: currentChestNumber, pin: _pin.toUpperCase());
+                    }),
+                  );
                 }
               }
             },

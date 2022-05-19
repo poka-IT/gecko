@@ -204,8 +204,59 @@ class SubstrateSdk with ChangeNotifier {
     return gen.mnemonic!;
   }
 
-  Future<bool> pay(BuildContext context, String address, double amount,
-      String password) async {
+  // Future<bool> pay(BuildContext context, String address, double amount,
+  //     String password) async {
+  //   final sender = TxSenderData(
+  //     keyring.current.address,
+  //     keyring.current.pubKey,
+  //   );
+  //   final txInfo = TxInfoData('balances', 'transfer', sender);
+  //   try {
+  //     final hash = await sdk.api.tx.signAndSend(
+  //       txInfo,
+  //       [address, amount * 100],
+  //       password,
+  //       onStatusChange: (status) {
+  //         print('status: ' + status);
+  //         if (status == 'Ready') {
+  //           snack(context, 'Transaction terminé');
+  //         }
+  //       },
+  //     );
+  //     print(hash.toString());
+  //     return true;
+  //   } catch (err) {
+  //     print(err.toString());
+  //     return false;
+  //   }
+  // }
+
+  String setCurrentWallet(String address) {
+    try {
+      final acc = getKeypair(address);
+      keyring.setCurrent(acc);
+      return acc.address!;
+    } catch (e) {
+      return (e.toString());
+    }
+  }
+
+  KeyPairData getCurrentWallet() {
+    try {
+      final acc = keyring.current;
+      return acc;
+    } catch (e) {
+      return KeyPairData();
+    }
+  }
+
+  Future<String> pay(BuildContext context,
+      {required String fromAddress,
+      required String destAddress,
+      required double amount,
+      required String password}) async {
+    setCurrentWallet(fromAddress);
+
     final sender = TxSenderData(
       keyring.current.address,
       keyring.current.pubKey,
@@ -214,7 +265,7 @@ class SubstrateSdk with ChangeNotifier {
     try {
       final hash = await sdk.api.tx.signAndSend(
         txInfo,
-        [address, amount * 100],
+        [destAddress, amount * 100],
         password,
         onStatusChange: (status) {
           print('status: ' + status);
@@ -224,10 +275,9 @@ class SubstrateSdk with ChangeNotifier {
         },
       );
       print(hash.toString());
-      return true;
-    } catch (err) {
-      print(err.toString());
-      return false;
+      return 'confirmed';
+    } catch (e) {
+      return e.toString();
     }
   }
 

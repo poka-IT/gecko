@@ -32,7 +32,11 @@ class WalletOptions extends StatelessWidget {
 
     final int _currentChest = _myWalletProvider.getCurrentChest()!;
 
-    log.d("Wallet options: $_currentChest:${wallet.number}");
+    //TODO: Debug multichest
+
+    // final currentWallet = _myWalletProvider.getDefaultWallet(_currentChest);
+    // log.d(_walletOptions.getAddress(_currentChest, 3));
+    // log.d("Wallet options: $_currentChest:${wallet.number}");
 
     return WillPopScope(
       onWillPop: () {

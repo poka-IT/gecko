@@ -3,6 +3,7 @@ import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:provider/provider.dart';
@@ -11,17 +12,20 @@ import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class ChooseWalletScreen extends StatelessWidget {
-  ChooseWalletScreen({Key? key}) : super(key: key);
+  ChooseWalletScreen({Key? key, required this.chest, required this.pin})
+      : super(key: key);
+  final int chest;
+  final String pin;
   int? _derivation;
   List<int?>? _selectedId;
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    SubstrateSdk _sdk = Provider.of<SubstrateSdk>(context, listen: false);
+    WalletsProfilesProvider _walletViewProvider =
+        Provider.of<WalletsProfilesProvider>(context, listen: false);
     // HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
-    WalletsProfilesProvider _walletsProfilesProvider =
-        Provider.of<WalletsProfilesProvider>(context);
-
     return Scaffold(
         appBar: AppBar(
             toolbarHeight: 60 * ratio,
@@ -31,7 +35,7 @@ class ChooseWalletScreen extends StatelessWidget {
             )),
         body: SafeArea(
           child: Stack(children: [
-            myWalletsTiles(context),
+            myWalletsTiles(context, chest),
             Positioned.fill(
               bottom: 60,
               child: Align(
@@ -46,8 +50,15 @@ class ChooseWalletScreen extends StatelessWidget {
                       onPrimary: Colors.white, // foreground
                     ),
                     onPressed: () async {
-                      final resultPay = await _walletsProfilesProvider
-                          .pay(context, derivation: _derivation);
+                      final acc = _sdk.getCurrentWallet();
+                      log.d(
+                          "fromAddress: ${acc.address!},destAddress: ${_walletViewProvider.outputPubkey.text}, amount: ${double.parse(_walletViewProvider.payAmount.text)},  password: $pin");
+                      final resultPay = await _sdk.pay(context,
+                          fromAddress: acc.address!,
+                          destAddress: _walletViewProvider.outputPubkey.text,
+                          amount:
+                              double.parse(_walletViewProvider.payAmount.text),
+                          password: pin);
                       await paymentsResult(context, resultPay);
                     },
                     child: const Text(
@@ -64,17 +75,18 @@ class ChooseWalletScreen extends StatelessWidget {
         ));
   }
 
-  Widget myWalletsTiles(BuildContext context) {
+  Widget myWalletsTiles(BuildContext context, int? currentChest) {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
     final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
+    SubstrateSdk _sdk = Provider.of<SubstrateSdk>(context, listen: false);
 
     WalletData? defaultWallet =
-        _myWalletProvider.getDefaultWallet(configBox.get('currentChest'));
+        _myWalletProvider.getDefaultWallet(currentChest);
     _selectedId ??= defaultWallet!.id();
     _derivation ??= defaultWallet!.derivation!;
 
-    _myWalletProvider.readAllWallets(configBox.get('currentChest'));
+    _myWalletProvider.readAllWallets(currentChest);
 
     if (!isWalletsExists) {
       return const Text('');
@@ -116,6 +128,7 @@ class ChooseWalletScreen extends StatelessWidget {
                     onTap: () {
                       _derivation = _repository.derivation!;
                       _selectedId = _repository.id();
+                      _sdk.setCurrentWallet(_repository.address!);
                       _myWalletProvider.rebuildWidget();
                     },
                     child: ClipOvalShadow(
@@ -182,6 +195,7 @@ class ChooseWalletScreen extends StatelessWidget {
                             onTap: () {
                               _derivation = _repository.derivation!;
                               _selectedId = _repository.id();
+                              _sdk.setCurrentWallet(_repository.address!);
                               _myWalletProvider.rebuildWidget();
                             },
                           )
@@ -201,18 +215,20 @@ Future<bool?> paymentsResult(context, String resultPay) {
     barrierDismissible: true, // user must tap button!
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text(resultPay == "success"
+        title: Text(resultPay == "confirmed"
             ? 'Paiement effecuté avec succès !'
             : "Une erreur s'est produite lors du paiement:\n$resultPay"),
         content: const SingleChildScrollView(child: Text('')),
         actions: <Widget>[
           TextButton(
             child: const Text("OK"),
-            onPressed: () {
-              Navigator.popUntil(
-                context,
-                ModalRoute.withName('/'),
-              );
+            onPressed: () async {
+              resultPay == "confirmed"
+                  ? await Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/',
+                      ModalRoute.withName('/'),
+                    )
+                  : Navigator.pop(context);
             },
           ),
         ],

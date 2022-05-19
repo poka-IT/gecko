@@ -20,7 +20,6 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/cesium_plus.dart';
-import 'package:gecko/providers/change_pin.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
@@ -71,17 +70,18 @@ Future<void> main() async {
   walletBox = await Hive.openBox<WalletData>("walletBox");
   chestBox = await Hive.openBox<ChestData>("chestBox");
   configBox = await Hive.openBox("configBox");
+  await Hive.deleteBoxFromDisk('g1WalletsBox');
   g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
   // keystoreBox = await Hive.openBox("keystoreBox");
 
-  g1WalletsBox.clear();
+  // g1WalletsBox.clear();
 
   // final HiveStore _store =
   //     await HiveStore.open(path: '${appPath.path}/gqlCache');
 
   // Get a valid GVA endpoint
-  // endPointGVA = 'https://g1.librelois.fr/gva';
-  endPointGVA = 'https://duniter-g1.p2p.legal/gva';
+  endPointGVA = 'https://g1.librelois.fr/gva';
+  // endPointGVA = 'https://duniter-g1.p2p.legal/gva';
   // await _homeProvider.getValidEndpoint();
 
   // if (endPointGVA == 'HS') {
@@ -156,7 +156,6 @@ class Gecko extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ChestProvider()),
         ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
         ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
-        ChangeNotifierProvider(create: (_) => ChangePinProvider()),
         ChangeNotifierProvider(create: (_) => SearchProvider()),
         ChangeNotifierProvider(create: (_) => CesiumPlusProvider()),
         ChangeNotifierProvider(create: (_) => SubstrateSdk())

@@ -51,23 +51,20 @@ dependencies:
       url: https://github.com/DavBfr/dart_pdf.git
       path: printing
   provider: ^6.0.1
-  # qrscan: ^0.3.2
-  qrscan:
+  qrscan: #^0.3.2
     git:
       url: https://github.com/leyan95/qrcode_scanner.git
       ref: master # branch name
   # qr_code_scanner: ^0.6.1
-  # qr_flutter: ^4.0.0
-  qr_flutter:
+  qr_flutter: #^4.0.0
     git:
       url: https://github.com/insinfo/qr.flutter.git
       ref: master # branch name
   responsive_builder: ^0.4.1
   responsive_framework: ^0.1.4
-  sentry: 6.5.1
+  sentry: ^6.5.1
   sentry_flutter: ^6.5.1
   shared_preferences: ^2.0.7
-  # super_tooltip: ^1.0.1
   sync_http: ^0.3.0
   test: ^1.17.10
   truncate: ^3.0.1
@@ -78,10 +75,7 @@ dependencies:
   desktop_window: ^0.4.0
   durt: ^0.1.6
   package_info_plus: ^1.4.2
-  polkawallet_sdk: ^0.4.5 ## Wait for merging PR: https://github.com/polkawallet-io/sdk/pull/19
-    # git:
-    #   url: git://github.com/poka-IT/sdk.git
-    #   ref: fixAndroidActivityVersion
+  polkawallet_sdk: ^0.4.5
 
 flutter_icons:
   android: true

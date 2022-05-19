@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/history.dart';
@@ -27,7 +28,7 @@ class WalletOptions extends StatelessWidget {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
 
-    log.d(_walletOptions.pubkey.text);
+    log.d(_walletOptions.address.text);
 
     final int _currentChest = _myWalletProvider.getCurrentChest()!;
 
@@ -97,7 +98,7 @@ class WalletOptions extends StatelessWidget {
               }),
               SizedBox(height: 4 * ratio),
               QrImageWidget(
-                data: _walletOptions.pubkey.text,
+                data: _walletOptions.address.text,
                 version: QrVersions.auto,
                 size: isTall ? 300 : 270,
               ),
@@ -221,9 +222,10 @@ class WalletOptions extends StatelessWidget {
   }
 
   Widget balance(WalletOptionsProvider walletProvider) {
+    SubstrateSdk _sdk = SubstrateSdk();
     return Column(children: <Widget>[
       FutureBuilder(
-          future: walletProvider.getBalance(walletProvider.pubkey.text),
+          future: _sdk.getBalance(walletProvider.address.text),
           builder: (BuildContext context, AsyncSnapshot<num?> _balance) {
             if (_balance.connectionState != ConnectionState.done ||
                 _balance.hasError) {
@@ -262,11 +264,11 @@ class WalletOptions extends StatelessWidget {
 
   Widget pubkeyWidget(WalletOptionsProvider walletProvider, BuildContext ctx) {
     final String shortPubkey =
-        walletProvider.getShortPubkey(walletProvider.pubkey.text);
+        walletProvider.getShortPubkey(walletProvider.address.text);
     return GestureDetector(
       key: const Key('copyPubkey'),
       onTap: () {
-        Clipboard.setData(ClipboardData(text: walletProvider.pubkey.text));
+        Clipboard.setData(ClipboardData(text: walletProvider.address.text));
         walletProvider.snackCopyKey(ctx);
       },
       child: SizedBox(
@@ -303,7 +305,7 @@ class WalletOptions extends StatelessWidget {
               ),
               onPressed: () {
                 Clipboard.setData(
-                    ClipboardData(text: walletProvider.pubkey.text));
+                    ClipboardData(text: walletProvider.address.text));
                 walletProvider.snackCopyKey(ctx);
               },
               child: Row(children: <Widget>[
@@ -336,7 +338,7 @@ class WalletOptions extends StatelessWidget {
           context,
           MaterialPageRoute(builder: (context) {
             return HistoryScreen(
-                pubkey: walletProvider.pubkey.text,
+                pubkey: walletProvider.address.text,
                 avatar: wallet.imageFile == null
                     ? Image.asset(
                         'assets/avatars/${wallet.imageName}',

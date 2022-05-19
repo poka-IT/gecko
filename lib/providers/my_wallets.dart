@@ -1,10 +1,11 @@
 import 'dart:typed_data';
-
-import 'package:durt/durt.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:provider/provider.dart';
 
 class MyWalletsProvider with ChangeNotifier {
   List<WalletData> listWallets = [];
@@ -19,24 +20,6 @@ class MyWalletsProvider with ChangeNotifier {
     }
 
     return configBox.get('currentChest');
-  }
-
-  String dewifToMnemonic(context, WalletData _wallet, String _pin) {
-    String _mnemonic;
-
-    try {
-      String _localDewif = chestBox.get(_wallet.chest)!.dewif!;
-      _mnemonic = Dewif()
-          .mnemonicFromDewif(_localDewif, _pin.toUpperCase(), lang: appLang);
-    } on ChecksumException catch (e) {
-      log.e(e.cause);
-      return 'bad';
-    } catch (e) {
-      // _homeProvider.playSound('non', 0.6);
-      log.e('ERROR READING FILE: $e');
-      return 'bad';
-    }
-    return _mnemonic;
   }
 
   bool checkIfWalletExist() {
@@ -150,8 +133,19 @@ class MyWalletsProvider with ChangeNotifier {
       _newWalletNbr = _walletConfig.last.number! + 1;
     }
 
+    MyWalletsProvider myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
+
+    SubstrateSdk _sdk = Provider.of<SubstrateSdk>(context, listen: false);
+
+    final int? _currentChestNumber = myWalletProvider.getCurrentChest();
+    final ChestData _currentChest = chestBox.get(_currentChestNumber)!;
+
+    final address = await _sdk.derive(context, _currentChest.address!, _newDerivationNbr, pinCode);
+
     WalletData newWallet = WalletData(
         chest: _chest,
+        address: address,
         number: _newWalletNbr,
         name: _name,
         derivation: _newDerivationNbr,

@@ -4,6 +4,7 @@ import 'package:crypto/crypto.dart';
 import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/globals.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:polkawallet_sdk/api/types/txInfoData.dart';
@@ -69,7 +70,8 @@ class SubstrateSdk with ChangeNotifier {
   Future<String> importAccount(
       {String mnemonic = '',
       bool fromMnemonic = false,
-      String derivePath = ''}) async {
+      String derivePath = '',
+      String password = ''}) async {
     // toy exercise immense month enter answer table prefer speed cycle gold phone
     final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
     if (mnemonic != '') {
@@ -78,6 +80,10 @@ class SubstrateSdk with ChangeNotifier {
     } else if (clipboardData!.text!.split(' ').length == 12) {
       fromMnemonic = true;
       generatedMnemonic = clipboardData.text!;
+    }
+
+    if (password == '') {
+      password = keystorePassword.text;
     }
 
     final KeyType keytype;
@@ -97,8 +103,8 @@ class SubstrateSdk with ChangeNotifier {
         .importAccount(keyring,
             keyType: keytype,
             key: keyToImport,
-            name: 'testKey',
-            password: keystorePassword.text,
+            name: derivePath,
+            password: password,
             derivePath: derivePath,
             cryptoType: CryptoType.sr25519)
         .catchError((e) {
@@ -107,16 +113,16 @@ class SubstrateSdk with ChangeNotifier {
     });
     if (json == null) return '';
     print(json);
-    late KeyPairData? keyPairData;
     try {
-      keyPairData = await sdk.api.keyring.addAccount(
+      await sdk.api.keyring.addAccount(
         keyring,
         keyType: keytype,
         acc: json,
-        password: keystorePassword.text,
+        password: password,
       );
       // Clipboard.setData(ClipboardData(text: jsonEncode(acc.toJson())));
     } catch (e) {
+      print(e);
       importIsLoading = false;
       notifyListeners();
     }
@@ -124,7 +130,8 @@ class SubstrateSdk with ChangeNotifier {
     importIsLoading = false;
     await Future.delayed(const Duration(milliseconds: 20));
     notifyListeners();
-    return keyPairData!.address!;
+    final bakedAddress = keyring.allAccounts.last.address;
+    return bakedAddress!;
   }
 
   void reload() {
@@ -142,14 +149,47 @@ class SubstrateSdk with ChangeNotifier {
       //   account.balance = int.parse(p0.freeBalance) / 100;
       // });
       // sdk.api.setting.unsubscribeBestNumber();
-      if (nodeConnected) {
-        final brutBalance = await sdk.api.account.queryBalance(element.address);
-        account.balance = int.parse(brutBalance!.freeBalance) / 100;
-      }
+      account.balance = await getBalance(element.address!);
       result.add(account);
+      print('waaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+      print(element.indexInfo);
+      print(element.memo);
     }
 
     return result;
+  }
+
+  Future<double> getBalance(String address, {bool isUd = false}) async {
+    double balance = 0.0;
+    if (nodeConnected) {
+      final brutBalance = await sdk.api.account.queryBalance(address);
+      balance = int.parse(brutBalance!.freeBalance) / 100;
+    }
+    return balance;
+  }
+
+  KeyPairData getKeypair(String address) {
+    return keyring.keyPairs.firstWhere((kp) => kp.address == address,
+        orElse: (() => KeyPairData()));
+  }
+
+  Future<bool> checkPassword(String address, String pass) async {
+    final account = getKeypair(address);
+    return await sdk.api.keyring.checkPassword(account, pass);
+  }
+
+  int getDerivationNumber(String address) {
+    final account = getKeypair(address);
+    final deriveNbr = account.name!.split('/')[1];
+    return int.parse(deriveNbr);
+  }
+
+  Future<KeyPairData?> changePassword(
+      String address, String passOld, String? passNew) async {
+    final account = getKeypair(address);
+    keyring.setCurrent(account);
+
+    return await sdk.api.keyring.changePassword(keyring, passOld, passNew);
   }
 
   Future<void> deleteAllAccounts() async {
@@ -158,7 +198,7 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
-  Future<String> generateMnemonic({String lang = 'english'}) async {
+  Future<String> generateMnemonic({String lang = appLang}) async {
     final gen = await sdk.api.keyring.generateMnemonic(ss58);
     generatedMnemonic = gen.mnemonic!;
 
@@ -192,16 +232,16 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
-  derive(
+  Future<String> derive(
       BuildContext context, String address, int number, String password) async {
-    final keypair =
-        keyring.keyPairs.firstWhere((element) => element.address == address);
+    final keypair = getKeypair(address);
 
     final seedMap =
         await keyring.store.getDecryptedSeed(keypair.pubKey, password);
     print(seedMap);
-    if (seedMap!['type'] != 'mnemonic') return;
-    final List seedList = seedMap['seed'].split('/');
+
+    if (seedMap?['type'] != 'mnemonic') return '';
+    final List seedList = seedMap!['seed'].split('/');
     generatedMnemonic = seedList[0];
     int sourceDerivation = -1; // To get derivation number of this account
     if (seedList.length > 1) {
@@ -210,7 +250,7 @@ class SubstrateSdk with ChangeNotifier {
     print(generatedMnemonic);
     print(sourceDerivation);
 
-    importAccount(fromMnemonic: true, derivePath: '/$number');
+    return await importAccount(fromMnemonic: true, derivePath: '/$number');
   }
 }
 

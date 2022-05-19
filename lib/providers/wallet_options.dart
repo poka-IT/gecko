@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:crypto/crypto.dart';
-import 'package:durt/durt.dart';
 import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -12,7 +11,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:truncate/truncate.dart';
 
 class WalletOptionsProvider with ChangeNotifier {
-  TextEditingController pubkey = TextEditingController();
+  TextEditingController address = TextEditingController();
   final TextEditingController _newWalletName = TextEditingController();
   bool isWalletUnlock = false;
   bool ischangedPin = false;
@@ -24,82 +23,6 @@ class WalletOptionsProvider with ChangeNotifier {
   late bool isDefaultWallet;
 
   Future<NewWallet>? get badWallet => null;
-
-  String _getPubkeyFromDewif(
-      String? _dewif, _pin, int _pinLenght, int? derivation) {
-    RegExp regExp = RegExp(
-      r'^[A-Z0-9]+$',
-      caseSensitive: false,
-      multiLine: false,
-    );
-
-    if (regExp.hasMatch(_pin) == true && _pin.length == _pinLenght) {
-    } else {
-      return 'false';
-    }
-    if (derivation != -1) {
-      try {
-        final _wallet = HdWallet.fromDewif(_dewif!, _pin, lang: appLang);
-        pubkey.text = _wallet.getPubkey(derivation!);
-        log.d(pubkey.text);
-        notifyListeners();
-
-        return pubkey.text;
-      } catch (e) {
-        log.w('Bad PIN code !\n' + e.toString());
-        notifyListeners();
-
-        return 'false';
-      }
-    } else {
-      try {
-        pubkey.text = CesiumWallet.fromDewif(_dewif!, _pin).pubkey;
-        notifyListeners();
-        return pubkey.text;
-      } catch (e) {
-        log.w('Bad PIN code !\n' + e.toString());
-        notifyListeners();
-
-        return 'false';
-      }
-    }
-  }
-
-  String? readLocalWallet(
-      context, WalletData _wallet, String _pin, int _pinLenght,
-      {String? mnemonic}) {
-    isWalletUnlock = false;
-    final String _localPubkey;
-
-    try {
-      String? _localDewif = chestBox.get(_wallet.chest)!.dewif;
-
-      if (mnemonic == null) {
-        _localPubkey = _getPubkeyFromDewif(
-            _localDewif, _pin.toUpperCase(), _pinLenght, _wallet.derivation);
-      } else {
-        final _hdwallet = HdWallet.fromMnemonic(mnemonic);
-        _localPubkey = _hdwallet.getPubkey(_wallet.derivation!);
-      }
-
-      if (_localPubkey != 'false') {
-        pubkey.text = _localPubkey;
-        isWalletUnlock = true;
-        log.d(pubkey.text);
-        return _localDewif;
-      } else {
-        throw 'Bad pubkey';
-      }
-    } on ChecksumException catch (e) {
-      log.e(e.cause);
-      return 'bad';
-    } catch (e) {
-      // _homeProvider.playSound('non', 0.6);
-      log.e('ERROR READING FILE: $e');
-      pubkey.clear();
-      return 'bad';
-    }
-  }
 
   int getPinLenght(_walletNbr) {
     // TODOo: Get real Dewif lenght
@@ -114,11 +37,6 @@ class WalletOptionsProvider with ChangeNotifier {
     //     dewif: _localDewif, secretCodeType: SecretCodeType.letters);
 
     return pinLength;
-  }
-
-  Future<double> getBalance(String pubkey, {bool isUd = false}) async {
-    final node = Gva(node: endPointGVA);
-    return await node.balance(pubkey, ud: isUd);
   }
 
   void _renameWallet(List<int?> _walletID, _newName,
@@ -251,5 +169,19 @@ class WalletOptionsProvider with ChangeNotifier {
 
   void reloadBuild() {
     notifyListeners();
+  }
+
+  String? getAddress(int chest, int derivation) {
+    String? _address;
+    walletBox.toMap().forEach((key, value) {
+      if (value.chest == chest) {
+        _address = value.address!;
+        return;
+      }
+    });
+
+    address.text = _address ?? '';
+
+    return _address;
   }
 }

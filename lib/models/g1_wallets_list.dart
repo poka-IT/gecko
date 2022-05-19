@@ -11,19 +11,19 @@ class G1WalletsList {
   @HiveField(1)
   double? balance;
 
-  @HiveField(3)
+  @HiveField(2)
   Id? id;
 
-  @HiveField(4)
+  @HiveField(3)
   Image? avatar;
 
-  @HiveField(5)
+  @HiveField(4)
   String? username;
 
-  @HiveField(6)
+  @HiveField(5)
   String? csName;
 
-  @HiveField(7)
+  @HiveField(6)
   bool? isMembre;
 
   G1WalletsList({

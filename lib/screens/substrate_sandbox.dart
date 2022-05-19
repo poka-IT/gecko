@@ -94,7 +94,7 @@ class SubstrateSandBox extends StatelessWidget {
                                     child: const Text("Dériver"),
                                   )
                                 ])
-                          ]); 
+                          ]);
                         }),
                     const SizedBox(height: 20),
                     const Text('Mot de passe du trousseau:'),

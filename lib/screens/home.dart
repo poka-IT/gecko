@@ -103,7 +103,7 @@ class HomeScreen extends StatelessWidget {
               WidgetsBinding.instance.addPostFrameCallback((_) async {
                 if (!_sub.sdkReady && !_sub.sdkLoading) await _sub.initApi();
                 if (_sub.sdkReady && !_sub.nodeConnected) {
-                  await _sub.connectNode();
+                  await _sub.connectNode(); //kopa
                 }
                 if (isWalletsExists) homeClass.snackNode(ctx);
               });

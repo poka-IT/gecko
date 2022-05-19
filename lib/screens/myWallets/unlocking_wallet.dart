@@ -1,7 +1,9 @@
+// ignore_for_file: avoid_print
+
 import 'dart:async';
-import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/models/chest_data.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -34,17 +36,12 @@ class UnlockingWallet extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
-    final double statusBarHeight = MediaQuery.of(context).padding.top;
+    // final double statusBarHeight = MediaQuery.of(context).padding.top;
 
     int _pinLenght;
     ChestData currentChest = chestBox.get(configBox.get('currentChest'))!;
 
-    if (currentChest.isCesium!) {
-      _pinLenght = _walletOptions.getPinLenght(currentChest.dewif);
-      wallet = WalletData(derivation: -1, chest: currentChest.key);
-    } else {
-      _pinLenght = _walletOptions.getPinLenght(wallet!.number);
-    }
+    _pinLenght = _walletOptions.getPinLenght(wallet!.number);
     errorController = StreamController<ErrorAnimationType>();
 
     return Scaffold(
@@ -55,7 +52,7 @@ class UnlockingWallet extends StatelessWidget {
           children: <Widget>[
             Stack(children: <Widget>[
               Positioned(
-                top: statusBarHeight + 10,
+                top: 10, //statusBarHeight + 10,
                 left: 15,
                 child: Builder(
                   builder: (context) => IconButton(
@@ -63,7 +60,7 @@ class UnlockingWallet extends StatelessWidget {
                     icon: const Icon(
                       Icons.arrow_back,
                       color: Colors.black,
-                      size: 25,
+                      size: 30,
                     ),
                     onPressed: () => Navigator.pop(context),
                   ),
@@ -150,6 +147,8 @@ class UnlockingWallet extends StatelessWidget {
     WalletsProfilesProvider _historyProvider =
         Provider.of<WalletsProfilesProvider>(context);
 
+    SubstrateSdk _sdk = Provider.of<SubstrateSdk>(context, listen: false);
+
     FocusNode pinFocus = FocusNode();
 
     return Form(
@@ -201,30 +200,12 @@ class UnlockingWallet extends StatelessWidget {
             ],
             onCompleted: (_pin) async {
               log.d("Completed");
-              _myWalletProvider.pinCode = _pin;
+              _myWalletProvider.pinCode = _pin.toUpperCase();
 
-              if (currentChest.isCesium!) {
-                try {
-                  String _localDewif = chestBox.get(wallet!.chest)!.dewif!;
-                  final cesiumWallet =
-                      CesiumWallet.fromDewif(_localDewif, _pin.toUpperCase());
-                  _walletOptions.pubkey.text = cesiumWallet.pubkey;
-                  _myWalletProvider.cesiumSeed = cesiumWallet.seed;
-                  _myWalletProvider.mnemonic = 'cesium';
-                } catch (e) {
-                  log.e(e);
-                  _myWalletProvider.mnemonic = 'bad';
-                }
-              } else {
-                _myWalletProvider.mnemonic = _myWalletProvider.dewifToMnemonic(
-                    context, wallet!, _pin.toUpperCase());
-              }
-              // final String? resultWallet = _walletOptions.readLocalWallet(
-              //     context, wallet!, _pin.toUpperCase(), _pinLenght);
-              // _myWalletProvider.pinCode = _pin.toUpperCase();
-              _myWalletProvider.pinLenght = _pinLenght;
+              final isValid = await _sdk.checkPassword(
+                  currentChest.address!, _pin.toUpperCase());
 
-              if (_myWalletProvider.mnemonic == 'bad') {
+              if (!isValid) {
                 await Future.delayed(const Duration(milliseconds: 50));
                 errorController.add(ErrorAnimationType
                     .shake); // Triggering error shake animation

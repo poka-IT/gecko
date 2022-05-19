@@ -38,7 +38,7 @@ class CesiumWalletOptions extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context, listen: false);
 
     final String shortPubkey =
-        _walletOptions.getShortPubkey(_walletOptions.pubkey.text);
+        _walletOptions.getShortPubkey(_walletOptions.address.text);
 
     if (_isNewNameValid == false) {
       _walletOptions.nameController.text = cesiumWallet.name!;
@@ -158,7 +158,7 @@ class CesiumWalletOptions extends StatelessWidget {
                             options: QueryOptions(
                               document: gql(getBalance),
                               variables: {
-                                'pubkey': _walletOptions.pubkey.text,
+                                'pubkey': _walletOptions.address.text,
                               },
                               // pollInterval: Duration(seconds: 1),
                             ),
@@ -257,7 +257,7 @@ class CesiumWalletOptions extends StatelessWidget {
               }),
               SizedBox(height: 4 * ratio),
               QrImageWidget(
-                data: _walletOptions.pubkey.text,
+                data: _walletOptions.address.text,
                 version: QrVersions.auto,
                 size: isTall ? 300 : 270,
               ),
@@ -266,7 +266,7 @@ class CesiumWalletOptions extends StatelessWidget {
                   key: const Key('copyPubkey'),
                   onTap: () {
                     Clipboard.setData(
-                        ClipboardData(text: _walletOptions.pubkey.text));
+                        ClipboardData(text: _walletOptions.address.text));
                     _walletOptions.snackCopyKey(ctx);
                   },
                   child: SizedBox(
@@ -303,7 +303,7 @@ class CesiumWalletOptions extends StatelessWidget {
                                 ),
                                 onPressed: () {
                                   Clipboard.setData(ClipboardData(
-                                      text: _walletOptions.pubkey.text));
+                                      text: _walletOptions.address.text));
                                   _walletOptions.snackCopyKey(ctx);
                                 },
                                 child: Row(children: <Widget>[
@@ -326,7 +326,7 @@ class CesiumWalletOptions extends StatelessWidget {
                       context,
                       MaterialPageRoute(builder: (context) {
                         return HistoryScreen(
-                            pubkey: _walletOptions.pubkey.text);
+                            pubkey: _walletOptions.address.text);
                       }),
                     );
                   },

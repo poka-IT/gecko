@@ -22,7 +22,8 @@ late Box configBox;
 late Box<G1WalletsList> g1WalletsBox;
 // late Box keystoreBox;
 
-String cesiumPod = "https://g1.data.le-sou.org";
+// String cesiumPod = "https://g1.data.le-sou.org";
+String cesiumPod = "https://g1.data.presles.fr";
 // String cesiumPod = "https://g1.data.e-is.pro";
 
 // Responsive ratios

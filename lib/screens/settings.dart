@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/generate_wallets.dart';
 import 'dart:io';
-import 'package:gecko/screens/myWallets/import_cesium_wallet.dart';
+// import 'package:gecko/screens/myWallets/import_cesium_wallet.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/screens/myWallets/restore_chest.dart';
 
@@ -48,14 +48,15 @@ class SettingsScreen extends StatelessWidget {
                 primary: yellowC, // background
                 onPrimary: Colors.black, // foreground
               ),
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) {
-                  return const ImportWalletScreen();
-                }),
-              ).then((value) => {
-                    if (value == true) {Navigator.pop(context)}
-                  }),
+              onPressed: null,
+              //  () => Navigator.push(
+              //   context,
+              //   MaterialPageRoute(builder: (context) {
+              //     return const ImportWalletScreen();
+              //   }),
+              // ).then((value) => {
+              //       if (value == true) {Navigator.pop(context)}
+              //     }),
               child: const Text(
                 "Importer un portefeuille Cesium",
                 style: TextStyle(fontSize: 16),

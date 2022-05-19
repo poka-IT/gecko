@@ -72,7 +72,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       chestName = 'Coffre à Ğecko ${chestNumber + 1}';
     }
     ChestData thisChest = ChestData(
-      dewif: address,
+      address: address,
       name: chestName,
       defaultWallet: 0,
       imageName: '${chestNumber % 8}.png',
@@ -83,6 +83,7 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     WalletData myWallet = WalletData(
         chest: chestKey,
+        address: address,
         number: 0,
         name: _name,
         derivation: 3,
@@ -228,55 +229,55 @@ class GenerateWalletsProvider with ChangeNotifier {
     log.d(_walletPubkey);
   }
 
-  Future<int?> importCesiumWallet() async {
-    // String _walletPubkey = await DubpRust.getLegacyPublicKey(
-    //     salt: _cesiumID, password: _cesiumPWD);
-    // String shortPubkey = truncate(_walletPubkey, 9,
-    //     omission: "...", position: TruncatePosition.end);
-    // await storeWallet(
-    //     actualWallet, 'Portefeuille Cesium - $shortPubkey', context);
-    // NewWallet myCesiumWallet = await DubpRust.genWalletFromDeprecatedSaltPassword(salt: _cesiumID, password: _cesiumPWD);
+  // Future<int?> importCesiumWallet() async {
+  //   // String _walletPubkey = await DubpRust.getLegacyPublicKey(
+  //   //     salt: _cesiumID, password: _cesiumPWD);
+  //   // String shortPubkey = truncate(_walletPubkey, 9,
+  //   //     omission: "...", position: TruncatePosition.end);
+  //   // await storeWallet(
+  //   //     actualWallet, 'Portefeuille Cesium - $shortPubkey', context);
+  //   // NewWallet myCesiumWallet = await DubpRust.genWalletFromDeprecatedSaltPassword(salt: _cesiumID, password: _cesiumPWD);
 
-    cesiumID.text = '';
-    cesiumPWD.text = '';
-    cesiumPubkey.text = '';
-    canImport = false;
-    isCesiumIDVisible = false;
-    isCesiumPWDVisible = false;
+  //   cesiumID.text = '';
+  //   cesiumPWD.text = '';
+  //   cesiumPubkey.text = '';
+  //   canImport = false;
+  //   isCesiumIDVisible = false;
+  //   isCesiumPWDVisible = false;
 
-    int chestNumber = 0;
-    chestBox.toMap().forEach((key, value) {
-      if (value.isCesium!) {
-        chestNumber++;
-      }
-    });
+  //   int chestNumber = 0;
+  //   chestBox.toMap().forEach((key, value) {
+  //     if (value.isCesium!) {
+  //       chestNumber++;
+  //     }
+  //   });
 
-    String chestName;
-    if (chestNumber == 0) {
-      chestName = 'Coffre à Césium';
-    } else {
-      chestName = 'Coffre à Césium ${chestNumber + 1}';
-    }
+  //   String chestName;
+  //   if (chestNumber == 0) {
+  //     chestName = 'Coffre à Césium';
+  //   } else {
+  //     chestName = 'Coffre à Césium ${chestNumber + 1}';
+  //   }
 
-    log.d(pin.text);
-    durt.NewWallet cesiumDewif =
-        await durt.Dewif().generateCesiumDewif(cesiumWallet.seed, pin.text);
+  //   log.d(pin.text);
+  //   durt.NewWallet cesiumDewif =
+  //       await durt.Dewif().generateCesiumDewif(cesiumWallet.seed, pin.text);
 
-    ChestData cesiumChest = ChestData(
-        dewif: cesiumDewif.dewif,
-        name: chestName,
-        imageName: 'cesium.png',
-        defaultWallet: 0,
-        isCesium: true);
+  //   ChestData cesiumChest = ChestData(
+  //       dewif: cesiumDewif.dewif,
+  //       name: chestName,
+  //       imageName: 'cesium.png',
+  //       defaultWallet: 0,
+  //       isCesium: true);
 
-    await chestBox.add(cesiumChest).then((value) => null);
-    int? chestKey = await chestBox.toMap().keys.last;
-    // chestBox.toMap().
-    await configBox.put('currentChest', chestKey);
+  //   await chestBox.add(cesiumChest).then((value) => null);
+  //   int? chestKey = await chestBox.toMap().keys.last;
+  //   // chestBox.toMap().
+  //   await configBox.put('currentChest', chestKey);
 
-    pin.text = '';
-    return chestKey;
-  }
+  //   pin.text = '';
+  //   return chestKey;
+  // }
 
   void cesiumIDisVisible() {
     isCesiumIDVisible = !isCesiumIDVisible;
@@ -296,8 +297,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   Future<List<String>> generateWordList(BuildContext context) async {
-    SubstrateSdk _sdk =
-        Provider.of<SubstrateSdk>(context, listen: false);
+    SubstrateSdk _sdk = Provider.of<SubstrateSdk>(context, listen: false);
 
     generatedMnemonic = await _sdk.generateMnemonic(lang: appLang);
     List<String> _wordsList = [];
@@ -318,7 +318,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     // Needed for bad encoding of UTF-8
     word = word.replaceAll('é', 'é');
     word = word.replaceAll('è', 'è');
-    return bip39Words.contains(word);
+    return bip39Words(appLang).contains(word);
   }
 
   bool isBipWordsList(List<String> words) {
@@ -327,7 +327,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       // Needed for bad encoding of UTF-8
       word = word.replaceAll('é', 'é');
       word = word.replaceAll('è', 'è');
-      if (!bip39Words.contains(word)) {
+      if (!bip39Words(appLang).contains(word)) {
         isValid = false;
       }
     }

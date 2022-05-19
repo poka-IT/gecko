@@ -1,4 +1,3 @@
-import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
@@ -55,7 +54,7 @@ class WalletsHome extends StatelessWidget {
           backgroundColor: const Color(0xffFFD58D),
         ),
         body: SafeArea(
-          child: myWalletsTiles(context),
+          child: myWalletsTiles(context, _currentChestNumber!),
         ),
       ),
     );
@@ -132,7 +131,7 @@ class WalletsHome extends StatelessWidget {
     ]);
   }
 
-  Widget myWalletsTiles(BuildContext context) {
+  Widget myWalletsTiles(BuildContext context, int _currentChestNumber) {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
     WalletOptionsProvider _walletOptions =
@@ -182,9 +181,8 @@ class WalletsHome extends StatelessWidget {
                     onTap: () {
                       // _walletOptions.readLocalWallet(context, _repository,
                       //     _myWalletProvider.pinCode, pinLength);
-                      _walletOptions.pubkey.text =
-                          HdWallet.fromMnemonic(_myWalletProvider.mnemonic)
-                              .getPubkey(_repository.derivation!);
+                      _walletOptions.getAddress(
+                          _currentChestNumber, _repository.derivation!);
                       Navigator.push(
                         context,
                         SmoothTransition(
@@ -275,10 +273,8 @@ class WalletsHome extends StatelessWidget {
                               //     _repository,
                               //     _myWalletProvider.pinCode,
                               //     pinLength);
-                              _walletOptions.pubkey.text =
-                                  HdWallet.fromMnemonic(
-                                          _myWalletProvider.mnemonic)
-                                      .getPubkey(_repository.derivation!);
+                              _walletOptions.getAddress(
+                                  _currentChestNumber, _repository.derivation!);
                               Navigator.push(
                                 context,
                                 SmoothTransition(

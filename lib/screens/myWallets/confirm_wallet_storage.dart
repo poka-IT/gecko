@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:provider/provider.dart';
 
@@ -32,6 +33,7 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
     final int? _currentChest = _myWalletProvider.getCurrentChest();
+    SubstrateSdk _sdk = Provider.of<SubstrateSdk>(context, listen: false);
 
     _mnemonicController.text = generatedMnemonic!;
     return WillPopScope(
@@ -134,9 +136,16 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                                         .isAskedWordValid &&
                                     walletName.text != '')
                                 ? () async {
-                                    _generateWalletProvider.storeHDWChest(
-                                        generatedWallet!.dewif,
-                                        walletName.text,
+                                    final address = await _sdk.importAccount(
+                                        fromMnemonic: true,
+                                        mnemonic: _generateWalletProvider
+                                            .generatedMnemonic!,
+                                        password:
+                                            _generateWalletProvider.pin.text,
+                                        derivePath: '/3');
+                                    await _generateWalletProvider.storeHDWChest(
+                                        address,
+                                        'Mon portefeuille courant',
                                         context);
                                     _generateWalletProvider.isAskedWordValid =
                                         false;

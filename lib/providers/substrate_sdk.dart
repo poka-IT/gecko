@@ -299,7 +299,7 @@ class SubstrateSdk with ChangeNotifier {
     print(generatedMnemonic);
     print(sourceDerivation);
 
-    return await importAccount(fromMnemonic: true, derivePath: '/$number');
+    return await importAccount(fromMnemonic: true, derivePath: '//$number');
   }
 }
 

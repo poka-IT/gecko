@@ -124,7 +124,8 @@ class SettingsScreen extends StatelessWidget {
                           ),
                           onPressed: () async => {
                                 log.i('Suppression de tous les wallets'),
-                                await _myWallets.deleteAllWallet(context)
+                                await _myWallets.deleteAllWallet(context),
+                                await _sub.deleteAllAccounts()
                               },
                           child: const Text("EFFACER TOUS MES PORTEFEUILLES",
                               style: TextStyle(fontSize: 20)))))),

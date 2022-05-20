@@ -126,10 +126,10 @@ class MyWalletsProvider with ChangeNotifier {
     List<WalletData> _walletConfig = readAllWallets(_chest);
 
     if (_walletConfig.isEmpty) {
-      _newDerivationNbr = 3;
+      _newDerivationNbr = 2;
       _newWalletNbr = 0;
     } else {
-      _newDerivationNbr = _walletConfig.last.derivation! + 3;
+      _newDerivationNbr = _walletConfig.last.derivation! + 2;
       _newWalletNbr = _walletConfig.last.number! + 1;
     }
 
@@ -141,7 +141,8 @@ class MyWalletsProvider with ChangeNotifier {
     final int? _currentChestNumber = myWalletProvider.getCurrentChest();
     final ChestData _currentChest = chestBox.get(_currentChestNumber)!;
 
-    final address = await _sdk.derive(context, _currentChest.address!, _newDerivationNbr, pinCode);
+    final address = await _sdk.derive(
+        context, _currentChest.address!, _newDerivationNbr, pinCode);
 
     WalletData newWallet = WalletData(
         chest: _chest,

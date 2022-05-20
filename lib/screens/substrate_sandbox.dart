@@ -33,10 +33,10 @@ class SubstrateSandBox extends StatelessWidget {
                     Text('js-api chargé ?: ${_sub.sdkReady}'),
                     InkWell(
                         onTap: () async {
-                          await _sub.connectNode();
+                          await _sub.connectNode(context);
                         },
                         child: Text(
-                            'Noeud connecté ?: ${_sub.nodeConnected} (${_sub.subNode})')),
+                            'Noeud connecté ?: ${_sub.nodeConnected} (${configBox.get('endpoint')})')),
                     if (_sub.nodeConnected)
                       Text(
                           'Noeud "${_sub.sdk.api.connectedNode!.name}", bloc N°${_sub.blocNumber}'),
@@ -56,46 +56,49 @@ class SubstrateSandBox extends StatelessWidget {
                       ),
                       const SizedBox(width: 10),
                     ]),
-                    // FutureBuilder(
-                    //     future: _sub.getKeyStoreAddress(),
-                    //     builder: (BuildContext context,
-                    //         AsyncSnapshot<List<AddressInfo>> _data) {
-                    //       return Column(children: [
-                    //         if (_data.data != null)
-                    //           for (final AddressInfo addressInfo in _data.data!)
-                    //             Row(children: [
-                    //               InkWell(
-                    //                 onTap: () => _sub.keyring.setCurrent(_sub
-                    //                     .keyring.keyPairs
-                    //                     .firstWhere((element) =>
-                    //                         element.address == addressInfo.address!)),
-                    //                 child: Text(
-                    //                   getShortPubkey(addressInfo.address!),
-                    //                   style: const TextStyle(
-                    //                       fontFamily: 'Monospace'),
-                    //                 ),
-                    //               ),
-                    //               const SizedBox(width: 20),
-                    //               InkWell(
-                    //                 onTap: () async => await _sub.pay(
-                    //                     context,
-                    //                     addressInfo.address!,
-                    //                     10,
-                    //                     _sub.keystorePassword.text),
-                    //                 child: Text("${addressInfo.balance.toString()} ğdev"),
-                    //               ),
-                    //               const SizedBox(width: 20),
-                    //               InkWell(
-                    //                 onTap: () async => await _sub.derive(
-                    //                     context,
-                    //                     addressInfo.address!,
-                    //                     3,
-                    //                     _sub.keystorePassword.text),
-                    //                 child: const Text("Dériver"),
-                    //               )
-                    //             ])
-                    //       ]);
-                    //     }),
+                    FutureBuilder(
+                        future: _sub.getKeyStoreAddress(),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<List<AddressInfo>> _data) {
+                          return Column(children: [
+                            if (_data.data != null)
+                              for (final AddressInfo addressInfo in _data.data!)
+                                Row(children: [
+                                  InkWell(
+                                    onTap: () => _sub.keyring.setCurrent(_sub
+                                        .keyring.keyPairs
+                                        .firstWhere((element) =>
+                                            element.address ==
+                                            addressInfo.address!)),
+                                    child: Text(
+                                      getShortPubkey(addressInfo.address!),
+                                      style: const TextStyle(
+                                          fontFamily: 'Monospace'),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 20),
+                                  // InkWell(
+                                  //   onTap: () async => await _sub.pay(
+                                  //       context,
+                                  //       addressInfo.address!,
+                                  //       10,
+                                  //       _sub.keystorePassword.text),
+                                  //   child:
+                                  Text(
+                                      "${addressInfo.balance.toString()} $currencyName"),
+                                  // ),
+                                  const SizedBox(width: 20),
+                                  InkWell(
+                                    onTap: () async => await _sub.derive(
+                                        context,
+                                        addressInfo.address!,
+                                        2,
+                                        _sub.keystorePassword.text),
+                                    child: const Text("Dériver"),
+                                  )
+                                ])
+                          ]);
+                        }),
                     const SizedBox(height: 20),
                     const Text('Mot de passe du trousseau:'),
                     TextField(

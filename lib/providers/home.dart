@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart' as pp;
@@ -138,22 +137,6 @@ class HomeProvider with ChangeNotifier {
     searchQuery.clear();
 
     notifyListeners();
-  }
-
-  void snackNode(context) {
-    if (isFirstBuild) {
-      String _message;
-      if (endPointGVA == 'HS') {
-        _message =
-            "Aucun noeud Duniter disponible, veuillez réessayer ultérieurement";
-      } else {
-        _message = "Vous êtes connecté au noeud\n${SubstrateSdk().subNode}";
-      }
-      final snackBar = SnackBar(
-          content: Text(_message), duration: const Duration(seconds: 2));
-      isFirstBuild = false;
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    }
   }
 
   void rebuildWidget() {

@@ -57,9 +57,9 @@ class SearchResultScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 40),
-            const Text(
-              'Dans la blockchain Ğ1',
-              style: TextStyle(fontSize: 20),
+            Text(
+              'Dans la blockchain $currencyName',
+              style: const TextStyle(fontSize: 20),
             ),
             const SizedBox(height: 20),
             FutureBuilder(

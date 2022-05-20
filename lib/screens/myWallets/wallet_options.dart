@@ -32,11 +32,9 @@ class WalletOptions extends StatelessWidget {
 
     final int _currentChest = _myWalletProvider.getCurrentChest()!;
 
-    //TODO: Debug multichest
-
     // final currentWallet = _myWalletProvider.getDefaultWallet(_currentChest);
     // log.d(_walletOptions.getAddress(_currentChest, 3));
-    // log.d("Wallet options: $_currentChest:${wallet.number}");
+    log.d("Wallet options: $_currentChest:${wallet.derivation}");
 
     return WillPopScope(
       onWillPop: () {
@@ -240,13 +238,13 @@ class WalletOptions extends StatelessWidget {
                       fontSize: isTall ? 20 : 18,
                     ));
               }
-              balanceCache = "${_balance.data.toString()} Ğ1";
+              balanceCache = "${_balance.data.toString()} $currencyName";
               return ImageFiltered(
                 imageFilter: ImageFilter.blur(
                     sigmaX: walletProvider.isBalanceBlur ? 6 : 0,
                     sigmaY: walletProvider.isBalanceBlur ? 5 : 0),
                 child: Text(
-                  _balance.data.toString() + ' Ğ1',
+                  balanceCache,
                   style: TextStyle(
                     fontSize: isTall ? 20 : 18,
                   ),

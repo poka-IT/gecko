@@ -45,7 +45,7 @@ class OnboardingStepFourteen extends StatelessWidget {
               textKey: const Key('step12'),
             ),
             SizedBox(height: isTall ? 80 : 10),
-            pinForm(context, _walletOptions, _pinLenght, 1, 3)
+            pinForm(context, _walletOptions, _pinLenght, 1, 2)
           ]),
         ));
   }
@@ -61,7 +61,7 @@ class OnboardingStepFourteen extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context);
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
-    SubstrateSdk _sdk = Provider.of<SubstrateSdk>(context, listen: false);
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     final int? _currentChest = _myWalletProvider.getCurrentChest();
 
@@ -118,10 +118,10 @@ class OnboardingStepFourteen extends StatelessWidget {
               log.d(_pin + ' || ' + _generateWalletProvider.pin.text);
               if (_pin.toUpperCase() == _generateWalletProvider.pin.text) {
                 pinColor = Colors.green[500];
-                final address = await _sdk.importAccount(
+                final address = await _sub.importAccount(
                     fromMnemonic: true,
                     mnemonic: _generateWalletProvider.generatedMnemonic!,
-                    derivePath: '/3',
+                    derivePath: '//2',
                     password: _generateWalletProvider.pin.text);
                 await _generateWalletProvider.storeHDWChest(
                     address, 'Mon portefeuille courant', context);

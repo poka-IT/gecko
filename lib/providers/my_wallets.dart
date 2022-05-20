@@ -23,6 +23,12 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   bool checkIfWalletExist() {
+    // configBox.delete('endpoint');
+    if (!configBox.containsKey('endpoint') || configBox.get('endpoint') == '') {
+      log.d('No endpoint, configure...');
+      configBox.put('endpoint', 'ws://192.168.1.72:9944');
+    }
+
     if (chestBox.isEmpty) {
       log.i('No wallets detected');
       return false;
@@ -68,6 +74,7 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   Future<int> deleteAllWallet(context) async {
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
     try {
       log.w('DELETE ALL WALLETS ?');
 
@@ -76,9 +83,7 @@ class MyWalletsProvider with ChangeNotifier {
         await walletBox.clear();
         await chestBox.clear();
         await configBox.delete('defaultWallet');
-        // await Future.delayed(const Duration(milliseconds: 50));
-        // notifyListeners();
-
+        await _sub.deleteAllAccounts();
         await Navigator.of(context).pushNamedAndRemoveUntil(
           '/',
           ModalRoute.withName('/'),
@@ -96,23 +101,42 @@ class MyWalletsProvider with ChangeNotifier {
       barrierDismissible: true, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text(
-              'Êtes-vous sûr de vouloir supprimer tous vos trousseaux ?'),
-          content: const SingleChildScrollView(child: Text('')),
+          backgroundColor: backgroundColor,
+          content: const Text(
+            'Êtes-vous sûr de vouloir oublier tous vos coffres ?',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+          ),
           actions: <Widget>[
-            TextButton(
-              child: const Text("Non"),
-              onPressed: () {
-                Navigator.pop(context, false);
-              },
-            ),
-            TextButton(
-              key: const Key('confirmDeletingAllWallets'),
-              child: const Text("Oui"),
-              onPressed: () {
-                Navigator.pop(context, true);
-              },
-            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  key: const Key('confirmDeletingAllWallets'),
+                  child: const Text(
+                    "Oui",
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Color(0xffD80000),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context, true);
+                  },
+                ),
+                const SizedBox(width: 20),
+                TextButton(
+                  child: const Text(
+                    "Non",
+                    style: TextStyle(fontSize: 20),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context, false);
+                  },
+                ),
+                const SizedBox(height: 120)
+              ],
+            )
           ],
         );
       },
@@ -136,12 +160,12 @@ class MyWalletsProvider with ChangeNotifier {
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
-    SubstrateSdk _sdk = Provider.of<SubstrateSdk>(context, listen: false);
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     final int? _currentChestNumber = myWalletProvider.getCurrentChest();
     final ChestData _currentChest = chestBox.get(_currentChestNumber)!;
 
-    final address = await _sdk.derive(
+    final address = await _sub.derive(
         context, _currentChest.address!, _newDerivationNbr, pinCode);
 
     WalletData newWallet = WalletData(

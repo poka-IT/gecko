@@ -33,7 +33,7 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
     final int? _currentChest = _myWalletProvider.getCurrentChest();
-    SubstrateSdk _sdk = Provider.of<SubstrateSdk>(context, listen: false);
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     _mnemonicController.text = generatedMnemonic!;
     return WillPopScope(
@@ -136,13 +136,13 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                                         .isAskedWordValid &&
                                     walletName.text != '')
                                 ? () async {
-                                    final address = await _sdk.importAccount(
+                                    final address = await _sub.importAccount(
                                         fromMnemonic: true,
                                         mnemonic: _generateWalletProvider
                                             .generatedMnemonic!,
                                         password:
                                             _generateWalletProvider.pin.text,
-                                        derivePath: '/3');
+                                        derivePath: '//2');
                                     await _generateWalletProvider.storeHDWChest(
                                         address,
                                         'Mon portefeuille courant',

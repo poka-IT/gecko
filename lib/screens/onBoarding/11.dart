@@ -1,4 +1,5 @@
 // ignore_for_file: file_names
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -21,8 +22,10 @@ class OnboardingStepThirteen extends StatelessWidget {
     // MyWalletsProvider myWalletProvider =
     //     Provider.of<MyWalletsProvider>(context);
     CommonElements common = CommonElements();
-    _generateWalletProvider.pin.text =
-        _generateWalletProvider.changePinCode(reload: false);
+
+    _generateWalletProvider.pin.text = kDebugMode && debugPin
+        ? 'AAAAA'
+        : _generateWalletProvider.changePinCode(reload: false);
 
     return Scaffold(
         extendBodyBehindAppBar: true,

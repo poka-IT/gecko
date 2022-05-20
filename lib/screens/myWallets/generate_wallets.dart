@@ -1,4 +1,5 @@
 import 'package:durt/durt.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/generate_wallets.dart';
@@ -25,7 +26,9 @@ class GenerateFastChestScreen extends StatelessWidget {
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context, listen: false);
 
-    _generateWalletProvider.changePinCode(reload: false);
+    _generateWalletProvider.pin.text = kDebugMode && debugPin
+        ? 'AAAAA'
+        : _generateWalletProvider.changePinCode(reload: false);
 
     return WillPopScope(
       onWillPop: () {

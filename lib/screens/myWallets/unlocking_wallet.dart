@@ -145,7 +145,7 @@ class UnlockingWallet extends StatelessWidget {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
 
-    SubstrateSdk _sdk = Provider.of<SubstrateSdk>(context, listen: false);
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     FocusNode pinFocus = FocusNode();
 
@@ -200,7 +200,7 @@ class UnlockingWallet extends StatelessWidget {
               log.d("Completed");
               _myWalletProvider.pinCode = _pin.toUpperCase();
 
-              final isValid = await _sdk.checkPassword(
+              final isValid = await _sub.checkPassword(
                   currentChest.address!, _pin.toUpperCase());
 
               if (!isValid) {
@@ -227,7 +227,7 @@ class UnlockingWallet extends StatelessWidget {
                           MaterialPageRoute(builder: (context) {
                             return const WalletsHome();
                           }),
-                        ).then((value) => _myWalletProvider.cesiumSeed.clear());
+                        );
                 } else if (action == "pay") {
                   Navigator.push(
                     context,

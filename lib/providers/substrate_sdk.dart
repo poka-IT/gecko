@@ -14,8 +14,6 @@ import 'package:polkawallet_sdk/storage/types/keyPairData.dart';
 import 'package:truncate/truncate.dart';
 
 class SubstrateSdk with ChangeNotifier {
-  final List subNode = ['192.168.1.72:9944'];
-  final bool isSsl = false;
   final int ss58 = 42;
 
   final WalletSDK sdk = WalletSDK();
@@ -26,6 +24,7 @@ class SubstrateSdk with ChangeNotifier {
   bool nodeConnected = false;
   bool importIsLoading = false;
   int blocNumber = 0;
+  bool isLoadingEndpoint = false;
 
   TextEditingController jsonKeystore = TextEditingController();
   TextEditingController keystorePassword = TextEditingController();
@@ -41,30 +40,45 @@ class SubstrateSdk with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> connectNode() async {
-    final String socketKind = isSsl ? 'wss' : 'ws';
+  Future<void> connectNode(BuildContext ctx) async {
     List<NetworkParams> node = [];
-    for (final sn in subNode) {
-      final n = NetworkParams();
-      n.name = 'duniter';
-      n.endpoint = '$socketKind://$sn';
-      n.ss58 = ss58;
-      node.add(n);
+    final n = NetworkParams();
+    n.name = currencyName;
+    n.endpoint = configBox.get('endpoint');
+    n.ss58 = ss58;
+    node.add(n);
+
+    if (sdk.api.connectedNode?.endpoint != null) {
+      await sdk.api.setting.unsubscribeBestNumber();
     }
+
+    isLoadingEndpoint = true;
+    notifyListeners();
     final res = await sdk.api.connectNode(keyring, node).timeout(
-          const Duration(seconds: 10),
+          const Duration(seconds: 7),
           onTimeout: () => null,
         );
+    isLoadingEndpoint = false;
+    notifyListeners();
     if (res != null) {
       nodeConnected = true;
       notifyListeners();
+      snackNode(ctx, true);
+    } else {
+      nodeConnected = false;
+      notifyListeners();
+      snackNode(ctx, false);
     }
 
     // Subscribe bloc number
-    sdk.api.setting.subscribeBestNumber((res) {
-      blocNumber = int.parse(res.toString());
-      notifyListeners();
-    });
+    if (nodeConnected) {
+      sdk.api.setting.subscribeBestNumber((res) {
+        blocNumber = int.parse(res.toString());
+        notifyListeners();
+      });
+    }
+
+    log.d(sdk.api.connectedNode?.endpoint);
   }
 
   Future<String> importAccount(
@@ -177,7 +191,7 @@ class SubstrateSdk with ChangeNotifier {
 
   int getDerivationNumber(String address) {
     final account = getKeypair(address);
-    final deriveNbr = account.name!.split('/')[1];
+    final deriveNbr = account.name!.split('//')[1];
     return int.parse(deriveNbr);
   }
 
@@ -290,11 +304,11 @@ class SubstrateSdk with ChangeNotifier {
     print(seedMap);
 
     if (seedMap?['type'] != 'mnemonic') return '';
-    final List seedList = seedMap!['seed'].split('/');
+    final List seedList = seedMap!['seed'].split('//');
     generatedMnemonic = seedList[0];
     int sourceDerivation = -1; // To get derivation number of this account
     if (seedList.length > 1) {
-      sourceDerivation = int.parse(seedMap['seed'].split('/')[1]);
+      sourceDerivation = int.parse(seedList[1]);
     }
     print(generatedMnemonic);
     print(sourceDerivation);
@@ -314,6 +328,20 @@ class AddressInfo {
   double balance;
 
   AddressInfo({@required this.address, this.balance = 0});
+}
+
+void snackNode(BuildContext context, bool isConnected) {
+  String _message;
+  if (!isConnected) {
+    _message =
+        "Aucun noeud Duniter disponible, veuillez réessayer ultérieurement";
+  } else {
+    _message =
+        "Vous êtes connecté au noeud\n${configBox.get('endpoint').split('//')[1]}";
+  }
+  final snackBar =
+      SnackBar(content: Text(_message), duration: const Duration(seconds: 2));
+  ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
 
 String getShortPubkey(String pubkey) {

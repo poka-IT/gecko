@@ -86,7 +86,7 @@ class GenerateWalletsProvider with ChangeNotifier {
         address: address,
         number: 0,
         name: _name,
-        derivation: 3,
+        derivation: 2,
         imageName: '0.png');
     await walletBox.add(myWallet);
 
@@ -297,9 +297,9 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   Future<List<String>> generateWordList(BuildContext context) async {
-    SubstrateSdk _sdk = Provider.of<SubstrateSdk>(context, listen: false);
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    generatedMnemonic = await _sdk.generateMnemonic(lang: appLang);
+    generatedMnemonic = await _sub.generateMnemonic(lang: appLang);
     List<String> _wordsList = [];
     String word;
     int _nbr = 1;

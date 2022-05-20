@@ -79,12 +79,13 @@ class WalletOptionsProvider with ChangeNotifier {
     final bool? _answer = await (_confirmDeletingWallet(context, wallet.name));
 
     if (_answer!) {
-      walletBox.delete(wallet.key);
+      await walletBox.delete(wallet.key);
 
-      Navigator.popUntil(
-        context,
-        ModalRoute.withName('/mywallets'),
-      );
+      // Navigator.popUntil(
+      //   context,
+      //   ModalRoute.withName('/mywallets'),
+      // );
+      Navigator.pop(context);
     }
     return 0;
   }

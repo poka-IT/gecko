@@ -346,7 +346,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                       ],
                     ),
                   ),
-                  trailing: Text("${repository[4]} Ğ1",
+                  trailing: Text("${repository[4]} $currencyName",
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.w500),
                       textAlign: TextAlign.justify),
@@ -466,7 +466,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                           return const Text('...');
                         }
                         return Text(
-                          "${_balance.data.toString()} Ğ1",
+                          "${_balance.data.toString()} $currencyName",
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                               fontSize: 22, fontWeight: FontWeight.w500),

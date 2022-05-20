@@ -25,7 +25,7 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    SubstrateSdk _sdk = Provider.of<SubstrateSdk>(context, listen: false);
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     return WillPopScope(
       onWillPop: () {
@@ -100,7 +100,8 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                   ),
                   onPressed: () async {
                     final _chest = chestBox.get(configBox.get('currentChest'));
-                    _sdk.changePassword(_chest!.address!, walletProvider.pinCode, newPin.text);
+                    _sub.changePassword(
+                        _chest!.address!, walletProvider.pinCode, newPin.text);
                     newPin.text = '';
                     walletProvider.pinCode = newPin.text;
                   },

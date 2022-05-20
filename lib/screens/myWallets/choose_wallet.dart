@@ -22,7 +22,7 @@ class ChooseWalletScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    SubstrateSdk _sdk = Provider.of<SubstrateSdk>(context, listen: false);
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
     WalletsProfilesProvider _walletViewProvider =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     // HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
@@ -50,10 +50,10 @@ class ChooseWalletScreen extends StatelessWidget {
                       onPrimary: Colors.white, // foreground
                     ),
                     onPressed: () async {
-                      final acc = _sdk.getCurrentWallet();
+                      final acc = _sub.getCurrentWallet();
                       log.d(
                           "fromAddress: ${acc.address!},destAddress: ${_walletViewProvider.outputPubkey.text}, amount: ${double.parse(_walletViewProvider.payAmount.text)},  password: $pin");
-                      final resultPay = await _sdk.pay(context,
+                      final resultPay = await _sub.pay(context,
                           fromAddress: acc.address!,
                           destAddress: _walletViewProvider.outputPubkey.text,
                           amount:
@@ -79,13 +79,14 @@ class ChooseWalletScreen extends StatelessWidget {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
     final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
-    SubstrateSdk _sdk = Provider.of<SubstrateSdk>(context, listen: false);
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     WalletData? defaultWallet =
         _myWalletProvider.getDefaultWallet(currentChest);
+
     _selectedId ??= defaultWallet!.id();
     _derivation ??= defaultWallet!.derivation!;
-
+    _sub.setCurrentWallet(defaultWallet!.address!);
     _myWalletProvider.readAllWallets(currentChest);
 
     if (!isWalletsExists) {
@@ -128,7 +129,7 @@ class ChooseWalletScreen extends StatelessWidget {
                     onTap: () {
                       _derivation = _repository.derivation!;
                       _selectedId = _repository.id();
-                      _sdk.setCurrentWallet(_repository.address!);
+                      _sub.setCurrentWallet(_repository.address!);
                       _myWalletProvider.rebuildWidget();
                     },
                     child: ClipOvalShadow(
@@ -195,7 +196,7 @@ class ChooseWalletScreen extends StatelessWidget {
                             onTap: () {
                               _derivation = _repository.derivation!;
                               _selectedId = _repository.id();
-                              _sdk.setCurrentWallet(_repository.address!);
+                              _sub.setCurrentWallet(_repository.address!);
                               _myWalletProvider.rebuildWidget();
                             },
                           )
@@ -209,13 +210,15 @@ class ChooseWalletScreen extends StatelessWidget {
 }
 
 Future<bool?> paymentsResult(context, String resultPay) {
-  if (resultPay != "success") log.e(resultPay);
+  final bool isValid = resultPay == "confirmed";
+  if (!isValid) log.e(resultPay);
+
   return showDialog<bool>(
     context: context,
     barrierDismissible: true, // user must tap button!
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text(resultPay == "confirmed"
+        title: Text(isValid
             ? 'Paiement effecuté avec succès !'
             : "Une erreur s'est produite lors du paiement:\n$resultPay"),
         content: const SingleChildScrollView(child: Text('')),
@@ -223,7 +226,7 @@ Future<bool?> paymentsResult(context, String resultPay) {
           TextButton(
             child: const Text("OK"),
             onPressed: () async {
-              resultPay == "confirmed"
+              isValid
                   ? await Navigator.of(context).pushNamedAndRemoveUntil(
                       '/',
                       ModalRoute.withName('/'),

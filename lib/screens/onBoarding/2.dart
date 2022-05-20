@@ -28,7 +28,7 @@ class OnboardingStepTwo extends StatelessWidget {
             common.onboardingProgressBar(
                 context, 'Nouveau portefeuilles', progress),
             common.bubbleSpeak(
-              "Un trousseau est créé à partir d’une phrase de restauration.",
+              "Un coffre est créé à partir d’une phrase de restauration.",
               textKey: const Key('step2'),
             ),
             const SizedBox(height: 70),

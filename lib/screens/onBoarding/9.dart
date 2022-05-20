@@ -33,7 +33,7 @@ class OnboardingStepEleven extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 const TextSpan(
                     text:
-                        " \n\nVotre code secret chiffre votre trousseau de clefs, ce qui le rend inutilisable par d’autres, par exemple si vous perdez votre téléphone ou si on vous le vole."),
+                        " \n\nVotre code secret chiffre votre coffre de clefs, ce qui le rend inutilisable par d’autres, par exemple si vous perdez votre téléphone ou si on vous le vole."),
               ],
               textKey: const Key('step9'),
             ),

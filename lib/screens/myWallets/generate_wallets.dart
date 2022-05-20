@@ -48,7 +48,7 @@ class GenerateFastChestScreen extends StatelessWidget {
                 }),
             title: const SizedBox(
               height: 22,
-              child: Text('Générer un trousseau'),
+              child: Text('Générer un coffre'),
             )),
         floatingActionButton: SizedBox(
             height: 80.0,
@@ -144,7 +144,7 @@ class GenerateFastChestScreen extends StatelessWidget {
                           );
                         }
                       : null,
-                  child: const Text('Enregistrer ce trousseau',
+                  child: const Text('Enregistrer ce coffre',
                       style: TextStyle(fontSize: 20))),
               const SizedBox(height: 20),
               GestureDetector(
@@ -219,7 +219,7 @@ class PrintWallet extends StatelessWidget {
                   Navigator.pop(context);
                 }),
             toolbarHeight: 60 * ratio,
-            title: const Text('Imprimer ce trousseau')),
+            title: const Text('Imprimer ce coffre')),
         body: PdfPreview(
           build: (format) => _generateWalletProvider.printWallet(sentence),
         ),

@@ -25,7 +25,7 @@ class OnboardingStepFive extends StatelessWidget {
             common.onboardingProgressBar(
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
-              "Par contre, attention :\n\nDans une blockchain, il n’y a pas de procédure de récupération de trousseau.\n\nSi vous perdez votre phrase de restauration, je ne pourrai pas vous la communiquer, et vous ne pourrez donc plus jamais accéder à votre compte.",
+              "Par contre, attention :\n\nDans une blockchain, il n’y a pas de procédure de récupération de coffre.\n\nSi vous perdez votre phrase de restauration, je ne pourrai pas vous la communiquer, et vous ne pourrez donc plus jamais accéder à votre compte.",
               textKey: const Key('step4'),
             ),
             SizedBox(height: isTall ? 30 : 10),

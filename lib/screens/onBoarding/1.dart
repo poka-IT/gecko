@@ -27,7 +27,7 @@ class OnboardingStepOne extends StatelessWidget {
             common.onboardingProgressBar(
                 context, 'Nouveau portefeuilles', progress),
             common.bubbleSpeak(
-                "Il semblerait que vous n’ayez pas encore de trousseau.\n\nUn trousseau vous permet de gérer un ou plusieurs portefeuilles.",
+                "Il semblerait que vous n’ayez pas encore de coffre.\n\nUn coffre vous permet de gérer un ou plusieurs portefeuilles.",
                 textKey: const Key('step1')),
             const SizedBox(height: 90),
             Image.asset(
@@ -53,7 +53,7 @@ class OnboardingStepOne extends StatelessWidget {
                                 FaderTransition(
                                     page: OnboardingStepTwo(), isFast: true));
                           },
-                          child: const Text('Créer mon trousseau',
+                          child: const Text('Créer mon coffre',
                               style: TextStyle(fontSize: 20))),
                     ))),
             const SizedBox(height: 80),

@@ -221,7 +221,7 @@ class PrintWallet extends StatelessWidget {
                   Navigator.pop(context);
                 }),
             toolbarHeight: 60 * ratio,
-            title: const Text('Imprimer ce trousseau')),
+            title: const Text('Imprimer ce coffre')),
         body: PdfPreview(
           build: (format) => _generateWalletProvider.printWallet(sentence),
         ),

@@ -42,7 +42,7 @@ class SubstrateSandBox extends StatelessWidget {
                           'Noeud "${_sub.sdk.api.connectedNode!.name}", bloc N°${_sub.blocNumber}'),
                     const SizedBox(height: 20),
                     Row(children: [
-                      const Text('Liste des trousseaux:'),
+                      const Text('Liste des coffres:'),
                       const Spacer(),
                       InkWell(
                         child: Image.asset(
@@ -100,7 +100,7 @@ class SubstrateSandBox extends StatelessWidget {
                           ]);
                         }),
                     const SizedBox(height: 20),
-                    const Text('Mot de passe du trousseau:'),
+                    const Text('Mot de passe du coffre:'),
                     TextField(
                       controller: _sub.keystorePassword,
                       obscureText: true,
@@ -127,7 +127,7 @@ class SubstrateSandBox extends StatelessWidget {
                                         context,
                                         res != ''
                                             ? 'Portefeuille importé'
-                                            : 'Le format de trousseau est invalide');
+                                            : 'Le format de coffre est invalide');
                                   }
                                 : null,
                             child: const Text(

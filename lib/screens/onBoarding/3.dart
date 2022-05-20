@@ -25,7 +25,7 @@ class OnboardingStepFor extends StatelessWidget {
             common.onboardingProgressBar(
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
-              "Si un jour vous changez de téléphone, il vous suffira de me redonner votre phrase de restauration pour recréer votre trousseau.",
+              "Si un jour vous changez de téléphone, il vous suffira de me redonner votre phrase de restauration pour recréer votre coffre.",
               textKey: const Key('step3'),
             ),
             SizedBox(height: isTall ? 15 : 0),

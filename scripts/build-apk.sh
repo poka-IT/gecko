@@ -22,7 +22,9 @@ else
 #	flutter build apk --release --build-name $VERSION --build-number $BUILD
 fi
 
-if [[ -d $HOME/Téléchargements ]]; then
+if [[ -d $HOME/Nextcloud/Gecko-APK ]]; then
+    DL="$HOME/Nextcloud/Gecko-APK"
+elif [[ -d $HOME/Téléchargements ]]; then
     DL="$HOME/Téléchargements"
 elif [[ -d $HOME/Downloads ]]; then
     DL="$HOME/Downloads"

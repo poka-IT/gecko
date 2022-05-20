@@ -25,7 +25,7 @@ class OnboardingStepFiveteen extends StatelessWidget {
             common.onboardingProgressBar(
                 context, 'Ma phrase de restauration', progress),
             common.bubbleSpeak(
-              "Top !\n\nVotre trousseau de clef et votre portefeuille ont été créés avec un immense succès.\n\nFélicitations !",
+              "Top !\n\nVotre coffre de clef et votre portefeuille ont été créés avec un immense succès.\n\nFélicitations !",
               textKey: const Key('step13'),
             ),
             SizedBox(height: isTall ? 20 : 10),

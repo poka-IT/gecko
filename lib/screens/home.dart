@@ -30,8 +30,6 @@ class HomeScreen extends StatelessWidget {
 
     final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
 
-
-
     isTall = false;
     ratio = 1;
     if (MediaQuery.of(context).size.height >= 930) {
@@ -71,7 +69,7 @@ class HomeScreen extends StatelessWidget {
               ),
               ListTile(
                 key: const Key('substrateSandbox'),
-                title: const Text('SUBSTRATE SANDBOX'),
+                title: const Text('Substrate debug'),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(

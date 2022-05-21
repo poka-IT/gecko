@@ -315,6 +315,14 @@ class SubstrateSdk with ChangeNotifier {
 
     return await importAccount(fromMnemonic: true, derivePath: '//$number');
   }
+
+  Future<bool> isMnemonicValid(String mnemonic) async {
+    // Needed for bad encoding of UTF-8
+    mnemonic = mnemonic.replaceAll('é', 'é');
+    mnemonic = mnemonic.replaceAll('è', 'è');
+
+    return await sdk.api.keyring.checkMnemonicValid(mnemonic);
+  }
 }
 
 void snack(BuildContext context, String message, {int duration = 2}) {
@@ -339,8 +347,10 @@ void snackNode(BuildContext context, bool isConnected) {
     _message =
         "Vous êtes connecté au noeud\n${configBox.get('endpoint').split('//')[1]}";
   }
-  final snackBar =
-      SnackBar(content: Text(_message), duration: const Duration(seconds: 2));
+  final snackBar = SnackBar(
+      padding: const EdgeInsets.all(20),
+      content: Text(_message, style: const TextStyle(fontSize: 16)),
+      duration: const Duration(seconds: 2));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
 

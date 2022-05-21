@@ -81,7 +81,9 @@ dependencies:
       ref: fixAndroidActivityVersion
 
 dev_dependencies:
-  flutter_launcher_icons_maker: ^0.10.2
+  # flutter_launcher_icons: ^0.9.2
+  # flutter_launcher_icons_maker: ^^0.10.2
+  icons_launcher: ^1.1.8
   build_runner: ^2.1.2
   flutter_test:
     sdk: flutter
@@ -94,6 +96,8 @@ flutter_icons:
   ios: true
   image_path: "assets/icon/gecko_flat.png"
   remove_alpha_ios: true
+
+uses-material-design: true
 
 # The following section is specific to Flutter.
 flutter:

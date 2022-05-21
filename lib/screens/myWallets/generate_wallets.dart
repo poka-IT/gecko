@@ -1,4 +1,3 @@
-import 'package:durt/durt.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -127,11 +126,6 @@ class GenerateFastChestScreen extends StatelessWidget {
                       ? () async {
                           _generateWalletProvider.nbrWord =
                               _generateWalletProvider.getRandomInt();
-                          _generateWalletProvider.actualWallet = await Dewif()
-                              .generateDewif(
-                                  _generateWalletProvider.generatedMnemonic!,
-                                  _generateWalletProvider.pin.text,
-                                  lang: appLang);
                           await Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) {

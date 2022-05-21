@@ -155,25 +155,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<durt.NewWallet?> generateWallet(String generatedMnemonic,
-      {required bool isImport}) async {
-    try {
-      actualWallet = await durt.Dewif().generateDewif(
-          generatedMnemonic, durt.randomSecretCode(pinLength),
-          lang: appLang);
-    } catch (e) {
-      log.e(e);
-    }
-
-    if (!isImport) {
-      mnemonicController.text = generatedMnemonic;
-      pin.text = actualWallet!.password;
-    }
-    // notifyListeners();
-
-    return actualWallet;
-  }
-
   String changePinCode({required bool reload}) {
     pin.text = durt.randomSecretCode(pinLength);
     if (reload) {
@@ -228,56 +209,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     cesiumPubkey.text = _walletPubkey;
     log.d(_walletPubkey);
   }
-
-  // Future<int?> importCesiumWallet() async {
-  //   // String _walletPubkey = await DubpRust.getLegacyPublicKey(
-  //   //     salt: _cesiumID, password: _cesiumPWD);
-  //   // String shortPubkey = truncate(_walletPubkey, 9,
-  //   //     omission: "...", position: TruncatePosition.end);
-  //   // await storeWallet(
-  //   //     actualWallet, 'Portefeuille Cesium - $shortPubkey', context);
-  //   // NewWallet myCesiumWallet = await DubpRust.genWalletFromDeprecatedSaltPassword(salt: _cesiumID, password: _cesiumPWD);
-
-  //   cesiumID.text = '';
-  //   cesiumPWD.text = '';
-  //   cesiumPubkey.text = '';
-  //   canImport = false;
-  //   isCesiumIDVisible = false;
-  //   isCesiumPWDVisible = false;
-
-  //   int chestNumber = 0;
-  //   chestBox.toMap().forEach((key, value) {
-  //     if (value.isCesium!) {
-  //       chestNumber++;
-  //     }
-  //   });
-
-  //   String chestName;
-  //   if (chestNumber == 0) {
-  //     chestName = 'Coffre à Césium';
-  //   } else {
-  //     chestName = 'Coffre à Césium ${chestNumber + 1}';
-  //   }
-
-  //   log.d(pin.text);
-  //   durt.NewWallet cesiumDewif =
-  //       await durt.Dewif().generateCesiumDewif(cesiumWallet.seed, pin.text);
-
-  //   ChestData cesiumChest = ChestData(
-  //       dewif: cesiumDewif.dewif,
-  //       name: chestName,
-  //       imageName: 'cesium.png',
-  //       defaultWallet: 0,
-  //       isCesium: true);
-
-  //   await chestBox.add(cesiumChest).then((value) => null);
-  //   int? chestKey = await chestBox.toMap().keys.last;
-  //   // chestBox.toMap().
-  //   await configBox.put('currentChest', chestKey);
-
-  //   pin.text = '';
-  //   return chestKey;
-  // }
 
   void cesiumIDisVisible() {
     isCesiumIDVisible = !isCesiumIDVisible;
@@ -368,25 +299,6 @@ class GenerateWalletsProvider with ChangeNotifier {
       return true;
     } else {
       return false;
-    }
-  }
-
-  Future<bool> isSentenceValid() async {
-    String inputMnemonic =
-        '${cellController0.text} ${cellController1.text} ${cellController2.text} ${cellController3.text} ${cellController4.text} ${cellController5.text} ${cellController6.text} ${cellController7.text} ${cellController8.text} ${cellController9.text} ${cellController10.text} ${cellController11.text}';
-
-    // Needed for bad encoding of UTF-8
-    inputMnemonic = inputMnemonic.replaceAll('é', 'é');
-    inputMnemonic = inputMnemonic.replaceAll('è', 'è');
-
-    durt.NewWallet? generatedWallet =
-        await generateWallet(inputMnemonic, isImport: true);
-
-    if (generatedWallet == null) {
-      return false;
-    } else {
-      generatedMnemonic = inputMnemonic;
-      return true;
     }
   }
 

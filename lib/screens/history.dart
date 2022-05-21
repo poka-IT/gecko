@@ -403,7 +403,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                             key: const Key('copyPubkey'),
                             onTap: () {
                               Clipboard.setData(ClipboardData(text: pubkey));
-                              _historyProvider.snackCopyKey(context);
+                              snackCopyKey(context);
                             },
                             child: Text(
                               _historyProvider.getShortPubkey(pubkey!),

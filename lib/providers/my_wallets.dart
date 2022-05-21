@@ -26,7 +26,7 @@ class MyWalletsProvider with ChangeNotifier {
     // configBox.delete('endpoint');
     if (!configBox.containsKey('endpoint') || configBox.get('endpoint') == '') {
       log.d('No endpoint, configure...');
-      configBox.put('endpoint', 'ws://192.168.1.72:9944');
+      configBox.put('endpoint', 'ws://127.0.0.1:9944');
     }
 
     if (chestBox.isEmpty) {

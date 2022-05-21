@@ -8,13 +8,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "40.0.0"
-  aes_ecb_pkcs5_flutter:
-    dependency: transitive
-    description:
-      name: aes_ecb_pkcs5_flutter
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.1.2"
   analyzer:
     dependency: transitive
     description:
@@ -349,6 +342,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_aes_ecb_pkcs5:
+    dependency: transitive
+    description:
+      name: flutter_aes_ecb_pkcs5
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.2"
   flutter_driver:
     dependency: "direct main"
     description: flutter
@@ -368,13 +368,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "5.4.3+7"
-  flutter_launcher_icons_maker:
-    dependency: "direct dev"
-    description:
-      name: flutter_launcher_icons_maker
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.10.2"
   flutter_lints:
     dependency: "direct main"
     description:
@@ -566,7 +559,7 @@ packages:
       name: http_parser
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.0.0"
+    version: "4.0.1"
   http_server:
     dependency: transitive
     description:
@@ -574,6 +567,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.0"
+  icons_launcher:
+    dependency: "direct dev"
+    description:
+      name: icons_launcher
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.1.8"
   image:
     dependency: transitive
     description:
@@ -615,7 +615,7 @@ packages:
       name: image_picker_ios
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.5+4"
+    version: "0.8.5+5"
   image_picker_platform_interface:
     dependency: transitive
     description:
@@ -914,7 +914,7 @@ packages:
       name: pdf
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.8.0"
+    version: "3.8.1"
   permission_handler:
     dependency: "direct main"
     description:
@@ -976,7 +976,7 @@ packages:
     description:
       path: "."
       ref: fixAndroidActivityVersion
-      resolved-ref: db17df1a7e421066dd88a16ed46c5cc945b77f82
+      resolved-ref: e33351cde5ea9b55d191772fe3b36f9dbb8277e6
       url: "https://github.com/poka-IT/sdk.git"
     source: git
     version: "0.4.5"
@@ -992,7 +992,7 @@ packages:
     description:
       path: printing
       ref: HEAD
-      resolved-ref: "726aab13746a4f515601febfb0824ba71dbe4f80"
+      resolved-ref: "95bbc1f33b7cb45f7a4b98088b96bc541fefc495"
       url: "https://github.com/DavBfr/dart_pdf.git"
     source: git
     version: "5.9.1"
@@ -1069,7 +1069,7 @@ packages:
       name: responsive_framework
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.1.8"
+    version: "0.1.9"
   rxdart:
     dependency: transitive
     description:
@@ -1306,6 +1306,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.3.0"
+  universal_io:
+    dependency: transitive
+    description:
+      name: universal_io
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.4"
   unorm_dart:
     dependency: "direct main"
     description:
@@ -1361,7 +1368,7 @@ packages:
       name: webkit_inspection_protocol
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.1"
+    version: "1.1.0"
   webview_flutter:
     dependency: transitive
     description:

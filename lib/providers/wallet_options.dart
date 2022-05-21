@@ -4,10 +4,11 @@ import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:truncate/truncate.dart';
 
 class WalletOptionsProvider with ChangeNotifier {
@@ -25,33 +26,16 @@ class WalletOptionsProvider with ChangeNotifier {
   Future<NewWallet>? get badWallet => null;
 
   int getPinLenght(_walletNbr) {
-    // TODOo: Get real Dewif lenght
-    // String _localDewif;
-    // if (_walletNbr is int || _walletNbr == null) {
-    //   _localDewif = chestBox.get(configBox.get('currentChest')).dewif;
-    // } else {
-    //   _localDewif = _walletNbr;
-    // }
-
-    // final int _pinLenght = DubpRust.getDewifSecretCodeLen(
-    //     dewif: _localDewif, secretCodeType: SecretCodeType.letters);
-
     return pinLength;
   }
 
-  void _renameWallet(List<int?> _walletID, _newName,
+  void _renameWallet(List<int?> _walletID, String _newName,
       {required bool isCesium}) async {
-    if (isCesium) {
-      ChestData _chestTarget = chestBox.get(_walletID[0])!;
-      _chestTarget.name = _newName;
-      await chestBox.put(_chestTarget.key, _chestTarget);
-    } else {
-      MyWalletsProvider myWalletClass = MyWalletsProvider();
+    MyWalletsProvider myWalletClass = MyWalletsProvider();
 
-      WalletData _walletTarget = myWalletClass.getWalletData(_walletID)!;
-      _walletTarget.name = _newName;
-      await walletBox.put(_walletTarget.key, _walletTarget);
-    }
+    WalletData _walletTarget = myWalletClass.getWalletData(_walletID)!;
+    _walletTarget.name = _newName;
+    await walletBox.put(_walletTarget.key, _walletTarget);
 
     _newWalletName.text = '';
   }
@@ -124,14 +108,6 @@ class WalletOptionsProvider with ChangeNotifier {
     );
   }
 
-  snackCopyKey(context) {
-    const snackBar = SnackBar(
-        content:
-            Text("Cette clé publique a été copié dans votre presse-papier."),
-        duration: Duration(seconds: 2));
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
-
   String getShortPubkey(String pubkey) {
     List<int> pubkeyByte = Base58Decode(pubkey);
     Digest pubkeyS256 = sha256.convert(sha256.convert(pubkeyByte).bytes);
@@ -161,10 +137,14 @@ class WalletOptionsProvider with ChangeNotifier {
 
     if (pickedFile != null) {
       _image = File(pickedFile.path);
+
+      ////TODO: Store image on disk, store path in walletBox.imagePath
+
       log.i(pickedFile.path);
       return _image;
     } else {
       log.w('No image selected.');
+      return null;
     }
   }
 
@@ -185,4 +165,31 @@ class WalletOptionsProvider with ChangeNotifier {
 
     return _address;
   }
+}
+
+Widget balance(BuildContext context, String address, double size) {
+  String balanceCache = '';
+
+  return Column(children: <Widget>[
+    Consumer<SubstrateSdk>(builder: (context, _sdk, _) {
+      return FutureBuilder(
+          future: _sdk.getBalance(address),
+          builder: (BuildContext context, AsyncSnapshot<num?> _balance) {
+            if (_balance.connectionState != ConnectionState.done ||
+                _balance.hasError) {
+              return Text(balanceCache,
+                  style: TextStyle(
+                    fontSize: isTall ? size : size * 0.9,
+                  ));
+            }
+            balanceCache = "${_balance.data.toString()} $currencyName";
+            return Text(
+              balanceCache,
+              style: TextStyle(
+                fontSize: isTall ? size : 18,
+              ),
+            );
+          });
+    }),
+  ]);
 }

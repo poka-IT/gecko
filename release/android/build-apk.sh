@@ -19,7 +19,7 @@ cargo make
 
 # Build APK
 echo "Build APK..."
-flutter clean
+#flutter clean
 flutter build apk --release --build-name $VERSION --build-number $BUILD
 
 # Create artifacts folder

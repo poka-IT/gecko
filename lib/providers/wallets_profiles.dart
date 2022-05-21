@@ -239,25 +239,6 @@ class WalletsProfilesProvider with ChangeNotifier {
     return num.parse(result);
   }
 
-  snackCopyKey(context) {
-    const snackBar = SnackBar(
-        padding: EdgeInsets.all(20),
-        content:
-            Text("Cette clé publique a été copié dans votre presse-papier."),
-        duration: Duration(seconds: 2));
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
-
-  void switchProfileView() {
-    isHistoryScreen = !isHistoryScreen;
-    if (isHistoryScreen) {
-      historySwitchButtun = "Payer";
-    } else {
-      historySwitchButtun = "Voir l'historique";
-    }
-    notifyListeners();
-  }
-
   String generateIdenticon(String _pubkey) {
     return Jdenticon.toSvg(_pubkey);
   }
@@ -284,4 +265,13 @@ class WalletsProfilesProvider with ChangeNotifier {
 
     return balance;
   }
+}
+
+snackCopyKey(context) {
+  const snackBar = SnackBar(
+      padding: EdgeInsets.all(20),
+      content: Text("Cette clé publique a été copié dans votre presse-papier.",
+          style: TextStyle(fontSize: 16)),
+      duration: Duration(seconds: 2));
+  ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }

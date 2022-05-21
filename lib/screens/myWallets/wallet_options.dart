@@ -1,11 +1,8 @@
 import 'dart:async';
-import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/history.dart';
@@ -92,13 +89,13 @@ class WalletOptions extends StatelessWidget {
                         Column(children: <Widget>[
                           walletName(walletProvider, _walletOptions),
                           SizedBox(height: isTall ? 5 : 0),
-                          balance(context, walletProvider),
+                          balance(context, walletProvider.address.text, 20),
                         ]),
                         const Spacer(flex: 3),
                       ]),
                 );
               }),
-              SizedBox(height: 4 * ratio),
+              SizedBox(height: 10 * ratio),
               QrImageWidget(
                 data: _walletOptions.address.text,
                 version: QrVersions.auto,
@@ -132,8 +129,10 @@ class WalletOptions extends StatelessWidget {
       children: <Widget>[
         InkWell(
           onTap: () async {
-            File newAvatar = await (walletProvider.changeAvatar());
-            wallet.imageFile = newAvatar;
+            wallet.imageFile = await (walletProvider.changeAvatar());
+            if (wallet.imageFile != null) {
+              walletBox.put(wallet.key, wallet);
+            }
             walletProvider.reloadBuild();
           },
           child: wallet.imageFile == null
@@ -151,8 +150,7 @@ class WalletOptions extends StatelessWidget {
           top: 0,
           child: InkWell(
             onTap: () async {
-              File newAvatar = await (walletProvider.changeAvatar());
-              wallet.imageFile = newAvatar;
+              wallet.imageFile = await (walletProvider.changeAvatar());
               walletProvider.reloadBuild();
             },
             child: Image.asset(
@@ -223,52 +221,6 @@ class WalletOptions extends StatelessWidget {
     );
   }
 
-  Widget balance(BuildContext context, WalletOptionsProvider walletProvider) {
-    String balanceCache = '';
-
-    return Column(children: <Widget>[
-      Consumer<SubstrateSdk>(builder: (context, _sdk, _) {
-        return FutureBuilder(
-            future: _sdk.getBalance(walletProvider.address.text),
-            builder: (BuildContext context, AsyncSnapshot<num?> _balance) {
-              if (_balance.connectionState != ConnectionState.done ||
-                  _balance.hasError) {
-                return Text(balanceCache,
-                    style: TextStyle(
-                      fontSize: isTall ? 20 : 18,
-                    ));
-              }
-              balanceCache = "${_balance.data.toString()} $currencyName";
-              return ImageFiltered(
-                imageFilter: ImageFilter.blur(
-                    sigmaX: walletProvider.isBalanceBlur ? 6 : 0,
-                    sigmaY: walletProvider.isBalanceBlur ? 5 : 0),
-                child: Text(
-                  balanceCache,
-                  style: TextStyle(
-                    fontSize: isTall ? 20 : 18,
-                  ),
-                ),
-              );
-            });
-      }),
-
-      const SizedBox(height: 15),
-      // InkWell(
-      //   key: const Key('displayBalance'),
-      //   onTap: () {
-      //     walletProvider.bluringBalance();
-      //   },
-      //   child: Image.asset(
-      //     walletProvider.isBalanceBlur
-      //         ? 'assets/walletOptions/icon_oeuil.png'
-      //         : 'assets/walletOptions/icon_oeuil_close.png',
-      //     height: 35,
-      //   ),
-      // ),
-    ]);
-  }
-
   Widget pubkeyWidget(WalletOptionsProvider walletProvider, BuildContext ctx) {
     final String shortPubkey =
         walletProvider.getShortPubkey(walletProvider.address.text);
@@ -276,7 +228,7 @@ class WalletOptions extends StatelessWidget {
       key: const Key('copyPubkey'),
       onTap: () {
         Clipboard.setData(ClipboardData(text: walletProvider.address.text));
-        walletProvider.snackCopyKey(ctx);
+        snackCopyKey(ctx);
       },
       child: SizedBox(
         height: 50,
@@ -313,7 +265,7 @@ class WalletOptions extends StatelessWidget {
               onPressed: () {
                 Clipboard.setData(
                     ClipboardData(text: walletProvider.address.text));
-                walletProvider.snackCopyKey(ctx);
+                snackCopyKey(ctx);
               },
               child: Row(children: <Widget>[
                 Image.asset(

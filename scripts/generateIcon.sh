@@ -1,5 +1,5 @@
 #!/bin/bash
 
-flutter pub run flutter_launcher_icons_maker:main
+flutter pub run icons_launcher:main
 
 exit 0

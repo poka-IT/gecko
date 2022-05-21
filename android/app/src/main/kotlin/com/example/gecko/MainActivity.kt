@@ -1,4 +1,4 @@
-package com.example.gecko
+package gecko.axiomteam.fr
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -21,7 +21,7 @@ class OnboardingStepNine extends StatelessWidget {
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     GenerateWalletsProvider _generateWalletProvider =
-        Provider.of<GenerateWalletsProvider>(context);
+        Provider.of<GenerateWalletsProvider>(context, listen: false);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
     CommonElements common = CommonElements();
@@ -58,24 +58,26 @@ class OnboardingStepNine extends StatelessWidget {
               ),
             ),
             Expanded(
-                child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: SizedBox(
-                      width: 400,
-                      height: 62,
-                      child: ElevatedButton(
-                          key: const Key('generateMnemonic'),
-                          style: ElevatedButton.styleFrom(
-                            elevation: 5,
-                            primary: const Color(0xffFFD58D),
-                            onPrimary: Colors.black, // foreground
-                          ),
-                          onPressed: () {
-                            _generateWalletProvider.reloadBuild();
-                          },
-                          child: const Text("Choisir une autre phrase",
-                              style: TextStyle(fontSize: 20))),
-                    ))),
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: SizedBox(
+                  width: 400,
+                  height: 62,
+                  child: ElevatedButton(
+                      key: const Key('generateMnemonic'),
+                      style: ElevatedButton.styleFrom(
+                        elevation: 5,
+                        primary: const Color(0xffFFD58D),
+                        onPrimary: Colors.black, // foreground
+                      ),
+                      onPressed: () {
+                        _generateWalletProvider.reloadBuild();
+                      },
+                      child: const Text("Choisir une autre phrase",
+                          style: TextStyle(fontSize: 20))),
+                ),
+              ),
+            ),
             const SizedBox(height: 25),
             SizedBox(
               width: 400,
@@ -135,12 +137,12 @@ Widget sentanceArray(BuildContext context) {
   // ];
 
   return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 12),
+    padding: const EdgeInsets.symmetric(horizontal: 3),
     child: Container(
       constraints: const BoxConstraints(maxWidth: 450),
       decoration: BoxDecoration(
           border: Border.all(color: Colors.black),
-          color: Colors.grey[300],
+          color: const Color(0xffeeeedd),
           borderRadius: const BorderRadius.all(
             Radius.circular(10),
           )),
@@ -186,17 +188,16 @@ Widget sentanceArray(BuildContext context) {
 
 Widget arrayCell(dataWord) {
   return SizedBox(
-    width: 102,
+    width: 100,
     child: Column(children: <Widget>[
       Text(
         dataWord.split(':')[0],
-        style: const TextStyle(fontSize: 14),
+        style: const TextStyle(fontSize: 15, color: Color(0xff6b6b52)),
       ),
-      const SizedBox(height: 2),
       Text(
         dataWord.split(':')[1],
         key: Key('word${dataWord.split(':')[0]}'),
-        style: const TextStyle(fontSize: 19, color: Colors.black),
+        style: const TextStyle(fontSize: 20, color: Colors.black),
       ),
     ]),
   );

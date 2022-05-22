@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/screens/common_elements.dart';
-import 'package:gecko/screens/onBoarding/1.dart';
+import 'package:gecko/screens/onBoarding/onboarding.dart';
 
 class NoKeyChainScreen extends StatelessWidget {
   const NoKeyChainScreen({Key? key}) : super(key: key);
@@ -39,7 +39,7 @@ class NoKeyChainScreen extends StatelessWidget {
                         Navigator.push(
                             context,
                             FaderTransition(
-                                page: OnboardingStepOne(), isFast: true));
+                                page: OnBoardingPage(), isFast: true));
                       }),
                 ),
               ),

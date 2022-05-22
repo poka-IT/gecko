@@ -10,6 +10,7 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
+import 'package:gecko/screens/onBoarding/onboarding.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/settings.dart';
 import 'package:flutter/services.dart';
@@ -29,6 +30,9 @@ class HomeScreen extends StatelessWidget {
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
+
+    screenWidth = MediaQuery.of(context).size.width;
+    screenHeight = MediaQuery.of(context).size.height;
 
     isTall = false;
     ratio = 1;
@@ -483,7 +487,7 @@ Widget welcomeHome(context) {
                         context,
                         MaterialPageRoute(
                           builder: (context) {
-                            return OnboardingStepOne();
+                            return const OnBoardingPage(); //OnBoardingPage(); //OnboardingStepOne();
                           },
                         ),
                       );

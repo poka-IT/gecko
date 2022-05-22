@@ -29,6 +29,8 @@ String cesiumPod = "https://g1.data.presles.fr";
 // Responsive ratios
 late bool isTall;
 late double ratio;
+late double screenWidth;
+late double screenHeight;
 
 // Logger
 var log = Logger();
@@ -37,7 +39,7 @@ var log = Logger();
 Color orangeC = const Color(0xffd07316);
 Color yellowC = const Color(0xffFFD68E);
 Color floattingYellow = const Color(0xffEFEFBF);
-Color backgroundColor = const Color(0xFFF5F5F5);
+Color backgroundColor = const Color(0xfff9f9f1);
 
 // Substrate settings
 const int ss58 = 42;

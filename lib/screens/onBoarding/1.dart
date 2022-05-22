@@ -18,27 +18,17 @@ class OnboardingStepOne extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    ////TODO: Continue onbarding refactoring
+    CommonElements common = CommonElements();
 
     return Scaffold(
-        appBar: AppBar(
-          toolbarHeight: 60 * ratio,
-          title: const SizedBox(
-            height: 22,
-            child: Text(
-              'Nouveau portefeuille',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ),
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(children: <Widget>[
-            // common.onboardingProgressBar(
-            //     context, 'Nouveau portefeuilles', progress),
-            // common.bubbleSpeak(
-            //     "Il semblerait que vous n’ayez pas encore de coffre.\n\nUn coffre vous permet de gérer un ou plusieurs portefeuilles.",
-            //     textKey: const Key('step1')),
+            common.onboardingProgressBar(
+                context, 'Nouveau portefeuilles', progress),
+            common.bubbleSpeak(
+                "Il semblerait que vous n’ayez pas encore de coffre.\n\nUn coffre vous permet de gérer un ou plusieurs portefeuilles.",
+                textKey: const Key('step1')),
             const SizedBox(height: 90),
             Image.asset(
               'assets/onBoarding/fabrication-de-portefeuille.png',

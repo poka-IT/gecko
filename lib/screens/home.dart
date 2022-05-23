@@ -1,9 +1,10 @@
 import 'package:bubble/bubble.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/stateful_wrapper.dart';
 import 'package:gecko/providers/chest_provider.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/screens/myWallets/restore_chest.dart';
@@ -12,6 +13,7 @@ import 'package:gecko/screens/onBoarding/1.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/settings.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/screens/substrate_sandbox.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -24,7 +26,7 @@ class HomeScreen extends StatelessWidget {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
     Provider.of<ChestProvider>(context);
-    HomeProvider homeClass = HomeProvider();
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
 
@@ -65,6 +67,20 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
               ),
+              ListTile(
+                key: const Key('substrateSandbox'),
+                title: const Text('Substrate debug'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return const SubstrateSandBox();
+                    }),
+                  );
+                },
+              ),
+
               // ListTile(
               //   title: const Text('A propos'),
               //   onTap: () {
@@ -82,8 +98,11 @@ class HomeScreen extends StatelessWidget {
       body: Builder(
         builder: (ctx) => StatefulWrapper(
             onInit: () {
-              WidgetsBinding.instance!.addPostFrameCallback((_) {
-                if (isWalletsExists) homeClass.snackNode(ctx);
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
+                if (!_sub.sdkReady && !_sub.sdkLoading) await _sub.initApi();
+                if (_sub.sdkReady && !_sub.nodeConnected) {
+                  await _sub.connectNode(ctx); //kopa
+                }
               });
             },
             child: isWalletsExists ? geckHome(context) : welcomeHome(context)
@@ -176,9 +195,10 @@ Widget geckHome(context) {
                     ),
                   ],
                 ),
-              )
+              ),
             ]),
       ),
+      const SizedBox(height: 15),
       Expanded(
         flex: 1,
         child: Container(
@@ -382,31 +402,30 @@ Widget welcomeHome(context) {
       ]),
       Padding(
         padding: EdgeInsets.only(top: 1 * ratio),
-        child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const <Widget>[
-              Text(
-                "L’application de paiement Ğ1\nplus rapide qu’un reptile du Vietnam",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  shadows: <Shadow>[
-                    Shadow(
-                      offset: Offset(0, 0),
-                      blurRadius: 20,
-                      color: Colors.black,
-                    ),
-                    Shadow(
-                      offset: Offset(0, 0),
-                      blurRadius: 20,
-                      color: Colors.black,
-                    ),
-                  ],
+        child:
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+          Text(
+            "L’application de paiement $currencyName\nplus rapide qu’un reptile du Vietnam",
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              shadows: <Shadow>[
+                Shadow(
+                  offset: Offset(0, 0),
+                  blurRadius: 20,
+                  color: Colors.black,
                 ),
-              )
-            ]),
+                Shadow(
+                  offset: Offset(0, 0),
+                  blurRadius: 20,
+                  color: Colors.black,
+                ),
+              ],
+            ),
+          )
+        ]),
       ),
       Expanded(
         flex: 1,
@@ -464,7 +483,7 @@ Widget welcomeHome(context) {
                         context,
                         MaterialPageRoute(
                           builder: (context) {
-                            return OnboardingStepOne();
+                            return const OnboardingStepOne();
                           },
                         ),
                       );
@@ -510,28 +529,6 @@ Widget welcomeHome(context) {
       )
     ]),
   );
-}
-
-class StatefulWrapper extends StatefulWidget {
-  final Function onInit;
-  final Widget child;
-  const StatefulWrapper({Key? key, required this.onInit, required this.child})
-      : super(key: key);
-  @override
-  _StatefulWrapperState createState() => _StatefulWrapperState();
-}
-
-class _StatefulWrapperState extends State<StatefulWrapper> {
-  @override
-  void initState() {
-    widget.onInit();
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return widget.child;
-  }
 }
 
 Widget bubbleSpeak(String text, {double? long, Key? textKey}) {

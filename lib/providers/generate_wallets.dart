@@ -1,21 +1,22 @@
 import 'dart:math';
 import 'dart:typed_data';
-import 'package:durt/durt.dart';
+import 'package:durt/durt.dart' as durt;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/bip39_words.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
+import 'package:provider/provider.dart';
 import "package:unorm_dart/unorm_dart.dart" as unorm;
 
 class GenerateWalletsProvider with ChangeNotifier {
   GenerateWalletsProvider();
   // NewWallet generatedWallet;
-  NewWallet? actualWallet;
+  durt.NewWallet? actualWallet;
 
   FocusNode walletNameFocus = FocusNode();
   Color? askedWordColor = Colors.black;
@@ -37,7 +38,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   bool isCesiumIDVisible = false;
   bool isCesiumPWDVisible = false;
   bool canImport = false;
-  late CesiumWallet cesiumWallet;
+  late durt.CesiumWallet cesiumWallet;
 
   // Import Chest
   TextEditingController cellController0 = TextEditingController();
@@ -55,7 +56,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   bool isFirstTimeSentenceComplete = true;
 
   Future storeHDWChest(
-      NewWallet _wallet, String _name, BuildContext context) async {
+      String address, String _name, BuildContext context) async {
     int chestNumber = 0;
     chestBox.toMap().forEach((key, value) {
       if (!value.isCesium!) {
@@ -70,7 +71,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       chestName = 'Coffre à Ğecko ${chestNumber + 1}';
     }
     ChestData thisChest = ChestData(
-      dewif: _wallet.dewif,
+      address: address,
       name: chestName,
       defaultWallet: 0,
       imageName: '${chestNumber % 8}.png',
@@ -81,9 +82,10 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     WalletData myWallet = WalletData(
         chest: chestKey,
+        address: address,
         number: 0,
         name: _name,
-        derivation: 3,
+        derivation: 2,
         imageName: '0.png');
     await walletBox.add(myWallet);
 
@@ -152,64 +154,78 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<NewWallet?> generateWallet(String generatedMnemonic,
-      {required bool isImport}) async {
-    try {
-      actualWallet = await Dewif().generateDewif(
-          generatedMnemonic, randomSecretCode(pinLength),
-          lang: appLang);
-    } catch (e) {
-      log.e(e);
-    }
-
-    if (!isImport) {
-      mnemonicController.text = generatedMnemonic;
-      pin.text = actualWallet!.password;
-    }
-    // notifyListeners();
-
-    return actualWallet;
-  }
-
   String changePinCode({required bool reload}) {
-    pin.text = randomSecretCode(pinLength);
+    pin.text = durt.randomSecretCode(pinLength);
     if (reload) {
       notifyListeners();
     }
     return pin.text;
   }
 
-  Future<Uint8List> printWallet(String? _title) async {
+  Future<Uint8List> printWallet(AsyncSnapshot<List>? mnemoList) async {
     final ByteData fontData =
         await rootBundle.load("assets/OpenSans-Regular.ttf");
     final pw.Font ttf = pw.Font.ttf(fontData.buffer.asByteData());
     final pdf = pw.Document();
 
-    const imageProvider = AssetImage('assets/icon/gecko_final.png');
-    final geckoLogo = await flutterImageProvider(imageProvider);
+    // const imageProvider = AssetImage('assets/icon/gecko_final.png');
+    // final geckoLogo = await flutterImageProvider(imageProvider);
+
+    pw.Widget arrayCell(dataWord) {
+      return pw.SizedBox(
+        width: 120,
+        child: pw.Column(children: <pw.Widget>[
+          pw.Text(
+            dataWord.split(':')[0],
+            style: pw.TextStyle(
+                fontSize: 15, color: const PdfColor(0.5, 0, 0), font: ttf),
+          ),
+          pw.Text(
+            dataWord.split(':')[1],
+            style: pw.TextStyle(
+                fontSize: 20, color: const PdfColor(0, 0, 0), font: ttf),
+          ),
+          pw.SizedBox(height: 10)
+        ]),
+      );
+    }
 
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
         build: (context) {
-          return pw.Column(children: <pw.Widget>[
-            pw.SizedBox(height: 20),
-            pw.Text("Phrase de restauration:",
-                style: pw.TextStyle(fontSize: 20, font: ttf)),
-            pw.SizedBox(height: 10),
-            pw.Text(_title!,
-                style: pw.TextStyle(fontSize: 15, font: ttf),
-                textAlign: pw.TextAlign.center),
-            pw.Expanded(
-                child: pw.Align(
-                    alignment: pw.Alignment.bottomCenter,
-                    child: pw.Text(
-                      "Gardez cette feuille en lieu sûr, à l'abris des regards indiscrets.",
-                      style: pw.TextStyle(fontSize: 10, font: ttf),
-                    ))),
-            pw.SizedBox(height: 15),
-            pw.Image(geckoLogo, height: 50)
-          ]);
+          return pw.Column(
+            // mainAxisAlignment: pw.MainAxisAlignment.center,
+            // mainAxisSize: pw.MainAxisSize.max,
+            // crossAxisAlignment: pw.CrossAxisAlignment.center,
+            children: <pw.Widget>[
+              pw.Row(children: <pw.Widget>[
+                arrayCell(mnemoList!.data![0]),
+                arrayCell(mnemoList.data![1]),
+                arrayCell(mnemoList.data![2]),
+                arrayCell(mnemoList.data![3]),
+              ]),
+              pw.Row(children: <pw.Widget>[
+                arrayCell(mnemoList.data![4]),
+                arrayCell(mnemoList.data![5]),
+                arrayCell(mnemoList.data![6]),
+                arrayCell(mnemoList.data![7]),
+              ]),
+              pw.Row(children: <pw.Widget>[
+                arrayCell(mnemoList.data![8]),
+                arrayCell(mnemoList.data![9]),
+                arrayCell(mnemoList.data![10]),
+                arrayCell(mnemoList.data![11])
+              ]),
+              pw.Expanded(
+                  child: pw.Align(
+                      alignment: pw.Alignment.bottomCenter,
+                      child: pw.Text(
+                        "Gardez cette feuille préciseusement, à l’abri des lézards indiscrets.",
+                        style: pw.TextStyle(fontSize: 15, font: ttf),
+                      )))
+            ],
+          );
         },
       ),
     );
@@ -219,61 +235,11 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   Future<void> generateCesiumWalletPubkey(
       String _cesiumID, String _cesiumPWD) async {
-    cesiumWallet = CesiumWallet(_cesiumID, _cesiumPWD);
+    cesiumWallet = durt.CesiumWallet(_cesiumID, _cesiumPWD);
     String _walletPubkey = cesiumWallet.pubkey;
 
     cesiumPubkey.text = _walletPubkey;
     log.d(_walletPubkey);
-  }
-
-  Future<int?> importCesiumWallet() async {
-    // String _walletPubkey = await DubpRust.getLegacyPublicKey(
-    //     salt: _cesiumID, password: _cesiumPWD);
-    // String shortPubkey = truncate(_walletPubkey, 9,
-    //     omission: "...", position: TruncatePosition.end);
-    // await storeWallet(
-    //     actualWallet, 'Portefeuille Cesium - $shortPubkey', context);
-    // NewWallet myCesiumWallet = await DubpRust.genWalletFromDeprecatedSaltPassword(salt: _cesiumID, password: _cesiumPWD);
-
-    cesiumID.text = '';
-    cesiumPWD.text = '';
-    cesiumPubkey.text = '';
-    canImport = false;
-    isCesiumIDVisible = false;
-    isCesiumPWDVisible = false;
-
-    int chestNumber = 0;
-    chestBox.toMap().forEach((key, value) {
-      if (value.isCesium!) {
-        chestNumber++;
-      }
-    });
-
-    String chestName;
-    if (chestNumber == 0) {
-      chestName = 'Coffre à Césium';
-    } else {
-      chestName = 'Coffre à Césium ${chestNumber + 1}';
-    }
-
-    log.d(pin.text);
-    NewWallet cesiumDewif =
-        await Dewif().generateCesiumDewif(cesiumWallet.seed, pin.text);
-
-    ChestData cesiumChest = ChestData(
-        dewif: cesiumDewif.dewif,
-        name: chestName,
-        imageName: 'cesium.png',
-        defaultWallet: 0,
-        isCesium: true);
-
-    await chestBox.add(cesiumChest).then((value) => null);
-    int? chestKey = await chestBox.toMap().keys.last;
-    // chestBox.toMap().
-    await configBox.put('currentChest', chestKey);
-
-    pin.text = '';
-    return chestKey;
   }
 
   void cesiumIDisVisible() {
@@ -293,8 +259,10 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  List<String> generateWordList() {
-    generatedMnemonic = generateMnemonic(lang: appLang);
+  Future<List<String>> generateWordList(BuildContext context) async {
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+
+    generatedMnemonic = await _sub.generateMnemonic(lang: appLang);
     List<String> _wordsList = [];
     String word;
     int _nbr = 1;
@@ -313,7 +281,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     // Needed for bad encoding of UTF-8
     word = word.replaceAll('é', 'é');
     word = word.replaceAll('è', 'è');
-    return bip39Words.contains(word);
+    return bip39Words(appLang).contains(word);
   }
 
   bool isBipWordsList(List<String> words) {
@@ -322,7 +290,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       // Needed for bad encoding of UTF-8
       word = word.replaceAll('é', 'é');
       word = word.replaceAll('è', 'è');
-      if (!bip39Words.contains(word)) {
+      if (!bip39Words(appLang).contains(word)) {
         isValid = false;
       }
     }
@@ -333,8 +301,8 @@ class GenerateWalletsProvider with ChangeNotifier {
     cellController0.text = cellController1.text = cellController2.text =
         cellController3.text = cellController4.text = cellController5.text =
             cellController6.text = cellController7.text = cellController8.text =
-                cellController9.text = cellController10.text =
-                    cellController11.text = '';
+                cellController9.text =
+                    cellController10.text = cellController11.text = '';
     isFirstTimeSentenceComplete = true;
     notifyListeners();
   }
@@ -366,22 +334,31 @@ class GenerateWalletsProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> isSentenceValid() async {
-    String inputMnemonic =
-        '${cellController0.text} ${cellController1.text} ${cellController2.text} ${cellController3.text} ${cellController4.text} ${cellController5.text} ${cellController6.text} ${cellController7.text} ${cellController8.text} ${cellController9.text} ${cellController10.text} ${cellController11.text}';
+  Future pasteMnemonic(BuildContext context) async {
+    final sentence = await Clipboard.getData('text/plain');
+    int nbr = 0;
 
-    // Needed for bad encoding of UTF-8
-    inputMnemonic = inputMnemonic.replaceAll('é', 'é');
-    inputMnemonic = inputMnemonic.replaceAll('è', 'è');
+    List cells = [
+      cellController0,
+      cellController1,
+      cellController2,
+      cellController3,
+      cellController4,
+      cellController5,
+      cellController6,
+      cellController7,
+      cellController8,
+      cellController9,
+      cellController10,
+      cellController11
+    ];
+    for (var word in sentence!.text!.split(' ')) {
+      bool isValid = isBipWord(word);
 
-    NewWallet? generatedWallet =
-        await generateWallet(inputMnemonic, isImport: true);
-
-    if (generatedWallet == null) {
-      return false;
-    } else {
-      generatedMnemonic = inputMnemonic;
-      return true;
+      if (isValid) {
+        cells[nbr].text = word;
+      }
+      nbr++;
     }
   }
 

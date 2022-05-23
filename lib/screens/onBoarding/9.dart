@@ -1,71 +1,109 @@
 // ignore_for_file: file_names
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/10.dart';
+import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
-class OnboardingStepEleven extends StatelessWidget {
-  TextEditingController tplController = TextEditingController();
-  final int progress = 8;
-
-  OnboardingStepEleven({Key? key}) : super(key: key);
+class OnboardingStepThirteen extends StatelessWidget {
+  const OnboardingStepThirteen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    GenerateWalletsProvider _generateWalletProvider =
+        Provider.of<GenerateWalletsProvider>(context);
+    // MyWalletsProvider myWalletProvider =
+    //     Provider.of<MyWalletsProvider>(context);
     CommonElements common = CommonElements();
 
+    _generateWalletProvider.pin.text = kDebugMode && debugPin
+        ? 'AAAAA'
+        : _generateWalletProvider.changePinCode(reload: false);
+
     return Scaffold(
+        appBar: AppBar(
+          toolbarHeight: 60 * ratio,
+          title: const SizedBox(
+            height: 22,
+            child: Text(
+              'Mon code secret',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(children: <Widget>[
-            common.onboardingProgressBar(
-                context, 'Ma phrase de restauration', progress),
-            common.bubbleSpeakRich(
+            SizedBox(height: isTall ? 40 : 20),
+            common.buildProgressBar(8),
+            SizedBox(height: isTall ? 40 : 20),
+            common.buildText(
               <TextSpan>[
                 const TextSpan(
-                    text: "Super !\n\nJe vais maintenant créer votre "),
+                    text:
+                        "Et voilà votre code secret !\n\nMémorisez-le ou notez-le, car il vous sera demandé "),
                 const TextSpan(
-                    text: 'code secret.',
+                    text: 'à chaque fois',
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 const TextSpan(
                     text:
-                        " \n\nVotre code secret chiffre votre trousseau de clefs, ce qui le rend inutilisable par d’autres, par exemple si vous perdez votre téléphone ou si on vous le vole."),
+                        " que vous voudrez effectuer un paiement sur cet appareil."),
               ],
-              textKey: const Key('step9'),
             ),
-            SizedBox(height: isTall ? 50 : 10),
-            Image.asset(
-              'assets/onBoarding/treasure-chest-gecko-souligne.png',
-              height: 280 * ratio, //5": 400
+            const SizedBox(height: 100),
+            Stack(
+              alignment: Alignment.centerRight,
+              children: <Widget>[
+                TextField(
+                    key: const Key('generatedPin'),
+                    enabled: false,
+                    controller: _generateWalletProvider.pin,
+                    maxLines: 1,
+                    textAlign: TextAlign.center,
+                    decoration: const InputDecoration(),
+                    style: const TextStyle(
+                        letterSpacing: 5,
+                        fontSize: 35.0,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold)),
+                IconButton(
+                  icon: const Icon(Icons.replay),
+                  color: orangeC,
+                  onPressed: () {
+                    _generateWalletProvider.changePinCode(reload: true);
+                  },
+                ),
+              ],
             ),
             Expanded(
                 child: Align(
                     alignment: Alignment.bottomCenter,
                     child: SizedBox(
-                      width: 400,
-                      height: 62,
+                      width: 410,
+                      height: 70,
                       child: ElevatedButton(
-                          key: const Key('goStep10'),
+                          key: const Key('changeSecretCode'),
                           style: ElevatedButton.styleFrom(
-                            elevation: 5,
-                            primary: orangeC,
-                            onPrimary: Colors.white, // foreground
+                            elevation: 4,
+                            primary: const Color(0xffFFD58D),
+                            onPrimary: Colors.black, // foreground
                           ),
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              FaderTransition(
-                                  page: OnboardingStepTwelve(), isFast: true),
-                            );
+                            _generateWalletProvider.changePinCode(reload: true);
                           },
-                          child: const Text("J'ai compris",
-                              style: TextStyle(fontSize: 20))),
+                          child: const Text("Choisir un autre code secret",
+                              style: TextStyle(
+                                  fontSize: 24, fontWeight: FontWeight.w600))),
                     ))),
-            const SizedBox(height: 80),
+            const SizedBox(height: 25),
+            common.nextButton(context, "J'ai noté mon code secret",
+                OnboardingStepFourteen(), false),
+            const SizedBox(height: 40),
           ]),
         ));
   }

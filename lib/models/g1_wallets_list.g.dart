@@ -1,7 +1,5 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-// ignore_for_file: unused_local_variable
-
 part of 'g1_wallets_list.dart';
 
 // **************************************************************************
@@ -21,11 +19,11 @@ class G1WalletsListAdapter extends TypeAdapter<G1WalletsList> {
     return G1WalletsList(
       pubkey: fields[0] as String?,
       balance: fields[1] as double?,
-      id: fields[3] as Id?,
-      avatar: fields[4] as Image?,
-      username: fields[5] as String?,
-      csName: fields[6] as String?,
-      isMembre: fields[7] as bool?,
+      id: fields[2] as Id?,
+      avatar: fields[3] as Image?,
+      username: fields[4] as String?,
+      csName: fields[5] as String?,
+      isMembre: fields[6] as bool?,
     );
   }
 
@@ -37,15 +35,15 @@ class G1WalletsListAdapter extends TypeAdapter<G1WalletsList> {
       ..write(obj.pubkey)
       ..writeByte(1)
       ..write(obj.balance)
-      ..writeByte(3)
+      ..writeByte(2)
       ..write(obj.id)
-      ..writeByte(4)
+      ..writeByte(3)
       ..write(obj.avatar)
-      ..writeByte(5)
+      ..writeByte(4)
       ..write(obj.username)
-      ..writeByte(6)
+      ..writeByte(5)
       ..write(obj.csName)
-      ..writeByte(7)
+      ..writeByte(6)
       ..write(obj.isMembre);
   }
 
@@ -66,10 +64,6 @@ class IdAdapter extends TypeAdapter<Id> {
 
   @override
   Id read(BinaryReader reader) {
-    final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{
-      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
-    };
     return Id();
   }
 

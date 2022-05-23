@@ -24,14 +24,15 @@ class ChestOptions extends StatelessWidget {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
           toolbarHeight: 60 * ratio,
-          leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
-              onPressed: () {
-                Navigator.popUntil(
-                  context,
-                  ModalRoute.withName('/mywallets'),
-                );
-              }),
+          // leading: IconButton(
+          //     icon: const Icon(Icons.arrow_back, color: Colors.black),
+          //     onPressed: () {
+          //       // Navigator.popUntil(
+          //       //   context,
+          //       //   ModalRoute.withName('/mywallets'),
+          //       // );
+          //       Navigator.pop(context);
+          //     }),
           title: SizedBox(
             height: 22,
             child: Text(currentChest.name!),

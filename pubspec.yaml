@@ -5,7 +5,7 @@ description: Pay with G1.
 # pub.dev using `pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 0.0.4+8
+version: 0.0.5+3
 
 environment:
   sdk: '>=2.12.0 <3.0.0'
@@ -17,7 +17,7 @@ dependencies:
     sdk: flutter
   window_size:
     git:
-      url: git://github.com/google/flutter-desktop-embedding.git
+      url: https://github.com/google/flutter-desktop-embedding.git
       path: plugins/window_size
   assorted_layout_widgets: ^5.2.1
   bubble: ^1.2.1
@@ -25,11 +25,14 @@ dependencies:
   confirm_dialog: ^1.0.0
   crypto: ^3.0.1
   fast_base58: ^0.2.0
-  flutter_launcher_icons: ^0.9.2
   flutter_lints: ^1.0.4
   flutter_logs: ^2.1.4
   flutter_svg: ^0.22.0
-  graphql_flutter: ^5.0.0
+  graphql_flutter: #^5.1.0
+    git:
+      url: https://github.com/Quantit-Github/graphql-flutter.git
+      path: packages/graphql_flutter
+      ref: f1ccb2d # commit hash
   hive: ^2.0.4
   hive_flutter: ^1.1.0
   http: ^0.13.4
@@ -43,25 +46,25 @@ dependencies:
   pdf: ^3.7.1
   permission_handler: ^8.3.0
   pin_code_fields: ^7.3.0
-  printing: ^5.7.2
+  printing: #^5.8.0
+    git: 
+      url: https://github.com/DavBfr/dart_pdf.git
+      path: printing
   provider: ^6.0.1
-  # qrscan: ^0.3.2
-  qrscan:
+  qrscan: #^0.3.2
     git:
-      url: git://github.com/leyan95/qrcode_scanner.git
+      url: https://github.com/leyan95/qrcode_scanner.git
       ref: master # branch name
   # qr_code_scanner: ^0.6.1
-  # qr_flutter: ^4.0.0
-  qr_flutter:
+  qr_flutter: #^4.0.0
     git:
-      url: git://github.com/insinfo/qr.flutter.git
+      url: https://github.com/insinfo/qr.flutter.git
       ref: master # branch name
   responsive_builder: ^0.4.1
   responsive_framework: ^0.1.4
-  sentry: ^6.0.0
-  sentry_flutter: ^6.0.0
+  sentry: ^6.5.1
+  sentry_flutter: ^6.5.1
   shared_preferences: ^2.0.7
-  super_tooltip: ^1.0.1
   sync_http: ^0.3.0
   test: ^1.17.10
   truncate: ^3.0.1
@@ -71,21 +74,31 @@ dependencies:
   dio: ^4.0.4
   desktop_window: ^0.4.0
   durt: ^0.1.6
-  package_info_plus: ^1.3.0
-
-flutter_icons:
-  android: "ic_launcher"
-  ios: true
-  image_path: "assets/icon/gecko_flat.png"
-  cupertino_icons: ^1.0.0
+  package_info_plus: ^1.4.2
+  polkawallet_sdk: #^0.4.5
+    git:
+      url: https://github.com/poka-IT/sdk.git
+      ref: fixAndroidActivityVersion
+  dots_indicator: ^2.1.0
 
 dev_dependencies:
+  # flutter_launcher_icons: ^0.9.2
+  # flutter_launcher_icons_maker: ^^0.10.2
+  icons_launcher: ^1.1.8
   build_runner: ^2.1.2
   flutter_test:
     sdk: flutter
   hive_generator: ^1.1.1
   integration_test:
     sdk: flutter
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/gecko_flat.png"
+  remove_alpha_ios: true
+
+uses-material-design: true
 
 # The following section is specific to Flutter.
 flutter:

@@ -7,7 +7,10 @@ part 'chest_data.g.dart';
 @HiveType(typeId: 1)
 class ChestData extends HiveObject {
   @HiveField(0)
-  String? dewif;
+  String? address;
+
+  @HiveField(1)
+  String? rootAddress;
 
   @HiveField(2)
   String? name;
@@ -25,7 +28,8 @@ class ChestData extends HiveObject {
   bool? isCesium;
 
   ChestData({
-    this.dewif,
+    this.address,
+    this.rootAddress,
     this.name,
     this.defaultWallet,
     this.imageName,

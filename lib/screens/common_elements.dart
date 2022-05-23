@@ -1,5 +1,5 @@
+import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/material.dart';
-import 'package:bubble/bubble.dart';
 import 'package:gecko/globals.dart';
 
 class CommonElements {
@@ -8,95 +8,104 @@ class CommonElements {
     return const Text('Coucou');
   }
 
-  Widget bubbleSpeak(String text,
-      {double? long, Key? textKey, bool isMaxWidth = true}) {
+  Widget buildImage(String assetName,
+      [double boxHeight = 440, double imageWidth = 350]) {
+    return Container(
+        padding: const EdgeInsets.all(0),
+        width: 440,
+        height: boxHeight,
+        decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xffd2d4cf),
+                Color(0xffeaeae7),
+              ],
+            ),
+            border: Border.all(color: Colors.grey[900]!)),
+        child: Image.asset('assets/onBoarding/$assetName', width: imageWidth));
+  }
+
+  Widget buildText(List<TextSpan> text, [double size = 20]) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      width: 440,
+      decoration: BoxDecoration(
+          color: Colors.white, border: Border.all(color: Colors.grey[900]!)),
+      child: RichText(
+        textAlign: TextAlign.justify,
+        text: TextSpan(
+          style: TextStyle(
+              fontSize: size, color: Colors.black, letterSpacing: 0.3),
+          children: text,
+        ),
+      ),
+    );
+  }
+
+  Widget nextButton(
+      BuildContext context, String text, nextScreen, bool isFast) {
     return SizedBox(
-      width: isMaxWidth ? double.infinity : 300,
-      child: Bubble(
-        padding: long == null
-            ? const BubbleEdges.all(18)
-            : BubbleEdges.symmetric(horizontal: long, vertical: 30),
-        elevation: 5,
-        color: Colors.white,
-        margin: const BubbleEdges.fromLTRB(10, 0, 20, 10),
-        // nip: BubbleNip.leftTop,
+      width: 410,
+      height: 70,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          elevation: 4,
+          primary: orangeC, // background
+          onPrimary: Colors.white, // foreground
+        ),
+        onPressed: () {
+          Navigator.push(
+              context, FaderTransition(page: nextScreen, isFast: isFast));
+        },
         child: Text(
           text,
-          key: textKey,
-          style: const TextStyle(
-              color: Colors.black, fontSize: 18, fontWeight: FontWeight.w400),
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
         ),
       ),
     );
   }
 
-  Widget bubbleSpeakRich(List<TextSpan> text, {Key? textKey}) {
-    return SizedBox(
-      width: double.infinity,
-      child: Bubble(
-        padding: const BubbleEdges.all(18),
-        elevation: 5,
-        color: Colors.white,
-        margin: const BubbleEdges.fromLTRB(10, 0, 20, 10),
-        // nip: BubbleNip.leftTop,
-        child: RichText(
-          key: textKey,
-          text: TextSpan(
-            style: const TextStyle(
-              fontSize: 18.0,
-              color: Colors.black,
-            ),
-            children: text,
-          ),
-        ),
+  Widget buildProgressBar(double pagePosition) {
+    return DotsIndicator(
+      dotsCount: 10,
+      position: pagePosition,
+      decorator: DotsDecorator(
+        spacing: const EdgeInsets.symmetric(horizontal: 10),
+        color: Colors.grey[300]!, // Inactive color
+        activeColor: orangeC,
       ),
     );
   }
 
-  Widget onboardingProgressBar(
-      BuildContext context, String screenTitle, int progress) {
-    return Stack(children: [
-      Container(height: 100),
-      Positioned(
-          top: 0, left: 0, right: 0, child: GeckoSpeechAppBar(screenTitle)),
-      Positioned(
-        top: 0,
-        left: 0,
-        child: GestureDetector(
-          onTap: () {
-            Navigator.popUntil(
-              context,
-              ModalRoute.withName('/'),
-            );
-          },
-          child: Image.asset(
-            'assets/onBoarding/gecko_bar.png',
-          ),
+  Widget infoIntro(
+    BuildContext context,
+    List<TextSpan> text,
+    String assetName,
+    String buttonText,
+    nextScreen,
+    double pagePosition, {
+    bool isFast = false,
+    double boxHeight = 440,
+    double imageWidth = 350,
+    double textSize = 20,
+  }) {
+    return Column(children: <Widget>[
+      SizedBox(height: isTall ? 40 : 20),
+      buildProgressBar(pagePosition),
+      SizedBox(height: isTall ? 40 : 20),
+
+      buildText(text, textSize),
+      buildImage(assetName, boxHeight, imageWidth),
+      Expanded(
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: nextButton(context, buttonText, nextScreen, false),
         ),
       ),
-      if (progress != 0)
-        Positioned(
-          top: 75,
-          left: 90,
-          child: Image.asset(
-            'assets/onBoarding/progress_bar/total.png',
-          ),
-        ),
-      if (progress != 0)
-        Positioned(
-          top: 75,
-          left: 90,
-          child: Image.asset(
-            'assets/onBoarding/progress_bar/$progress.png',
-          ),
-        ),
-      if (progress != 0)
-        Positioned(
-          top: 70,
-          right: 90,
-          child: Text(progress == 12 ? '11/11' : '$progress/11',
-              style: const TextStyle(fontSize: 12, color: Colors.black)),
-        ),
+      // const SizedBox(height: 40),
+      SizedBox(height: isTall ? 40 : 10),
     ]);
   }
 

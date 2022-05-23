@@ -17,7 +17,8 @@ class ChestDataAdapter extends TypeAdapter<ChestData> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return ChestData(
-      dewif: fields[0] as String?,
+      address: fields[0] as String?,
+      rootAddress: fields[1] as String?,
       name: fields[2] as String?,
       defaultWallet: fields[3] as int?,
       imageName: fields[4] as String?,
@@ -29,9 +30,11 @@ class ChestDataAdapter extends TypeAdapter<ChestData> {
   @override
   void write(BinaryWriter writer, ChestData obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(0)
-      ..write(obj.dewif)
+      ..write(obj.address)
+      ..writeByte(1)
+      ..write(obj.rootAddress)
       ..writeByte(2)
       ..write(obj.name)
       ..writeByte(3)

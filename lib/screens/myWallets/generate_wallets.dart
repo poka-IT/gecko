@@ -1,16 +1,13 @@
-import 'package:durt/durt.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/screens/myWallets/confirm_wallet_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
-import 'package:super_tooltip/super_tooltip.dart';
 
 // ignore: must_be_immutable
 class GenerateFastChestScreen extends StatelessWidget {
-  SuperTooltip? tooltip;
   bool hasError = false;
   String validPin = 'NO PIN';
   String currentText = "";
@@ -25,14 +22,11 @@ class GenerateFastChestScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     GenerateWalletsProvider _generateWalletProvider =
-        Provider.of<GenerateWalletsProvider>(context);
+        Provider.of<GenerateWalletsProvider>(context, listen: false);
 
-    if (_generateWalletProvider.mnemonicController.text == '') {
-      _generateWalletProvider.generateWordList();
-      _generateWalletProvider.mnemonicController.text =
-          _generateWalletProvider.generatedMnemonic!;
-      _generateWalletProvider.pin.text = randomSecretCode(pinLength);
-    }
+    _generateWalletProvider.pin.text = kDebugMode && debugPin
+        ? 'AAAAA'
+        : _generateWalletProvider.changePinCode(reload: false);
 
     return WillPopScope(
       onWillPop: () {
@@ -52,7 +46,7 @@ class GenerateFastChestScreen extends StatelessWidget {
                 }),
             title: const SizedBox(
               height: 22,
-              child: Text('Générer un trousseau'),
+              child: Text('Générer un coffre'),
             )),
         floatingActionButton: SizedBox(
             height: 80.0,
@@ -61,9 +55,7 @@ class GenerateFastChestScreen extends StatelessWidget {
                 child: FloatingActionButton(
               heroTag: "buttonGenerateWallet",
               onPressed: () {
-                _generateWalletProvider.generateWordList();
-                _generateWalletProvider.mnemonicController.text =
-                    _generateWalletProvider.generatedMnemonic!;
+                _generateWalletProvider.reloadBuild();
               },
               child: SizedBox(
                 height: 40.0,
@@ -79,18 +71,23 @@ class GenerateFastChestScreen extends StatelessWidget {
               const SizedBox(height: 20),
               toolTips(_toolTipSentence, 'Phrase de restauration:',
                   "Notez et gardez cette phrase précieusement sur un papier, elle vous servira à restaurer votre portefeuille sur un autre appareil"),
-              TextField(
-                  enabled: false,
-                  controller: _generateWalletProvider.mnemonicController,
-                  maxLines: 3,
-                  textAlign: TextAlign.center,
-                  decoration: const InputDecoration(
-                    contentPadding: EdgeInsets.all(15.0),
-                  ),
-                  style: const TextStyle(
-                      fontSize: 22.0,
-                      color: Colors.black,
-                      fontWeight: FontWeight.w400)),
+              Consumer<GenerateWalletsProvider>(builder: (context, _gWP, _) {
+                return FutureBuilder(
+                    future: _gWP.generateWordList(context),
+                    builder: (BuildContext context, AsyncSnapshot<List> _data) {
+                      if (!_data.hasData) {
+                        return const Text('');
+                      } else {
+                        return Text(_gWP.generatedMnemonic!,
+                            maxLines: 3,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                fontSize: 22.0,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w400));
+                      }
+                    });
+              }),
               const SizedBox(height: 8),
               toolTips(_toolTipSecret, 'Code secret:',
                   "Retenez bien votre code secret, il vous sera demandé à chaque paiement, ainsi que pour configurer votre portefeuille"),
@@ -112,7 +109,7 @@ class GenerateFastChestScreen extends StatelessWidget {
                     icon: const Icon(Icons.replay),
                     color: orangeC,
                     onPressed: () {
-                      _generateWalletProvider.changePinCode(reload: true);
+                      _generateWalletProvider.changePinCode(reload: false);
                     },
                   ),
                 ],
@@ -128,11 +125,6 @@ class GenerateFastChestScreen extends StatelessWidget {
                       ? () async {
                           _generateWalletProvider.nbrWord =
                               _generateWalletProvider.getRandomInt();
-                          _generateWalletProvider.actualWallet = await Dewif()
-                              .generateDewif(
-                                  _generateWalletProvider.generatedMnemonic!,
-                                  _generateWalletProvider.pin.text,
-                                  lang: appLang);
                           await Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) {
@@ -145,20 +137,20 @@ class GenerateFastChestScreen extends StatelessWidget {
                           );
                         }
                       : null,
-                  child: const Text('Enregistrer ce trousseau',
+                  child: const Text('Enregistrer ce coffre',
                       style: TextStyle(fontSize: 20))),
               const SizedBox(height: 20),
-              GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return PrintWallet(
-                            _generateWalletProvider.generatedMnemonic);
-                      }),
-                    );
-                  },
-                  child: const Icon(Icons.print))
+              // GestureDetector(
+              //     onTap: () {
+              //       Navigator.push(
+              //         context,
+              //         MaterialPageRoute(builder: (context) {
+              //           return PrintWallet(
+              //               _generateWalletProvider.generatedMnemonic);
+              //         }),
+              //       );
+              //     },
+              //     child: const Icon(Icons.print))
             ]),
           ),
         ),
@@ -201,30 +193,30 @@ class GenerateFastChestScreen extends StatelessWidget {
   }
 }
 
-// ignore: must_be_immutable
-class PrintWallet extends StatelessWidget {
-  const PrintWallet(this.sentence, {Key? key}) : super(key: key);
+// // ignore: must_be_immutable
+// class PrintWallet extends StatelessWidget {
+//   const PrintWallet(this.sentence, {Key? key}) : super(key: key);
 
-  final String? sentence;
+//   final String? sentence;
 
-  @override
-  Widget build(BuildContext context) {
-    GenerateWalletsProvider _generateWalletProvider =
-        Provider.of<GenerateWalletsProvider>(context);
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-            leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () {
-                  Navigator.pop(context);
-                }),
-            toolbarHeight: 60 * ratio,
-            title: const Text('Imprimer ce trousseau')),
-        body: PdfPreview(
-          build: (format) => _generateWalletProvider.printWallet(sentence),
-        ),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     GenerateWalletsProvider _generateWalletProvider =
+//         Provider.of<GenerateWalletsProvider>(context);
+//     return MaterialApp(
+//       home: Scaffold(
+//         appBar: AppBar(
+//             leading: IconButton(
+//                 icon: const Icon(Icons.arrow_back, color: Colors.white),
+//                 onPressed: () {
+//                   Navigator.pop(context);
+//                 }),
+//             toolbarHeight: 60 * ratio,
+//             title: const Text('Imprimer ce coffre')),
+//         body: PdfPreview(
+//           build: (format) => _generateWalletProvider.printWallet(sentence),
+//         ),
+//       ),
+//     );
+//   }
+// }

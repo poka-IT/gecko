@@ -5,16 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/3.dart';
-// import 'package:gecko/screens/commonElements.dart';
-// import 'package:gecko/models/home.dart';
-// import 'package:provider/provider.dart';
 
-// ignore: must_be_immutable
 class OnboardingStepTwo extends StatelessWidget {
-  TextEditingController tplController = TextEditingController();
-  final int progress = 2;
-
-  OnboardingStepTwo({Key? key}) : super(key: key);
+  const OnboardingStepTwo({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,44 +15,30 @@ class OnboardingStepTwo extends StatelessWidget {
     CommonElements common = CommonElements();
 
     return Scaffold(
-        extendBodyBehindAppBar: true,
-        body: SafeArea(
-          child: Column(children: <Widget>[
-            common.onboardingProgressBar(
-                context, 'Nouveau portefeuilles', progress),
-            common.bubbleSpeak(
-              "Un trousseau est créé à partir d’une phrase de restauration.",
-              textKey: const Key('step2'),
-            ),
-            const SizedBox(height: 70),
-            Image.asset(
-                'assets/onBoarding/keys-and-wallets-horizontal-plus-phrase.png'),
-            Expanded(
-                child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: SizedBox(
-                      width: 400,
-                      height: 62,
-                      child: ElevatedButton(
-                        key: const Key('goStep3'),
-                        style: ElevatedButton.styleFrom(
-                          elevation: 5,
-                          primary: orangeC,
-                          onPrimary: Colors.white, // foreground
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            FaderTransition(
-                                page: OnboardingStepFor(), isFast: true),
-                          );
-                        },
-                        child: const Text("D'accord",
-                            style: TextStyle(fontSize: 20)),
-                      ),
-                    ))),
-            const SizedBox(height: 80),
-          ]),
-        ));
+      appBar: AppBar(
+        toolbarHeight: 60 * ratio,
+        title: const SizedBox(
+          height: 22,
+          child: Text(
+            'Votre phrase de restauration',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
+      ),
+      extendBodyBehindAppBar: true,
+      body: SafeArea(
+        child: common.infoIntro(
+            context,
+            <TextSpan>[
+              const TextSpan(
+                  text:
+                      'Conservez cette phrase précieusement, car sans elle Gecko ne pourra pas reconstruire vos portefeuilles le jour où vous changez de téléphone.'),
+            ],
+            'fabrication-de-portefeuille-impossible-sans-phrase.png',
+            '>',
+            const OnboardingStepThree(),
+            1),
+      ),
+    );
   }
 }

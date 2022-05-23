@@ -1,4 +1,4 @@
-//  Copyright (C) 2020 Axiom-Team.
+//  Copyright (C) 2022 Axiom-Team.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -20,11 +20,11 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/cesium_plus.dart';
-import 'package:gecko/providers/change_pin.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/providers/generate_wallets.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -65,19 +65,23 @@ Future<void> main() async {
   Hive.registerAdapter(ChestDataAdapter());
   Hive.registerAdapter(G1WalletsListAdapter());
   Hive.registerAdapter(IdAdapter());
+  // Hive.registerAdapter(KeyStoreDataAdapter());
+
   walletBox = await Hive.openBox<WalletData>("walletBox");
   chestBox = await Hive.openBox<ChestData>("chestBox");
   configBox = await Hive.openBox("configBox");
+  await Hive.deleteBoxFromDisk('g1WalletsBox');
   g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
+  // keystoreBox = await Hive.openBox("keystoreBox");
 
-  g1WalletsBox.clear();
+  // g1WalletsBox.clear();
 
   // final HiveStore _store =
   //     await HiveStore.open(path: '${appPath.path}/gqlCache');
 
   // Get a valid GVA endpoint
-  // endPointGVA = 'https://g1.librelois.fr/gva';
-  endPointGVA = 'https://duniter-g1.p2p.legal/gva';
+  endPointGVA = 'https://g1.librelois.fr/gva';
+  // endPointGVA = 'https://duniter-g1.p2p.legal/gva';
   // await _homeProvider.getValidEndpoint();
 
   // if (endPointGVA == 'HS') {
@@ -152,9 +156,9 @@ class Gecko extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ChestProvider()),
         ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
         ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
-        ChangeNotifierProvider(create: (_) => ChangePinProvider()),
         ChangeNotifierProvider(create: (_) => SearchProvider()),
-        ChangeNotifierProvider(create: (_) => CesiumPlusProvider())
+        ChangeNotifierProvider(create: (_) => CesiumPlusProvider()),
+        ChangeNotifierProvider(create: (_) => SubstrateSdk())
       ],
       child: GraphQLProvider(
         client: _client,
@@ -178,8 +182,8 @@ class Gecko extends StatelessWidget {
             ),
             primaryColor: const Color(0xffFFD58D),
             textTheme: const TextTheme(
-              bodyText1: TextStyle(),
-              bodyText2: TextStyle(),
+              bodyText1: TextStyle(fontSize: 16),
+              bodyText2: TextStyle(fontSize: 18),
             ).apply(
               bodyColor: const Color(0xFF000000),
             ),

@@ -1,7 +1,5 @@
 import 'dart:io';
-
 import 'package:hive_flutter/hive_flutter.dart';
-
 part 'wallet_data.g.dart';
 
 @HiveType(typeId: 0)
@@ -10,22 +8,26 @@ class WalletData extends HiveObject {
   int? chest;
 
   @HiveField(1)
-  int? number;
+  String? address;
 
   @HiveField(2)
-  String? name;
+  int? number;
 
   @HiveField(3)
-  int? derivation;
+  String? name;
 
   @HiveField(4)
-  String? imageName;
+  int? derivation;
 
   @HiveField(5)
+  String? imageName;
+
+  @HiveField(6)
   File? imageFile;
 
   WalletData(
       {this.chest,
+      this.address,
       this.number,
       this.name,
       this.derivation,
@@ -47,4 +49,11 @@ class WalletData extends HiveObject {
   List<int?> id() {
     return [chest, number];
   }
+}
+
+class NewWallet {
+  final String address;
+  final String password;
+
+  NewWallet._(this.address, this.password);
 }

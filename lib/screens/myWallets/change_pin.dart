@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/providers/change_pin.dart';
+import 'package:gecko/models/stateful_wrapper.dart';
 import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'dart:io';
+
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
@@ -18,15 +20,16 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
   final MyWalletsProvider walletProvider;
   Directory? appPath;
 
+  TextEditingController newPin = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    ChangePinProvider _changePin = Provider.of<ChangePinProvider>(context);
-    // _walletOptions.changePin(walletName, oldPin);
-    // _walletOptions.newPin.text = _tmpPin;
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+
     return WillPopScope(
       onWillPop: () {
-        _changePin.newPin.text = '';
+        newPin.text = '';
         return Future<bool>.value(true);
       },
       child: Scaffold(
@@ -36,7 +39,7 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
           leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.black),
               onPressed: () {
-                _changePin.newPin.text = '';
+                newPin.text = '';
                 Navigator.of(context).pop();
               }),
           title: SizedBox(
@@ -49,7 +52,7 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
             child: Column(children: <Widget>[
               StatefulWrapper(
                 onInit: () {
-                  _changePin.newPin.text = randomSecretCode(pinLength);
+                  newPin.text = randomSecretCode(pinLength);
                 },
                 child: Container(),
               ),
@@ -68,7 +71,7 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                 children: <Widget>[
                   TextField(
                       enabled: false,
-                      controller: _changePin.newPin,
+                      controller: newPin,
                       maxLines: 1,
                       textAlign: TextAlign.center,
                       decoration: const InputDecoration(),
@@ -80,7 +83,7 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                     icon: const Icon(Icons.replay),
                     color: orangeC,
                     onPressed: () async {
-                      _changePin.newPin.text = randomSecretCode(pinLength);
+                      newPin.text = randomSecretCode(pinLength);
                     },
                   ),
                 ],
@@ -96,12 +99,12 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                     onPrimary: Colors.black, // foreground
                   ),
                   onPressed: () async {
-                    NewWallet? _newWalletFile = await _changePin.changePin(
-                        walletProvider.pinCode,
-                        newCustomPin: _changePin.newPin.text);
-                    _changePin.newPin.text = '';
-                    _changePin.storeNewPinChest(context, _newWalletFile!);
-                    walletProvider.pinCode = _changePin.newPin.text;
+                    final _chest = chestBox.get(configBox.get('currentChest'));
+                    await _sub.changePassword(
+                        _chest!.address!, walletProvider.pinCode, newPin.text);
+                    walletProvider.pinCode = newPin.text;
+                    newPin.text = '';
+                    Navigator.pop(context);
                   },
                   child: const Text(
                     'Confirmer',
@@ -114,27 +117,5 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
         ),
       ),
     );
-  }
-}
-
-class StatefulWrapper extends StatefulWidget {
-  final Function onInit;
-  final Widget child;
-  const StatefulWrapper({Key? key, required this.onInit, required this.child})
-      : super(key: key);
-  @override
-  _StatefulWrapperState createState() => _StatefulWrapperState();
-}
-
-class _StatefulWrapperState extends State<StatefulWrapper> {
-  @override
-  void initState() {
-    widget.onInit();
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return widget.child;
   }
 }

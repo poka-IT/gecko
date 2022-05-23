@@ -139,22 +139,6 @@ class HomeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void snackNode(context) {
-    if (isFirstBuild) {
-      String _message;
-      if (endPointGVA == 'HS') {
-        _message =
-            "Aucun noeud Duniter disponible, veuillez réessayer ultérieurement";
-      } else {
-        _message = "Vous êtes connecté au noeud\n${endPointGVA.split('/')[2]}";
-      }
-      final snackBar = SnackBar(
-          content: Text(_message), duration: const Duration(seconds: 2));
-      isFirstBuild = false;
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    }
-  }
-
   void rebuildWidget() {
     notifyListeners();
   }

@@ -3,6 +3,7 @@ import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/providers/search.dart';
 import 'package:gecko/screens/wallet_view.dart';
@@ -57,9 +58,9 @@ class SearchResultScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 40),
-            const Text(
-              'Dans la blockchain Ğ1',
-              style: TextStyle(fontSize: 20),
+            Text(
+              'Dans la blockchain $currencyName',
+              style: const TextStyle(fontSize: 20),
             ),
             const SizedBox(height: 20),
             FutureBuilder(
@@ -107,9 +108,11 @@ class SearchResultScreen extends StatelessWidget {
                                           ]);
                                         }
                                         if (_avatar.hasData) {
-                                          g1WalletsBox
-                                              .get(g1Wallet.pubkey)!
-                                              .avatar = _avatar.data;
+                                          final _w =
+                                              g1WalletsBox.get(g1Wallet.pubkey);
+                                          if (_w != null) {
+                                            _w.avatar = _avatar.data;
+                                          }
                                           return ClipOval(child: _avatar.data);
                                         } else {
                                           g1WalletsBox
@@ -131,6 +134,11 @@ class SearchResultScreen extends StatelessWidget {
                                         fontWeight: FontWeight.w500),
                                     textAlign: TextAlign.center),
                               ]),
+                              trailing: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    balance(context, g1Wallet.pubkey!, 16)
+                                  ]),
                               subtitle: Row(children: <Widget>[
                                 Text(g1Wallet.id?.username ?? '',
                                     style: const TextStyle(

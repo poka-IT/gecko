@@ -3,8 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/generate_wallets.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/common_elements.dart';
-import 'package:gecko/screens/onBoarding/11.dart';
+import 'package:gecko/screens/onBoarding/9.dart';
 import 'package:provider/provider.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:provider/provider.dart';
@@ -15,14 +16,19 @@ class RestoreChest extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    GenerateWalletsProvider generateWalletProvider =
+    GenerateWalletsProvider genW =
         Provider.of<GenerateWalletsProvider>(context, listen: false);
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    generateWalletProvider.actualWallet = null;
+    genW.actualWallet = null;
+    if (genW.isSentenceComplete(context)) {
+      genW.generatedMnemonic =
+          '${genW.cellController0.text} ${genW.cellController1.text} ${genW.cellController2.text} ${genW.cellController3.text} ${genW.cellController4.text} ${genW.cellController5.text} ${genW.cellController6.text} ${genW.cellController7.text} ${genW.cellController8.text} ${genW.cellController9.text} ${genW.cellController10.text} ${genW.cellController11.text}';
+    }
 
     return WillPopScope(
       onWillPop: () {
-        generateWalletProvider.resetImportView();
+        genW.resetImportView();
         return Future<bool>.value(true);
       },
       child: Scaffold(
@@ -31,7 +37,7 @@ class RestoreChest extends StatelessWidget {
             leading: IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.black),
                 onPressed: () {
-                  generateWalletProvider.resetImportView();
+                  genW.resetImportView();
                   Navigator.of(context).pop();
                 }),
             title: const SizedBox(
@@ -48,32 +54,32 @@ class RestoreChest extends StatelessWidget {
               Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: <Widget>[
-                    arrayCell(context, generateWalletProvider.cellController0),
-                    arrayCell(context, generateWalletProvider.cellController1),
-                    arrayCell(context, generateWalletProvider.cellController2),
-                    arrayCell(context, generateWalletProvider.cellController3),
+                    arrayCell(context, genW.cellController0),
+                    arrayCell(context, genW.cellController1),
+                    arrayCell(context, genW.cellController2),
+                    arrayCell(context, genW.cellController3),
                   ]),
               const SizedBox(height: 15),
               Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: <Widget>[
-                    arrayCell(context, generateWalletProvider.cellController4),
-                    arrayCell(context, generateWalletProvider.cellController5),
-                    arrayCell(context, generateWalletProvider.cellController6),
-                    arrayCell(context, generateWalletProvider.cellController7),
+                    arrayCell(context, genW.cellController4),
+                    arrayCell(context, genW.cellController5),
+                    arrayCell(context, genW.cellController6),
+                    arrayCell(context, genW.cellController7),
                   ]),
               const SizedBox(height: 15),
               Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: <Widget>[
-                    arrayCell(context, generateWalletProvider.cellController8),
-                    arrayCell(context, generateWalletProvider.cellController9),
-                    arrayCell(context, generateWalletProvider.cellController10),
-                    arrayCell(context, generateWalletProvider.cellController11),
+                    arrayCell(context, genW.cellController8),
+                    arrayCell(context, genW.cellController9),
+                    arrayCell(context, genW.cellController10),
+                    arrayCell(context, genW.cellController11),
                   ]),
             ]),
             // const Spacer(),
-            if (generateWalletProvider.isSentenceComplete(context))
+            if (genW.isSentenceComplete(context))
               Expanded(
                   child: Align(
                 alignment: Alignment.center,
@@ -87,12 +93,13 @@ class RestoreChest extends StatelessWidget {
                       onPrimary: Colors.white, // foreground
                     ),
                     onPressed: () async {
-                      if (await generateWalletProvider.isSentenceValid()) {
-                        generateWalletProvider.resetImportView();
+                      if (await _sub.isMnemonicValid(genW.generatedMnemonic!)) {
+                        genW.resetImportView();
                         await Navigator.push(
                           context,
                           FaderTransition(
-                              page: const OnboardingStepThirteen(), isFast: true),
+                              page: const OnboardingStepThirteen(),
+                              isFast: true),
                         );
                       } else {
                         await badMnemonicPopup(context);
@@ -107,6 +114,30 @@ class RestoreChest extends StatelessWidget {
                 ),
                 // SizedBox(height: isTall ? 80 : 80),
               ))
+            else
+              Column(children: [
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: 150,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      elevation: 4,
+                      primary: yellowC, // background
+                      onPrimary: Colors.black, // foreground
+                    ),
+                    onPressed: () {
+                      genW.pasteMnemonic(context);
+                    },
+                    child: const Text(
+                      'Coller depuis le\npresse-papier',
+                      textAlign: TextAlign.center,
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                    ),
+                  ),
+                )
+              ])
           ]),
         ),
       ),
@@ -168,7 +199,7 @@ class RestoreChest extends StatelessWidget {
         return AlertDialog(
           title: const Text('Phrase incorrecte'),
           content: const Text(
-              'Votre phrase de restauration semble incorrecte, veuillez la corriger.'),
+              'Votre phrase de restauration semble incorrecte, les mots ne sont pas dans le bon ordre.\nVeuillez la corriger.'),
           actions: <Widget>[
             TextButton(
               child: const Text("OK"),

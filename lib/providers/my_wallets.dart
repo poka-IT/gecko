@@ -1,10 +1,11 @@
 import 'dart:typed_data';
-
-import 'package:durt/durt.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:provider/provider.dart';
 
 class MyWalletsProvider with ChangeNotifier {
   List<WalletData> listWallets = [];
@@ -21,25 +22,13 @@ class MyWalletsProvider with ChangeNotifier {
     return configBox.get('currentChest');
   }
 
-  String dewifToMnemonic(context, WalletData _wallet, String _pin) {
-    String _mnemonic;
-
-    try {
-      String _localDewif = chestBox.get(_wallet.chest)!.dewif!;
-      _mnemonic = Dewif()
-          .mnemonicFromDewif(_localDewif, _pin.toUpperCase(), lang: appLang);
-    } on ChecksumException catch (e) {
-      log.e(e.cause);
-      return 'bad';
-    } catch (e) {
-      // _homeProvider.playSound('non', 0.6);
-      log.e('ERROR READING FILE: $e');
-      return 'bad';
-    }
-    return _mnemonic;
-  }
-
   bool checkIfWalletExist() {
+    // configBox.delete('endpoint');
+    if (!configBox.containsKey('endpoint') || configBox.get('endpoint') == '') {
+      log.d('No endpoint, configure...');
+      configBox.put('endpoint', 'ws://127.0.0.1:9944');
+    }
+
     if (chestBox.isEmpty) {
       log.i('No wallets detected');
       return false;
@@ -85,6 +74,7 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   Future<int> deleteAllWallet(context) async {
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
     try {
       log.w('DELETE ALL WALLETS ?');
 
@@ -93,9 +83,7 @@ class MyWalletsProvider with ChangeNotifier {
         await walletBox.clear();
         await chestBox.clear();
         await configBox.delete('defaultWallet');
-        // await Future.delayed(const Duration(milliseconds: 50));
-        // notifyListeners();
-
+        await _sub.deleteAllAccounts();
         await Navigator.of(context).pushNamedAndRemoveUntil(
           '/',
           ModalRoute.withName('/'),
@@ -113,23 +101,42 @@ class MyWalletsProvider with ChangeNotifier {
       barrierDismissible: true, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text(
-              'Êtes-vous sûr de vouloir supprimer tous vos trousseaux ?'),
-          content: const SingleChildScrollView(child: Text('')),
+          backgroundColor: backgroundColor,
+          content: const Text(
+            'Êtes-vous sûr de vouloir oublier tous vos coffres ?',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+          ),
           actions: <Widget>[
-            TextButton(
-              child: const Text("Non"),
-              onPressed: () {
-                Navigator.pop(context, false);
-              },
-            ),
-            TextButton(
-              key: const Key('confirmDeletingAllWallets'),
-              child: const Text("Oui"),
-              onPressed: () {
-                Navigator.pop(context, true);
-              },
-            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  key: const Key('confirmDeletingAllWallets'),
+                  child: const Text(
+                    "Oui",
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Color(0xffD80000),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context, true);
+                  },
+                ),
+                const SizedBox(width: 20),
+                TextButton(
+                  child: const Text(
+                    "Non",
+                    style: TextStyle(fontSize: 20),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context, false);
+                  },
+                ),
+                const SizedBox(height: 120)
+              ],
+            )
           ],
         );
       },
@@ -143,15 +150,27 @@ class MyWalletsProvider with ChangeNotifier {
     List<WalletData> _walletConfig = readAllWallets(_chest);
 
     if (_walletConfig.isEmpty) {
-      _newDerivationNbr = 3;
+      _newDerivationNbr = 2;
       _newWalletNbr = 0;
     } else {
-      _newDerivationNbr = _walletConfig.last.derivation! + 3;
+      _newDerivationNbr = _walletConfig.last.derivation! + 2;
       _newWalletNbr = _walletConfig.last.number! + 1;
     }
 
+    MyWalletsProvider myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
+
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+
+    final int? _currentChestNumber = myWalletProvider.getCurrentChest();
+    final ChestData _currentChest = chestBox.get(_currentChestNumber)!;
+
+    final address = await _sub.derive(
+        context, _currentChest.address!, _newDerivationNbr, pinCode);
+
     WalletData newWallet = WalletData(
         chest: _chest,
+        address: address,
         number: _newWalletNbr,
         name: _name,
         derivation: _newDerivationNbr,

@@ -1,13 +1,13 @@
+// ignore_for_file: avoid_print
+
 import 'dart:async';
-import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/models/chest_data.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/screens/myWallets/cesium_wallet_options.dart';
 import 'package:gecko/screens/myWallets/choose_chest.dart';
 import 'package:gecko/screens/myWallets/choose_wallet.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
@@ -21,6 +21,8 @@ class UnlockingWallet extends StatelessWidget {
       {Key? keyUnlockWallet, required this.wallet, required this.action})
       : super(key: keyUnlockWallet);
   WalletData? wallet;
+  late int currentChestNumber;
+  late ChestData currentChest;
   String action;
 
   // ignore: close_sinks
@@ -34,17 +36,11 @@ class UnlockingWallet extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context);
-    final double statusBarHeight = MediaQuery.of(context).padding.top;
+    // final double statusBarHeight = MediaQuery.of(context).padding.top;
 
-    int _pinLenght;
-    ChestData currentChest = chestBox.get(configBox.get('currentChest'))!;
-
-    if (currentChest.isCesium!) {
-      _pinLenght = _walletOptions.getPinLenght(currentChest.dewif);
-      wallet = WalletData(derivation: -1, chest: currentChest.key);
-    } else {
-      _pinLenght = _walletOptions.getPinLenght(wallet!.number);
-    }
+    currentChestNumber = configBox.get('currentChest');
+    currentChest = chestBox.get(currentChestNumber)!;
+    int _pinLenght = _walletOptions.getPinLenght(wallet!.number);
     errorController = StreamController<ErrorAnimationType>();
 
     return Scaffold(
@@ -55,7 +51,7 @@ class UnlockingWallet extends StatelessWidget {
           children: <Widget>[
             Stack(children: <Widget>[
               Positioned(
-                top: statusBarHeight + 10,
+                top: 10, //statusBarHeight + 10,
                 left: 15,
                 child: Builder(
                   builder: (context) => IconButton(
@@ -63,7 +59,7 @@ class UnlockingWallet extends StatelessWidget {
                     icon: const Icon(
                       Icons.arrow_back,
                       color: Colors.black,
-                      size: 25,
+                      size: 30,
                     ),
                     onPressed: () => Navigator.pop(context),
                   ),
@@ -106,7 +102,7 @@ class UnlockingWallet extends StatelessWidget {
                           fontWeight: FontWeight.w400),
                     )),
                 SizedBox(height: 40 * ratio),
-                pinForm(context, _pinLenght, currentChest),
+                pinForm(context, _pinLenght),
                 SizedBox(height: 3 * ratio),
                 InkWell(
                     key: const Key('chooseChest'),
@@ -137,7 +133,7 @@ class UnlockingWallet extends StatelessWidget {
     ));
   }
 
-  Widget pinForm(context, _pinLenght, ChestData currentChest) {
+  Widget pinForm(context, _pinLenght) {
     // var _walletPin = '';
 // ignore: close_sinks
     StreamController<ErrorAnimationType> errorController =
@@ -147,8 +143,8 @@ class UnlockingWallet extends StatelessWidget {
         Provider.of<WalletOptionsProvider>(context);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
-    WalletsProfilesProvider _historyProvider =
-        Provider.of<WalletsProfilesProvider>(context);
+
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     FocusNode pinFocus = FocusNode();
 
@@ -201,30 +197,12 @@ class UnlockingWallet extends StatelessWidget {
             ],
             onCompleted: (_pin) async {
               log.d("Completed");
-              _myWalletProvider.pinCode = _pin;
+              _myWalletProvider.pinCode = _pin.toUpperCase();
 
-              if (currentChest.isCesium!) {
-                try {
-                  String _localDewif = chestBox.get(wallet!.chest)!.dewif!;
-                  final cesiumWallet =
-                      CesiumWallet.fromDewif(_localDewif, _pin.toUpperCase());
-                  _walletOptions.pubkey.text = cesiumWallet.pubkey;
-                  _myWalletProvider.cesiumSeed = cesiumWallet.seed;
-                  _myWalletProvider.mnemonic = 'cesium';
-                } catch (e) {
-                  log.e(e);
-                  _myWalletProvider.mnemonic = 'bad';
-                }
-              } else {
-                _myWalletProvider.mnemonic = _myWalletProvider.dewifToMnemonic(
-                    context, wallet!, _pin.toUpperCase());
-              }
-              // final String? resultWallet = _walletOptions.readLocalWallet(
-              //     context, wallet!, _pin.toUpperCase(), _pinLenght);
-              // _myWalletProvider.pinCode = _pin.toUpperCase();
-              _myWalletProvider.pinLenght = _pinLenght;
+              final isValid = await _sub.checkPassword(
+                  currentChest.address!, _pin.toUpperCase());
 
-              if (_myWalletProvider.mnemonic == 'bad') {
+              if (!isValid) {
                 await Future.delayed(const Duration(milliseconds: 50));
                 errorController.add(ErrorAnimationType
                     .shake); // Triggering error shake animation
@@ -235,32 +213,20 @@ class UnlockingWallet extends StatelessWidget {
               } else {
                 pinColor = Colors.green[400];
                 if (action == "mywallets") {
-                  currentChest.isCesium!
-                      ? Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) {
-                            return CesiumWalletOptions(
-                                cesiumWallet: currentChest);
-                          }),
-                        ).then((value) => _myWalletProvider.mnemonic = '')
-                      : Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) {
-                            return const WalletsHome();
-                          }),
-                        ).then((value) => _myWalletProvider.cesiumSeed.clear());
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return const WalletsHome();
+                    }),
+                  );
                 } else if (action == "pay") {
-                  if (currentChest.isCesium!) {
-                    final resultPay = await _historyProvider.pay(context);
-                    await paymentsResult(context, resultPay);
-                  } else {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return ChooseWalletScreen();
-                      }),
-                    );
-                  }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return ChooseWalletScreen(
+                          chest: currentChestNumber, pin: _pin.toUpperCase());
+                    }),
+                  );
                 }
               }
             },

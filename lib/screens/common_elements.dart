@@ -69,7 +69,7 @@ class CommonElements {
 
   Widget buildProgressBar(double pagePosition) {
     return DotsIndicator(
-      dotsCount: 11,
+      dotsCount: 10,
       position: pagePosition,
       decorator: DotsDecorator(
         spacing: const EdgeInsets.symmetric(horizontal: 10),

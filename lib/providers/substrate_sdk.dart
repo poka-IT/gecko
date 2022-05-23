@@ -12,6 +12,7 @@ import 'package:polkawallet_sdk/polkawallet_sdk.dart';
 import 'package:polkawallet_sdk/storage/keyring.dart';
 import 'package:polkawallet_sdk/storage/types/keyPairData.dart';
 import 'package:truncate/truncate.dart';
+// import 'package:web_socket_channel/io.dart';
 
 class SubstrateSdk with ChangeNotifier {
   final int ss58 = 42;
@@ -47,6 +48,28 @@ class SubstrateSdk with ChangeNotifier {
     n.endpoint = configBox.get('endpoint');
     n.ss58 = ss58;
     node.add(n);
+    int timeout = 7000;
+
+    // if (n.endpoint!.startsWith('ws://')) {
+    //   timeout = 5000;
+    // }
+
+    //// Check websocket conenction - only for wss
+    // final channel = IOWebSocketChannel.connect(
+    //   Uri.parse('wss://192.168.1.72:9944'),
+    // );
+
+    // channel.stream.listen(
+    //   (dynamic message) {
+    //     log.d('message $message');
+    //   },
+    //   onDone: () {
+    //     log.d('ws channel closed');
+    //   },
+    //   onError: (error) {
+    //     log.d('ws error $error');
+    //   },
+    // );
 
     if (sdk.api.connectedNode?.endpoint != null) {
       await sdk.api.setting.unsubscribeBestNumber();
@@ -55,7 +78,7 @@ class SubstrateSdk with ChangeNotifier {
     isLoadingEndpoint = true;
     notifyListeners();
     final res = await sdk.api.connectNode(keyring, node).timeout(
-          const Duration(seconds: 7),
+          Duration(milliseconds: timeout),
           onTimeout: () => null,
         );
     isLoadingEndpoint = false;

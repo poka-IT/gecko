@@ -483,7 +483,7 @@ Widget welcomeHome(context) {
                         context,
                         MaterialPageRoute(
                           builder: (context) {
-                            return OnboardingStepOne();
+                            return const OnboardingStepOne();
                           },
                         ),
                       );

@@ -100,10 +100,11 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                   ),
                   onPressed: () async {
                     final _chest = chestBox.get(configBox.get('currentChest'));
-                    _sub.changePassword(
+                    await _sub.changePassword(
                         _chest!.address!, walletProvider.pinCode, newPin.text);
-                    newPin.text = '';
                     walletProvider.pinCode = newPin.text;
+                    newPin.text = '';
+                    Navigator.pop(context);
                   },
                   child: const Text(
                     'Confirmer',

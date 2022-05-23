@@ -4,7 +4,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/screens/myWallets/confirm_wallet_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
@@ -141,17 +140,17 @@ class GenerateFastChestScreen extends StatelessWidget {
                   child: const Text('Enregistrer ce coffre',
                       style: TextStyle(fontSize: 20))),
               const SizedBox(height: 20),
-              GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return PrintWallet(
-                            _generateWalletProvider.generatedMnemonic);
-                      }),
-                    );
-                  },
-                  child: const Icon(Icons.print))
+              // GestureDetector(
+              //     onTap: () {
+              //       Navigator.push(
+              //         context,
+              //         MaterialPageRoute(builder: (context) {
+              //           return PrintWallet(
+              //               _generateWalletProvider.generatedMnemonic);
+              //         }),
+              //       );
+              //     },
+              //     child: const Icon(Icons.print))
             ]),
           ),
         ),
@@ -194,30 +193,30 @@ class GenerateFastChestScreen extends StatelessWidget {
   }
 }
 
-// ignore: must_be_immutable
-class PrintWallet extends StatelessWidget {
-  const PrintWallet(this.sentence, {Key? key}) : super(key: key);
+// // ignore: must_be_immutable
+// class PrintWallet extends StatelessWidget {
+//   const PrintWallet(this.sentence, {Key? key}) : super(key: key);
 
-  final String? sentence;
+//   final String? sentence;
 
-  @override
-  Widget build(BuildContext context) {
-    GenerateWalletsProvider _generateWalletProvider =
-        Provider.of<GenerateWalletsProvider>(context);
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-            leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () {
-                  Navigator.pop(context);
-                }),
-            toolbarHeight: 60 * ratio,
-            title: const Text('Imprimer ce coffre')),
-        body: PdfPreview(
-          build: (format) => _generateWalletProvider.printWallet(sentence),
-        ),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     GenerateWalletsProvider _generateWalletProvider =
+//         Provider.of<GenerateWalletsProvider>(context);
+//     return MaterialApp(
+//       home: Scaffold(
+//         appBar: AppBar(
+//             leading: IconButton(
+//                 icon: const Icon(Icons.arrow_back, color: Colors.white),
+//                 onPressed: () {
+//                   Navigator.pop(context);
+//                 }),
+//             toolbarHeight: 60 * ratio,
+//             title: const Text('Imprimer ce coffre')),
+//         body: PdfPreview(
+//           build: (format) => _generateWalletProvider.printWallet(sentence),
+//         ),
+//       ),
+//     );
+//   }
+// }

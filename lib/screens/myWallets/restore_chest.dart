@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/common_elements.dart';
-import 'package:gecko/screens/onBoarding/11.dart';
+import 'package:gecko/screens/onBoarding/9.dart';
 import 'package:provider/provider.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:provider/provider.dart';

@@ -214,7 +214,7 @@ class SubstrateSdk with ChangeNotifier {
     generatedMnemonic = gen.mnemonic!;
 
     // final res = await importAccount(fromMnemonic: true);
-    await Clipboard.setData(ClipboardData(text: generatedMnemonic));
+    // await Clipboard.setData(ClipboardData(text: generatedMnemonic));
     return gen.mnemonic!;
   }
 

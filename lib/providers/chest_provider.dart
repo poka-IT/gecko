@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
+import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:provider/provider.dart';
 
 class ChestProvider with ChangeNotifier {
   void rebuildWidget() {
@@ -10,8 +13,9 @@ class ChestProvider with ChangeNotifier {
 
   Future deleteChest(context, ChestData _chest) async {
     final bool? _answer = await (_confirmDeletingChest(context, _chest.name));
-
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
     if (_answer!) {
+      await _sub.deleteAccounts(getChestWallets(_chest));
       await chestBox.delete(_chest.key);
       if (chestBox.isEmpty) {
         await configBox.put('currentChest', 0);
@@ -26,6 +30,17 @@ class ChestProvider with ChangeNotifier {
       );
       notifyListeners();
     }
+  }
+
+  List<String> getChestWallets(ChestData _chest) {
+    List<String> toDelete = [];
+    log.d(_chest.key);
+    walletBox.toMap().forEach((key, WalletData value) {
+      if (value.chest == _chest.key) {
+        toDelete.add(value.address!);
+      }
+    });
+    return toDelete;
   }
 
   Future<bool?> _confirmDeletingChest(context, String? _walletName) async {

@@ -27,7 +27,6 @@ class WalletViewScreen extends StatelessWidget {
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     CesiumPlusProvider _cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
-
     _historyProvider.pubkey = pubkey!;
 
     return Scaffold(
@@ -285,21 +284,21 @@ class WalletViewScreen extends StatelessWidget {
                                   primary: orangeC, // background
                                   onPrimary: Colors.white, // foreground
                                 ),
-                                onPressed: _walletViewProvider.payAmount.text !=
-                                        ''
-                                    ? () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) {
-                                              return UnlockingWallet(
-                                                  wallet: defaultWallet,
-                                                  action: "pay");
-                                            },
-                                          ),
-                                        );
-                                      }
-                                    : null,
+                                onPressed:
+                                    _walletViewProvider.payAmount.text != ''
+                                        ? () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) {
+                                                  return UnlockingWallet(
+                                                      wallet: defaultWallet,
+                                                      action: "pay");
+                                                },
+                                              ),
+                                            );
+                                          }
+                                        : null,
                                 child: const Text(
                                   'Effectuer le virement',
                                   style: TextStyle(
@@ -324,6 +323,9 @@ class WalletViewScreen extends StatelessWidget {
       WalletsProfilesProvider _historyProvider,
       CesiumPlusProvider _cesiumPlusProvider) {
     const double _avatarSize = 140;
+
+    WalletOptionsProvider _walletOptions =
+        Provider.of<WalletOptionsProvider>(context, listen: false);
 
     return Column(children: <Widget>[
       Container(
@@ -365,9 +367,11 @@ class WalletViewScreen extends StatelessWidget {
                   const SizedBox(height: 25),
                   Consumer<WalletOptionsProvider>(
                       builder: (context, walletProvider, _) {
-                    return balance(context, pubkey!, 20);
+                    return balance(context, pubkey!, 22);
                   }),
-                  ////
+                  const SizedBox(height: 10),
+                  _walletOptions.idtyStatus(context, pubkey!, isOwner: false),
+
                   // if (username == null &&
                   //     g1WalletsBox.get(pubkey)?.username == null)
                   //   Query(

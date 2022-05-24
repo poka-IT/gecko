@@ -7,6 +7,9 @@ import 'package:hive/hive.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// Version of box data
+const int dataVersion = 1;
+
 // Files paths
 Directory? appPath;
 

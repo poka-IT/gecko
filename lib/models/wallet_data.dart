@@ -5,28 +5,32 @@ part 'wallet_data.g.dart';
 @HiveType(typeId: 0)
 class WalletData extends HiveObject {
   @HiveField(0)
-  int? chest;
+  int? version;
 
   @HiveField(1)
-  String? address;
+  int? chest;
 
   @HiveField(2)
-  int? number;
+  String? address;
 
   @HiveField(3)
-  String? name;
+  int? number;
 
   @HiveField(4)
-  int? derivation;
+  String? name;
 
   @HiveField(5)
-  String? imageName;
+  int? derivation;
 
   @HiveField(6)
+  String? imageName;
+
+  @HiveField(7)
   File? imageFile;
 
   WalletData(
-      {this.chest,
+      {this.version,
+      this.chest,
       this.address,
       this.number,
       this.name,

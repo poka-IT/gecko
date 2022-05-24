@@ -12,6 +12,7 @@ import 'package:polkawallet_sdk/polkawallet_sdk.dart';
 import 'package:polkawallet_sdk/storage/keyring.dart';
 import 'package:polkawallet_sdk/storage/types/keyPairData.dart';
 import 'package:truncate/truncate.dart';
+// import 'package:web_socket_channel/io.dart';
 
 class SubstrateSdk with ChangeNotifier {
   final int ss58 = 42;
@@ -47,6 +48,28 @@ class SubstrateSdk with ChangeNotifier {
     n.endpoint = configBox.get('endpoint');
     n.ss58 = ss58;
     node.add(n);
+    int timeout = 7000;
+
+    // if (n.endpoint!.startsWith('ws://')) {
+    //   timeout = 5000;
+    // }
+
+    //// Check websocket conenction - only for wss
+    // final channel = IOWebSocketChannel.connect(
+    //   Uri.parse('wss://192.168.1.72:9944'),
+    // );
+
+    // channel.stream.listen(
+    //   (dynamic message) {
+    //     log.d('message $message');
+    //   },
+    //   onDone: () {
+    //     log.d('ws channel closed');
+    //   },
+    //   onError: (error) {
+    //     log.d('ws error $error');
+    //   },
+    // );
 
     if (sdk.api.connectedNode?.endpoint != null) {
       await sdk.api.setting.unsubscribeBestNumber();
@@ -55,7 +78,7 @@ class SubstrateSdk with ChangeNotifier {
     isLoadingEndpoint = true;
     notifyListeners();
     final res = await sdk.api.connectNode(keyring, node).timeout(
-          const Duration(seconds: 7),
+          Duration(milliseconds: timeout),
           onTimeout: () => null,
         );
     isLoadingEndpoint = false;
@@ -209,6 +232,13 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
+  Future<void> deleteAccounts(List<String> address) async {
+    for (var a in address) {
+      final account = getKeypair(a);
+      await sdk.api.keyring.deleteAccount(keyring, account);
+    }
+  }
+
   Future<String> generateMnemonic({String lang = appLang}) async {
     final gen = await sdk.api.keyring.generateMnemonic(ss58);
     generatedMnemonic = gen.mnemonic!;
@@ -271,6 +301,11 @@ class SubstrateSdk with ChangeNotifier {
       required String password}) async {
     setCurrentWallet(fromAddress);
 
+    log.d(keyring.current.address);
+    log.d(fromAddress);
+    log.d(password);
+    log.d(await checkPassword(fromAddress, password));
+
     final sender = TxSenderData(
       keyring.current.address,
       keyring.current.pubKey,
@@ -295,25 +330,76 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
+  Future<String> idtyStatus(String address) async {
+    //   var tata = await sdk.webView!
+    //       .evalJavascript('api.query.system.account("$address")');
+
+    var idtyIndex = await sdk.webView!
+        .evalJavascript('api.query.identity.identityIndexOf("$address")');
+
+    if (idtyIndex == null) {
+      return 'noid';
+    }
+
+    final idtyStatus = await sdk.webView!
+        .evalJavascript('api.query.identity.identities($idtyIndex)');
+
+    if (idtyStatus != null) {
+      final String _status = idtyStatus['status'];
+      log.d(_status);
+      return (_status);
+    } else {
+      return 'expired';
+    }
+  }
+
+  Future<String> confirmIdentity(
+      String address, String name, String password) async {
+    // Confirm identity
+    setCurrentWallet(address);
+    log.d('idty: ' + keyring.current.address!);
+
+    final sender = TxSenderData(
+      keyring.current.address,
+      keyring.current.pubKey,
+    );
+
+    final txInfo = TxInfoData(
+      'identity',
+      'confirmIdentity',
+      sender,
+    );
+
+    try {
+      final tata = await sdk.api.tx.signAndSend(
+        txInfo,
+        [name],
+        password,
+      );
+      log.d(tata);
+      return 'confirmed';
+    } on Exception catch (e) {
+      log.e(e);
+      // if (e.toString() == 'Exception: password check failed') {
+      //   throw PasswordException('Bad password');
+      // }
+      return e.toString();
+    }
+  }
+
   Future<String> derive(
       BuildContext context, String address, int number, String password) async {
     final keypair = getKeypair(address);
 
     final seedMap =
         await keyring.store.getDecryptedSeed(keypair.pubKey, password);
-    print(seedMap);
 
     if (seedMap?['type'] != 'mnemonic') return '';
     final List seedList = seedMap!['seed'].split('//');
     generatedMnemonic = seedList[0];
-    int sourceDerivation = -1; // To get derivation number of this account
-    if (seedList.length > 1) {
-      sourceDerivation = int.parse(seedList[1]);
-    }
-    print(generatedMnemonic);
-    print(sourceDerivation);
 
-    return await importAccount(fromMnemonic: true, derivePath: '//$number');
+    return await importAccount(
+        fromMnemonic: true, derivePath: '//$number', password: password);
   }
 
   Future<bool> isMnemonicValid(String mnemonic) async {
@@ -368,4 +454,9 @@ String getShortPubkey(String pubkey) {
       ':$pubkeyChecksumShort';
 
   return pubkeyShort;
+}
+
+class PasswordException implements Exception {
+  String cause;
+  PasswordException(this.cause);
 }

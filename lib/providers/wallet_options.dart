@@ -148,6 +148,124 @@ class WalletOptionsProvider with ChangeNotifier {
     }
   }
 
+  Widget idtyStatus(BuildContext context, String address,
+      {bool isOwner = false}) {
+    return Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+      return FutureBuilder(
+          future: _sub.idtyStatus(address),
+          initialData: '...',
+          builder: (context, snapshot) {
+            switch (snapshot.data.toString()) {
+              case 'noid':
+                {
+                  return Column(children: const <Widget>[
+                    Text(
+                      'Aucune identité',
+                      style: TextStyle(fontSize: 18, color: Colors.black),
+                    ),
+                  ]);
+                }
+              case 'Created':
+                {
+                  return Column(children: <Widget>[
+                    isOwner
+                        ? InkWell(
+                            child: const Text(
+                              'Identité créé, cliquez pour la confirmer',
+                              style:
+                                  TextStyle(fontSize: 18, color: Colors.black),
+                            ),
+                            onTap: () async {
+                              await validateIdentity(context);
+                            },
+                          )
+                        : const Text(
+                            'Identité créé',
+                            style: TextStyle(fontSize: 18, color: Colors.black),
+                          ),
+                  ]);
+                }
+              case 'ConfirmedByOwner':
+                {
+                  return Column(children: const <Widget>[
+                    Text(
+                      'Identité confirmé',
+                      style: TextStyle(fontSize: 18, color: Colors.black),
+                    ),
+                  ]);
+                }
+
+              case 'Validated':
+                {
+                  return Column(children: const <Widget>[
+                    Text(
+                      'Membre validé !',
+                      style: TextStyle(fontSize: 18, color: Colors.black),
+                    ),
+                  ]);
+                }
+
+              case 'expired':
+                {
+                  return Column(children: const <Widget>[
+                    Text(
+                      'Identité expiré',
+                      style: TextStyle(fontSize: 18, color: Colors.black),
+                    ),
+                  ]);
+                }
+            }
+            return SizedBox(
+              width: 230,
+              child: Column(children: const <Widget>[
+                Text(
+                  'Statut inconnu',
+                  style: TextStyle(fontSize: 18, color: Colors.black),
+                ),
+              ]),
+            );
+          });
+    });
+  }
+
+  Future<String?> validateIdentity(BuildContext context) async {
+    TextEditingController idtyName = TextEditingController();
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    WalletOptionsProvider _walletOptions =
+        Provider.of<WalletOptionsProvider>(context, listen: false);
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
+
+    return showDialog<String>(
+      context: context,
+      barrierDismissible: true, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmez votre identité'),
+          content: SizedBox(
+            height: 100,
+            child: Column(children: [
+              const Text('Nom:'),
+              TextField(
+                controller: idtyName,
+              )
+            ]),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("Valider"),
+              onPressed: () async {
+                _sub.confirmIdentity(_walletOptions.address.text, idtyName.text,
+                    _myWalletProvider.pinCode);
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void reloadBuild() {
     notifyListeners();
   }
@@ -167,9 +285,9 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 }
 
-Widget balance(BuildContext context, String address, double size) {
-  String balanceCache = '';
+Map<String, String> balanceCache = {};
 
+Widget balance(BuildContext context, String address, double size) {
   return Column(children: <Widget>[
     Consumer<SubstrateSdk>(builder: (context, _sdk, _) {
       return FutureBuilder(
@@ -177,14 +295,25 @@ Widget balance(BuildContext context, String address, double size) {
           builder: (BuildContext context, AsyncSnapshot<num?> _balance) {
             if (_balance.connectionState != ConnectionState.done ||
                 _balance.hasError) {
-              return Text(balanceCache,
-                  style: TextStyle(
-                    fontSize: isTall ? size : size * 0.9,
-                  ));
+              if (balanceCache[address] != null) {
+                return Text(balanceCache[address]!,
+                    style: TextStyle(
+                      fontSize: isTall ? size : size * 0.9,
+                    ));
+              } else {
+                return SizedBox(
+                  height: 15,
+                  width: 15,
+                  child: CircularProgressIndicator(
+                    color: orangeC,
+                    strokeWidth: 2,
+                  ),
+                );
+              }
             }
-            balanceCache = "${_balance.data.toString()} $currencyName";
+            balanceCache[address] = "${_balance.data.toString()} $currencyName";
             return Text(
-              balanceCache,
+              balanceCache[address]!,
               style: TextStyle(
                 fontSize: isTall ? size : 18,
               ),

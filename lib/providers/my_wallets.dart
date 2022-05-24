@@ -169,6 +169,7 @@ class MyWalletsProvider with ChangeNotifier {
         context, _currentChest.address!, _newDerivationNbr, pinCode);
 
     WalletData newWallet = WalletData(
+        version: dataVersion,
         chest: _chest,
         address: address,
         number: _newWalletNbr,

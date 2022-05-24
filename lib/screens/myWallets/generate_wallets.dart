@@ -26,7 +26,7 @@ class GenerateFastChestScreen extends StatelessWidget {
 
     _generateWalletProvider.pin.text = kDebugMode && debugPin
         ? 'AAAAA'
-        : _generateWalletProvider.changePinCode(reload: false);
+        : _generateWalletProvider.changePinCode(reload: false).toUpperCase();
 
     return WillPopScope(
       onWillPop: () {

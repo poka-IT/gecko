@@ -81,6 +81,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     int? chestKey = chestBox.keys.last;
 
     WalletData myWallet = WalletData(
+        version: dataVersion,
         chest: chestKey,
         address: address,
         number: 0,

@@ -285,8 +285,7 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 }
 
-// Map<String, String> balanceCache = {};
-String balanceCache = '';
+Map<String, String> balanceCache = {};
 
 Widget balance(BuildContext context, String address, double size) {
   return Column(children: <Widget>[
@@ -296,14 +295,25 @@ Widget balance(BuildContext context, String address, double size) {
           builder: (BuildContext context, AsyncSnapshot<num?> _balance) {
             if (_balance.connectionState != ConnectionState.done ||
                 _balance.hasError) {
-              return Text(balanceCache,
-                  style: TextStyle(
-                    fontSize: isTall ? size : size * 0.9,
-                  ));
+              if (balanceCache[address] != null) {
+                return Text(balanceCache[address]!,
+                    style: TextStyle(
+                      fontSize: isTall ? size : size * 0.9,
+                    ));
+              } else {
+                return SizedBox(
+                  height: 15,
+                  width: 15,
+                  child: CircularProgressIndicator(
+                    color: orangeC,
+                    strokeWidth: 2,
+                  ),
+                );
+              }
             }
-            balanceCache = "${_balance.data.toString()} $currencyName";
+            balanceCache[address] = "${_balance.data.toString()} $currencyName";
             return Text(
-              balanceCache,
+              balanceCache[address]!,
               style: TextStyle(
                 fontSize: isTall ? size : 18,
               ),

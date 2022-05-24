@@ -58,7 +58,7 @@ class ChooseWalletScreen extends StatelessWidget {
                           destAddress: _walletViewProvider.outputPubkey.text,
                           amount:
                               double.parse(_walletViewProvider.payAmount.text),
-                          password: pin);
+                          password: pin.toUpperCase());
                       await paymentsResult(context, resultPay);
                     },
                     child: const Text(

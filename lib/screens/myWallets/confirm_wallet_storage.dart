@@ -140,8 +140,9 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                                         fromMnemonic: true,
                                         mnemonic: _generateWalletProvider
                                             .generatedMnemonic!,
-                                        password:
-                                            _generateWalletProvider.pin.text,
+                                        password: _generateWalletProvider
+                                            .pin.text
+                                            .toUpperCase(),
                                         derivePath: '//2');
                                     await _generateWalletProvider.storeHDWChest(
                                         address,

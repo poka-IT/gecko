@@ -232,6 +232,13 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
+  Future<void> deleteAccounts(List<String> address) async {
+    for (var a in address) {
+      final account = getKeypair(a);
+      await sdk.api.keyring.deleteAccount(keyring, account);
+    }
+  }
+
   Future<String> generateMnemonic({String lang = appLang}) async {
     final gen = await sdk.api.keyring.generateMnemonic(ss58);
     generatedMnemonic = gen.mnemonic!;
@@ -294,6 +301,11 @@ class SubstrateSdk with ChangeNotifier {
       required String password}) async {
     setCurrentWallet(fromAddress);
 
+    log.d(keyring.current.address);
+    log.d(fromAddress);
+    log.d(password);
+    log.d(await checkPassword(fromAddress, password));
+
     final sender = TxSenderData(
       keyring.current.address,
       keyring.current.pubKey,
@@ -318,25 +330,76 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
+  Future<String> idtyStatus(String address) async {
+    //   var tata = await sdk.webView!
+    //       .evalJavascript('api.query.system.account("$address")');
+
+    var idtyIndex = await sdk.webView!
+        .evalJavascript('api.query.identity.identityIndexOf("$address")');
+
+    if (idtyIndex == null) {
+      return 'noid';
+    }
+
+    final idtyStatus = await sdk.webView!
+        .evalJavascript('api.query.identity.identities($idtyIndex)');
+
+    if (idtyStatus != null) {
+      final String _status = idtyStatus['status'];
+      log.d(_status);
+      return (_status);
+    } else {
+      return 'expired';
+    }
+  }
+
+  Future<String> confirmIdentity(
+      String address, String name, String password) async {
+    // Confirm identity
+    setCurrentWallet(address);
+    log.d('idty: ' + keyring.current.address!);
+
+    final sender = TxSenderData(
+      keyring.current.address,
+      keyring.current.pubKey,
+    );
+
+    final txInfo = TxInfoData(
+      'identity',
+      'confirmIdentity',
+      sender,
+    );
+
+    try {
+      final tata = await sdk.api.tx.signAndSend(
+        txInfo,
+        [name],
+        password,
+      );
+      log.d(tata);
+      return 'confirmed';
+    } on Exception catch (e) {
+      log.e(e);
+      // if (e.toString() == 'Exception: password check failed') {
+      //   throw PasswordException('Bad password');
+      // }
+      return e.toString();
+    }
+  }
+
   Future<String> derive(
       BuildContext context, String address, int number, String password) async {
     final keypair = getKeypair(address);
 
     final seedMap =
         await keyring.store.getDecryptedSeed(keypair.pubKey, password);
-    print(seedMap);
 
     if (seedMap?['type'] != 'mnemonic') return '';
     final List seedList = seedMap!['seed'].split('//');
     generatedMnemonic = seedList[0];
-    int sourceDerivation = -1; // To get derivation number of this account
-    if (seedList.length > 1) {
-      sourceDerivation = int.parse(seedList[1]);
-    }
-    print(generatedMnemonic);
-    print(sourceDerivation);
 
-    return await importAccount(fromMnemonic: true, derivePath: '//$number');
+    return await importAccount(
+        fromMnemonic: true, derivePath: '//$number', password: password);
   }
 
   Future<bool> isMnemonicValid(String mnemonic) async {
@@ -391,4 +454,9 @@ String getShortPubkey(String pubkey) {
       ':$pubkeyChecksumShort';
 
   return pubkeyShort;
+}
+
+class PasswordException implements Exception {
+  String cause;
+  PasswordException(this.cause);
 }

@@ -90,6 +90,10 @@ class WalletOptions extends StatelessWidget {
                           walletName(walletProvider, _walletOptions),
                           SizedBox(height: isTall ? 5 : 0),
                           balance(context, walletProvider.address.text, 20),
+                          SizedBox(height: isTall ? 5 : 0),
+                          _walletOptions.idtyStatus(
+                              context, _walletOptions.address.text,
+                              isOwner: true),
                         ]),
                         const Spacer(flex: 3),
                       ]),
@@ -212,8 +216,8 @@ class WalletOptions extends StatelessWidget {
                   walletProvider.isEditing
                       ? 'assets/walletOptions/android-checkmark.png'
                       : 'assets/walletOptions/edit.png',
-                  width: 20,
-                  height: 20),
+                  width: 25,
+                  height: 25),
             ),
           ),
         ),

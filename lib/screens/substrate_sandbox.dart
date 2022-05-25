@@ -160,7 +160,10 @@ class SubstrateSandBox extends StatelessWidget {
                               _sub.generatedMnemonic,
                               textAlign: TextAlign.center,
                             ),
-                          )
+                          ),
+                          const Text('--------'),
+                          const SizedBox(height: 10),
+                          Text(_sub.debugConnection)
                         ])
                   ]),
             );

@@ -5,13 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/common_elements.dart';
+import 'package:gecko/screens/onBoarding/7.dart';
 import 'package:gecko/screens/onBoarding/9.dart';
 import 'package:provider/provider.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:provider/provider.dart';
 
 class RestoreChest extends StatelessWidget {
-  const RestoreChest({Key? key}) : super(key: key);
+  const RestoreChest({Key? key, this.skipIntro = false}) : super(key: key);
+  final bool skipIntro;
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +100,9 @@ class RestoreChest extends StatelessWidget {
                         await Navigator.push(
                           context,
                           FaderTransition(
-                              page: const OnboardingStepThirteen(),
+                              page: skipIntro
+                                  ? const OnboardingStepNine()
+                                  : const OnboardingStepSeven(),
                               isFast: true),
                         );
                       } else {

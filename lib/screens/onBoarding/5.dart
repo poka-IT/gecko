@@ -13,7 +13,9 @@ import 'package:provider/provider.dart';
 AsyncSnapshot<List>? mnemoList;
 
 class OnboardingStepFive extends StatelessWidget {
-  const OnboardingStepFive({Key? key}) : super(key: key);
+  const OnboardingStepFive({Key? key, this.skipIntro = false})
+      : super(key: key);
+  final bool skipIntro;
 
   @override
   Widget build(BuildContext context) {
@@ -47,9 +49,9 @@ class OnboardingStepFive extends StatelessWidget {
                       'Gecko a généré votre phrase de restauration ! Tâchez de la garder bien secrète, car elle permet à quiconque la connaît d’accéder à tous vos portefeuilles.'),
             ],
           ),
-          const SizedBox(height: 40),
+          SizedBox(height: 35 * ratio),
           sentanceArray(context),
-          const SizedBox(height: 20),
+          SizedBox(height: 17 * ratio),
           GestureDetector(
             onTap: () {
               Navigator.push(
@@ -61,7 +63,7 @@ class OnboardingStepFive extends StatelessWidget {
             },
             child: Image.asset(
               'assets/printer.png',
-              height: 45,
+              height: 42 * ratio,
             ),
           ),
           const SizedBox(height: 40),
@@ -69,8 +71,8 @@ class OnboardingStepFive extends StatelessWidget {
             child: Align(
               alignment: Alignment.bottomCenter,
               child: SizedBox(
-                width: 410,
-                height: 70,
+                width: 380 * ratio,
+                height: 60 * ratio,
                 child: ElevatedButton(
                     key: const Key('generateMnemonic'),
                     style: ElevatedButton.styleFrom(
@@ -82,15 +84,16 @@ class OnboardingStepFive extends StatelessWidget {
                       _generateWalletProvider.reloadBuild();
                       // setState(() {});
                     },
-                    child: const Text("Choisir une autre phrase",
+                    child: Text("Choisir une autre phrase",
                         style: TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.w600))),
+                            fontSize: 22 * ratio,
+                            fontWeight: FontWeight.w600))),
               ),
             ),
           ),
-          const SizedBox(height: 25),
-          nextButton(context, "J'ai noté ma phrase", false),
-          const SizedBox(height: 40),
+          SizedBox(height: 22 * ratio),
+          nextButton(context, "J'ai noté ma phrase", false, skipIntro),
+          SizedBox(height: 35 * ratio),
         ]),
       ),
     );
@@ -157,12 +160,12 @@ Widget arrayCell(dataWord) {
     child: Column(children: <Widget>[
       Text(
         dataWord.split(':')[0],
-        style: const TextStyle(fontSize: 15, color: Color(0xff6b6b52)),
+        style: TextStyle(fontSize: 13 * ratio, color: const Color(0xff6b6b52)),
       ),
       Text(
         dataWord.split(':')[1],
         key: Key('word${dataWord.split(':')[0]}'),
-        style: const TextStyle(fontSize: 20, color: Colors.black),
+        style: TextStyle(fontSize: 17 * ratio, color: Colors.black),
       ),
     ]),
   );
@@ -207,14 +210,15 @@ class PrintWallet extends StatelessWidget {
   }
 }
 
-Widget nextButton(BuildContext context, String text, bool isFast) {
+Widget nextButton(
+    BuildContext context, String text, bool isFast, bool skipIntro) {
   GenerateWalletsProvider _generateWalletProvider =
       Provider.of<GenerateWalletsProvider>(context, listen: false);
   MyWalletsProvider _myWalletProvider =
       Provider.of<MyWalletsProvider>(context, listen: false);
   return SizedBox(
-    width: 410,
-    height: 70,
+    width: 380 * ratio,
+    height: 60 * ratio,
     child: ElevatedButton(
       style: ElevatedButton.styleFrom(
         elevation: 4,
@@ -232,13 +236,14 @@ Widget nextButton(BuildContext context, String text, bool isFast) {
           context,
           FaderTransition(
               page: OnboardingStepSix(
-                  generatedMnemonic: _generateWalletProvider.generatedMnemonic),
+                  generatedMnemonic: _generateWalletProvider.generatedMnemonic,
+                  skipIntro: skipIntro),
               isFast: true),
         );
       },
       child: Text(
         text,
-        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+        style: TextStyle(fontSize: 22 * ratio, fontWeight: FontWeight.w600),
       ),
     ),
   );

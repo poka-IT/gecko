@@ -40,7 +40,7 @@ class OnboardingStepEight extends StatelessWidget {
             ],
             'coffre-fort-protege-les-portefeuilles.png',
             '>',
-            const OnboardingStepThirteen(),
+            const OnboardingStepNine(),
             7),
       ),
     );

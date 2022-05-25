@@ -6,13 +6,16 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/7.dart';
+import 'package:gecko/screens/onBoarding/9.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class OnboardingStepSix extends StatelessWidget {
-  OnboardingStepSix({Key? key, required this.generatedMnemonic})
+  OnboardingStepSix(
+      {Key? key, required this.skipIntro, required this.generatedMnemonic})
       : super(key: key);
 
+  final bool skipIntro;
   String? generatedMnemonic;
   TextEditingController wordController = TextEditingController();
   final TextEditingController _mnemonicController = TextEditingController();
@@ -116,8 +119,13 @@ class OnboardingStepSix extends StatelessWidget {
                 child: Expanded(
                   child: Align(
                     alignment: Alignment.bottomCenter,
-                    child: nextButton(context, 'Continuer',
-                        const OnboardingStepSeven(), false),
+                    child: nextButton(
+                        context,
+                        'Continuer',
+                        skipIntro
+                            ? const OnboardingStepNine()
+                            : const OnboardingStepSeven(),
+                        false),
                   ),
                 ),
               ),
@@ -130,7 +138,7 @@ class OnboardingStepSix extends StatelessWidget {
               //     ),
               //   ),
               // ),
-              const SizedBox(height: 40),
+              SizedBox(height: 35 * ratio),
             ]),
           ),
         ),
@@ -217,8 +225,8 @@ Widget nextButton(BuildContext context, String text, nextScreen, bool isFast) {
   _generateWalletProvider.askedWordColor = Colors.black;
 
   return SizedBox(
-    width: 410,
-    height: 70,
+    width: 380 * ratio,
+    height: 60 * ratio,
     child: ElevatedButton(
       style: ElevatedButton.styleFrom(
         elevation: 4,

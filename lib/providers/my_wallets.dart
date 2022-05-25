@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
@@ -11,7 +10,6 @@ class MyWalletsProvider with ChangeNotifier {
   List<WalletData> listWallets = [];
   late String pinCode;
   late String mnemonic;
-  late Uint8List cesiumSeed;
   int? pinLenght;
 
   int? getCurrentChest() {

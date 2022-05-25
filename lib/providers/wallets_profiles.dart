@@ -265,6 +265,10 @@ class WalletsProfilesProvider with ChangeNotifier {
 
     return balance;
   }
+
+  void reload() {
+    notifyListeners();
+  }
 }
 
 snackCopyKey(context) {

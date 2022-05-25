@@ -212,21 +212,33 @@ class UnlockingWallet extends StatelessWidget {
                 pinFocus.requestFocus();
               } else {
                 pinColor = Colors.green[400];
-                if (action == "mywallets") {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) {
-                      return const WalletsHome();
-                    }),
-                  );
-                } else if (action == "pay") {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) {
-                      return ChooseWalletScreen(
-                          chest: currentChestNumber, pin: _pin.toUpperCase());
-                    }),
-                  );
+                switch (action) {
+                  case "mywallets":
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return const WalletsHome();
+                      }),
+                    );
+                    break;
+                  case "changeWallet":
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return ChooseWalletScreen(
+                            chest: currentChestNumber, pin: _pin.toUpperCase());
+                      }),
+                    );
+                    break;
+                  case "pay":
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return ChooseWalletScreen(
+                            chest: currentChestNumber, pin: _pin.toUpperCase());
+                      }),
+                    );
+                    break;
                 }
               }
             },

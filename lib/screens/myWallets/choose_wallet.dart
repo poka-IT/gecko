@@ -22,9 +22,7 @@ class ChooseWalletScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
-    WalletsProfilesProvider _walletViewProvider =
-        Provider.of<WalletsProfilesProvider>(context, listen: false);
+
     // HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
     return Scaffold(
         appBar: AppBar(
@@ -50,19 +48,22 @@ class ChooseWalletScreen extends StatelessWidget {
                       onPrimary: Colors.white, // foreground
                     ),
                     onPressed: () async {
-                      final acc = _sub.getCurrentWallet();
-                      log.d(
-                          "fromAddress: ${acc.address!},destAddress: ${_walletViewProvider.outputPubkey.text}, amount: ${double.parse(_walletViewProvider.payAmount.text)},  password: $pin");
-                      final resultPay = await _sub.pay(context,
-                          fromAddress: acc.address!,
-                          destAddress: _walletViewProvider.outputPubkey.text,
-                          amount:
-                              double.parse(_walletViewProvider.payAmount.text),
-                          password: pin.toUpperCase());
-                      await paymentsResult(context, resultPay);
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                      // Payment workflow !
+                      // final acc = _sub.getCurrentWallet();
+                      // log.d(
+                      //     "fromAddress: ${acc.address!},destAddress: ${_walletViewProvider.outputPubkey.text}, amount: ${double.parse(_walletViewProvider.payAmount.text)},  password: $pin");
+                      // final resultPay = await _sub.pay(context,
+                      //     fromAddress: acc.address!,
+                      //     destAddress: _walletViewProvider.outputPubkey.text,
+                      //     amount:
+                      //         double.parse(_walletViewProvider.payAmount.text),
+                      //     password: pin.toUpperCase());
+                      // await paymentsResult(context, resultPay);
                     },
                     child: const Text(
-                      'Valider le paiement',
+                      'Choisir ce portefeuille',
                       style:
                           TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
                     ),
@@ -80,6 +81,8 @@ class ChooseWalletScreen extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context);
     final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    WalletsProfilesProvider _walletViewProvider =
+        Provider.of<WalletsProfilesProvider>(context, listen: false);
 
     WalletData? defaultWallet =
         _myWalletProvider.getDefaultWallet(currentChest);
@@ -129,8 +132,12 @@ class ChooseWalletScreen extends StatelessWidget {
                     onTap: () {
                       _derivation = _repository.derivation!;
                       _selectedId = _repository.id();
+                      chestBox.get(currentChest)!.defaultWallet =
+                          _repository.number;
+
                       _sub.setCurrentWallet(_repository.address!);
                       _myWalletProvider.rebuildWidget();
+                      _walletViewProvider.reload();
                     },
                     child: ClipOvalShadow(
                       shadow: const Shadow(
@@ -196,8 +203,11 @@ class ChooseWalletScreen extends StatelessWidget {
                             onTap: () {
                               _derivation = _repository.derivation!;
                               _selectedId = _repository.id();
+                              chestBox.get(currentChest)!.defaultWallet =
+                                  _repository.number;
                               _sub.setCurrentWallet(_repository.address!);
-                              _myWalletProvider.rebuildWidget();
+                              // _myWalletProvider.rebuildWidget();
+                              _sub.reload();
                             },
                           )
                         ]),

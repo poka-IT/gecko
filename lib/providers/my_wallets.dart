@@ -24,6 +24,7 @@ class MyWalletsProvider with ChangeNotifier {
     // configBox.delete('endpoint');
     if (!configBox.containsKey('endpoint') || configBox.get('endpoint') == '') {
       log.d('No endpoint, configure...');
+      // configBox.put('endpoint', 'wss://gdev.librelois.fr/ws');
       configBox.put('endpoint', 'ws://127.0.0.1:9944');
     }
 

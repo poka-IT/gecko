@@ -9,8 +9,8 @@ import 'package:gecko/screens/onBoarding/10.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
-class OnboardingStepThirteen extends StatelessWidget {
-  const OnboardingStepThirteen({Key? key}) : super(key: key);
+class OnboardingStepNine extends StatelessWidget {
+  const OnboardingStepNine({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -84,8 +84,8 @@ class OnboardingStepThirteen extends StatelessWidget {
                 child: Align(
                     alignment: Alignment.bottomCenter,
                     child: SizedBox(
-                      width: 410,
-                      height: 70,
+                      width: 380 * ratio,
+                      height: 60 * ratio,
                       child: ElevatedButton(
                           key: const Key('changeSecretCode'),
                           style: ElevatedButton.styleFrom(
@@ -96,14 +96,15 @@ class OnboardingStepThirteen extends StatelessWidget {
                           onPressed: () {
                             _generateWalletProvider.changePinCode(reload: true);
                           },
-                          child: const Text("Choisir un autre code secret",
+                          child: Text("Choisir un autre code secret",
                               style: TextStyle(
-                                  fontSize: 24, fontWeight: FontWeight.w600))),
+                                  fontSize: 22 * ratio,
+                                  fontWeight: FontWeight.w600))),
                     ))),
-            const SizedBox(height: 25),
+            SizedBox(height: 22 * ratio),
             common.nextButton(context, "J'ai noté mon code secret",
-                OnboardingStepFourteen(), false),
-            const SizedBox(height: 40),
+                OnboardingStepTen(), false),
+            SizedBox(height: 35 * ratio),
           ]),
         ));
   }

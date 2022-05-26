@@ -221,11 +221,12 @@ Widget geckHome(context) {
                     child: Material(
                       color: orangeC, // button color
                       child: InkWell(
-                          child: const Padding(
-                            padding: EdgeInsets.all(18),
+                          child: Padding(
+                            padding: const EdgeInsets.all(18),
                             child: Image(
-                                image: AssetImage('assets/home/loupe.png'),
-                                height: 70),
+                                image:
+                                    const AssetImage('assets/home/loupe.png'),
+                                height: 62 * ratio),
                           ),
                           onTap: () {
                             Navigator.push(
@@ -249,12 +250,12 @@ Widget geckHome(context) {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   "Rechercher un\nportefeuille",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       color: Colors.white,
-                      fontSize: 17,
+                      fontSize: 15 * ratio,
                       fontWeight: FontWeight.w500),
                 )
               ]),
@@ -266,15 +267,15 @@ Widget geckHome(context) {
                     child: Material(
                       color: orangeC, // button color
                       child: InkWell(
-                          child: const Padding(
-                              padding: EdgeInsets.all(18),
+                          child: Padding(
+                              padding: const EdgeInsets.all(18),
                               child: Image(
-                                  image: AssetImage('assets/home/wallet.png'),
-                                  height: 75)),
+                                  image: const AssetImage(
+                                      'assets/home/wallet.png'),
+                                  height: 68 * ratio)),
                           onTap: () {
                             WalletData? defaultWallet =
-                                _myWalletProvider.getDefaultWallet(
-                                    configBox.get('currentChest'));
+                                _myWalletProvider.getDefaultWallet();
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -304,18 +305,18 @@ Widget geckHome(context) {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   "Gérer mes\nportefeuilles",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       color: Colors.white,
-                      fontSize: 17,
+                      fontSize: 15 * ratio,
                       fontWeight: FontWeight.w500),
                 )
               ])
             ]),
             Padding(
-              padding: const EdgeInsets.only(top: 40),
+              padding: EdgeInsets.only(top: 35 * ratio),
               child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
@@ -325,12 +326,12 @@ Widget geckHome(context) {
                           child: Material(
                             color: orangeC, // button color
                             child: InkWell(
-                                child: const Padding(
-                                    padding: EdgeInsets.all(18),
+                                child: Padding(
+                                    padding: const EdgeInsets.all(18),
                                     child: Image(
-                                        image: AssetImage(
+                                        image: const AssetImage(
                                             'assets/home/qrcode.png'),
-                                        height: 75)),
+                                        height: 68 * ratio)),
                                 onTap: () async {
                                   await _historyProvider.scan(context);
                                 }),
@@ -348,12 +349,12 @@ Widget geckHome(context) {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
+                      Text(
                         "Scanner un\nQR code",
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             color: Colors.white,
-                            fontSize: 17,
+                            fontSize: 15 * ratio,
                             fontWeight: FontWeight.w500),
                       )
                     ])

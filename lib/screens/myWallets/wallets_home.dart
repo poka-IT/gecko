@@ -155,7 +155,7 @@ class WalletsHome extends StatelessWidget {
 
     List _listWallets = _myWalletProvider.listWallets;
     WalletData? defaultWallet =
-        _myWalletProvider.getDefaultWallet(configBox.get('currentChest'));
+        _myWalletProvider.getDefaultWallet();
     final double screenWidth = MediaQuery.of(context).size.width;
     int nTule = 2;
 

@@ -26,6 +26,8 @@ class SubstrateSdk with ChangeNotifier {
   bool importIsLoading = false;
   int blocNumber = 0;
   bool isLoadingEndpoint = false;
+  String debugConnection = '';
+  String transactionStatus = '';
 
   TextEditingController jsonKeystore = TextEditingController();
   TextEditingController keystorePassword = TextEditingController();
@@ -48,7 +50,7 @@ class SubstrateSdk with ChangeNotifier {
     n.endpoint = configBox.get('endpoint');
     n.ss58 = ss58;
     node.add(n);
-    int timeout = 7000;
+    int timeout = 10000;
 
     // if (n.endpoint!.startsWith('ws://')) {
     //   timeout = 5000;
@@ -85,20 +87,19 @@ class SubstrateSdk with ChangeNotifier {
     notifyListeners();
     if (res != null) {
       nodeConnected = true;
-      notifyListeners();
-      snackNode(ctx, true);
-    } else {
-      nodeConnected = false;
-      notifyListeners();
-      snackNode(ctx, false);
-    }
 
-    // Subscribe bloc number
-    if (nodeConnected) {
+      // Subscribe bloc number
       sdk.api.setting.subscribeBestNumber((res) {
         blocNumber = int.parse(res.toString());
         notifyListeners();
       });
+      notifyListeners();
+      snackNode(ctx, true);
+    } else {
+      nodeConnected = false;
+      debugConnection = res.toString();
+      notifyListeners();
+      snackNode(ctx, false);
     }
 
     log.d(sdk.api.connectedNode?.endpoint);
@@ -299,6 +300,8 @@ class SubstrateSdk with ChangeNotifier {
       required String destAddress,
       required double amount,
       required String password}) async {
+    transactionStatus = '';
+
     setCurrentWallet(fromAddress);
 
     log.d(keyring.current.address);
@@ -317,15 +320,31 @@ class SubstrateSdk with ChangeNotifier {
         [destAddress, amount * 100],
         password,
         onStatusChange: (status) {
-          print('status: ' + status);
+          log.d('Transaction status: ' + status);
           if (status == 'Ready') {
-            snack(context, 'Transaction terminé');
+            transactionStatus = 'sent';
+            notifyListeners();
+            // snack(context, 'Transaction terminé');
           }
         },
+      ).timeout(
+        const Duration(seconds: 12),
+        onTimeout: () => {},
       );
       print(hash.toString());
-      return 'confirmed';
+      if (hash.isEmpty) {
+        transactionStatus = 'timeout';
+        notifyListeners();
+
+        return 'timeout';
+      } else {
+        transactionStatus = hash.toString();
+        notifyListeners();
+        return hash.toString();
+      }
     } catch (e) {
+      transactionStatus = e.toString();
+      notifyListeners();
       return e.toString();
     }
   }
@@ -371,12 +390,12 @@ class SubstrateSdk with ChangeNotifier {
     );
 
     try {
-      final tata = await sdk.api.tx.signAndSend(
+      final result = await sdk.api.tx.signAndSend(
         txInfo,
         [name],
         password,
       );
-      log.d(tata);
+      log.d(result);
       return 'confirmed';
     } on Exception catch (e) {
       log.e(e);

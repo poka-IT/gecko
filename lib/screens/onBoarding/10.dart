@@ -14,8 +14,8 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
-class OnboardingStepFourteen extends StatelessWidget {
-  OnboardingStepFourteen({
+class OnboardingStepTen extends StatelessWidget {
+  OnboardingStepTen({
     Key? validationKey,
   }) : super(key: validationKey);
 
@@ -146,7 +146,7 @@ class OnboardingStepFourteen extends StatelessWidget {
                 Navigator.push(
                   context,
                   FaderTransition(
-                      page: const OnboardingStepFiveteen(), isFast: false),
+                      page: const OnboardingStepEleven(), isFast: false),
                 );
               } else {
                 errorController.add(ErrorAnimationType

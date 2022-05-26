@@ -13,7 +13,7 @@ class CommonElements {
     return Container(
         padding: const EdgeInsets.all(0),
         width: 440,
-        height: boxHeight,
+        height: isTall ? boxHeight : boxHeight * 0.9,
         decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
@@ -37,7 +37,9 @@ class CommonElements {
         textAlign: TextAlign.justify,
         text: TextSpan(
           style: TextStyle(
-              fontSize: size, color: Colors.black, letterSpacing: 0.3),
+              fontSize: isTall ? size : size * 0.9,
+              color: Colors.black,
+              letterSpacing: 0.3),
           children: text,
         ),
       ),
@@ -47,8 +49,8 @@ class CommonElements {
   Widget nextButton(
       BuildContext context, String text, nextScreen, bool isFast) {
     return SizedBox(
-      width: 410,
-      height: 70,
+      width: 380 * ratio,
+      height: 60 * ratio,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           elevation: 4,
@@ -61,7 +63,7 @@ class CommonElements {
         },
         child: Text(
           text,
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+          style: TextStyle(fontSize: 23 * ratio, fontWeight: FontWeight.w600),
         ),
       ),
     );
@@ -105,7 +107,7 @@ class CommonElements {
         ),
       ),
       // const SizedBox(height: 40),
-      SizedBox(height: isTall ? 40 : 10),
+      SizedBox(height: isTall ? 40 : 20),
     ]);
   }
 

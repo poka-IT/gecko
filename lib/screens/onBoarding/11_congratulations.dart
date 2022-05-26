@@ -7,8 +7,8 @@ import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
 
 // ignore: must_be_immutable
-class OnboardingStepFiveteen extends StatelessWidget {
-  const OnboardingStepFiveteen({Key? key}) : super(key: key);
+class OnboardingStepEleven extends StatelessWidget {
+  const OnboardingStepEleven({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -54,8 +54,8 @@ class OnboardingStepFiveteen extends StatelessWidget {
 
 Widget finishButton(BuildContext context) {
   return SizedBox(
-    width: 410,
-    height: 70,
+    width: 380 * ratio,
+    height: 60 * ratio,
     child: ElevatedButton(
         key: const Key('goWalletHome'),
         style: ElevatedButton.styleFrom(
@@ -72,7 +72,8 @@ Widget finishButton(BuildContext context) {
             ModalRoute.withName('/'),
           );
         },
-        child: const Text("Accéder à mon coffre",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600))),
+        child: Text("Accéder à mon coffre",
+            style:
+                TextStyle(fontSize: 22 * ratio, fontWeight: FontWeight.w600))),
   );
 }

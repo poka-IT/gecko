@@ -164,10 +164,8 @@ class ConfirmStoreWallet extends StatelessWidget with ChangeNotifier {
                                     Navigator.pushAndRemoveUntil(context,
                                         MaterialPageRoute(builder: (context) {
                                       return UnlockingWallet(
-                                        wallet:
-                                            _myWalletProvider.getDefaultWallet(
-                                          configBox.get('currentChest'),
-                                        ),
+                                        wallet: _myWalletProvider
+                                            .getDefaultWallet(),
                                         action: "mywallets",
                                       );
                                     }), ModalRoute.withName('/'));

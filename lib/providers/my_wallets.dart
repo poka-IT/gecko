@@ -24,6 +24,7 @@ class MyWalletsProvider with ChangeNotifier {
     // configBox.delete('endpoint');
     if (!configBox.containsKey('endpoint') || configBox.get('endpoint') == '') {
       log.d('No endpoint, configure...');
+      // configBox.put('endpoint', 'wss://gdev.librelois.fr/ws');
       configBox.put('endpoint', 'ws://127.0.0.1:9944');
     }
 
@@ -62,10 +63,11 @@ class MyWalletsProvider with ChangeNotifier {
     return _targetedWallet;
   }
 
-  WalletData? getDefaultWallet(int? chest) {
+  WalletData? getDefaultWallet([int? chest]) {
     if (chestBox.isEmpty) {
       return WalletData(chest: 0, number: 0);
     } else {
+      chest ??= getCurrentChest();
       int? defaultWalletNumber = chestBox.get(chest)!.defaultWallet;
       return getWalletData([chest, defaultWalletNumber]);
     }

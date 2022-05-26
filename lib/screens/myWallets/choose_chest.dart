@@ -3,9 +3,10 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/screens/myWallets/generate_wallets.dart';
+import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:gecko/screens/onBoarding/5.dart';
 import 'package:provider/provider.dart';
 
 class ChooseChest extends StatefulWidget {
@@ -114,7 +115,7 @@ class _ChooseChestState extends State<ChooseChest> {
                 onPressed: () {
                   configBox.put('currentChest', currentChest);
                   WalletData? defaultWallet =
-                      _myWalletProvider.getDefaultWallet(currentChest);
+                      _myWalletProvider.getDefaultWallet();
                   _myWalletProvider.rebuildWidget();
                   Navigator.pushAndRemoveUntil(
                     context,
@@ -136,28 +137,54 @@ class _ChooseChestState extends State<ChooseChest> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            // const SizedBox(height: 20),
+            Expanded(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: InkWell(
+                  key: const Key('createNewChest'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return const OnboardingStepFive(skipIntro: true);
+                      }),
+                    );
+                  },
+                  child: SizedBox(
+                    width: 400,
+                    height: 50,
+                    child: Center(
+                        child: Text('Créer un nouveau coffre',
+                            style: TextStyle(
+                                fontSize: 22,
+                                color: orangeC,
+                                fontWeight: FontWeight.w600))),
+                  ),
+                ),
+              ),
+            ),
             InkWell(
-                key: const Key('createNewChest'),
+                key: const Key('importChest'),
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) {
-                      return GenerateFastChestScreen();
+                      return const RestoreChest(skipIntro: true);
                     }),
                   );
                 },
                 child: SizedBox(
                   width: 400,
-                  height: 70,
+                  height: 50,
                   child: Center(
-                      child: Text('Créer un nouveau coffre',
+                      child: Text('Importer un coffre',
                           style: TextStyle(
                               fontSize: 22,
                               color: orangeC,
                               fontWeight: FontWeight.w600))),
                 )),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
           ]),
         ));
   }

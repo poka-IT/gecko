@@ -29,7 +29,7 @@ class WalletOptions extends StatelessWidget {
 
     final int _currentChest = _myWalletProvider.getCurrentChest()!;
 
-    // final currentWallet = _myWalletProvider.getDefaultWallet(_currentChest);
+    // final currentWallet = _myWalletProvider.getDefaultWallet();
     // log.d(_walletOptions.getAddress(_currentChest, 3));
     log.d("Wallet options: $_currentChest:${wallet.derivation}");
 
@@ -336,7 +336,7 @@ class WalletOptions extends StatelessWidget {
       WalletOptionsProvider _walletOptions,
       int _currentChest) {
     WalletData defaultWallet =
-        _myWalletProvider.getDefaultWallet(_currentChest)!;
+        _myWalletProvider.getDefaultWallet()!;
 
     _walletOptions.isDefaultWallet = (defaultWallet.number == wallet.id()[1]);
 

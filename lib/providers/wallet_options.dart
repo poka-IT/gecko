@@ -315,7 +315,7 @@ Widget balance(BuildContext context, String address, double size) {
             return Text(
               balanceCache[address]!,
               style: TextStyle(
-                fontSize: isTall ? size : 18,
+                fontSize: isTall ? size : size * 0.9,
               ),
             );
           });

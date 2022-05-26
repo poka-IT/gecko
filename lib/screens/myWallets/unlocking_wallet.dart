@@ -8,9 +8,11 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/choose_chest.dart';
 import 'package:gecko/screens/myWallets/choose_wallet.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
+import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/globals.dart';
@@ -231,10 +233,26 @@ class UnlockingWallet extends StatelessWidget {
                     );
                     break;
                   case "pay":
+                    // Navigator.pop(context);
+                    // Navigator.pop(context);
+                    // Payment workflow !
+                    WalletsProfilesProvider _walletViewProvider =
+                        Provider.of<WalletsProfilesProvider>(context,
+                            listen: false);
+                    final acc = _sub.getCurrentWallet();
+                    log.d(
+                        "fromAddress: ${acc.address!},destAddress: ${_walletViewProvider.outputPubkey.text}, amount: ${double.parse(_walletViewProvider.payAmount.text)},  password: $_pin");
+                    _sub.pay(context,
+                        fromAddress: acc.address!,
+                        destAddress: _walletViewProvider.outputPubkey.text,
+                        amount:
+                            double.parse(_walletViewProvider.payAmount.text),
+                        password: _pin.toUpperCase());
+                    // await paymentsResult(context, resultPay);
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) {
-                        return ChooseWalletScreen(
+                        return TransactionInProgress(
                             chest: currentChestNumber, pin: _pin.toUpperCase());
                       }),
                     );

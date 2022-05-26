@@ -27,6 +27,7 @@ class SubstrateSdk with ChangeNotifier {
   int blocNumber = 0;
   bool isLoadingEndpoint = false;
   String debugConnection = '';
+  String transactionStatus = '';
 
   TextEditingController jsonKeystore = TextEditingController();
   TextEditingController keystorePassword = TextEditingController();
@@ -299,6 +300,8 @@ class SubstrateSdk with ChangeNotifier {
       required String destAddress,
       required double amount,
       required String password}) async {
+    transactionStatus = '';
+
     setCurrentWallet(fromAddress);
 
     log.d(keyring.current.address);
@@ -317,15 +320,31 @@ class SubstrateSdk with ChangeNotifier {
         [destAddress, amount * 100],
         password,
         onStatusChange: (status) {
-          print('status: ' + status);
+          log.d('Transaction status: ' + status);
           if (status == 'Ready') {
-            snack(context, 'Transaction terminé');
+            transactionStatus = 'sent';
+            notifyListeners();
+            // snack(context, 'Transaction terminé');
           }
         },
+      ).timeout(
+        const Duration(seconds: 12),
+        onTimeout: () => {},
       );
       print(hash.toString());
-      return 'confirmed';
+      if (hash.isEmpty) {
+        transactionStatus = 'timeout';
+        notifyListeners();
+
+        return 'timeout';
+      } else {
+        transactionStatus = hash.toString();
+        notifyListeners();
+        return hash.toString();
+      }
     } catch (e) {
+      transactionStatus = e.toString();
+      notifyListeners();
       return e.toString();
     }
   }

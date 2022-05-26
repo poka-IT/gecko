@@ -275,8 +275,7 @@ Widget geckHome(context) {
                                   height: 68 * ratio)),
                           onTap: () {
                             WalletData? defaultWallet =
-                                _myWalletProvider.getDefaultWallet(
-                                    configBox.get('currentChest'));
+                                _myWalletProvider.getDefaultWallet();
                             Navigator.push(
                               context,
                               MaterialPageRoute(

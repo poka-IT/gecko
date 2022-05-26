@@ -63,10 +63,11 @@ class MyWalletsProvider with ChangeNotifier {
     return _targetedWallet;
   }
 
-  WalletData? getDefaultWallet(int? chest) {
+  WalletData? getDefaultWallet([int? chest]) {
     if (chestBox.isEmpty) {
       return WalletData(chest: 0, number: 0);
     } else {
+      chest ??= getCurrentChest();
       int? defaultWalletNumber = chestBox.get(chest)!.defaultWallet;
       return getWalletData([chest, defaultWalletNumber]);
     }

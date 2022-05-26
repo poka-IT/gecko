@@ -115,7 +115,7 @@ class _ChooseChestState extends State<ChooseChest> {
                 onPressed: () {
                   configBox.put('currentChest', currentChest);
                   WalletData? defaultWallet =
-                      _myWalletProvider.getDefaultWallet(currentChest);
+                      _myWalletProvider.getDefaultWallet();
                   _myWalletProvider.rebuildWidget();
                   Navigator.pushAndRemoveUntil(
                     context,

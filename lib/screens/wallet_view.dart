@@ -184,16 +184,18 @@ class WalletViewScreen extends StatelessWidget {
 
   void paymentPopup(
       BuildContext context, WalletsProfilesProvider _walletViewProvider) {
-    WalletsProfilesProvider _walletViewProvider =
-        Provider.of<WalletsProfilesProvider>(context, listen: false);
+    // WalletsProfilesProvider _walletViewProvider =
+    //     Provider.of<WalletsProfilesProvider>(context, listen: false);
 
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     // SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     const double shapeSize = 20;
-    WalletData? defaultWallet =
-        _myWalletProvider.getDefaultWallet(configBox.get('currentChest'));
+    WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
+
+    bool canValidate = false;
+
     _walletViewProvider.outputPubkey.text = pubkey!;
 
     showModalBottomSheet<void>(
@@ -208,6 +210,15 @@ class WalletViewScreen extends StatelessWidget {
         builder: (BuildContext context) {
           return StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
+            if (_walletViewProvider.payAmount.text != '' &&
+                double.parse(_walletViewProvider.payAmount.text) <=
+                    double.parse(
+                        balanceCache[defaultWallet!.address]!.split(' ')[0]) &&
+                _walletViewProvider.pubkey != defaultWallet.address) {
+              canValidate = true;
+            } else {
+              canValidate = false;
+            }
             return Padding(
               padding: EdgeInsets.only(
                   bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -251,7 +262,8 @@ class WalletViewScreen extends StatelessWidget {
                                 MaterialPageRoute(
                                   builder: (context) {
                                     return UnlockingWallet(
-                                        wallet: defaultWallet, action: "pay");
+                                        wallet: defaultWallet,
+                                        action: "changeWallet");
                                   },
                                 ),
                               );
@@ -265,8 +277,8 @@ class WalletViewScreen extends StatelessWidget {
                                 //         BorderSide(color: Colors.grey[500], width: 2),
                                 //     borderRadius: BorderRadius.circular(8)),
                                 border: Border.all(
-                                    color:
-                                        Colors.grey[500]!, // Set border color
+                                    color: Colors.blueAccent
+                                        .shade200, // Set border color
                                     width: 2), // Set border width
                                 borderRadius: const BorderRadius.all(
                                     Radius.circular(10.0)), // Set ro
@@ -376,7 +388,7 @@ class WalletViewScreen extends StatelessWidget {
                               primary: orangeC, // background
                               onPrimary: Colors.white, // foreground
                             ),
-                            onPressed: _walletViewProvider.payAmount.text != ''
+                            onPressed: canValidate
                                 ? () {
                                     Navigator.push(
                                       context,

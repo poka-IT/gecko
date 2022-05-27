@@ -84,6 +84,7 @@ Future<void> main() async {
   endPointGVA = 'https://g1.librelois.fr/gva';
   // endPointGVA = 'https://duniter-g1.p2p.legal/gva';
   await _homeProvider.getValidEndpoints();
+  // log.d(await configBox.get('endpoint'));
 
   // if (endPointGVA == 'HS') {
   //   _homeProvider.playSound('faché', 0.8);

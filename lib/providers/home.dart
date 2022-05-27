@@ -61,13 +61,17 @@ class HomeProvider with ChangeNotifier {
     configBox.delete('endpoint');
 
     List _listEndpoints = [];
-    if (!configBox.containsKey('endpoint') || configBox.get('endpoint') == []) {
+    if (!configBox.containsKey('endpoint') ||
+        configBox.get('endpoint') == [] ||
+        configBox.get('endpoint') == '') {
       _listEndpoints = await rootBundle
           .loadString('config/gdev_endpoints.json')
           .then((jsonStr) => jsonDecode(jsonStr));
       _listEndpoints.shuffle();
       configBox.put('endpoint', _listEndpoints);
     }
+
+    log.i('ENDPOINT: ' + _listEndpoints.toString());
 
     // int i = 0;
     // String? _endpoint;
@@ -111,7 +115,6 @@ class HomeProvider with ChangeNotifier {
     //   }
     // } while (_statusCode != 400);
 
-    log.i('ENDPOINT: ' + _listEndpoints.toString());
     return _listEndpoints;
   }
 

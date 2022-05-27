@@ -506,7 +506,7 @@ void snackNode(BuildContext context, bool isConnected) {
   String _message;
   if (!isConnected) {
     _message =
-        "Aucun noeud Duniter disponible, veuillez réessayer ultérieurement";
+        "Aucun noeud Duniter disponible, veuillez réessayer ultérieurement:\n${configBox.get('endpoint').first}";
   } else {
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
@@ -516,7 +516,7 @@ void snackNode(BuildContext context, bool isConnected) {
   final snackBar = SnackBar(
       padding: const EdgeInsets.all(20),
       content: Text(_message, style: const TextStyle(fontSize: 16)),
-      duration: const Duration(seconds: 2));
+      duration: const Duration(seconds: 4));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
 

@@ -232,29 +232,41 @@ class UnlockingWallet extends StatelessWidget {
                     );
                     break;
                   case "pay":
-                    // Navigator.pop(context);
-                    // Navigator.pop(context);
                     // Payment workflow !
                     WalletsProfilesProvider _walletViewProvider =
                         Provider.of<WalletsProfilesProvider>(context,
                             listen: false);
                     final acc = _sub.getCurrentWallet();
                     log.d(
-                        "fromAddress: ${acc.address!},destAddress: ${_walletViewProvider.outputPubkey.text}, amount: ${double.parse(_walletViewProvider.payAmount.text)},  password: $_pin");
-                    _sub.pay(context,
+                        "fromAddress: ${acc.address!},destAddress: ${_walletViewProvider.pubkey!}, amount: ${double.parse(_walletViewProvider.payAmount.text)},  password: $_pin");
+                    _sub.pay(
                         fromAddress: acc.address!,
-                        destAddress: _walletViewProvider.outputPubkey.text,
+                        destAddress: _walletViewProvider.pubkey!,
                         amount:
                             double.parse(_walletViewProvider.payAmount.text),
                         password: _pin.toUpperCase());
-                    // await paymentsResult(context, resultPay);
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) {
-                        return TransactionInProgress(
-                            chest: currentChestNumber, pin: _pin.toUpperCase());
+                        return const TransactionInProgress();
                       }),
                     );
+                    break;
+                  case "cert":
+                    WalletsProfilesProvider _walletViewProvider =
+                        Provider.of<WalletsProfilesProvider>(context,
+                            listen: false);
+                    final acc = _sub.getCurrentWallet();
+                    _sub.certify(acc.address!, _pin.toUpperCase(),
+                        _walletViewProvider.pubkey!);
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return const TransactionInProgress(transType: 'cert');
+                      }),
+                    );
+
                     break;
                 }
               }

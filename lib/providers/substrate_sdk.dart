@@ -254,33 +254,6 @@ class SubstrateSdk with ChangeNotifier {
     return gen.mnemonic!;
   }
 
-  // Future<bool> pay(BuildContext context, String address, double amount,
-  //     String password) async {
-  //   final sender = TxSenderData(
-  //     keyring.current.address,
-  //     keyring.current.pubKey,
-  //   );
-  //   final txInfo = TxInfoData('balances', 'transfer', sender);
-  //   try {
-  //     final hash = await sdk.api.tx.signAndSend(
-  //       txInfo,
-  //       [address, amount * 100],
-  //       password,
-  //       onStatusChange: (status) {
-  //         print('status: ' + status);
-  //         if (status == 'Ready') {
-  //           snack(context, 'Transaction terminé');
-  //         }
-  //       },
-  //     );
-  //     print(hash.toString());
-  //     return true;
-  //   } catch (err) {
-  //     print(err.toString());
-  //     return false;
-  //   }
-  // }
-
   String setCurrentWallet(String address) {
     try {
       final acc = getKeypair(address);
@@ -300,7 +273,7 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
-  Future<String> pay(BuildContext context,
+  Future<String> pay(
       {required String fromAddress,
       required String destAddress,
       required double amount,
@@ -329,14 +302,89 @@ class SubstrateSdk with ChangeNotifier {
           if (status == 'Ready') {
             transactionStatus = 'sent';
             notifyListeners();
-            // snack(context, 'Transaction terminé');
           }
         },
       ).timeout(
         const Duration(seconds: 12),
         onTimeout: () => {},
       );
-      print(hash.toString());
+      log.d(hash.toString());
+      if (hash.isEmpty) {
+        transactionStatus = 'timeout';
+        notifyListeners();
+
+        return 'timeout';
+      } else {
+        transactionStatus = hash.toString();
+        notifyListeners();
+        return hash.toString();
+      }
+    } catch (e) {
+      transactionStatus = e.toString();
+      notifyListeners();
+      return e.toString();
+    }
+  }
+
+  Future<String> certify(
+      String fromAddress, String password, String toAddress) async {
+    transactionStatus = '';
+
+    setCurrentWallet(fromAddress);
+    log.d('me: ' + fromAddress);
+    log.d('to: ' + toAddress);
+
+    final _myIdtyStatus = await idtyStatus(fromAddress);
+    final _toIdtyStatus = await idtyStatus(toAddress);
+
+    log.d(_myIdtyStatus);
+    log.d(_toIdtyStatus);
+
+    if (_myIdtyStatus != 'Validated') {
+      transactionStatus = 'notMember';
+      notifyListeners();
+      return 'notMember';
+    }
+
+    final sender = TxSenderData(
+      keyring.current.address,
+      keyring.current.pubKey,
+    );
+    TxInfoData txInfo;
+
+    if (_toIdtyStatus == 'noid') {
+      txInfo = TxInfoData(
+        'identity',
+        'createIdentity',
+        sender,
+      );
+    } else if (_toIdtyStatus == 'Validated' ||
+        _toIdtyStatus == 'ConfirmedByOwner') {
+      txInfo = TxInfoData(
+        'cert',
+        'addCert',
+        sender,
+      );
+    } else {
+      transactionStatus = 'cantBeCert';
+      notifyListeners();
+      return 'cantBeCert';
+    }
+
+    log.d('Cert action: ' + txInfo.call!);
+
+    try {
+      final hash = await sdk.api.tx
+          .signAndSend(
+            txInfo,
+            [toAddress],
+            password,
+          )
+          .timeout(
+            const Duration(seconds: 12),
+            onTimeout: () => {},
+          );
+      log.d(hash);
       if (hash.isEmpty) {
         transactionStatus = 'timeout';
         notifyListeners();
@@ -378,10 +426,10 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<String> confirmIdentity(
-      String address, String name, String password) async {
+      String fromAddress, String name, String password) async {
     // Confirm identity
-    setCurrentWallet(address);
-    log.d('idty: ' + keyring.current.address!);
+    setCurrentWallet(fromAddress);
+    log.d('me: ' + keyring.current.address!);
 
     final sender = TxSenderData(
       keyring.current.address,
@@ -404,11 +452,12 @@ class SubstrateSdk with ChangeNotifier {
       return 'confirmed';
     } on Exception catch (e) {
       log.e(e);
-      // if (e.toString() == 'Exception: password check failed') {
-      //   throw PasswordException('Bad password');
-      // }
       return e.toString();
     }
+  }
+
+  Future<bool> isMember(String address) async {
+    return await idtyStatus(address) == 'Validated';
   }
 
   Future<String> derive(

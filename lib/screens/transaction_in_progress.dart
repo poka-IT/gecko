@@ -10,11 +10,9 @@ import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class TransactionInProgress extends StatelessWidget {
-  const TransactionInProgress(
-      {Key? key, required this.chest, required this.pin})
+  const TransactionInProgress({Key? key, this.transType = 'pay'})
       : super(key: key);
-  final int chest;
-  final String pin;
+  final String transType;
 
   @override
   Widget build(BuildContext context) {
@@ -30,10 +28,29 @@ class TransactionInProgress extends StatelessWidget {
     // Map jsonResult;
     final _result = _sub.transactionStatus;
 
+    log.d(_walletViewProvider.pubkey!);
+
     final from = _myWalletProvider.getDefaultWallet()!.name!;
-    final to = _walletViewProvider
-        .getShortPubkey(_walletViewProvider.outputPubkey.text);
+    final to = _walletViewProvider.getShortPubkey(_walletViewProvider.pubkey!);
     final amount = _walletViewProvider.payAmount.text;
+    String _actionName = '';
+
+    switch (transType) {
+      case 'pay':
+        {
+          _actionName = 'Transaction';
+        }
+        break;
+      case 'cert':
+        {
+          _actionName = 'Certification';
+        }
+        break;
+      default:
+        {
+          _actionName = 'Transaction étrange';
+        }
+    }
 
     switch (_result) {
       case '':
@@ -52,7 +69,7 @@ class TransactionInProgress extends StatelessWidget {
           // jsonResult = json.decode(_result);
           log.d(_result);
           if (_result.contains('blockHash: ')) {
-            _resultText = 'Transcation validé !';
+            _resultText = '$_actionName validé !';
           } else {
             _resultText = "Une erreur s'est produite:\n\n$_result";
           }
@@ -64,7 +81,9 @@ class TransactionInProgress extends StatelessWidget {
           _sub.transactionStatus = '';
           Navigator.pop(context);
           Navigator.pop(context);
-          Navigator.pop(context);
+          if (_actionName == 'pay') {
+            Navigator.pop(context);
+          }
           return Future<bool>.value(true);
         },
         child: Scaffold(
@@ -76,7 +95,7 @@ class TransactionInProgress extends StatelessWidget {
                 height: 22,
                 child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const <Widget>[Text('Transaction en cours')]),
+                    children: <Widget>[Text('$_actionName en cours')]),
               )),
           body: SafeArea(
             child: Align(
@@ -95,13 +114,14 @@ class TransactionInProgress extends StatelessWidget {
                     )),
                     child: Column(children: <Widget>[
                       const SizedBox(height: 10),
-                      Text(
-                        '$amount $currencyName',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 10),
+                      if (transType == 'pay')
+                        Text(
+                          '$amount $currencyName',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w600),
+                        ),
+                      if (transType == 'pay') const SizedBox(height: 10),
                       const Text(
                         'de',
                         textAlign: TextAlign.center,
@@ -130,22 +150,23 @@ class TransactionInProgress extends StatelessWidget {
                   ),
                   // const SizedBox(height: 20, width: double.infinity),
                   const Spacer(),
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Text(
-                      _resultText,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 19 * ratio),
-                    ),
+                  Column(children: [
                     Visibility(
                       visible: isLoading,
                       child: SizedBox(
-                        height: 15,
-                        width: 15,
+                        height: 18,
+                        width: 18,
                         child: CircularProgressIndicator(
                           color: orangeC,
                           strokeWidth: 2,
                         ),
                       ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      _resultText,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 19 * ratio),
                     ),
                   ]),
                   const Spacer(),
@@ -164,7 +185,9 @@ class TransactionInProgress extends StatelessWidget {
                           onPressed: () {
                             Navigator.pop(context);
                             Navigator.pop(context);
-                            Navigator.pop(context);
+                            if (_actionName == 'pay') {
+                              Navigator.pop(context);
+                            }
                           },
                           child: Text(
                             'Fermer',

@@ -4,6 +4,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/history.dart';
@@ -114,7 +115,7 @@ class WalletOptions extends StatelessWidget {
                   SizedBox(height: 10 * ratio),
                   historyWidget(context, _historyProvider, walletProvider),
                   SizedBox(height: 12 * ratio),
-                  setDefaultWallet(walletProvider, _myWalletProvider,
+                  setDefaultWallet(context, walletProvider, _myWalletProvider,
                       _walletOptions, _currentChest),
                   SizedBox(height: 17 * ratio),
                   if (!walletProvider.isDefaultWallet)
@@ -332,11 +333,13 @@ class WalletOptions extends StatelessWidget {
   }
 
   Widget setDefaultWallet(
+      BuildContext context,
       WalletOptionsProvider walletProvider,
       MyWalletsProvider _myWalletProvider,
       WalletOptionsProvider _walletOptions,
       int _currentChest) {
     WalletData defaultWallet = _myWalletProvider.getDefaultWallet()!;
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     _walletOptions.isDefaultWallet = (defaultWallet.number == wallet.id()[1]);
 
@@ -348,6 +351,7 @@ class WalletOptions extends StatelessWidget {
               ChestData _newChestData = chestBox.get(_currentChest)!;
               _newChestData.defaultWallet = wallet.number;
               await chestBox.put(_currentChest, _newChestData);
+              _sub.setCurrentWallet(wallet.address!);
               _myWalletProvider.readAllWallets(_currentChest);
               _myWalletProvider.rebuildWidget();
             }

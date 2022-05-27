@@ -106,6 +106,7 @@ class WalletsProfilesProvider with ChangeNotifier {
   }
 
   String getShortPubkey(String pubkey) {
+    // log.d(pubkey);
     List<int> pubkeyByte = Base58Decode(pubkey);
     Digest pubkeyS256 = sha256.convert(sha256.convert(pubkeyByte).bytes);
     String pubkeyCheksum = Base58Encode(pubkeyS256.bytes);

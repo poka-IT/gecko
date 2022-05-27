@@ -247,6 +247,7 @@ class WalletOptionsProvider with ChangeNotifier {
             child: Column(children: [
               const Text('Nom:'),
               TextField(
+                autofocus: true,
                 controller: idtyName,
               )
             ]),

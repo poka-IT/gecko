@@ -29,6 +29,12 @@ class WalletViewScreen extends StatelessWidget {
     CesiumPlusProvider _cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
     _walletViewProvider.pubkey = pubkey!;
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
+    WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
+    _sub.setCurrentWallet(defaultWallet!.address!);
 
     return Scaffold(
         resizeToAvoidBottomInset: true,
@@ -89,6 +95,56 @@ class WalletViewScreen extends StatelessWidget {
                       fontSize: buttonFontSize, fontWeight: FontWeight.w500),
                 ),
               ]),
+              Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+                return FutureBuilder(
+                  future: _sub.isMember(defaultWallet.address!),
+                  builder: (context, AsyncSnapshot<bool?> snapshot) {
+                    return Visibility(
+                      visible: (snapshot.data ?? false),
+                      child: Column(children: <Widget>[
+                        SizedBox(
+                          height: buttonSize,
+                          child: ClipOval(
+                            child: Material(
+                              color: const Color(0xffFFD58D), // button color
+                              child: InkWell(
+                                  key: const Key('copyKey'),
+                                  splashColor: orangeC, // inkwell color
+                                  child: const Padding(
+                                    padding: EdgeInsets.only(bottom: 0),
+                                    child: Image(
+                                        image: AssetImage(
+                                            'assets/gecko_certify.png')),
+                                  ),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) {
+                                          return UnlockingWallet(
+                                              wallet: defaultWallet,
+                                              action: "cert");
+                                        },
+                                      ),
+                                    );
+                                    // _sub.certify(fromAddress, password, toAddress);
+                                  }),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 9),
+                        Text(
+                          "Certifier",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: buttonFontSize,
+                              fontWeight: FontWeight.w500),
+                        ),
+                      ]),
+                    );
+                  },
+                );
+              }),
               Column(children: <Widget>[
                 SizedBox(
                   height: buttonSize,

@@ -519,7 +519,7 @@ class WalletViewScreen extends StatelessWidget {
                         snackCopyKey(context);
                       },
                       child: Text(
-                        _historyProvider.getShortPubkey(pubkey!),
+                        getShortPubkey(pubkey!),
                         style: const TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.w800,

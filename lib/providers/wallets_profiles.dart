@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
@@ -8,9 +9,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'dart:math';
 import 'package:intl/intl.dart';
-import 'package:truncate/truncate.dart';
-import 'package:crypto/crypto.dart';
-import 'package:fast_base58/fast_base58.dart';
 
 class WalletsProfilesProvider with ChangeNotifier {
   WalletsProfilesProvider(this.pubkey);
@@ -103,23 +101,6 @@ class WalletsProfilesProvider with ChangeNotifier {
     } else {
       return false;
     }
-  }
-
-  String getShortPubkey(String pubkey) {
-    // log.d(pubkey);
-    List<int> pubkeyByte = Base58Decode(pubkey);
-    Digest pubkeyS256 = sha256.convert(sha256.convert(pubkeyByte).bytes);
-    String pubkeyCheksum = Base58Encode(pubkeyS256.bytes);
-    String pubkeyChecksumShort = truncate(pubkeyCheksum, 3,
-        omission: "", position: TruncatePosition.end);
-
-    pubkeyShort = truncate(pubkey, 5,
-            omission: String.fromCharCode(0x2026),
-            position: TruncatePosition.end) +
-        truncate(pubkey, 4, omission: "", position: TruncatePosition.start) +
-        ':$pubkeyChecksumShort';
-
-    return pubkeyShort;
   }
 
 // poka: Do99s6wQR2JLfhirPdpAERSjNbmjjECzGxHNJMiNKT3P

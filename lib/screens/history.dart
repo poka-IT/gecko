@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/models/queries.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/avatar_fullscreen.dart';
@@ -406,7 +407,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                               snackCopyKey(context);
                             },
                             child: Text(
-                              _historyProvider.getShortPubkey(pubkey!),
+                              getShortPubkey(pubkey!),
                               style: const TextStyle(
                                 fontSize: 30,
                                 fontWeight: FontWeight.w800,

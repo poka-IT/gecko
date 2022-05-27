@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'package:crypto/crypto.dart';
-import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
@@ -9,7 +7,6 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:truncate/truncate.dart';
 
 class WalletOptionsProvider with ChangeNotifier {
   TextEditingController address = TextEditingController();
@@ -106,22 +103,6 @@ class WalletOptionsProvider with ChangeNotifier {
         );
       },
     );
-  }
-
-  String getShortPubkey(String pubkey) {
-    List<int> pubkeyByte = Base58Decode(pubkey);
-    Digest pubkeyS256 = sha256.convert(sha256.convert(pubkeyByte).bytes);
-    String pubkeyCheksum = Base58Encode(pubkeyS256.bytes);
-    String pubkeyChecksumShort = truncate(pubkeyCheksum, 3,
-        omission: "", position: TruncatePosition.end);
-
-    String pubkeyShort = truncate(pubkey, 5,
-            omission: String.fromCharCode(0x2026),
-            position: TruncatePosition.end) +
-        truncate(pubkey, 4, omission: "", position: TruncatePosition.start) +
-        ':$pubkeyChecksumShort';
-
-    return pubkeyShort;
   }
 
   void bluringBalance() {

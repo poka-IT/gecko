@@ -31,7 +31,7 @@ class TransactionInProgress extends StatelessWidget {
     log.d(_walletViewProvider.pubkey!);
 
     final from = _myWalletProvider.getDefaultWallet()!.name!;
-    final to = _walletViewProvider.getShortPubkey(_walletViewProvider.pubkey!);
+    final to = getShortPubkey(_walletViewProvider.pubkey!);
     final amount = _walletViewProvider.payAmount.text;
     String _actionName = '';
 

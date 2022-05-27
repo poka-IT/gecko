@@ -1,7 +1,5 @@
 // ignore_for_file: avoid_print
 
-import 'package:crypto/crypto.dart';
-import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -54,7 +52,6 @@ class SubstrateSdk with ChangeNotifier {
       n.ss58 = ss58;
       node.add(n);
     }
-
     int timeout = 10000;
 
     // if (n.endpoint!.startsWith('ws://')) {
@@ -520,18 +517,10 @@ void snackNode(BuildContext context, bool isConnected) {
 }
 
 String getShortPubkey(String pubkey) {
-  List<int> pubkeyByte = Base58Decode(pubkey);
-  Digest pubkeyS256 = sha256.convert(sha256.convert(pubkeyByte).bytes);
-  String pubkeyCheksum = Base58Encode(pubkeyS256.bytes);
-  String pubkeyChecksumShort =
-      truncate(pubkeyCheksum, 3, omission: "", position: TruncatePosition.end);
-
-  String pubkeyShort = truncate(pubkey, 5,
+  String pubkeyShort = truncate(pubkey, 7,
           omission: String.fromCharCode(0x2026),
           position: TruncatePosition.end) +
-      truncate(pubkey, 4, omission: "", position: TruncatePosition.start) +
-      ':$pubkeyChecksumShort';
-
+      truncate(pubkey, 6, omission: "", position: TruncatePosition.start);
   return pubkeyShort;
 }
 

@@ -239,8 +239,7 @@ class WalletOptions extends StatelessWidget {
   }
 
   Widget pubkeyWidget(WalletOptionsProvider walletProvider, BuildContext ctx) {
-    final String shortPubkey =
-        walletProvider.getShortPubkey(walletProvider.address.text);
+    final String shortPubkey = getShortPubkey(walletProvider.address.text);
     return GestureDetector(
       key: const Key('copyPubkey'),
       onTap: () {
@@ -256,17 +255,12 @@ class WalletOptions extends StatelessWidget {
             height: 45,
           ),
           const SizedBox(width: 20),
-          Text("${shortPubkey.split(':')[0]}:",
+          Text(shortPubkey,
               style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                   fontFamily: 'Monospace',
                   color: Colors.black)),
-          Text(shortPubkey.split(':')[1],
-              style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  fontFamily: 'Monospace')),
           const SizedBox(width: 15),
           SizedBox(
             height: 40,

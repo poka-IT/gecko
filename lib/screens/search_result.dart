@@ -3,6 +3,7 @@ import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/providers/search.dart';
@@ -126,8 +127,8 @@ class SearchResultScreen extends StatelessWidget {
                                       }),
                               title: Row(children: <Widget>[
                                 Text(
-                                    _walletsProfilesClass
-                                        .getShortPubkey(g1Wallet.pubkey!),
+                                    
+                                        getShortPubkey(g1Wallet.pubkey!),
                                     style: const TextStyle(
                                         fontSize: 18,
                                         fontFamily: 'Monospace',

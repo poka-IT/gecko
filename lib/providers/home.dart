@@ -149,64 +149,61 @@ class HomeProvider with ChangeNotifier {
         color: yellowC,
         width: double.infinity,
         height: 80,
-        child: Expanded(
-          child: Row(
-            // mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              const Spacer(flex: 1),
-              IconButton(
-                iconSize: 50,
-                icon: const Image(image: AssetImage('assets/loupe-noire.png')),
-                onPressed: () {
-                  Navigator.popUntil(
-                    context,
-                    ModalRoute.withName('/'),
-                  );
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) {
-                      return const SearchScreen();
-                    }),
-                  );
-                },
-              ),
-              // SizedBox(width: 0),
-              const Spacer(flex: 2),
-              IconButton(
-                iconSize: 60,
-                icon: const Image(
-                    image: AssetImage('assets/qrcode-scan.png'), height: 50),
-                onPressed: () async {
-                  Navigator.popUntil(
-                    context,
-                    ModalRoute.withName('/'),
-                  );
-                  await _historyProvider.scan(context);
-                },
-              ),
-              const Spacer(flex: 2),
-              IconButton(
-                iconSize: 60,
-                icon: const Image(image: AssetImage('assets/wallet.png')),
-                onPressed: () {
-                  WalletData? defaultWallet =
-                      _myWalletProvider.getDefaultWallet();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return UnlockingWallet(
-                          wallet: defaultWallet,
-                          action: "mywallets",
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
-              const Spacer(flex: 1),
-            ],
-          ),
+        child: Row(
+          // mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            const Spacer(flex: 1),
+            IconButton(
+              iconSize: 40,
+              icon: const Image(image: AssetImage('assets/loupe-noire.png')),
+              onPressed: () {
+                // Navigator.popUntil(
+                //   context,
+                //   ModalRoute.withName('/'),
+                // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return const SearchScreen();
+                  }),
+                );
+              },
+            ),
+            // SizedBox(width: 0),
+            const Spacer(flex: 2),
+            IconButton(
+              iconSize: 60,
+              icon: const Image(image: AssetImage('assets/qrcode-scan.png')),
+              onPressed: () async {
+                // Navigator.popUntil(
+                //   context,
+                //   ModalRoute.withName('/'),
+                // );
+                await _historyProvider.scan(context);
+              },
+            ),
+            const Spacer(flex: 2),
+            IconButton(
+              iconSize: 60,
+              icon: const Image(image: AssetImage('assets/wallet.png')),
+              onPressed: () {
+                WalletData? defaultWallet =
+                    _myWalletProvider.getDefaultWallet();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return UnlockingWallet(
+                        wallet: defaultWallet,
+                        action: "mywallets",
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+            const Spacer(flex: 1),
+          ],
         ),
       ),
     );

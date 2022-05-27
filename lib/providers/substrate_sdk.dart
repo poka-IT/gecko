@@ -48,7 +48,6 @@ class SubstrateSdk with ChangeNotifier {
     List<NetworkParams> node = [];
 
     for (String _endpoint in configBox.get('endpoint')) {
-      log.d(_endpoint);
       final n = NetworkParams();
       n.name = currencyName;
       n.endpoint = _endpoint;

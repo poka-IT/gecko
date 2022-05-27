@@ -106,27 +106,34 @@ class WalletOptions extends StatelessWidget {
                 );
               }),
               SizedBox(height: 10 * ratio),
-              QrImageWidget(
-                data: _walletOptions.address.text,
-                version: QrVersions.auto,
-                size: isTall ? 300 : 270,
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(children: <Widget>[
+                    QrImageWidget(
+                      data: _walletOptions.address.text,
+                      version: QrVersions.auto,
+                      size: isTall ? 300 : 270,
+                    ),
+                    SizedBox(height: 15 * ratio),
+                    Consumer<WalletOptionsProvider>(
+                        builder: (context, walletProvider, _) {
+                      return Column(children: [
+                        pubkeyWidget(walletProvider, ctx),
+                        SizedBox(height: 10 * ratio),
+                        historyWidget(
+                            context, _historyProvider, walletProvider),
+                        SizedBox(height: 12 * ratio),
+                        setDefaultWallet(context, walletProvider,
+                            _myWalletProvider, _walletOptions, _currentChest),
+                        SizedBox(height: 17 * ratio),
+                        if (!walletProvider.isDefaultWallet)
+                          deleteWallet(context, walletProvider,
+                              _myWalletProvider, _currentChest)
+                      ]);
+                    }),
+                  ]),
+                ),
               ),
-              SizedBox(height: 15 * ratio),
-              Consumer<WalletOptionsProvider>(
-                  builder: (context, walletProvider, _) {
-                return Column(children: [
-                  pubkeyWidget(walletProvider, ctx),
-                  SizedBox(height: 10 * ratio),
-                  historyWidget(context, _historyProvider, walletProvider),
-                  SizedBox(height: 12 * ratio),
-                  setDefaultWallet(context, walletProvider, _myWalletProvider,
-                      _walletOptions, _currentChest),
-                  SizedBox(height: 17 * ratio),
-                  if (!walletProvider.isDefaultWallet)
-                    deleteWallet(context, walletProvider, _myWalletProvider,
-                        _currentChest)
-                ]);
-              }),
             ]),
           ),
         ),

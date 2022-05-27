@@ -26,6 +26,7 @@ class ChestOptions extends StatelessWidget {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
+          elevation: 1,
           toolbarHeight: 60 * ratio,
           // leading: IconButton(
           //     icon: const Icon(Icons.arrow_back, color: Colors.black),

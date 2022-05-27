@@ -16,7 +16,6 @@ class SearchScreen extends StatelessWidget {
     SearchProvider _searchProvider = Provider.of<SearchProvider>(context);
     final double screenHeight = MediaQuery.of(context).size.height;
 
-
     return WillPopScope(
         onWillPop: () {
           _searchProvider.searchController.text = '';
@@ -24,6 +23,7 @@ class SearchScreen extends StatelessWidget {
         },
         child: Scaffold(
           appBar: AppBar(
+            elevation: 1,
             toolbarHeight: 60 * ratio,
             title: const SizedBox(
               height: 22,

@@ -57,56 +57,62 @@ class HomeProvider with ChangeNotifier {
     return version + '+' + buildNumber;
   }
 
-  Future<String?> getValidEndpoint() async {
-    List _listEndpoints = await rootBundle
-        .loadString('config/gva_endpoints.json')
-        .then((jsonStr) => jsonDecode(jsonStr));
-    _listEndpoints.shuffle();
+  Future<List?> getValidEndpoints() async {
+    configBox.delete('endpoint');
 
-    int i = 0;
-    String? _endpoint;
-    int _statusCode = 0;
+    List _listEndpoints = [];
+    if (!configBox.containsKey('endpoint') || configBox.get('endpoint') == []) {
+      _listEndpoints = await rootBundle
+          .loadString('config/gdev_endpoints.json')
+          .then((jsonStr) => jsonDecode(jsonStr));
+      _listEndpoints.shuffle();
+      configBox.put('endpoint', _listEndpoints);
+    }
 
-    final _client = HttpClient();
-    _client.connectionTimeout = const Duration(milliseconds: 1000);
+    // int i = 0;
+    // String? _endpoint;
+    // int _statusCode = 0;
 
-    do {
-      i++;
-      log.d(i.toString() + ' ème essai de recherche de endpoint GVA.');
-      log.d('Try GVA endpoint: ${_listEndpoints[i - 1]}');
-      int listLenght = _listEndpoints.length - 1;
-      if (i > listLenght) {
-        log.e('NO VALID GVA ENDPOINT FOUND');
-        _endpoint = 'HS';
-        break;
-      }
-      if (i != 0) {
-        await Future.delayed(const Duration(milliseconds: 300));
-      }
+    // final _client = HttpClient();
+    // _client.connectionTimeout = const Duration(milliseconds: 1000);
 
-      try {
-        final request = await _client.postUrl(Uri.parse(_listEndpoints[i]));
-        final response = await request.close();
+    // do {
+    //   i++;
+    //   log.d(i.toString() + ' ème essai de recherche de endpoint GVA.');
+    //   log.d('Try GVA endpoint: ${_listEndpoints[i - 1]}');
+    //   int listLenght = _listEndpoints.length - 1;
+    //   if (i > listLenght) {
+    //     log.e('NO VALID GVA ENDPOINT FOUND');
+    //     _endpoint = 'HS';
+    //     break;
+    //   }
+    //   if (i != 0) {
+    //     await Future.delayed(const Duration(milliseconds: 300));
+    //   }
 
-        _endpoint = _listEndpoints[i];
-        _statusCode = response.statusCode;
-      } on TimeoutException catch (_) {
-        log.e('This endpoint is timeout, next');
-        _statusCode = 50;
-        continue;
-      } on SocketException catch (_) {
-        log.e('This endpoint is a bad endpoint, next');
-        _statusCode = 70;
-        continue;
-      } on Exception {
-        log.e('Unknown error');
-        _statusCode = 60;
-        continue;
-      }
-    } while (_statusCode != 400);
+    //   try {
+    //     final request = await _client.postUrl(Uri.parse(_listEndpoints[i]));
+    //     final response = await request.close();
 
-    log.i('ENDPOINT: ' + _endpoint!);
-    return _endpoint;
+    //     _endpoint = _listEndpoints[i];
+    //     _statusCode = response.statusCode;
+    //   } on TimeoutException catch (_) {
+    //     log.e('This endpoint is timeout, next');
+    //     _statusCode = 50;
+    //     continue;
+    //   } on SocketException catch (_) {
+    //     log.e('This endpoint is a bad endpoint, next');
+    //     _statusCode = 70;
+    //     continue;
+    //   } on Exception {
+    //     log.e('Unknown error');
+    //     _statusCode = 60;
+    //     continue;
+    //   }
+    // } while (_statusCode != 400);
+
+    log.i('ENDPOINT: ' + _listEndpoints.toString());
+    return _listEndpoints;
   }
 
   T getRandomElement<T>(List<T> list) {

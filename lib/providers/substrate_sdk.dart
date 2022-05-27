@@ -11,6 +11,7 @@ import 'package:polkawallet_sdk/api/types/txInfoData.dart';
 import 'package:polkawallet_sdk/polkawallet_sdk.dart';
 import 'package:polkawallet_sdk/storage/keyring.dart';
 import 'package:polkawallet_sdk/storage/types/keyPairData.dart';
+import 'package:provider/provider.dart';
 import 'package:truncate/truncate.dart';
 // import 'package:web_socket_channel/io.dart';
 
@@ -45,11 +46,15 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<void> connectNode(BuildContext ctx) async {
     List<NetworkParams> node = [];
-    final n = NetworkParams();
-    n.name = currencyName;
-    n.endpoint = configBox.get('endpoint');
-    n.ss58 = ss58;
-    node.add(n);
+
+    for (String _endpoint in configBox.get('endpoint')) {
+      final n = NetworkParams();
+      n.name = currencyName;
+      n.endpoint = _endpoint;
+      n.ss58 = ss58;
+      node.add(n);
+    }
+
     int timeout = 10000;
 
     // if (n.endpoint!.startsWith('ws://')) {
@@ -428,6 +433,10 @@ class SubstrateSdk with ChangeNotifier {
 
     return await sdk.api.keyring.checkMnemonicValid(mnemonic);
   }
+
+  String? getConnectedEndpoint() {
+    return sdk.api.connectedNode?.endpoint;
+  }
 }
 
 void snack(BuildContext context, String message, {int duration = 2}) {
@@ -449,8 +458,10 @@ void snackNode(BuildContext context, bool isConnected) {
     _message =
         "Aucun noeud Duniter disponible, veuillez réessayer ultérieurement";
   } else {
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+
     _message =
-        "Vous êtes connecté au noeud\n${configBox.get('endpoint').split('//')[1]}";
+        "Vous êtes connecté au noeud\n${_sub.getConnectedEndpoint()!.split('//')[1]}";
   }
   final snackBar = SnackBar(
       padding: const EdgeInsets.all(20),

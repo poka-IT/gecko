@@ -22,11 +22,10 @@ class MyWalletsProvider with ChangeNotifier {
 
   bool checkIfWalletExist() {
     // configBox.delete('endpoint');
-    if (!configBox.containsKey('endpoint') || configBox.get('endpoint') == '') {
-      log.d('No endpoint, configure...');
-      // configBox.put('endpoint', 'wss://gdev.librelois.fr/ws');
-      configBox.put('endpoint', 'ws://127.0.0.1:9944');
-    }
+    // if (!configBox.containsKey('endpoint') || configBox.get('endpoint') == []) {
+    //   log.d('No endpoint, configure...');
+    //   configBox.put('endpoint', 'wss://gdev.librelois.fr/ws');
+    // }
 
     if (chestBox.isEmpty) {
       log.i('No wallets detected');

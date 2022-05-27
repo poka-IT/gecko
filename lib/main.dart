@@ -72,6 +72,7 @@ Future<void> main() async {
   configBox = await Hive.openBox("configBox");
   await Hive.deleteBoxFromDisk('g1WalletsBox');
   g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
+
   // keystoreBox = await Hive.openBox("keystoreBox");
 
   // g1WalletsBox.clear();
@@ -82,7 +83,7 @@ Future<void> main() async {
   // Get a valid GVA endpoint
   endPointGVA = 'https://g1.librelois.fr/gva';
   // endPointGVA = 'https://duniter-g1.p2p.legal/gva';
-  // await _homeProvider.getValidEndpoint();
+  await _homeProvider.getValidEndpoints();
 
   // if (endPointGVA == 'HS') {
   //   _homeProvider.playSound('faché', 0.8);

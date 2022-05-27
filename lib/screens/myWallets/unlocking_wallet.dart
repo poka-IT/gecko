@@ -198,7 +198,6 @@ class UnlockingWallet extends StatelessWidget {
               )
             ],
             onCompleted: (_pin) async {
-              log.d("Completed");
               _myWalletProvider.pinCode = _pin.toUpperCase();
 
               final isValid = await _sub.checkPassword(

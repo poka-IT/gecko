@@ -30,12 +30,13 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     const double buttonHigh = 50;
     const double buttonWidth = 240;
     const double fontSize = 16;
     TextEditingController _endpointController =
-        TextEditingController(text: configBox.get('endpoint'));
+        TextEditingController(text: _sub.getConnectedEndpoint());
 
     // getAppDirectory();
     return Scaffold(
@@ -71,7 +72,7 @@ class SettingsScreen extends StatelessWidget {
                           size: 40,
                         ),
                         onPressed: () async {
-                          configBox.put('endpoint', _endpointController.text);
+                          configBox.put('endpoint', [_endpointController.text]);
                           await _sub.connectNode(context);
                         });
               }),

@@ -107,7 +107,7 @@ flutter:
 
   assets:
     - images/
-    - config/gva_endpoints.json
+    - config/gdev_endpoints.json
     - assets/
     - assets/home/
     - assets/avatars/

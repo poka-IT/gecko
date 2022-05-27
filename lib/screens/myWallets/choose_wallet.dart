@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -74,8 +75,7 @@ class ChooseWalletScreen extends StatelessWidget {
     WalletsProfilesProvider _walletViewProvider =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
 
-    WalletData? defaultWallet =
-        _myWalletProvider.getDefaultWallet();
+    WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
 
     _selectedId ??= defaultWallet!.id();
     _derivation ??= defaultWallet!.derivation!;
@@ -190,11 +190,14 @@ class ChooseWalletScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            onTap: () {
+                            onTap: () async {
                               _derivation = _repository.derivation!;
                               _selectedId = _repository.id();
-                              chestBox.get(currentChest)!.defaultWallet =
-                                  _repository.number;
+
+                              ChestData _newChestData =
+                                  chestBox.get(currentChest)!;
+                              _newChestData.defaultWallet = _repository.number;
+                              await chestBox.put(currentChest, _newChestData);
 
                               _sub.setCurrentWallet(_repository.address!);
                               _myWalletProvider.rebuildWidget();

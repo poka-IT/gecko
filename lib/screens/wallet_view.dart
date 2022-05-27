@@ -193,6 +193,7 @@ class WalletViewScreen extends StatelessWidget {
 
     const double shapeSize = 20;
     WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
+    log.d(defaultWallet!.address);
 
     bool canValidate = false;
 
@@ -213,7 +214,7 @@ class WalletViewScreen extends StatelessWidget {
             if (_walletViewProvider.payAmount.text != '' &&
                 double.parse(_walletViewProvider.payAmount.text) <=
                     double.parse(
-                        balanceCache[defaultWallet!.address]!.split(' ')[0]) &&
+                        balanceCache[defaultWallet.address]!.split(' ')[0]) &&
                 _walletViewProvider.pubkey != defaultWallet.address) {
               canValidate = true;
             } else {
@@ -286,7 +287,7 @@ class WalletViewScreen extends StatelessWidget {
                               padding: const EdgeInsets.all(10),
 
                               child: Row(children: [
-                                Text(defaultWallet!.name!),
+                                Text(defaultWallet.name!),
                                 const Spacer(),
                                 FutureBuilder(
                                     future:

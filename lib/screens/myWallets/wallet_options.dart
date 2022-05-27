@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
+import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -26,6 +27,8 @@ class WalletOptions extends StatelessWidget {
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
+    HomeProvider _homeProvider =
+        Provider.of<HomeProvider>(context, listen: false);
 
     log.d(_walletOptions.address.text);
 
@@ -62,6 +65,7 @@ class WalletOptions extends StatelessWidget {
             }),
           ),
         ),
+        bottomNavigationBar: _homeProvider.bottomAppBar(context, 2),
         body: Builder(
           builder: (ctx) => SafeArea(
             child: Column(children: <Widget>[

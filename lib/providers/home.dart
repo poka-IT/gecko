@@ -7,10 +7,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
+import 'package:gecko/screens/search.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:provider/provider.dart';
 
 class HomeProvider with ChangeNotifier {
   bool? isSearching;
@@ -19,9 +25,6 @@ class HomeProvider with ChangeNotifier {
   Widget appBarTitle = Text('Ğecko', style: TextStyle(color: Colors.grey[850]));
   Widget appBarExplorer =
       Text('Explorateur', style: TextStyle(color: Colors.grey[850]));
-
-  bool isFirstBuild = true;
-  // AudioCache player = AudioCache(prefix: 'sounds/');
 
   Future<void> initHive() async {
     late Directory hivePath;
@@ -130,6 +133,165 @@ class HomeProvider with ChangeNotifier {
   // void playSound(String customSound, double volume) async {
   //   await player.play('$customSound.wav',
   //       volume: volume, mode: PlayerMode.LOW_LATENCY, stayAwake: false);
+  // }
+
+  Widget bottomAppBar(BuildContext context, int index) {
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
+    WalletsProfilesProvider _historyProvider =
+        Provider.of<WalletsProfilesProvider>(context, listen: false);
+
+    const bool _showBottomBar = true;
+
+    return Visibility(
+      visible: _showBottomBar,
+      child: Container(
+        color: yellowC,
+        width: double.infinity,
+        height: 80,
+        child: Expanded(
+          child: Row(
+            // mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              const Spacer(flex: 1),
+              IconButton(
+                iconSize: 50,
+                icon: const Image(image: AssetImage('assets/loupe-noire.png')),
+                onPressed: () {
+                  Navigator.popUntil(
+                    context,
+                    ModalRoute.withName('/'),
+                  );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return const SearchScreen();
+                    }),
+                  );
+                },
+              ),
+              // SizedBox(width: 0),
+              const Spacer(flex: 2),
+              IconButton(
+                iconSize: 60,
+                icon: const Image(
+                    image: AssetImage('assets/qrcode-scan.png'), height: 50),
+                onPressed: () async {
+                  Navigator.popUntil(
+                    context,
+                    ModalRoute.withName('/'),
+                  );
+                  await _historyProvider.scan(context);
+                },
+              ),
+              const Spacer(flex: 2),
+              IconButton(
+                iconSize: 60,
+                icon: const Image(image: AssetImage('assets/wallet.png')),
+                onPressed: () {
+                  WalletData? defaultWallet =
+                      _myWalletProvider.getDefaultWallet();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) {
+                        return UnlockingWallet(
+                          wallet: defaultWallet,
+                          action: "mywallets",
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              const Spacer(flex: 1),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // BottomAppBar bottomAppBar(BuildContext context, int index) {
+  //   MyWalletsProvider _myWalletProvider =
+  //       Provider.of<MyWalletsProvider>(context, listen: false);
+
+  //   return BottomAppBar(
+  //     color: yellowC,
+  //     notchMargin: 0, //not
+  //     child: SizedBox(
+  //         height: 70,
+  //         child: Row(
+  //           children: [
+  //             const Spacer(flex: 1),
+  //             IconButton(
+  //               iconSize: 50,
+  //               icon: const Image(image: AssetImage('assets/loupe-noire.png')),
+  //               onPressed: () {
+  //                 Navigator.popUntil(
+  //                   context,
+  //                   ModalRoute.withName('/'),
+  //                 );
+  //                 Navigator.push(
+  //                   context,
+  //                   MaterialPageRoute(builder: (context) {
+  //                     return const SearchScreen();
+  //                   }),
+  //                 );
+  //               },
+  //             ),
+  //             const Spacer(flex: 4),
+  //             IconButton(
+  //               iconSize: 60,
+  //               icon: const Image(image: AssetImage('assets/wallet.png')),
+  //               onPressed: () {
+  //                 WalletData? defaultWallet =
+  //                     _myWalletProvider.getDefaultWallet();
+  //                 Navigator.push(
+  //                   context,
+  //                   MaterialPageRoute(
+  //                     builder: (context) {
+  //                       return UnlockingWallet(
+  //                         wallet: defaultWallet,
+  //                         action: "mywallets",
+  //                       );
+  //                     },
+  //                   ),
+  //                 );
+  //               },
+  //             ),
+  //             const Spacer(flex: 1),
+  //           ],
+  //         )),
+  //   );
+  // }
+
+  // Widget floatingAction(BuildContext context, index) {
+  //   WalletsProfilesProvider _historyProvider =
+  //       Provider.of<WalletsProfilesProvider>(context, listen: false);
+  //   return SizedBox(
+  //     height: 90,
+  //     width: 90,
+  //     child: FittedBox(
+  //       child: FloatingActionButton(
+  //         // shape: const RoundedRectangleBorder(
+  //         //   borderRadius: BorderRadius.all(Radius.elliptical(150, 100)),
+  //         // ),
+  //         backgroundColor: yellowC,
+  //         elevation: 0,
+  //         onPressed: () async {
+  //           Navigator.popUntil(
+  //             context,
+  //             ModalRoute.withName('/'),
+  //           );
+  //           await _historyProvider.scan(context);
+  //         },
+  //         child: const Image(
+  //             image: AssetImage('assets/qrcode-scan.png'),
+  //             height: 35), //icon inside button
+  //       ),
+  //     ),
+  //   );
   // }
 
   void handleSearchEnd() {

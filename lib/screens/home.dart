@@ -94,6 +94,7 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
+      // bottomNavigationBar: _homeProvider.bottomBar(context, 1),
       backgroundColor: const Color(0xffF9F9F1),
       body: Builder(
         builder: (ctx) => StatefulWrapper(

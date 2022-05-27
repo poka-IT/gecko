@@ -3,6 +3,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/providers/chest_provider.dart';
+import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/change_pin.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +18,8 @@ class ChestOptions extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     ChestProvider _chestProvider =
         Provider.of<ChestProvider>(context, listen: false);
+    HomeProvider _homeProvider =
+        Provider.of<HomeProvider>(context, listen: false);
 
     ChestData currentChest = chestBox.get(configBox.get('currentChest'))!;
 
@@ -37,6 +40,7 @@ class ChestOptions extends StatelessWidget {
             height: 22,
             child: Text(currentChest.name!),
           )),
+      bottomNavigationBar: _homeProvider.bottomAppBar(context, 2),
       body: Builder(
         builder: (ctx) => SafeArea(
           child: Column(children: <Widget>[

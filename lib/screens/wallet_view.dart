@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/cesium_plus.dart';
+import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -30,6 +31,8 @@ class WalletViewScreen extends StatelessWidget {
         Provider.of<CesiumPlusProvider>(context, listen: false);
     _walletViewProvider.pubkey = pubkey!;
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    HomeProvider _homeProvider =
+        Provider.of<HomeProvider>(context, listen: false);
 
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
@@ -46,11 +49,14 @@ class WalletViewScreen extends StatelessWidget {
             child: Text('Voir un portefeuille'),
           ),
         ),
+        bottomNavigationBar: _homeProvider.bottomAppBar(context, 1),
+        // floatingActionButton: _homeProvider.floatingAction(context, 1),
+        // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         body: SafeArea(
           child: Column(children: <Widget>[
             headerProfileView(
                 context, _walletViewProvider, _cesiumPlusProvider),
-            SizedBox(height: isTall ? 120 : 70),
+            SizedBox(height: isTall ? 50 : 20),
             Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
               Column(children: <Widget>[
                 SizedBox(
@@ -233,7 +239,7 @@ class WalletViewScreen extends StatelessWidget {
               style: TextStyle(
                   fontSize: buttonFontSize, fontWeight: FontWeight.w500),
             ),
-            SizedBox(height: isTall ? 120 : 70)
+            SizedBox(height: isTall ? 50 : 20)
           ]),
         ));
   }

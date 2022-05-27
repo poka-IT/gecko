@@ -112,7 +112,7 @@ packages:
       name: build_resolvers
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.8"
+    version: "2.0.9"
   build_runner:
     dependency: "direct dev"
     description:
@@ -983,10 +983,10 @@ packages:
     description:
       path: "."
       ref: fixAndroidActivityVersion
-      resolved-ref: e33351cde5ea9b55d191772fe3b36f9dbb8277e6
+      resolved-ref: "069a9f696ec8d9eacd0a3fdd284116fd2c1faf44"
       url: "https://github.com/poka-IT/sdk.git"
     source: git
-    version: "0.4.5"
+    version: "0.4.6"
   pool:
     dependency: transitive
     description:
@@ -1389,7 +1389,7 @@ packages:
       name: webview_flutter_android
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.8.8"
+    version: "2.8.9"
   webview_flutter_platform_interface:
     dependency: transitive
     description:
@@ -1403,7 +1403,7 @@ packages:
       name: webview_flutter_wkwebview
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.7.5"
+    version: "2.8.0"
   win32:
     dependency: transitive
     description:

@@ -14,7 +14,7 @@ class ChestProvider with ChangeNotifier {
   Future deleteChest(context, ChestData _chest) async {
     final bool? _answer = await (_confirmDeletingChest(context, _chest.name));
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
-    if (_answer!) {
+    if (_answer ?? false) {
       await _sub.deleteAccounts(getChestWallets(_chest));
       await chestBox.delete(_chest.key);
       if (chestBox.isEmpty) {

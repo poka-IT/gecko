@@ -1,3 +1,6 @@
 [
-      "wss://gdev.librelois.fr/ws"
+      "wss://gdev.librelois.fr/ws",
+      "wss://gdev.1000i100.fr/ws",
+      "wss://gdev.komun.org/ws"
+
 ]

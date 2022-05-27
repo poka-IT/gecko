@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
+import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -26,6 +27,8 @@ class WalletOptions extends StatelessWidget {
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
+    HomeProvider _homeProvider =
+        Provider.of<HomeProvider>(context, listen: false);
 
     log.d(_walletOptions.address.text);
 
@@ -62,6 +65,7 @@ class WalletOptions extends StatelessWidget {
             }),
           ),
         ),
+        bottomNavigationBar: _homeProvider.bottomAppBar(context, 2),
         body: Builder(
           builder: (ctx) => SafeArea(
             child: Column(children: <Widget>[
@@ -102,27 +106,34 @@ class WalletOptions extends StatelessWidget {
                 );
               }),
               SizedBox(height: 10 * ratio),
-              QrImageWidget(
-                data: _walletOptions.address.text,
-                version: QrVersions.auto,
-                size: isTall ? 300 : 270,
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(children: <Widget>[
+                    QrImageWidget(
+                      data: _walletOptions.address.text,
+                      version: QrVersions.auto,
+                      size: isTall ? 300 : 270,
+                    ),
+                    SizedBox(height: 15 * ratio),
+                    Consumer<WalletOptionsProvider>(
+                        builder: (context, walletProvider, _) {
+                      return Column(children: [
+                        pubkeyWidget(walletProvider, ctx),
+                        SizedBox(height: 10 * ratio),
+                        historyWidget(
+                            context, _historyProvider, walletProvider),
+                        SizedBox(height: 12 * ratio),
+                        setDefaultWallet(context, walletProvider,
+                            _myWalletProvider, _walletOptions, _currentChest),
+                        SizedBox(height: 17 * ratio),
+                        if (!walletProvider.isDefaultWallet)
+                          deleteWallet(context, walletProvider,
+                              _myWalletProvider, _currentChest)
+                      ]);
+                    }),
+                  ]),
+                ),
               ),
-              SizedBox(height: 15 * ratio),
-              Consumer<WalletOptionsProvider>(
-                  builder: (context, walletProvider, _) {
-                return Column(children: [
-                  pubkeyWidget(walletProvider, ctx),
-                  SizedBox(height: 10 * ratio),
-                  historyWidget(context, _historyProvider, walletProvider),
-                  SizedBox(height: 12 * ratio),
-                  setDefaultWallet(context, walletProvider, _myWalletProvider,
-                      _walletOptions, _currentChest),
-                  SizedBox(height: 17 * ratio),
-                  if (!walletProvider.isDefaultWallet)
-                    deleteWallet(context, walletProvider, _myWalletProvider,
-                        _currentChest)
-                ]);
-              }),
             ]),
           ),
         ),

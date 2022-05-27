@@ -23,6 +23,7 @@ class SearchScreen extends StatelessWidget {
         },
         child: Scaffold(
           appBar: AppBar(
+            elevation: 1,
             toolbarHeight: 60 * ratio,
             title: const SizedBox(
               height: 22,

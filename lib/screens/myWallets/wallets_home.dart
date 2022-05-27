@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
+import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/queries.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -21,6 +22,8 @@ class WalletsHome extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
+    HomeProvider _homeProvider =
+        Provider.of<HomeProvider>(context, listen: false);
 
     final int? _currentChestNumber = myWalletProvider.getCurrentChest();
     final ChestData _currentChest = chestBox.get(_currentChestNumber)!;
@@ -38,6 +41,7 @@ class WalletsHome extends StatelessWidget {
       },
       child: Scaffold(
         appBar: AppBar(
+          elevation: 1,
           toolbarHeight: 60 * ratio,
           leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.black),
@@ -53,6 +57,7 @@ class WalletsHome extends StatelessWidget {
               style: TextStyle(color: Colors.grey[850])),
           backgroundColor: const Color(0xffFFD58D),
         ),
+        bottomNavigationBar: _homeProvider.bottomAppBar(context, 3),
         body: SafeArea(
           child: myWalletsTiles(context, _currentChestNumber!),
         ),
@@ -154,8 +159,7 @@ class WalletsHome extends StatelessWidget {
     }
 
     List _listWallets = _myWalletProvider.listWallets;
-    WalletData? defaultWallet =
-        _myWalletProvider.getDefaultWallet();
+    WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
     final double screenWidth = MediaQuery.of(context).size.width;
     int nTule = 2;
 

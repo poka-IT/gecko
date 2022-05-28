@@ -34,6 +34,7 @@ class OnboardingStepTen extends StatelessWidget {
     final int _pinLenght = _generateWalletProvider.pin.text.length;
 
     return Scaffold(
+        backgroundColor: backgroundColor,
         appBar: AppBar(
           toolbarHeight: 60 * ratio,
           title: const SizedBox(

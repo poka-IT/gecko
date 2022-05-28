@@ -40,6 +40,7 @@ class WalletViewScreen extends StatelessWidget {
     _sub.setCurrentWallet(defaultWallet!);
 
     return Scaffold(
+        backgroundColor: backgroundColor,
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
           elevation: 0,

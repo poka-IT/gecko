@@ -6,6 +6,7 @@ import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/change_pin.dart';
+import 'package:gecko/screens/myWallets/show_seed.dart';
 import 'package:provider/provider.dart';
 
 class ChestOptions extends StatelessWidget {
@@ -24,6 +25,7 @@ class ChestOptions extends StatelessWidget {
     ChestData currentChest = chestBox.get(configBox.get('currentChest'))!;
 
     return Scaffold(
+      backgroundColor: backgroundColor,
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
           elevation: 1,
@@ -46,6 +48,39 @@ class ChestOptions extends StatelessWidget {
         builder: (ctx) => SafeArea(
           child: Column(children: <Widget>[
             SizedBox(height: 30 * ratio),
+            InkWell(
+              key: const Key('showSeed'),
+              onTap: () async {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return ShowSeed(
+                      walletName: currentChest.name,
+                      walletProvider: walletProvider,
+                    );
+                  }),
+                );
+              },
+              child: SizedBox(
+                height: 50,
+                child: Row(children: <Widget>[
+                  const SizedBox(width: 20),
+                  Image.asset(
+                    'assets/onBoarding/phrase_de_restauration_flou.png',
+                    width: 60,
+                  ),
+                  const SizedBox(width: 15),
+                  Text(
+                    'Afficher ma phrase de restauration',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: orangeC,
+                    ),
+                  ),
+                ]),
+              ),
+            ),
+            SizedBox(height: 10 * ratio),
             InkWell(
               key: const Key('changePin'),
               onTap: () async {

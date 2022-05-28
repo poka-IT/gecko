@@ -539,7 +539,7 @@ Widget bubbleSpeak(String text, {double? long, Key? textKey}) {
         ? const BubbleEdges.all(20)
         : BubbleEdges.symmetric(horizontal: long, vertical: 30),
     elevation: 5,
-    color: Colors.white,
+    color: backgroundColor,
     child: Text(
       text,
       key: textKey,

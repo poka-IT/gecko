@@ -26,6 +26,7 @@ class ChooseWalletScreen extends StatelessWidget {
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     return Scaffold(
+        backgroundColor: backgroundColor,
         appBar: AppBar(
             toolbarHeight: 60 * ratio,
             title: const SizedBox(

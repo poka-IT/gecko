@@ -47,6 +47,7 @@ class WalletOptions extends StatelessWidget {
         return Future<bool>.value(true);
       },
       child: Scaffold(
+        backgroundColor: backgroundColor,
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           toolbarHeight: 60 * ratio,
@@ -84,7 +85,7 @@ class WalletOptions extends StatelessWidget {
                     end: Alignment.bottomCenter,
                     colors: [
                       yellowC,
-                      const Color(0xfffafafa),
+                      backgroundColor,
                     ],
                   )),
                   child: Row(
@@ -364,7 +365,7 @@ class WalletOptions extends StatelessWidget {
       onTap: !walletProvider.isDefaultWallet
           ? () async {
               defaultWallet = wallet;
-             await _sub.setCurrentWallet(wallet);
+              await _sub.setCurrentWallet(wallet);
               _myWalletProvider.readAllWallets(_currentChest);
               _myWalletProvider.rebuildWidget();
             }

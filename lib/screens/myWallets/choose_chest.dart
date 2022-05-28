@@ -34,6 +34,7 @@ class _ChooseChestState extends State<ChooseChest> {
     log.d(widget.action);
 
     return Scaffold(
+        backgroundColor: backgroundColor,
         appBar: AppBar(
             toolbarHeight: 60 * ratio,
             title: const SizedBox(

@@ -85,8 +85,6 @@ class WalletOptionsProvider with ChangeNotifier {
     XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      ////TODO: Store image on disk, store path in walletBox.imagePath
-
       File imageFile = File(pickedFile.path);
       if (!await imageDirectory.exists()) {
         log.e("Image folder doesn't exist");

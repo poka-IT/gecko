@@ -36,6 +36,7 @@ class OnboardingStepSix extends StatelessWidget {
         return Future<bool>.value(true);
       },
       child: Scaffold(
+        backgroundColor: backgroundColor,
         resizeToAvoidBottomInset: false,
         extendBodyBehindAppBar: true,
         appBar: AppBar(

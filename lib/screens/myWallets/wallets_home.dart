@@ -40,6 +40,7 @@ class WalletsHome extends StatelessWidget {
         return Future<bool>.value(true);
       },
       child: Scaffold(
+        backgroundColor: backgroundColor,
         appBar: AppBar(
           elevation: 1,
           toolbarHeight: 60 * ratio,
@@ -244,14 +245,14 @@ class WalletsHome extends StatelessWidget {
                                       ),
                           )),
                           balanceBuilder(context, _repository.address!,
-                              _repository.id()[1] == defaultWallet!.id()[1]),
+                              _repository.address == defaultWallet!.address),
                           ListTile(
                             shape: const RoundedRectangleBorder(
                                 borderRadius: BorderRadius.vertical(
                                     bottom: Radius.circular(12))),
                             // contentPadding: const EdgeInsets.only(left: 7.0),
                             tileColor:
-                                _repository.id()[1] == defaultWallet.id()[1]
+                                _repository.address == defaultWallet.address
                                     ? orangeC
                                     : const Color(0xffFFD58D),
                             // leading: Text('IMAGE'),

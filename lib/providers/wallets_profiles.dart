@@ -242,7 +242,7 @@ class WalletsProfilesProvider with ChangeNotifier {
 snackCopyKey(context) {
   const snackBar = SnackBar(
       padding: EdgeInsets.all(20),
-      content: Text("Cette clé publique a été copié dans votre presse-papier.",
+      content: Text("Cette adresse a été copié dans votre presse-papier.",
           style: TextStyle(fontSize: 16)),
       duration: Duration(seconds: 2));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);

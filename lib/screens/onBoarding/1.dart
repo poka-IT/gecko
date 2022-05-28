@@ -13,6 +13,7 @@ class OnboardingStepOne extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     CommonElements common = CommonElements();
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         toolbarHeight: 60 * ratio,
         title: const SizedBox(

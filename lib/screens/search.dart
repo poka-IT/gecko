@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+// import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/search.dart';
 import 'package:gecko/screens/search_result.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +16,8 @@ class SearchScreen extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     SearchProvider _searchProvider = Provider.of<SearchProvider>(context);
     final double screenHeight = MediaQuery.of(context).size.height;
+    // HomeProvider _homeProvider =
+    //     Provider.of<HomeProvider>(context, listen: false);
 
     return WillPopScope(
         onWillPop: () {
@@ -22,6 +25,8 @@ class SearchScreen extends StatelessWidget {
           return Future<bool>.value(true);
         },
         child: Scaffold(
+          backgroundColor: backgroundColor,
+
           appBar: AppBar(
             elevation: 1,
             toolbarHeight: 60 * ratio,
@@ -36,6 +41,7 @@ class SearchScreen extends StatelessWidget {
                   Navigator.of(context).pop();
                 }),
           ),
+          // bottomNavigationBar: _homeProvider.bottomAppBar(context),
           body: SafeArea(
             child: Column(children: <Widget>[
               SizedBox(height: isTall ? 200 : 100),

@@ -229,6 +229,23 @@ class SubstrateSdk with ChangeNotifier {
     return await sdk.api.keyring.checkPassword(account, pass);
   }
 
+  Future<String> getSeed(String address, String _pin) async {
+    final account = getKeypair(address);
+    keyring.setCurrent(account);
+
+    final _seed = await sdk.api.keyring.getDecryptedSeed(keyring, _pin);
+
+    String _seedText;
+    if (_seed == null) {
+      _seedText = '';
+    } else {
+      _seedText = _seed.seed!.split('//')[0];
+    }
+
+    log.d(_seedText);
+    return _seedText;
+  }
+
   int getDerivationNumber(String address) {
     final account = getKeypair(address);
     final deriveNbr = account.name!.split('//')[1];

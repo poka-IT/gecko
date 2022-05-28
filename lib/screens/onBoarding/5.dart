@@ -26,6 +26,7 @@ class OnboardingStepFive extends StatelessWidget {
     CommonElements common = CommonElements();
 
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         toolbarHeight: 60 * ratio,
         title: const SizedBox(

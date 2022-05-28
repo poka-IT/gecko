@@ -25,6 +25,7 @@ class OnboardingStepNine extends StatelessWidget {
         : _generateWalletProvider.changePinCode(reload: false).toUpperCase();
 
     return Scaffold(
+        backgroundColor: backgroundColor,
         appBar: AppBar(
           toolbarHeight: 60 * ratio,
           title: const SizedBox(

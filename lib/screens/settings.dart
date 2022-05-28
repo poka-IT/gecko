@@ -39,6 +39,7 @@ class SettingsScreen extends StatelessWidget {
 
     // getAppDirectory();
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
           toolbarHeight: 60 * ratio,
           title: const SizedBox(

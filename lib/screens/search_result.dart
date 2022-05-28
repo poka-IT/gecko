@@ -30,6 +30,7 @@ class SearchResultScreen extends StatelessWidget {
     double _avatarSize = 55;
 
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         elevation: 1,
         toolbarHeight: 60 * ratio,

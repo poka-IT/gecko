@@ -87,6 +87,7 @@ class TransactionInProgress extends StatelessWidget {
           return Future<bool>.value(true);
         },
         child: Scaffold(
+          backgroundColor: backgroundColor,
           appBar: AppBar(
               toolbarHeight: 60 * ratio,
               elevation: 0,

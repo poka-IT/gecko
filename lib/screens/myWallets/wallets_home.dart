@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
@@ -64,12 +66,6 @@ class WalletsHome extends StatelessWidget {
       ),
     );
   }
-
-  // Widget cesiumWalletOptions(BuildContext context) {
-  //   return Column(children: const [
-  //     Center(child: Text('This is a Cesium wallet')),
-  //   ]);
-  // }
 
   Widget chestOptions(
       BuildContext context, MyWalletsProvider _myWalletProvider) {
@@ -171,6 +167,7 @@ class WalletsHome extends StatelessWidget {
 
     return CustomScrollView(slivers: <Widget>[
       const SliverToBoxAdapter(child: SizedBox(height: 20)),
+
       SliverGrid.count(
           key: const Key('listWallets'),
           crossAxisCount: nTule,
@@ -227,19 +224,29 @@ class WalletsHome extends StatelessWidget {
                             child:
                                 // SvgPicture.asset('assets/chopp-gecko2.png',
                                 //         semanticsLabel: 'Gecko', height: 48),
-                                _repository.imageFile == null
+                                _repository.imageCustomPath == null ||
+                                        _repository.imageCustomPath == ''
                                     ? Image.asset(
-                                        'assets/avatars/${_repository.imageName}',
+                                        'assets/avatars/${_repository.imageDefaultPath}',
                                         alignment: Alignment.bottomCenter,
                                         scale: 0.5,
                                       )
-                                    : Image.file(
-                                        _repository.imageFile!,
-                                        alignment: Alignment.bottomCenter,
-                                        scale: 0.5,
+                                    : Container(
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.transparent,
+                                          image: DecorationImage(
+                                            fit: BoxFit.contain,
+                                            image: FileImage(
+                                              File(
+                                                  _repository.imageCustomPath!),
+                                            ),
+                                          ),
+                                        ),
                                       ),
                           )),
-                          // balanceBuilder(context, _walletOptions.pubkey.text),
+                          balanceBuilder(context, _repository.address!,
+                              _repository.id()[1] == defaultWallet!.id()[1]),
                           ListTile(
                             shape: const RoundedRectangleBorder(
                                 borderRadius: BorderRadius.vertical(
@@ -308,36 +315,24 @@ class WalletsHome extends StatelessWidget {
     ]);
   }
 
-  Widget balanceBuilder(context, String _pubkey) {
-    return Query(
-        options: QueryOptions(
-          document: gql(getBalance),
-          variables: {
-            'pubkey': _pubkey,
-          },
-          // pollInterval: Duration(seconds: 1),
-        ),
-        builder: (QueryResult result,
-            {VoidCallback? refetch, FetchMore? fetchMore}) {
-          if (result.hasException) {
-            return Text(result.exception.toString());
-          }
-
-          if (result.isLoading) {
-            return const Text('Loading');
-          }
-          String wBalanceUD;
-          if (result.data!['balance'] == null) {
-            wBalanceUD = '0.0';
-          } else {
-            int wBalanceG1 = result.data!['balance']['amount'];
-            int currentUD = result.data!['currentUd']['amount'];
-            double wBalanceUDBrut = wBalanceG1 / currentUD; // .toString();
-            wBalanceUD =
-                double.parse((wBalanceUDBrut).toStringAsFixed(2)).toString();
-          }
-          return Text(wBalanceUD);
-        });
+  Widget balanceBuilder(context, String _address, bool isDefault) {
+    return Container(
+      width: double.infinity,
+      color: isDefault ? orangeC : yellowC,
+      child: SizedBox(
+        height: 25,
+        child: Column(children: [
+          const Spacer(),
+          // Text(
+          //   '0.0 gd',
+          //   textAlign: TextAlign.center,
+          //   style: TextStyle(color: isDefault ? Colors.white : Colors.black),
+          // ),
+          balance(
+              context, _address, 15, isDefault ? Colors.white : Colors.black)
+        ]),
+      ),
+    );
   }
 
   Widget addNewDerivation(context) {
@@ -355,21 +350,32 @@ class WalletsHome extends StatelessWidget {
                 child: InkWell(
                     key: const Key('addDerivation'),
                     onTap: () async {
-                      await _myWalletProvider.generateNewDerivation(
-                          context, _newDerivationName);
+                      if (!_myWalletProvider.isNewDerivationLoading) {
+                        await _myWalletProvider.generateNewDerivation(
+                            context, _newDerivationName);
+                      }
                     },
                     child: Container(
                       width: double.infinity,
                       height: double.infinity,
                       decoration: BoxDecoration(color: floattingYellow),
-                      child: const Center(
-                          child: Text(
-                        '+',
-                        style: TextStyle(
-                            fontSize: 150,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFFFCB437)),
-                      )),
+                      child: Center(
+                          child: _myWalletProvider.isNewDerivationLoading
+                              ? SizedBox(
+                                  height: 60,
+                                  width: 60,
+                                  child: CircularProgressIndicator(
+                                    color: orangeC,
+                                    strokeWidth: 7,
+                                  ),
+                                )
+                              : const Text(
+                                  '+',
+                                  style: TextStyle(
+                                      fontSize: 150,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFFFCB437)),
+                                )),
                     )),
               ),
             ])));

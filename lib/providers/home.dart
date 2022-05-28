@@ -16,6 +16,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 class HomeProvider with ChangeNotifier {
@@ -46,6 +47,14 @@ class HomeProvider with ChangeNotifier {
       await Hive.initFlutter(hivePath.path);
     } else {
       await Hive.initFlutter();
+    }
+
+    // Init app folders
+    final documentDir = await getApplicationDocumentsDirectory();
+    imageDirectory = Directory('${documentDir.path}/images');
+
+    if (!await imageDirectory.exists()) {
+      await imageDirectory.create();
     }
   }
 

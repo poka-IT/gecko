@@ -4,6 +4,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/screens/common_elements.dart';
 import 'package:provider/provider.dart';
 
 class MyWalletsProvider with ChangeNotifier {
@@ -11,6 +12,7 @@ class MyWalletsProvider with ChangeNotifier {
   late String pinCode;
   late String mnemonic;
   int? pinLenght;
+  bool isNewDerivationLoading = false;
 
   int? getCurrentChest() {
     if (configBox.get('currentChest') == null) {
@@ -71,7 +73,8 @@ class MyWalletsProvider with ChangeNotifier {
     try {
       log.w('DELETE ALL WALLETS ?');
 
-      final bool? _answer = await (_confirmDeletingAllWallets(context));
+      final bool? _answer = await (confirmPopop(
+          context, 'Êtes-vous sûr de vouloir oublier tous vos coffres ?'));
       if (_answer!) {
         await walletBox.clear();
         await chestBox.clear();
@@ -88,58 +91,13 @@ class MyWalletsProvider with ChangeNotifier {
     }
   }
 
-  Future<bool?> _confirmDeletingAllWallets(context) async {
-    return showDialog<bool>(
-      context: context,
-      barrierDismissible: true, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: backgroundColor,
-          content: const Text(
-            'Êtes-vous sûr de vouloir oublier tous vos coffres ?',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-          ),
-          actions: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton(
-                  key: const Key('confirmDeletingAllWallets'),
-                  child: const Text(
-                    "Oui",
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Color(0xffD80000),
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context, true);
-                  },
-                ),
-                const SizedBox(width: 20),
-                TextButton(
-                  child: const Text(
-                    "Non",
-                    style: TextStyle(fontSize: 20),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context, false);
-                  },
-                ),
-                const SizedBox(height: 120)
-              ],
-            )
-          ],
-        );
-      },
-    );
-  }
-
   Future<void> generateNewDerivation(context, String _name) async {
+    isNewDerivationLoading = true;
+    notifyListeners();
     int _newDerivationNbr;
     int _newWalletNbr;
     int? _chest = getCurrentChest();
+
     List<WalletData> _walletConfig = readAllWallets(_chest);
 
     if (_walletConfig.isEmpty) {
@@ -168,10 +126,11 @@ class MyWalletsProvider with ChangeNotifier {
         number: _newWalletNbr,
         name: _name,
         derivation: _newDerivationNbr,
-        imageName: '${_newWalletNbr % 4}.png');
+        imageDefaultPath: '${_newWalletNbr % 4}.png');
 
     await walletBox.add(newWallet);
 
+    isNewDerivationLoading = false;
     notifyListeners();
   }
 

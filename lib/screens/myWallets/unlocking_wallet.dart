@@ -189,7 +189,7 @@ class UnlockingWallet extends StatelessWidget {
             enableActiveFill: false,
             errorAnimationController: errorController,
             controller: _enterPin,
-            keyboardType: TextInputType.text,
+            keyboardType: TextInputType.visiblePassword,
             boxShadows: const [
               BoxShadow(
                 offset: Offset(0, 1),

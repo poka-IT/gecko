@@ -23,8 +23,8 @@ class WalletDataAdapter extends TypeAdapter<WalletData> {
       number: fields[3] as int?,
       name: fields[4] as String?,
       derivation: fields[5] as int?,
-      imageName: fields[6] as String?,
-      imageFile: fields[7] as File?,
+      imageDefaultPath: fields[6] as String?,
+      imageCustomPath: fields[7] as String?,
     );
   }
 
@@ -45,9 +45,9 @@ class WalletDataAdapter extends TypeAdapter<WalletData> {
       ..writeByte(5)
       ..write(obj.derivation)
       ..writeByte(6)
-      ..write(obj.imageName)
+      ..write(obj.imageDefaultPath)
       ..writeByte(7)
-      ..write(obj.imageFile);
+      ..write(obj.imageCustomPath);
   }
 
   @override

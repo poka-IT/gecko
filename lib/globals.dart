@@ -24,6 +24,7 @@ late Box<ChestData> chestBox;
 late Box configBox;
 late Box<G1WalletsList> g1WalletsBox;
 // late Box keystoreBox;
+late Directory imageDirectory;
 
 // String cesiumPod = "https://g1.data.le-sou.org";
 String cesiumPod = "https://g1.data.presles.fr";

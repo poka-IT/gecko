@@ -192,6 +192,54 @@ class FaderTransition extends PageRouteBuilder {
         );
 }
 
+Future<bool?> confirmPopop(BuildContext context, String title) async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: true, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: backgroundColor,
+          content: Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+          ),
+          actions: <Widget>[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  key: const Key('confirmPopop'),
+                  child: const Text(
+                    "Oui",
+                    style: TextStyle(
+                      fontSize: 21,
+                      color: Color(0xffD80000),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context, true);
+                  },
+                ),
+                const SizedBox(width: 20),
+                TextButton(
+                  child: const Text(
+                    "Non",
+                    style: TextStyle(fontSize: 21),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context, false);
+                  },
+                ),
+                const SizedBox(height: 120)
+              ],
+            )
+          ],
+        );
+      },
+    );
+  }
+
 // Widget geckoAppBar() {
 //   return AppBar(
 //     toolbarHeight: 60 * ratio,

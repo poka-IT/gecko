@@ -152,14 +152,14 @@ class ChooseWalletScreen extends StatelessWidget {
                                 const Color(0xFFE7E7A6),
                               ],
                             )),
-                            child: _repository.imageFile == null
+                            child: _repository.imageCustomPath == null
                                 ? Image.asset(
-                                    'assets/avatars/${_repository.imageName}',
+                                    'assets/avatars/${_repository.imageDefaultPath}',
                                     alignment: Alignment.bottomCenter,
                                     scale: 0.5,
                                   )
-                                : Image.file(
-                                    _repository.imageFile!,
+                                : Image.asset(
+                                    _repository.imageCustomPath!,
                                     alignment: Alignment.bottomCenter,
                                     scale: 0.5,
                                   ),

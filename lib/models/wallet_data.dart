@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:hive_flutter/hive_flutter.dart';
 part 'wallet_data.g.dart';
 
@@ -23,10 +22,10 @@ class WalletData extends HiveObject {
   int? derivation;
 
   @HiveField(6)
-  String? imageName;
+  String? imageDefaultPath;
 
   @HiveField(7)
-  File? imageFile;
+  String? imageCustomPath;
 
   WalletData(
       {this.version,
@@ -35,8 +34,8 @@ class WalletData extends HiveObject {
       this.number,
       this.name,
       this.derivation,
-      this.imageName,
-      this.imageFile});
+      this.imageDefaultPath,
+      this.imageCustomPath});
 
   // representation of WalletData when debugging
   @override
@@ -46,7 +45,7 @@ class WalletData extends HiveObject {
 
   // creates the ':'-separated string from the WalletData
   String inLine() {
-    return "$chest:$number:$name:$derivation:$imageName";
+    return "$chest:$number:$name:$derivation:$imageDefaultPath";
   }
 
   // returns only the id part of the ':'-separated string

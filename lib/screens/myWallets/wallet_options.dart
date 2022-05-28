@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
@@ -42,6 +43,7 @@ class WalletOptions extends StatelessWidget {
       onWillPop: () {
         _walletOptions.isEditing = false;
         _walletOptions.isBalanceBlur = false;
+        _myWalletProvider.rebuildWidget();
         Navigator.pop(context);
         return Future<bool>.value(true);
       },
@@ -55,13 +57,14 @@ class WalletOptions extends StatelessWidget {
               onPressed: () {
                 _walletOptions.isEditing = false;
                 _walletOptions.isBalanceBlur = false;
+                _myWalletProvider.rebuildWidget();
                 Navigator.pop(context);
               }),
           title: SizedBox(
             height: 22,
             child: Consumer<WalletOptionsProvider>(
                 builder: (context, walletProvider, _) {
-              return Text(_walletOptions.nameController.text);
+              return Text(wallet.name!);
             }),
           ),
         ),
@@ -146,20 +149,31 @@ class WalletOptions extends StatelessWidget {
       children: <Widget>[
         InkWell(
           onTap: () async {
-            wallet.imageFile = await (walletProvider.changeAvatar());
-            if (wallet.imageFile != null) {
+            final _newPath = await (walletProvider.changeAvatar());
+            if (_newPath != '') {
+              wallet.imageCustomPath = _newPath;
               walletBox.put(wallet.key, wallet);
             }
             walletProvider.reloadBuild();
           },
-          child: wallet.imageFile == null
+          child: wallet.imageCustomPath == null || wallet.imageCustomPath == ''
               ? Image.asset(
-                  'assets/avatars/${wallet.imageName}',
+                  'assets/avatars/${wallet.imageDefaultPath}',
                   width: 110,
                 )
-              : Image.file(
-                  wallet.imageFile!,
-                  width: 110,
+              : Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.transparent,
+                    image: DecorationImage(
+                      fit: BoxFit.contain,
+                      image: FileImage(
+                        File(wallet.imageCustomPath!),
+                      ),
+                    ),
+                  ),
                 ),
         ),
         Positioned(
@@ -167,7 +181,7 @@ class WalletOptions extends StatelessWidget {
           top: 0,
           child: InkWell(
             onTap: () async {
-              wallet.imageFile = await (walletProvider.changeAvatar());
+              wallet.imageCustomPath = await (walletProvider.changeAvatar());
               walletProvider.reloadBuild();
             },
             child: Image.asset(
@@ -182,12 +196,10 @@ class WalletOptions extends StatelessWidget {
 
   Widget walletName(WalletOptionsProvider walletProvider,
       WalletOptionsProvider _walletOptions) {
-    bool _isNewNameValid = false;
-    if (_isNewNameValid == false) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       _walletOptions.nameController.text = wallet.name!;
-    } else {
-      wallet.name = _walletOptions.nameController.text;
-    }
+      // _walletOptions.reloadBuild();
+    });
 
     return SizedBox(
       width: 260,
@@ -219,8 +231,8 @@ class WalletOptions extends StatelessWidget {
           child: InkWell(
             key: const Key('renameWallet'),
             onTap: () async {
-              _isNewNameValid =
-                  walletProvider.editWalletName(wallet.id(), isCesium: false);
+              // _isNewNameValid =
+              walletProvider.editWalletName(wallet.id(), isCesium: false);
               await Future.delayed(const Duration(milliseconds: 30));
               walletProvider.walletNameFocus.requestFocus();
             },
@@ -309,13 +321,13 @@ class WalletOptions extends StatelessWidget {
           MaterialPageRoute(builder: (context) {
             return HistoryScreen(
                 pubkey: walletProvider.address.text,
-                avatar: wallet.imageFile == null
+                avatar: wallet.imageCustomPath == null
                     ? Image.asset(
-                        'assets/avatars/${wallet.imageName}',
+                        'assets/avatars/${wallet.imageDefaultPath}',
                         width: 110,
                       )
-                    : Image.file(
-                        wallet.imageFile!,
+                    : Image.asset(
+                        wallet.imageCustomPath!,
                         width: 110,
                       ));
           }),

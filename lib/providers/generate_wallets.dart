@@ -87,7 +87,7 @@ class GenerateWalletsProvider with ChangeNotifier {
         number: 0,
         name: _name,
         derivation: 2,
-        imageName: '0.png');
+        imageDefaultPath: '0.png');
     await walletBox.add(myWallet);
 
     await configBox.put('currentChest', chestKey);

@@ -5,6 +5,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/screens/common_elements.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
@@ -57,7 +58,8 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Future<int> deleteWallet(context, WalletData wallet) async {
-    final bool? _answer = await (_confirmDeletingWallet(context, wallet.name));
+    final bool? _answer = await (confirmPopop(context,
+        'Êtes-vous sûr de vouloir oublier le portefeuille "${wallet.name}" ?'));
 
     if (_answer!) {
       await walletBox.delete(wallet.key);
@@ -71,61 +73,40 @@ class WalletOptionsProvider with ChangeNotifier {
     return 0;
   }
 
-  Future<bool?> _confirmDeletingWallet(context, _walletName) async {
-    return showDialog<bool>(
-      context: context,
-      barrierDismissible: true, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-              'Êtes-vous sûr de vouloir supprimer le portefeuille "$_walletName" ?'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: const <Widget>[
-                Text('Vous pourrez restaurer ce portefeuille plus tard.'),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text("Non", key: Key('cancelDeleting')),
-              onPressed: () {
-                Navigator.pop(context, false);
-              },
-            ),
-            TextButton(
-              child: const Text("Oui", key: Key('confirmDeleting')),
-              onPressed: () {
-                Navigator.pop(context, true);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   void bluringBalance() {
     isBalanceBlur = !isBalanceBlur;
     notifyListeners();
   }
 
-  Future changeAvatar() async {
-    File _image;
+  Future<String> changeAvatar() async {
+    // File _image;
     final picker = ImagePicker();
 
     XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      _image = File(pickedFile.path);
-
       ////TODO: Store image on disk, store path in walletBox.imagePath
 
-      log.i(pickedFile.path);
-      return _image;
+      File imageFile = File(pickedFile.path);
+      if (!await imageDirectory.exists()) {
+        log.e("Image folder doesn't exist");
+        return '';
+      }
+
+      final newPath = "${imageDirectory.path}/${pickedFile.name}";
+
+      await imageFile.copy(newPath);
+      // final File newImage = File(newPath);
+
+      // await newImage.writeAsBytes(await pickedFile.readAsBytes());
+      // await pickedFile.saveTo(newPath);
+      // await Future.delayed(const Duration(milliseconds: 100));
+
+      log.i(newPath);
+      return newPath;
     } else {
       log.w('No image selected.');
-      return null;
+      return '';
     }
   }
 
@@ -269,7 +250,8 @@ class WalletOptionsProvider with ChangeNotifier {
 
 Map<String, String> balanceCache = {};
 
-Widget balance(BuildContext context, String address, double size) {
+Widget balance(BuildContext context, String address, double size,
+    [Color _color = Colors.black]) {
   return Column(children: <Widget>[
     Consumer<SubstrateSdk>(builder: (context, _sdk, _) {
       return FutureBuilder(
@@ -280,8 +262,7 @@ Widget balance(BuildContext context, String address, double size) {
               if (balanceCache[address] != null) {
                 return Text(balanceCache[address]!,
                     style: TextStyle(
-                      fontSize: isTall ? size : size * 0.9,
-                    ));
+                        fontSize: isTall ? size : size * 0.9, color: _color));
               } else {
                 return SizedBox(
                   height: 15,
@@ -298,6 +279,7 @@ Widget balance(BuildContext context, String address, double size) {
               balanceCache[address]!,
               style: TextStyle(
                 fontSize: isTall ? size : size * 0.9,
+                color: _color,
               ),
             );
           });

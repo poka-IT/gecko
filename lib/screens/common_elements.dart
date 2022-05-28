@@ -192,59 +192,23 @@ class FaderTransition extends PageRouteBuilder {
         );
 }
 
-class SlideLeftRoute extends PageRouteBuilder {
-  final Widget? page;
-  SlideLeftRoute({this.page})
-      : super(
-          pageBuilder: (
-            BuildContext context,
-            Animation<double> animation,
-            Animation<double> secondaryAnimation,
-          ) =>
-              page!,
-          transitionsBuilder: (
-            BuildContext context,
-            Animation<double> animation,
-            Animation<double> secondaryAnimation,
-            Widget child,
-          ) =>
-              SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(1, 0),
-              end: Offset.zero,
-            ).animate(animation),
-            child: child,
-          ),
-        );
-}
-
-class GeckoSpeechAppBar extends StatelessWidget with PreferredSizeWidget {
-  @override
-  final Size preferredSize;
-  final String title;
-
-  GeckoSpeechAppBar(
-    this.title, {
-    Key? key,
-  })  : preferredSize = const Size.fromHeight(105.4),
-        super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return AppBar(
-        toolbarHeight: 60 * ratio,
-        leading: IconButton(
-          icon: SizedBox(
-              height: 30,
-              child: Image.asset('assets/onBoarding/gecko_bar.png')),
-          onPressed: () => Navigator.popUntil(
-            context,
-            ModalRoute.withName('/'),
-          ),
-        ),
-        title: SizedBox(
-          height: 25,
-          child: Text(title),
-        ));
-  }
-}
+// Widget geckoAppBar() {
+//   return AppBar(
+//     toolbarHeight: 60 * ratio,
+//     elevation: 0,
+//     leading: IconButton(
+//         icon: const Icon(Icons.arrow_back, color: Colors.black),
+//         onPressed: () {
+//           _walletOptions.isEditing = false;
+//           _walletOptions.isBalanceBlur = false;
+//           Navigator.pop(context);
+//         }),
+//     title: SizedBox(
+//       height: 22,
+//       child: Consumer<WalletOptionsProvider>(
+//           builder: (context, walletProvider, _) {
+//         return Text(_walletOptions.nameController.text);
+//       }),
+//     ),
+//   );
+// }

@@ -30,7 +30,9 @@ class OnboardingStepThree extends StatelessWidget {
         child: common.infoIntro(
             context,
             <TextSpan>[
-              const TextSpan(text: 'Dans une blockchain, pas de procédure de récupération par mail. Seule votre phrase de restauration peut vous permettre de récupérer vos Ğ1 à tout moment.'),
+              const TextSpan(
+                  text:
+                      'Dans une blockchain, pas de procédure de récupération par mail. Seule votre phrase de restauration peut vous permettre de récupérer vos Ğ1 à tout moment.'),
             ],
             'mot-de-passe-oublie.png',
             '>',

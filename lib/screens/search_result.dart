@@ -28,6 +28,7 @@ class SearchResultScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        elevation: 1,
         toolbarHeight: 60 * ratio,
         title: const SizedBox(
           height: 22,
@@ -126,9 +127,7 @@ class SearchResultScreen extends StatelessWidget {
                                         }
                                       }),
                               title: Row(children: <Widget>[
-                                Text(
-                                    
-                                        getShortPubkey(g1Wallet.pubkey!),
+                                Text(getShortPubkey(g1Wallet.pubkey!),
                                     style: const TextStyle(
                                         fontSize: 18,
                                         fontFamily: 'Monospace',

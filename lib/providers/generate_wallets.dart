@@ -71,7 +71,6 @@ class GenerateWalletsProvider with ChangeNotifier {
       chestName = 'Coffre à Ğecko ${chestNumber + 1}';
     }
     ChestData thisChest = ChestData(
-      address: address,
       name: chestName,
       defaultWallet: 0,
       imageName: '${chestNumber % 8}.png',

@@ -42,6 +42,7 @@ class UnlockingWallet extends StatelessWidget {
 
     currentChestNumber = configBox.get('currentChest');
     currentChest = chestBox.get(currentChestNumber)!;
+
     int _pinLenght = _walletOptions.getPinLenght(wallet!.number);
     errorController = StreamController<ErrorAnimationType>();
 
@@ -145,8 +146,9 @@ class UnlockingWallet extends StatelessWidget {
         Provider.of<WalletOptionsProvider>(context);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
-
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+
+    WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
 
     FocusNode pinFocus = FocusNode();
 
@@ -201,7 +203,7 @@ class UnlockingWallet extends StatelessWidget {
               _myWalletProvider.pinCode = _pin.toUpperCase();
 
               final isValid = await _sub.checkPassword(
-                  currentChest.address!, _pin.toUpperCase());
+                  defaultWallet!.address!, _pin.toUpperCase());
 
               if (!isValid) {
                 await Future.delayed(const Duration(milliseconds: 50));

@@ -8,7 +8,7 @@ import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Version of box data
-const int dataVersion = 1;
+const int dataVersion = 2;
 
 // Files paths
 Directory? appPath;

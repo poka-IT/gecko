@@ -73,6 +73,7 @@ Future<void> main() async {
   await Hive.deleteBoxFromDisk('g1WalletsBox');
   g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
 
+
   // keystoreBox = await Hive.openBox("keystoreBox");
 
   // g1WalletsBox.clear();

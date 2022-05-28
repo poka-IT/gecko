@@ -12,18 +12,26 @@ import 'package:provider/provider.dart';
 
 AsyncSnapshot<List>? mnemoList;
 
-class OnboardingStepFive extends StatelessWidget {
+class OnboardingStepFive extends StatefulWidget {
   const OnboardingStepFive({Key? key, this.skipIntro = false})
       : super(key: key);
   final bool skipIntro;
 
+  @override
+  State<StatefulWidget> createState() {
+    return _ChooseChestState();
+  }
+}
+
+// ignore: unused_element
+class _ChooseChestState extends State<OnboardingStepFive> {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     GenerateWalletsProvider _generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context, listen: false);
 
-    CommonElements common = CommonElements();
+    final CommonElements common = CommonElements();
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -82,8 +90,8 @@ class OnboardingStepFive extends StatelessWidget {
                       onPrimary: Colors.black, // foreground
                     ),
                     onPressed: () {
-                      _generateWalletProvider.reloadBuild();
-                      // setState(() {});
+                      // _generateWalletProvider.reloadBuild();
+                      setState(() {});
                     },
                     child: Text("Choisir une autre phrase",
                         style: TextStyle(
@@ -93,7 +101,7 @@ class OnboardingStepFive extends StatelessWidget {
             ),
           ),
           SizedBox(height: 22 * ratio),
-          nextButton(context, "J'ai noté ma phrase", false, skipIntro),
+          nextButton(context, "J'ai noté ma phrase", false, widget.skipIntro),
           SizedBox(height: 35 * ratio),
         ]),
       ),
@@ -103,7 +111,7 @@ class OnboardingStepFive extends StatelessWidget {
 
 Widget sentanceArray(BuildContext context) {
   GenerateWalletsProvider _generateWalletProvider =
-      Provider.of<GenerateWalletsProvider>(context);
+      Provider.of<GenerateWalletsProvider>(context, listen: false);
 
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 3),
@@ -181,7 +189,7 @@ class PrintWallet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     GenerateWalletsProvider _generateWalletProvider =
-        Provider.of<GenerateWalletsProvider>(context);
+        Provider.of<GenerateWalletsProvider>(context, listen: false);
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(

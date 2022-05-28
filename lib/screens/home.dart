@@ -7,6 +7,7 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
@@ -102,6 +103,17 @@ class HomeScreen extends StatelessWidget {
               WidgetsBinding.instance.addPostFrameCallback((_) async {
                 if (!_sub.sdkReady && !_sub.sdkLoading) await _sub.initApi();
                 if (_sub.sdkReady && !_sub.nodeConnected) {
+                  if (walletBox.isNotEmpty &&
+                      walletBox.getAt(0)!.version! < dataVersion) {
+                    await infoPopup(context,
+                        "La version de vos coffres n'est plus comptabile avec cette version de Ğecko.\nTous vos coffres vont être oubliés, vous devez les importer de nouveau.");
+                    await walletBox.clear();
+                    await chestBox.clear();
+                    await configBox.delete('defaultWallet');
+                    await _sub.deleteAllAccounts();
+                    _myWalletProvider.rebuildWidget();
+                  }
+
                   await _sub.connectNode(ctx); //kopa
                 }
               });

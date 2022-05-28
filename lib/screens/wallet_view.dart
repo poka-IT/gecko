@@ -76,7 +76,7 @@ class WalletViewScreen extends StatelessWidget {
                                       'assets/walletOptions/clock.png'),
                                   height: 90)),
                           onTap: () {
-                            ////TODO: wait for subsquid indexer
+                            //// Wait for subsquid indexer
                             // _historyProvider.nPage = 1;
                             // Navigator.push(
                             //   context,

@@ -58,16 +58,14 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Future<int> deleteWallet(context, WalletData wallet) async {
-    final bool? _answer = await (confirmPopop(context,
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final bool? _answer = await (confirmPopup(context,
         'Êtes-vous sûr de vouloir oublier le portefeuille "${wallet.name}" ?'));
 
     if (_answer!) {
       await walletBox.delete(wallet.key);
+      await _sub.deleteAccounts([wallet.address!]);
 
-      // Navigator.popUntil(
-      //   context,
-      //   ModalRoute.withName('/mywallets'),
-      // );
       Navigator.pop(context);
     }
     return 0;

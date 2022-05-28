@@ -7,29 +7,21 @@ part 'chest_data.g.dart';
 @HiveType(typeId: 1)
 class ChestData extends HiveObject {
   @HiveField(0)
-  String? address;
-
-  @HiveField(1)
-  String? rootAddress;
-
-  @HiveField(2)
   String? name;
 
-  @HiveField(3)
+  @HiveField(1)
   int? defaultWallet;
 
-  @HiveField(4)
+  @HiveField(2)
   String? imageName;
 
-  @HiveField(5)
+  @HiveField(3)
   File? imageFile;
 
-  @HiveField(6)
+  @HiveField(4)
   bool? isCesium;
 
   ChestData({
-    this.address,
-    this.rootAddress,
     this.name,
     this.defaultWallet,
     this.imageName,

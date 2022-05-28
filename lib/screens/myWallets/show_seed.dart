@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/common_elements.dart';
@@ -22,14 +23,14 @@ class ShowSeed extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    // HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
+        MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
     CommonElements common = CommonElements();
 
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    final _chest = chestBox.get(configBox.get('currentChest'));
-    //  _sub.changePassword(
-    //     _chest!.address!, walletProvider.pinCode, newPin.text);
+WalletData defaultWallet =
+                        _myWalletProvider.getDefaultWallet()!;
 
     return Scaffold(
         backgroundColor: backgroundColor,
@@ -43,7 +44,7 @@ class ShowSeed extends StatelessWidget {
           child: Column(children: <Widget>[
             const Spacer(flex: 1),
             FutureBuilder(
-                future: _sub.getSeed(_chest!.address!, walletProvider.pinCode),
+                future: _sub.getSeed(defaultWallet.address!, walletProvider.pinCode),
                 builder: (BuildContext context, AsyncSnapshot<String?> _seed) {
                   if (_seed.connectionState != ConnectionState.done ||
                       _seed.hasError) {

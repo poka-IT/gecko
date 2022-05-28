@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/common_elements.dart';
@@ -73,7 +72,7 @@ class MyWalletsProvider with ChangeNotifier {
     try {
       log.w('DELETE ALL WALLETS ?');
 
-      final bool? _answer = await (confirmPopop(
+      final bool? _answer = await (confirmPopup(
           context, 'Êtes-vous sûr de vouloir oublier tous vos coffres ?'));
       if (_answer!) {
         await walletBox.clear();
@@ -92,6 +91,9 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   Future<void> generateNewDerivation(context, String _name) async {
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
+
     isNewDerivationLoading = true;
     notifyListeners();
     int _newDerivationNbr;
@@ -107,17 +109,12 @@ class MyWalletsProvider with ChangeNotifier {
       _newDerivationNbr = _walletConfig.last.derivation! + 2;
       _newWalletNbr = _walletConfig.last.number! + 1;
     }
-
-    MyWalletsProvider myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
-
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    final int? _currentChestNumber = myWalletProvider.getCurrentChest();
-    final ChestData _currentChest = chestBox.get(_currentChestNumber)!;
+    WalletData defaultWallet = _myWalletProvider.getDefaultWallet()!;
 
     final address = await _sub.derive(
-        context, _currentChest.address!, _newDerivationNbr, pinCode);
+        context, defaultWallet.address!, _newDerivationNbr, pinCode);
 
     WalletData newWallet = WalletData(
         version: dataVersion,

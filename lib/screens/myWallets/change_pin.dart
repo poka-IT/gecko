@@ -3,6 +3,7 @@ import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/stateful_wrapper.dart';
+import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'dart:io';
@@ -26,6 +27,8 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
 
     return WillPopScope(
       onWillPop: () {
@@ -100,9 +103,11 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                     onPrimary: Colors.black, // foreground
                   ),
                   onPressed: () async {
-                    final _chest = chestBox.get(configBox.get('currentChest'));
+                    WalletData defaultWallet =
+                        _myWalletProvider.getDefaultWallet()!;
+
                     await _sub.changePassword(
-                        _chest!.address!, walletProvider.pinCode, newPin.text);
+                        defaultWallet.address!, walletProvider.pinCode, newPin.text);
                     walletProvider.pinCode = newPin.text;
                     newPin.text = '';
                     Navigator.pop(context);

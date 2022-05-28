@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:provider/provider.dart';
 // import 'package:gecko/models/home.dart';
@@ -166,6 +167,8 @@ class ChooseWalletScreen extends StatelessWidget {
                                     ),
                                   ),
                           )),
+                          balanceBuilder(context, _repository.address!,
+                              selectedWallet!.address == _repository.address!),
                           ListTile(
                             shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.vertical(
@@ -204,5 +207,25 @@ class ChooseWalletScreen extends StatelessWidget {
                   )),
           ]),
     ]);
+  }
+
+  Widget balanceBuilder(context, String _address, bool isDefault) {
+    return Container(
+      width: double.infinity,
+      color: isDefault ? orangeC : yellowC,
+      child: SizedBox(
+        height: 25,
+        child: Column(children: [
+          const Spacer(),
+          // Text(
+          //   '0.0 gd',
+          //   textAlign: TextAlign.center,
+          //   style: TextStyle(color: isDefault ? Colors.white : Colors.black),
+          // ),
+          balance(
+              context, _address, 15, isDefault ? Colors.white : Colors.black)
+        ]),
+      ),
+    );
   }
 }

@@ -41,7 +41,7 @@ class ChestOptions extends StatelessWidget {
             height: 22,
             child: Text(currentChest.name!),
           )),
-      bottomNavigationBar: _homeProvider.bottomAppBar(context, 2),
+      bottomNavigationBar: _homeProvider.bottomAppBar(context),
       body: Builder(
         builder: (ctx) => SafeArea(
           child: Column(children: <Widget>[

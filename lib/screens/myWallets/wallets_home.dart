@@ -57,7 +57,7 @@ class WalletsHome extends StatelessWidget {
               style: TextStyle(color: Colors.grey[850])),
           backgroundColor: const Color(0xffFFD58D),
         ),
-        bottomNavigationBar: _homeProvider.bottomAppBar(context, 3),
+        bottomNavigationBar: _homeProvider.bottomAppBar(context),
         body: SafeArea(
           child: myWalletsTiles(context, _currentChestNumber!),
         ),

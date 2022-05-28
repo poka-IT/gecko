@@ -67,7 +67,7 @@ class WalletOptions extends StatelessWidget {
             }),
           ),
         ),
-        bottomNavigationBar: _homeProvider.bottomAppBar(context, 2),
+        bottomNavigationBar: _homeProvider.bottomAppBar(context),
         body: Builder(
           builder: (ctx) => SafeArea(
             child: Column(children: <Widget>[

@@ -49,7 +49,7 @@ class WalletViewScreen extends StatelessWidget {
             child: Text('Voir un portefeuille'),
           ),
         ),
-        bottomNavigationBar: _homeProvider.bottomAppBar(context, 1),
+        bottomNavigationBar: _homeProvider.bottomAppBar(context),
         // floatingActionButton: _homeProvider.floatingAction(context, 1),
         // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         body: SafeArea(

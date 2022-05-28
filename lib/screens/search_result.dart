@@ -3,6 +3,7 @@ import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
@@ -22,6 +23,8 @@ class SearchResultScreen extends StatelessWidget {
         Provider.of<CesiumPlusProvider>(context, listen: false);
     WalletsProfilesProvider _walletsProfilesClass =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
+    HomeProvider _homeProvider =
+        Provider.of<HomeProvider>(context, listen: false);
 
     int keyID = 0;
     double _avatarSize = 55;
@@ -35,6 +38,7 @@ class SearchResultScreen extends StatelessWidget {
           child: Text('Résultats de votre recherche'),
         ),
       ),
+      bottomNavigationBar: _homeProvider.bottomAppBar(context),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),

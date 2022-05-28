@@ -148,7 +148,7 @@ class HomeProvider with ChangeNotifier {
   //       volume: volume, mode: PlayerMode.LOW_LATENCY, stayAwake: false);
   // }
 
-  Widget bottomAppBar(BuildContext context, int index) {
+  Widget bottomAppBar(BuildContext context) {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     WalletsProfilesProvider _historyProvider =

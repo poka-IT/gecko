@@ -5,7 +5,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/models/queries.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/wallet_options.dart';
@@ -13,7 +12,6 @@ import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/chest_options.dart';
 import 'package:gecko/screens/myWallets/choose_chest.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
 class WalletsHome extends StatelessWidget {
@@ -253,7 +251,7 @@ class WalletsHome extends StatelessWidget {
                                     bottom: Radius.circular(12))),
                             // contentPadding: const EdgeInsets.only(left: 7.0),
                             tileColor:
-                                _repository.id()[1] == defaultWallet!.id()[1]
+                                _repository.id()[1] == defaultWallet.id()[1]
                                     ? orangeC
                                     : const Color(0xffFFD58D),
                             // leading: Text('IMAGE'),

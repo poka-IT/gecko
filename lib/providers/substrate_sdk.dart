@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/chest_data.dart';
+import 'package:gecko/models/wallet_data.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:polkawallet_sdk/api/types/txInfoData.dart';
@@ -205,6 +207,18 @@ class SubstrateSdk with ChangeNotifier {
     return balance;
   }
 
+  Future<double> subscribeBalance(String address, {bool isUd = false}) async {
+    double balance = 0.0;
+    if (nodeConnected) {
+      await sdk.api.account.subscribeBalance(address, (_balance) {
+        balance = int.parse(_balance.freeBalance) / 100;
+        notifyListeners();
+      });
+    }
+
+    return balance;
+  }
+
   KeyPairData getKeypair(String address) {
     return keyring.keyPairs.firstWhere((kp) => kp.address == address,
         orElse: (() => KeyPairData()));
@@ -251,9 +265,14 @@ class SubstrateSdk with ChangeNotifier {
     return gen.mnemonic!;
   }
 
-  String setCurrentWallet(String address) {
+  Future<String> setCurrentWallet(WalletData _wallet) async {
+    final currentChestNumber = configBox.get('currentChest');
+    ChestData _newChestData = chestBox.get(currentChestNumber)!;
+    _newChestData.defaultWallet = _wallet.number;
+    await chestBox.put(currentChestNumber, _newChestData);
+
     try {
-      final acc = getKeypair(address);
+      final acc = getKeypair(_wallet.address!);
       keyring.setCurrent(acc);
       return acc.address!;
     } catch (e) {
@@ -277,7 +296,7 @@ class SubstrateSdk with ChangeNotifier {
       required String password}) async {
     transactionStatus = '';
 
-    setCurrentWallet(fromAddress);
+    // setCurrentWallet(fromAddress);
 
     log.d(keyring.current.address);
     log.d(fromAddress);
@@ -327,7 +346,7 @@ class SubstrateSdk with ChangeNotifier {
       String fromAddress, String password, String toAddress) async {
     transactionStatus = '';
 
-    setCurrentWallet(fromAddress);
+    // setCurrentWallet(fromAddress);
     log.d('me: ' + fromAddress);
     log.d('to: ' + toAddress);
 
@@ -425,7 +444,7 @@ class SubstrateSdk with ChangeNotifier {
   Future<String> confirmIdentity(
       String fromAddress, String name, String password) async {
     // Confirm identity
-    setCurrentWallet(fromAddress);
+    // setCurrentWallet(fromAddress);
     log.d('me: ' + keyring.current.address!);
 
     final sender = TxSenderData(

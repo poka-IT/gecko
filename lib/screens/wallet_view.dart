@@ -37,7 +37,7 @@ class WalletViewScreen extends StatelessWidget {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
-    _sub.setCurrentWallet(defaultWallet!.address!);
+    _sub.setCurrentWallet(defaultWallet!);
 
     return Scaffold(
         resizeToAvoidBottomInset: true,
@@ -102,8 +102,10 @@ class WalletViewScreen extends StatelessWidget {
                 ),
               ]),
               Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+                WalletData? _defaultWallet =
+                    _myWalletProvider.getDefaultWallet();
                 return FutureBuilder(
-                  future: _sub.isMember(defaultWallet.address!),
+                  future: _sub.isMember(_defaultWallet!.address!),
                   builder: (context, AsyncSnapshot<bool?> snapshot) {
                     return Visibility(
                       visible: (snapshot.data ?? false),
@@ -128,7 +130,7 @@ class WalletViewScreen extends StatelessWidget {
                                       MaterialPageRoute(
                                         builder: (context) {
                                           return UnlockingWallet(
-                                              wallet: defaultWallet,
+                                              wallet: _defaultWallet,
                                               action: "cert");
                                         },
                                       ),
@@ -258,8 +260,6 @@ class WalletViewScreen extends StatelessWidget {
     log.d(defaultWallet!.address);
 
     bool canValidate = false;
-
-    _walletViewProvider.outputPubkey.text = pubkey!;
 
     showModalBottomSheet<void>(
         shape: const RoundedRectangleBorder(

@@ -13,7 +13,7 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -63,7 +63,9 @@ class HomeProvider with ChangeNotifier {
     String buildNumber;
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     version = packageInfo.version;
-    buildNumber = packageInfo.buildNumber;
+    buildNumber = kDebugMode
+        ? packageInfo.buildNumber
+        : (int.parse(packageInfo.buildNumber) - 1000).toString();
 
     notifyListeners();
     return version + '+' + buildNumber;

@@ -15,7 +15,6 @@ class WalletsProfilesProvider with ChangeNotifier {
 
   String? pubkey = '';
   String pubkeyShort = '';
-  final TextEditingController outputPubkey = TextEditingController();
   List? transBC;
   String? fetchMoreCursor;
   Map? pageInfo;
@@ -40,7 +39,6 @@ class WalletsProfilesProvider with ChangeNotifier {
       return 'false';
     }
     if (barcode != null && isPubkey(barcode)) {
-      outputPubkey.text = barcode;
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) {
@@ -85,17 +83,6 @@ class WalletsProfilesProvider with ChangeNotifier {
       log.d("C'est une pubkey !");
 
       this.pubkey = pubkey;
-      // getShortPubkey(pubkey);
-
-      // outputPubkey.text = pubkey;
-
-      // Navigator.push(
-      //   context,
-      //   MaterialPageRoute(builder: (context) {
-      //     return const WalletViewScreen();
-      //   }),
-      // );
-      // notifyListeners();
 
       return true;
     } else {
@@ -212,7 +199,6 @@ class WalletsProfilesProvider with ChangeNotifier {
   }
 
   void resetdHistory() {
-    outputPubkey.text = '';
     notifyListeners();
   }
 

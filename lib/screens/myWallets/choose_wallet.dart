@@ -1,11 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:provider/provider.dart';
 // import 'package:gecko/models/home.dart';
@@ -17,14 +17,13 @@ class ChooseWalletScreen extends StatelessWidget {
       : super(key: key);
   final int chest;
   final String pin;
-  int? _derivation;
-  List<int?>? _selectedId;
+  WalletData? selectedWallet;
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    // HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
     return Scaffold(
         appBar: AppBar(
             toolbarHeight: 60 * ratio,
@@ -49,6 +48,11 @@ class ChooseWalletScreen extends StatelessWidget {
                       onPrimary: Colors.white, // foreground
                     ),
                     onPressed: () async {
+                      await _sub.setCurrentWallet(selectedWallet!);
+
+                      // _walletViewProvider.reload();
+                      _sub.reload();
+
                       Navigator.pop(context);
                       Navigator.pop(context);
                       Navigator.pop(context);
@@ -62,7 +66,6 @@ class ChooseWalletScreen extends StatelessWidget {
                 ),
               ),
             ),
-            // const SizedBox(height: 160),
           ]),
         ));
   }
@@ -70,16 +73,12 @@ class ChooseWalletScreen extends StatelessWidget {
   Widget myWalletsTiles(BuildContext context, int? currentChest) {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
-    final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
-    WalletsProfilesProvider _walletViewProvider =
-        Provider.of<WalletsProfilesProvider>(context, listen: false);
+    // SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
+    final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
     WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
 
-    _selectedId ??= defaultWallet!.id();
-    _derivation ??= defaultWallet!.derivation!;
-    _sub.setCurrentWallet(defaultWallet!.address!);
+    selectedWallet ??= defaultWallet!;
     _myWalletProvider.readAllWallets(currentChest);
 
     if (!isWalletsExists) {
@@ -120,14 +119,8 @@ class ChooseWalletScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   child: GestureDetector(
                     onTap: () {
-                      _derivation = _repository.derivation!;
-                      _selectedId = _repository.id();
-                      chestBox.get(currentChest)!.defaultWallet =
-                          _repository.number;
-
-                      _sub.setCurrentWallet(_repository.address!);
+                      selectedWallet = _repository;
                       _myWalletProvider.rebuildWidget();
-                      _walletViewProvider.reload();
                     },
                     child: ClipOvalShadow(
                       shadow: const Shadow(
@@ -158,10 +151,19 @@ class ChooseWalletScreen extends StatelessWidget {
                                     alignment: Alignment.bottomCenter,
                                     scale: 0.5,
                                   )
-                                : Image.asset(
-                                    _repository.imageCustomPath!,
-                                    alignment: Alignment.bottomCenter,
-                                    scale: 0.5,
+                                : Container(
+                                    width: 120,
+                                    height: 120,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.transparent,
+                                      image: DecorationImage(
+                                        fit: BoxFit.contain,
+                                        image: FileImage(
+                                          File(_repository.imageCustomPath!),
+                                        ),
+                                      ),
+                                    ),
                                   ),
                           )),
                           ListTile(
@@ -170,9 +172,10 @@ class ChooseWalletScreen extends StatelessWidget {
                                 bottom: Radius.circular(12),
                               ),
                             ),
-                            tileColor: _repository.id()[1] == _selectedId![1]
-                                ? orangeC
-                                : const Color(0xffFFD58D),
+                            tileColor:
+                                _repository.address == selectedWallet!.address
+                                    ? orangeC
+                                    : const Color(0xffFFD58D),
                             title: Center(
                               child: Padding(
                                 padding:
@@ -182,27 +185,17 @@ class ChooseWalletScreen extends StatelessWidget {
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                       fontSize: 17.0,
-                                      color:
-                                          _repository.id()[1] == _selectedId![1]
-                                              ? const Color(0xffF9F9F1)
-                                              : Colors.black,
+                                      color: _repository.address ==
+                                              selectedWallet!.address
+                                          ? const Color(0xffF9F9F1)
+                                          : Colors.black,
                                       fontStyle: FontStyle.italic),
                                 ),
                               ),
                             ),
                             onTap: () async {
-                              _derivation = _repository.derivation!;
-                              _selectedId = _repository.id();
-
-                              ChestData _newChestData =
-                                  chestBox.get(currentChest)!;
-                              _newChestData.defaultWallet = _repository.number;
-                              await chestBox.put(currentChest, _newChestData);
-
-                              _sub.setCurrentWallet(_repository.address!);
+                              selectedWallet = _repository;
                               _myWalletProvider.rebuildWidget();
-                              _walletViewProvider.reload();
-                              _sub.reload();
                             },
                           )
                         ]),

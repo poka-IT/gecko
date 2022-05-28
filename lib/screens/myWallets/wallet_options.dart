@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -365,10 +364,7 @@ class WalletOptions extends StatelessWidget {
       onTap: !walletProvider.isDefaultWallet
           ? () async {
               defaultWallet = wallet;
-              ChestData _newChestData = chestBox.get(_currentChest)!;
-              _newChestData.defaultWallet = wallet.number;
-              await chestBox.put(_currentChest, _newChestData);
-              _sub.setCurrentWallet(wallet.address!);
+             await _sub.setCurrentWallet(wallet);
               _myWalletProvider.readAllWallets(_currentChest);
               _myWalletProvider.rebuildWidget();
             }

@@ -21,7 +21,7 @@ class OnboardingStepNine extends StatelessWidget {
     //     Provider.of<MyWalletsProvider>(context);
     CommonElements common = CommonElements();
 
-    _generateWalletProvider.pin.text = kDebugMode && debugPin
+    _generateWalletProvider.pin.text = debugPin // kDebugMode &&
         ? 'AAAAA'
         : _generateWalletProvider.changePinCode(reload: false).toUpperCase();
 

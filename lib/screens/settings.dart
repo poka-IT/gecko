@@ -4,10 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'dart:io';
-// import 'package:gecko/screens/myWallets/import_cesium_wallet.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/screens/myWallets/restore_chest.dart';
-import 'package:gecko/screens/onBoarding/5.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
@@ -51,80 +48,42 @@ class SettingsScreen extends StatelessWidget {
           children: <Widget>[
             const SizedBox(height: 60),
             Row(children: [
-              Text(' Noeud $currencyName :'),
-              const SizedBox(width: 20),
-              SizedBox(
-                width: 200,
-                height: 50,
-                child: TextField(
-                  controller: _endpointController,
-                  autocorrect: false,
-                ),
-              ),
-              const Spacer(),
               Consumer<SubstrateSdk>(builder: (context, _sub, _) {
-                return _sub.isLoadingEndpoint
-                    ? CircularProgressIndicator(color: orangeC)
-                    : IconButton(
-                        icon: Icon(
-                          Icons.send,
-                          color: orangeC,
-                          size: 40,
-                        ),
-                        onPressed: () async {
-                          configBox.put('endpoint', [_endpointController.text]);
-                          await _sub.connectNode(context);
-                        });
+                return Expanded(
+                  child: Row(children: [
+                    Text(' Noeud $currencyName :'),
+                    const Spacer(),
+                    Icon(_sub.nodeConnected ? Icons.check : Icons.close),
+                    const Spacer(),
+                    SizedBox(
+                      width: 200,
+                      height: 50,
+                      child: TextField(
+                        controller: _endpointController,
+                        autocorrect: false,
+                      ),
+                    ),
+                    const Spacer(flex: 5),
+                    _sub.isLoadingEndpoint
+                        ? CircularProgressIndicator(color: orangeC)
+                        : IconButton(
+                            icon: Icon(
+                              Icons.send,
+                              color: orangeC,
+                              size: 40,
+                            ),
+                            onPressed: () async {
+                              configBox
+                                  .put('endpoint', [_endpointController.text]);
+                              await _sub.connectNode(context);
+                            }),
+                    const Spacer(flex: 8),
+                  ]),
+                );
               }),
-              const Spacer(),
             ]),
-            SizedBox(height: isTall ? 50 : 20),
-            SizedBox(
-              height: buttonHigh,
-              width: buttonWidth,
-              child: ElevatedButton(
-                key: const Key('generateKeychain'),
-                style: ElevatedButton.styleFrom(
-                  elevation: 5,
-                  primary: yellowC, // background
-                  onPrimary: Colors.black, // foreground
-                ),
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) {
-                    return const OnboardingStepFive(skipIntro: true);
-                  }),
-                ),
-                child: const Text(
-                  "Générer un coffre",
-                  style: TextStyle(fontSize: fontSize),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              height: buttonHigh,
-              width: buttonWidth,
-              child: ElevatedButton(
-                key: const Key('generateKeychain'),
-                style: ElevatedButton.styleFrom(
-                  elevation: 5,
-                  primary: yellowC, // background
-                  onPrimary: Colors.black, // foreground
-                ),
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) {
-                    return const RestoreChest(skipIntro: true);
-                  }),
-                ),
-                child: const Text(
-                  "Restaurer un coffre",
-                  style: TextStyle(fontSize: fontSize),
-                ),
-              ),
-            ),
-            const SizedBox(height: 25),
+            // SizedBox(height: isTall ? 80 : 120),
+            const Spacer(),
             SizedBox(
               height: buttonHigh,
               width: buttonWidth,
@@ -138,14 +97,16 @@ class SettingsScreen extends StatelessWidget {
                   child: const Text(
                     'Oublier tous mes coffres',
                     style: TextStyle(
-                      fontSize: fontSize + 3,
+                      fontSize: fontSize + 4,
                       color: Color(0xffD80000),
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
               ),
             ),
+            // const Spacer(),
+            SizedBox(height: isTall ? 90 : 60),
           ]),
     );
   }

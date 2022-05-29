@@ -26,6 +26,7 @@ class HomeProvider with ChangeNotifier {
   Widget appBarTitle = Text('Ğecko', style: TextStyle(color: Colors.grey[850]));
   Widget appBarExplorer =
       Text('Explorateur', style: TextStyle(color: Colors.grey[850]));
+  String homeMessage = "y'a pas de lézard ;-)";
 
   Future<void> initHive() async {
     late Directory hivePath;
@@ -69,6 +70,15 @@ class HomeProvider with ChangeNotifier {
 
     notifyListeners();
     return version + '+' + buildNumber;
+  }
+
+  Future changeMessage(String newMessage, int seconds) async {
+    final oldMessage = homeMessage;
+    homeMessage = newMessage;
+    notifyListeners();
+    await Future.delayed(Duration(seconds: seconds));
+    homeMessage = oldMessage;
+    notifyListeners();
   }
 
   Future<List?> getValidEndpoints() async {

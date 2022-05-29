@@ -2,6 +2,7 @@ import 'package:bubble/bubble.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/stateful_wrapper.dart';
 import 'package:gecko/providers/chest_provider.dart';
+import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +24,6 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    // HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
     Provider.of<ChestProvider>(context);
@@ -103,6 +103,7 @@ class HomeScreen extends StatelessWidget {
               WidgetsBinding.instance.addPostFrameCallback((_) async {
                 if (!_sub.sdkReady && !_sub.sdkLoading) await _sub.initApi();
                 if (_sub.sdkReady && !_sub.nodeConnected) {
+                  // Check if versionData non compatible, drop everything
                   if (walletBox.isNotEmpty &&
                       walletBox.getAt(0)!.version! < dataVersion) {
                     await infoPopup(context,
@@ -185,31 +186,32 @@ Widget geckHome(context) {
       ]),
       Padding(
         padding: EdgeInsets.only(top: 15 * ratio),
-        child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const <Widget>[
-              Text(
-                "y'a pas de lézard ;-)",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  shadows: <Shadow>[
-                    Shadow(
-                      offset: Offset(0, 0),
-                      blurRadius: 20,
-                      color: Colors.black,
-                    ),
-                    Shadow(
-                      offset: Offset(0, 0),
-                      blurRadius: 20,
-                      color: Colors.black,
-                    ),
-                  ],
-                ),
+        child:
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+          Consumer<HomeProvider>(builder: (context, _homeP, _) {
+            return Text(
+              _homeP.homeMessage,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                shadows: <Shadow>[
+                  Shadow(
+                    offset: Offset(0, 0),
+                    blurRadius: 20,
+                    color: Colors.black,
+                  ),
+                  Shadow(
+                    offset: Offset(0, 0),
+                    blurRadius: 20,
+                    color: Colors.black,
+                  ),
+                ],
               ),
-            ]),
+            );
+          }),
+        ]),
       ),
       const SizedBox(height: 15),
       Expanded(

@@ -31,7 +31,7 @@ class WalletOptionsProvider with ChangeNotifier {
       {required bool isCesium}) async {
     MyWalletsProvider myWalletClass = MyWalletsProvider();
 
-    WalletData _walletTarget = myWalletClass.getWalletData(_walletID)!;
+    WalletData _walletTarget = myWalletClass.getWalletDataById(_walletID)!;
     _walletTarget.name = _newName;
     await walletBox.put(_walletTarget.key, _walletTarget);
 
@@ -214,6 +214,9 @@ class WalletOptionsProvider with ChangeNotifier {
             TextButton(
               child: const Text("Valider"),
               onPressed: () async {
+                final _wallet =
+                    _myWalletProvider.getWalletDataByAddress(address.text);
+                await _sub.setCurrentWallet(_wallet!);
                 _sub.confirmIdentity(_walletOptions.address.text, idtyName.text,
                     _myWalletProvider.pinCode);
                 Navigator.pop(context);

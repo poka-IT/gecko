@@ -126,7 +126,7 @@ class WalletOptions extends StatelessWidget {
                         historyWidget(
                             context, _historyProvider, walletProvider),
                         SizedBox(height: 12 * ratio),
-                        setDefaultWallet(context, walletProvider,
+                        setDefaultWalletWidget(context, walletProvider,
                             _myWalletProvider, _walletOptions, _currentChest),
                         SizedBox(height: 17 * ratio),
                         if (!walletProvider.isDefaultWallet)
@@ -349,25 +349,20 @@ class WalletOptions extends StatelessWidget {
     );
   }
 
-  Widget setDefaultWallet(
+  Widget setDefaultWalletWidget(
       BuildContext context,
       WalletOptionsProvider walletProvider,
       MyWalletsProvider _myWalletProvider,
       WalletOptionsProvider _walletOptions,
       int _currentChest) {
     WalletData defaultWallet = _myWalletProvider.getDefaultWallet()!;
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
-
     _walletOptions.isDefaultWallet = (defaultWallet.number == wallet.id()[1]);
 
     return InkWell(
       key: const Key('setDefaultWallet'),
       onTap: !walletProvider.isDefaultWallet
           ? () async {
-              defaultWallet = wallet;
-              await _sub.setCurrentWallet(wallet);
-              _myWalletProvider.readAllWallets(_currentChest);
-              _myWalletProvider.rebuildWidget();
+              await setDefaultWallet(context, _currentChest);
             }
           : null,
       child: SizedBox(
@@ -395,6 +390,18 @@ class WalletOptions extends StatelessWidget {
         ]),
       ),
     );
+  }
+
+  Future setDefaultWallet(BuildContext context, int _currentChest) async {
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
+
+    // WalletData defaultWallet = _myWalletProvider.getDefaultWallet()!;
+    // defaultWallet = wallet;
+    await _sub.setCurrentWallet(wallet);
+    _myWalletProvider.readAllWallets(_currentChest);
+    _myWalletProvider.rebuildWidget();
   }
 
   Widget deleteWallet(

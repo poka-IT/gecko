@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/home.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:polkawallet_sdk/api/types/txInfoData.dart';
@@ -46,6 +47,7 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<void> connectNode(BuildContext ctx) async {
     List<NetworkParams> node = [];
+    HomeProvider _homeProvider = Provider.of<HomeProvider>(ctx, listen: false);
 
     for (String _endpoint in configBox.get('endpoint')) {
       final n = NetworkParams();
@@ -98,12 +100,14 @@ class SubstrateSdk with ChangeNotifier {
         notifyListeners();
       });
       notifyListeners();
-      snackNode(ctx, true);
+      _homeProvider.changeMessage('Vous êtes bien connecté', 3);
+      // snackNode(ctx, true);
     } else {
       nodeConnected = false;
       debugConnection = res.toString();
       notifyListeners();
-      snackNode(ctx, false);
+      _homeProvider.changeMessage('Vous êtes pas connecté', 3);
+      // snackNode(ctx, false);
     }
 
     log.d(sdk.api.connectedNode?.endpoint);

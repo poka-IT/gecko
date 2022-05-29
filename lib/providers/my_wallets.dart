@@ -41,7 +41,7 @@ class MyWalletsProvider with ChangeNotifier {
     return listWallets;
   }
 
-  WalletData? getWalletData(List<int?> _id) {
+  WalletData? getWalletDataById(List<int?> _id) {
     if (_id.isEmpty) return WalletData();
     int? _chest = _id[0];
     int? _nbr = _id[1];
@@ -57,13 +57,26 @@ class MyWalletsProvider with ChangeNotifier {
     return _targetedWallet;
   }
 
+  WalletData? getWalletDataByAddress(String address) {
+    WalletData? _targetedWallet;
+
+    walletBox.toMap().forEach((key, value) {
+      if (value.address == address) {
+        _targetedWallet = value;
+        return;
+      }
+    });
+
+    return _targetedWallet;
+  }
+
   WalletData? getDefaultWallet([int? chest]) {
     if (chestBox.isEmpty) {
       return WalletData(chest: 0, number: 0);
     } else {
       chest ??= getCurrentChest();
       int? defaultWalletNumber = chestBox.get(chest)!.defaultWallet;
-      return getWalletData([chest, defaultWalletNumber]);
+      return getWalletDataById([chest, defaultWalletNumber]);
     }
   }
 

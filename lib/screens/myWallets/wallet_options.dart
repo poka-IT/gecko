@@ -8,7 +8,6 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:gecko/screens/history.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -316,22 +315,22 @@ class WalletOptions extends StatelessWidget {
       key: const Key('displayHistory'),
       onTap: () {
         _historyProvider.nPage = 1;
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) {
-            return HistoryScreen(
-                pubkey: walletProvider.address.text,
-                avatar: wallet.imageCustomPath == null
-                    ? Image.asset(
-                        'assets/avatars/${wallet.imageDefaultPath}',
-                        width: 110,
-                      )
-                    : Image.asset(
-                        wallet.imageCustomPath!,
-                        width: 110,
-                      ));
-          }),
-        );
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(builder: (context) {
+        //     return HistoryScreen(
+        //         pubkey: walletProvider.address.text,
+        //         avatar: wallet.imageCustomPath == null
+        //             ? Image.asset(
+        //                 'assets/avatars/${wallet.imageDefaultPath}',
+        //                 width: 110,
+        //               )
+        //             : Image.asset(
+        //                 wallet.imageCustomPath!,
+        //                 width: 110,
+        //               ));
+        //   }),
+        // );
       },
       child: SizedBox(
         height: 50,
@@ -342,8 +341,8 @@ class WalletOptions extends StatelessWidget {
             height: 45,
           ),
           const SizedBox(width: 22),
-          const Text('Historique des transactions',
-              style: TextStyle(fontSize: 20, color: Colors.black)),
+          Text('Historique des transactions',
+              style: TextStyle(fontSize: 20, color: Colors.grey[500])),
         ]),
       ),
     );

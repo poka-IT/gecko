@@ -78,8 +78,8 @@ class WalletsProfilesProvider with ChangeNotifier {
     );
 
     if (regExp.hasMatch(address) == true &&
-        address.length > 47 &&
-        address.length < 50) {
+        address.length > 45 &&
+        address.length < 52) {
       log.d("C'est une adresse !");
 
       this.address = address;

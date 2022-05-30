@@ -976,7 +976,7 @@ packages:
     description:
       path: "."
       ref: fixAndroidActivityVersion
-      resolved-ref: "069a9f696ec8d9eacd0a3fdd284116fd2c1faf44"
+      resolved-ref: "3dcfaa00f8e53e33346332d7a1e3612b1cd03b0c"
       url: "https://github.com/poka-IT/sdk.git"
     source: git
     version: "0.4.6"

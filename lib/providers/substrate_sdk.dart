@@ -175,11 +175,8 @@ class SubstrateSdk with ChangeNotifier {
 
     importIsLoading = false;
 
-    //TODO: fix bug of address rendering to skip this delay
-    await Future.delayed(const Duration(milliseconds: 50));
     notifyListeners();
-    final bakedAddress = keyring.allAccounts.last.address;
-    return bakedAddress!;
+    return keyring.allAccounts.last.address!;
   }
 
   void reload() {

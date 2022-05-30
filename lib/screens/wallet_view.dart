@@ -623,52 +623,55 @@ class WalletViewScreen extends StatelessWidget {
             const Spacer(),
             Column(children: <Widget>[
               if (avatar == null)
-                FutureBuilder(
-                    future: _cesiumPlusProvider.getAvatar(pubkey, _avatarSize),
-                    builder:
-                        (BuildContext context, AsyncSnapshot<Image?> _avatar) {
-                      if (_avatar.connectionState != ConnectionState.done) {
-                        return Stack(children: [
-                          ClipOval(
-                            child:
-                                _cesiumPlusProvider.defaultAvatar(_avatarSize),
-                          ),
-                          Positioned(
-                            top: 15,
-                            right: 45,
-                            width: 51,
-                            height: 51,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 5,
-                              color: orangeC,
-                            ),
-                          ),
-                        ]);
-                      }
-                      if (_avatar.hasData) {
-                        return GestureDetector(
-                          key: const Key('openAvatar'),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) {
-                                return AvatarFullscreen(_avatar.data);
-                              }),
-                            );
-                          },
-                          child: ClipOval(
-                            child: Image(
-                              image: _avatar.data!.image,
-                              height: _avatarSize,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        );
-                      }
-                      return ClipOval(
-                        child: _cesiumPlusProvider.defaultAvatar(_avatarSize),
-                      );
-                    }),
+                ClipOval(
+                  child: _cesiumPlusProvider.defaultAvatar(_avatarSize),
+                ),
+              // FutureBuilder(
+              //     future: _cesiumPlusProvider.getAvatar(pubkey, _avatarSize),
+              //     builder:
+              //         (BuildContext context, AsyncSnapshot<Image?> _avatar) {
+              //       if (_avatar.connectionState != ConnectionState.done) {
+              //         return Stack(children: [
+              //           ClipOval(
+              //             child:
+              //                 _cesiumPlusProvider.defaultAvatar(_avatarSize),
+              //           ),
+              //           Positioned(
+              //             top: 15,
+              //             right: 45,
+              //             width: 51,
+              //             height: 51,
+              //             child: CircularProgressIndicator(
+              //               strokeWidth: 5,
+              //               color: orangeC,
+              //             ),
+              //           ),
+              //         ]);
+              //       }
+              //       if (_avatar.hasData) {
+              //         return GestureDetector(
+              //           key: const Key('openAvatar'),
+              //           onTap: () {
+              //             Navigator.push(
+              //               context,
+              //               MaterialPageRoute(builder: (context) {
+              //                 return AvatarFullscreen(_avatar.data);
+              //               }),
+              //             );
+              //           },
+              //           child: ClipOval(
+              //             child: Image(
+              //               image: _avatar.data!.image,
+              //               height: _avatarSize,
+              //               fit: BoxFit.cover,
+              //             ),
+              //           ),
+              //         );
+              //       }
+              //       return ClipOval(
+              //         child: _cesiumPlusProvider.defaultAvatar(_avatarSize),
+              //       );
+              //     }),
               if (avatar != null)
                 GestureDetector(
                   key: const Key('openAvatar'),

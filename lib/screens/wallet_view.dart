@@ -29,7 +29,7 @@ class WalletViewScreen extends StatelessWidget {
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     CesiumPlusProvider _cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
-    _walletViewProvider.pubkey = pubkey!;
+    _walletViewProvider.address = pubkey!;
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
     HomeProvider _homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
@@ -278,7 +278,7 @@ class WalletViewScreen extends StatelessWidget {
                 double.parse(_walletViewProvider.payAmount.text) <=
                     double.parse(
                         balanceCache[defaultWallet.address]!.split(' ')[0]) &&
-                _walletViewProvider.pubkey != defaultWallet.address) {
+                _walletViewProvider.address != defaultWallet.address) {
               canValidate = true;
             } else {
               canValidate = false;

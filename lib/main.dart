@@ -36,7 +36,6 @@ import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/search_result.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
@@ -73,25 +72,8 @@ Future<void> main() async {
   await Hive.deleteBoxFromDisk('g1WalletsBox');
   g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
 
-
-  // keystoreBox = await Hive.openBox("keystoreBox");
-
-  // g1WalletsBox.clear();
-
-  // final HiveStore _store =
-  //     await HiveStore.open(path: '${appPath.path}/gqlCache');
-
-  // Get a valid GVA endpoint
-  endPointGVA = 'https://g1.librelois.fr/gva';
-  // endPointGVA = 'https://duniter-g1.p2p.legal/gva';
   await _homeProvider.getValidEndpoints();
   // log.d(await configBox.get('endpoint'));
-
-  // if (endPointGVA == 'HS') {
-  //   _homeProvider.playSound('faché', 0.8);
-  // } else {
-  //   _homeProvider.playSound('start', 0.2);
-  // }
 
   HttpOverrides.global = MyHttpOverrides();
 
@@ -109,7 +91,7 @@ Future<void> main() async {
     await SentryFlutter.init((options) {
       options.dsn =
           'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
-    }, appRunner: () => runApp(Gecko(endPointGVA)));
+    }, appRunner: () => runApp(const Gecko()));
 
     // runZoned<Future<void>>(
     //       () async {
@@ -126,30 +108,17 @@ Future<void> main() async {
   } else {
     print('Debug mode enabled: No sentry alerte');
 
-    runApp(Gecko(endPointGVA));
+    runApp(const Gecko());
   }
 }
 
 class Gecko extends StatelessWidget {
-  const Gecko(this.randomEndpoint, {Key? key}) : super(key: key);
-  final String? randomEndpoint;
+  const Gecko({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    final _httpLink = HttpLink(
-      randomEndpoint!,
-    );
 
-    final _client = ValueNotifier(
-      GraphQLClient(
-        cache: GraphQLCache(),
-        link: _httpLink,
-      ),
-    );
-
-    // HistoryProvider _historyProvider = Provider.of<HistoryProvider>(context);
-    // HistoryProvider('').snackNode(context);
     return MultiProvider(
       providers: [
         // Provider(create: (context) => HistoryProvider()),
@@ -163,44 +132,41 @@ class Gecko extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CesiumPlusProvider()),
         ChangeNotifierProvider(create: (_) => SubstrateSdk())
       ],
-      child: GraphQLProvider(
-        client: _client,
-        child: MaterialApp(
-          builder: (context, widget) => ResponsiveWrapper.builder(
-              BouncingScrollWrapper.builder(context, widget!),
-              maxWidth: 1200,
-              minWidth: 480,
-              defaultScale: true,
-              breakpoints: [
-                const ResponsiveBreakpoint.resize(480, name: MOBILE),
-                const ResponsiveBreakpoint.autoScale(800, name: TABLET),
-                const ResponsiveBreakpoint.resize(1000, name: DESKTOP),
-              ],
-              background: Container(color: backgroundColor)),
-          title: 'Ğecko',
-          theme: ThemeData(
-            appBarTheme: const AppBarTheme(
-              color: Color(0xffFFD58D),
-              foregroundColor: Color(0xFF000000),
-            ),
-            primaryColor: const Color(0xffFFD58D),
-            textTheme: const TextTheme(
-              bodyText1: TextStyle(fontSize: 16),
-              bodyText2: TextStyle(fontSize: 18),
-            ).apply(
-              bodyColor: const Color(0xFF000000),
-            ),
-            colorScheme:
-                ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]),
+      child: MaterialApp(
+        builder: (context, widget) => ResponsiveWrapper.builder(
+            BouncingScrollWrapper.builder(context, widget!),
+            maxWidth: 1200,
+            minWidth: 480,
+            defaultScale: true,
+            breakpoints: [
+              const ResponsiveBreakpoint.resize(480, name: MOBILE),
+              const ResponsiveBreakpoint.autoScale(800, name: TABLET),
+              const ResponsiveBreakpoint.resize(1000, name: DESKTOP),
+            ],
+            background: Container(color: backgroundColor)),
+        title: 'Ğecko',
+        theme: ThemeData(
+          appBarTheme: const AppBarTheme(
+            color: Color(0xffFFD58D),
+            foregroundColor: Color(0xFF000000),
           ),
-          home: const HomeScreen(),
-          initialRoute: "/",
-          routes: {
-            '/mywallets': (context) => const WalletsHome(),
-            '/search': (context) => const SearchScreen(),
-            '/searchResult': (context) => const SearchResultScreen(),
-          },
+          primaryColor: const Color(0xffFFD58D),
+          textTheme: const TextTheme(
+            bodyText1: TextStyle(fontSize: 16),
+            bodyText2: TextStyle(fontSize: 18),
+          ).apply(
+            bodyColor: const Color(0xFF000000),
+          ),
+          colorScheme:
+              ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]),
         ),
+        home: const HomeScreen(),
+        initialRoute: "/",
+        routes: {
+          '/mywallets': (context) => const WalletsHome(),
+          '/search': (context) => const SearchScreen(),
+          '/searchResult': (context) => const SearchResultScreen(),
+        },
       ),
     );
   }

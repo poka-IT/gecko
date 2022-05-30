@@ -240,10 +240,10 @@ class UnlockingWallet extends StatelessWidget {
                             listen: false);
                     final acc = _sub.getCurrentWallet();
                     log.d(
-                        "fromAddress: ${acc.address!},destAddress: ${_walletViewProvider.pubkey!}, amount: ${double.parse(_walletViewProvider.payAmount.text)},  password: $_pin");
+                        "fromAddress: ${acc.address!},destAddress: ${_walletViewProvider.address!}, amount: ${double.parse(_walletViewProvider.payAmount.text)},  password: $_pin");
                     _sub.pay(
                         fromAddress: acc.address!,
-                        destAddress: _walletViewProvider.pubkey!,
+                        destAddress: _walletViewProvider.address!,
                         amount:
                             double.parse(_walletViewProvider.payAmount.text),
                         password: _pin.toUpperCase());
@@ -260,7 +260,7 @@ class UnlockingWallet extends StatelessWidget {
                             listen: false);
                     final acc = _sub.getCurrentWallet();
                     _sub.certify(acc.address!, _pin.toUpperCase(),
-                        _walletViewProvider.pubkey!);
+                        _walletViewProvider.address!);
 
                     Navigator.push(
                       context,

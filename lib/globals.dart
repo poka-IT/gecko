@@ -15,7 +15,6 @@ Directory? appPath;
 
 late String appVersion;
 late SharedPreferences prefs;
-late String endPointGVA;
 const int pinLength = 5;
 const String appLang = 'english';
 

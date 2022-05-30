@@ -1,7 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/cesium_plus.dart';
-import 'package:gecko/models/queries.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:flutter/material.dart';
@@ -65,7 +64,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
       children: <Widget>[
         Query(
           options: QueryOptions(
-            document: gql(getHistory),
+            document: gql('getHistory'),
             variables: <String, dynamic>{
               'pubkey': pubkey,
               'number': 10,
@@ -419,7 +418,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                         if (username == null)
                           Query(
                             options: QueryOptions(
-                              document: gql(getId),
+                              document: gql('getId'),
                               variables: {
                                 'pubkey': pubkey,
                               },

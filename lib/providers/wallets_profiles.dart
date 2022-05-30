@@ -11,9 +11,9 @@ import 'dart:math';
 import 'package:intl/intl.dart';
 
 class WalletsProfilesProvider with ChangeNotifier {
-  WalletsProfilesProvider(this.pubkey);
+  WalletsProfilesProvider(this.address);
 
-  String? pubkey = '';
+  String? address = '';
   String pubkeyShort = '';
   List? transBC;
   String? fetchMoreCursor;
@@ -38,7 +38,7 @@ class WalletsProfilesProvider with ChangeNotifier {
       log.e(e);
       return 'false';
     }
-    if (barcode != null && isPubkey(barcode)) {
+    if (barcode != null && isAddress(barcode)) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) {
@@ -70,19 +70,19 @@ class WalletsProfilesProvider with ChangeNotifier {
   //   return result;
   // }
 
-  bool isPubkey(pubkey) {
+  bool isAddress(address) {
     final RegExp regExp = RegExp(
       r'^[a-zA-Z0-9]+$',
       caseSensitive: false,
       multiLine: false,
     );
 
-    if (regExp.hasMatch(pubkey) == true &&
-        pubkey.length > 42 &&
-        pubkey.length < 50) {
-      log.d("C'est une pubkey !");
+    if (regExp.hasMatch(address) == true &&
+        address.length > 47 &&
+        address.length < 50) {
+      log.d("C'est une adresse !");
 
-      this.pubkey = pubkey;
+      this.address = address;
 
       return true;
     } else {

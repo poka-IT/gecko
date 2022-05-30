@@ -34,6 +34,9 @@ String cesiumPod = "https://g1.data.presles.fr";
 late bool isTall;
 late double ratio;
 
+// Contexts
+late BuildContext homeContext;
+
 // Logger
 var log = Logger();
 

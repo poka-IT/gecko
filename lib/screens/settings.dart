@@ -53,7 +53,9 @@ class SettingsScreen extends StatelessWidget {
                   child: Row(children: [
                     Text(' Noeud $currencyName :'),
                     const Spacer(),
-                    Icon(_sub.nodeConnected ? Icons.check : Icons.close),
+                    Icon(_sub.nodeConnected && !_sub.isLoadingEndpoint
+                        ? Icons.check
+                        : Icons.close),
                     const Spacer(),
                     SizedBox(
                       width: 200,

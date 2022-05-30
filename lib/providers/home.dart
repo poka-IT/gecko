@@ -96,49 +96,6 @@ class HomeProvider with ChangeNotifier {
     }
 
     log.i('ENDPOINT: ' + _listEndpoints.toString());
-
-    // int i = 0;
-    // String? _endpoint;
-    // int _statusCode = 0;
-
-    // final _client = HttpClient();
-    // _client.connectionTimeout = const Duration(milliseconds: 1000);
-
-    // do {
-    //   i++;
-    //   log.d(i.toString() + ' ème essai de recherche de endpoint GVA.');
-    //   log.d('Try GVA endpoint: ${_listEndpoints[i - 1]}');
-    //   int listLenght = _listEndpoints.length - 1;
-    //   if (i > listLenght) {
-    //     log.e('NO VALID GVA ENDPOINT FOUND');
-    //     _endpoint = 'HS';
-    //     break;
-    //   }
-    //   if (i != 0) {
-    //     await Future.delayed(const Duration(milliseconds: 300));
-    //   }
-
-    //   try {
-    //     final request = await _client.postUrl(Uri.parse(_listEndpoints[i]));
-    //     final response = await request.close();
-
-    //     _endpoint = _listEndpoints[i];
-    //     _statusCode = response.statusCode;
-    //   } on TimeoutException catch (_) {
-    //     log.e('This endpoint is timeout, next');
-    //     _statusCode = 50;
-    //     continue;
-    //   } on SocketException catch (_) {
-    //     log.e('This endpoint is a bad endpoint, next');
-    //     _statusCode = 70;
-    //     continue;
-    //   } on Exception {
-    //     log.e('Unknown error');
-    //     _statusCode = 60;
-    //     continue;
-    //   }
-    // } while (_statusCode != 400);
-
     return _listEndpoints;
   }
 
@@ -164,70 +121,74 @@ class HomeProvider with ChangeNotifier {
     WalletsProfilesProvider _historyProvider =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
 
+    final size = MediaQuery.of(context).size;
+
     const bool _showBottomBar = true;
 
     return Visibility(
       visible: _showBottomBar,
       child: Container(
         color: yellowC,
-        width: double.infinity,
+        width: size.width,
         height: 80,
-        child: Row(
-          // mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            const Spacer(flex: 1),
-            IconButton(
-              iconSize: 40,
-              icon: const Image(image: AssetImage('assets/loupe-noire.png')),
-              onPressed: () {
-                // Navigator.popUntil(
-                //   context,
-                //   ModalRoute.withName('/'),
-                // );
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) {
-                    return const SearchScreen();
-                  }),
-                );
-              },
-            ),
-            // SizedBox(width: 0),
-            const Spacer(flex: 2),
-            IconButton(
-              iconSize: 60,
-              icon: const Image(image: AssetImage('assets/qrcode-scan.png')),
-              onPressed: () async {
-                // Navigator.popUntil(
-                //   context,
-                //   ModalRoute.withName('/'),
-                // );
-                await _historyProvider.scan(context);
-              },
-            ),
-            const Spacer(flex: 2),
-            IconButton(
-              iconSize: 60,
-              icon: const Image(image: AssetImage('assets/wallet.png')),
-              onPressed: () {
-                WalletData? defaultWallet =
-                    _myWalletProvider.getDefaultWallet();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) {
-                      return UnlockingWallet(
-                        wallet: defaultWallet,
-                        action: "mywallets",
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
-            const Spacer(flex: 1),
-          ],
-        ),
+        child:
+            // Stack(
+            //   children: [
+            //     // CustomPaint(
+            //     //   size: Size(size.width, 110),
+            //     //   painter: CustomRoundedButton(),
+            //     // ),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+          IconButton(
+            iconSize: 40,
+            icon: const Image(image: AssetImage('assets/loupe-noire.png')),
+            onPressed: () {
+              Navigator.popUntil(
+                context,
+                ModalRoute.withName('/'),
+              );
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (homeContext) {
+                  return const SearchScreen();
+                }),
+              );
+            },
+          ),
+          IconButton(
+            iconSize: 70,
+            icon: const Image(image: AssetImage('assets/qrcode-scan.png')),
+            onPressed: () async {
+              Navigator.popUntil(
+                context,
+                ModalRoute.withName('/'),
+              );
+              _historyProvider.scan(homeContext);
+            },
+          ),
+          IconButton(
+            iconSize: 60,
+            icon: const Image(image: AssetImage('assets/wallet.png')),
+            onPressed: () {
+              Navigator.popUntil(
+                context,
+                ModalRoute.withName('/'),
+              );
+              WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (homeContext) {
+                    return UnlockingWallet(
+                      wallet: defaultWallet,
+                      action: "mywallets",
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+        ]),
       ),
     );
   }
@@ -248,5 +209,26 @@ class HomeProvider with ChangeNotifier {
 
   void rebuildWidget() {
     notifyListeners();
+  }
+}
+
+class CustomRoundedButton extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint paint = Paint()
+      ..color = yellowC
+      ..style = PaintingStyle.fill;
+    Path path = Path();
+    path.lineTo(size.width * 0.4, 0);
+    path.quadraticBezierTo(size.width * 0.5, -40, size.width * 0.6, 0);
+    path.lineTo(size.width, 0);
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
   }
 }

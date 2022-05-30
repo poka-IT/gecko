@@ -106,7 +106,7 @@ class SubstrateSdk with ChangeNotifier {
       nodeConnected = false;
       debugConnection = res.toString();
       notifyListeners();
-      _homeProvider.changeMessage('Vous êtes pas connecté', 3);
+      _homeProvider.changeMessage("Vous n'êtes pas connecté:", 3);
       // snackNode(ctx, false);
     }
 
@@ -335,10 +335,8 @@ class SubstrateSdk with ChangeNotifier {
         password,
         onStatusChange: (status) {
           log.d('Transaction status: ' + status);
-          if (status == 'Ready') {
-            transactionStatus = 'sent';
-            notifyListeners();
-          }
+          transactionStatus = status;
+          notifyListeners();
         },
       ).timeout(
         const Duration(seconds: 12),

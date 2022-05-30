@@ -62,7 +62,7 @@ class WalletOptionsProvider with ChangeNotifier {
     final bool? _answer = await (confirmPopup(context,
         'Êtes-vous sûr de vouloir oublier le portefeuille "${wallet.name}" ?'));
 
-    if (_answer!) {
+    if (_answer ?? false) {
       await walletBox.delete(wallet.key);
       await _sub.deleteAccounts([wallet.address!]);
 

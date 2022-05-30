@@ -304,11 +304,22 @@ class WalletViewScreen extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        const Text(
-                          'Effectuer un virement',
-                          style: TextStyle(
-                              fontSize: 26, fontWeight: FontWeight.w700),
-                        ),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Effectuer un virement',
+                                style: TextStyle(
+                                    fontSize: 26, fontWeight: FontWeight.w700),
+                              ),
+                              IconButton(
+                                iconSize: 40,
+                                icon: const Icon(Icons.cancel_outlined),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ]),
                         const SizedBox(height: 20),
                         Text(
                           'Depuis:',

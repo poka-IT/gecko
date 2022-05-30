@@ -27,7 +27,7 @@ class WalletsProfilesProvider with ChangeNotifier {
   int nRepositories = 20;
   int nPage = 1;
 
-  Future scan(context) async {
+  Future<String> scan(context) async {
     if (Platform.isAndroid || Platform.isIOS) {
       await Permission.camera.request();
     }
@@ -42,7 +42,7 @@ class WalletsProfilesProvider with ChangeNotifier {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) {
-          return WalletViewScreen(pubkey: pubkey);
+          return WalletViewScreen(pubkey: barcode!);
         }),
       );
     } else {

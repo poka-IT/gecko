@@ -58,7 +58,12 @@ class TransactionInProgress extends StatelessWidget {
           _resultText = 'Envoi en cours ...';
         }
         break;
-      case 'sent':
+      case 'Ready':
+        {
+          _resultText = 'En cours de propagation...';
+        }
+        break;
+      case 'Broadcast':
         {
           _resultText = 'En cours de validation ...';
         }
@@ -81,7 +86,7 @@ class TransactionInProgress extends StatelessWidget {
           _sub.transactionStatus = '';
           Navigator.pop(context);
           Navigator.pop(context);
-          if (_actionName == 'pay') {
+          if (transType == 'pay') {
             Navigator.pop(context);
           }
           return Future<bool>.value(true);
@@ -186,7 +191,7 @@ class TransactionInProgress extends StatelessWidget {
                           onPressed: () {
                             Navigator.pop(context);
                             Navigator.pop(context);
-                            if (_actionName == 'pay') {
+                            if (transType == 'pay') {
                               Navigator.pop(context);
                             }
                           },

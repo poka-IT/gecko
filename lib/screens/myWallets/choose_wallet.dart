@@ -14,9 +14,7 @@ import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class ChooseWalletScreen extends StatelessWidget {
-  ChooseWalletScreen({Key? key, required this.chest, required this.pin})
-      : super(key: key);
-  final int chest;
+  ChooseWalletScreen({Key? key, required this.pin}) : super(key: key);
   final String pin;
   WalletData? selectedWallet;
 
@@ -24,6 +22,7 @@ class ChooseWalletScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final int chest = configBox.get('currentChest');
 
     return Scaffold(
         backgroundColor: backgroundColor,
@@ -55,7 +54,7 @@ class ChooseWalletScreen extends StatelessWidget {
                       // _walletViewProvider.reload();
                       _sub.reload();
 
-                      Navigator.pop(context);
+                      // Navigator.pop(context);
                       Navigator.pop(context);
                       Navigator.pop(context);
                     },

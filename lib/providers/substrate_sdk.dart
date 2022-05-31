@@ -6,6 +6,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/home.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:polkawallet_sdk/api/types/txInfoData.dart';
@@ -255,10 +256,13 @@ class SubstrateSdk with ChangeNotifier {
     return int.parse(deriveNbr);
   }
 
-  Future<KeyPairData?> changePassword(
-      String address, String passOld, String? passNew) async {
+  Future<KeyPairData?> changePassword(BuildContext context, String address,
+      String passOld, String? passNew) async {
     final account = getKeypair(address);
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
     keyring.setCurrent(account);
+    _myWalletProvider.resetPinCode();
 
     return await sdk.api.keyring.changePassword(keyring, passOld, passNew);
   }

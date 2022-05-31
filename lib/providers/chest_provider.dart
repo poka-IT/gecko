@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:provider/provider.dart';
 
@@ -17,6 +18,11 @@ class ChestProvider with ChangeNotifier {
     if (_answer ?? false) {
       await _sub.deleteAccounts(getChestWallets(_chest));
       await chestBox.delete(_chest.key);
+      MyWalletsProvider _myWalletProvider =
+          Provider.of<MyWalletsProvider>(context, listen: false);
+
+      _myWalletProvider.pinCode = '';
+
       if (chestBox.isEmpty) {
         await configBox.put('currentChest', 0);
       } else {

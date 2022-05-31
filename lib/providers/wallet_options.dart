@@ -232,6 +232,12 @@ class WalletOptionsProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future changePinCacheChoice() async {
+    bool isCacheChecked = configBox.get('isCacheChecked') ?? true;
+    await configBox.put('isCacheChecked', !isCacheChecked);
+    notifyListeners();
+  }
+
   String? getAddress(int chest, int derivation) {
     String? _address;
     walletBox.toMap().forEach((key, value) {

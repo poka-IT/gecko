@@ -58,7 +58,29 @@ class OnboardingStepTen extends StatelessWidget {
                   style: TextStyle(fontSize: 16 * ratio))
             ]),
             SizedBox(height: isTall ? 80 : 20),
-            pinForm(context, _walletOptions, _pinLenght, 1, 2)
+            pinForm(context, _walletOptions, _pinLenght, 1, 2),
+            InkWell(
+              onTap: () {
+                _walletOptions.changePinCacheChoice();
+              },
+              child: Row(children: [
+                const SizedBox(height: 30),
+                const Spacer(),
+                Icon(
+                  configBox.get('isCacheChecked')
+                      ? Icons.check_box
+                      : Icons.check_box_outline_blank,
+                  color: orangeC,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Garder ce code en mémoire 15 minutes',
+                  style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                ),
+                const Spacer()
+              ]),
+            ),
+            const SizedBox(height: 10),
           ]),
         ));
   }
@@ -144,6 +166,7 @@ class OnboardingStepTen extends StatelessWidget {
                 _myWalletProvider.rebuildWidget();
                 // });
                 _generateWalletProvider.generatedMnemonic = '';
+                _myWalletProvider.resetPinCode();
                 Navigator.push(
                   context,
                   FaderTransition(

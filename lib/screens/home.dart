@@ -11,6 +11,7 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
+import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/settings.dart';
@@ -289,20 +290,31 @@ Widget geckHome(context) {
                                   image: const AssetImage(
                                       'assets/home/wallet.png'),
                                   height: 68 * ratio)),
-                          onTap: () {
+                          onTap: () async {
                             WalletData? defaultWallet =
                                 _myWalletProvider.getDefaultWallet();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) {
-                                  return UnlockingWallet(
-                                    wallet: defaultWallet,
-                                    action: "mywallets",
-                                  );
-                                },
-                              ),
-                            );
+                            String? _pin;
+                            if (_myWalletProvider.pinCode == '') {
+                              _pin = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (homeContext) {
+                                    return UnlockingWallet(
+                                        wallet: defaultWallet);
+                                  },
+                                ),
+                              );
+                            }
+                            if (_pin != null ||
+                                _myWalletProvider.pinCode != '') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) {
+                                  return const WalletsHome();
+                                }),
+                              );
+                            }
+                            // log.d(_myWalletProvider.pinCode);
 
                             // Navigator.pushNamed(
                             //     context, '/mywallets')));

@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 
 class MyWalletsProvider with ChangeNotifier {
   List<WalletData> listWallets = [];
-  late String pinCode;
+  String pinCode = '';
   late String mnemonic;
   int? pinLenght;
   bool isNewDerivationLoading = false;
@@ -82,6 +82,8 @@ class MyWalletsProvider with ChangeNotifier {
 
   Future<int> deleteAllWallet(context) async {
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
     try {
       log.w('DELETE ALL WALLETS ?');
 
@@ -92,6 +94,9 @@ class MyWalletsProvider with ChangeNotifier {
         await chestBox.clear();
         await configBox.delete('defaultWallet');
         await _sub.deleteAllAccounts();
+
+        _myWalletProvider.pinCode = '';
+
         await Navigator.of(context).pushNamedAndRemoveUntil(
           '/',
           ModalRoute.withName('/'),
@@ -142,6 +147,13 @@ class MyWalletsProvider with ChangeNotifier {
 
     isNewDerivationLoading = false;
     notifyListeners();
+  }
+
+  Future resetPinCode([int minutes = 15]) async {
+    await Future.delayed(
+        Duration(seconds: configBox.get('isCacheChecked') ? minutes * 60 : 1));
+    log.i('reset pin code ...');
+    pinCode = '';
   }
 
   void rebuildWidget() {

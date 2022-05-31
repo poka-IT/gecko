@@ -11,6 +11,7 @@ import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/chest_options.dart';
 import 'package:gecko/screens/myWallets/choose_chest.dart';
+import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:provider/provider.dart';
 
@@ -32,7 +33,7 @@ class WalletsHome extends StatelessWidget {
 
     return WillPopScope(
       onWillPop: () {
-        myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
+        // myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
         Navigator.popUntil(
           context,
           ModalRoute.withName('/'),
@@ -47,7 +48,7 @@ class WalletsHome extends StatelessWidget {
           leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.black),
               onPressed: () {
-                myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
+                // myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
                 Navigator.popUntil(
                   context,
                   ModalRoute.withName('/'),
@@ -350,8 +351,23 @@ class WalletsHome extends StatelessWidget {
                     key: const Key('addDerivation'),
                     onTap: () async {
                       if (!_myWalletProvider.isNewDerivationLoading) {
-                        await _myWalletProvider.generateNewDerivation(
-                            context, _newDerivationName);
+                        WalletData? defaultWallet =
+                            _myWalletProvider.getDefaultWallet();
+                        String? _pin;
+                        if (_myWalletProvider.pinCode == '') {
+                          _pin = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (homeContext) {
+                                return UnlockingWallet(wallet: defaultWallet);
+                              },
+                            ),
+                          );
+                        }
+                        if (_pin != null || _myWalletProvider.pinCode != '') {
+                          await _myWalletProvider.generateNewDerivation(
+                              context, _newDerivationName);
+                        }
                       }
                     },
                     child: Container(

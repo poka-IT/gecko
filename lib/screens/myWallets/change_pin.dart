@@ -6,6 +6,7 @@ import 'package:gecko/models/stateful_wrapper.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'dart:io';
 
 import 'package:provider/provider.dart';
@@ -106,11 +107,24 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                     WalletData defaultWallet =
                         _myWalletProvider.getDefaultWallet()!;
 
-                    await _sub.changePassword(
-                        defaultWallet.address!, walletProvider.pinCode, newPin.text);
-                    walletProvider.pinCode = newPin.text;
-                    newPin.text = '';
-                    Navigator.pop(context);
+                    String? _pin;
+                    if (_myWalletProvider.pinCode == '') {
+                      _pin = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (homeContext) {
+                            return UnlockingWallet(wallet: defaultWallet);
+                          },
+                        ),
+                      );
+                    }
+                    if (_pin != null || _myWalletProvider.pinCode != '') {
+                      await _sub.changePassword(context, defaultWallet.address!,
+                          walletProvider.pinCode, newPin.text);
+                      walletProvider.pinCode = newPin.text;
+                      newPin.text = '';
+                      Navigator.pop(context);
+                    }
                   },
                   child: const Text(
                     'Confirmer',

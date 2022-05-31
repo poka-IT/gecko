@@ -9,7 +9,9 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/avatar_fullscreen.dart';
+import 'package:gecko/screens/myWallets/choose_wallet.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
+import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:provider/provider.dart';
 
 class WalletViewScreen extends StatelessWidget {
@@ -125,18 +127,40 @@ class WalletViewScreen extends StatelessWidget {
                                         image: AssetImage(
                                             'assets/gecko_certify.png')),
                                   ),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) {
-                                          return UnlockingWallet(
-                                              wallet: _defaultWallet,
-                                              action: "cert");
-                                        },
-                                      ),
-                                    );
-                                    // _sub.certify(fromAddress, password, toAddress);
+                                  onTap: () async {
+                                    String? _pin;
+                                    if (_myWalletProvider.pinCode == '') {
+                                      _pin = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (homeContext) {
+                                            return UnlockingWallet(
+                                                wallet: defaultWallet);
+                                          },
+                                        ),
+                                      );
+                                    }
+                                    if (_pin != null ||
+                                        _myWalletProvider.pinCode != '') {
+                                      WalletsProfilesProvider
+                                          _walletViewProvider =
+                                          Provider.of<WalletsProfilesProvider>(
+                                              context,
+                                              listen: false);
+                                      final acc = _sub.getCurrentWallet();
+                                      _sub.certify(
+                                          acc.address!,
+                                          _pin ?? _myWalletProvider.pinCode,
+                                          _walletViewProvider.address!);
+
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (context) {
+                                          return const TransactionInProgress(
+                                              transType: 'cert');
+                                        }),
+                                      );
+                                    }
                                   }),
                             ),
                           ),
@@ -331,17 +355,29 @@ class WalletViewScreen extends StatelessWidget {
                         const SizedBox(height: 10),
                         Consumer<SubstrateSdk>(builder: (context, _sub, _) {
                           return InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    return UnlockingWallet(
-                                        wallet: defaultWallet,
-                                        action: "changeWallet");
-                                  },
-                                ),
-                              );
+                            onTap: () async {
+                              String? _pin;
+                              if (_myWalletProvider.pinCode == '') {
+                                _pin = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (homeContext) {
+                                      return UnlockingWallet(
+                                          wallet: defaultWallet);
+                                    },
+                                  ),
+                                );
+                              }
+                              if (_pin != null ||
+                                  _myWalletProvider.pinCode != '') {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) {
+                                    return ChooseWalletScreen(
+                                        pin: _pin ?? _myWalletProvider.pinCode);
+                                  }),
+                                );
+                              }
                             },
                             child: Container(
                               width: double.infinity,
@@ -464,17 +500,50 @@ class WalletViewScreen extends StatelessWidget {
                               onPrimary: Colors.white, // foreground
                             ),
                             onPressed: canValidate
-                                ? () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) {
-                                          return UnlockingWallet(
-                                              wallet: defaultWallet,
-                                              action: "pay");
-                                        },
-                                      ),
-                                    );
+                                ? () async {
+                                    String? _pin;
+                                    if (_myWalletProvider.pinCode == '') {
+                                      _pin = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (homeContext) {
+                                            return UnlockingWallet(
+                                                wallet: defaultWallet);
+                                          },
+                                        ),
+                                      );
+                                    }
+                                    log.d(_pin);
+                                    if (_pin != null ||
+                                        _myWalletProvider.pinCode != '') {
+                                      // Payment workflow !
+                                      WalletsProfilesProvider
+                                          _walletViewProvider =
+                                          Provider.of<WalletsProfilesProvider>(
+                                              context,
+                                              listen: false);
+                                      SubstrateSdk _sub =
+                                          Provider.of<SubstrateSdk>(context,
+                                              listen: false);
+                                      final acc = _sub.getCurrentWallet();
+                                      log.d(
+                                          "fromAddress: ${acc.address!},destAddress: ${_walletViewProvider.address!}, amount: ${double.parse(_walletViewProvider.payAmount.text)},  password: $_pin");
+                                      _sub.pay(
+                                          fromAddress: acc.address!,
+                                          destAddress:
+                                              _walletViewProvider.address!,
+                                          amount: double.parse(
+                                              _walletViewProvider
+                                                  .payAmount.text),
+                                          password: _pin ??
+                                              _myWalletProvider.pinCode);
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (context) {
+                                          return const TransactionInProgress();
+                                        }),
+                                      );
+                                    }
                                   }
                                 : null,
                             child: const Text(

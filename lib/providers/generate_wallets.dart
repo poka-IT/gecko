@@ -70,6 +70,8 @@ class GenerateWalletsProvider with ChangeNotifier {
     } else {
       chestName = 'Coffre à Ğecko ${chestNumber + 1}';
     }
+    await configBox.put('currentChest', chestNumber);
+
     ChestData thisChest = ChestData(
       name: chestName,
       defaultWallet: 0,

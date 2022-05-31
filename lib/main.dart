@@ -77,6 +77,8 @@ Future<void> main() async {
 
   HttpOverrides.global = MyHttpOverrides();
 
+
+
   if (kReleaseMode && enableSentry) {
     // CatcherOptions debugOptions = CatcherOptions(DialogReportMode(), [
     //   SentryHandler(SentryClient(SentryOptions(

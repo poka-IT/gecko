@@ -6,12 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:gecko/screens/onBoarding/5.dart';
 import 'package:provider/provider.dart';
 
 class ChooseChest extends StatefulWidget {
-  const ChooseChest({this.action, Key? key}) : super(key: key);
-  final String? action;
+  const ChooseChest({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -30,8 +30,6 @@ class _ChooseChestState extends State<ChooseChest> {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
-
-    log.d(widget.action);
 
     return Scaffold(
         backgroundColor: backgroundColor,
@@ -113,21 +111,33 @@ class _ChooseChestState extends State<ChooseChest> {
                   primary: orangeC, // background
                   onPrimary: Colors.black, // foreground
                 ),
-                onPressed: () {
-                  configBox.put('currentChest', currentChest);
+                onPressed: () async {
+                  await configBox.put('currentChest', currentChest);
+                  _myWalletProvider.pinCode = '';
                   WalletData? defaultWallet =
                       _myWalletProvider.getDefaultWallet();
                   _myWalletProvider.rebuildWidget();
-                  Navigator.pushAndRemoveUntil(
+
+                  await Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) {
-                      return UnlockingWallet(
-                        wallet: defaultWallet,
-                        action: widget.action ?? "mywallets",
-                      );
-                    }),
+                    MaterialPageRoute(
+                      builder: (homeContext) {
+                        return UnlockingWallet(wallet: defaultWallet);
+                      },
+                    ),
+                  );
+                  Navigator.popUntil(
+                    context,
                     ModalRoute.withName('/'),
                   );
+                  if (_myWalletProvider.pinCode != '') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return const WalletsHome();
+                      }),
+                    );
+                  }
                 },
                 child: Text(
                   'Ouvrir ce coffre',

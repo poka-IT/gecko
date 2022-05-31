@@ -11,6 +11,7 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
+import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
@@ -169,23 +170,32 @@ class HomeProvider with ChangeNotifier {
           IconButton(
             iconSize: 60,
             icon: const Image(image: AssetImage('assets/wallet.png')),
-            onPressed: () {
-              Navigator.popUntil(
-                context,
-                ModalRoute.withName('/'),
-              );
+            onPressed: () async {
               WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (homeContext) {
-                    return UnlockingWallet(
-                      wallet: defaultWallet,
-                      action: "mywallets",
-                    );
-                  },
-                ),
-              );
+              String? _pin;
+              if (_myWalletProvider.pinCode == '') {
+                _pin = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (homeContext) {
+                      return UnlockingWallet(wallet: defaultWallet);
+                    },
+                  ),
+                );
+              }
+
+              if (_pin != null || _myWalletProvider.pinCode != '') {
+                Navigator.popUntil(
+                  context,
+                  ModalRoute.withName('/'),
+                );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return const WalletsHome();
+                  }),
+                );
+              }
             },
           ),
         ]),

@@ -8,24 +8,18 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/choose_chest.dart';
-import 'package:gecko/screens/myWallets/choose_wallet.dart';
-import 'package:gecko/screens/myWallets/wallets_home.dart';
-import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/globals.dart';
 
 // ignore: must_be_immutable
 class UnlockingWallet extends StatelessWidget {
-  UnlockingWallet(
-      {Key? keyUnlockWallet, required this.wallet, required this.action})
+  UnlockingWallet({Key? keyUnlockWallet, required this.wallet})
       : super(key: keyUnlockWallet);
   WalletData? wallet;
   late int currentChestNumber;
   late ChestData currentChest;
-  String action;
 
   // ignore: close_sinks
   StreamController<ErrorAnimationType>? errorController;
@@ -42,6 +36,10 @@ class UnlockingWallet extends StatelessWidget {
 
     currentChestNumber = configBox.get('currentChest');
     currentChest = chestBox.get(currentChestNumber)!;
+
+    if (configBox.get('isCacheChecked') == null) {
+      configBox.put('isCacheChecked', true);
+    }
 
     int _pinLenght = _walletOptions.getPinLenght(wallet!.number);
     errorController = StreamController<ErrorAnimationType>();
@@ -108,18 +106,41 @@ class UnlockingWallet extends StatelessWidget {
                     pinForm(context, _pinLenght),
                     SizedBox(height: 3 * ratio),
                     InkWell(
+                      onTap: () {
+                        _walletOptions.changePinCacheChoice();
+                      },
+                      child: Row(children: [
+                        const SizedBox(height: 30),
+                        const Spacer(),
+                        Icon(
+                          configBox.get('isCacheChecked')
+                              ? Icons.check_box
+                              : Icons.check_box_outline_blank,
+                          color: orangeC,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Garder ce code en mémoire 15 minutes',
+                          style:
+                              TextStyle(fontSize: 16, color: Colors.grey[700]),
+                        ),
+                        const Spacer()
+                      ]),
+                    ),
+                    const SizedBox(height: 10),
+                    InkWell(
                         key: const Key('chooseChest'),
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) {
-                              return ChooseChest(action: action);
+                              return const ChooseChest();
                             }),
                           );
                         },
                         child: SizedBox(
                           width: 400,
-                          height: 70,
+                          height: 50,
                           child: Center(
                             child: Text(
                               'Changer de coffre',
@@ -215,62 +236,8 @@ class UnlockingWallet extends StatelessWidget {
                 pinFocus.requestFocus();
               } else {
                 pinColor = Colors.green[400];
-                switch (action) {
-                  case "mywallets":
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return const WalletsHome();
-                      }),
-                    );
-                    break;
-                  case "changeWallet":
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return ChooseWalletScreen(
-                            chest: currentChestNumber, pin: _pin.toUpperCase());
-                      }),
-                    );
-                    break;
-                  case "pay":
-                    // Payment workflow !
-                    WalletsProfilesProvider _walletViewProvider =
-                        Provider.of<WalletsProfilesProvider>(context,
-                            listen: false);
-                    final acc = _sub.getCurrentWallet();
-                    log.d(
-                        "fromAddress: ${acc.address!},destAddress: ${_walletViewProvider.address!}, amount: ${double.parse(_walletViewProvider.payAmount.text)},  password: $_pin");
-                    _sub.pay(
-                        fromAddress: acc.address!,
-                        destAddress: _walletViewProvider.address!,
-                        amount:
-                            double.parse(_walletViewProvider.payAmount.text),
-                        password: _pin.toUpperCase());
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return const TransactionInProgress();
-                      }),
-                    );
-                    break;
-                  case "cert":
-                    WalletsProfilesProvider _walletViewProvider =
-                        Provider.of<WalletsProfilesProvider>(context,
-                            listen: false);
-                    final acc = _sub.getCurrentWallet();
-                    _sub.certify(acc.address!, _pin.toUpperCase(),
-                        _walletViewProvider.address!);
-
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return const TransactionInProgress(transType: 'cert');
-                      }),
-                    );
-
-                    break;
-                }
+                _myWalletProvider.resetPinCode();
+                Navigator.pop(context, _pin.toUpperCase());
               }
             },
             onChanged: (value) {

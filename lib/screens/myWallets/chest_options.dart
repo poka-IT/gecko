@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/change_pin.dart';
 import 'package:gecko/screens/myWallets/show_seed.dart';
+import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:provider/provider.dart';
 
 class ChestOptions extends StatelessWidget {
@@ -51,15 +53,32 @@ class ChestOptions extends StatelessWidget {
             InkWell(
               key: const Key('showSeed'),
               onTap: () async {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) {
-                    return ShowSeed(
-                      walletName: currentChest.name,
-                      walletProvider: walletProvider,
-                    );
-                  }),
-                );
+                MyWalletsProvider _myWalletProvider =
+                    Provider.of<MyWalletsProvider>(context, listen: false);
+                WalletData? defaultWallet =
+                    _myWalletProvider.getDefaultWallet();
+                String? _pin;
+                if (_myWalletProvider.pinCode == '') {
+                  _pin = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (homeContext) {
+                        return UnlockingWallet(wallet: defaultWallet);
+                      },
+                    ),
+                  );
+                }
+                if (_pin != null || _myWalletProvider.pinCode != '') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return ShowSeed(
+                        walletName: currentChest.name,
+                        walletProvider: walletProvider,
+                      );
+                    }),
+                  );
+                }
               },
               child: SizedBox(
                 height: 50,

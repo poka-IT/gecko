@@ -149,11 +149,14 @@ class MyWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  int lockPin = 0;
   Future resetPinCode([int minutes = 15]) async {
+    lockPin++;
+    final actualLock = lockPin;
     await Future.delayed(
         Duration(seconds: configBox.get('isCacheChecked') ? minutes * 60 : 1));
-    log.i('reset pin code ...');
-    pinCode = '';
+    log.i('reset pin code, lock $actualLock ...');
+    if (actualLock == lockPin) pinCode = '';
   }
 
   void rebuildWidget() {

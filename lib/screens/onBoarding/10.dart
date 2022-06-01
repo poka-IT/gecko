@@ -67,7 +67,7 @@ class OnboardingStepTen extends StatelessWidget {
                 const SizedBox(height: 30),
                 const Spacer(),
                 Icon(
-                  configBox.get('isCacheChecked')
+                  configBox.get('isCacheChecked') ?? false
                       ? Icons.check_box
                       : Icons.check_box_outline_blank,
                   color: orangeC,

@@ -6,7 +6,8 @@ import 'package:gecko/screens/wallet_view.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:qrscan/qrscan.dart' as scanner;
+// import 'package:qrscan/qrscan.dart' as scanner;
+import 'package:barcode_scan2/barcode_scan2.dart';
 import 'dart:math';
 import 'package:intl/intl.dart';
 
@@ -31,24 +32,24 @@ class WalletsProfilesProvider with ChangeNotifier {
     if (Platform.isAndroid || Platform.isIOS) {
       await Permission.camera.request();
     }
-    String? barcode;
+    ScanResult? barcode;
     try {
-      barcode = await scanner.scan();
+      barcode = await BarcodeScanner.scan();
     } catch (e) {
       log.e(e);
       return 'false';
     }
-    if (barcode != null && isAddress(barcode)) {
+    if (isAddress(barcode.rawContent)) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) {
-          return WalletViewScreen(pubkey: barcode!);
+          return WalletViewScreen(pubkey: barcode!.rawContent);
         }),
       );
     } else {
       return 'false';
     }
-    return barcode;
+    return barcode.rawContent;
   }
 
   // Future<String> pay(BuildContext context, {int? derivation}) async {

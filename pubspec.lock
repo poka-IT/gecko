@@ -57,6 +57,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.2.1"
+  barcode_scan2:
+    dependency: "direct main"
+    description:
+      name: barcode_scan2
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "4.2.1"
   bip32_ed25519:
     dependency: transitive
     description:
@@ -999,6 +1006,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.2.4"
+  protobuf:
+    dependency: transitive
+    description:
+      name: protobuf
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.1"
   provider:
     dependency: "direct main"
     description:
@@ -1043,15 +1057,6 @@ packages:
       url: "https://github.com/insinfo/qr.flutter.git"
     source: git
     version: "4.0.0"
-  qrscan:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: master
-      resolved-ref: "1fb6b45541965190d16ac214fa6d8b632d1f711e"
-      url: "https://github.com/leyan95/qrcode_scanner.git"
-    source: git
-    version: "0.3.3"
   responsive_builder:
     dependency: "direct main"
     description:

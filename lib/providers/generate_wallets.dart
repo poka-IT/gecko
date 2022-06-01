@@ -57,12 +57,7 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   Future storeHDWChest(
       String address, String _name, BuildContext context) async {
-    int chestNumber = 0;
-    chestBox.toMap().forEach((key, value) {
-      if (!value.isCesium!) {
-        chestNumber++;
-      }
-    });
+    int chestNumber = chestBox.isEmpty ? 0 : chestBox.keys.last + 1;
 
     String chestName;
     if (chestNumber == 0) {

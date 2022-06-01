@@ -30,7 +30,8 @@ class MyWalletsProvider with ChangeNotifier {
     }
   }
 
-  List<WalletData> readAllWallets(int? _chest) {
+  List<WalletData> readAllWallets([int? _chest]) {
+    _chest = _chest ?? configBox.get('currentChest') ?? 0;
     listWallets.clear();
     walletBox.toMap().forEach((key, value) {
       if (value.chest == _chest) {
@@ -108,28 +109,20 @@ class MyWalletsProvider with ChangeNotifier {
     }
   }
 
-  Future<void> generateNewDerivation(context, String _name) async {
-    MyWalletsProvider _myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
-
+  Future<void> generateNewDerivation(context, String _name,
+      [int? number]) async {
     isNewDerivationLoading = true;
     notifyListeners();
-    int _newDerivationNbr;
-    int _newWalletNbr;
+
+    final List idList = getNextWalletNumberAndDerivation();
+    int _newWalletNbr = idList[0];
+    int _newDerivationNbr = number ?? idList[1];
+
     int? _chest = getCurrentChest();
 
-    List<WalletData> _walletConfig = readAllWallets(_chest);
-
-    if (_walletConfig.isEmpty) {
-      _newDerivationNbr = 2;
-      _newWalletNbr = 0;
-    } else {
-      _newDerivationNbr = _walletConfig.last.derivation! + 2;
-      _newWalletNbr = _walletConfig.last.number! + 1;
-    }
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    WalletData defaultWallet = _myWalletProvider.getDefaultWallet()!;
+    WalletData defaultWallet = getDefaultWallet()!;
 
     final address = await _sub.derive(
         context, defaultWallet.address!, _newDerivationNbr, pinCode);
@@ -147,6 +140,71 @@ class MyWalletsProvider with ChangeNotifier {
 
     isNewDerivationLoading = false;
     notifyListeners();
+  }
+
+  Future<void> generateRootWallet(context, String _name) async {
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
+
+    isNewDerivationLoading = true;
+    notifyListeners();
+    int _newWalletNbr;
+    int? _chest = getCurrentChest();
+
+    List<WalletData> _walletConfig = readAllWallets(_chest);
+
+    if (_walletConfig.isEmpty) {
+      _newWalletNbr = 0;
+    } else {
+      _newWalletNbr = _walletConfig.last.number! + 1;
+    }
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+
+    WalletData defaultWallet = _myWalletProvider.getDefaultWallet()!;
+
+    final address =
+        await _sub.generateRootKeypair(defaultWallet.address!, pinCode);
+
+    WalletData newWallet = WalletData(
+        version: dataVersion,
+        chest: _chest,
+        address: address,
+        number: _newWalletNbr,
+        name: _name,
+        derivation: -1,
+        imageDefaultPath: '${_newWalletNbr % 4}.png');
+
+    await walletBox.add(newWallet);
+
+    isNewDerivationLoading = false;
+    notifyListeners();
+  }
+
+  List<int> getNextWalletNumberAndDerivation(
+      {int? chestNumber, bool isOneshoot = false}) {
+    int _newDerivationNbr = 0;
+    int _newWalletNbr = 0;
+
+    chestNumber ??= getCurrentChest();
+
+    List<WalletData> _walletConfig = readAllWallets(chestNumber);
+
+    if (_walletConfig.isEmpty) {
+      _newDerivationNbr = 2;
+    } else {
+      WalletData _lastWallet = _walletConfig.reduce(
+          (curr, next) => curr.derivation! > next.derivation! ? curr : next);
+
+      if (_lastWallet.derivation == -1) {
+        _newDerivationNbr = 2;
+      } else {
+        _newDerivationNbr = _lastWallet.derivation! + (isOneshoot ? 1 : 2);
+      }
+
+      _newWalletNbr = _walletConfig.last.number! + 1;
+    }
+
+    return [_newWalletNbr, _newDerivationNbr];
   }
 
   int lockPin = 0;

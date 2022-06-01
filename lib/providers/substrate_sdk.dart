@@ -230,6 +230,8 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<bool> checkPassword(String address, String pass) async {
     final account = getKeypair(address);
+    // log.d(account.address);
+
     return await sdk.api.keyring.checkPassword(account, pass);
   }
 
@@ -510,7 +512,23 @@ class SubstrateSdk with ChangeNotifier {
     generatedMnemonic = seedList[0];
 
     return await importAccount(
-        fromMnemonic: true, derivePath: '//$number', password: password);
+        mnemonic: generatedMnemonic,
+        fromMnemonic: true,
+        derivePath: '//$number',
+        password: password);
+  }
+
+  Future<String> generateRootKeypair(String address, String password) async {
+    final keypair = getKeypair(address);
+
+    final seedMap =
+        await keyring.store.getDecryptedSeed(keypair.pubKey, password);
+
+    if (seedMap?['type'] != 'mnemonic') return '';
+    final List seedList = seedMap!['seed'].split('//');
+    generatedMnemonic = seedList[0];
+
+    return await importAccount(fromMnemonic: true, password: password);
   }
 
   Future<bool> isMnemonicValid(String mnemonic) async {

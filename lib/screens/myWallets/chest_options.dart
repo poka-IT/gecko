@@ -7,6 +7,7 @@ import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/change_pin.dart';
+import 'package:gecko/screens/myWallets/custom_derivations.dart';
 import 'package:gecko/screens/myWallets/show_seed.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:provider/provider.dart';
@@ -123,7 +124,7 @@ class ChestOptions extends StatelessWidget {
               child: SizedBox(
                   height: 50,
                   child: Row(children: <Widget>[
-                    const SizedBox(width: 28),
+                    const SizedBox(width: 26),
                     Image.asset(
                       'assets/chests/secret_code.png',
                       height: 25,
@@ -137,6 +138,35 @@ class ChestOptions extends StatelessWidget {
             ),
             SizedBox(height: 10 * ratio),
             InkWell(
+              key: const Key('createRootDerivation'),
+              onTap: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return const CustomDerivation();
+                    },
+                  ),
+                );
+              },
+              child: SizedBox(
+                height: 50,
+                child: Row(children: const <Widget>[
+                  SizedBox(width: 35),
+                  Icon(
+                    Icons.manage_accounts,
+                    size: 33,
+                  ),
+                  SizedBox(width: 25),
+                  Text(
+                    'Créer une autre dérivation',
+                    style: TextStyle(fontSize: 20, color: Colors.black),
+                  ),
+                ]),
+              ),
+            ),
+            SizedBox(height: 10 * ratio),
+            InkWell(
               key: const Key('deleteChest'),
               onTap: () async {
                 await _chestProvider.deleteChest(context, currentChest);
@@ -144,7 +174,7 @@ class ChestOptions extends StatelessWidget {
               child: SizedBox(
                 height: 50,
                 child: Row(children: <Widget>[
-                  const SizedBox(width: 30),
+                  const SizedBox(width: 28),
                   Image.asset(
                     'assets/walletOptions/trash.png',
                     height: 45,

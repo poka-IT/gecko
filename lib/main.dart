@@ -74,6 +74,9 @@ Future<void> main() async {
 
   await _homeProvider.getValidEndpoints();
   // await configBox.delete('isCacheChecked');
+  if (configBox.get('isCacheChecked') == null) {
+    configBox.put('isCacheChecked', false);
+  }
   // log.d(await configBox.get('endpoint'));
 
   HttpOverrides.global = MyHttpOverrides();

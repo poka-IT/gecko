@@ -37,10 +37,6 @@ class UnlockingWallet extends StatelessWidget {
     currentChestNumber = configBox.get('currentChest');
     currentChest = chestBox.get(currentChestNumber)!;
 
-    if (configBox.get('isCacheChecked') == null) {
-      configBox.put('isCacheChecked', false);
-    }
-
     int _pinLenght = _walletOptions.getPinLenght(wallet!.number);
     errorController = StreamController<ErrorAnimationType>();
 
@@ -222,7 +218,6 @@ class UnlockingWallet extends StatelessWidget {
             ],
             onCompleted: (_pin) async {
               _myWalletProvider.pinCode = _pin.toUpperCase();
-
               final isValid = await _sub.checkPassword(
                   defaultWallet!.address!, _pin.toUpperCase());
 

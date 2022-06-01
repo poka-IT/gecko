@@ -283,7 +283,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     // Needed for bad encoding of UTF-8
     word = word.replaceAll('é', 'é');
     word = word.replaceAll('è', 'è');
-    return bip39Words(appLang).contains(word);
+    return bip39Words(appLang).contains(word.toLowerCase());
   }
 
   bool isBipWordsList(List<String> words) {
@@ -292,7 +292,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       // Needed for bad encoding of UTF-8
       word = word.replaceAll('é', 'é');
       word = word.replaceAll('è', 'è');
-      if (!bip39Words(appLang).contains(word)) {
+      if (!bip39Words(appLang).contains(word.toLowerCase())) {
         isValid = false;
       }
     }

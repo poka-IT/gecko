@@ -73,11 +73,10 @@ Future<void> main() async {
   g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
 
   await _homeProvider.getValidEndpoints();
+  // await configBox.delete('isCacheChecked');
   // log.d(await configBox.get('endpoint'));
 
   HttpOverrides.global = MyHttpOverrides();
-
-
 
   if (kReleaseMode && enableSentry) {
     // CatcherOptions debugOptions = CatcherOptions(DialogReportMode(), [

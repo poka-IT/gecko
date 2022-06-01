@@ -38,7 +38,7 @@ class UnlockingWallet extends StatelessWidget {
     currentChest = chestBox.get(currentChestNumber)!;
 
     if (configBox.get('isCacheChecked') == null) {
-      configBox.put('isCacheChecked', true);
+      configBox.put('isCacheChecked', false);
     }
 
     int _pinLenght = _walletOptions.getPinLenght(wallet!.number);

@@ -233,7 +233,7 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Future changePinCacheChoice() async {
-    bool isCacheChecked = configBox.get('isCacheChecked') ?? true;
+    bool isCacheChecked = configBox.get('isCacheChecked') ?? false;
     await configBox.put('isCacheChecked', !isCacheChecked);
     notifyListeners();
   }

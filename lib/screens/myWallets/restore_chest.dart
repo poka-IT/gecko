@@ -180,7 +180,7 @@ class RestoreChest extends StatelessWidget {
         textInputAction: TextInputAction.next,
         onChanged: (v) {
           bool isValid = generateWalletProvider.isBipWord(v);
-
+          if (isValid) cellCtl.text = cellCtl.text.toLowerCase();
           if (isValid && generateWalletProvider.cellController11.text.isEmpty) {
             FocusScope.of(context).nextFocus();
           }

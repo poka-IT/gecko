@@ -100,34 +100,27 @@ class WalletsHome extends StatelessWidget {
             ),
           )),
       const SizedBox(height: 30),
-      SizedBox(
-          height: 90,
-          width: 420,
-          child: ElevatedButton.icon(
-            icon: Image.asset(
-              'assets/chests/miniChests.png',
-              height: 70,
-            ),
-            style: ElevatedButton.styleFrom(
-              elevation: 2,
-              primary: floattingYellow, // background
-              onPrimary: Colors.black, // foreground
-            ),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) {
-                return const ChooseChest();
-              }),
-            ),
-            label: const Text(
-              "     Changer de coffre",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: Color(0xff8a3c0f),
-              ),
-            ),
-          )),
+      InkWell(
+        key: const Key('createNewChest'),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) {
+              return const ChooseChest();
+            }),
+          );
+        },
+        child: SizedBox(
+          width: 400,
+          height: 50,
+          child: Center(
+              child: Text('Changer de coffre',
+                  style: TextStyle(
+                      fontSize: 22,
+                      color: orangeC,
+                      fontWeight: FontWeight.w500))),
+        ),
+      ),
       const SizedBox(height: 30)
     ]);
   }

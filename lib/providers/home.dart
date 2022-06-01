@@ -28,6 +28,7 @@ class HomeProvider with ChangeNotifier {
   Widget appBarExplorer =
       Text('Explorateur', style: TextStyle(color: Colors.grey[850]));
   String homeMessage = "y'a pas de lézard ;-)";
+  String defaultMessage = "y'a pas de lézard ;-)";
 
   Future<void> initHive() async {
     late Directory hivePath;
@@ -74,11 +75,10 @@ class HomeProvider with ChangeNotifier {
   }
 
   Future changeMessage(String newMessage, int seconds) async {
-    final oldMessage = homeMessage;
     homeMessage = newMessage;
     notifyListeners();
     await Future.delayed(Duration(seconds: seconds));
-    homeMessage = oldMessage;
+    if (seconds != 0) homeMessage = defaultMessage;
     notifyListeners();
   }
 

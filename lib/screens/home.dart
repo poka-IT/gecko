@@ -8,6 +8,7 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/screens/animated_text.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
@@ -190,29 +191,33 @@ Widget geckHome(context) {
         padding: EdgeInsets.only(top: 15 * ratio),
         child:
             Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-          Consumer<HomeProvider>(builder: (context, _homeP, _) {
-            return Text(
-              _homeP.homeMessage,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-                shadows: <Shadow>[
-                  Shadow(
-                    offset: Offset(0, 0),
-                    blurRadius: 20,
-                    color: Colors.black,
-                  ),
-                  Shadow(
-                    offset: Offset(0, 0),
-                    blurRadius: 20,
-                    color: Colors.black,
-                  ),
-                ],
-              ),
-            );
-          }),
+          DefaultTextStyle(
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              shadows: <Shadow>[
+                Shadow(
+                  offset: Offset(0, 0),
+                  blurRadius: 20,
+                  color: Colors.black,
+                ),
+                Shadow(
+                  offset: Offset(0, 0),
+                  blurRadius: 20,
+                  color: Colors.black,
+                ),
+              ],
+            ),
+            child: Consumer<HomeProvider>(builder: (context, _homeP, _) {
+              return AnimatedFadeOutIn<String>(
+                data: _homeP.homeMessage,
+                duration: const Duration(milliseconds: 100),
+                builder: (value) => Text(value),
+              );
+            }),
+          ),
         ]),
       ),
       const SizedBox(height: 15),

@@ -50,6 +50,8 @@ class SubstrateSdk with ChangeNotifier {
     List<NetworkParams> node = [];
     HomeProvider _homeProvider = Provider.of<HomeProvider>(ctx, listen: false);
 
+    _homeProvider.changeMessage("Connexion en cours...", 0);
+
     for (String _endpoint in configBox.get('endpoint')) {
       final n = NetworkParams();
       n.name = currencyName;
@@ -98,16 +100,22 @@ class SubstrateSdk with ChangeNotifier {
       // Subscribe bloc number
       sdk.api.setting.subscribeBestNumber((res) {
         blocNumber = int.parse(res.toString());
+        if (sdk.api.connectedNode?.endpoint == null) {
+          _homeProvider.changeMessage("Le réseau a été perdu...", 0);
+        }
+
         notifyListeners();
       });
       notifyListeners();
-      _homeProvider.changeMessage('Vous êtes bien connecté', 3);
+      _homeProvider.changeMessage(
+          'Vous êtes bien connecté aux noeud\n${getConnectedEndpoint()!.split('/')[2]}',
+          5);
       // snackNode(ctx, true);
     } else {
       nodeConnected = false;
       debugConnection = res.toString();
       notifyListeners();
-      _homeProvider.changeMessage("Vous n'êtes pas connecté:", 3);
+      _homeProvider.changeMessage("Aucun server disponible...", 0);
       // snackNode(ctx, false);
     }
 

@@ -174,7 +174,6 @@ class WalletOptionsProvider with ChangeNotifier {
                 }
             }
             return SizedBox(
-              width: 230,
               child: Column(children: const <Widget>[
                 Text(
                   'Statut inconnu',
@@ -282,6 +281,47 @@ Widget balance(BuildContext context, String address, double size,
             balanceCache[address] = "${_balance.data.toString()} $currencyName";
             return Text(
               balanceCache[address]!,
+              style: TextStyle(
+                fontSize: isTall ? size : size * 0.9,
+                color: _color,
+              ),
+            );
+          });
+    }),
+  ]);
+}
+
+Map<String, String> certCache = {};
+Widget getCerts(BuildContext context, String address, double size,
+    [Color _color = Colors.black]) {
+  return Column(children: <Widget>[
+    Consumer<SubstrateSdk>(builder: (context, _sdk, _) {
+      return FutureBuilder(
+          future: _sdk.getCerts(address),
+          builder: (BuildContext context, AsyncSnapshot<List?>? _certs) {
+            if (_certs!.connectionState != ConnectionState.done ||
+                _certs.hasError) {
+              if (certCache[address] != null) {
+                return Text(certCache[address]!,
+                    style: TextStyle(
+                        fontSize: isTall ? size : size * 0.9, color: _color));
+              } else {
+                return SizedBox(
+                  height: 15,
+                  width: 15,
+                  child: CircularProgressIndicator(
+                    color: orangeC,
+                    strokeWidth: 2,
+                  ),
+                );
+              }
+            }
+            certCache[address] = _certs.data![0] != 0
+                ? "Certifications reçus: ${_certs.data![0].toString()}\nCertifications envoyés: ${_certs.data![1].toString()}"
+                : '';
+
+            return Text(
+              certCache[address]!,
               style: TextStyle(
                 fontSize: isTall ? size : size * 0.9,
                 color: _color,

@@ -210,6 +210,20 @@ class SubstrateSdk with ChangeNotifier {
     return result;
   }
 
+  Future<List<int>> getCerts(String address) async {
+    final idtyIndex = await sdk.webView!
+        .evalJavascript('api.query.identity.identityIndexOf("$address")');
+    log.d(idtyIndex);
+
+    final _certsReceiver = await sdk.webView!
+            .evalJavascript('api.query.cert.storageIdtyCertMeta($idtyIndex)') ??
+        [];
+
+    log.d(_certsReceiver['receivedCount']);
+
+    return [_certsReceiver['receivedCount'], _certsReceiver['issuedCount']];
+  }
+
   Future<double> getBalance(String address, {bool isUd = false}) async {
     double balance = 0.0;
     if (nodeConnected) {

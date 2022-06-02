@@ -609,12 +609,11 @@ class WalletViewScreen extends StatelessWidget {
                     ),
                   ]),
                   const SizedBox(height: 25),
-                  Consumer<WalletOptionsProvider>(
-                      builder: (context, walletProvider, _) {
-                    return balance(context, pubkey!, 22);
-                  }),
+
+                  balance(context, pubkey!, 22),
                   const SizedBox(height: 10),
                   _walletOptions.idtyStatus(context, pubkey!, isOwner: false),
+                  getCerts(context, pubkey!, 14),
 
                   // if (username == null &&
                   //     g1WalletsBox.get(pubkey)?.username == null)

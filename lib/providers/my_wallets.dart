@@ -71,13 +71,13 @@ class MyWalletsProvider with ChangeNotifier {
     return _targetedWallet;
   }
 
-  WalletData? getDefaultWallet([int? chest]) {
+  WalletData getDefaultWallet([int? chest]) {
     if (chestBox.isEmpty) {
       return WalletData(chest: 0, number: 0);
     } else {
       chest ??= getCurrentChest();
       int? defaultWalletNumber = chestBox.get(chest)!.defaultWallet;
-      return getWalletDataById([chest, defaultWalletNumber]);
+      return getWalletDataById([chest, defaultWalletNumber])!;
     }
   }
 
@@ -122,7 +122,7 @@ class MyWalletsProvider with ChangeNotifier {
 
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    WalletData defaultWallet = getDefaultWallet()!;
+    WalletData defaultWallet = getDefaultWallet();
 
     final address = await _sub.derive(
         context, defaultWallet.address!, _newDerivationNbr, pinCode);
@@ -160,7 +160,7 @@ class MyWalletsProvider with ChangeNotifier {
     }
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    WalletData defaultWallet = _myWalletProvider.getDefaultWallet()!;
+    WalletData defaultWallet = _myWalletProvider.getDefaultWallet();
 
     final address =
         await _sub.generateRootKeypair(defaultWallet.address!, pinCode);

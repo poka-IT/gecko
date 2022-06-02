@@ -219,7 +219,7 @@ class UnlockingWallet extends StatelessWidget {
             onCompleted: (_pin) async {
               _myWalletProvider.pinCode = _pin.toUpperCase();
               final isValid = await _sub.checkPassword(
-                  defaultWallet!.address!, _pin.toUpperCase());
+                  defaultWallet.address!, _pin.toUpperCase());
 
               if (!isValid) {
                 await Future.delayed(const Duration(milliseconds: 50));

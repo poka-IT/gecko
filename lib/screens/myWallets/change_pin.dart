@@ -105,7 +105,7 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                   ),
                   onPressed: () async {
                     WalletData defaultWallet =
-                        _myWalletProvider.getDefaultWallet()!;
+                        _myWalletProvider.getDefaultWallet();
 
                     String? _pin;
                     if (_myWalletProvider.pinCode == '') {

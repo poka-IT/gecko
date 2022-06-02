@@ -239,7 +239,7 @@ class WalletsHome extends StatelessWidget {
                                       ),
                           )),
                           balanceBuilder(context, _repository.address!,
-                              _repository.address == defaultWallet!.address),
+                              _repository.address == defaultWallet.address),
                           ListTile(
                             shape: const RoundedRectangleBorder(
                                 borderRadius: BorderRadius.vertical(

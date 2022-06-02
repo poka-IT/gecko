@@ -23,14 +23,13 @@ class ShowSeed extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-        MyWalletsProvider _myWalletProvider =
+    MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     CommonElements common = CommonElements();
 
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-WalletData defaultWallet =
-                        _myWalletProvider.getDefaultWallet()!;
+    WalletData defaultWallet = _myWalletProvider.getDefaultWallet();
 
     return Scaffold(
         backgroundColor: backgroundColor,
@@ -44,7 +43,8 @@ WalletData defaultWallet =
           child: Column(children: <Widget>[
             const Spacer(flex: 1),
             FutureBuilder(
-                future: _sub.getSeed(defaultWallet.address!, walletProvider.pinCode),
+                future: _sub.getSeed(
+                    defaultWallet.address!, walletProvider.pinCode),
                 builder: (BuildContext context, AsyncSnapshot<String?> _seed) {
                   if (_seed.connectionState != ConnectionState.done ||
                       _seed.hasError) {
@@ -122,7 +122,27 @@ WalletData defaultWallet =
                         ]),
                       ]);
                 }),
-            const Spacer(flex: 3),
+            const Spacer(flex: 2),
+            SizedBox(
+              width: 380 * ratio,
+              height: 60 * ratio,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  elevation: 4,
+                  primary: orangeC, // background
+                  onPrimary: Colors.white, // foreground
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text(
+                  'Fermer',
+                  style: TextStyle(
+                      fontSize: 23 * ratio, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+            const Spacer(flex: 2),
           ]),
         ));
   }

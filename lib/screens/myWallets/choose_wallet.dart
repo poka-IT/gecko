@@ -79,7 +79,7 @@ class ChooseWalletScreen extends StatelessWidget {
     final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
     WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
 
-    selectedWallet ??= defaultWallet!;
+    selectedWallet ??= defaultWallet;
     _myWalletProvider.readAllWallets(currentChest);
 
     if (!isWalletsExists) {

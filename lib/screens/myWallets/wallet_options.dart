@@ -354,7 +354,7 @@ class WalletOptions extends StatelessWidget {
       MyWalletsProvider _myWalletProvider,
       WalletOptionsProvider _walletOptions,
       int _currentChest) {
-    WalletData defaultWallet = _myWalletProvider.getDefaultWallet()!;
+    WalletData defaultWallet = _myWalletProvider.getDefaultWallet();
     _walletOptions.isDefaultWallet = (defaultWallet.number == wallet.id()[1]);
 
     return InkWell(

@@ -39,7 +39,7 @@ class WalletViewScreen extends StatelessWidget {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
-    _sub.setCurrentWallet(defaultWallet!);
+    _sub.setCurrentWallet(defaultWallet);
 
     return Scaffold(
         backgroundColor: backgroundColor,
@@ -108,7 +108,7 @@ class WalletViewScreen extends StatelessWidget {
                 WalletData? _defaultWallet =
                     _myWalletProvider.getDefaultWallet();
                 return FutureBuilder(
-                  future: _sub.isMember(_defaultWallet!.address!),
+                  future: _sub.isMember(_defaultWallet.address!),
                   builder: (context, AsyncSnapshot<bool?> snapshot) {
                     return Visibility(
                       visible: (snapshot.data ?? false),
@@ -282,7 +282,7 @@ class WalletViewScreen extends StatelessWidget {
 
     const double shapeSize = 20;
     WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
-    log.d(defaultWallet!.address);
+    log.d(defaultWallet.address);
 
     bool canValidate = false;
 

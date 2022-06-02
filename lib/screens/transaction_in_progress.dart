@@ -85,7 +85,7 @@ class TransactionInProgress extends StatelessWidget {
         onWillPop: () {
           _sub.transactionStatus = '';
           Navigator.pop(context);
-          Navigator.pop(context);
+          if (transType == 'pay') Navigator.pop(context);
           return Future<bool>.value(true);
         },
         child: Scaffold(
@@ -187,7 +187,7 @@ class TransactionInProgress extends StatelessWidget {
                           ),
                           onPressed: () {
                             Navigator.pop(context);
-                            Navigator.pop(context);
+                            if (transType == 'pay') Navigator.pop(context);
                           },
                           child: Text(
                             'Fermer',

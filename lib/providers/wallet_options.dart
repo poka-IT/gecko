@@ -108,6 +108,15 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Widget idtyStatus(BuildContext context, String address,
       {bool isOwner = false}) {
+    _showText(String text, [double size = 18, bool _bold = false]) => Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              fontSize: size,
+              color: _bold ? orangeC : Colors.black,
+              fontWeight: _bold ? FontWeight.w500 : FontWeight.w400),
+        );
+
     return Consumer<SubstrateSdk>(builder: (context, _sub, _) {
       return FutureBuilder(
           future: _sub.idtyStatus(address),
@@ -116,70 +125,39 @@ class WalletOptionsProvider with ChangeNotifier {
             switch (snapshot.data.toString()) {
               case 'noid':
                 {
-                  return Column(children: const <Widget>[
-                    Text(
-                      'Aucune identité',
-                      style: TextStyle(fontSize: 18, color: Colors.black),
-                    ),
-                  ]);
+                  return _showText('Aucune identité');
                 }
               case 'Created':
                 {
-                  return Column(children: <Widget>[
-                    isOwner
-                        ? InkWell(
-                            child: const Text(
-                              'Identité créé, cliquez pour la confirmer',
-                              style:
-                                  TextStyle(fontSize: 18, color: Colors.black),
-                            ),
-                            onTap: () async {
-                              await validateIdentity(context);
-                            },
-                          )
-                        : const Text(
-                            'Identité créé',
-                            style: TextStyle(fontSize: 18, color: Colors.black),
-                          ),
-                  ]);
+                  return isOwner
+                      ? InkWell(
+                          child: _showText(
+                              'Cliquez ici pour confirmer\nvotre nouvelle identité',
+                              18,
+                              true),
+                          onTap: () async {
+                            await validateIdentity(context);
+                          },
+                        )
+                      : _showText('Identité créé');
                 }
               case 'ConfirmedByOwner':
                 {
-                  return Column(children: const <Widget>[
-                    Text(
-                      'Identité confirmé',
-                      style: TextStyle(fontSize: 18, color: Colors.black),
-                    ),
-                  ]);
+                  return _showText('Identité confirmé');
                 }
 
               case 'Validated':
                 {
-                  return Column(children: const <Widget>[
-                    Text(
-                      'Membre validé !',
-                      style: TextStyle(fontSize: 18, color: Colors.black),
-                    ),
-                  ]);
+                  return _showText('Membre validé !');
                 }
 
               case 'expired':
                 {
-                  return Column(children: const <Widget>[
-                    Text(
-                      'Identité expiré',
-                      style: TextStyle(fontSize: 18, color: Colors.black),
-                    ),
-                  ]);
+                  return _showText('Identité expiré');
                 }
             }
             return SizedBox(
-              child: Column(children: const <Widget>[
-                Text(
-                  'Statut inconnu',
-                  style: TextStyle(fontSize: 18, color: Colors.black),
-                ),
-              ]),
+              child: _showText('Statut inconnu'),
             );
           });
     });
@@ -198,29 +176,60 @@ class WalletOptionsProvider with ChangeNotifier {
       barrierDismissible: true, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Confirmez votre identité'),
+          title: const Text(
+            'Confirmez votre identité',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+          ),
           content: SizedBox(
             height: 100,
             child: Column(children: [
-              const Text('Nom:'),
+              const SizedBox(height: 20),
+              const Text(
+                'Nom:',
+                style: TextStyle(fontSize: 19),
+              ),
               TextField(
+                onChanged: (_) => notifyListeners(),
+                textAlign: TextAlign.center,
                 autofocus: true,
                 controller: idtyName,
+                style: const TextStyle(fontSize: 19),
               )
             ]),
           ),
           actions: <Widget>[
-            TextButton(
-              child: const Text("Valider"),
-              onPressed: () async {
-                final _wallet =
-                    _myWalletProvider.getWalletDataByAddress(address.text);
-                await _sub.setCurrentWallet(_wallet!);
-                _sub.confirmIdentity(_walletOptions.address.text, idtyName.text,
-                    _myWalletProvider.pinCode);
-                Navigator.pop(context);
-              },
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Consumer<WalletOptionsProvider>(
+                    builder: (context, _wOptions, _) {
+                  return TextButton(
+                    key: const Key('infoPopup'),
+                    child: Text(
+                      "Valider",
+                      style: TextStyle(
+                        fontSize: 21,
+                        color: idtyName.text.length >= 2
+                            ? const Color(0xffD80000)
+                            : Colors.grey,
+                      ),
+                    ),
+                    onPressed: () async {
+                      if (idtyName.text.length >= 2) {
+                        final _wallet = _myWalletProvider
+                            .getWalletDataByAddress(address.text);
+                        await _sub.setCurrentWallet(_wallet!);
+                        _sub.confirmIdentity(_walletOptions.address.text,
+                            idtyName.text, _myWalletProvider.pinCode);
+                        Navigator.pop(context);
+                      }
+                    },
+                  );
+                })
+              ],
             ),
+            const SizedBox(height: 20)
           ],
         );
       },
@@ -291,42 +300,34 @@ Widget balance(BuildContext context, String address, double size,
   ]);
 }
 
-Map<String, String> certCache = {};
 Widget getCerts(BuildContext context, String address, double size,
     [Color _color = Colors.black]) {
   return Column(children: <Widget>[
     Consumer<SubstrateSdk>(builder: (context, _sdk, _) {
       return FutureBuilder(
           future: _sdk.getCerts(address),
-          builder: (BuildContext context, AsyncSnapshot<List?>? _certs) {
-            if (_certs!.connectionState != ConnectionState.done ||
-                _certs.hasError) {
-              if (certCache[address] != null) {
-                return Text(certCache[address]!,
-                    style: TextStyle(
-                        fontSize: isTall ? size : size * 0.9, color: _color));
-              } else {
-                return SizedBox(
-                  height: 15,
-                  width: 15,
-                  child: CircularProgressIndicator(
-                    color: orangeC,
-                    strokeWidth: 2,
-                  ),
-                );
-              }
-            }
-            certCache[address] = _certs.data![0] != 0
-                ? "Certifications reçus: ${_certs.data![0].toString()}\nCertifications envoyés: ${_certs.data![1].toString()}"
-                : '';
+          builder: (BuildContext context, AsyncSnapshot<List<int>> _certs) {
+            // log.d(_certs.data);
 
-            return Text(
-              certCache[address]!,
-              style: TextStyle(
-                fontSize: isTall ? size : size * 0.9,
-                color: _color,
-              ),
-            );
+            return _certs.data?[0] != 0
+                ? Row(
+                    children: [
+                      const Icon(
+                        Icons.arrow_drop_down,
+                        color: Colors.green,
+                        size: 30,
+                      ),
+                      Text(_certs.data?[0].toString() ?? '0'),
+                      const SizedBox(width: 15),
+                      const Icon(
+                        Icons.arrow_drop_up,
+                        color: Colors.blue,
+                        size: 30,
+                      ),
+                      Text(_certs.data?[1].toString() ?? '0')
+                    ],
+                  )
+                : const Text('');
           });
     }),
   ]);

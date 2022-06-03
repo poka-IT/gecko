@@ -91,36 +91,27 @@ class WalletOptions extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: <Widget>[
-                        const Spacer(flex: 5),
+                        const Spacer(flex: 1),
                         avatar(walletProvider),
-                        // const Spacer(flex: 1),
+                        const Spacer(flex: 1),
                         Column(children: <Widget>[
                           walletName(walletProvider, _walletOptions),
                           SizedBox(height: isTall ? 5 : 0),
-                          SizedBox(
-                            width: 350,
-                            child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  // SizedBox(height: isTall ? 5 : 0),
-                                  balance(
-                                      context, walletProvider.address.text, 21),
-                                  const SizedBox(width: 30),
-                                  Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        _walletOptions.idtyStatus(context,
-                                            _walletOptions.address.text,
-                                            isOwner: true),
-                                        getCerts(context,
-                                            walletProvider.address.text, 15),
-                                      ]),
-                                ]),
-                          ),
+                          // SizedBox(height: isTall ? 5 : 0),
+                          balance(context, walletProvider.address.text, 21),
+                          const SizedBox(width: 30),
+                          Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                _walletOptions.idtyStatus(
+                                    context, _walletOptions.address.text,
+                                    isOwner: true),
+                                getCerts(
+                                    context, walletProvider.address.text, 15),
+                              ]),
                           SizedBox(height: 10 * ratio),
                         ]),
-                        const Spacer(flex: 1),
+                        const Spacer(flex: 2),
                       ]),
                 );
               }),

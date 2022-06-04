@@ -76,7 +76,28 @@ class TransactionInProgress extends StatelessWidget {
           if (_result.contains('blockHash: ')) {
             _resultText = '$_actionName validé !';
           } else {
-            _resultText = "Une erreur s'est produite:\n\n$_result";
+            _resultText = "Une erreur s'est produite:\n";
+            final String _exception = _result.split('Exception: ')[1];
+            switch (_exception) {
+              case 'cert.NotRespectCertPeriod':
+              case 'identity.CreatorNotAllowedToCreateIdty':
+                {
+                  _resultText +=
+                      "Vous devez attendre 24h entre chaque certification";
+                }
+                break;
+              case 'cert.CannotCertifySelf':
+                {
+                  _resultText +=
+                      "Vous ne pouvez pas vous certifier\nvous même ...";
+                }
+                break;
+              default:
+                {
+                  _resultText += "\n$_exception";
+                }
+                break;
+            }
           }
         }
     }

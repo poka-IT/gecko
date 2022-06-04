@@ -9,6 +9,7 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/avatar_fullscreen.dart';
+import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/choose_wallet.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
@@ -108,7 +109,7 @@ class WalletViewScreen extends StatelessWidget {
                 WalletData? _defaultWallet =
                     _myWalletProvider.getDefaultWallet();
                 return FutureBuilder(
-                  future: _sub.isMember(_defaultWallet.address!),
+                  future: _sub.canCertify(_defaultWallet.address!, pubkey!),
                   builder: (context, AsyncSnapshot<bool?> snapshot) {
                     return Visibility(
                       visible: (snapshot.data ?? false),
@@ -128,38 +129,44 @@ class WalletViewScreen extends StatelessWidget {
                                             'assets/gecko_certify.png')),
                                   ),
                                   onTap: () async {
-                                    String? _pin;
-                                    if (_myWalletProvider.pinCode == '') {
-                                      _pin = await Navigator.push(
+                                    final bool? _result = await confirmPopup(
                                         context,
-                                        MaterialPageRoute(
-                                          builder: (homeContext) {
-                                            return UnlockingWallet(
-                                                wallet: defaultWallet);
-                                          },
-                                        ),
-                                      );
-                                    }
-                                    if (_pin != null ||
-                                        _myWalletProvider.pinCode != '') {
-                                      WalletsProfilesProvider
-                                          _walletViewProvider =
-                                          Provider.of<WalletsProfilesProvider>(
-                                              context,
-                                              listen: false);
-                                      final acc = _sub.getCurrentWallet();
-                                      _sub.certify(
-                                          acc.address!,
-                                          _pin ?? _myWalletProvider.pinCode,
-                                          _walletViewProvider.address!);
+                                        "Êtes-vous certain de vouloir certifier l'adresse:\n\n${getShortPubkey(pubkey!)}");
 
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder: (context) {
-                                          return const TransactionInProgress(
-                                              transType: 'cert');
-                                        }),
-                                      );
+                                    if (_result ?? false) {
+                                      String? _pin;
+                                      if (_myWalletProvider.pinCode == '') {
+                                        _pin = await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (homeContext) {
+                                              return UnlockingWallet(
+                                                  wallet: defaultWallet);
+                                            },
+                                          ),
+                                        );
+                                      }
+                                      if (_pin != null ||
+                                          _myWalletProvider.pinCode != '') {
+                                        WalletsProfilesProvider
+                                            _walletViewProvider = Provider.of<
+                                                    WalletsProfilesProvider>(
+                                                context,
+                                                listen: false);
+                                        final acc = _sub.getCurrentWallet();
+                                        _sub.certify(
+                                            acc.address!,
+                                            _pin ?? _myWalletProvider.pinCode,
+                                            _walletViewProvider.address!);
+
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(builder: (context) {
+                                            return const TransactionInProgress(
+                                                transType: 'cert');
+                                          }),
+                                        );
+                                      }
                                     }
                                   }),
                             ),

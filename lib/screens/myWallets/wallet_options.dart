@@ -169,8 +169,8 @@ class WalletOptions extends StatelessWidget {
                   width: 110,
                 )
               : Container(
-                  width: 120,
-                  height: 120,
+                  width: 180,
+                  height: 180,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.transparent,

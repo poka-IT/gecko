@@ -213,13 +213,30 @@ class SubstrateSdk with ChangeNotifier {
   Future<List<int>> getCerts(String address) async {
     final idtyIndex = await sdk.webView!
         .evalJavascript('api.query.identity.identityIndexOf("$address")');
-    log.d(idtyIndex);
+    log.d('u32: ' + idtyIndex.toString());
 
     final _certsReceiver = await sdk.webView!
             .evalJavascript('api.query.cert.storageIdtyCertMeta($idtyIndex)') ??
         [];
 
     return [_certsReceiver['receivedCount'], _certsReceiver['issuedCount']];
+  }
+
+  Future<Map> getCertData(String from, String to) async {
+    final idtyIndexFrom = await sdk.webView!
+        .evalJavascript('api.query.identity.identityIndexOf("$from")');
+
+    final idtyIndexTo = await sdk.webView!
+        .evalJavascript('api.query.identity.identityIndexOf("$to")');
+
+    final _certData = await sdk.webView!.evalJavascript(
+            'api.query.cert.storageCertsByIssuer($idtyIndexFrom, $idtyIndexTo)') ??
+        '';
+
+    log.d(_certData);
+    if (_certData == '') return {};
+
+    return _certData;
   }
 
   // Future<bool> isAccountExit(String address) async {
@@ -525,6 +542,34 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<bool> isMember(String address) async {
     return await idtyStatus(address) == 'Validated';
+  }
+
+  Future<bool> canCertify(String from, String to) async {
+    bool _result = false;
+    if (from != to && await isMember(from)) {
+      final _certData = await getCertData(from, to);
+      final _certMeta = await getCertMeta(from);
+      final int _removableOn = _certData['removableOn'] ?? 0;
+      final int _nextIssuableOn = _certMeta['nextIssuableOn'] ?? 0;
+      log.d(_removableOn);
+      if (_removableOn == 0 && _nextIssuableOn == 0) {
+        _result = true;
+      }
+    }
+    return _result;
+  }
+
+  Future<Map> getCertMeta(String address) async {
+    var idtyIndex = await sdk.webView!
+        .evalJavascript('api.query.identity.identityIndexOf("$address")');
+
+    final _certMeta = await sdk.webView!
+            .evalJavascript('api.query.cert.storageIdtyCertMeta($idtyIndex)') ??
+        '';
+    // if (_certMeta['nextIssuableOn'] != 0) return {};
+
+    log.d(_certMeta);
+    return _certMeta;
   }
 
   Future<String> derive(

@@ -46,6 +46,11 @@ class TransactionInProgress extends StatelessWidget {
           _actionName = 'Certification';
         }
         break;
+      case 'comfirmIdty':
+        {
+          _actionName = "Confirmation d'identité";
+        }
+        break;
       default:
         {
           _actionName = 'Transaction étrange';
@@ -77,7 +82,14 @@ class TransactionInProgress extends StatelessWidget {
             _resultText = '$_actionName validé !';
           } else {
             _resultText = "Une erreur s'est produite:\n";
-            final String _exception = _result.split('Exception: ')[1];
+            final List _exceptionSplit = _result.split('Exception: ');
+            String _exception;
+            if (_exceptionSplit.length > 1) {
+              _exception = _exceptionSplit[1];
+            } else {
+              _exception = _exceptionSplit[0];
+            }
+
             switch (_exception) {
               case 'cert.NotRespectCertPeriod':
               case 'identity.CreatorNotAllowedToCreateIdty':
@@ -92,6 +104,12 @@ class TransactionInProgress extends StatelessWidget {
                       "Vous ne pouvez pas vous certifier\nvous même ...";
                 }
                 break;
+              case 'identity.IdtyNameAlreadyExist':
+                {
+                  _resultText += "Ce nom est déjà pris";
+                }
+                break;
+
               default:
                 {
                   _resultText += "\n$_exception";
@@ -208,6 +226,7 @@ class TransactionInProgress extends StatelessWidget {
                           ),
                           onPressed: () {
                             Navigator.pop(context);
+                            _sub.transactionStatus = '';
                             if (transType == 'pay') Navigator.pop(context);
                           },
                           child: Text(

@@ -6,6 +6,8 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/common_elements.dart';
+import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
+import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
@@ -217,12 +219,36 @@ class WalletOptionsProvider with ChangeNotifier {
                     ),
                     onPressed: () async {
                       if (idtyName.text.length >= 2) {
-                        final _wallet = _myWalletProvider
-                            .getWalletDataByAddress(address.text);
-                        await _sub.setCurrentWallet(_wallet!);
-                        _sub.confirmIdentity(_walletOptions.address.text,
-                            idtyName.text, _myWalletProvider.pinCode);
-                        Navigator.pop(context);
+                        WalletData? defaultWallet =
+                            _myWalletProvider.getDefaultWallet();
+
+                        String? _pin;
+                        if (_myWalletProvider.pinCode == '') {
+                          _pin = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (homeContext) {
+                                return UnlockingWallet(wallet: defaultWallet);
+                              },
+                            ),
+                          );
+                        }
+                        if (_pin != null || _myWalletProvider.pinCode != '') {
+                          final _wallet = _myWalletProvider
+                              .getWalletDataByAddress(address.text);
+                          await _sub.setCurrentWallet(_wallet!);
+                          _sub.confirmIdentity(_walletOptions.address.text,
+                              idtyName.text, _myWalletProvider.pinCode);
+                          Navigator.pop(context);
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) {
+                              return const TransactionInProgress(
+                                  transType: 'comfirmIdty');
+                            }),
+                          );
+                        }
                       }
                     },
                   );

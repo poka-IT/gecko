@@ -229,7 +229,7 @@ class WalletsHome extends StatelessWidget {
                                           shape: BoxShape.circle,
                                           color: Colors.transparent,
                                           image: DecorationImage(
-                                            fit: BoxFit.contain,
+                                            fit: BoxFit.fitHeight,
                                             image: FileImage(
                                               File(
                                                   _repository.imageCustomPath!),

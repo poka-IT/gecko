@@ -47,7 +47,7 @@ Color backgroundColor = const Color(0xFFF5F5F5);
 
 // Substrate settings
 const int ss58 = 42;
-String currencyName = 'Ğdev';
+String currencyName = 'ĞD';
 
 // Debug
 const debugPin = true;

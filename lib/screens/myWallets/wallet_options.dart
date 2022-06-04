@@ -169,13 +169,13 @@ class WalletOptions extends StatelessWidget {
                   width: 110,
                 )
               : Container(
-                  width: 180,
-                  height: 180,
+                  width: 150,
+                  height: 150,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.transparent,
                     image: DecorationImage(
-                      fit: BoxFit.contain,
+                      fit: BoxFit.cover,
                       image: FileImage(
                         File(wallet.imageCustomPath!),
                       ),

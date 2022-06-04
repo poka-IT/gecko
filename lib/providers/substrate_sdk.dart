@@ -106,6 +106,7 @@ class SubstrateSdk with ChangeNotifier {
 
         notifyListeners();
       });
+      // currencyName = await getCurencyName();
       notifyListeners();
       _homeProvider.changeMessage(
           'Vous êtes bien connecté aux noeud\n${getConnectedEndpoint()!.split('/')[2]}',
@@ -527,15 +528,34 @@ class SubstrateSdk with ChangeNotifier {
     );
 
     try {
-      final result = await sdk.api.tx.signAndSend(
+      final hash = await sdk.api.tx.signAndSend(
         txInfo,
         [name],
         password,
+        onStatusChange: (status) {
+          log.d('Transaction status: ' + status);
+          transactionStatus = status;
+          notifyListeners();
+        },
+      ).timeout(
+        const Duration(seconds: 12),
+        onTimeout: () => {},
       );
-      log.d(result);
-      return 'confirmed';
+      log.d(hash);
+      if (hash.isEmpty) {
+        transactionStatus = 'timeout';
+        notifyListeners();
+
+        return 'timeout';
+      } else {
+        transactionStatus = hash.toString();
+        notifyListeners();
+        return hash.toString();
+      }
     } on Exception catch (e) {
       log.e(e);
+      transactionStatus = e.toString();
+      notifyListeners();
       return e.toString();
     }
   }
@@ -545,18 +565,22 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<bool> canCertify(String from, String to) async {
-    bool _result = false;
     if (from != to && await isMember(from)) {
       final _certData = await getCertData(from, to);
       final _certMeta = await getCertMeta(from);
       final int _removableOn = _certData['removableOn'] ?? 0;
+      final int _renewableOn = _certData['renewableOn'] ?? 0;
       final int _nextIssuableOn = _certMeta['nextIssuableOn'] ?? 0;
-      log.d(_removableOn);
-      if (_removableOn == 0 && _nextIssuableOn == 0) {
-        _result = true;
+      log.d(_renewableOn.toString() +
+          '\n' +
+          _removableOn.toString() +
+          '\n' +
+          _nextIssuableOn.toString());
+      if (_renewableOn == 0 && _nextIssuableOn == 0) {
+        return true;
       }
     }
-    return _result;
+    return false;
   }
 
   Future<Map> getCertMeta(String address) async {
@@ -571,6 +595,8 @@ class SubstrateSdk with ChangeNotifier {
     log.d(_certMeta);
     return _certMeta;
   }
+
+  Future getCurencyName() async {}
 
   Future<String> derive(
       BuildContext context, String address, int number, String password) async {

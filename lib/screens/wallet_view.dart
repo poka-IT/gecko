@@ -381,21 +381,14 @@ class WalletViewScreen extends StatelessWidget {
                             },
                             child: Container(
                               width: double.infinity,
-                              // height: 25,
                               decoration: BoxDecoration(
-                                // border: OutlineInputBorder(
-                                //     borderSide:
-                                //         BorderSide(color: Colors.grey[500], width: 2),
-                                //     borderRadius: BorderRadius.circular(8)),
                                 border: Border.all(
-                                    color: Colors.blueAccent
-                                        .shade200, // Set border color
-                                    width: 2), // Set border width
+                                    color: Colors.blueAccent.shade200,
+                                    width: 2),
                                 borderRadius: const BorderRadius.all(
-                                    Radius.circular(10.0)), // Set ro
+                                    Radius.circular(10.0)),
                               ),
                               padding: const EdgeInsets.all(10),
-
                               child: Row(children: [
                                 Text(defaultWallet.name!),
                                 const Spacer(),
@@ -570,28 +563,25 @@ class WalletViewScreen extends StatelessWidget {
 
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    // SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    // AsyncSnapshot<bool> isAccountExist;
+    bool isAccountExist = balanceCache[pubkey] != '0.0 $currencyName';
 
     return Stack(children: <Widget>[
-      FutureBuilder(
-          future: _sub.isAccountExit(pubkey!),
-          builder: (BuildContext context, AsyncSnapshot<bool> isAccountExist) {
-            final bool _isExit = isAccountExist.data ?? false;
-            return Container(
-                height: 180,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      _isExit ? yellowC : Colors.grey[400]!,
-                      _isExit ? const Color(0xFFE7811A) : Colors.grey[600]!,
-                    ],
-                  ),
-                ));
-          }),
+      Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+        return Container(
+            height: 180,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  isAccountExist ? yellowC : Colors.grey[400]!,
+                  isAccountExist ? const Color(0xFFE7811A) : Colors.grey[600]!,
+                ],
+              ),
+            ));
+      }),
       Padding(
         padding: const EdgeInsets.only(left: 30, right: 40),
         child: Row(children: <Widget>[

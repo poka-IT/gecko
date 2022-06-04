@@ -222,12 +222,12 @@ class SubstrateSdk with ChangeNotifier {
     return [_certsReceiver['receivedCount'], _certsReceiver['issuedCount']];
   }
 
-  Future<bool> isAccountExit(String address) async {
-    final _accountInfo = await sdk.webView!
-        .evalJavascript('api.query.system.account("$address")');
-    final _randomId = _accountInfo['data']['randomId'];
-    return _randomId == null ? false : true;
-  }
+  // Future<bool> isAccountExit(String address) async {
+  //   final _accountInfo = await sdk.webView!
+  //       .evalJavascript('api.query.system.account("$address")');
+  //   final _randomId = _accountInfo['data']['randomId'];
+  //   return _randomId == null ? false : true;
+  // }
 
   Future<double> getBalance(String address, {bool isUd = false}) async {
     double balance = 0.0;

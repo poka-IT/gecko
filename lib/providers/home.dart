@@ -139,7 +139,10 @@ class HomeProvider with ChangeNotifier {
             //     //   size: Size(size.width, 110),
             //     //   painter: CustomRoundedButton(),
             //     // ),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+            Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+          // SizedBox(width: 0),
+          const Spacer(),
+          const SizedBox(width: 11),
           IconButton(
             iconSize: 40,
             icon: const Image(image: AssetImage('assets/loupe-noire.png')),
@@ -156,6 +159,8 @@ class HomeProvider with ChangeNotifier {
               );
             },
           ),
+          const SizedBox(width: 22),
+          const Spacer(),
           IconButton(
             iconSize: 70,
             icon: const Image(image: AssetImage('assets/qrcode-scan.png')),
@@ -167,6 +172,8 @@ class HomeProvider with ChangeNotifier {
               _historyProvider.scan(homeContext);
             },
           ),
+          const Spacer(),
+          const SizedBox(width: 15),
           IconButton(
             iconSize: 60,
             icon: const Image(image: AssetImage('assets/wallet.png')),
@@ -198,6 +205,7 @@ class HomeProvider with ChangeNotifier {
               }
             },
           ),
+          const Spacer(),
         ]),
       ),
     );

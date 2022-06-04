@@ -312,19 +312,15 @@ Widget getCerts(BuildContext context, String address, double size,
             return _certs.data?[0] != 0
                 ? Row(
                     children: [
-                      const Icon(
-                        Icons.arrow_drop_down,
-                        color: Colors.green,
-                        size: 30,
-                      ),
-                      Text(_certs.data?[0].toString() ?? '0'),
-                      const SizedBox(width: 15),
-                      const Icon(
-                        Icons.arrow_drop_up,
-                        color: Colors.blue,
-                        size: 30,
-                      ),
-                      Text(_certs.data?[1].toString() ?? '0')
+                      Image.asset('assets/medal.png', height: 20),
+                      const SizedBox(width: 1),
+                      Text(_certs.data?[0].toString() ?? '0',
+                          style: const TextStyle(fontSize: 20)),
+                      const SizedBox(width: 5),
+                      Text(
+                        "(${_certs.data?[1].toString() ?? '0'})",
+                        style: const TextStyle(fontSize: 14),
+                      )
                     ],
                   )
                 : const Text('');

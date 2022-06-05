@@ -564,8 +564,9 @@ class SubstrateSdk with ChangeNotifier {
     return await idtyStatus(address) == 'Validated';
   }
 
-  Future<bool> canCertify(String from, String to) async {
+  Future<Map<String, int>> certState(String from, String to) async {
     if (from != to && await isMember(from)) {
+      Map<String, int> _result = {};
       final _certData = await getCertData(from, to);
       final _certMeta = await getCertMeta(from);
       final int _removableOn = _certData['removableOn'] ?? 0;
@@ -576,12 +577,25 @@ class SubstrateSdk with ChangeNotifier {
           _removableOn.toString() +
           '\n' +
           _nextIssuableOn.toString());
-      if (_renewableOn == 0 && _nextIssuableOn < blocNumber) {
-        return true;
+      if (_nextIssuableOn > blocNumber) {
+        final certDelayDuration = (_nextIssuableOn - blocNumber) * 6;
+        _result.putIfAbsent('certDelay', () => certDelayDuration);
+        return _result;
+      } else if (_renewableOn != 0) {
+        final certRenewDuration = (_renewableOn - blocNumber) * 6;
+        _result.putIfAbsent('certRenewable', () => certRenewDuration);
+        return _result;
+      } else {
+        _result.putIfAbsent('canCert', () => 0);
+        return _result;
       }
     }
-    return false;
+    return {};
   }
+
+  // Future<String> certState(String from, String to) async {
+  //   return '';
+  // }
 
   Future<Map> getCertMeta(String address) async {
     var idtyIndex = await sdk.webView!

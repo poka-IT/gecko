@@ -51,6 +51,11 @@ class TransactionInProgress extends StatelessWidget {
           _actionName = "Confirmation d'identité";
         }
         break;
+      case 'revokeIdty':
+        {
+          _actionName = "Révocation d'adhésion";
+        }
+        break;
       default:
         {
           _actionName = 'Transaction étrange';

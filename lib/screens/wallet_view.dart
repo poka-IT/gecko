@@ -130,77 +130,173 @@ class WalletViewScreen extends StatelessWidget {
                 WalletData? _defaultWallet =
                     _myWalletProvider.getDefaultWallet();
                 return FutureBuilder(
-                  future: _sub.canCertify(_defaultWallet.address!, pubkey!),
-                  builder: (context, AsyncSnapshot<bool?> snapshot) {
+                  future: _sub.certState(_defaultWallet.address!,
+                      pubkey!), // .canCertify(_defaultWallet.address!, pubkey!),
+                  builder: (context, AsyncSnapshot<Map<String, int>> snapshot) {
+                    log.d(snapshot.data);
+                    if (snapshot.data == null) return const SizedBox();
+                    String _duration = '';
+                    if (snapshot.data!['certDelay'] != null ||
+                        snapshot.data!['certRenewable'] != null) {
+                      final Duration _durationSeconds = Duration(
+                          seconds: snapshot.data!['certDelay'] ??
+                              snapshot.data!['certRenewable']!);
+                      final int _seconds = _durationSeconds.inSeconds;
+                      final int _minutes = _durationSeconds.inMinutes;
+
+                      if (_seconds <= 60) {
+                        _duration = '$_seconds secondes';
+                      } else if (_seconds <= 3600) {
+                        _duration = '$_minutes minutes';
+                      } else if (_seconds <= 86400) {
+                        final int _hours = _durationSeconds.inHours;
+                        final int _minutesLeft = _minutes - _hours * 60;
+                        String _showMinutes = '';
+                        if (_minutesLeft < 60) {}
+                        _showMinutes = ' $_minutesLeft minutes';
+                        _duration = '$_hours heures$_showMinutes';
+                      } else if (_seconds <= 2592000) {
+                        final int _days = _durationSeconds.inDays;
+                        _duration = '$_days jours';
+                      } else {
+                        final int _months =
+                            (_durationSeconds.inDays / 30).round();
+                        _duration = '$_months mois';
+                      }
+                    }
                     return Visibility(
-                      visible: (snapshot.data ?? false),
+                      visible: (snapshot.data != {}),
                       child: Column(children: <Widget>[
-                        SizedBox(
-                          height: buttonSize,
-                          child: ClipOval(
-                            child: Material(
-                              color: const Color(0xffFFD58D), // button color
-                              child: InkWell(
-                                  key: const Key('copyKey'),
-                                  splashColor: orangeC, // inkwell color
-                                  child: const Padding(
-                                    padding: EdgeInsets.only(bottom: 0),
+                        if (snapshot.data!['canCert'] != null)
+                          Column(children: <Widget>[
+                            SizedBox(
+                              height: buttonSize,
+                              child: ClipOval(
+                                child: Material(
+                                  color:
+                                      const Color(0xffFFD58D), // button color
+                                  child: InkWell(
+                                      key: const Key('copyKey'),
+                                      splashColor: orangeC, // inkwell color
+                                      child: const Padding(
+                                        padding: EdgeInsets.only(bottom: 0),
+                                        child: Image(
+                                            image: AssetImage(
+                                                'assets/gecko_certify.png')),
+                                      ),
+                                      onTap: () async {
+                                        final bool? _result = await confirmPopup(
+                                            context,
+                                            "Êtes-vous certain de vouloir certifier l'adresse:\n\n${getShortPubkey(pubkey!)}");
+
+                                        if (_result ?? false) {
+                                          String? _pin;
+                                          if (_myWalletProvider.pinCode == '') {
+                                            _pin = await Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (homeContext) {
+                                                  return UnlockingWallet(
+                                                      wallet: defaultWallet);
+                                                },
+                                              ),
+                                            );
+                                          }
+                                          if (_pin != null ||
+                                              _myWalletProvider.pinCode != '') {
+                                            WalletsProfilesProvider
+                                                _walletViewProvider = Provider
+                                                    .of<WalletsProfilesProvider>(
+                                                        context,
+                                                        listen: false);
+                                            final acc = _sub.getCurrentWallet();
+                                            _sub.certify(
+                                                acc.address!,
+                                                _pin ??
+                                                    _myWalletProvider.pinCode,
+                                                _walletViewProvider.address!);
+
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) {
+                                                return const TransactionInProgress(
+                                                    transType: 'cert');
+                                              }),
+                                            );
+                                          }
+                                        }
+                                      }),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 9),
+                            Text(
+                              "Certifier",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: buttonFontSize,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                          ]),
+                        if (snapshot.data!['certDelay'] != null)
+                          Column(children: <Widget>[
+                            SizedBox(
+                              height: buttonSize,
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 0),
+                                child: Container(
+                                  foregroundDecoration: const BoxDecoration(
+                                    color: Colors.grey,
+                                    backgroundBlendMode: BlendMode.saturation,
+                                  ),
+                                  child: const Opacity(
+                                    opacity: 0.5,
                                     child: Image(
                                         image: AssetImage(
                                             'assets/gecko_certify.png')),
                                   ),
-                                  onTap: () async {
-                                    final bool? _result = await confirmPopup(
-                                        context,
-                                        "Êtes-vous certain de vouloir certifier l'adresse:\n\n${getShortPubkey(pubkey!)}");
-
-                                    if (_result ?? false) {
-                                      String? _pin;
-                                      if (_myWalletProvider.pinCode == '') {
-                                        _pin = await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (homeContext) {
-                                              return UnlockingWallet(
-                                                  wallet: defaultWallet);
-                                            },
-                                          ),
-                                        );
-                                      }
-                                      if (_pin != null ||
-                                          _myWalletProvider.pinCode != '') {
-                                        WalletsProfilesProvider
-                                            _walletViewProvider = Provider.of<
-                                                    WalletsProfilesProvider>(
-                                                context,
-                                                listen: false);
-                                        final acc = _sub.getCurrentWallet();
-                                        _sub.certify(
-                                            acc.address!,
-                                            _pin ?? _myWalletProvider.pinCode,
-                                            _walletViewProvider.address!);
-
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(builder: (context) {
-                                            return const TransactionInProgress(
-                                                transType: 'cert');
-                                          }),
-                                        );
-                                      }
-                                    }
-                                  }),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 9),
-                        Text(
-                          "Certifier",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: buttonFontSize,
-                              fontWeight: FontWeight.w500),
-                        ),
+                            Text(
+                              "Vous devez attendre\n$_duration avant\nde pouvoir certifier",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: buttonFontSize - 4,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.grey[600]),
+                            ),
+                          ]),
+                        if (snapshot.data!['certRenewable'] != null)
+                          Column(children: <Widget>[
+                            SizedBox(
+                              height: buttonSize,
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 0),
+                                child: Container(
+                                  foregroundDecoration: const BoxDecoration(
+                                    color: Colors.grey,
+                                    backgroundBlendMode: BlendMode.saturation,
+                                  ),
+                                  child: const Opacity(
+                                    opacity: 0.5,
+                                    child: Image(
+                                        image: AssetImage(
+                                            'assets/gecko_certify.png')),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Text(
+                              "Vous pourrez renouveller cette certification\ndans \n$_duration",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: buttonFontSize - 4,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.grey[600]),
+                            ),
+                          ]),
                       ]),
                     );
                   },

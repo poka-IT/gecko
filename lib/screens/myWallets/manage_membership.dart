@@ -1,13 +1,13 @@
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/screens/common_elements.dart';
-import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
-import 'package:gecko/screens/transaction_in_progress.dart';
-import 'package:provider/provider.dart';
+// import 'package:gecko/models/wallet_data.dart';
+// import 'package:gecko/providers/my_wallets.dart';
+// import 'package:gecko/providers/substrate_sdk.dart';
+// import 'package:gecko/screens/common_elements.dart';
+// import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
+// import 'package:gecko/screens/transaction_in_progress.dart';
+// import 'package:provider/provider.dart';
 
 class ManageMembership extends StatelessWidget {
   const ManageMembership({Key? key, required this.address}) : super(key: key);
@@ -39,51 +39,44 @@ class ManageMembership extends StatelessWidget {
     return InkWell(
       key: const Key('revokeIdty'),
       onTap: () async {
-        final _answer = await confirmPopup(context,
-                'Êtes-vous certains de vouloir révoquer définitivement cette identité ?') ??
-            false;
+        // TODO: Generate revoke document, and understand extrinsic identity.revokeIdentity options
+        // final _answer = await confirmPopup(context,
+        //         'Êtes-vous certains de vouloir révoquer définitivement cette identité ?') ??
+        //     false;
 
-        if (_answer) {
-          MyWalletsProvider _myWalletProvider =
-              Provider.of<MyWalletsProvider>(context, listen: false);
-          SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+        // if (_answer) {
+        //   MyWalletsProvider _myWalletProvider =
+        //       Provider.of<MyWalletsProvider>(context, listen: false);
+        //   SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-          MyWalletsProvider _mw = MyWalletsProvider();
-          final _wallet = _mw.getWalletDataByAddress(address);
-          await _sub.setCurrentWallet(_wallet!);
+        //   MyWalletsProvider _mw = MyWalletsProvider();
+        //   final _wallet = _mw.getWalletDataByAddress(address);
+        //   await _sub.setCurrentWallet(_wallet!);
 
-          WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
-          String? _pin;
-          if (_myWalletProvider.pinCode == '') {
-            _pin = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (homeContext) {
-                  return UnlockingWallet(wallet: defaultWallet);
-                },
-              ),
-            );
-          }
-          if (_pin != null || _myWalletProvider.pinCode != '') {
-            _sub.revokeIdentity(address, _myWalletProvider.pinCode);
-          }
-          Navigator.pop(context);
-
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) {
-              return const TransactionInProgress(transType: 'revokeIdty');
-            }),
-          );
-        }
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(builder: (context) {
-        //     return ManageMembership(
-        //       address: _walletOptions.address.text,
+        //   WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
+        //   String? _pin;
+        //   if (_myWalletProvider.pinCode == '') {
+        //     _pin = await Navigator.push(
+        //       context,
+        //       MaterialPageRoute(
+        //         builder: (homeContext) {
+        //           return UnlockingWallet(wallet: defaultWallet);
+        //         },
+        //       ),
         //     );
-        //   }),
-        // );
+        //   }
+        //   if (_pin != null || _myWalletProvider.pinCode != '') {
+        //     _sub.revokeIdentity(address, _myWalletProvider.pinCode);
+        //   }
+        //   Navigator.pop(context);
+
+        //   Navigator.push(
+        //     context,
+        //     MaterialPageRoute(builder: (context) {
+        //       return const TransactionInProgress(transType: 'revokeIdty');
+        //     }),
+        //   );
+        // }
       },
       child: SizedBox(
         height: 40,

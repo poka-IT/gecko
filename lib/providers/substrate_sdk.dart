@@ -576,7 +576,7 @@ class SubstrateSdk with ChangeNotifier {
           _removableOn.toString() +
           '\n' +
           _nextIssuableOn.toString());
-      if (_renewableOn == 0 && _nextIssuableOn == 0) {
+      if (_renewableOn == 0 && _nextIssuableOn < blocNumber) {
         return true;
       }
     }

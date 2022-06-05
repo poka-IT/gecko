@@ -21,7 +21,7 @@ class ChestDataAdapter extends TypeAdapter<ChestData> {
       defaultWallet: fields[1] as int?,
       imageName: fields[2] as String?,
       imageFile: fields[3] as File?,
-      isCesium: fields[4] as bool?,
+      memberWallet: fields[4] as int?,
     );
   }
 
@@ -38,7 +38,7 @@ class ChestDataAdapter extends TypeAdapter<ChestData> {
       ..writeByte(3)
       ..write(obj.imageFile)
       ..writeByte(4)
-      ..write(obj.isCesium);
+      ..write(obj.memberWallet);
   }
 
   @override

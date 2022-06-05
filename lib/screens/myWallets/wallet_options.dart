@@ -33,7 +33,7 @@ class WalletOptions extends StatelessWidget {
 
     log.d(_walletOptions.address.text);
 
-    final int _currentChest = _myWalletProvider.getCurrentChest()!;
+    final int _currentChest = _myWalletProvider.getCurrentChest();
 
     // final currentWallet = _myWalletProvider.getDefaultWallet();
     // log.d(_walletOptions.getAddress(_currentChest, 3));

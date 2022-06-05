@@ -564,7 +564,27 @@ class SubstrateSdk with ChangeNotifier {
     return await idtyStatus(address) == 'Validated';
   }
 
+  Future<String> getMemberAddress() async {
+    // TODO: Continue digging memberAddress detection
+    String memberAddress = '';
+    walletBox.toMap().forEach((key, value) async {
+      final bool _isMember = await isMember(value.address!);
+      log.d(_isMember);
+      if (_isMember) {
+        final currentChestNumber = configBox.get('currentChest');
+        ChestData _newChestData = chestBox.get(currentChestNumber)!;
+        _newChestData.memberWallet = value.number;
+        await chestBox.put(currentChestNumber, _newChestData);
+        memberAddress = value.address!;
+        return;
+      }
+    });
+    log.d(memberAddress);
+    return memberAddress;
+  }
+
   Future<Map<String, int>> certState(String from, String to) async {
+    // String from = await getMemberAddress();
     if (from != to && await isMember(from)) {
       Map<String, int> _result = {};
       final _certData = await getCertData(from, to);

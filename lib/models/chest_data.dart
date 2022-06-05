@@ -19,14 +19,14 @@ class ChestData extends HiveObject {
   File? imageFile;
 
   @HiveField(4)
-  bool? isCesium;
+  int? memberWallet;
 
   ChestData({
     this.name,
     this.defaultWallet,
     this.imageName,
     this.imageFile,
-    this.isCesium,
+    this.memberWallet,
   });
 
   @override

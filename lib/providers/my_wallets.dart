@@ -13,7 +13,7 @@ class MyWalletsProvider with ChangeNotifier {
   int? pinLenght;
   bool isNewDerivationLoading = false;
 
-  int? getCurrentChest() {
+  int getCurrentChest() {
     if (configBox.get('currentChest') == null) {
       configBox.put('currentChest', 0);
     }

@@ -165,6 +165,11 @@ class WalletOptionsProvider with ChangeNotifier {
     });
   }
 
+    Future<bool> isMember(BuildContext context, String address) async {
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    return await _sub. idtyStatus(address) == 'Validated';
+  }
+
   Future<String?> validateIdentity(BuildContext context) async {
     TextEditingController idtyName = TextEditingController();
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);

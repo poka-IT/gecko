@@ -12,8 +12,10 @@ import 'package:gecko/screens/avatar_fullscreen.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/choose_wallet.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
+import 'package:gecko/screens/qrcode_fullscreen.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class WalletViewScreen extends StatelessWidget {
   const WalletViewScreen(
@@ -48,6 +50,25 @@ class WalletViewScreen extends StatelessWidget {
         appBar: AppBar(
           elevation: 0,
           toolbarHeight: 60 * ratio,
+          actions: [
+            InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return QrCodeFullscreen(
+                      _walletViewProvider.address!,
+                    );
+                  }),
+                );
+              },
+              child: QrImageWidget(
+                data: _walletViewProvider.address!,
+                version: QrVersions.auto,
+                size: 80,
+              ),
+            ),
+          ],
           title: const SizedBox(
             height: 22,
             child: Text('Voir un portefeuille'),

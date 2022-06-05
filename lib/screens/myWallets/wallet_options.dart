@@ -8,6 +8,8 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/screens/myWallets/manage_membership.dart';
+import 'package:gecko/screens/qrcode_fullscreen.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -25,7 +27,7 @@ class WalletOptions extends StatelessWidget {
     WalletsProfilesProvider _historyProvider =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     MyWalletsProvider _myWalletProvider =
-        Provider.of<MyWalletsProvider>(context);
+        Provider.of<MyWalletsProvider>(context, listen: false);
     HomeProvider _homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
 
@@ -118,30 +120,67 @@ class WalletOptions extends StatelessWidget {
               }),
               Expanded(
                 child: SingleChildScrollView(
-                  child: Column(children: <Widget>[
-                    QrImageWidget(
-                      data: _walletOptions.address.text,
-                      version: QrVersions.auto,
-                      size: isTall ? 300 : 270,
-                    ),
-                    SizedBox(height: 15 * ratio),
-                    Consumer<WalletOptionsProvider>(
-                        builder: (context, walletProvider, _) {
-                      return Column(children: [
-                        pubkeyWidget(walletProvider, ctx),
-                        SizedBox(height: 10 * ratio),
-                        historyWidget(
-                            context, _historyProvider, walletProvider),
-                        SizedBox(height: 12 * ratio),
-                        setDefaultWalletWidget(context, walletProvider,
-                            _myWalletProvider, _walletOptions, _currentChest),
-                        SizedBox(height: 17 * ratio),
-                        if (!walletProvider.isDefaultWallet)
-                          deleteWallet(context, walletProvider,
-                              _myWalletProvider, _currentChest)
-                      ]);
-                    }),
-                  ]),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) {
+                                return QrCodeFullscreen(
+                                  _walletOptions.address.text,
+                                );
+                              }),
+                            );
+                          },
+                          child: QrImageWidget(
+                            data: _walletOptions.address.text,
+                            version: QrVersions.auto,
+                            size: isTall ? 150 : 80,
+                          ),
+                        ),
+                        SizedBox(height: 15 * ratio),
+                        Consumer<WalletOptionsProvider>(
+                            builder: (context, walletProvider, _) {
+                          return Column(children: [
+                            pubkeyWidget(walletProvider, ctx),
+                            SizedBox(height: 10 * ratio),
+                            historyWidget(
+                                context, _historyProvider, walletProvider),
+                            SizedBox(height: 12 * ratio),
+                            setDefaultWalletWidget(
+                                context,
+                                walletProvider,
+                                _myWalletProvider,
+                                _walletOptions,
+                                _currentChest),
+                            SizedBox(height: 17 * ratio),
+                            // walletProvider.isMember(context, _walletOptions.address.text)
+                            FutureBuilder(
+                                future: walletProvider.isMember(
+                                    context, _walletOptions.address.text),
+                                builder: (BuildContext context,
+                                    AsyncSnapshot<bool> _isMember) {
+                                  if (_isMember.connectionState !=
+                                          ConnectionState.done ||
+                                      _isMember.hasError) {
+                                    return const Text('');
+                                  }
+                                  return Column(children: [
+                                    if (!walletProvider.isDefaultWallet &&
+                                        !_isMember.data!)
+                                      deleteWallet(context, walletProvider,
+                                          _myWalletProvider, _currentChest)
+                                    else
+                                      const SizedBox(),
+                                    if (_isMember.data!)
+                                      manageMemberStatus(context)
+                                  ]);
+                                }),
+                          ]);
+                        }),
+                      ]),
                 ),
               ),
             ]),
@@ -356,47 +395,79 @@ class WalletOptions extends StatelessWidget {
     );
   }
 
+  Widget manageMemberStatus(BuildContext context) {
+    WalletOptionsProvider _walletOptions =
+        Provider.of<WalletOptionsProvider>(context, listen: false);
+    return InkWell(
+      key: const Key('manageStatus'),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) {
+            return ManageMembership(
+              address: _walletOptions.address.text,
+            );
+          }),
+        );
+      },
+      child: SizedBox(
+        height: 40,
+        child: Row(children: <Widget>[
+          const SizedBox(width: 32),
+          Image.asset(
+            'assets/medal.png',
+            height: 45,
+          ),
+          const SizedBox(width: 22),
+          const Text('Gérer mon adhésion', style: TextStyle(fontSize: 20)),
+        ]),
+      ),
+    );
+  }
+
   Widget setDefaultWalletWidget(
       BuildContext context,
       WalletOptionsProvider walletProvider,
       MyWalletsProvider _myWalletProvider,
       WalletOptionsProvider _walletOptions,
       int _currentChest) {
-    WalletData defaultWallet = _myWalletProvider.getDefaultWallet();
-    _walletOptions.isDefaultWallet = (defaultWallet.number == wallet.id()[1]);
-
-    return InkWell(
-      key: const Key('setDefaultWallet'),
-      onTap: !walletProvider.isDefaultWallet
-          ? () async {
-              await setDefaultWallet(context, _currentChest);
-            }
-          : null,
-      child: SizedBox(
-        height: 50,
-        child: Row(children: <Widget>[
-          const SizedBox(width: 31),
-          CircleAvatar(
-            backgroundColor:
-                Colors.grey[walletProvider.isDefaultWallet ? 300 : 500],
-            child: Image.asset(
-              'assets/walletOptions/android-checkmark.png',
-              height: 25,
+    return Consumer<MyWalletsProvider>(
+        builder: (context, _myWalletProvider, _) {
+      WalletData defaultWallet = _myWalletProvider.getDefaultWallet();
+      _walletOptions.isDefaultWallet = (defaultWallet.number == wallet.id()[1]);
+      return InkWell(
+        key: const Key('setDefaultWallet'),
+        onTap: !walletProvider.isDefaultWallet
+            ? () async {
+                await setDefaultWallet(context, _currentChest);
+              }
+            : null,
+        child: SizedBox(
+          height: 50,
+          child: Row(children: <Widget>[
+            const SizedBox(width: 31),
+            CircleAvatar(
+              backgroundColor:
+                  Colors.grey[walletProvider.isDefaultWallet ? 300 : 500],
+              child: Image.asset(
+                'assets/walletOptions/android-checkmark.png',
+                height: 25,
+              ),
             ),
-          ),
-          const SizedBox(width: 22),
-          Text(
-              walletProvider.isDefaultWallet
-                  ? 'Ce portefeuille est celui par defaut'
-                  : 'Définir comme portefeuille par défaut',
-              style: TextStyle(
-                  fontSize: 20,
-                  color: walletProvider.isDefaultWallet
-                      ? Colors.grey[500]
-                      : Colors.black)),
-        ]),
-      ),
-    );
+            const SizedBox(width: 22),
+            Text(
+                walletProvider.isDefaultWallet
+                    ? 'Ce portefeuille est celui par defaut'
+                    : 'Définir comme portefeuille par défaut',
+                style: TextStyle(
+                    fontSize: 20,
+                    color: walletProvider.isDefaultWallet
+                        ? Colors.grey[500]
+                        : Colors.black)),
+          ]),
+        ),
+      );
+    });
   }
 
   Future setDefaultWallet(BuildContext context, int _currentChest) async {

@@ -596,6 +596,53 @@ class SubstrateSdk with ChangeNotifier {
     return _certMeta;
   }
 
+  Future revokeIdentity(String address, String password) async {
+    final idtyIndex = await sdk.webView!
+        .evalJavascript('api.query.identity.identityIndexOf("$address")');
+
+    final sender = TxSenderData(
+      keyring.current.address,
+      keyring.current.pubKey,
+    );
+
+    log.d(sender.address);
+    TxInfoData txInfo;
+
+    txInfo = TxInfoData(
+      'membership',
+      'revokeMembership',
+      sender,
+    );
+
+    try {
+      final hash = await sdk.api.tx
+          .signAndSend(
+            txInfo,
+            [idtyIndex],
+            password,
+          )
+          .timeout(
+            const Duration(seconds: 12),
+            onTimeout: () => {},
+          );
+      log.d(hash);
+      if (hash.isEmpty) {
+        transactionStatus = 'timeout';
+        notifyListeners();
+
+        return 'timeout';
+      } else {
+        transactionStatus = hash.toString();
+        notifyListeners();
+        return hash.toString();
+      }
+    } catch (e) {
+      transactionStatus = e.toString();
+      notifyListeners();
+      return e.toString();
+    }
+  }
+
   Future getCurencyName() async {}
 
   Future<String> derive(

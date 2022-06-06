@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/subscribe_balances.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/animated_text.dart';
 import 'package:gecko/screens/common_elements.dart';
@@ -301,42 +302,55 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 }
 
-Map<String, String> balanceCache = {};
+Map<String, double> balanceCache = {};
 
 Widget balance(BuildContext context, String address, double size,
     [Color _color = Colors.black]) {
+  SubscribeBalances _subBalances =
+      Provider.of<SubscribeBalances>(context, listen: false);
+
+  log.d('Start balance widget: $address');
+
   return Column(children: <Widget>[
-    Consumer<SubstrateSdk>(builder: (context, _sdk, _) {
-      return FutureBuilder(
-          future: _sdk.getBalance(address),
-          builder: (BuildContext context, AsyncSnapshot<num?> _balance) {
-            if (_balance.connectionState != ConnectionState.done ||
-                _balance.hasError) {
-              if (balanceCache[address] != null) {
-                return Text(balanceCache[address]!,
-                    style: TextStyle(
-                        fontSize: isTall ? size : size * 0.9, color: _color));
-              } else {
-                return SizedBox(
-                  height: 15,
-                  width: 15,
-                  child: CircularProgressIndicator(
-                    color: orangeC,
-                    strokeWidth: 2,
-                  ),
-                );
-              }
+    FutureBuilder(
+        future: _subBalances.getBalance(context, address),
+        builder: (BuildContext context,
+            AsyncSnapshot<Map<String, double>> _balance) {
+          if (_balance.connectionState != ConnectionState.done ||
+              _balance.hasError) {
+            if (balanceCache[address] != null) {
+              log.d('BALANCES: ' + balanceCache[address].toString());
+              return Text(balanceCache[address].toString(),
+                  style: TextStyle(
+                      fontSize: isTall ? size : size * 0.9, color: _color));
+            } else {
+              return SizedBox(
+                height: 15,
+                width: 15,
+                child: CircularProgressIndicator(
+                  color: orangeC,
+                  strokeWidth: 2,
+                ),
+              );
             }
-            balanceCache[address] = "${_balance.data.toString()} $currencyName";
-            return Text(
-              balanceCache[address]!,
-              style: TextStyle(
-                fontSize: isTall ? size : size * 0.9,
-                color: _color,
-              ),
-            );
+          }
+          balanceCache[address] = _subBalances.balances[address] ?? 0;
+
+          _subBalances.balances.forEach((key, value) {
+            if (key == address) {
+              balanceCache[address] = value;
+            }
           });
-    }),
+
+          log.d('balanceCache: $balanceCache');
+          return Text(
+            balanceCache[address].toString(),
+            style: TextStyle(
+              fontSize: isTall ? size : size * 0.9,
+              color: _color,
+            ),
+          );
+        }),
   ]);
 }
 

@@ -597,13 +597,13 @@ class SubstrateSdk with ChangeNotifier {
           _removableOn.toString() +
           '\n' +
           _nextIssuableOn.toString());
-      if (_nextIssuableOn > blocNumber) {
-        final certDelayDuration = (_nextIssuableOn - blocNumber) * 6;
-        _result.putIfAbsent('certDelay', () => certDelayDuration);
-        return _result;
-      } else if (_renewableOn != 0) {
+      if (_renewableOn != 0) {
         final certRenewDuration = (_renewableOn - blocNumber) * 6;
         _result.putIfAbsent('certRenewable', () => certRenewDuration);
+        return _result;
+      } else if (_nextIssuableOn > blocNumber) {
+        final certDelayDuration = (_nextIssuableOn - blocNumber) * 6;
+        _result.putIfAbsent('certDelay', () => certDelayDuration);
         return _result;
       } else {
         _result.putIfAbsent('canCert', () => 0);

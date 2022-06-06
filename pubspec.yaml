@@ -48,7 +48,7 @@ dependencies:
   qr_flutter: #^4.0.0
     git:
       url: https://github.com/insinfo/qr.flutter.git
-      ref: master # branch name
+      ref: master
   responsive_builder: ^0.4.1
   responsive_framework: ^0.2.0
   sentry: ^6.5.1

@@ -289,7 +289,7 @@ class WalletViewScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              "Vous pourrez renouveller cette certification\ndans \n$_duration",
+                              "Vous pourrez renouveller\ncette certification\ndans $_duration",
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   fontSize: buttonFontSize - 4,

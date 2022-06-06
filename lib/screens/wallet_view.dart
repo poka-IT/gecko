@@ -133,7 +133,7 @@ class WalletViewScreen extends StatelessWidget {
                   future: _sub.certState(_defaultWallet.address!,
                       pubkey!), // .canCertify(_defaultWallet.address!, pubkey!),
                   builder: (context, AsyncSnapshot<Map<String, int>> snapshot) {
-                    log.d(snapshot.data);
+                    // log.d(snapshot.data);
                     if (snapshot.data == null) return const SizedBox();
                     String _duration = '';
                     if (snapshot.data!['certDelay'] != null ||
@@ -736,7 +736,7 @@ class WalletViewScreen extends StatelessWidget {
 
                 balance(context, pubkey!, 22),
                 const SizedBox(height: 10),
-                _walletOptions.idtyStatus(context, pubkey!, isOwner: false),
+                _walletOptions.idtyStatus(context, pubkey!, isOwner: false, color: Colors.black),
                 getCerts(context, pubkey!, 14),
 
                 // if (username == null &&

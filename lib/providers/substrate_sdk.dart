@@ -214,7 +214,7 @@ class SubstrateSdk with ChangeNotifier {
   Future<List<int>> getCerts(String address) async {
     final idtyIndex = await sdk.webView!
         .evalJavascript('api.query.identity.identityIndexOf("$address")');
-    log.d('u32: ' + idtyIndex.toString());
+    // log.d('u32: ' + idtyIndex.toString());
 
     final _certsReceiver = await sdk.webView!
             .evalJavascript('api.query.cert.storageIdtyCertMeta($idtyIndex)') ??
@@ -234,9 +234,9 @@ class SubstrateSdk with ChangeNotifier {
             'api.query.cert.storageCertsByIssuer($idtyIndexFrom, $idtyIndexTo)') ??
         '';
 
-    log.d(_certData);
     if (_certData == '') return {};
 
+    // log.d(_certData);
     return _certData;
   }
 
@@ -487,7 +487,7 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
-  Future<String> idtyStatus(String address) async {
+  Future<String> idtyStatus(String address, [bool smooth = true]) async {
     //   var tata = await sdk.webView!
     //       .evalJavascript('api.query.system.account("$address")');
 
@@ -503,7 +503,7 @@ class SubstrateSdk with ChangeNotifier {
 
     if (idtyStatus != null) {
       final String _status = idtyStatus['status'];
-      log.d(_status);
+      log.d('Status $address: $_status');
       return (_status);
     } else {
       return 'expired';

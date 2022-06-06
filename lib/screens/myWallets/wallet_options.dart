@@ -108,7 +108,7 @@ class WalletOptions extends StatelessWidget {
                                   children: [
                                     _walletOptions.idtyStatus(
                                         context, _walletOptions.address.text,
-                                        isOwner: true),
+                                        isOwner: true, color: orangeC),
                                     getCerts(context,
                                         walletProvider.address.text, 15),
                                   ]),

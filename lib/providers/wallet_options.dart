@@ -5,6 +5,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/screens/animated_text.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
@@ -109,20 +110,28 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Widget idtyStatus(BuildContext context, String address,
-      {bool isOwner = false}) {
-    _showText(String text, [double size = 18, bool _bold = false]) => Text(
-          text,
+      {bool isOwner = false, Color color = Colors.black}) {
+    _showText(String text,
+        [double size = 18, bool _bold = false, bool smooth = true]) {
+      log.d(text);
+      return AnimatedFadeOutIn<String>(
+        data: text,
+        duration: Duration(milliseconds: smooth ? 200 : 0),
+        builder: (value) => Text(
+          value,
           textAlign: TextAlign.center,
           style: TextStyle(
               fontSize: size,
-              color: _bold ? orangeC : Colors.black,
+              color: _bold ? color : Colors.black,
               fontWeight: _bold ? FontWeight.w500 : FontWeight.w400),
-        );
+        ),
+      );
+    }
 
     return Consumer<SubstrateSdk>(builder: (context, _sub, _) {
       return FutureBuilder(
           future: _sub.idtyStatus(address),
-          initialData: '...',
+          initialData: '',
           builder: (context, snapshot) {
             switch (snapshot.data.toString()) {
               case 'noid':
@@ -150,7 +159,7 @@ class WalletOptionsProvider with ChangeNotifier {
 
               case 'Validated':
                 {
-                  return _showText('Membre validé !');
+                  return _showText('Membre validé !', 18, true);
                 }
 
               case 'expired':
@@ -159,15 +168,15 @@ class WalletOptionsProvider with ChangeNotifier {
                 }
             }
             return SizedBox(
-              child: _showText('Statut inconnu'),
+              child: _showText('', 18, false, false),
             );
           });
     });
   }
 
-    Future<bool> isMember(BuildContext context, String address) async {
+  Future<bool> isMember(BuildContext context, String address) async {
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
-    return await _sub. idtyStatus(address) == 'Validated';
+    return await _sub.idtyStatus(address) == 'Validated';
   }
 
   Future<String?> validateIdentity(BuildContext context) async {

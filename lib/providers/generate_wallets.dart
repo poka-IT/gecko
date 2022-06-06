@@ -10,6 +10,7 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:provider/provider.dart';
 import "package:unorm_dart/unorm_dart.dart" as unorm;
 
@@ -360,5 +361,27 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   void reloadBuild() {
     notifyListeners();
+  }
+
+  Future scanDerivations(BuildContext context, {int number = 10}) async {
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final ss58 = _sub.ss58;
+
+    // for ()
+    // final addressData = await _sub.sdk.api.keyring.addressFromMnemonic(ss58,
+    //     cryptoType: CryptoType.sr25519,
+    //     mnemonic: generatedMnemonic!,
+    //     derivePath: '//4');
+
+    // final balance = await _sub.getBalance(addressData.address!);
+
+    // log.d(balance);
+    // if (balance != 0) {
+    //   await _sub.importAccount(
+    //       mnemonic: '',
+    //       fromMnemonic: true,
+    //       derivePath: '//4',
+    //       password: pin.text);
+    // }
   }
 }

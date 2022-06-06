@@ -6,7 +6,9 @@ import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/9.dart';
 
 class OnboardingStepEight extends StatelessWidget {
-  const OnboardingStepEight({Key? key}) : super(key: key);
+  const OnboardingStepEight({Key? key, this.scanDerivation = false})
+      : super(key: key);
+  final bool scanDerivation;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +43,7 @@ class OnboardingStepEight extends StatelessWidget {
             ],
             'coffre-fort-protege-les-portefeuilles.png',
             '>',
-            const OnboardingStepNine(),
+            OnboardingStepNine(scanDerivation: scanDerivation),
             7),
       ),
     );

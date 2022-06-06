@@ -15,10 +15,10 @@ import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class OnboardingStepTen extends StatelessWidget {
-  OnboardingStepTen({
-    Key? validationKey,
-  }) : super(key: validationKey);
+  OnboardingStepTen({Key? validationKey, this.scanDerivation = false})
+      : super(key: validationKey);
 
+  final bool scanDerivation;
   final formKey = GlobalKey<FormState>();
   Color? pinColor = const Color(0xFFA4B600);
   bool hasError = false;
@@ -161,10 +161,11 @@ class OnboardingStepTen extends StatelessWidget {
                 await _generateWalletProvider.storeHDWChest(
                     address, 'Mon portefeuille courant', context);
                 _myWalletProvider.readAllWallets(_currentChest);
-                // scheduleMicrotask(() {
-                // _walletOptions.reloadBuild();
                 _myWalletProvider.rebuildWidget();
-                // });
+
+                await _generateWalletProvider.scanDerivations(context,
+                    number: 20);
+
                 _generateWalletProvider.generatedMnemonic = '';
                 _myWalletProvider.resetPinCode();
                 Navigator.push(

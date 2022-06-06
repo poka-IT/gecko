@@ -102,8 +102,8 @@ class RestoreChest extends StatelessWidget {
                           context,
                           FaderTransition(
                               page: skipIntro
-                                  ? const OnboardingStepNine()
-                                  : const OnboardingStepSeven(),
+                                  ? const OnboardingStepNine(scanDerivation: true)
+                                  : const OnboardingStepSeven(scanDerivation: true),
                               isFast: true),
                         );
                       } else {

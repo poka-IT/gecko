@@ -366,7 +366,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   Future<bool> scanDerivations(BuildContext context,
-      {int numberScan = 10}) async {
+      {int numberScan = 20}) async {
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
     final ss58 = _sub.ss58;
     final currentChestNumber = configBox.get('currentChest');

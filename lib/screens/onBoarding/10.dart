@@ -173,7 +173,7 @@ class OnboardingStepTen extends StatelessWidget {
                 bool isAlive = false;
                 if (scanDerivation) {
                   isAlive = await _generateWalletProvider
-                      .scanDerivations(context, numberScan: 30);
+                      .scanDerivations(context, numberScan: 20);
                 }
                 if (!isAlive) {
                   final address = await _sub.importAccount(

@@ -273,12 +273,25 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   bool isBipWord(String word) {
+    bool isValid = false;
     notifyListeners();
 
     // Needed for bad encoding of UTF-8
     word = word.replaceAll('é', 'é');
     word = word.replaceAll('è', 'è');
-    return bip39Words(appLang).contains(word.toLowerCase());
+
+    int nbrMatch = 0;
+    if (bip39Words(appLang).contains(word.toLowerCase())) {
+      for (var bipWord in bip39Words(appLang)) {
+        if (bipWord.startsWith(word)) {
+          log.d('ploppp : ' + nbrMatch.toString());
+          isValid = nbrMatch == 0 ? true : false;
+          nbrMatch = nbrMatch + 1;
+        }
+      }
+    }
+
+    return isValid;
   }
 
   bool isBipWordsList(List<String> words) {

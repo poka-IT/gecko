@@ -272,7 +272,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     return _wordsList;
   }
 
-  bool isBipWord(String word) {
+  bool isBipWord(String word, [bool checkRedondance = true]) {
     bool isValid = false;
     notifyListeners();
 
@@ -284,9 +284,8 @@ class GenerateWalletsProvider with ChangeNotifier {
     if (bip39Words(appLang).contains(word.toLowerCase())) {
       for (var bipWord in bip39Words(appLang)) {
         if (bipWord.startsWith(word)) {
-          log.d('ploppp : ' + nbrMatch.toString());
           isValid = nbrMatch == 0 ? true : false;
-          nbrMatch = nbrMatch + 1;
+          if (checkRedondance) nbrMatch = nbrMatch + 1;
         }
       }
     }
@@ -363,7 +362,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       cellController11
     ];
     for (var word in sentence!.text!.split(' ')) {
-      bool isValid = isBipWord(word);
+      bool isValid = isBipWord(word, false);
 
       if (isValid) {
         cells[nbr].text = word;

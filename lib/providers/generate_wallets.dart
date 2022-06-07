@@ -10,6 +10,7 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:provider/provider.dart';
 import "package:unorm_dart/unorm_dart.dart" as unorm;
 
@@ -21,6 +22,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   FocusNode walletNameFocus = FocusNode();
   Color? askedWordColor = Colors.black;
   bool isAskedWordValid = false;
+  int scanedWalletNumber = -1;
 
   late int nbrWord;
   String? nbrWordAlpha;
@@ -55,8 +57,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   TextEditingController cellController11 = TextEditingController();
   bool isFirstTimeSentenceComplete = true;
 
-  Future storeHDWChest(
-      String address, String _name, BuildContext context) async {
+  Future storeHDWChest(BuildContext context) async {
     int chestNumber = chestBox.isEmpty ? 0 : chestBox.keys.last + 1;
 
     String chestName;
@@ -74,16 +75,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     );
     await chestBox.add(thisChest);
     int? chestKey = chestBox.keys.last;
-
-    WalletData myWallet = WalletData(
-        version: dataVersion,
-        chest: chestKey,
-        address: address,
-        number: 0,
-        name: _name,
-        derivation: 2,
-        imageDefaultPath: '0.png');
-    await walletBox.add(myWallet);
 
     await configBox.put('currentChest', chestKey);
     notifyListeners();
@@ -271,13 +262,25 @@ class GenerateWalletsProvider with ChangeNotifier {
     return _wordsList;
   }
 
-  bool isBipWord(String word) {
+  bool isBipWord(String word, [bool checkRedondance = true]) {
+    bool isValid = false;
     notifyListeners();
 
     // Needed for bad encoding of UTF-8
     word = word.replaceAll('é', 'é');
     word = word.replaceAll('è', 'è');
-    return bip39Words(appLang).contains(word.toLowerCase());
+
+    int nbrMatch = 0;
+    if (bip39Words(appLang).contains(word.toLowerCase())) {
+      for (var bipWord in bip39Words(appLang)) {
+        if (bipWord.startsWith(word)) {
+          isValid = nbrMatch == 0 ? true : false;
+          if (checkRedondance) nbrMatch = nbrMatch + 1;
+        }
+      }
+    }
+
+    return isValid;
   }
 
   bool isBipWordsList(List<String> words) {
@@ -349,7 +352,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       cellController11
     ];
     for (var word in sentence!.text!.split(' ')) {
-      bool isValid = isBipWord(word);
+      bool isValid = isBipWord(word, false);
 
       if (isValid) {
         cells[nbr].text = word;
@@ -360,5 +363,85 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   void reloadBuild() {
     notifyListeners();
+  }
+
+  Future<bool> scanDerivations(BuildContext context,
+      {int numberScan = 20}) async {
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final ss58 = _sub.ss58;
+    final currentChestNumber = configBox.get('currentChest');
+    bool isAlive = false;
+    scanedWalletNumber = 0;
+    notifyListeners();
+
+    final hasRoot = await scanRootBalance(_sub, currentChestNumber);
+    if (hasRoot) {
+      scanedWalletNumber = 1;
+      isAlive = true;
+    }
+
+    for (var derivationNbr in [for (var i = 0; i < numberScan; i += 1) i]) {
+      final addressData = await _sub.sdk.api.keyring.addressFromMnemonic(ss58,
+          cryptoType: CryptoType.sr25519,
+          mnemonic: generatedMnemonic!,
+          derivePath: '//$derivationNbr');
+
+      final balance = await _sub.getBalance(addressData.address!);
+
+      log.d(balance);
+      if (balance != 0) {
+        isAlive = true;
+        String walletName = scanedWalletNumber == 0
+            ? 'Mon portefeuille courant'
+            : 'Portefeuille ${scanedWalletNumber + 1}';
+        await _sub.importAccount(
+            mnemonic: '',
+            fromMnemonic: true,
+            derivePath: '//$derivationNbr',
+            password: pin.text);
+
+        WalletData myWallet = WalletData(
+            version: dataVersion,
+            chest: currentChestNumber,
+            address: addressData.address!,
+            number: scanedWalletNumber,
+            name: walletName,
+            derivation: derivationNbr,
+            imageDefaultPath: '${scanedWalletNumber % 4}.png');
+        await walletBox.add(myWallet);
+        scanedWalletNumber = scanedWalletNumber + 1;
+      }
+    }
+    scanedWalletNumber = -1;
+    notifyListeners();
+    return isAlive;
+  }
+
+  Future<bool> scanRootBalance(
+      SubstrateSdk _sub, int currentChestNumber) async {
+    final addressData = await _sub.sdk.api.keyring.addressFromMnemonic(ss58,
+        cryptoType: CryptoType.sr25519, mnemonic: generatedMnemonic!);
+
+    final balance = await _sub.getBalance(addressData.address!);
+
+    log.d(balance);
+    if (balance != 0) {
+      String walletName = 'Mon portefeuille racine';
+      await _sub.importAccount(
+          mnemonic: '', fromMnemonic: true, password: pin.text);
+
+      WalletData myWallet = WalletData(
+          version: dataVersion,
+          chest: currentChestNumber,
+          address: addressData.address!,
+          number: 0,
+          name: walletName,
+          derivation: -1,
+          imageDefaultPath: '0.png');
+      await walletBox.add(myWallet);
+      return true;
+    } else {
+      return false;
+    }
   }
 }

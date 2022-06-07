@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -15,10 +16,10 @@ import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class OnboardingStepTen extends StatelessWidget {
-  OnboardingStepTen({
-    Key? validationKey,
-  }) : super(key: validationKey);
+  OnboardingStepTen({Key? validationKey, this.scanDerivation = false})
+      : super(key: validationKey);
 
+  final bool scanDerivation;
   final formKey = GlobalKey<FormState>();
   Color? pinColor = const Color(0xFFA4B600);
   bool hasError = false;
@@ -58,6 +59,20 @@ class OnboardingStepTen extends StatelessWidget {
                   style: TextStyle(fontSize: 16 * ratio))
             ]),
             SizedBox(height: isTall ? 80 : 20),
+            Visibility(
+              visible: _generateWalletProvider.scanedWalletNumber != -1,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 15),
+                child: SizedBox(
+                  height: 22,
+                  width: 22,
+                  child: CircularProgressIndicator(
+                    color: orangeC,
+                    strokeWidth: 3,
+                  ),
+                ),
+              ),
+            ),
             pinForm(context, _walletOptions, _pinLenght, 1, 2),
             InkWell(
               onTap: () {
@@ -153,18 +168,32 @@ class OnboardingStepTen extends StatelessWidget {
               log.d(_pin + ' || ' + _generateWalletProvider.pin.text);
               if (_pin.toUpperCase() == _generateWalletProvider.pin.text) {
                 pinColor = Colors.green[500];
-                final address = await _sub.importAccount(
-                    fromMnemonic: true,
-                    mnemonic: _generateWalletProvider.generatedMnemonic!,
-                    derivePath: '//2',
-                    password: _generateWalletProvider.pin.text);
-                await _generateWalletProvider.storeHDWChest(
-                    address, 'Mon portefeuille courant', context);
+
+                await _generateWalletProvider.storeHDWChest(context);
+                bool isAlive = false;
+                if (scanDerivation) {
+                  isAlive = await _generateWalletProvider
+                      .scanDerivations(context, numberScan: 20);
+                }
+                if (!isAlive) {
+                  final address = await _sub.importAccount(
+                      fromMnemonic: true,
+                      mnemonic: _generateWalletProvider.generatedMnemonic!,
+                      derivePath: '//2',
+                      password: _generateWalletProvider.pin.text);
+                  WalletData myWallet = WalletData(
+                      version: dataVersion,
+                      chest: configBox.get('currentChest'),
+                      address: address,
+                      number: 0,
+                      name: 'Mon portefeuille courant',
+                      derivation: 2,
+                      imageDefaultPath: '0.png');
+                  await walletBox.add(myWallet);
+                }
                 _myWalletProvider.readAllWallets(_currentChest);
-                // scheduleMicrotask(() {
-                // _walletOptions.reloadBuild();
                 _myWalletProvider.rebuildWidget();
-                // });
+
                 _generateWalletProvider.generatedMnemonic = '';
                 _myWalletProvider.resetPinCode();
                 Navigator.push(

@@ -9,7 +9,9 @@ import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class OnboardingStepNine extends StatelessWidget {
-  const OnboardingStepNine({Key? key}) : super(key: key);
+  const OnboardingStepNine({Key? key, this.scanDerivation = false})
+      : super(key: key);
+  final bool scanDerivation;
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +105,7 @@ class OnboardingStepNine extends StatelessWidget {
                     ))),
             SizedBox(height: 22 * ratio),
             common.nextButton(context, "J'ai noté mon code secret",
-                OnboardingStepTen(), false),
+                OnboardingStepTen(scanDerivation: scanDerivation), false),
             SizedBox(height: 35 * ratio),
           ]),
         ));

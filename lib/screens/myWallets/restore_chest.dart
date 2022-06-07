@@ -102,8 +102,10 @@ class RestoreChest extends StatelessWidget {
                           context,
                           FaderTransition(
                               page: skipIntro
-                                  ? const OnboardingStepNine()
-                                  : const OnboardingStepSeven(),
+                                  ? const OnboardingStepNine(
+                                      scanDerivation: true)
+                                  : const OnboardingStepSeven(
+                                      scanDerivation: true),
                               isFast: true),
                         );
                       } else {
@@ -123,24 +125,32 @@ class RestoreChest extends StatelessWidget {
               Column(children: [
                 const SizedBox(height: 20),
                 SizedBox(
-                  width: 150,
-                  height: 50,
+                  width: 190,
+                  height: 60,
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      elevation: 4,
-                      primary: yellowC, // background
-                      onPrimary: Colors.black, // foreground
-                    ),
-                    onPressed: () {
-                      genW.pasteMnemonic(context);
-                    },
-                    child: const Text(
-                      'Coller depuis le\npresse-papier',
-                      textAlign: TextAlign.center,
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-                    ),
-                  ),
+                      style: ElevatedButton.styleFrom(
+                        elevation: 4,
+                        primary: yellowC, // background
+                        onPrimary: Colors.black, // foreground
+                      ),
+                      onPressed: () {
+                        genW.pasteMnemonic(context);
+                      },
+                      child: Row(
+                        children: const [
+                          Icon(
+                            Icons.content_paste_go,
+                            size: 25,
+                          ),
+                          SizedBox(width: 10),
+                          Text(
+                            'Coller depuis le\npresse-papier',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 17, fontWeight: FontWeight.w400),
+                          ),
+                        ],
+                      )),
                 )
               ])
           ]),

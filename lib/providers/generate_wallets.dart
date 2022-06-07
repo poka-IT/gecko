@@ -22,6 +22,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   FocusNode walletNameFocus = FocusNode();
   Color? askedWordColor = Colors.black;
   bool isAskedWordValid = false;
+  int scanedWalletNumber = -1;
 
   late int nbrWord;
   String? nbrWordAlpha;
@@ -56,8 +57,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   TextEditingController cellController11 = TextEditingController();
   bool isFirstTimeSentenceComplete = true;
 
-  Future storeHDWChest(
-      String address, String _name, BuildContext context) async {
+  Future storeHDWChest(BuildContext context) async {
     int chestNumber = chestBox.isEmpty ? 0 : chestBox.keys.last + 1;
 
     String chestName;
@@ -75,16 +75,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     );
     await chestBox.add(thisChest);
     int? chestKey = chestBox.keys.last;
-
-    WalletData myWallet = WalletData(
-        version: dataVersion,
-        chest: chestKey,
-        address: address,
-        number: 0,
-        name: _name,
-        derivation: 2,
-        imageDefaultPath: '0.png');
-    await walletBox.add(myWallet);
 
     await configBox.put('currentChest', chestKey);
     notifyListeners();
@@ -375,25 +365,83 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future scanDerivations(BuildContext context, {int number = 10}) async {
+  Future<bool> scanDerivations(BuildContext context,
+      {int numberScan = 10}) async {
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
     final ss58 = _sub.ss58;
+    final currentChestNumber = configBox.get('currentChest');
+    bool isAlive = false;
+    scanedWalletNumber = 0;
+    notifyListeners();
 
-    // for ()
-    // final addressData = await _sub.sdk.api.keyring.addressFromMnemonic(ss58,
-    //     cryptoType: CryptoType.sr25519,
-    //     mnemonic: generatedMnemonic!,
-    //     derivePath: '//4');
+    final hasRoot = await scanRootBalance(_sub, currentChestNumber);
+    if (hasRoot) {
+      scanedWalletNumber = 1;
+      isAlive = true;
+    }
 
-    // final balance = await _sub.getBalance(addressData.address!);
+    for (var derivationNbr in [for (var i = 0; i < numberScan; i += 1) i]) {
+      final addressData = await _sub.sdk.api.keyring.addressFromMnemonic(ss58,
+          cryptoType: CryptoType.sr25519,
+          mnemonic: generatedMnemonic!,
+          derivePath: '//$derivationNbr');
 
-    // log.d(balance);
-    // if (balance != 0) {
-    //   await _sub.importAccount(
-    //       mnemonic: '',
-    //       fromMnemonic: true,
-    //       derivePath: '//4',
-    //       password: pin.text);
-    // }
+      final balance = await _sub.getBalance(addressData.address!);
+
+      log.d(balance);
+      if (balance != 0) {
+        isAlive = true;
+        String walletName = scanedWalletNumber == 0
+            ? 'Mon portefeuille courant'
+            : 'Portefeuille ${scanedWalletNumber + 1}';
+        await _sub.importAccount(
+            mnemonic: '',
+            fromMnemonic: true,
+            derivePath: '//$derivationNbr',
+            password: pin.text);
+
+        WalletData myWallet = WalletData(
+            version: dataVersion,
+            chest: currentChestNumber,
+            address: addressData.address!,
+            number: scanedWalletNumber,
+            name: walletName,
+            derivation: derivationNbr,
+            imageDefaultPath: '${scanedWalletNumber % 4}.png');
+        await walletBox.add(myWallet);
+        scanedWalletNumber = scanedWalletNumber + 1;
+      }
+    }
+    scanedWalletNumber = -1;
+    notifyListeners();
+    return isAlive;
+  }
+
+  Future<bool> scanRootBalance(
+      SubstrateSdk _sub, int currentChestNumber) async {
+    final addressData = await _sub.sdk.api.keyring.addressFromMnemonic(ss58,
+        cryptoType: CryptoType.sr25519, mnemonic: generatedMnemonic!);
+
+    final balance = await _sub.getBalance(addressData.address!);
+
+    log.d(balance);
+    if (balance != 0) {
+      String walletName = 'Mon portefeuille racine';
+      await _sub.importAccount(
+          mnemonic: '', fromMnemonic: true, password: pin.text);
+
+      WalletData myWallet = WalletData(
+          version: dataVersion,
+          chest: currentChestNumber,
+          address: addressData.address!,
+          number: 0,
+          name: walletName,
+          derivation: -1,
+          imageDefaultPath: '0.png');
+      await walletBox.add(myWallet);
+      return true;
+    } else {
+      return false;
+    }
   }
 }

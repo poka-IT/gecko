@@ -500,9 +500,14 @@ class WalletOptions extends StatelessWidget {
               _hasConsumers.hasError) {
             return const Text('');
           }
+          final _balance = double.parse(
+              balanceCache[walletProvider.address.text]!.split(' ')[0]);
+          final bool canDelete = !isDefaultWallet &&
+              !_hasConsumers.data! &&
+              (_balance > 2 || _balance == 0);
           return InkWell(
             key: const Key('deleteWallet'),
-            onTap: !isDefaultWallet && !_hasConsumers.data!
+            onTap: canDelete
                 ? () async {
                     await walletProvider.deleteWallet(context, wallet);
                     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -512,7 +517,7 @@ class WalletOptions extends StatelessWidget {
                     });
                   }
                 : null,
-            child: !isDefaultWallet && !_hasConsumers.data!
+            child: canDelete
                 ? Row(children: <Widget>[
                     const SizedBox(width: 30),
                     Image.asset(

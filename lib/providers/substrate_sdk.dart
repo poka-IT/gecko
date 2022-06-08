@@ -8,6 +8,7 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
+import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:polkawallet_sdk/api/types/txInfoData.dart';
 import 'package:polkawallet_sdk/polkawallet_sdk.dart';
 import 'package:polkawallet_sdk/storage/keyring.dart';
@@ -55,13 +56,14 @@ class SubstrateSdk with ChangeNotifier {
 
     _homeProvider.changeMessage("Connexion en cours...", 0);
 
-    // for (String _endpoint in configBox.get('endpoint')) {
-    //   final n = NetworkParams();
-    //   n.name = currencyName;
-    //   n.endpoint = _endpoint;
-    //   n.ss58 = ss58;
-    //   node.add(n);
-    // }
+    List<NetworkParams> node = [];
+    for (String _endpoint in configBox.get('endpoint')) {
+      final n = NetworkParams();
+      n.name = currencyName;
+      n.endpoint = _endpoint;
+      n.ss58 = ss58;
+      node.add(n);
+    }
     int timeout = 10000;
 
     // if (n.endpoint!.startsWith('ws://')) {
@@ -91,7 +93,8 @@ class SubstrateSdk with ChangeNotifier {
 
     isLoadingEndpoint = true;
     notifyListeners();
-    final res = await sdk.api.connectLightNode(keyring, chainspec).timeout(
+    // final res = await sdk.api.connectLightNode(keyring, chainspec).timeout(
+    final res = await sdk.api.connectNode(keyring, node).timeout(
           Duration(milliseconds: timeout),
           onTimeout: () => null,
         );

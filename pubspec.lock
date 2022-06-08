@@ -981,7 +981,7 @@ packages:
     description:
       path: "."
       ref: gecko-work
-      resolved-ref: "430463dc523afed6bc5f50377fdae7e9782bbc41"
+      resolved-ref: ff579b6e3cca037350618c011b518884eaf0512e
       url: "https://github.com/poka-IT/sdk.git"
     source: git
     version: "0.4.6"

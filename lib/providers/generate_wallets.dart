@@ -386,7 +386,10 @@ class GenerateWalletsProvider with ChangeNotifier {
           mnemonic: generatedMnemonic!,
           derivePath: '//$derivationNbr');
 
-      final balance = await _sub.getBalance(addressData.address!);
+      final balance = await _sub.getBalance(addressData.address!).timeout(
+            const Duration(seconds: 1),
+            onTimeout: () => 0,
+          );
 
       log.d(balance);
       if (balance != 0) {
@@ -422,7 +425,10 @@ class GenerateWalletsProvider with ChangeNotifier {
     final addressData = await _sub.sdk.api.keyring.addressFromMnemonic(ss58,
         cryptoType: CryptoType.sr25519, mnemonic: generatedMnemonic!);
 
-    final balance = await _sub.getBalance(addressData.address!);
+    final balance = await _sub.getBalance(addressData.address!).timeout(
+          const Duration(seconds: 1),
+          onTimeout: () => 0,
+        );
 
     log.d(balance);
     if (balance != 0) {

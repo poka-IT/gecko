@@ -372,17 +372,20 @@ class SubstrateSdk with ChangeNotifier {
     log.d(keyring.current.address);
     log.d(fromAddress);
     log.d(password);
-    log.d(await checkPassword(fromAddress, password));
+    // log.d(await checkPassword(fromAddress, password));
 
+    final fromPubkey = await sdk.api.account.decodeAddress([fromAddress]);
+    log.d(fromPubkey!.keys.first);
     final sender = TxSenderData(
-      keyring.current.address,
-      keyring.current.pubKey,
+      fromAddress,
+      fromPubkey.keys.first,
     );
-    final txInfo = TxInfoData('balances', 'transfer', sender);
+    final txInfo = TxInfoData(
+        'balances', amount == -1 ? 'transferAll' : 'transferKeepAlive', sender);
     try {
       final hash = await sdk.api.tx.signAndSend(
         txInfo,
-        [destAddress, amount * 100],
+        [destAddress, amount == -1 ? false : (amount * 100)],
         password,
         onStatusChange: (status) {
           log.d('Transaction status: ' + status);

@@ -49,6 +49,7 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 60),
             Row(children: [
               Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+                log.d(_sub.sdk.api.connectedNode?.endpoint);
                 return Expanded(
                   child: Row(children: [
                     Text(' Noeud $currencyName :'),

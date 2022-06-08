@@ -66,6 +66,20 @@ class WalletOptionsProvider with ChangeNotifier {
         'Êtes-vous sûr de vouloir oublier le portefeuille "${wallet.name}" ?'));
 
     if (_answer ?? false) {
+      //Check if balance is null
+      final _balance = await _sub.getBalance(wallet.address!);
+      if (_balance != 0) {
+        MyWalletsProvider _myWalletProvider =
+            Provider.of<MyWalletsProvider>(context, listen: false);
+        final _defaultWallet = _myWalletProvider.getDefaultWallet();
+        log.d(_defaultWallet.address);
+        await _sub.pay(
+            fromAddress: wallet.address!,
+            destAddress: _defaultWallet.address!,
+            amount: -1,
+            password: _myWalletProvider.pinCode);
+      }
+
       await walletBox.delete(wallet.key);
       await _sub.deleteAccounts([wallet.address!]);
 

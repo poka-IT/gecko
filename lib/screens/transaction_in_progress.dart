@@ -22,6 +22,7 @@ class TransactionInProgress extends StatelessWidget {
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
+    bool isValid = false;
 
     String _resultText;
     bool isLoading = true;
@@ -84,8 +85,10 @@ class TransactionInProgress extends StatelessWidget {
           // jsonResult = json.decode(_result);
           log.d(_result);
           if (_result.contains('blockHash: ')) {
+            isValid = true;
             _resultText = '$_actionName validé !';
           } else {
+            isValid = false;
             _resultText = "Une erreur s'est produite:\n";
             final List _exceptionSplit = _result.split('Exception: ');
             String _exception;
@@ -94,7 +97,7 @@ class TransactionInProgress extends StatelessWidget {
             } else {
               _exception = _exceptionSplit[0];
             }
-
+            // log.d('expection: $_exception');
             switch (_exception) {
               case 'cert.NotRespectCertPeriod':
               case 'identity.CreatorNotAllowedToCreateIdty':
@@ -112,6 +115,23 @@ class TransactionInProgress extends StatelessWidget {
               case 'identity.IdtyNameAlreadyExist':
                 {
                   _resultText += "Ce nom est déjà pris";
+                }
+                break;
+              case 'balances.KeepAlive':
+                {
+                  _resultText =
+                      "Vous devez garder au moins 2ĞD sur votre compte pour le garder actif";
+                }
+                break;
+              case '1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low':
+                {
+                  _resultText =
+                      "Vous devez alimenter ce compte avant\nde pouvoir l'utiliser";
+                }
+                break;
+              case 'timeout':
+                {
+                  _resultText += "Le délais d'éxecution est dépassé";
                 }
                 break;
 
@@ -156,7 +176,7 @@ class TransactionInProgress extends StatelessWidget {
                       end: Alignment.bottomCenter,
                       colors: [
                         yellowC,
-                        const Color(0xfffafafa),
+                        backgroundColor,
                       ],
                     )),
                     child: Column(children: <Widget>[
@@ -207,6 +227,14 @@ class TransactionInProgress extends StatelessWidget {
                           color: orangeC,
                           strokeWidth: 2,
                         ),
+                      ),
+                    ),
+                    Visibility(
+                      visible: !isLoading,
+                      child: Icon(
+                        isValid ? Icons.done_all : Icons.close,
+                        size: 35,
+                        color: isValid ? Colors.greenAccent : Colors.redAccent,
                       ),
                     ),
                     const SizedBox(height: 10),

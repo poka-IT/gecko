@@ -72,7 +72,6 @@ Future<void> main() async {
   await Hive.deleteBoxFromDisk('g1WalletsBox');
   g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
 
-  await _homeProvider.getValidEndpoints();
   // await configBox.delete('isCacheChecked');
   if (configBox.get('isCacheChecked') == null) {
     configBox.put('isCacheChecked', false);

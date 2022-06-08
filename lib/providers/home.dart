@@ -1,10 +1,8 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 // import 'package:audioplayers/audio_cache.dart';
 // import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -82,23 +80,24 @@ class HomeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List?> getValidEndpoints() async {
-    await configBox.delete('endpoint');
+  // Future<List?> getValidEndpoints() async {
+  //   await configBox.delete('endpoint');
 
-    List _listEndpoints = [];
-    if (!configBox.containsKey('endpoint') ||
-        configBox.get('endpoint') == [] ||
-        configBox.get('endpoint') == '') {
-      _listEndpoints = await rootBundle
-          .loadString('config/gdev_endpoints.json')
-          .then((jsonStr) => jsonDecode(jsonStr));
-      _listEndpoints.shuffle();
-      configBox.put('endpoint', _listEndpoints);
-    }
+  //   List _listEndpoints = [];
+  //   if (!configBox.containsKey('endpoint') ||
+  //       configBox.get('endpoint') == [] ||
+  //       configBox.get('endpoint') == '') {
+  //     _listEndpoints = await rootBundle
+  //         .loadString('config/gdev_endpoints.json')
+  //         .then((jsonStr) => jsonDecode(jsonStr));
+  //     _listEndpoints.shuffle();
+  //     configBox.put('endpoint', _listEndpoints);
+  //   }
 
-    log.i('ENDPOINT: ' + _listEndpoints.toString());
-    return _listEndpoints;
-  }
+  //   log.i('ENDPOINT: ' + _listEndpoints.toString());
+  //   return _listEndpoints;
+  // }
+
 
   T getRandomElement<T>(List<T> list) {
     final random = Random();

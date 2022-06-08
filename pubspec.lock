@@ -980,8 +980,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: fixAndroidActivityVersion
-      resolved-ref: "0157c7e6abddcf21eda0fab2381353683ce6e49f"
+      ref: gecko-work
+      resolved-ref: "430463dc523afed6bc5f50377fdae7e9782bbc41"
       url: "https://github.com/poka-IT/sdk.git"
     source: git
     version: "0.4.6"

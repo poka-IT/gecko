@@ -73,7 +73,7 @@ class WalletOptionsProvider with ChangeNotifier {
             Provider.of<MyWalletsProvider>(context, listen: false);
         final _defaultWallet = _myWalletProvider.getDefaultWallet();
         log.d(_defaultWallet.address);
-        await _sub.pay(
+        _sub.pay(
             fromAddress: wallet.address!,
             destAddress: _defaultWallet.address!,
             amount: -1,

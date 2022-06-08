@@ -423,11 +423,16 @@ class WalletViewScreen extends StatelessWidget {
           return StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
             if (_walletViewProvider.payAmount.text != '' &&
-                double.parse(_walletViewProvider.payAmount.text) <=
+                (double.parse(_walletViewProvider.payAmount.text) + 2) <=
                     double.parse(
                         balanceCache[defaultWallet.address]!.split(' ')[0]) &&
                 _walletViewProvider.address != defaultWallet.address) {
-              canValidate = true;
+              if (balanceCache[pubkey] == '0.0 $currencyName' &&
+                  double.parse(_walletViewProvider.payAmount.text) < 5) {
+                canValidate = false;
+              } else {
+                canValidate = true;
+              }
             } else {
               canValidate = false;
             }
@@ -736,7 +741,8 @@ class WalletViewScreen extends StatelessWidget {
 
                 balance(context, pubkey!, 22),
                 const SizedBox(height: 10),
-                _walletOptions.idtyStatus(context, pubkey!, isOwner: false, color: Colors.black),
+                _walletOptions.idtyStatus(context, pubkey!,
+                    isOwner: false, color: Colors.black),
                 getCerts(context, pubkey!, 14),
 
                 // if (username == null &&

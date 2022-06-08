@@ -102,19 +102,19 @@ class TransactionInProgress extends StatelessWidget {
               case 'cert.NotRespectCertPeriod':
               case 'identity.CreatorNotAllowedToCreateIdty':
                 {
-                  _resultText +=
+                  _resultText =
                       "Vous devez attendre 24h entre chaque certification";
                 }
                 break;
               case 'cert.CannotCertifySelf':
                 {
-                  _resultText +=
+                  _resultText =
                       "Vous ne pouvez pas vous certifier\nvous même ...";
                 }
                 break;
               case 'identity.IdtyNameAlreadyExist':
                 {
-                  _resultText += "Ce nom est déjà pris";
+                  _resultText = "Ce nom est déjà pris";
                 }
                 break;
               case 'balances.KeepAlive':
@@ -129,12 +129,12 @@ class TransactionInProgress extends StatelessWidget {
                       "Vous devez alimenter ce compte avant\nde pouvoir l'utiliser";
                 }
                 break;
+
               case 'timeout':
                 {
                   _resultText += "Le délais d'éxecution est dépassé";
                 }
                 break;
-
               default:
                 {
                   _resultText += "\n$_exception";

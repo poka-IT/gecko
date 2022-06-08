@@ -171,7 +171,7 @@ class WalletOptions extends StatelessWidget {
                                     if (!walletProvider.isDefaultWallet &&
                                         !_isMember.data!)
                                       deleteWallet(context, walletProvider,
-                                          _myWalletProvider, _currentChest)
+                                          _currentChest)
                                     else
                                       const SizedBox(),
                                     if (_isMember.data!)
@@ -482,33 +482,50 @@ class WalletOptions extends StatelessWidget {
     _myWalletProvider.rebuildWidget();
   }
 
-  Widget deleteWallet(
-      BuildContext context,
-      WalletOptionsProvider walletProvider,
-      MyWalletsProvider _myWalletProvider,
-      int _currentChest) {
-    return InkWell(
-      key: const Key('deleteWallet'),
-      onTap: !walletProvider.isDefaultWallet
-          ? () async {
-              await walletProvider.deleteWallet(context, wallet);
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _myWalletProvider.listWallets =
-                    _myWalletProvider.readAllWallets(_currentChest);
-                _myWalletProvider.rebuildWidget();
-              });
-            }
-          : null,
-      child: Row(children: <Widget>[
-        const SizedBox(width: 30),
-        Image.asset(
-          'assets/walletOptions/trash.png',
-          height: 45,
-        ),
-        const SizedBox(width: 19),
-        const Text('Supprimer ce portefeuille',
-            style: TextStyle(fontSize: 20, color: Color(0xffD80000))),
-      ]),
-    );
+  Widget deleteWallet(BuildContext context,
+      WalletOptionsProvider walletProvider, int _currentChest) {
+    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
+
+    final _defaultWallet = _myWalletProvider.getDefaultWallet();
+    final bool isDefaultWallet =
+        walletProvider.address.text == _defaultWallet.address;
+    // return Consumer<MyWalletsProvider>(
+    //     builder: (context, _myWalletProvider, _) {
+    return FutureBuilder(
+        future: _sub.hasAccountConsumers(wallet.address!),
+        builder: (BuildContext context, AsyncSnapshot<bool> _hasConsumers) {
+          if (_hasConsumers.connectionState != ConnectionState.done ||
+              _hasConsumers.hasError) {
+            return const Text('');
+          }
+          return InkWell(
+            key: const Key('deleteWallet'),
+            onTap: !isDefaultWallet && !_hasConsumers.data!
+                ? () async {
+                    await walletProvider.deleteWallet(context, wallet);
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      _myWalletProvider.listWallets =
+                          _myWalletProvider.readAllWallets(_currentChest);
+                      _myWalletProvider.rebuildWidget();
+                    });
+                  }
+                : null,
+            child: !isDefaultWallet && !_hasConsumers.data!
+                ? Row(children: <Widget>[
+                    const SizedBox(width: 30),
+                    Image.asset(
+                      'assets/walletOptions/trash.png',
+                      height: 45,
+                    ),
+                    const SizedBox(width: 19),
+                    const Text('Supprimer ce portefeuille',
+                        style:
+                            TextStyle(fontSize: 20, color: Color(0xffD80000))),
+                  ])
+                : const SizedBox(width: 30),
+          );
+        });
   }
 }

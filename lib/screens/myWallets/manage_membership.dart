@@ -39,7 +39,7 @@ class ManageMembership extends StatelessWidget {
     return InkWell(
       key: const Key('revokeIdty'),
       onTap: () async {
-        // TODO: Generate revoke document, and understand extrinsic identity.revokeIdentity options
+        // TODOO: Generate revoke document, and understand extrinsic identity.revokeIdentity options
         // final _answer = await confirmPopup(context,
         //         'Êtes-vous certains de vouloir révoquer définitivement cette identité ?') ??
         //     false;

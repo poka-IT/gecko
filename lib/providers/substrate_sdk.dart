@@ -240,12 +240,13 @@ class SubstrateSdk with ChangeNotifier {
     return _certData;
   }
 
-  // Future<bool> isAccountExit(String address) async {
-  //   final _accountInfo = await sdk.webView!
-  //       .evalJavascript('api.query.system.account("$address")');
-  //   final _randomId = _accountInfo['data']['randomId'];
-  //   return _randomId == null ? false : true;
-  // }
+  Future<bool> hasAccountConsumers(String address) async {
+    final _accountInfo = await sdk.webView!
+        .evalJavascript('api.query.system.account("$address")');
+    final _consumers = _accountInfo['consumers'];
+    // log.d('Consumers: $_consumers');
+    return _consumers == 0 ? false : true;
+  }
 
   Future<double> getBalance(String address, {bool isUd = false}) async {
     double balance = 0.0;
@@ -568,7 +569,7 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<String> getMemberAddress() async {
-    // TODO: Continue digging memberAddress detection
+    // TODOO: Continue digging memberAddress detection
     String memberAddress = '';
     walletBox.toMap().forEach((key, value) async {
       final bool _isMember = await isMember(value.address!);

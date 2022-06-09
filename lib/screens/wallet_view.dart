@@ -424,10 +424,9 @@ class WalletViewScreen extends StatelessWidget {
               builder: (BuildContext context, StateSetter setState) {
             if (_walletViewProvider.payAmount.text != '' &&
                 (double.parse(_walletViewProvider.payAmount.text) + 2) <=
-                    double.parse(
-                        balanceCache[defaultWallet.address]!.split(' ')[0]) &&
+                    (balanceCache[defaultWallet.address] ?? 0) &&
                 _walletViewProvider.address != defaultWallet.address) {
-              if (balanceCache[pubkey] == '0.0 $currencyName' &&
+              if ((balanceCache[pubkey] == 0 || balanceCache[pubkey] == null) &&
                   double.parse(_walletViewProvider.payAmount.text) < 5) {
                 canValidate = false;
               } else {
@@ -525,7 +524,7 @@ class WalletViewScreen extends StatelessWidget {
                                     future:
                                         _sub.getBalance(defaultWallet.address!),
                                     builder: (BuildContext context,
-                                        AsyncSnapshot<num?> _balance) {
+                                        AsyncSnapshot<double> _balance) {
                                       if (_balance.connectionState !=
                                               ConnectionState.done ||
                                           _balance.hasError) {
@@ -533,8 +532,7 @@ class WalletViewScreen extends StatelessWidget {
                                                 defaultWallet.address!] !=
                                             null) {
                                           return Text(
-                                              balanceCache[
-                                                  defaultWallet.address!]!,
+                                              "${balanceCache[defaultWallet.address!]} $currencyName",
                                               style: const TextStyle(
                                                 fontSize: 20,
                                               ));
@@ -550,9 +548,9 @@ class WalletViewScreen extends StatelessWidget {
                                         }
                                       }
                                       balanceCache[defaultWallet.address!] =
-                                          "${_balance.data.toString()} $currencyName";
+                                          _balance.data!;
                                       return Text(
-                                        balanceCache[defaultWallet.address!]!,
+                                        "${balanceCache[defaultWallet.address!]} $currencyName",
                                         style: const TextStyle(
                                           fontSize: 20,
                                         ),
@@ -694,7 +692,7 @@ class WalletViewScreen extends StatelessWidget {
         Provider.of<WalletOptionsProvider>(context, listen: false);
     // SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    bool isAccountExist = balanceCache[pubkey] != '0.0 $currencyName';
+    bool isAccountExist = balanceCache[pubkey] != 0;
 
     return Stack(children: <Widget>[
       Consumer<SubstrateSdk>(builder: (context, _sub, _) {

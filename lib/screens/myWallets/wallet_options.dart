@@ -500,8 +500,7 @@ class WalletOptions extends StatelessWidget {
               _hasConsumers.hasError) {
             return const Text('');
           }
-          final _balance = double.parse(
-              balanceCache[walletProvider.address.text]!.split(' ')[0]);
+          final double _balance = balanceCache[walletProvider.address.text]!;
           final bool canDelete = !isDefaultWallet &&
               !_hasConsumers.data! &&
               (_balance > 2 || _balance == 0);

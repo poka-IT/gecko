@@ -315,7 +315,7 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 }
 
-Map<String, String> balanceCache = {};
+Map<String, double> balanceCache = {};
 
 Widget balance(BuildContext context, String address, double size,
     [Color _color = Colors.black]) {
@@ -323,11 +323,12 @@ Widget balance(BuildContext context, String address, double size,
     Consumer<SubstrateSdk>(builder: (context, _sdk, _) {
       return FutureBuilder(
           future: _sdk.getBalance(address),
-          builder: (BuildContext context, AsyncSnapshot<num?> _balance) {
+          builder: (BuildContext context, AsyncSnapshot<double> _balance) {
             if (_balance.connectionState != ConnectionState.done ||
                 _balance.hasError) {
               if (balanceCache[address] != null) {
-                return Text(balanceCache[address]!,
+                return Text(
+                    "${balanceCache[address]!.toString()} $currencyName",
                     style: TextStyle(
                         fontSize: isTall ? size : size * 0.9, color: _color));
               } else {
@@ -341,9 +342,9 @@ Widget balance(BuildContext context, String address, double size,
                 );
               }
             }
-            balanceCache[address] = "${_balance.data.toString()} $currencyName";
+            balanceCache[address] = _balance.data!;
             return Text(
-              balanceCache[address]!,
+              "${balanceCache[address]!.toString()} $currencyName",
               style: TextStyle(
                 fontSize: isTall ? size : size * 0.9,
                 color: _color,

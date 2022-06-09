@@ -184,11 +184,23 @@ class RestoreChest extends StatelessWidget {
     return Container(
       width: 102,
       height: 40 * ratio,
+      // child: RawKeyboardListener(
+      //   focusNode: FocusNode(), // or FocusNode()
+      //   onKey: (event) {
+      //     if (event.logicalKey == LogicalKeyboardKey.space) {
+      //       FocusScope.of(context).nextFocus();
+      //     }
+      //   },
+
       child: TextField(
         autofocus: true,
         controller: cellCtl,
         textInputAction: TextInputAction.next,
         onChanged: (v) {
+          if (v.contains(' ')) {
+            cellCtl.text = cellCtl.text.replaceAll(' ', '');
+            FocusScope.of(context).nextFocus();
+          }
           bool isValid = generateWalletProvider.isBipWord(v);
           if (isValid) cellCtl.text = cellCtl.text.toLowerCase();
           if (isValid && generateWalletProvider.cellController11.text.isEmpty) {
@@ -198,6 +210,7 @@ class RestoreChest extends StatelessWidget {
         textAlign: TextAlign.center,
         style: const TextStyle(fontSize: 20),
       ),
+      // ),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey),
         color: Colors.white,

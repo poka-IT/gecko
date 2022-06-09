@@ -77,7 +77,8 @@ class MyWalletsProvider with ChangeNotifier {
     } else {
       chest ??= getCurrentChest();
       int? defaultWalletNumber = chestBox.get(chest)!.defaultWallet;
-      return getWalletDataById([chest, defaultWalletNumber])!;
+      return getWalletDataById([chest, defaultWalletNumber]) ??
+          WalletData(chest: chest, number: 0);
     }
   }
 

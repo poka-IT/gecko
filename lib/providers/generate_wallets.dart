@@ -390,6 +390,7 @@ class GenerateWalletsProvider with ChangeNotifier {
             const Duration(seconds: 1),
             onTimeout: () => 0,
           );
+      // const balance = 0;
 
       log.d(balance);
       if (balance != 0) {

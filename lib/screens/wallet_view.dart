@@ -144,7 +144,9 @@ class WalletViewScreen extends StatelessWidget {
                       final int _seconds = _durationSeconds.inSeconds;
                       final int _minutes = _durationSeconds.inMinutes;
 
-                      if (_seconds <= 60) {
+                      if (_seconds <= 0) {
+                        _duration = '0 secondes';
+                      } else if (_seconds <= 60) {
                         _duration = '$_seconds secondes';
                       } else if (_seconds <= 3600) {
                         _duration = '$_minutes minutes';
@@ -167,7 +169,8 @@ class WalletViewScreen extends StatelessWidget {
                     return Visibility(
                       visible: (snapshot.data != {}),
                       child: Column(children: <Widget>[
-                        if (snapshot.data!['canCert'] != null)
+                        if (snapshot.data!['canCert'] != null ||
+                            _duration == '0 secondes')
                           Column(children: <Widget>[
                             SizedBox(
                               height: buttonSize,
@@ -268,7 +271,8 @@ class WalletViewScreen extends StatelessWidget {
                                   color: Colors.grey[600]),
                             ),
                           ]),
-                        if (snapshot.data!['certRenewable'] != null)
+                        if (snapshot.data!['certRenewable'] != null &&
+                            _duration != '0 secondes')
                           Column(children: <Widget>[
                             SizedBox(
                               height: buttonSize,

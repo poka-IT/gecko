@@ -589,7 +589,7 @@ class WalletViewScreen extends StatelessWidget {
                             FilteringTextInputFormatter.deny(',',
                                 replacementString: '.'),
                             FilteringTextInputFormatter.allow(
-                                RegExp(r'(^\d*\.?\d{0,2})')),
+                                RegExp(r'(^\d+\.?\d{0,2})')),
                           ],
                           // onChanged: (v) => _searchProvider.rebuildWidget(),
                           decoration: InputDecoration(

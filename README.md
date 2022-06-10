@@ -89,30 +89,4 @@ then
 
 ## Roadmap
 
-- v0.1.0 (expected date: 21-08-16)
-    - Reorganization of persistent data
-    - Complete implementation of Figma model (made by Boris)
-    - Account management (creation, security)
-    - Payment (QR-code generation / reading, form)
-    - Viewing transaction history
-    - Finalization of integration tests and unit tests
-    - Completing the network scan when starting the application
-    - F-Droid publication
-- v1.0
-    - Multi-vault management
-    - Cesium import
-    - Advanced search
-    - Item basket management
-    - Transaction monitoring
-    - Contacts / Messaging
-    - IOS compatibility
-    - Sharding (sharing of key fragments)
-    - Apple AppStore and Google PlayStore publication
-    - Mock-up and UX design of future functionalities
-- v2.0
-    - Opaque bypass
-    - NFC payment
-    - Desktop compatibility
-    - Web of trust management (certifications, promises of certifications)
-    - Calendar / community
-
+-> https://pad.p2p.legal/gecko-roadmap-2022?view

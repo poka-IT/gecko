@@ -100,7 +100,8 @@ class WalletOptions extends StatelessWidget {
                           Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: <Widget>[
-                                walletName(walletProvider, _walletOptions),
+                                walletName(
+                                    context, walletProvider, _walletOptions),
                                 SizedBox(height: isTall ? 5 : 0),
                                 // SizedBox(height: isTall ? 5 : 0),
                                 balance(
@@ -246,7 +247,7 @@ class WalletOptions extends StatelessWidget {
     );
   }
 
-  Widget walletName(WalletOptionsProvider walletProvider,
+  Widget walletName(BuildContext context, WalletOptionsProvider walletProvider,
       WalletOptionsProvider _walletOptions) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _walletOptions.nameController.text = wallet.name!;
@@ -284,7 +285,8 @@ class WalletOptions extends StatelessWidget {
             key: const Key('renameWallet'),
             onTap: () async {
               // _isNewNameValid =
-              walletProvider.editWalletName(wallet.id(), isCesium: false);
+              // walletProvider.editWalletName(wallet.id(), isCesium: false);
+              await walletProvider.editWalletName(context, wallet.id());
               await Future.delayed(const Duration(milliseconds: 30));
               walletProvider.walletNameFocus.requestFocus();
             },

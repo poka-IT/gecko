@@ -23,6 +23,7 @@ class WalletOptionsProvider with ChangeNotifier {
   FocusNode walletNameFocus = FocusNode();
   TextEditingController nameController = TextEditingController();
   late bool isDefaultWallet;
+  bool canValidateNameBool = false;
 
   Future<NewWallet>? get badWallet => null;
 
@@ -39,25 +40,6 @@ class WalletOptionsProvider with ChangeNotifier {
     await walletBox.put(_walletTarget.key, _walletTarget);
 
     _newWalletName.text = '';
-  }
-
-  bool editWalletName(List<int?> _wID, {bool? isCesium}) {
-    bool nameState;
-    if (isEditing) {
-      if (!nameController.text.contains(':') &&
-          nameController.text.length <= 39) {
-        _renameWallet(_wID, nameController.text, isCesium: isCesium!);
-        nameState = true;
-      } else {
-        nameState = false;
-      }
-    } else {
-      nameState = true;
-    }
-
-    isEditing ? isEditing = false : isEditing = true;
-    notifyListeners();
-    return nameState;
   }
 
   Future<int> deleteWallet(context, WalletData wallet) async {
@@ -288,6 +270,111 @@ class WalletOptionsProvider with ChangeNotifier {
         );
       },
     );
+  }
+
+  Future<String?> editWalletName(BuildContext context, List<int?> _wID) async {
+    TextEditingController walletName = TextEditingController();
+    canValidateNameBool = false;
+
+    return showDialog<String>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Choisissez un nouveau nom\n pour votre portefeuille :',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+          ),
+          content: SizedBox(
+            height: 100,
+            child: Column(children: [
+              const SizedBox(height: 20),
+              TextField(
+                onChanged: (_) => canValidateName(context, walletName),
+                textAlign: TextAlign.center,
+                autofocus: true,
+                controller: walletName,
+                style: const TextStyle(fontSize: 19),
+              )
+            ]),
+          ),
+          actions: <Widget>[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Consumer<WalletOptionsProvider>(
+                    builder: (context, _wOptions, _) {
+                  return TextButton(
+                    key: const Key('infoPopup'),
+                    child: Text(
+                      "Valider",
+                      style: TextStyle(
+                        fontSize: 21,
+                        color: canValidateNameBool
+                            ? const Color(0xffD80000)
+                            : Colors.grey,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    onPressed: () async {
+                      if (canValidateNameBool) {
+                        nameController.text = walletName.text;
+                        _renameWallet(_wID, walletName.text, isCesium: false);
+                        // notifyListeners();
+                        Navigator.pop(context);
+                      }
+                    },
+                  );
+                })
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  key: const Key('cancel'),
+                  child: Text(
+                    "Annuler",
+                    style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.grey[800],
+                        fontWeight: FontWeight.w300),
+                  ),
+                  onPressed: () async {
+                    Navigator.pop(context);
+                  },
+                )
+              ],
+            ),
+            const SizedBox(height: 20)
+          ],
+        );
+      },
+    );
+  }
+
+  bool canValidateName(BuildContext context, TextEditingController walletName) {
+    MyWalletsProvider _myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
+
+    bool isNameValid = walletName.text.length >= 2 &&
+        !walletName.text.contains(':') &&
+        walletName.text.length <= 39;
+
+    if (isNameValid) {
+      for (var wallet in _myWalletProvider.listWallets) {
+        if (walletName.text == wallet.name!) {
+          canValidateNameBool = false;
+          break;
+        }
+        canValidateNameBool = true;
+      }
+    } else {
+      canValidateNameBool = false;
+    }
+    notifyListeners();
+    return canValidateNameBool;
   }
 
   void reloadBuild() {

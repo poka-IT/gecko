@@ -121,10 +121,10 @@ class HomeScreen extends StatelessWidget {
 
                   var connectivityResult =
                       await (Connectivity().checkConnectivity());
+                  HomeProvider _homeProvider =
+                      Provider.of<HomeProvider>(ctx, listen: false);
                   if (connectivityResult != ConnectivityResult.mobile &&
                       connectivityResult != ConnectivityResult.wifi) {
-                    HomeProvider _homeProvider =
-                        Provider.of<HomeProvider>(ctx, listen: false);
                     _homeProvider.changeMessage(
                         "Vous n'êtes pas connecté à internet", 0);
                     _sub.nodeConnected = false;
@@ -134,7 +134,15 @@ class HomeScreen extends StatelessWidget {
                       .onConnectivityChanged
                       .listen((ConnectivityResult result) async {
                     log.d('Network changed: $result');
-                    await _sub.connectNode(ctx);
+                    if (result == ConnectivityResult.none) {
+                      _sub.nodeConnected = false;
+                      await _sub.sdk.api.setting.unsubscribeBestNumber();
+                      _homeProvider.changeMessage(
+                          "Vous n'êtes pas connecté à internet", 0);
+                      _sub.reload();
+                    } else {
+                      await _sub.connectNode(ctx);
+                    }
                   });
                 }
               });

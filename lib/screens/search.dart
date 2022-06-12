@@ -21,31 +21,31 @@ class SearchScreen extends StatelessWidget {
     //     Provider.of<HomeProvider>(context, listen: false);
 
     return WillPopScope(
-        onWillPop: () {
-          _searchProvider.searchController.text = '';
-          return Future<bool>.value(true);
-        },
-        child: Scaffold(
-          backgroundColor: backgroundColor,
+      onWillPop: () {
+        _searchProvider.searchController.text = '';
+        return Future<bool>.value(true);
+      },
+      child: Scaffold(
+        backgroundColor: backgroundColor,
 
-          appBar: AppBar(
-            elevation: 1,
-            toolbarHeight: 60 * ratio,
-            title: const SizedBox(
-              height: 22,
-              child: Text('Rechercher'),
-            ),
-            leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () {
-                  _searchProvider.searchController.text = '';
-                  Navigator.of(context).pop();
-                }),
+        appBar: AppBar(
+          elevation: 1,
+          toolbarHeight: 60 * ratio,
+          title: const SizedBox(
+            height: 22,
+            child: Text('Rechercher'),
           ),
-          // bottomNavigationBar: _homeProvider.bottomAppBar(context),
-          body: SafeArea(
-            child: Column(children: <Widget>[
-              CommonElements().offlineInfo(context),
+          leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: () {
+                _searchProvider.searchController.text = '';
+                Navigator.of(context).pop();
+              }),
+        ),
+        // bottomNavigationBar: _homeProvider.bottomAppBar(context),
+        body: SafeArea(
+          child: Stack(children: [
+            Column(children: <Widget>[
               SizedBox(height: isTall ? 200 : 100),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 17),
@@ -113,7 +113,10 @@ class SearchScreen extends StatelessWidget {
               ),
               Spacer(flex: screenHeight <= 800 ? 1 : 2),
             ]),
-          ),
-        ));
+            CommonElements().offlineInfo(context),
+          ]),
+        ),
+      ),
+    );
   }
 }

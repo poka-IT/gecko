@@ -126,30 +126,30 @@ class UnlockingWallet extends StatelessWidget {
                         ]),
                       ),
                     const SizedBox(height: 10),
-                    if (canUnlock)
-                      InkWell(
-                          key: const Key('chooseChest'),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) {
-                                return const ChooseChest();
-                              }),
-                            );
-                          },
-                          child: SizedBox(
-                            width: 400,
-                            height: 50,
-                            child: Center(
-                              child: Text(
-                                'Changer de coffre',
-                                style: TextStyle(
-                                    fontSize: 22,
-                                    color: orangeC,
-                                    fontWeight: FontWeight.w600),
-                              ),
+                    // if (canUnlock)
+                    InkWell(
+                        key: const Key('chooseChest'),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) {
+                              return const ChooseChest();
+                            }),
+                          );
+                        },
+                        child: SizedBox(
+                          width: 400,
+                          height: 50,
+                          child: Center(
+                            child: Text(
+                              'Changer de coffre',
+                              style: TextStyle(
+                                  fontSize: 22,
+                                  color: orangeC,
+                                  fontWeight: FontWeight.w600),
                             ),
-                          )),
+                          ),
+                        )),
                   ]),
                 ]),
               ]),

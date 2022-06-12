@@ -134,7 +134,6 @@ class HomeScreen extends StatelessWidget {
                       .onConnectivityChanged
                       .listen((ConnectivityResult result) async {
                     log.d('Network changed: $result');
-
                     await _sub.connectNode(ctx);
                   });
                 }

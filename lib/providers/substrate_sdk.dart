@@ -113,7 +113,6 @@ class SubstrateSdk with ChangeNotifier {
         } else {
           nodeConnected = true;
         }
-
         notifyListeners();
       });
 

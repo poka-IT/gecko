@@ -73,28 +73,48 @@ class OnboardingStepTen extends StatelessWidget {
                 ),
               ),
             ),
-            pinForm(context, _walletOptions, _pinLenght, 1, 2),
-            InkWell(
-              onTap: () {
-                _walletOptions.changePinCacheChoice();
-              },
-              child: Row(children: [
-                const SizedBox(height: 30),
-                const Spacer(),
-                Icon(
-                  configBox.get('isCacheChecked') ?? false
-                      ? Icons.check_box
-                      : Icons.check_box_outline_blank,
-                  color: orangeC,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Garder ce code en mémoire 15 minutes',
-                  style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                ),
-                const Spacer()
-              ]),
-            ),
+            Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+              return _sub.nodeConnected
+                  ? pinForm(context, _walletOptions, _pinLenght, 1, 2)
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                          Text(
+                            'Vous devez vous connecter à internet\npour valider votre coffre',
+                            style: TextStyle(
+                              fontSize: 20,
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ]);
+            }),
+            Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+              return _sub.nodeConnected
+                  ? InkWell(
+                      onTap: () {
+                        _walletOptions.changePinCacheChoice();
+                      },
+                      child: Row(children: [
+                        const SizedBox(height: 30),
+                        const Spacer(),
+                        Icon(
+                          configBox.get('isCacheChecked') ?? false
+                              ? Icons.check_box
+                              : Icons.check_box_outline_blank,
+                          color: orangeC,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Garder ce code en mémoire 15 minutes',
+                          style:
+                              TextStyle(fontSize: 16, color: Colors.grey[700]),
+                        ),
+                        const Spacer()
+                      ]))
+                  : const Text('');
+            }),
             const SizedBox(height: 10),
           ]),
         ));

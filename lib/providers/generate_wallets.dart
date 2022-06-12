@@ -374,6 +374,10 @@ class GenerateWalletsProvider with ChangeNotifier {
     scanedWalletNumber = 0;
     notifyListeners();
 
+    if (!_sub.nodeConnected) {
+      return false;
+    }
+
     final hasRoot = await scanRootBalance(_sub, currentChestNumber);
     if (hasRoot) {
       scanedWalletNumber = 1;

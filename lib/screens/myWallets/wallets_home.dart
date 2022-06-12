@@ -7,6 +7,7 @@ import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/chest_options.dart';
@@ -298,7 +299,11 @@ class WalletsHome extends StatelessWidget {
                       ),
                     ),
                   )),
-            addNewDerivation(context),
+            Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+              return _sub.nodeConnected
+                  ? addNewDerivation(context)
+                  : const Text('');
+            }),
             // SizedBox(height: 1),
             // Padding(
             //     padding: EdgeInsets.symmetric(horizontal: 35),

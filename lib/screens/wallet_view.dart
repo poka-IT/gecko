@@ -360,40 +360,51 @@ class WalletViewScreen extends StatelessWidget {
             //   },
             // ),
             const Spacer(),
-            Container(
-              height: buttonSize,
-              decoration: BoxDecoration(
-                color: const Color(0xff7c94b6),
-                borderRadius: const BorderRadius.all(Radius.circular(100)),
-                border: Border.all(
-                  color: const Color(0xFF6c4204),
-                  width: 4,
+            Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+              return Opacity(
+                opacity: _sub.nodeConnected ? 1 : 0.5,
+                child: Container(
+                  height: buttonSize,
+                  decoration: BoxDecoration(
+                    color: const Color(0xff7c94b6),
+                    borderRadius: const BorderRadius.all(Radius.circular(100)),
+                    border: Border.all(
+                      color: const Color(0xFF6c4204),
+                      width: 4,
+                    ),
+                  ),
+                  child: ClipOval(
+                    child: Material(
+                      color: orangeC, // button color
+                      child: InkWell(
+                          key: const Key('pay'),
+                          splashColor: yellowC, // inkwell color
+                          child: const Padding(
+                              padding: EdgeInsets.all(14),
+                              child: Image(
+                                image: AssetImage('assets/vector_white.png'),
+                              )),
+                          onTap: _sub.nodeConnected
+                              ? () {
+                                  paymentPopup(context, _walletViewProvider);
+                                }
+                              : null),
+                    ),
+                  ),
                 ),
-              ),
-              child: ClipOval(
-                child: Material(
-                  color: orangeC, // button color
-                  child: InkWell(
-                      key: const Key('pay'),
-                      splashColor: yellowC, // inkwell color
-                      child: const Padding(
-                          padding: EdgeInsets.all(14),
-                          child: Image(
-                            image: AssetImage('assets/vector_white.png'),
-                          )),
-                      onTap: () {
-                        paymentPopup(context, _walletViewProvider);
-                      }),
-                ),
-              ),
-            ),
+              );
+            }),
             const SizedBox(height: 9),
-            Text(
-              "Faire un\nvirement",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: buttonFontSize, fontWeight: FontWeight.w500),
-            ),
+            Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+              return Text(
+                "Faire un\nvirement",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    color: _sub.nodeConnected ? Colors.black : Colors.grey[500],
+                    fontSize: buttonFontSize,
+                    fontWeight: FontWeight.w500),
+              );
+            }),
             SizedBox(height: isTall ? 50 : 20)
           ]),
         ));

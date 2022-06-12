@@ -11,6 +11,7 @@ import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:image_cropper/image_cropper.dart';
 
 class WalletOptionsProvider with ChangeNotifier {
   TextEditingController address = TextEditingController();
@@ -88,14 +89,33 @@ class WalletOptionsProvider with ChangeNotifier {
         return '';
       }
 
+      CroppedFile? croppedFile = await ImageCropper().cropImage(
+        sourcePath: imageFile.path,
+        aspectRatioPresets: [CropAspectRatioPreset.square],
+        cropStyle: CropStyle.circle,
+        uiSettings: [
+          AndroidUiSettings(
+              hideBottomControls: true,
+              toolbarTitle: 'Personnalisation',
+              toolbarColor: Colors.deepOrange,
+              toolbarWidgetColor: Colors.white,
+              initAspectRatio: CropAspectRatioPreset.original,
+              lockAspectRatio: true),
+          IOSUiSettings(
+            title: 'Cropper',
+          ),
+        ],
+      );
+
       final newPath = "${imageDirectory.path}/${pickedFile.name}";
 
-      await imageFile.copy(newPath);
-      // final File newImage = File(newPath);
-
-      // await newImage.writeAsBytes(await pickedFile.readAsBytes());
-      // await pickedFile.saveTo(newPath);
-      // await Future.delayed(const Duration(milliseconds: 100));
+      if (croppedFile != null) {
+        await File(croppedFile.path).rename(newPath);
+      } else {
+        log.w('No image selected.');
+        return '';
+      }
+      // await imageFile.copy(newPath);
 
       log.i(newPath);
       return newPath;

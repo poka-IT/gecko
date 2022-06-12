@@ -898,6 +898,7 @@ class WalletViewScreen extends StatelessWidget {
           ]),
         ]),
       ),
+      CommonElements().offlineInfo(context),
     ]);
   }
 }

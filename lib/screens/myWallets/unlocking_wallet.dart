@@ -20,6 +20,7 @@ class UnlockingWallet extends StatelessWidget {
   WalletData? wallet;
   late int currentChestNumber;
   late ChestData currentChest;
+  bool canUnlock = true;
 
   // ignore: close_sinks
   StreamController<ErrorAnimationType>? errorController;
@@ -101,52 +102,54 @@ class UnlockingWallet extends StatelessWidget {
                     SizedBox(height: 40 * ratio),
                     pinForm(context, _pinLenght),
                     SizedBox(height: 3 * ratio),
-                    InkWell(
-                      onTap: () {
-                        _walletOptions.changePinCacheChoice();
-                      },
-                      child: Row(children: [
-                        const SizedBox(height: 30),
-                        const Spacer(),
-                        Icon(
-                          configBox.get('isCacheChecked')
-                              ? Icons.check_box
-                              : Icons.check_box_outline_blank,
-                          color: orangeC,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Garder ce code en mémoire 15 minutes',
-                          style:
-                              TextStyle(fontSize: 16, color: Colors.grey[700]),
-                        ),
-                        const Spacer()
-                      ]),
-                    ),
-                    const SizedBox(height: 10),
-                    InkWell(
-                        key: const Key('chooseChest'),
+                    if (canUnlock)
+                      InkWell(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) {
-                              return const ChooseChest();
-                            }),
-                          );
+                          _walletOptions.changePinCacheChoice();
                         },
-                        child: SizedBox(
-                          width: 400,
-                          height: 50,
-                          child: Center(
-                            child: Text(
-                              'Changer de coffre',
-                              style: TextStyle(
-                                  fontSize: 22,
-                                  color: orangeC,
-                                  fontWeight: FontWeight.w600),
-                            ),
+                        child: Row(children: [
+                          const SizedBox(height: 30),
+                          const Spacer(),
+                          Icon(
+                            configBox.get('isCacheChecked')
+                                ? Icons.check_box
+                                : Icons.check_box_outline_blank,
+                            color: orangeC,
                           ),
-                        )),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Garder ce code en mémoire 15 minutes',
+                            style: TextStyle(
+                                fontSize: 16, color: Colors.grey[700]),
+                          ),
+                          const Spacer()
+                        ]),
+                      ),
+                    const SizedBox(height: 10),
+                    if (canUnlock)
+                      InkWell(
+                          key: const Key('chooseChest'),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) {
+                                return const ChooseChest();
+                              }),
+                            );
+                          },
+                          child: SizedBox(
+                            width: 400,
+                            height: 50,
+                            child: Center(
+                              child: Text(
+                                'Changer de coffre',
+                                style: TextStyle(
+                                    fontSize: 22,
+                                    color: orangeC,
+                                    fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          )),
                   ]),
                 ]),
               ]),
@@ -164,10 +167,20 @@ class UnlockingWallet extends StatelessWidget {
     MyWalletsProvider _myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
-
-    WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
-
     FocusNode pinFocus = FocusNode();
+
+    WalletData defaultWallet = _myWalletProvider.getDefaultWallet();
+
+    // defaultWallet.address = null;
+    if (defaultWallet.address == null) {
+      canUnlock = false;
+      return Text(
+        'Impossible de retrouver votre\nportefeuille par défaut.\nID: ${defaultWallet.id()}',
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+            color: Colors.redAccent, fontWeight: FontWeight.w500),
+      );
+    }
 
     return Form(
       key: formKey,

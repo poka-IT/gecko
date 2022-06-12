@@ -50,6 +50,12 @@ class SubstrateSdk with ChangeNotifier {
     List<NetworkParams> node = [];
     HomeProvider _homeProvider = Provider.of<HomeProvider>(ctx, listen: false);
 
+    // var connectivityResult = await (Connectivity().checkConnectivity());
+    // if (connectivityResult == ConnectivityResult.mobile ||
+    //     connectivityResult == ConnectivityResult.wifi) {
+    //   _homeProvider.changeMessage("Vous n'êtes pas connecté à internet", 0);
+    //   return;
+    // }
     _homeProvider.changeMessage("Connexion en cours...", 0);
 
     for (String _endpoint in configBox.get('endpoint')) {
@@ -100,12 +106,17 @@ class SubstrateSdk with ChangeNotifier {
       // Subscribe bloc number
       sdk.api.setting.subscribeBestNumber((res) {
         blocNumber = int.parse(res.toString());
+        // log.d(sdk.api.connectedNode?.endpoint);
         if (sdk.api.connectedNode?.endpoint == null) {
+          nodeConnected = false;
           _homeProvider.changeMessage("Le réseau a été perdu...", 0);
+        } else {
+          nodeConnected = true;
         }
 
         notifyListeners();
       });
+
       // currencyName = await getCurencyName();
       notifyListeners();
       _homeProvider.changeMessage(
@@ -250,9 +261,12 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<double> getBalance(String address, {bool isUd = false}) async {
     double balance = 0.0;
+    // log.d('nodeConnected: ' + nodeConnected.toString());
     if (nodeConnected) {
       final brutBalance = await sdk.api.account.queryBalance(address);
       balance = int.parse(brutBalance!.freeBalance) / 100;
+    } else {
+      balance = -1;
     }
     return balance;
   }

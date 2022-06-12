@@ -1,6 +1,8 @@
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:provider/provider.dart';
 
 class CommonElements {
   // Exemple de Widget
@@ -145,6 +147,33 @@ class CommonElements {
       ),
     );
   }
+
+  Widget offlineInfo(BuildContext context) {
+    // SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final double screenWidth = MediaQuery.of(context).size.width;
+    return Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+      return Visibility(
+        visible: !_sub.nodeConnected,
+        child: Positioned(
+          top: 0,
+          child: Container(
+              height: 30,
+              width: screenWidth,
+              color: Colors.grey[800],
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Vous êtes hors ligne...",
+                    style: TextStyle(color: Colors.grey[50]),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              )),
+        ),
+      );
+    });
+  }
 }
 
 class SmoothTransition extends PageRouteBuilder {
@@ -276,6 +305,7 @@ Future<void> infoPopup(BuildContext context, String title) async {
     },
   );
 }
+
 
 // Widget geckoAppBar() {
 //   return AppBar(

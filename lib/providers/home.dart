@@ -27,7 +27,7 @@ class HomeProvider with ChangeNotifier {
   Widget appBarTitle = Text('Ğecko', style: TextStyle(color: Colors.grey[850]));
   Widget appBarExplorer =
       Text('Explorateur', style: TextStyle(color: Colors.grey[850]));
-  String homeMessage = "y'a pas de lézard ;-)";
+  String homeMessage = "Chargement en cours ...";
   String defaultMessage = "y'a pas de lézard ;-)";
 
   Future<void> initHive() async {

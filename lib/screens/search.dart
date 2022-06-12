@@ -3,6 +3,7 @@ import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 // import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/search.dart';
+import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/search_result.dart';
 import 'package:provider/provider.dart';
 // import 'package:gecko/models/home.dart';
@@ -44,6 +45,7 @@ class SearchScreen extends StatelessWidget {
           // bottomNavigationBar: _homeProvider.bottomAppBar(context),
           body: SafeArea(
             child: Column(children: <Widget>[
+              CommonElements().offlineInfo(context),
               SizedBox(height: isTall ? 200 : 100),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 17),

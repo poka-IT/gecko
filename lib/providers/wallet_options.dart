@@ -318,7 +318,8 @@ class WalletOptionsProvider with ChangeNotifier {
 Map<String, double> balanceCache = {};
 
 Widget balance(BuildContext context, String address, double size,
-    [Color _color = Colors.black]) {
+    [Color _color = Colors.black,
+    Color _loadingColor = const Color(0xffd07316)]) {
   return Column(children: <Widget>[
     Consumer<SubstrateSdk>(builder: (context, _sdk, _) {
       return FutureBuilder(
@@ -326,7 +327,8 @@ Widget balance(BuildContext context, String address, double size,
           builder: (BuildContext context, AsyncSnapshot<double> _balance) {
             if (_balance.connectionState != ConnectionState.done ||
                 _balance.hasError) {
-              if (balanceCache[address] != null) {
+              if (balanceCache[address] != null &&
+                  balanceCache[address] != -1) {
                 return Text(
                     "${balanceCache[address]!.toString()} $currencyName",
                     style: TextStyle(
@@ -336,20 +338,24 @@ Widget balance(BuildContext context, String address, double size,
                   height: 15,
                   width: 15,
                   child: CircularProgressIndicator(
-                    color: orangeC,
+                    color: _loadingColor,
                     strokeWidth: 2,
                   ),
                 );
               }
             }
             balanceCache[address] = _balance.data!;
-            return Text(
-              "${balanceCache[address]!.toString()} $currencyName",
-              style: TextStyle(
-                fontSize: isTall ? size : size * 0.9,
-                color: _color,
-              ),
-            );
+            if (balanceCache[address] != -1) {
+              return Text(
+                "${balanceCache[address]!.toString()} $currencyName",
+                style: TextStyle(
+                  fontSize: isTall ? size : size * 0.9,
+                  color: _color,
+                ),
+              );
+            } else {
+              return const Text('');
+            }
           });
     }),
   ]);
@@ -362,9 +368,9 @@ Widget getCerts(BuildContext context, String address, double size,
       return FutureBuilder(
           future: _sdk.getCerts(address),
           builder: (BuildContext context, AsyncSnapshot<List<int>> _certs) {
-            // log.d(_certs.data);
+            log.d(_certs.data);
 
-            return _certs.data?[0] != 0
+            return _certs.data?[0] != 0 && _certs.data != null
                 ? Row(
                     children: [
                       Image.asset('assets/medal.png', height: 20),

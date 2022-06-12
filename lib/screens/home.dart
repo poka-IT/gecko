@@ -1,4 +1,5 @@
 import 'package:bubble/bubble.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/stateful_wrapper.dart';
 import 'package:gecko/providers/chest_provider.dart';
@@ -118,7 +119,24 @@ class HomeScreen extends StatelessWidget {
                     _myWalletProvider.rebuildWidget();
                   }
 
-                  await _sub.connectNode(ctx); //kopa
+                  var connectivityResult =
+                      await (Connectivity().checkConnectivity());
+                  if (connectivityResult != ConnectivityResult.mobile &&
+                      connectivityResult != ConnectivityResult.wifi) {
+                    HomeProvider _homeProvider =
+                        Provider.of<HomeProvider>(ctx, listen: false);
+                    _homeProvider.changeMessage(
+                        "Vous n'êtes pas connecté à internet", 0);
+                    _sub.nodeConnected = false;
+                  }
+
+                  Connectivity()
+                      .onConnectivityChanged
+                      .listen((ConnectivityResult result) async {
+                    log.d('Network changed: $result');
+
+                    await _sub.connectNode(ctx);
+                  });
                 }
               });
             },

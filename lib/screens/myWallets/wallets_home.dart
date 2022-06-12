@@ -61,7 +61,12 @@ class WalletsHome extends StatelessWidget {
         ),
         bottomNavigationBar: _homeProvider.bottomAppBar(context),
         body: SafeArea(
-          child: myWalletsTiles(context, _currentChestNumber!),
+          child: Stack(
+            children: [
+              myWalletsTiles(context, _currentChestNumber!),
+              CommonElements().offlineInfo(context),
+            ],
+          ),
         ),
       ),
     );
@@ -322,7 +327,11 @@ class WalletsHome extends StatelessWidget {
           //   style: TextStyle(color: isDefault ? Colors.white : Colors.black),
           // ),
           balance(
-              context, _address, 15, isDefault ? Colors.white : Colors.black)
+              context,
+              _address,
+              15,
+              isDefault ? Colors.white : Colors.black,
+              isDefault ? yellowC : orangeC)
         ]),
       ),
     );

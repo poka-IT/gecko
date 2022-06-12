@@ -8,6 +8,7 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/providers/search.dart';
+import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:provider/provider.dart';
 
@@ -46,6 +47,7 @@ class SearchResultScreen extends StatelessWidget {
           child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
+                CommonElements().offlineInfo(context),
                 const SizedBox(height: 30),
                 RichText(
                   text: TextSpan(

@@ -62,17 +62,16 @@ class ChestOptions extends StatelessWidget {
                   WalletData? defaultWallet =
                       _myWalletProvider.getDefaultWallet();
                   String? _pin;
-                  if (_myWalletProvider.pinCode == '') {
-                    _pin = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (homeContext) {
-                          return UnlockingWallet(wallet: defaultWallet);
-                        },
-                      ),
-                    );
-                  }
-                  if (_pin != null || _myWalletProvider.pinCode != '') {
+                  _pin = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (homeContext) {
+                        return UnlockingWallet(wallet: defaultWallet);
+                      },
+                    ),
+                  );
+
+                  if (_pin != null) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) {

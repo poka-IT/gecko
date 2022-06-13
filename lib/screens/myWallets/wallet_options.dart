@@ -100,10 +100,18 @@ class WalletOptions extends StatelessWidget {
                           Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: <Widget>[
-                                walletName(
-                                    context, walletProvider, _walletOptions),
-                                SizedBox(height: isTall ? 5 : 0),
+                                _walletOptions.getNameByAddress(
+                                    context,
+                                    walletProvider.address.text,
+                                    wallet,
+                                    27,
+                                    false,
+                                    Colors.black,
+                                    FontWeight.w400,
+                                    FontStyle.normal),
                                 // SizedBox(height: isTall ? 5 : 0),
+
+                                SizedBox(height: isTall ? 5 : 0),
                                 balance(
                                     context, walletProvider.address.text, 21),
                                 const SizedBox(width: 30),
@@ -244,63 +252,6 @@ class WalletOptions extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget walletName(BuildContext context, WalletOptionsProvider walletProvider,
-      WalletOptionsProvider _walletOptions) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _walletOptions.nameController.text = wallet.name!;
-      // _walletOptions.reloadBuild();
-    });
-
-    return SizedBox(
-      width: 260,
-      child: Stack(children: <Widget>[
-        TextField(
-          key: const Key('walletName'),
-          autofocus: false,
-          focusNode: walletProvider.walletNameFocus,
-          enabled: walletProvider.isEditing,
-          controller: walletProvider.nameController,
-          minLines: 1,
-          maxLines: 3,
-          textAlign: TextAlign.center,
-          decoration: const InputDecoration(
-            border: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            disabledBorder: InputBorder.none,
-            contentPadding: EdgeInsets.all(15.0),
-          ),
-          style: TextStyle(
-            fontSize: isTall ? 27 : 23,
-            color: Colors.black,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-        Positioned(
-          right: 0,
-          child: InkWell(
-            key: const Key('renameWallet'),
-            onTap: () async {
-              // _isNewNameValid =
-              // walletProvider.editWalletName(wallet.id(), isCesium: false);
-              await walletProvider.editWalletName(context, wallet.id());
-              await Future.delayed(const Duration(milliseconds: 30));
-              walletProvider.walletNameFocus.requestFocus();
-            },
-            child: ClipRRect(
-              child: Image.asset(
-                  walletProvider.isEditing
-                      ? 'assets/walletOptions/android-checkmark.png'
-                      : 'assets/walletOptions/edit.png',
-                  width: 25,
-                  height: 25),
-            ),
-          ),
-        ),
-      ]),
     );
   }
 

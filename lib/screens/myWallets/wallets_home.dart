@@ -263,17 +263,27 @@ class WalletsHome extends StatelessWidget {
                               child: Padding(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 5),
-                                child: Text(
-                                  _repository.name!,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      fontSize: 17.0,
-                                      color: _repository.id()[1] ==
-                                              defaultWallet.id()[1]
-                                          ? const Color(0xffF9F9F1)
-                                          : Colors.black,
-                                      fontStyle: FontStyle.italic),
-                                ),
+                                child: _walletOptions.getNameByAddress(
+                                    context,
+                                    _repository.address!,
+                                    _repository,
+                                    17,
+                                    true,
+                                    _repository.id()[1] == defaultWallet.id()[1]
+                                        ? const Color(0xffF9F9F1)
+                                        : Colors.black),
+
+                                //  Text(
+                                //   _repository.name!,
+                                //   textAlign: TextAlign.center,
+                                //   style: TextStyle(
+                                //       fontSize: 17.0,
+                                //       color: _repository.id()[1] ==
+                                //               defaultWallet.id()[1]
+                                //           ? const Color(0xffF9F9F1)
+                                //           : Colors.black,
+                                //       fontStyle: FontStyle.italic),
+                                // ),
                               ),
                             ),
                             // dense: true,

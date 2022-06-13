@@ -43,6 +43,7 @@ import 'package:responsive_framework/responsive_framework.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:window_size/window_size.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 
 const bool enableSentry = true;
 
@@ -79,6 +80,8 @@ Future<void> main() async {
   }
   // log.d(await configBox.get('endpoint'));
 
+  const indexerEndpoint = "http://192.168.1.72:8080/v1/graphql";
+
   HttpOverrides.global = MyHttpOverrides();
 
   if (kReleaseMode && enableSentry) {
@@ -95,7 +98,7 @@ Future<void> main() async {
     await SentryFlutter.init((options) {
       options.dsn =
           'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
-    }, appRunner: () => runApp(const Gecko()));
+    }, appRunner: () => runApp(const Gecko(indexerEndpoint)));
 
     // runZoned<Future<void>>(
     //       () async {
@@ -112,16 +115,27 @@ Future<void> main() async {
   } else {
     print('Debug mode enabled: No sentry alerte');
 
-    runApp(const Gecko());
+    runApp(const Gecko(indexerEndpoint));
   }
 }
 
 class Gecko extends StatelessWidget {
-  const Gecko({Key? key}) : super(key: key);
+  const Gecko(this.indexerEndpoint, {Key? key}) : super(key: key);
+  final String? indexerEndpoint;
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    final _httpLink = HttpLink(
+      indexerEndpoint!,
+    );
+
+    final _client = ValueNotifier(
+      GraphQLClient(
+        cache: GraphQLCache(),
+        link: _httpLink,
+      ),
+    );
 
     return MultiProvider(
       providers: [
@@ -136,41 +150,44 @@ class Gecko extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CesiumPlusProvider()),
         ChangeNotifierProvider(create: (_) => SubstrateSdk())
       ],
-      child: MaterialApp(
-        builder: (context, widget) => ResponsiveWrapper.builder(
-            BouncingScrollWrapper.builder(context, widget!),
-            maxWidth: 1200,
-            minWidth: 480,
-            defaultScale: true,
-            breakpoints: [
-              const ResponsiveBreakpoint.resize(480, name: MOBILE),
-              const ResponsiveBreakpoint.autoScale(800, name: TABLET),
-              const ResponsiveBreakpoint.resize(1000, name: DESKTOP),
-            ],
-            background: Container(color: backgroundColor)),
-        title: 'Ğecko',
-        theme: ThemeData(
-          appBarTheme: const AppBarTheme(
-            color: Color(0xffFFD58D),
-            foregroundColor: Color(0xFF000000),
+      child: GraphQLProvider(
+        client: _client,
+        child: MaterialApp(
+          builder: (context, widget) => ResponsiveWrapper.builder(
+              BouncingScrollWrapper.builder(context, widget!),
+              maxWidth: 1200,
+              minWidth: 480,
+              defaultScale: true,
+              breakpoints: [
+                const ResponsiveBreakpoint.resize(480, name: MOBILE),
+                const ResponsiveBreakpoint.autoScale(800, name: TABLET),
+                const ResponsiveBreakpoint.resize(1000, name: DESKTOP),
+              ],
+              background: Container(color: backgroundColor)),
+          title: 'Ğecko',
+          theme: ThemeData(
+            appBarTheme: const AppBarTheme(
+              color: Color(0xffFFD58D),
+              foregroundColor: Color(0xFF000000),
+            ),
+            primaryColor: const Color(0xffFFD58D),
+            textTheme: const TextTheme(
+              bodyText1: TextStyle(fontSize: 16),
+              bodyText2: TextStyle(fontSize: 18),
+            ).apply(
+              bodyColor: const Color(0xFF000000),
+            ),
+            colorScheme:
+                ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]),
           ),
-          primaryColor: const Color(0xffFFD58D),
-          textTheme: const TextTheme(
-            bodyText1: TextStyle(fontSize: 16),
-            bodyText2: TextStyle(fontSize: 18),
-          ).apply(
-            bodyColor: const Color(0xFF000000),
-          ),
-          colorScheme:
-              ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]),
+          home: const HomeScreen(),
+          initialRoute: "/",
+          routes: {
+            '/mywallets': (context) => const WalletsHome(),
+            '/search': (context) => const SearchScreen(),
+            '/searchResult': (context) => const SearchResultScreen(),
+          },
         ),
-        home: const HomeScreen(),
-        initialRoute: "/",
-        routes: {
-          '/mywallets': (context) => const WalletsHome(),
-          '/search': (context) => const SearchScreen(),
-          '/searchResult': (context) => const SearchResultScreen(),
-        },
       ),
     );
   }

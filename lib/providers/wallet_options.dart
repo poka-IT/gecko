@@ -147,9 +147,6 @@ class WalletOptionsProvider with ChangeNotifier {
       );
     }
 
-    log.d('bbbbbbbbbbbb: ' +
-        DateTime.parse("2022-06-13T16:51:24.001+00:00").toString());
-
     return Consumer<SubstrateSdk>(builder: (context, _sub, _) {
       return FutureBuilder(
           future: _sub.idtyStatus(address),

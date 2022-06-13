@@ -80,7 +80,8 @@ Future<void> main() async {
   }
   // log.d(await configBox.get('endpoint'));
 
-  const indexerEndpoint = "http://192.168.1.72:8080/v1/graphql";
+  // const indexerEndpoint = "http://192.168.1.72:8080/v1/graphql";
+  const indexerEndpoint = "https://duniter-indexer.coinduf.eu/v1/graphql";
 
   HttpOverrides.global = MyHttpOverrides();
 

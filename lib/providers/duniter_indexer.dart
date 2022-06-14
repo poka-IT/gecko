@@ -7,7 +7,11 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/cesium_plus.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/screens/wallet_view.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -106,7 +110,6 @@ class DuniterIndexer with ChangeNotifier {
       FontStyle fontStyle = FontStyle.italic]) {
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
-    log.d('iiiiiiiiiiiiiiiiiiiiiii $indexerEndpoint');
     if (indexerEndpoint == '') {
       if (wallet == null) {
         return const SizedBox();
@@ -164,6 +167,93 @@ class DuniterIndexer with ChangeNotifier {
               fontWeight: fontWeight,
               fontStyle: fontStyle,
             ),
+          );
+        });
+  }
+
+  Widget searchIdentity(BuildContext context, String name) {
+    // WalletOptionsProvider _walletOptions =
+    //     Provider.of<WalletOptionsProvider>(context, listen: false);
+    CesiumPlusProvider _cesiumPlusProvider =
+        Provider.of<CesiumPlusProvider>(context, listen: false);
+    WalletsProfilesProvider _walletsProfiles =
+        Provider.of<WalletsProfilesProvider>(context, listen: false);
+    if (indexerEndpoint == '') {
+      return const Text('Aucun résultat');
+    }
+
+    return Query(
+        options: QueryOptions(
+          document: gql(
+              searchAddressByNameQ), // this is the query string you just created
+          variables: {
+            'name': name,
+          },
+          // pollInterval: const Duration(seconds: 10),
+        ),
+        builder: (QueryResult result,
+            {VoidCallback? refetch, FetchMore? fetchMore}) {
+          if (result.hasException) {
+            return Text(result.exception.toString());
+          }
+
+          if (result.isLoading) {
+            return const Text('Loading');
+          }
+
+          final List identities = result.data?['search_identity'] ?? [];
+
+          if (identities.isEmpty) {
+            return const Text('Aucun résultat');
+          }
+
+          int keyID = 0;
+          double _avatarSize = 55;
+          return Expanded(
+            child: ListView(children: <Widget>[
+              for (Map profile in identities)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  child: ListTile(
+                      key: Key('searchResult${keyID++}'),
+                      horizontalTitleGap: 40,
+                      contentPadding: const EdgeInsets.all(5),
+                      leading: _cesiumPlusProvider.defaultAvatar(_avatarSize),
+                      title: Row(children: <Widget>[
+                        Text(getShortPubkey(profile['id']),
+                            style: const TextStyle(
+                                fontSize: 18,
+                                fontFamily: 'Monospace',
+                                fontWeight: FontWeight.w500),
+                            textAlign: TextAlign.center),
+                      ]),
+                      trailing: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [balance(context, profile['id'], 16)]),
+                      subtitle: Row(children: <Widget>[
+                        Text(profile['name'] ?? '',
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.w500),
+                            textAlign: TextAlign.center),
+                      ]),
+                      dense: false,
+                      isThreeLine: false,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) {
+                            _walletsProfiles.address = profile['id'];
+                            return WalletViewScreen(
+                              pubkey: profile['id'],
+                              username:
+                                  g1WalletsBox.get(profile['id'])?.id?.username,
+                              avatar: g1WalletsBox.get(profile['id'])?.avatar,
+                            );
+                          }),
+                        );
+                      }),
+                ),
+            ]),
           );
         });
   }

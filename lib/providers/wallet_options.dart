@@ -128,9 +128,9 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Widget idtyStatus(BuildContext context, String address,
       {bool isOwner = false, Color color = Colors.black}) {
-DuniterIndexer _duniterIndexer =
+    DuniterIndexer _duniterIndexer =
         Provider.of<DuniterIndexer>(context, listen: false);
-        
+
     _showText(String text,
         [double size = 18, bool _bold = false, bool smooth = true]) {
       log.d(text);
@@ -176,16 +176,30 @@ DuniterIndexer _duniterIndexer =
                 {
                   return isOwner
                       ? _showText('Identité confirmé')
-                      : _duniterIndexer.getNameByAddress(context, address, null, 20, true,
-                          Colors.grey[700]!, FontWeight.w500, FontStyle.italic);
+                      : _duniterIndexer.getNameByAddress(
+                          context,
+                          address,
+                          null,
+                          20,
+                          true,
+                          Colors.grey[700]!,
+                          FontWeight.w500,
+                          FontStyle.italic);
                 }
 
               case 'Validated':
                 {
                   return isOwner
                       ? _showText('Membre validé !', 18, true)
-                      : _duniterIndexer.getNameByAddress(context, address, null, 20, true,
-                          Colors.black, FontWeight.w600, FontStyle.normal);
+                      : _duniterIndexer.getNameByAddress(
+                          context,
+                          address,
+                          null,
+                          20,
+                          true,
+                          Colors.black,
+                          FontWeight.w600,
+                          FontStyle.normal);
                 }
 
               case 'expired':
@@ -430,8 +444,6 @@ DuniterIndexer _duniterIndexer =
 
     return _address;
   }
-
-
 
   Widget walletNameController(BuildContext context, WalletData wallet,
       [double size = 20]) {

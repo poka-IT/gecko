@@ -11,8 +11,7 @@ class TemplateScreen extends StatelessWidget {
     // HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
 
     return Scaffold(
-      backgroundColor: backgroundColor,
-
+        backgroundColor: backgroundColor,
         appBar: AppBar(
             toolbarHeight: 60 * ratio,
             title: const SizedBox(

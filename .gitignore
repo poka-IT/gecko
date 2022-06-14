@@ -55,3 +55,4 @@ scripts/private/
 AppDir/
 appimage-builder-cache/
 AppImageBuilder.yml
+android/app/build.gradle

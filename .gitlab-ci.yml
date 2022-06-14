@@ -17,6 +17,9 @@ format:
     - if: $CI_COMMIT_TAG || $CI_MERGE_REQUEST_ID
     - when: manual
   stage: format
+  script:
+    - flutter format --set-exit-if-changed lib packages/dubp_rs/lib/dubp.dart
+
 
 build_and_test:
   extends: .env

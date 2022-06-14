@@ -30,7 +30,7 @@ build_and_test:
     - redshift
   script:
     - flutter analyze
-    # - flutter test
+# - flutter test
 
 lint:
   extends: .env

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -31,6 +32,8 @@ class WalletOptions extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context, listen: false);
     HomeProvider _homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
+    DuniterIndexer _duniterIndexer =
+        Provider.of<DuniterIndexer>(context, listen: false);
 
     log.d(_walletOptions.address.text);
 
@@ -100,7 +103,7 @@ class WalletOptions extends StatelessWidget {
                           Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: <Widget>[
-                                _walletOptions.getNameByAddress(
+                                _duniterIndexer.getNameByAddress(
                                     context,
                                     walletProvider.address.text,
                                     wallet,

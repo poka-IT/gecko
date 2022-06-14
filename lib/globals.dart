@@ -51,3 +51,5 @@ String currencyName = 'ĞD';
 
 // Debug
 const debugPin = true;
+
+String indexerEndpoint = '';

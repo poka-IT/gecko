@@ -23,6 +23,7 @@ import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
@@ -56,6 +57,7 @@ Future<void> main() async {
   }
 
   HomeProvider _homeProvider = HomeProvider();
+  DuniterIndexer _duniterIndexer = DuniterIndexer();
   await _homeProvider.initHive();
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
@@ -80,8 +82,10 @@ Future<void> main() async {
   }
   // log.d(await configBox.get('endpoint'));
 
-  // const indexerEndpoint = "http://192.168.1.72:8080/v1/graphql";
-  const indexerEndpoint = "https://duniter-indexer.coinduf.eu/v1/graphql";
+  await _duniterIndexer.getValidIndexerEndpoint();
+  // _duniterIndexer.indexerEndpoint = "http://192.168.1.72:8080/v1/graphql";
+  // _duniterIndexer.indexerEndpoint =
+  //     "https://duniter-indexer.coinduf.eu/v1/graphql";
 
   HttpOverrides.global = MyHttpOverrides();
 
@@ -99,7 +103,7 @@ Future<void> main() async {
     await SentryFlutter.init((options) {
       options.dsn =
           'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
-    }, appRunner: () => runApp(const Gecko(indexerEndpoint)));
+    }, appRunner: () => runApp(Gecko(indexerEndpoint)));
 
     // runZoned<Future<void>>(
     //       () async {
@@ -116,7 +120,7 @@ Future<void> main() async {
   } else {
     print('Debug mode enabled: No sentry alerte');
 
-    runApp(const Gecko(indexerEndpoint));
+    runApp(Gecko(indexerEndpoint));
   }
 }
 
@@ -149,7 +153,8 @@ class Gecko extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
         ChangeNotifierProvider(create: (_) => SearchProvider()),
         ChangeNotifierProvider(create: (_) => CesiumPlusProvider()),
-        ChangeNotifierProvider(create: (_) => SubstrateSdk())
+        ChangeNotifierProvider(create: (_) => SubstrateSdk()),
+        ChangeNotifierProvider(create: (_) => DuniterIndexer())
       ],
       child: GraphQLProvider(
         client: _client,

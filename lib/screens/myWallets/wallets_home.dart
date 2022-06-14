@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
+import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -136,6 +137,8 @@ class WalletsHome extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context);
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
+    DuniterIndexer _duniterIndexer =
+        Provider.of<DuniterIndexer>(context, listen: false);
     final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
 
     if (!isWalletsExists) {
@@ -263,7 +266,7 @@ class WalletsHome extends StatelessWidget {
                               child: Padding(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 5),
-                                child: _walletOptions.getNameByAddress(
+                                child: _duniterIndexer.getNameByAddress(
                                     context,
                                     _repository.address!,
                                     _repository,

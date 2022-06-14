@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/queries_indexer.dart';
+import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -10,7 +10,6 @@ import 'package:gecko/screens/animated_text.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -27,7 +26,6 @@ class WalletOptionsProvider with ChangeNotifier {
   TextEditingController nameController = TextEditingController();
   late bool isDefaultWallet;
   bool canValidateNameBool = false;
-  Map<String, String?> walletNameIndexer = {};
 
   Future<NewWallet>? get badWallet => null;
 
@@ -130,6 +128,9 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Widget idtyStatus(BuildContext context, String address,
       {bool isOwner = false, Color color = Colors.black}) {
+DuniterIndexer _duniterIndexer =
+        Provider.of<DuniterIndexer>(context, listen: false);
+        
     _showText(String text,
         [double size = 18, bool _bold = false, bool smooth = true]) {
       log.d(text);
@@ -175,7 +176,7 @@ class WalletOptionsProvider with ChangeNotifier {
                 {
                   return isOwner
                       ? _showText('Identité confirmé')
-                      : getNameByAddress(context, address, null, 20, true,
+                      : _duniterIndexer.getNameByAddress(context, address, null, 20, true,
                           Colors.grey[700]!, FontWeight.w500, FontStyle.italic);
                 }
 
@@ -183,7 +184,7 @@ class WalletOptionsProvider with ChangeNotifier {
                 {
                   return isOwner
                       ? _showText('Membre validé !', 18, true)
-                      : getNameByAddress(context, address, null, 20, true,
+                      : _duniterIndexer.getNameByAddress(context, address, null, 20, true,
                           Colors.black, FontWeight.w600, FontStyle.normal);
                 }
 
@@ -430,60 +431,7 @@ class WalletOptionsProvider with ChangeNotifier {
     return _address;
   }
 
-  Widget getNameByAddress(BuildContext context, String address,
-      [WalletData? wallet,
-      double size = 20,
-      bool canEdit = false,
-      Color _color = Colors.black,
-      FontWeight fontWeight = FontWeight.w400,
-      FontStyle fontStyle = FontStyle.italic]) {
-    return Query(
-        options: QueryOptions(
-          document: gql(
-              getNameByAddressQ), // this is the query string you just created
-          variables: {
-            'address': address,
-          },
-          // pollInterval: const Duration(seconds: 10),
-        ),
-        builder: (QueryResult result,
-            {VoidCallback? refetch, FetchMore? fetchMore}) {
-          if (result.hasException) {
-            return Text(result.exception.toString());
-          }
 
-          if (result.isLoading) {
-            return const Text('Loading');
-          }
-
-          walletNameIndexer[address] =
-              result.data?['account_by_pk']?['identity']?['name'];
-
-          if (walletNameIndexer[address] == null) {
-            if (wallet == null) {
-              return const SizedBox();
-            } else {
-              if (canEdit) {
-                return walletName(context, wallet, size, _color);
-              } else {
-                return walletNameController(context, wallet, size);
-              }
-            }
-          }
-
-          return Text(
-            _color == Colors.grey[700]!
-                ? '(${walletNameIndexer[address]!})'
-                : walletNameIndexer[address]!,
-            style: TextStyle(
-              fontSize: size,
-              color: _color,
-              fontWeight: fontWeight,
-              fontStyle: fontStyle,
-            ),
-          );
-        });
-  }
 
   Widget walletNameController(BuildContext context, WalletData wallet,
       [double size = 20]) {

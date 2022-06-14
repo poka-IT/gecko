@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -127,6 +128,9 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Widget idtyStatus(BuildContext context, String address,
       {bool isOwner = false, Color color = Colors.black}) {
+    DuniterIndexer _duniterIndexer =
+        Provider.of<DuniterIndexer>(context, listen: false);
+
     _showText(String text,
         [double size = 18, bool _bold = false, bool smooth = true]) {
       log.d(text);
@@ -170,12 +174,32 @@ class WalletOptionsProvider with ChangeNotifier {
                 }
               case 'ConfirmedByOwner':
                 {
-                  return _showText('Identité confirmé');
+                  return isOwner
+                      ? _showText('Identité confirmé')
+                      : _duniterIndexer.getNameByAddress(
+                          context,
+                          address,
+                          null,
+                          20,
+                          true,
+                          Colors.grey[700]!,
+                          FontWeight.w500,
+                          FontStyle.italic);
                 }
 
               case 'Validated':
                 {
-                  return _showText('Membre validé !', 18, true);
+                  return isOwner
+                      ? _showText('Membre validé !', 18, true)
+                      : _duniterIndexer.getNameByAddress(
+                          context,
+                          address,
+                          null,
+                          20,
+                          true,
+                          Colors.black,
+                          FontWeight.w600,
+                          FontStyle.normal);
                 }
 
               case 'expired':
@@ -419,6 +443,84 @@ class WalletOptionsProvider with ChangeNotifier {
     address.text = _address ?? '';
 
     return _address;
+  }
+
+  Widget walletNameController(BuildContext context, WalletData wallet,
+      [double size = 20]) {
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    log.d('aaaaaaaaaaaaaaaaaaaaa: ${wallet.name}');
+    nameController.text = wallet.name!;
+    // _walletOptions.reloadBuild();
+    // });
+
+    return SizedBox(
+      width: 260,
+      child: Stack(children: <Widget>[
+        TextField(
+          key: const Key('walletName'),
+          autofocus: false,
+          focusNode: walletNameFocus,
+          enabled: isEditing,
+          controller: nameController,
+          minLines: 1,
+          maxLines: 3,
+          textAlign: TextAlign.center,
+          decoration: const InputDecoration(
+            border: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            contentPadding: EdgeInsets.all(15.0),
+          ),
+          style: TextStyle(
+            fontSize: isTall ? size : size * 0.9,
+            color: Colors.black,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+        Positioned(
+          right: 0,
+          child: InkWell(
+            key: const Key('renameWallet'),
+            onTap: () async {
+              // _isNewNameValid =
+              // walletProvider.editWalletName(wallet.id(), isCesium: false);
+              await editWalletName(context, wallet.id());
+              await Future.delayed(const Duration(milliseconds: 30));
+              walletNameFocus.requestFocus();
+            },
+            child: ClipRRect(
+              child: Image.asset(
+                  isEditing
+                      ? 'assets/walletOptions/android-checkmark.png'
+                      : 'assets/walletOptions/edit.png',
+                  width: 25,
+                  height: 25),
+            ),
+          ),
+        ),
+      ]),
+    );
+  }
+
+  Widget walletName(BuildContext context, WalletData wallet,
+      [double size = 20, Color color = Colors.black]) {
+    return SizedBox(
+      width: 260,
+      child:
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+        Text(
+          wallet.name!,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: isTall ? size : size * 0.9,
+            color: color,
+            fontWeight: FontWeight.w400,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      ]),
+    );
   }
 }
 

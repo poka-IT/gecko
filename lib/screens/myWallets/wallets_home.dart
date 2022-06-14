@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
+import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -136,6 +137,8 @@ class WalletsHome extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context);
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
+    DuniterIndexer _duniterIndexer =
+        Provider.of<DuniterIndexer>(context, listen: false);
     final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
 
     if (!isWalletsExists) {
@@ -263,17 +266,27 @@ class WalletsHome extends StatelessWidget {
                               child: Padding(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 5),
-                                child: Text(
-                                  _repository.name!,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      fontSize: 17.0,
-                                      color: _repository.id()[1] ==
-                                              defaultWallet.id()[1]
-                                          ? const Color(0xffF9F9F1)
-                                          : Colors.black,
-                                      fontStyle: FontStyle.italic),
-                                ),
+                                child: _duniterIndexer.getNameByAddress(
+                                    context,
+                                    _repository.address!,
+                                    _repository,
+                                    17,
+                                    true,
+                                    _repository.id()[1] == defaultWallet.id()[1]
+                                        ? const Color(0xffF9F9F1)
+                                        : Colors.black),
+
+                                //  Text(
+                                //   _repository.name!,
+                                //   textAlign: TextAlign.center,
+                                //   style: TextStyle(
+                                //       fontSize: 17.0,
+                                //       color: _repository.id()[1] ==
+                                //               defaultWallet.id()[1]
+                                //           ? const Color(0xffF9F9F1)
+                                //           : Colors.black,
+                                //       fontStyle: FontStyle.italic),
+                                // ),
                               ),
                             ),
                             // dense: true,

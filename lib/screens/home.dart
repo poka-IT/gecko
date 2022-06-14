@@ -3,6 +3,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/stateful_wrapper.dart';
 import 'package:gecko/providers/chest_provider.dart';
+import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
@@ -145,6 +146,9 @@ class HomeScreen extends StatelessWidget {
                     }
                   });
                 }
+                DuniterIndexer _duniterIndexer =
+                    Provider.of<DuniterIndexer>(ctx, listen: false);
+                _duniterIndexer.checkIndexerEndpoint();
               });
             },
             child: isWalletsExists ? geckHome(context) : welcomeHome(context)

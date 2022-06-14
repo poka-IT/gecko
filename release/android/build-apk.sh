@@ -13,10 +13,6 @@ APK_FILENAME="${APPNAME}-${VERSION}+${BUILD}.apk"
 
 echo "artifact name: ${APK_FILENAME}"
 
-## Build Rust dependancies
-echo "Compile Rust binding..."
-cargo make
-
 # Build APK
 echo "Build APK..."
 #flutter clean

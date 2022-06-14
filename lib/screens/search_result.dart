@@ -3,6 +3,7 @@ import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
@@ -26,6 +27,8 @@ class SearchResultScreen extends StatelessWidget {
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     HomeProvider _homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
+    DuniterIndexer _duniterIndexer =
+        Provider.of<DuniterIndexer>(context, listen: false);
 
     int keyID = 0;
     double _avatarSize = 55;
@@ -78,7 +81,10 @@ class SearchResultScreen extends StatelessWidget {
                       if (snapshot.connectionState == ConnectionState.done) {
                         log.d(snapshot.data);
                         if (snapshot.data?.isEmpty ?? true) {
-                          return const Text('Aucun résultat');
+                          return _duniterIndexer.searchIdentity(
+                              context, _searchProvider.searchController.text);
+
+                          // const Text('Aucun résultat');
                         } else {
                           return Expanded(
                             child: ListView(children: <Widget>[
@@ -91,53 +97,8 @@ class SearchResultScreen extends StatelessWidget {
                                       key: Key('searchResult${keyID++}'),
                                       horizontalTitleGap: 40,
                                       contentPadding: const EdgeInsets.all(5),
-                                      leading:
-                                          // g1WalletsBox.get(g1Wallet.pubkey)
-                                          //             ?.avatar !=
-                                          //         null
-                                          //     ?
-                                          _cesiumPlusProvider
-                                              .defaultAvatar(_avatarSize),
-                                      // : FutureBuilder(
-                                      //     future: _cesiumPlusProvider.getAvatar(
-                                      //         g1Wallet.pubkey, _avatarSize),
-                                      //     builder: (BuildContext context,
-                                      //         AsyncSnapshot<Image?> _avatar) {
-                                      //       if (_avatar.connectionState !=
-                                      //               ConnectionState.done ||
-                                      //           _avatar.hasError) {
-                                      //         return Stack(children: [
-                                      //           _cesiumPlusProvider
-                                      //               .defaultAvatar(_avatarSize),
-                                      //           Positioned(
-                                      //             top: 8,
-                                      //             right: 0,
-                                      //             width: 12,
-                                      //             height: 12,
-                                      //             child: CircularProgressIndicator(
-                                      //               strokeWidth: 1,
-                                      //               color: orangeC,
-                                      //             ),
-                                      //           ),
-                                      //         ]);
-                                      //       }
-                                      //       if (_avatar.hasData) {
-                                      //         final _w =
-                                      //             g1WalletsBox.get(g1Wallet.pubkey);
-                                      //         if (_w != null) {
-                                      //           _w.avatar = _avatar.data;
-                                      //         }
-                                      //         return ClipOval(child: _avatar.data);
-                                      //       } else {
-                                      //         g1WalletsBox
-                                      //                 .get(g1Wallet.pubkey)!
-                                      //                 .avatar =
-                                      //             _cesiumPlusProvider
-                                      //                 .defaultAvatar(_avatarSize);
-                                      //         return _cesiumPlusProvider
-                                      //             .defaultAvatar(_avatarSize);
-                                      //       }
-                                      //     }),
+                                      leading: _cesiumPlusProvider
+                                          .defaultAvatar(_avatarSize),
                                       title: Row(children: <Widget>[
                                         Text(getShortPubkey(g1Wallet.pubkey!),
                                             style: const TextStyle(
@@ -154,11 +115,8 @@ class SearchResultScreen extends StatelessWidget {
                                                 context, g1Wallet.pubkey!, 16)
                                           ]),
                                       subtitle: Row(children: <Widget>[
-                                        Text(g1Wallet.id?.username ?? '',
-                                            style: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w500),
-                                            textAlign: TextAlign.center),
+                                        _duniterIndexer.getNameByAddress(
+                                            context, g1Wallet.pubkey!)
                                       ]),
                                       dense: false,
                                       isThreeLine: false,

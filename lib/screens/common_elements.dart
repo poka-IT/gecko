@@ -306,7 +306,6 @@ Future<void> infoPopup(BuildContext context, String title) async {
   );
 }
 
-
 // Widget geckoAppBar() {
 //   return AppBar(
 //     toolbarHeight: 60 * ratio,

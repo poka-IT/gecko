@@ -1002,10 +1002,10 @@ packages:
     description:
       path: "."
       ref: gecko-work
-      resolved-ref: cb802395bedf17e352b7022b268b61ce40bc1a95
-      url: "https://github.com/poka-IT/sdk.git"
+      resolved-ref: b0d761c021ab1ae804e779c4535ef292f7149760
+      url: "git@github.com:poka-IT/sdk.git"
     source: git
-    version: "0.4.6"
+    version: "0.4.7"
   pool:
     dependency: transitive
     description:

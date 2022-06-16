@@ -97,7 +97,6 @@ flutter:
   uses-material-design: true
 
   assets:
-    - images/
     - config/
     - assets/
     - assets/home/

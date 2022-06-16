@@ -577,7 +577,7 @@ Widget getCerts(BuildContext context, String address, double size,
       return FutureBuilder(
           future: _sdk.getCerts(address),
           builder: (BuildContext context, AsyncSnapshot<List<int>> _certs) {
-            log.d(_certs.data);
+            // log.d(_certs.data);
 
             return _certs.data?[0] != 0 && _certs.data != null
                 ? Row(

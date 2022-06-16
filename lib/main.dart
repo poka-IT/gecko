@@ -58,6 +58,7 @@ Future<void> main() async {
 
   HomeProvider _homeProvider = HomeProvider();
   DuniterIndexer _duniterIndexer = DuniterIndexer();
+  await initHiveForFlutter();
   await _homeProvider.initHive();
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
@@ -67,7 +68,6 @@ Future<void> main() async {
   Hive.registerAdapter(ChestDataAdapter());
   Hive.registerAdapter(G1WalletsListAdapter());
   Hive.registerAdapter(IdAdapter());
-  // Hive.registerAdapter(KeyStoreDataAdapter());
 
   walletBox = await Hive.openBox<WalletData>("walletBox");
   chestBox = await Hive.openBox<ChestData>("chestBox");
@@ -82,10 +82,7 @@ Future<void> main() async {
   }
   // log.d(await configBox.get('endpoint'));
 
-  await _duniterIndexer.getValidIndexerEndpoint();
-  // _duniterIndexer.indexerEndpoint = "http://192.168.1.72:8080/v1/graphql";
-  // _duniterIndexer.indexerEndpoint =
-  //     "https://duniter-indexer.coinduf.eu/v1/graphql";
+  _duniterIndexer.getValidIndexerEndpoint();
 
   HttpOverrides.global = MyHttpOverrides();
 
@@ -131,20 +128,11 @@ class Gecko extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    final _httpLink = HttpLink(
-      indexerEndpoint!,
-    );
 
-    final _client = ValueNotifier(
-      GraphQLClient(
-        cache: GraphQLCache(),
-        link: _httpLink,
-      ),
-    );
+    // To configure multi_endpoints GraphQLProvider: https://stackoverflow.com/q/70656513/8301867
 
     return MultiProvider(
       providers: [
-        // Provider(create: (context) => HistoryProvider()),
         ChangeNotifierProvider(create: (_) => HomeProvider()),
         ChangeNotifierProvider(create: (_) => WalletsProfilesProvider('')),
         ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
@@ -156,44 +144,41 @@ class Gecko extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SubstrateSdk()),
         ChangeNotifierProvider(create: (_) => DuniterIndexer())
       ],
-      child: GraphQLProvider(
-        client: _client,
-        child: MaterialApp(
-          builder: (context, widget) => ResponsiveWrapper.builder(
-              BouncingScrollWrapper.builder(context, widget!),
-              maxWidth: 1200,
-              minWidth: 480,
-              defaultScale: true,
-              breakpoints: [
-                const ResponsiveBreakpoint.resize(480, name: MOBILE),
-                const ResponsiveBreakpoint.autoScale(800, name: TABLET),
-                const ResponsiveBreakpoint.resize(1000, name: DESKTOP),
-              ],
-              background: Container(color: backgroundColor)),
-          title: 'Ğecko',
-          theme: ThemeData(
-            appBarTheme: const AppBarTheme(
-              color: Color(0xffFFD58D),
-              foregroundColor: Color(0xFF000000),
-            ),
-            primaryColor: const Color(0xffFFD58D),
-            textTheme: const TextTheme(
-              bodyText1: TextStyle(fontSize: 16),
-              bodyText2: TextStyle(fontSize: 18),
-            ).apply(
-              bodyColor: const Color(0xFF000000),
-            ),
-            colorScheme:
-                ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]),
+      child: MaterialApp(
+        builder: (context, widget) => ResponsiveWrapper.builder(
+            BouncingScrollWrapper.builder(context, widget!),
+            maxWidth: 1200,
+            minWidth: 480,
+            defaultScale: true,
+            breakpoints: [
+              const ResponsiveBreakpoint.resize(480, name: MOBILE),
+              const ResponsiveBreakpoint.autoScale(800, name: TABLET),
+              const ResponsiveBreakpoint.resize(1000, name: DESKTOP),
+            ],
+            background: Container(color: backgroundColor)),
+        title: 'Ğecko',
+        theme: ThemeData(
+          appBarTheme: const AppBarTheme(
+            color: Color(0xffFFD58D),
+            foregroundColor: Color(0xFF000000),
           ),
-          home: const HomeScreen(),
-          initialRoute: "/",
-          routes: {
-            '/mywallets': (context) => const WalletsHome(),
-            '/search': (context) => const SearchScreen(),
-            '/searchResult': (context) => const SearchResultScreen(),
-          },
+          primaryColor: const Color(0xffFFD58D),
+          textTheme: const TextTheme(
+            bodyText1: TextStyle(fontSize: 16),
+            bodyText2: TextStyle(fontSize: 18),
+          ).apply(
+            bodyColor: const Color(0xFF000000),
+          ),
+          colorScheme:
+              ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]),
         ),
+        home: const HomeScreen(),
+        initialRoute: "/",
+        routes: {
+          '/mywallets': (context) => const WalletsHome(),
+          '/search': (context) => const SearchScreen(),
+          '/searchResult': (context) => const SearchResultScreen(),
+        },
       ),
     );
   }

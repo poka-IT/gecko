@@ -52,19 +52,31 @@ query ($address: String!) {
 ''';
 
 const String getHistoryByAddressQ3 = r'''
-query ($address: String!) {
+query ($address: String!, $number: Int!, $cursor: String) {
   transaction_connection(where: 
   {_or: [
     {issuer_id: {_eq: $address}}, 
     {receiver_id: {_eq: $address}}
   ]}, 
-  order_by: {created_at: desc}) {
+  order_by: {created_at: desc},
+  first: $number,
+  after: $cursor) {
     edges {
       node {
         amount
         created_at
         issuer_id
         receiver_id
+        issuer {
+          identity {
+            name
+          }
+        }
+        receiver {
+          identity {
+            name
+          }
+        }
       }
     }
     pageInfo {

@@ -112,7 +112,7 @@ class WalletViewScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 9),
                 Text(
-                  "Voir\nl'historique",
+                  "Voir\nl'activité",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       fontSize: buttonFontSize, fontWeight: FontWeight.w500),

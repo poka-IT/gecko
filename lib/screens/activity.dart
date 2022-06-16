@@ -1,22 +1,24 @@
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/providers/cesium_plus.dart';
+import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/screens/avatar_fullscreen.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
-class HistoryScreen extends StatelessWidget with ChangeNotifier {
-  HistoryScreen({required this.pubkey, this.avatar, this.username, Key? key})
+class ActivityScreen extends StatelessWidget with ChangeNotifier {
+  ActivityScreen({required this.address, this.avatar, this.username, Key? key})
       : super(key: key);
   final ScrollController scrollController = ScrollController();
   final double avatarsSize = 80;
-  final String? pubkey;
+  final String? address;
   final String? username;
   final Image? avatar;
 
@@ -28,14 +30,6 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    WalletsProfilesProvider _historyProvider =
-        Provider.of<WalletsProfilesProvider>(context, listen: false);
-    CesiumPlusProvider _cesiumPlusProvider =
-        Provider.of<CesiumPlusProvider>(context, listen: false);
-    log.i('Build pubkey : ' + pubkey!);
-    // WidgetsBinding.instance.addPostFrameCallback((_) {});
-
-    _historyProvider.balance = _historyProvider.transBC = null;
 
     return Scaffold(
         key: _scaffoldKey,
@@ -44,18 +38,18 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
           toolbarHeight: 60 * ratio,
           title: const SizedBox(
             height: 22,
-            child: Text('Historique des transactions'),
+            child: Text('Activité du compte'),
           ),
         ),
         body: Column(children: <Widget>[
-          headerProfileView(context, _historyProvider, _cesiumPlusProvider),
-          historyQuery(context, _cesiumPlusProvider),
+          headerProfileView(context),
+          historyQuery(context),
         ]));
   }
 
-  Widget historyQuery(context, CesiumPlusProvider _cesiumPlusProvider) {
-    WalletsProfilesProvider _historyProvider =
-        Provider.of<WalletsProfilesProvider>(context, listen: true);
+  Widget historyQuery(context) {
+    DuniterIndexer _duniterIndexer =
+        Provider.of<DuniterIndexer>(context, listen: false);
 
     return Expanded(
         child: Column(
@@ -64,14 +58,13 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
       children: <Widget>[
         Query(
           options: QueryOptions(
-            document: gql('getHistory'),
+            document: gql(getHistoryByAddressQ3),
             variables: <String, dynamic>{
-              'pubkey': pubkey,
-              'number': 10,
-              'cursor': null
+              'address': address,
             },
           ),
           builder: (QueryResult result, {fetchMore, refetch}) {
+            log.d(result.data);
             if (result.isLoading && result.data == null) {
               return const Center(
                 child: CircularProgressIndicator(),
@@ -79,11 +72,12 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
             }
 
             if (result.hasException) {
-              log.e('Error GVA: ' + result.exception.toString());
+              log.e('Error Indexer: ' + result.exception.toString());
               return Column(children: const <Widget>[
                 SizedBox(height: 50),
                 Text(
-                  "Aucun noeud GVA valide n'a pu être trouvé.\nVeuillez réessayer ultérieurement.",
+                  "L'état du réseau ne permet pas\nd'afficher l'historique du compte",
+                  textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 18),
                 )
               ]);
@@ -97,16 +91,10 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
               ]);
             }
 
-            if (result.data!['balance'] == null) {
-              _historyProvider.balance = 0.0;
-            } else {
-              _historyProvider.balance = _historyProvider
-                  .removeDecimalZero(result.data!['balance']['amount'] / 100);
-            }
-
             if (result.isNotLoading) {
               // log.d(result.data);
-              opts = _historyProvider.checkQueryResult(result, opts, pubkey);
+              opts =
+                  _duniterIndexer.checkHistoryResult(result, opts!, address!);
             }
 
             // Build history list
@@ -124,7 +112,7 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                   if (t is ScrollEndNotification &&
                       scrollController.position.pixels >=
                           scrollController.position.maxScrollExtent * 0.7 &&
-                      _historyProvider.pageInfo!['hasPreviousPage'] &&
+                      _duniterIndexer.pageInfo!['hasPreviousPage'] &&
                       result.isNotLoading) {
                     fetchMore!(opts!);
                   }
@@ -368,11 +356,9 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
     }).toList());
   }
 
-  Widget headerProfileView(
-      BuildContext context,
-      WalletsProfilesProvider _historyProvider,
-      CesiumPlusProvider _cesiumPlusProvider) {
-    const double _avatarSize = 140;
+  Widget headerProfileView(BuildContext context) {
+    DuniterIndexer _duniterIndexer =
+        Provider.of<DuniterIndexer>(context, listen: false);
 
     return Column(children: <Widget>[
       Container(
@@ -402,11 +388,11 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                           GestureDetector(
                             key: const Key('copyPubkey'),
                             onTap: () {
-                              Clipboard.setData(ClipboardData(text: pubkey));
+                              Clipboard.setData(ClipboardData(text: address));
                               snackCopyKey(context);
                             },
                             child: Text(
-                              getShortPubkey(pubkey!),
+                              getShortPubkey(address!),
                               style: const TextStyle(
                                 fontSize: 30,
                                 fontWeight: FontWeight.w800,
@@ -416,34 +402,15 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                         ]),
                         const SizedBox(height: 10),
                         if (username == null)
-                          Query(
-                            options: QueryOptions(
-                              document: gql('getId'),
-                              variables: {
-                                'pubkey': pubkey,
-                              },
-                            ),
-                            builder: (QueryResult result,
-                                {VoidCallback? refetch, FetchMore? fetchMore}) {
-                              if (result.isLoading || result.hasException) {
-                                return const Text('...');
-                              } else if (result.data!['idty'] == null ||
-                                  result.data!['idty']['username'] == null) {
-                                return const Text('');
-                              } else {
-                                return SizedBox(
-                                  width: 230,
-                                  child: Text(
-                                    result.data!['idty']['username'] ?? '',
-                                    style: const TextStyle(
-                                      fontSize: 27,
-                                      color: Color(0xff814C00),
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
-                          ),
+                          _duniterIndexer.getNameByAddress(
+                              context,
+                              address!,
+                              null,
+                              27,
+                              false,
+                              Colors.black,
+                              FontWeight.w400,
+                              FontStyle.normal),
                         if (username != null)
                           SizedBox(
                             width: 230,
@@ -457,91 +424,12 @@ class HistoryScreen extends StatelessWidget with ChangeNotifier {
                           ),
                         const SizedBox(height: 25),
                       ]),
-                  FutureBuilder(
-                      future: _historyProvider.getBalance(pubkey),
-                      builder:
-                          (BuildContext context, AsyncSnapshot<num?> _balance) {
-                        if (_balance.connectionState != ConnectionState.done ||
-                            _balance.hasError) {
-                          return const Text('...');
-                        }
-                        return Text(
-                          "${_balance.data.toString()} $currencyName",
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                              fontSize: 22, fontWeight: FontWeight.w500),
-                        );
-                      }),
+                  balance(context, address!, 21),
                   const SizedBox(height: 30),
                 ]),
             const Spacer(),
             Column(children: <Widget>[
-              if (avatar == null)
-                FutureBuilder(
-                    future: _cesiumPlusProvider.getAvatar(pubkey, _avatarSize),
-                    builder:
-                        (BuildContext context, AsyncSnapshot<Image?> _avatar) {
-                      if (_avatar.connectionState != ConnectionState.done) {
-                        return Stack(children: [
-                          ClipOval(
-                            child:
-                                _cesiumPlusProvider.defaultAvatar(_avatarSize),
-                          ),
-                          Positioned(
-                            top: 15,
-                            right: 45,
-                            width: 51,
-                            height: 51,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 5,
-                              color: orangeC,
-                            ),
-                          ),
-                        ]);
-                      }
-                      if (_avatar.hasData) {
-                        return GestureDetector(
-                          key: const Key('openAvatar'),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) {
-                                return AvatarFullscreen(_avatar.data);
-                              }),
-                            );
-                          },
-                          child: ClipOval(
-                            child: Image(
-                              image: _avatar.data!.image,
-                              height: _avatarSize,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        );
-                      }
-                      return ClipOval(
-                        child: _cesiumPlusProvider.defaultAvatar(_avatarSize),
-                      );
-                    }),
-              if (avatar != null)
-                GestureDetector(
-                  key: const Key('openAvatar'),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return AvatarFullscreen(avatar);
-                      }),
-                    );
-                  },
-                  child: ClipOval(
-                    child: Image(
-                      image: avatar!.image,
-                      height: _avatarSize,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
+              Image.asset(('assets/icon_user.png'), height: 50),
               const SizedBox(height: 25),
             ]),
           ]),

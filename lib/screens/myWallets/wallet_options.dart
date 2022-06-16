@@ -10,6 +10,7 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/common_elements.dart';
+import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/myWallets/manage_membership.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
 import 'package:provider/provider.dart';
@@ -162,7 +163,7 @@ class WalletOptions extends StatelessWidget {
                             return Column(children: [
                               pubkeyWidget(walletProvider, ctx),
                               SizedBox(height: 10 * ratio),
-                              historyWidget(
+                              activityWidget(
                                   context, _historyProvider, walletProvider),
                               SizedBox(height: 12 * ratio),
                               setDefaultWalletWidget(
@@ -316,30 +317,30 @@ class WalletOptions extends StatelessWidget {
     );
   }
 
-  Widget historyWidget(
+  Widget activityWidget(
       BuildContext context,
       WalletsProfilesProvider _historyProvider,
       WalletOptionsProvider walletProvider) {
     return InkWell(
-      key: const Key('displayHistory'),
+      key: const Key('displayActivity'),
       onTap: () {
-        _historyProvider.nPage = 1;
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(builder: (context) {
-        //     return HistoryScreen(
-        //         pubkey: walletProvider.address.text,
-        //         avatar: wallet.imageCustomPath == null
-        //             ? Image.asset(
-        //                 'assets/avatars/${wallet.imageDefaultPath}',
-        //                 width: 110,
-        //               )
-        //             : Image.asset(
-        //                 wallet.imageCustomPath!,
-        //                 width: 110,
-        //               ));
-        //   }),
-        // );
+        // _historyProvider.nPage = 1;
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) {
+            return ActivityScreen(
+                address: walletProvider.address.text,
+                avatar: wallet.imageCustomPath == null
+                    ? Image.asset(
+                        'assets/avatars/${wallet.imageDefaultPath}',
+                        width: 110,
+                      )
+                    : Image.asset(
+                        wallet.imageCustomPath!,
+                        width: 110,
+                      ));
+          }),
+        );
       },
       child: SizedBox(
         height: 50,
@@ -350,8 +351,8 @@ class WalletOptions extends StatelessWidget {
             height: 45,
           ),
           const SizedBox(width: 22),
-          Text('Historique des transactions',
-              style: TextStyle(fontSize: 20, color: Colors.grey[500])),
+          const Text('Activité',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
         ]),
       ),
     );

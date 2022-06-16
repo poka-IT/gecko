@@ -17,6 +17,7 @@ import 'package:provider/provider.dart';
 
 class DuniterIndexer with ChangeNotifier {
   Map<String, String?> walletNameIndexer = {};
+  Map? pageInfo;
 
   void reload() {
     notifyListeners();
@@ -257,4 +258,10 @@ class DuniterIndexer with ChangeNotifier {
           );
         });
   }
+
+
+checkHistoryResult(QueryResult<Object?> result, FetchMoreOptions options, String address) {
+
+}
+
 }

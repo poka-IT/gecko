@@ -351,7 +351,7 @@ class WalletOptions extends StatelessWidget {
             height: 45,
           ),
           const SizedBox(width: 22),
-          const Text('Activité',
+          const Text("Voir l'activité",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
         ]),
       ),

@@ -1,5 +1,6 @@
 import 'package:bubble/bubble.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/stateful_wrapper.dart';
 import 'package:gecko/providers/chest_provider.dart';
@@ -301,6 +302,7 @@ Widget geckHome(context) {
                   ),
                 ),
                 const SizedBox(height: 12),
+                const Text('msg').tr(args: [currencyName]),
                 Text(
                   "Rechercher un\nportefeuille",
                   textAlign: TextAlign.center,

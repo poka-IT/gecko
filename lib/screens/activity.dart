@@ -51,84 +51,109 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
     DuniterIndexer _duniterIndexer =
         Provider.of<DuniterIndexer>(context, listen: false);
 
-    return Expanded(
-        child: Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      mainAxisSize: MainAxisSize.max,
-      children: <Widget>[
-        Query(
-          options: QueryOptions(
-            document: gql(getHistoryByAddressQ3),
-            variables: <String, dynamic>{
-              'address': address,
-            },
-          ),
-          builder: (QueryResult result, {fetchMore, refetch}) {
-            log.d(result.data);
-            if (result.isLoading && result.data == null) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
+    if (indexerEndpoint == '') {
+      Column(children: const <Widget>[
+        SizedBox(height: 50),
+        Text(
+          "L'état du réseau ne permet pas\nd'afficher l'historique du compte",
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18),
+        )
+      ]);
+    }
 
-            if (result.hasException) {
-              log.e('Error Indexer: ' + result.exception.toString());
-              return Column(children: const <Widget>[
-                SizedBox(height: 50),
-                Text(
-                  "L'état du réseau ne permet pas\nd'afficher l'historique du compte",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 18),
-                )
-              ]);
-            } else if (result.data == null) {
-              return Column(children: const <Widget>[
-                SizedBox(height: 50),
-                Text(
-                  "Aucune donnée à afficher.",
-                  style: TextStyle(fontSize: 18),
-                )
-              ]);
-            }
+    final _httpLink = HttpLink(
+      '$indexerEndpoint/v1beta1/relay',
+    );
 
-            if (result.isNotLoading) {
-              // log.d(result.data);
-              opts =
-                  _duniterIndexer.checkHistoryResult(result, opts!, address!);
-            }
+    final _client = ValueNotifier(
+      GraphQLClient(
+        cache: GraphQLCache(),
+        link: _httpLink,
+      ),
+    );
 
-            // Build history list
-            return NotificationListener(
-                child: Builder(
-                  builder: (context) => Expanded(
-                    child: ListView(
-                      key: const Key('listTransactions'),
-                      controller: scrollController,
-                      children: <Widget>[historyView(context, result)],
+    return GraphQLProvider(
+      client: _client,
+      child: Expanded(
+          child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.max,
+        children: <Widget>[
+          Query(
+            options: QueryOptions(
+              document: gql(getHistoryByAddressQ3),
+              variables: <String, dynamic>{
+                'address': address,
+                'number': 20,
+                'cursor': null
+              },
+            ),
+            builder: (QueryResult result, {fetchMore, refetch}) {
+              if (result.isLoading && result.data == null) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              if (result.hasException) {
+                log.e('Error Indexer: ' + result.exception.toString());
+                return Column(children: const <Widget>[
+                  SizedBox(height: 50),
+                  Text(
+                    "L'état du réseau ne permet pas\nd'afficher l'historique du compte",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 18),
+                  )
+                ]);
+              } else if (result.data == null) {
+                return Column(children: const <Widget>[
+                  SizedBox(height: 50),
+                  Text(
+                    "Aucune donnée à afficher.",
+                    style: TextStyle(fontSize: 18),
+                  )
+                ]);
+              }
+
+              if (result.isNotLoading) {
+                // log.d(result.data);
+                opts = _duniterIndexer.checkQueryResult(result, opts, address!);
+              }
+
+              // Build history list
+              return NotificationListener(
+                  child: Builder(
+                    builder: (context) => Expanded(
+                      child: ListView(
+                        key: const Key('listTransactions'),
+                        controller: scrollController,
+                        children: <Widget>[historyView(context, result)],
+                      ),
                     ),
                   ),
-                ),
-                onNotification: (dynamic t) {
-                  if (t is ScrollEndNotification &&
-                      scrollController.position.pixels >=
-                          scrollController.position.maxScrollExtent * 0.7 &&
-                      _duniterIndexer.pageInfo!['hasPreviousPage'] &&
-                      result.isNotLoading) {
-                    fetchMore!(opts!);
-                  }
-                  return true;
-                });
-          },
-        ),
-      ],
-    ));
+                  onNotification: (dynamic t) {
+                    if (t is ScrollEndNotification &&
+                        scrollController.position.pixels >=
+                            scrollController.position.maxScrollExtent * 0.7 &&
+                        _duniterIndexer.pageInfo!['hasNextPage'] &&
+                        result.isNotLoading) {
+                      fetchMore!(opts!);
+                    }
+                    return true;
+                  });
+            },
+          ),
+        ],
+      )),
+    );
   }
 
   Widget historyView(context, result) {
-    WalletsProfilesProvider _historyProvider =
-        Provider.of<WalletsProfilesProvider>(context, listen: false);
+    DuniterIndexer _duniterIndexer =
+        Provider.of<DuniterIndexer>(context, listen: false);
 
-    return _historyProvider.transBC == null
+    return _duniterIndexer.transBC == null
         ? Column(children: const <Widget>[
             SizedBox(height: 50),
             Text(
@@ -137,16 +162,16 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
             )
           ])
         : Column(children: <Widget>[
-            getTransactionTile(context, _historyProvider),
+            getTransactionTile(context, _duniterIndexer),
             if (result.isLoading &&
-                _historyProvider.pageInfo!['hasPreviousPage'])
+                _duniterIndexer.pageInfo!['hasPreviousPage'])
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: const <Widget>[
                   CircularProgressIndicator(),
                 ],
               ),
-            if (!_historyProvider.pageInfo!['hasPreviousPage'])
+            if (!_duniterIndexer.pageInfo!['hasNextPage'])
               Column(
                 children: const <Widget>[
                   SizedBox(height: 15),
@@ -160,7 +185,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
   }
 
   Widget getTransactionTile(
-      BuildContext context, WalletsProfilesProvider _historyProvider) {
+      BuildContext context, DuniterIndexer _duniterIndexer) {
     CesiumPlusProvider _cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
     int keyID = 0;
@@ -188,9 +213,11 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
     };
 
     return Column(
-        children: _historyProvider.transBC!.map((repository) {
+        children: _duniterIndexer.transBC!.map((repository) {
+      // log.d('bbbbbbbbbbbbbbbbbbbbbb: ' + repository.toString());
+
       DateTime now = DateTime.now();
-      DateTime date = DateTime.fromMillisecondsSinceEpoch(repository[0] * 1000);
+      DateTime date = repository[0];
 
       String dateForm;
       if ({4, 10, 11, 12}.contains(date.month)) {
@@ -257,52 +284,12 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
                   key: Key('transaction${keyID++}'),
                   contentPadding: const EdgeInsets.only(
                       left: 20, right: 30, top: 15, bottom: 15),
-                  leading: g1WalletsBox.get(repository[2])?.avatar == null
-                      ? FutureBuilder(
-                          future: _cesiumPlusProvider.getAvatar(
-                              repository[2], _avatarSize),
-                          builder: (BuildContext context,
-                              AsyncSnapshot<Image?> _avatar) {
-                            if (_avatar.connectionState !=
-                                    ConnectionState.done ||
-                                _avatar.hasError) {
-                              return Stack(children: [
-                                _cesiumPlusProvider.defaultAvatar(_avatarSize),
-                                Positioned(
-                                  top: 8,
-                                  right: 0,
-                                  width: 12,
-                                  height: 12,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 1,
-                                    color: orangeC,
-                                  ),
-                                ),
-                              ]);
-                            }
-                            if (_avatar.hasData) {
-                              g1WalletsBox.get(repository[2])?.avatar =
-                                  _avatar.data;
-                              return ClipOval(child: _avatar.data);
-                            } else {
-                              g1WalletsBox.get(repository[2])?.avatar =
-                                  _cesiumPlusProvider
-                                      .defaultAvatar(repository[2]);
-                              return _cesiumPlusProvider
-                                  .defaultAvatar(_avatarSize);
-                            }
-                          })
-                      : ClipOval(
-                          child: Image(
-                            image:
-                                g1WalletsBox.get(repository[2])!.avatar!.image,
-                            height: _avatarSize,
-                          ),
-                        ),
+                  leading: ClipOval(
+                    child: _cesiumPlusProvider.defaultAvatar(_avatarSize),
+                  ),
                   title: Padding(
-                    padding: EdgeInsets.only(
-                        bottom: 5, top: repository[6] != '' ? 0 : 0),
-                    child: Text(repository[3],
+                    padding: const EdgeInsets.only(bottom: 5),
+                    child: Text(getShortPubkey(repository[1]),
                         style: const TextStyle(
                             fontSize: 18, fontFamily: 'Monospace')),
                   ),
@@ -316,7 +303,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
                         TextSpan(
                           text: dateForm,
                         ),
-                        if (repository[6] != '')
+                        if (repository[2] != '')
                           TextSpan(
                             text: '  ·  ',
                             style: TextStyle(
@@ -325,7 +312,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
                             ),
                           ),
                         TextSpan(
-                          text: repository[6],
+                          text: repository[2],
                           style: TextStyle(
                             fontStyle: FontStyle.italic,
                             color: Colors.grey[600],
@@ -334,19 +321,19 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
                       ],
                     ),
                   ),
-                  trailing: Text("${repository[4]} $currencyName",
+                  trailing: Text("${repository[3]} $currencyName",
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.w500),
                       textAlign: TextAlign.justify),
                   dense: false,
                   isThreeLine: false,
                   onTap: () {
-                    _historyProvider.nPage = 1;
+                    _duniterIndexer.nPage = 1;
                     // _cesiumPlusProvider.avatarCancelToken.cancel('cancelled');
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) {
-                        return WalletViewScreen(pubkey: repository[2]);
+                        return WalletViewScreen(pubkey: repository[1]);
                       }),
                     );
                     // Navigator.pop(context);

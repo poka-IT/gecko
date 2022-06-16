@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -17,7 +16,11 @@ import 'package:provider/provider.dart';
 
 class DuniterIndexer with ChangeNotifier {
   Map<String, String?> walletNameIndexer = {};
+  String? fetchMoreCursor;
   Map? pageInfo;
+  int nPage = 1;
+  int nRepositories = 20;
+  List? transBC;
 
   void reload() {
     notifyListeners();
@@ -30,7 +33,8 @@ class DuniterIndexer with ChangeNotifier {
       final _client = HttpClient();
       _client.connectionTimeout = const Duration(milliseconds: 1000);
       try {
-        final request = await _client.postUrl(Uri.parse(oldEndpoint));
+        final request =
+            await _client.postUrl(Uri.parse('$oldEndpoint/v1/graphql'));
         final response = await request.close();
         if (response.statusCode != 200) {
           log.d('INDEXER IS OFFILINE');
@@ -74,7 +78,8 @@ class DuniterIndexer with ChangeNotifier {
       }
 
       try {
-        final request = await _client.postUrl(Uri.parse(_listEndpoints[i]));
+        final request =
+            await _client.postUrl(Uri.parse('${_listEndpoints[i]}/v1/graphql'));
         final response = await request.close();
 
         indexerEndpoint = _listEndpoints[i];
@@ -122,54 +127,67 @@ class DuniterIndexer with ChangeNotifier {
         }
       }
     }
+    final _httpLink = HttpLink(
+      '$indexerEndpoint/v1/graphql',
+    );
 
-    return Query(
-        options: QueryOptions(
-          document: gql(
-              getNameByAddressQ), // this is the query string you just created
-          variables: {
-            'address': address,
-          },
-          // pollInterval: const Duration(seconds: 10),
-        ),
-        builder: (QueryResult result,
-            {VoidCallback? refetch, FetchMore? fetchMore}) {
-          if (result.hasException) {
-            return Text(result.exception.toString());
-          }
+    final _client = ValueNotifier(
+      GraphQLClient(
+        cache: GraphQLCache(store: HiveStore()),
+        link: _httpLink,
+      ),
+    );
+    return GraphQLProvider(
+      client: _client,
+      child: Query(
+          options: QueryOptions(
+            document: gql(
+                getNameByAddressQ), // this is the query string you just created
+            variables: {
+              'address': address,
+            },
+            // pollInterval: const Duration(seconds: 10),
+          ),
+          builder: (QueryResult result,
+              {VoidCallback? refetch, FetchMore? fetchMore}) {
+            if (result.hasException) {
+              return Text(result.exception.toString());
+            }
 
-          if (result.isLoading) {
-            return const Text('Loading');
-          }
+            if (result.isLoading) {
+              return const Text('Loading');
+            }
 
-          walletNameIndexer[address] =
-              result.data?['account_by_pk']?['identity']?['name'];
+            walletNameIndexer[address] =
+                result.data?['account_by_pk']?['identity']?['name'];
 
-          if (walletNameIndexer[address] == null) {
-            if (wallet == null) {
-              return const SizedBox();
-            } else {
-              if (canEdit) {
-                return _walletOptions.walletName(context, wallet, size, _color);
+            if (walletNameIndexer[address] == null) {
+              if (wallet == null) {
+                return const SizedBox();
               } else {
-                return _walletOptions.walletNameController(
-                    context, wallet, size);
+                if (canEdit) {
+                  return _walletOptions.walletName(
+                      context, wallet, size, _color);
+                } else {
+                  return _walletOptions.walletNameController(
+                      context, wallet, size);
+                }
               }
             }
-          }
 
-          return Text(
-            _color == Colors.grey[700]!
-                ? '(${walletNameIndexer[address]!})'
-                : walletNameIndexer[address]!,
-            style: TextStyle(
-              fontSize: size,
-              color: _color,
-              fontWeight: fontWeight,
-              fontStyle: fontStyle,
-            ),
-          );
-        });
+            return Text(
+              _color == Colors.grey[700]!
+                  ? '(${walletNameIndexer[address]!})'
+                  : walletNameIndexer[address]!,
+              style: TextStyle(
+                fontSize: size,
+                color: _color,
+                fontWeight: fontWeight,
+                fontStyle: fontStyle,
+              ),
+            );
+          }),
+    );
   }
 
   Widget searchIdentity(BuildContext context, String name) {
@@ -183,85 +201,184 @@ class DuniterIndexer with ChangeNotifier {
       return const Text('Aucun résultat');
     }
 
-    return Query(
-        options: QueryOptions(
-          document: gql(
-              searchAddressByNameQ), // this is the query string you just created
-          variables: {
-            'name': name,
-          },
-          // pollInterval: const Duration(seconds: 10),
-        ),
-        builder: (QueryResult result,
-            {VoidCallback? refetch, FetchMore? fetchMore}) {
-          if (result.hasException) {
-            return Text(result.exception.toString());
-          }
+    final _httpLink = HttpLink(
+      '$indexerEndpoint/v1/graphql',
+    );
 
-          if (result.isLoading) {
-            return const Text('Loading');
-          }
+    final _client = ValueNotifier(
+      GraphQLClient(
+        cache: GraphQLCache(store: HiveStore()),
+        link: _httpLink,
+      ),
+    );
+    return GraphQLProvider(
+      client: _client,
+      child: Query(
+          options: QueryOptions(
+            document: gql(
+                searchAddressByNameQ), // this is the query string you just created
+            variables: {
+              'name': name,
+            },
+            // pollInterval: const Duration(seconds: 10),
+          ),
+          builder: (QueryResult result,
+              {VoidCallback? refetch, FetchMore? fetchMore}) {
+            if (result.hasException) {
+              return Text(result.exception.toString());
+            }
 
-          final List identities = result.data?['search_identity'] ?? [];
+            if (result.isLoading) {
+              return const Text('Loading');
+            }
 
-          if (identities.isEmpty) {
-            return const Text('Aucun résultat');
-          }
+            final List identities = result.data?['search_identity'] ?? [];
 
-          int keyID = 0;
-          double _avatarSize = 55;
-          return Expanded(
-            child: ListView(children: <Widget>[
-              for (Map profile in identities)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 5),
-                  child: ListTile(
-                      key: Key('searchResult${keyID++}'),
-                      horizontalTitleGap: 40,
-                      contentPadding: const EdgeInsets.all(5),
-                      leading: _cesiumPlusProvider.defaultAvatar(_avatarSize),
-                      title: Row(children: <Widget>[
-                        Text(getShortPubkey(profile['id']),
-                            style: const TextStyle(
-                                fontSize: 18,
-                                fontFamily: 'Monospace',
-                                fontWeight: FontWeight.w500),
-                            textAlign: TextAlign.center),
-                      ]),
-                      trailing: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [balance(context, profile['id'], 16)]),
-                      subtitle: Row(children: <Widget>[
-                        Text(profile['name'] ?? '',
-                            style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w500),
-                            textAlign: TextAlign.center),
-                      ]),
-                      dense: false,
-                      isThreeLine: false,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) {
-                            _walletsProfiles.address = profile['id'];
-                            return WalletViewScreen(
-                              pubkey: profile['id'],
-                              username:
-                                  g1WalletsBox.get(profile['id'])?.id?.username,
-                              avatar: g1WalletsBox.get(profile['id'])?.avatar,
-                            );
-                          }),
-                        );
-                      }),
-                ),
-            ]),
-          );
-        });
+            if (identities.isEmpty) {
+              return const Text('Aucun résultat');
+            }
+
+            int keyID = 0;
+            double _avatarSize = 55;
+            return Expanded(
+              child: ListView(children: <Widget>[
+                for (Map profile in identities)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    child: ListTile(
+                        key: Key('searchResult${keyID++}'),
+                        horizontalTitleGap: 40,
+                        contentPadding: const EdgeInsets.all(5),
+                        leading: _cesiumPlusProvider.defaultAvatar(_avatarSize),
+                        title: Row(children: <Widget>[
+                          Text(getShortPubkey(profile['id']),
+                              style: const TextStyle(
+                                  fontSize: 18,
+                                  fontFamily: 'Monospace',
+                                  fontWeight: FontWeight.w500),
+                              textAlign: TextAlign.center),
+                        ]),
+                        trailing: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [balance(context, profile['id'], 16)]),
+                        subtitle: Row(children: <Widget>[
+                          Text(profile['name'] ?? '',
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.w500),
+                              textAlign: TextAlign.center),
+                        ]),
+                        dense: false,
+                        isThreeLine: false,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) {
+                              _walletsProfiles.address = profile['id'];
+                              return WalletViewScreen(
+                                pubkey: profile['id'],
+                                username: g1WalletsBox
+                                    .get(profile['id'])
+                                    ?.id
+                                    ?.username,
+                                avatar: g1WalletsBox.get(profile['id'])?.avatar,
+                              );
+                            }),
+                          );
+                        }),
+                  ),
+              ]),
+            );
+          }),
+    );
   }
 
+  List parseHistory(blockchainTX, _pubkey) {
+    var transBC = [];
+    int i = 0;
 
-checkHistoryResult(QueryResult<Object?> result, FetchMoreOptions options, String address) {
+    for (final trans in blockchainTX) {
+      final transaction = trans['node'];
+      final direction =
+          transaction['issuer_id'] != _pubkey ? 'RECEIVED' : 'SENT';
 
-}
+      transBC.add(i);
+      transBC[i] = [];
+      transBC[i].add(DateTime.parse(transaction['created_at']));
+      final int amountBrut = transaction['amount'];
+      final num amount = removeDecimalZero(amountBrut / 100);
+      if (direction == "RECEIVED") {
+        transBC[i].add(transaction['issuer_id']);
+        transBC[i].add(transaction['issuer']['identity']?['name'] ?? '');
+        transBC[i].add(amount.toString());
+      } else if (direction == "SENT") {
+        transBC[i].add(transaction['receiver_id']);
+        transBC[i].add(transaction['receiver']['identity']?['name'] ?? '');
+        transBC[i].add('- ' + amount.toString());
+      }
+      // transBC[i].add(''); //transaction comment
 
+      i++;
+    }
+    return transBC;
+  }
+
+  FetchMoreOptions? checkQueryResult(result, opts, _pubkey) {
+    final List<dynamic>? blockchainTX =
+        (result.data['transaction_connection']['edges'] as List<dynamic>?);
+    // final List<dynamic> mempoolTX =
+    //     (result.data['txsHistoryMp']['receiving'] as List<dynamic>);
+
+    pageInfo = result.data['transaction_connection']['pageInfo'];
+    fetchMoreCursor = pageInfo!['endCursor'];
+    if (fetchMoreCursor == null) nPage = 1;
+
+    log.d(fetchMoreCursor);
+
+    if (nPage == 1) {
+      nRepositories = 40;
+    } else if (nPage == 2) {
+      nRepositories = 100;
+    }
+    // nRepositories = 10;
+    nPage++;
+
+    if (fetchMoreCursor != null) {
+      opts = FetchMoreOptions(
+        variables: {'cursor': fetchMoreCursor, 'number': nRepositories},
+        updateQuery: (previousResultData, fetchMoreResultData) {
+          final List<dynamic> repos = [
+            ...previousResultData!['transaction_connection']['edges']
+                as List<dynamic>,
+            ...fetchMoreResultData!['transaction_connection']['edges']
+                as List<dynamic>
+          ];
+
+          log.d('repos:  ' + previousResultData.toString());
+          log.d('repos:  ' + fetchMoreResultData.toString());
+          log.d('repos:  ' + repos.toString());
+
+          fetchMoreResultData['transaction_connection']['edges'] = repos;
+          return fetchMoreResultData;
+        },
+      );
+    }
+
+    log.d(
+        "###### DEBUG H Parse blockchainTX list. Cursor: $fetchMoreCursor ######");
+    if (fetchMoreCursor != null) {
+      transBC = parseHistory(blockchainTX, _pubkey);
+    } else {
+      log.i("###### DEBUG H - Début de l'historique");
+    }
+
+    return opts;
+  }
+
+  num removeDecimalZero(double n) {
+    String result = n.toStringAsFixed(n.truncateToDouble() == n ? 0 : 2);
+    return num.parse(result);
+  }
+
+  // checkHistoryResult(
+  //     QueryResult<Object?> result, FetchMoreOptions options, String address) {}
 }

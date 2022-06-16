@@ -1,32 +1,24 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/wallet_view.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
 // import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:barcode_scan2/barcode_scan2.dart';
-import 'dart:math';
-import 'package:intl/intl.dart';
 
 class WalletsProfilesProvider with ChangeNotifier {
   WalletsProfilesProvider(this.address);
 
   String? address = '';
   String pubkeyShort = '';
-  List? transBC;
-  String? fetchMoreCursor;
-  Map? pageInfo;
+
   bool isHistoryScreen = false;
   String historySwitchButtun = "Voir l'historique";
   String? rawSvg;
   TextEditingController payAmount = TextEditingController();
   TextEditingController payComment = TextEditingController();
   num? balance;
-  int nRepositories = 20;
-  int nPage = 1;
 
   Future<String> scan(context) async {
     if (Platform.isAndroid || Platform.isIOS) {
@@ -97,115 +89,8 @@ class WalletsProfilesProvider with ChangeNotifier {
 // Matograine portefeuille: 9p5nHsES6xujFR7pw2yGy4PLKKHgWsMvsDHaHF64Uj25.
 // Lion simone: 78jhpprYkMNF6i5kQPXfkAVBpd2aqcpieNsXTSW4c21f
 
-  List parseHistory(txs, _pubkey) {
-    var transBC = [];
-    int i = 0;
-
-    const currentBase = 0;
-    double currentUD = 10.54;
-
-    for (final trans in txs) {
-      var direction = trans['direction'];
-      final transaction = trans['node'];
-      String? output;
-      if (direction == "RECEIVED") {
-        for (String line in transaction['outputs']) {
-          if (line.contains(_pubkey)) {
-            output = line;
-          }
-        }
-      } else {
-        output = transaction['outputs'][0];
-      }
-      if (output == null) {
-        continue;
-      }
-
-      transBC.add(i);
-      transBC[i] = [];
-      final dateBrut = DateTime.fromMillisecondsSinceEpoch(
-          transaction['writtenTime'] * 1000);
-      final DateFormat formatter = DateFormat('dd-MM-yy\nHH:mm');
-      final date = formatter.format(dateBrut);
-      transBC[i].add(transaction['writtenTime']);
-      transBC[i].add(date);
-      final int amountBrut = int.parse(output.split(':')[0]);
-      final base = int.parse(output.split(':')[1]);
-      final int applyBase = base - currentBase;
-      final num amount =
-          removeDecimalZero(amountBrut * pow(10, applyBase) / 100);
-      num amountUD = amount / currentUD;
-      if (direction == "RECEIVED") {
-        transBC[i].add(transaction['issuers'][0]);
-        transBC[i].add(getShortPubkey(transaction['issuers'][0]));
-        transBC[i].add(amount.toString());
-        transBC[i].add(amountUD.toStringAsFixed(2));
-      } else if (direction == "SENT") {
-        final outPubkey = output.split("SIG(")[1].replaceAll(')', '');
-        transBC[i].add(outPubkey);
-        transBC[i].add(getShortPubkey(outPubkey));
-        transBC[i].add('- ' + amount.toString());
-        transBC[i].add(amountUD.toStringAsFixed(2));
-      }
-      transBC[i].add(transaction['comment']);
-
-      i++;
-    }
-    return transBC;
-  }
-
-  FetchMoreOptions? checkQueryResult(result, opts, _pubkey) {
-    final List<dynamic>? blockchainTX =
-        (result.data['txsHistoryBc']['both']['edges'] as List<dynamic>?);
-    // final List<dynamic> mempoolTX =
-    //     (result.data['txsHistoryMp']['receiving'] as List<dynamic>);
-
-    pageInfo = result.data['txsHistoryBc']['both']['pageInfo'];
-    fetchMoreCursor = pageInfo!['endCursor'];
-    if (fetchMoreCursor == null) nPage = 1;
-
-    if (nPage == 1) {
-      nRepositories = 40;
-    } else if (nPage == 2) {
-      nRepositories = 100;
-    }
-    nPage++;
-
-    if (fetchMoreCursor != null) {
-      opts = FetchMoreOptions(
-        variables: {'cursor': fetchMoreCursor, 'number': nRepositories},
-        updateQuery: (previousResultData, fetchMoreResultData) {
-          final List<dynamic> repos = [
-            ...previousResultData!['txsHistoryBc']['both']['edges']
-                as List<dynamic>,
-            ...fetchMoreResultData!['txsHistoryBc']['both']['edges']
-                as List<dynamic>
-          ];
-
-          fetchMoreResultData['txsHistoryBc']['both']['edges'] = repos;
-          return fetchMoreResultData;
-        },
-      );
-    }
-
-    log.d(
-        "###### DEBUG H Parse blockchainTX list. Cursor: $fetchMoreCursor ######");
-    if (fetchMoreCursor != null) {
-      transBC = parseHistory(blockchainTX, _pubkey);
-    } else {
-      log.i("###### DEBUG H - Début de l'historique");
-    }
-
-    return opts;
-  }
-
   void resetdHistory() {
     notifyListeners();
-  }
-
-  num removeDecimalZero(double n) {
-    String result = n.toStringAsFixed(n.truncateToDouble() == n ? 0 : 2);
-    return num.parse(result);
   }
 
   String generateIdenticon(String _pubkey) {

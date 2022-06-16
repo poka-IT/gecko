@@ -8,6 +8,7 @@ import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/avatar_fullscreen.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/choose_wallet.dart';
@@ -88,8 +89,7 @@ class WalletViewScreen extends StatelessWidget {
                   height: buttonSize,
                   child: ClipOval(
                     child: Material(
-                      color: Colors
-                          .grey[300], //const Color(0xffFFD58D), // button color
+                      color: yellowC, //const Color(0xffFFD58D), // button color
                       child: InkWell(
                           key: const Key('viewHistory'),
                           splashColor: orangeC, // inkwell color
@@ -100,20 +100,16 @@ class WalletViewScreen extends StatelessWidget {
                                       'assets/walletOptions/clock.png'),
                                   height: 90)),
                           onTap: () {
-                            //// Wait for subsquid indexer
                             // _historyProvider.nPage = 1;
-                            // Navigator.push(
-                            //   context,
-                            //   FaderTransition(
-                            //       page: HistoryScreen(
-                            //         pubkey: pubkey,
-                            //         username: username ??
-                            //             g1WalletsBox.get(pubkey)?.username,
-                            //         avatar: avatar ??
-                            //             g1WalletsBox.get(pubkey)?.avatar,
-                            //       ),
-                            //       isFast: false),
-                            // );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) {
+                                return ActivityScreen(
+                                    address: pubkey,
+                                    avatar:
+                                        _cesiumPlusProvider.defaultAvatar(50));
+                              }),
+                            );
                           }),
                     ),
                   ),

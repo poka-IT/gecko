@@ -3,8 +3,8 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/wallet_view.dart';
@@ -30,6 +30,10 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    WalletsProfilesProvider _walletProfile =
+        Provider.of<WalletsProfilesProvider>(context, listen: false);
+    HomeProvider _homeProvider =
+        Provider.of<HomeProvider>(context, listen: false);
 
     return Scaffold(
         key: _scaffoldKey,
@@ -41,8 +45,9 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
             child: Text('Activité du compte'),
           ),
         ),
+        bottomNavigationBar: _homeProvider.bottomAppBar(context),
         body: Column(children: <Widget>[
-          headerProfileView(context),
+          _walletProfile.headerProfileView(context, address!, username),
           historyQuery(context),
         ]));
   }
@@ -341,87 +346,5 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
         ),
       ]);
     }).toList());
-  }
-
-  Widget headerProfileView(BuildContext context) {
-    DuniterIndexer _duniterIndexer =
-        Provider.of<DuniterIndexer>(context, listen: false);
-
-    return Column(children: <Widget>[
-      Container(
-        height: 10,
-        color: yellowC,
-      ),
-      Container(
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            yellowC,
-            const Color(0xFFE7811A),
-          ],
-        )),
-        child: Padding(
-          padding: const EdgeInsets.only(left: 30, right: 40),
-          child: Row(children: <Widget>[
-            Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Row(children: [
-                          GestureDetector(
-                            key: const Key('copyPubkey'),
-                            onTap: () {
-                              Clipboard.setData(ClipboardData(text: address));
-                              snackCopyKey(context);
-                            },
-                            child: Text(
-                              getShortPubkey(address!),
-                              style: const TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                        ]),
-                        const SizedBox(height: 10),
-                        if (username == null)
-                          _duniterIndexer.getNameByAddress(
-                              context,
-                              address!,
-                              null,
-                              27,
-                              false,
-                              Colors.black,
-                              FontWeight.w400,
-                              FontStyle.normal),
-                        if (username != null)
-                          SizedBox(
-                            width: 230,
-                            child: Text(
-                              username!,
-                              style: const TextStyle(
-                                fontSize: 27,
-                                color: Color(0xff814C00),
-                              ),
-                            ),
-                          ),
-                        const SizedBox(height: 25),
-                      ]),
-                  balance(context, address!, 21),
-                  const SizedBox(height: 30),
-                ]),
-            const Spacer(),
-            Column(children: <Widget>[
-              Image.asset(('assets/icon_user.png'), height: 50),
-              const SizedBox(height: 25),
-            ]),
-          ]),
-        ),
-      ),
-    ]);
   }
 }

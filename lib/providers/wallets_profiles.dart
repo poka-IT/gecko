@@ -1,11 +1,17 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/providers/cesium_plus.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/providers/wallet_options.dart';
+import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
 // import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:barcode_scan2/barcode_scan2.dart';
+import 'package:provider/provider.dart';
 
 class WalletsProfilesProvider with ChangeNotifier {
   WalletsProfilesProvider(this.address);
@@ -18,7 +24,7 @@ class WalletsProfilesProvider with ChangeNotifier {
   String? rawSvg;
   TextEditingController payAmount = TextEditingController();
   TextEditingController payComment = TextEditingController();
-  num? balance;
+  num? _balance;
 
   Future<String> scan(context) async {
     if (Platform.isAndroid || Platform.isIOS) {
@@ -113,12 +119,115 @@ class WalletsProfilesProvider with ChangeNotifier {
   // }
 
   Future<num?> getBalance(String? _pubkey) async {
-    while (balance == null) {
+    while (_balance == null) {
       await Future.delayed(const Duration(milliseconds: 50));
     }
 
-    return balance;
+    return _balance;
   }
+
+
+Widget headerProfileView(
+      BuildContext context, String _address, String? username) {
+    const double _avatarSize = 140;
+
+    WalletOptionsProvider _walletOptions =
+        Provider.of<WalletOptionsProvider>(context, listen: false);
+        CesiumPlusProvider _cesiumPlusProvider =
+        Provider.of<CesiumPlusProvider>(context, listen: false);
+    // SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+
+    bool isAccountExist = balanceCache[_address] != 0;
+
+    return Stack(children: <Widget>[
+      Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+        return Container(
+            height: 180,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  isAccountExist ? yellowC : Colors.grey[400]!,
+                  isAccountExist ? const Color(0xFFE7811A) : Colors.grey[600]!,
+                ],
+              ),
+            ));
+      }),
+      Padding(
+        padding: const EdgeInsets.only(left: 30, right: 40),
+        child: Row(children: <Widget>[
+          Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  height: 10,
+                  color: yellowC, // Colors.grey[400],
+                ),
+                Row(children: [
+                  GestureDetector(
+                    key: const Key('copyPubkey'),
+                    onTap: () {
+                      Clipboard.setData(ClipboardData(text: _address));
+                      snackCopyKey(context);
+                    },
+                    child: Text(
+                      getShortPubkey(_address),
+                      style: const TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ]),
+                const SizedBox(height: 25),
+
+                balance(context, _address, 22),
+                const SizedBox(height: 10),
+                _walletOptions.idtyStatus(context, _address,
+                    isOwner: false, color: Colors.black),
+                getCerts(context, _address, 14),
+
+                if (username == null &&
+                    g1WalletsBox.get(_address)?.username != null)
+                  SizedBox(
+                    width: 230,
+                    child: Text(
+                      g1WalletsBox.get(_address)?.username ?? '',
+                      style: const TextStyle(
+                        fontSize: 27,
+                        color: Color(0xff814C00),
+                      ),
+                    ),
+                  ),
+                if (username != null)
+                  SizedBox(
+                    width: 230,
+                    child: Text(
+                      username,
+                      style: const TextStyle(
+                        fontSize: 27,
+                        color: Color(0xff814C00),
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 55),
+              ]),
+          const Spacer(),
+          Column(children: <Widget>[
+              ClipOval(
+                child: _cesiumPlusProvider.defaultAvatar(_avatarSize),
+              ),
+  
+            const SizedBox(height: 25),
+          ]),
+        ]),
+      ),
+      CommonElements().offlineInfo(context),
+    ]);
+  }
+
+
 
   void reload() {
     notifyListeners();

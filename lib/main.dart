@@ -45,7 +45,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:window_size/window_size.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 const bool enableSentry = true;
@@ -110,7 +109,7 @@ Future<void> main() async {
           supportedLocales: const [Locale('en'), Locale('fr')],
           path:
               'assets/translations', // <-- change the path of the translation files
-          fallbackLocale: const Locale('fr'),
+          fallbackLocale: const Locale('en'),
           child: Gecko(indexerEndpoint),
         ),
       ),

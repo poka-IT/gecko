@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
@@ -93,7 +94,7 @@ class ChestOptions extends StatelessWidget {
                     ),
                     const SizedBox(width: 15),
                     Text(
-                      'Afficher ma phrase de restauration',
+                      'displayMnemonic'.tr(),
                       style: TextStyle(
                         fontSize: 20,
                         color: orangeC,
@@ -136,7 +137,7 @@ class ChestOptions extends StatelessWidget {
                         ),
                         const SizedBox(width: 18),
                         Text(
-                          'Changer mon code secret',
+                          'changePassword'.tr(),
                           style: TextStyle(
                               fontSize: 20,
                               color: _sub.nodeConnected
@@ -172,7 +173,7 @@ class ChestOptions extends StatelessWidget {
                       ),
                       const SizedBox(width: 25),
                       Text(
-                        'Créer une autre dérivation',
+                        'createDerivation'.tr(),
                         style: TextStyle(
                             fontSize: 20,
                             color: _sub.nodeConnected
@@ -198,9 +199,9 @@ class ChestOptions extends StatelessWidget {
                       height: 45,
                     ),
                     const SizedBox(width: 20),
-                    const Text(
-                      'Supprimer ce coffre',
-                      style: TextStyle(
+                    Text(
+                      'deleteChest'.tr(),
+                      style: const TextStyle(
                         fontSize: 20,
                         color: Color(0xffD80000),
                       ),

@@ -1,5 +1,6 @@
 // ignore_for_file: file_names
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -93,7 +94,8 @@ class _ChooseChestState extends State<OnboardingStepFive> {
                       // _generateWalletProvider.reloadBuild();
                       setState(() {});
                     },
-                    child: Text("Choisir une autre phrase",
+                    child: Text("chooseAnotherMnemonic".tr(),
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                             fontSize: 22 * ratio,
                             fontWeight: FontWeight.w600))),
@@ -101,7 +103,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
             ),
           ),
           SizedBox(height: 22 * ratio),
-          nextButton(context, "J'ai noté ma phrase", false, widget.skipIntro),
+          nextButton(context, "iNotedMyMnemonic".tr(), false, widget.skipIntro),
           SizedBox(height: 35 * ratio),
         ]),
       ),
@@ -204,7 +206,7 @@ class PrintWallet extends StatelessWidget {
           title: const SizedBox(
             height: 22,
             child: Text(
-              'Imprimer ma phrase de restauration',
+              'printMyMnemonic',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),

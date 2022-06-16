@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
@@ -39,9 +40,9 @@ class SettingsScreen extends StatelessWidget {
       backgroundColor: backgroundColor,
       appBar: AppBar(
           toolbarHeight: 60 * ratio,
-          title: const SizedBox(
+          title: SizedBox(
             height: 22,
-            child: Text('Paramètres'),
+            child: Text('parameters'.tr()),
           )),
       body: Column(
           // crossAxisAlignment: CrossAxisAlignment.start,

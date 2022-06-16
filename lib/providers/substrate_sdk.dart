@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -56,7 +57,7 @@ class SubstrateSdk with ChangeNotifier {
     //   _homeProvider.changeMessage("Vous n'êtes pas connecté à internet", 0);
     //   return;
     // }
-    _homeProvider.changeMessage("Connexion en cours...", 0);
+    _homeProvider.changeMessage("connectionPending".tr(), 0);
 
     for (String _endpoint in configBox.get('endpoint')) {
       final n = NetworkParams();
@@ -109,7 +110,7 @@ class SubstrateSdk with ChangeNotifier {
         // log.d(sdk.api.connectedNode?.endpoint);
         if (sdk.api.connectedNode?.endpoint == null) {
           nodeConnected = false;
-          _homeProvider.changeMessage("Le réseau a été perdu...", 0);
+          _homeProvider.changeMessage("networkLost".tr(), 0);
         } else {
           nodeConnected = true;
         }
@@ -119,14 +120,14 @@ class SubstrateSdk with ChangeNotifier {
       // currencyName = await getCurencyName();
       notifyListeners();
       _homeProvider.changeMessage(
-          'Vous êtes bien connecté aux noeud\n${getConnectedEndpoint()!.split('/')[2]}',
+          "wellConnectedToNode".tr(args: [getConnectedEndpoint()!.split('/')[2]]),
           5);
       // snackNode(ctx, true);
     } else {
       nodeConnected = false;
       debugConnection = res.toString();
       notifyListeners();
-      _homeProvider.changeMessage("Aucun server disponible...", 0);
+      _homeProvider.changeMessage("noDuniterEndointAvailable".tr(), 0);
       // snackNode(ctx, false);
     }
 

@@ -1,5 +1,6 @@
 // ignore_for_file: file_names
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -73,7 +74,7 @@ Widget finishButton(BuildContext context) {
             ModalRoute.withName('/'),
           );
         },
-        child: Text("Accéder à mon coffre",
+        child: Text("accessMyChest".tr(),
             style:
                 TextStyle(fontSize: 22 * ratio, fontWeight: FontWeight.w600))),
   );

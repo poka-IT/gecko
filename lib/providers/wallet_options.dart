@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
@@ -163,7 +164,7 @@ class WalletOptionsProvider with ChangeNotifier {
                   return isOwner
                       ? InkWell(
                           child: _showText(
-                              'Cliquez ici pour confirmer\nvotre nouvelle identité',
+                              'clickHereToConfirmIdentity'.tr(),
                               18,
                               true),
                           onTap: () async {
@@ -190,7 +191,7 @@ class WalletOptionsProvider with ChangeNotifier {
               case 'Validated':
                 {
                   return isOwner
-                      ? _showText('Membre validé !', 18, true)
+                      ? _showText('memberValidated'.tr(), 18, true)
                       : _duniterIndexer.getNameByAddress(
                           context,
                           address,
@@ -263,7 +264,7 @@ class WalletOptionsProvider with ChangeNotifier {
                   return TextButton(
                     key: const Key('infoPopup'),
                     child: Text(
-                      "Valider",
+                      "validate".tr(),
                       style: TextStyle(
                         fontSize: 21,
                         color: idtyName.text.length >= 2
@@ -325,10 +326,10 @@ class WalletOptionsProvider with ChangeNotifier {
       barrierDismissible: true,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text(
-            'Choisissez un nouveau nom\n pour votre portefeuille :',
+          title: Text(
+            'chooseWalletName'.tr(),
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
           ),
           content: SizedBox(
             height: 100,
@@ -352,7 +353,7 @@ class WalletOptionsProvider with ChangeNotifier {
                   return TextButton(
                     key: const Key('infoPopup'),
                     child: Text(
-                      "Valider",
+                      "validate".tr(),
                       style: TextStyle(
                         fontSize: 21,
                         color: canValidateNameBool

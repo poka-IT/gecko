@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:durt/durt.dart' as durt;
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -62,9 +63,9 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     String chestName;
     if (chestNumber == 0) {
-      chestName = 'Coffre à Ğecko';
+      chestName = 'geckoChest'.tr();
     } else {
-      chestName = 'Coffre à Ğecko ${chestNumber + 1}';
+      chestName = 'geckoChest'.tr() + '${chestNumber + 1}';
     }
     await configBox.put('currentChest', chestNumber);
 
@@ -400,8 +401,8 @@ class GenerateWalletsProvider with ChangeNotifier {
       if (balance != 0) {
         isAlive = true;
         String walletName = scanedWalletNumber == 0
-            ? 'Mon portefeuille courant'
-            : 'Portefeuille ${scanedWalletNumber + 1}';
+            ? 'currentWallet'.tr()
+            : 'wallet'.tr() + ' ${scanedWalletNumber + 1}';
         await _sub.importAccount(
             mnemonic: '',
             fromMnemonic: true,
@@ -437,7 +438,7 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     log.d(balance);
     if (balance != 0) {
-      String walletName = 'Mon portefeuille racine';
+      String walletName = 'myRootWallet'.tr();
       await _sub.importAccount(
           mnemonic: '', fromMnemonic: true, password: pin.text);
 

@@ -1,5 +1,6 @@
 // ignore_for_file: file_names
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -31,11 +32,11 @@ class OnboardingStepThree extends StatelessWidget {
         child: common.infoIntro(
             context,
             <TextSpan>[
-              const TextSpan(
+              TextSpan(
                   text:
-                      'Dans une blockchain, pas de procédure de récupération par mail. Seule votre phrase de restauration peut vous permettre de récupérer vos Ğ1 à tout moment.'),
+                      'warningForgotPassword'.tr()),
             ],
-            'mot-de-passe-oublie.png',
+            'forgot_password.png'.tr(),
             '>',
             const OnboardingStepFor(),
             2),

@@ -1,6 +1,7 @@
 // ignore_for_file: file_names
 
 import 'dart:async';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -206,7 +207,7 @@ class OnboardingStepTen extends StatelessWidget {
                       chest: configBox.get('currentChest'),
                       address: address,
                       number: 0,
-                      name: 'Mon portefeuille courant',
+                      name: 'currentWallet'.tr(),
                       derivation: 2,
                       imageDefaultPath: '0.png');
                   await walletBox.add(myWallet);

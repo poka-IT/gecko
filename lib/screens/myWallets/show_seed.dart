@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
@@ -97,7 +98,7 @@ class ShowSeed extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 7),
                                 Text(
-                                  'Copier',
+                                  'copy'.tr(),
                                   style: TextStyle(
                                       fontSize: 15, color: Colors.grey[50]),
                                 )

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -235,10 +236,10 @@ Widget headerProfileView(
 }
 
 snackCopyKey(context) {
-  const snackBar = SnackBar(
-      padding: EdgeInsets.all(20),
-      content: Text("Cette adresse a été copié dans votre presse-papier.",
-          style: TextStyle(fontSize: 16)),
-      duration: Duration(seconds: 2));
+  final snackBar = SnackBar(
+      padding: const EdgeInsets.all(20),
+      content: Text("thisAddressHasBeenCopiedToClipboard".tr(),
+          style: const TextStyle(fontSize: 16)),
+      duration: const  Duration(seconds: 2));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }

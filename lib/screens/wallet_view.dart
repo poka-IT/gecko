@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
@@ -321,7 +322,7 @@ class WalletViewScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 9),
                 Text(
-                  "Copier\nla clef",
+                  "copyAddress".tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       fontSize: buttonFontSize, fontWeight: FontWeight.w500),

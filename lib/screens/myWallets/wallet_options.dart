@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
@@ -306,7 +307,7 @@ class WalletOptions extends StatelessWidget {
                 ),
                 const SizedBox(width: 7),
                 Text(
-                  'Copier',
+                  'copy'.tr(),
                   style: TextStyle(fontSize: 15, color: Colors.grey[50]),
                 )
               ]),
@@ -351,8 +352,8 @@ class WalletOptions extends StatelessWidget {
             height: 45,
           ),
           const SizedBox(width: 22),
-          const Text("Voir l'activité",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
+          Text("displayActivity".tr(),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
         ]),
       ),
     );
@@ -382,7 +383,7 @@ class WalletOptions extends StatelessWidget {
             height: 45,
           ),
           const SizedBox(width: 22),
-          const Text('Gérer mon adhésion', style: TextStyle(fontSize: 20)),
+          Text('manageMembership'.tr(), style: const TextStyle(fontSize: 20)),
         ]),
       ),
     );
@@ -420,8 +421,8 @@ class WalletOptions extends StatelessWidget {
             const SizedBox(width: 22),
             Text(
                 walletProvider.isDefaultWallet
-                    ? 'Ce portefeuille est celui par defaut'
-                    : 'Définir comme portefeuille par défaut',
+                    ? 'thisWalletIsDefault'.tr()
+                    : 'defineWalletAsDefault'.tr(),
                 style: TextStyle(
                     fontSize: 20,
                     color: walletProvider.isDefaultWallet

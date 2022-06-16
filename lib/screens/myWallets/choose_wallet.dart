@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
@@ -58,10 +59,10 @@ class ChooseWalletScreen extends StatelessWidget {
                       Navigator.pop(context);
                       Navigator.pop(context);
                     },
-                    child: const Text(
-                      'Choisir ce portefeuille',
+                    child: Text(
+                      'chooseThisWallet'.tr(),
                       style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                          const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),

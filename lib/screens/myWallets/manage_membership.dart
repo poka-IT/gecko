@@ -24,7 +24,7 @@ class ManageMembership extends StatelessWidget {
             toolbarHeight: 60 * ratio,
             title: const SizedBox(
               height: 22,
-              child: Text('Gérer mon adhésion'),
+              child: Text('manageMembership'),
             )),
         body: SafeArea(
           child: Column(children: <Widget>[

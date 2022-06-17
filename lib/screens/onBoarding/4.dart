@@ -28,10 +28,14 @@ class OnboardingStepFor extends StatelessWidget {
       ),
       extendBodyBehindAppBar: true,
       body: SafeArea(
-        child: common.infoIntro(context, '', 'gecko-oublie-aussi.png', '>',
-            const OnboardingStepFive(), 3,
-            textMd:
-                'Il est temps de vous munir d’**un papier et d’un crayon** afin de pouvoir noter votre phrase de restauration.'),
+        child: common.infoIntro(
+            context,
+            'Il est temps de vous munir d’**un papier et d’un crayon** afin de pouvoir noter votre phrase de restauration.',
+            'gecko-oublie-aussi.png',
+            '>',
+            const OnboardingStepFive(),
+            3,
+            isMd: true),
       ),
     );
   }

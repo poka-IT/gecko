@@ -30,23 +30,8 @@ class CommonElements {
         child: Image.asset('assets/onBoarding/$assetName', width: imageWidth));
   }
 
-  Widget buildText(String text, [double size = 20]) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      width: 440,
-      decoration: BoxDecoration(
-          color: Colors.white, border: Border.all(color: Colors.grey[900]!)),
-      child: Text(text,
-          textAlign: TextAlign.justify,
-          style: TextStyle(
-              fontSize: isTall ? size : size * 0.9,
-              color: Colors.black,
-              letterSpacing: 0.3)),
-    );
-  }
-
-  Widget buildTextMd(String text, [double size = 20]) {
-    final style = MarkdownStyleSheet(
+  Widget buildText(String text, [double size = 20, bool isMd = false]) {
+    final mdStyle = MarkdownStyleSheet(
       p: TextStyle(
           fontSize: isTall ? size : size * 0.9,
           color: Colors.black,
@@ -55,11 +40,19 @@ class CommonElements {
     );
 
     return Container(
-        padding: const EdgeInsets.all(12),
-        width: 440,
-        decoration: BoxDecoration(
-            color: Colors.white, border: Border.all(color: Colors.grey[900]!)),
-        child: MarkdownBody(data: text, styleSheet: style));
+      padding: const EdgeInsets.all(12),
+      width: 440,
+      decoration: BoxDecoration(
+          color: Colors.white, border: Border.all(color: Colors.grey[900]!)),
+      child: isMd
+          ? MarkdownBody(data: text, styleSheet: mdStyle)
+          : Text(text,
+              textAlign: TextAlign.justify,
+              style: TextStyle(
+                  fontSize: isTall ? size : size * 0.9,
+                  color: Colors.black,
+                  letterSpacing: 0.3)),
+    );
   }
 
   Widget nextButton(
@@ -104,7 +97,7 @@ class CommonElements {
     String buttonText,
     nextScreen,
     double pagePosition, {
-    String? textMd,
+    bool isMd = false,
     bool isFast = false,
     double boxHeight = 440,
     double imageWidth = 350,
@@ -115,10 +108,7 @@ class CommonElements {
       buildProgressBar(pagePosition),
       SizedBox(height: isTall ? 40 : 20),
 
-      if (textMd == null)
-        buildText(text, textSize)
-      else
-        buildTextMd(textMd, textSize),
+      buildText(text, textSize, isMd),
 
       buildImage(assetName, boxHeight, imageWidth),
       Expanded(

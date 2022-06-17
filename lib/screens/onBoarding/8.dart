@@ -30,13 +30,12 @@ class OnboardingStepEight extends StatelessWidget {
       body: SafeArea(
         child: common.infoIntro(
             context,
-            '',
+            'Ce code secret protège vos portefeuilles dans un coffre-fort **dont vous seul possédez le code**, de sorte que vos portefeuilles seront inutilisables par d’autres.',
             'coffre-fort-protege-les-portefeuilles.png',
             '>',
             OnboardingStepNine(scanDerivation: scanDerivation),
             7,
-            textMd:
-                'Ce code secret protège vos portefeuilles dans un coffre-fort **dont vous seul possédez le code**, de sorte que vos portefeuilles seront inutilisables par d’autres.'),
+            isMd: true),
       ),
     );
   }

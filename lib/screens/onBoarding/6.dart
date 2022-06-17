@@ -56,9 +56,10 @@ class OnboardingStepSix extends StatelessWidget {
               SizedBox(height: isTall ? 40 : 20),
               common.buildProgressBar(5),
               SizedBox(height: isTall ? 40 : 20),
-              common.buildTextMd(
-                "Avez-vous bien noté votre phrase de restauration ?\n\nPour en être sûr, veuillez taper dans le champ ci-dessous le **${_generateWalletProvider.nbrWord + 1}ème mot** de votre phrase de restauration :",
-              ),
+              common.buildText(
+                  "Avez-vous bien noté votre phrase de restauration ?\n\nPour en être sûr, veuillez taper dans le champ ci-dessous le **${_generateWalletProvider.nbrWord + 1}ème mot** de votre phrase de restauration :",
+                  20,
+                  true),
               SizedBox(height: isTall ? 70 : 20),
               Text('${_generateWalletProvider.nbrWord + 1}',
                   key: const Key('askedWord'),

@@ -29,12 +29,12 @@ class OnboardingStepOne extends StatelessWidget {
       body: SafeArea(
         child: common.infoIntro(
           context,
-          '',
+          'geckoGenerateYourWalletFromMnemonic'.tr(),
           'fabrication-de-portefeuille.png',
           '>',
           const OnboardingStepTwo(),
           0,
-          textMd: 'geckoGenerateYourWalletFromMnemonic'.tr(),
+          isMd: true,
         ),
       ),
     );

@@ -17,11 +17,11 @@ class OnboardingStepOne extends StatelessWidget {
       backgroundColor: backgroundColor,
       appBar: AppBar(
         toolbarHeight: 60 * ratio,
-        title: const SizedBox(
+        title: SizedBox(
           height: 22,
           child: Text(
-            'Nouveau portefeuille',
-            style: TextStyle(fontWeight: FontWeight.w600),
+            'newWallet'.tr(),
+            style: const TextStyle(fontWeight: FontWeight.w600),
           ),
         ),
       ),

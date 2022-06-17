@@ -1,5 +1,6 @@
 // ignore_for_file: file_names
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -30,7 +31,7 @@ class OnboardingStepFor extends StatelessWidget {
       body: SafeArea(
         child: common.infoIntro(
             context,
-            'Il est temps de vous munir d’**un papier et d’un crayon** afin de pouvoir noter votre phrase de restauration.',
+            'itsTimeToUseAPenAndPaper'.tr(),
             'gecko-oublie-aussi.png',
             '>',
             const OnboardingStepFive(),

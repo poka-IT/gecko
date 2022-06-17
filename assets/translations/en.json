@@ -51,7 +51,11 @@
     "confirmPayment": "Confirm payment",
     "clickHereToConfirmIdentity": "Click here to confirm\nyour new identity",
     "geckoGenerateYourWalletFromMnemonic": "Ğecko builds your wallet from a **restoration sentence**. It is a bit like the blueprint that builds your wallet.",
-    "keepThisMnemonicSecure": "Keep this sentence carefully, because without it Ğecko will not be able to rebuild your wallets the day you change your phone."
+    "keepThisMnemonicSecure": "Keep this sentence carefully, because without it Ğecko will not be able to rebuild your wallets the day you change your phone.",
+    "geckoGeneratedYourMnemonicKeepItSecret": "Ğecko generated your mnemonic successfully! Keep it secret, because anyone who knows it can access all your wallets.",
+    "newWallet": "New Wallet",
+    "itsTimeToUseAPenAndPaper": "Il est temps de vous munir d’**un papier et d’un crayon** afin de pouvoir noter votre phrase de restauration."
+
    
 
 }

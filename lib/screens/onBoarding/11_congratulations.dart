@@ -20,11 +20,11 @@ class OnboardingStepEleven extends StatelessWidget {
         backgroundColor: backgroundColor,
         appBar: AppBar(
           toolbarHeight: 60 * ratio,
-          title: const SizedBox(
+          title: SizedBox(
             height: 22,
             child: Text(
-              'C’est tout bon !',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              'allGood'.tr(),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ),
@@ -32,8 +32,7 @@ class OnboardingStepEleven extends StatelessWidget {
         body: SafeArea(
           child: Column(children: <Widget>[
             const SizedBox(height: 40),
-            common.buildText(
-                "Top !\n\nVotre coffre votre premier portefeuille ont été créés avec un immense succès.\n\nFélicitations !"),
+            common.buildText("yourChestAndWalletWereCreatedSuccessfully".tr()),
             SizedBox(height: isTall ? 20 : 10),
             Image.asset(
               'assets/onBoarding/gecko-clin.gif',

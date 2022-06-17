@@ -46,7 +46,7 @@ class OnboardingStepNine extends StatelessWidget {
             common.buildProgressBar(8),
             SizedBox(height: isTall ? 40 : 20),
             common.buildText(
-                "Et voilà votre code secret !\n\nMémorisez-le ou notez-le, car il vous sera demandé **à chaque fois** que vous voudrez effectuer un paiement sur cet appareil.",
+                "hereIsThePasswordKeepIt".tr(),
                 20,
                 true),
             const SizedBox(height: 100),
@@ -90,13 +90,13 @@ class OnboardingStepNine extends StatelessWidget {
                           onPressed: () {
                             _generateWalletProvider.changePinCode(reload: true);
                           },
-                          child: Text("Choisir un autre code secret",
+                          child: Text("chooseAnotherPassword".tr(),
                               style: TextStyle(
                                   fontSize: 22 * ratio,
                                   fontWeight: FontWeight.w600))),
                     ))),
             SizedBox(height: 22 * ratio),
-            common.nextButton(context, "J'ai noté mon code secret",
+            common.nextButton(context, "iNotedMyPassword".tr(),
                 OnboardingStepTen(scanDerivation: scanDerivation), false),
             SizedBox(height: 35 * ratio),
           ]),

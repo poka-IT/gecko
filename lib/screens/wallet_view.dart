@@ -181,9 +181,13 @@ class WalletViewScreen extends StatelessWidget {
                                                 'assets/gecko_certify.png')),
                                       ),
                                       onTap: () async {
-                                        final bool? _result = await confirmPopup(
-                                            context,
-                                            "Êtes-vous certain de vouloir certifier l'adresse:\n\n${getShortPubkey(pubkey!)}");
+                                        final bool? _result =
+                                            await confirmPopup(
+                                                context,
+                                                "areYouSureYouWantToCertify".tr(
+                                                    args: [
+                                                      getShortPubkey(pubkey!)
+                                                    ]));
 
                                         if (_result ?? false) {
                                           String? _pin;

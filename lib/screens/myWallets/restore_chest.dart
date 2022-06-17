@@ -1,4 +1,5 @@
 import 'package:bubble/bubble.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
@@ -43,15 +44,14 @@ class RestoreChest extends StatelessWidget {
                   genW.resetImportView();
                   Navigator.of(context).pop();
                 }),
-            title: const SizedBox(
+            title: SizedBox(
               height: 22,
-              child: Text('Restaurer un coffre'),
+              child: Text('restoreAChest'.tr()),
             )),
         body: SafeArea(
           child: Column(children: <Widget>[
             SizedBox(height: isTall ? 30 : 15),
-            bubbleSpeak(
-                'Pour restaurer vos portefeuilles Gecko, rentrez dans les champs ci-dessous les 12 mots qui constituent votre phrase de restauration :'),
+            bubbleSpeak('toRestoreEnterMnemonic'.tr()),
             SizedBox(height: isTall ? 30 : 15),
             Column(children: <Widget>[
               Row(
@@ -112,10 +112,10 @@ class RestoreChest extends StatelessWidget {
                         await badMnemonicPopup(context);
                       }
                     },
-                    child: const Text(
-                      'Restaurer ce coffre',
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                    child: Text(
+                      'restoreThisChest'.tr(),
+                      style: const TextStyle(
+                          fontSize: 24, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -137,16 +137,16 @@ class RestoreChest extends StatelessWidget {
                         genW.pasteMnemonic(context);
                       },
                       child: Row(
-                        children: const [
-                          Icon(
+                        children: [
+                          const Icon(
                             Icons.content_paste_go,
                             size: 25,
                           ),
-                          SizedBox(width: 10),
+                          const SizedBox(width: 10),
                           Text(
-                            'Coller depuis le\npresse-papier',
+                            'pasteFromClipboard'.tr(),
                             textAlign: TextAlign.center,
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 17, fontWeight: FontWeight.w400),
                           ),
                         ],

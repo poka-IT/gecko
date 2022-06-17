@@ -161,7 +161,7 @@ void main() {
           await driver!.getText(find.byValueKey(
             'step6',
           )),
-          "J’ai généré votre phrase de restauration !\nTâchez de la garder bien secrète, car elle permet à quiconque la connaît d’accéder à tous vos portefeuilles.");
+          "iGeneratedYourMnemonicKeepItSecret".tr());
     });
 
     test('OnBoarding - Generate sentance and confirme it', (

@@ -53,8 +53,7 @@ class OnboardingStepTen extends StatelessWidget {
             SizedBox(height: isTall ? 40 : 20),
             common.buildProgressBar(9),
             SizedBox(height: isTall ? 40 : 20),
-            common.buildText(
-                "Gecko va vérifier avec vous si vous avez bien mémorisé votre code secret.\n\nTapez votre code secret dans le champ ci-dessous pour vérifier que vous l’avez bien noté."),
+            common.buildText("geckoWillCheckPassword".tr()),
             SizedBox(height: isTall ? 80 : 20),
             Visibility(
               visible: _generateWalletProvider.scanedWalletNumber != -1,
@@ -104,7 +103,7 @@ class OnboardingStepTen extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Garder ce code en mémoire 15 minutes',
+                          'rememberPassword'.tr(),
                           style:
                               TextStyle(fontSize: 16, color: Colors.grey[700]),
                         ),
@@ -150,7 +149,7 @@ class OnboardingStepTen extends StatelessWidget {
             animationType: AnimationType.fade,
             validator: (v) {
               if (v!.length < _pinLenght) {
-                return "Votre code PIN fait $_pinLenght caractères";
+                return "yourPasswordLengthIsX".tr(args: [_pinLenght.toString()]);
               } else {
                 return null;
               }

@@ -47,8 +47,8 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Future<int> deleteWallet(context, WalletData wallet) async {
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final bool? _answer = await (confirmPopup(context,
-        'Êtes-vous sûr de vouloir oublier le portefeuille "${wallet.name}" ?'));
+    final bool? _answer = await (confirmPopup(
+        context, 'areYouSureToForgetWallet'.tr(args: [wallet.name!])));
 
     if (_answer ?? false) {
       //Check if balance is null
@@ -157,7 +157,7 @@ class WalletOptionsProvider with ChangeNotifier {
             switch (snapshot.data.toString()) {
               case 'noid':
                 {
-                  return _showText('Aucune identité');
+                  return _showText('noIdentity'.tr());
                 }
               case 'Created':
                 {
@@ -169,12 +169,12 @@ class WalletOptionsProvider with ChangeNotifier {
                             await validateIdentity(context);
                           },
                         )
-                      : _showText('Identité créé');
+                      : _showText('identityCreated'.tr());
                 }
               case 'ConfirmedByOwner':
                 {
                   return isOwner
-                      ? _showText('Identité confirmé')
+                      ? _showText('identityConfirmed'.tr())
                       : _duniterIndexer.getNameByAddress(
                           context,
                           address,
@@ -203,7 +203,7 @@ class WalletOptionsProvider with ChangeNotifier {
 
               case 'expired':
                 {
-                  return _showText('Identité expiré');
+                  return _showText('identityExpired'.tr());
                 }
             }
             return SizedBox(
@@ -231,10 +231,10 @@ class WalletOptionsProvider with ChangeNotifier {
       barrierDismissible: true, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text(
-            'Confirmez votre identité',
+          title: Text(
+            'confirmYourIdentity'.tr(),
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
           ),
           content: SizedBox(
             height: 100,

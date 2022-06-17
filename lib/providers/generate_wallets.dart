@@ -120,18 +120,18 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   String? intToString(int _nbr) {
     Map nbrToString = {};
-    nbrToString[1] = 'Premier';
-    nbrToString[2] = 'Deuxième';
-    nbrToString[3] = 'Troisième';
-    nbrToString[4] = 'Quatrième';
-    nbrToString[5] = 'Cinquième';
-    nbrToString[6] = 'Sixième';
-    nbrToString[7] = 'Septième';
-    nbrToString[8] = 'Huitième';
-    nbrToString[9] = 'Neuvième';
-    nbrToString[10] = 'Dixième';
-    nbrToString[11] = 'Onzième';
-    nbrToString[12] = 'Douzième';
+    nbrToString[1] = '1th'.tr();
+    nbrToString[2] = '2th'.tr();
+    nbrToString[3] = '3th'.tr();
+    nbrToString[4] = '4th'.tr();
+    nbrToString[5] = '5th'.tr();
+    nbrToString[6] = '6th'.tr();
+    nbrToString[7] = '7th'.tr();
+    nbrToString[8] = '8th'.tr();
+    nbrToString[9] = '9th'.tr();
+    nbrToString[10] = '10th'.tr();
+    nbrToString[11] = '11th'.tr();
+    nbrToString[12] = '12th'.tr();
 
     nbrWordAlpha = nbrToString[_nbr];
 

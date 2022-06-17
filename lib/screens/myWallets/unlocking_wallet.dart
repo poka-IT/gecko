@@ -201,7 +201,8 @@ class UnlockingWallet extends StatelessWidget {
             animationType: AnimationType.fade,
             validator: (v) {
               if (v!.length < _pinLenght) {
-                return "Votre code PIN fait $_pinLenght caractères";
+                return "yourPasswordLengthIsX"
+                    .tr(args: [_pinLenght.toString()]);
               } else {
                 return null;
               }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
@@ -55,17 +56,16 @@ class ChestProvider with ChangeNotifier {
       barrierDismissible: true, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(
-              'Êtes-vous sûr de vouloir supprimer le coffre "$_walletName" ?'),
+          title: Text('areYouSureToDeleteWallet'.tr(args: [_walletName!])),
           actions: <Widget>[
             TextButton(
-              child: const Text("Non", key: Key('cancelDeleting')),
+              child: Text("no".tr(), key: const Key('cancelDeleting')),
               onPressed: () {
                 Navigator.pop(context, false);
               },
             ),
             TextButton(
-              child: const Text("Oui", key: Key('confirmDeleting')),
+              child: Text("yes".tr(), key: const Key('confirmDeleting')),
               onPressed: () {
                 Navigator.pop(context, true);
               },

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
@@ -263,7 +264,7 @@ class TransactionInProgress extends StatelessWidget {
                             if (transType == 'pay') Navigator.pop(context);
                           },
                           child: Text(
-                            'Fermer',
+                            'close'.tr(),
                             style: TextStyle(
                                 fontSize: 23 * ratio,
                                 fontWeight: FontWeight.w600),

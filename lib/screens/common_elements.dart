@@ -1,4 +1,5 @@
 import 'package:dots_indicator/dots_indicator.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gecko/globals.dart';
@@ -248,9 +249,9 @@ Future<bool?> confirmPopup(BuildContext context, String title) async {
             children: [
               TextButton(
                 key: const Key('confirmPopop'),
-                child: const Text(
-                  "Oui",
-                  style: TextStyle(
+                child: Text(
+                  "yes".tr(),
+                  style: const TextStyle(
                     fontSize: 21,
                     color: Color(0xffD80000),
                   ),
@@ -261,9 +262,9 @@ Future<bool?> confirmPopup(BuildContext context, String title) async {
               ),
               const SizedBox(width: 20),
               TextButton(
-                child: const Text(
-                  "Non",
-                  style: TextStyle(fontSize: 21),
+                child: Text(
+                  "no".tr(),
+                  style: const TextStyle(fontSize: 21),
                 ),
                 onPressed: () {
                   Navigator.pop(context, false);

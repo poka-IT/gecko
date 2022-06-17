@@ -96,8 +96,9 @@ class OnboardingStepSix extends StatelessWidget {
                             color: Colors.grey[500],
                             fontWeight: FontWeight.w500),
                         labelText: _generateWalletProvider.isAskedWordValid
-                            ? "C'est le bon mot !"
-                            : "${_generateWalletProvider.nbrWordAlpha} mot de votre phrase de restauration",
+                            ? "itsTheGoodWord".tr()
+                            : "${_generateWalletProvider.nbrWordAlpha} " +
+                                "nthMnemonicWord".tr(),
                         fillColor: const Color(0xffeeeedd),
                         filled: true,
                         contentPadding: const EdgeInsets.all(12),
@@ -113,7 +114,7 @@ class OnboardingStepSix extends StatelessWidget {
                     alignment: Alignment.bottomCenter,
                     child: nextButton(
                         context,
-                        'Continuer',
+                        'continue'.tr(),
                         skipIntro
                             ? const OnboardingStepNine()
                             : const OnboardingStepSeven(),

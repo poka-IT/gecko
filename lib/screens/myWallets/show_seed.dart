@@ -36,9 +36,9 @@ class ShowSeed extends StatelessWidget {
         backgroundColor: backgroundColor,
         appBar: AppBar(
             toolbarHeight: 60 * ratio,
-            title: const SizedBox(
+            title: SizedBox(
               height: 22,
-              child: Text('Ma phrase de restauration'),
+              child: Text('myMnemonic'.tr()),
             )),
         body: SafeArea(
           child: Column(children: <Widget>[
@@ -65,8 +65,7 @@ class ShowSeed extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Column(children: [
-                          common.buildText(
-                              'Tâchez de garder cette phrase bien secrète, car elle permet à quiconque la connaît d’accéder à tous vos portefeuilles.'),
+                          common.buildText('keepYourMnemonicSecret'.tr()),
                           SizedBox(height: 35 * ratio),
                           sentanceArray(context, _seed.data!.split(' ')),
                           const SizedBox(height: 20),
@@ -132,7 +131,7 @@ class ShowSeed extends StatelessWidget {
                   Navigator.pop(context);
                 },
                 child: Text(
-                  'Fermer',
+                  'close'.tr(),
                   style: TextStyle(
                       fontSize: 23 * ratio, fontWeight: FontWeight.w600),
                 ),
@@ -233,11 +232,11 @@ class PrintWallet extends StatelessWidget {
           backgroundColor: yellowC,
           foregroundColor: Colors.black,
           toolbarHeight: 60 * ratio,
-          title: const SizedBox(
+          title: SizedBox(
             height: 22,
             child: Text(
-              'Imprimer ma phrase de restauration',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              'printMyMnemonic'.tr(),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ),

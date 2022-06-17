@@ -127,14 +127,13 @@ class WalletsProfilesProvider with ChangeNotifier {
     return _balance;
   }
 
-
-Widget headerProfileView(
+  Widget headerProfileView(
       BuildContext context, String _address, String? username) {
     const double _avatarSize = 140;
 
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
-        CesiumPlusProvider _cesiumPlusProvider =
+    CesiumPlusProvider _cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
     // SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
@@ -182,13 +181,11 @@ Widget headerProfileView(
                   ),
                 ]),
                 const SizedBox(height: 25),
-
                 balance(context, _address, 22),
                 const SizedBox(height: 10),
                 _walletOptions.idtyStatus(context, _address,
                     isOwner: false, color: Colors.black),
                 getCerts(context, _address, 14),
-
                 if (username == null &&
                     g1WalletsBox.get(_address)?.username != null)
                   SizedBox(
@@ -216,10 +213,9 @@ Widget headerProfileView(
               ]),
           const Spacer(),
           Column(children: <Widget>[
-              ClipOval(
-                child: _cesiumPlusProvider.defaultAvatar(_avatarSize),
-              ),
-  
+            ClipOval(
+              child: _cesiumPlusProvider.defaultAvatar(_avatarSize),
+            ),
             const SizedBox(height: 25),
           ]),
         ]),
@@ -227,8 +223,6 @@ Widget headerProfileView(
       CommonElements().offlineInfo(context),
     ]);
   }
-
-
 
   void reload() {
     notifyListeners();
@@ -240,6 +234,6 @@ snackCopyKey(context) {
       padding: const EdgeInsets.all(20),
       content: Text("thisAddressHasBeenCopiedToClipboard".tr(),
           style: const TextStyle(fontSize: 16)),
-      duration: const  Duration(seconds: 2));
+      duration: const Duration(seconds: 2));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }

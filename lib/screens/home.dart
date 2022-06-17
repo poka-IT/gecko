@@ -554,8 +554,8 @@ Widget welcomeHome(context) {
                     },
                     child: Text(
                       'createWallet'.tr(),
-                      style:
-                          const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                          fontSize: 24, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),

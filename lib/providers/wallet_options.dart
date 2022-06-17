@@ -164,9 +164,7 @@ class WalletOptionsProvider with ChangeNotifier {
                   return isOwner
                       ? InkWell(
                           child: _showText(
-                              'clickHereToConfirmIdentity'.tr(),
-                              18,
-                              true),
+                              'clickHereToConfirmIdentity'.tr(), 18, true),
                           onTap: () async {
                             await validateIdentity(context);
                           },

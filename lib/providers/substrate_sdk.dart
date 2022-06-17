@@ -120,7 +120,8 @@ class SubstrateSdk with ChangeNotifier {
       // currencyName = await getCurencyName();
       notifyListeners();
       _homeProvider.changeMessage(
-          "wellConnectedToNode".tr(args: [getConnectedEndpoint()!.split('/')[2]]),
+          "wellConnectedToNode"
+              .tr(args: [getConnectedEndpoint()!.split('/')[2]]),
           5);
       // snackNode(ctx, true);
     } else {

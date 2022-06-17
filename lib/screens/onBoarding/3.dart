@@ -32,9 +32,7 @@ class OnboardingStepThree extends StatelessWidget {
         child: common.infoIntro(
             context,
             <TextSpan>[
-              TextSpan(
-                  text:
-                      'warningForgotPassword'.tr()),
+              TextSpan(text: 'warningForgotPassword'.tr()),
             ],
             'forgot_password.png'.tr(),
             '>',

@@ -107,8 +107,7 @@ Future<void> main() async {
       appRunner: () => runApp(
         EasyLocalization(
           supportedLocales: const [Locale('en'), Locale('fr')],
-          path:
-              'assets/translations', // <-- change the path of the translation files
+          path: 'assets/translations',
           fallbackLocale: const Locale('en'),
           child: Gecko(indexerEndpoint),
         ),

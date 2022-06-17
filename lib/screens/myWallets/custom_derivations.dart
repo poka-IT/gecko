@@ -125,8 +125,8 @@ class _CustomDerivationState extends State<CustomDerivation> {
                   }
 
                   if (_pin != null || _myWalletProvider.pinCode != '') {
-                    String _newDerivationName =
-                        'wallet'.tr() + ' ${_myWalletProvider.listWallets.last.number! + 2}';
+                    String _newDerivationName = 'wallet'.tr() +
+                        ' ${_myWalletProvider.listWallets.last.number! + 2}';
                     if (dropdownValue == 'root') {
                       await _myWalletProvider.generateRootWallet(
                           context, 'Portefeuille racine');
@@ -149,7 +149,8 @@ class _CustomDerivationState extends State<CustomDerivation> {
                 },
                 child: Text(
                   'validate'.tr(),
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.w600),
                 ),
               ),
             ),

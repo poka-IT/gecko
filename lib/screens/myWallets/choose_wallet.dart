@@ -61,8 +61,8 @@ class ChooseWalletScreen extends StatelessWidget {
                     },
                     child: Text(
                       'chooseThisWallet'.tr(),
-                      style:
-                          const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                          fontSize: 24, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),

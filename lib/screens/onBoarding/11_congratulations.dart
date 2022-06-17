@@ -32,12 +32,8 @@ class OnboardingStepEleven extends StatelessWidget {
         body: SafeArea(
           child: Column(children: <Widget>[
             const SizedBox(height: 40),
-            common.buildText(<TextSpan>[
-              const TextSpan(
-                text:
-                    "Top !\n\nVotre coffre votre premier portefeuille ont été créés avec un immense succès.\n\nFélicitations !",
-              )
-            ]),
+            common.buildText(
+                "Top !\n\nVotre coffre votre premier portefeuille ont été créés avec un immense succès.\n\nFélicitations !"),
             SizedBox(height: isTall ? 20 : 10),
             Image.asset(
               'assets/onBoarding/gecko-clin.gif',

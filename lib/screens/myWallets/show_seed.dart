@@ -66,12 +66,7 @@ class ShowSeed extends StatelessWidget {
                       children: [
                         Column(children: [
                           common.buildText(
-                            <TextSpan>[
-                              const TextSpan(
-                                  text:
-                                      'Tâchez de garder cette phrase bien secrète, car elle permet à quiconque la connaît d’accéder à tous vos portefeuilles.'),
-                            ],
-                          ),
+                              'Tâchez de garder cette phrase bien secrète, car elle permet à quiconque la connaît d’accéder à tous vos portefeuilles.'),
                           SizedBox(height: 35 * ratio),
                           sentanceArray(context, _seed.data!.split(' ')),
                           const SizedBox(height: 20),

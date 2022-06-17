@@ -30,11 +30,7 @@ class OnboardingStepSeven extends StatelessWidget {
       body: SafeArea(
         child: common.infoIntro(
             context,
-            <TextSpan>[
-              const TextSpan(
-                  text:
-                      'Gecko va maintenant générer pour vous un code secret court qui vous permettra d’accéder rapidement à vos portefeuilles, sans avoir à taper votre phrase de restauration à chaque fois.'),
-            ],
+            'Gecko va maintenant générer pour vous un code secret court qui vous permettra d’accéder rapidement à vos portefeuilles, sans avoir à taper votre phrase de restauration à chaque fois.',
             'coffre-fort-code-secret-dans-telephone.png',
             '>',
             OnboardingStepEight(scanDerivation: scanDerivation),

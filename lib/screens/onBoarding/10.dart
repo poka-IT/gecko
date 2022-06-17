@@ -53,12 +53,8 @@ class OnboardingStepTen extends StatelessWidget {
             SizedBox(height: isTall ? 40 : 20),
             common.buildProgressBar(9),
             SizedBox(height: isTall ? 40 : 20),
-            common.buildText(<TextSpan>[
-              TextSpan(
-                  text:
-                      "Gecko va vérifier avec vous si vous avez bien mémorisé votre code secret.\n\nTapez votre code secret dans le champ ci-dessous pour vérifier que vous l’avez bien noté.",
-                  style: TextStyle(fontSize: 16 * ratio))
-            ]),
+            common.buildText(
+                "Gecko va vérifier avec vous si vous avez bien mémorisé votre code secret.\n\nTapez votre code secret dans le champ ci-dessous pour vérifier que vous l’avez bien noté."),
             SizedBox(height: isTall ? 80 : 20),
             Visibility(
               visible: _generateWalletProvider.scanedWalletNumber != -1,

@@ -1,5 +1,6 @@
 // ignore_for_file: file_names
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -30,11 +31,7 @@ class OnboardingStepTwo extends StatelessWidget {
       body: SafeArea(
         child: common.infoIntro(
             context,
-            <TextSpan>[
-              const TextSpan(
-                  text:
-                      'Conservez cette phrase précieusement, car sans elle Gecko ne pourra pas reconstruire vos portefeuilles le jour où vous changez de téléphone.'),
-            ],
+            'keepThisMnemonicSecure'.tr(),
             'fabrication-de-portefeuille-impossible-sans-phrase.png',
             '>',
             const OnboardingStepThree(),

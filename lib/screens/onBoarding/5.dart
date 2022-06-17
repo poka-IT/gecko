@@ -53,12 +53,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
           common.buildProgressBar(4),
           SizedBox(height: isTall ? 40 : 20),
           common.buildText(
-            <TextSpan>[
-              const TextSpan(
-                  text:
-                      'Gecko a généré votre phrase de restauration ! Tâchez de la garder bien secrète, car elle permet à quiconque la connaît d’accéder à tous vos portefeuilles.'),
-            ],
-          ),
+              'Gecko a généré votre phrase de restauration ! Tâchez de la garder bien secrète, car elle permet à quiconque la connaît d’accéder à tous vos portefeuilles.'),
           SizedBox(height: 35 * ratio),
           sentanceArray(context),
           SizedBox(height: 17 * ratio),

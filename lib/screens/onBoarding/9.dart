@@ -44,19 +44,8 @@ class OnboardingStepNine extends StatelessWidget {
             SizedBox(height: isTall ? 40 : 20),
             common.buildProgressBar(8),
             SizedBox(height: isTall ? 40 : 20),
-            common.buildText(
-              <TextSpan>[
-                const TextSpan(
-                    text:
-                        "Et voilà votre code secret !\n\nMémorisez-le ou notez-le, car il vous sera demandé "),
-                const TextSpan(
-                    text: 'à chaque fois',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                const TextSpan(
-                    text:
-                        " que vous voudrez effectuer un paiement sur cet appareil."),
-              ],
-            ),
+            common.buildTextMd(
+                "Et voilà votre code secret !\n\nMémorisez-le ou notez-le, car il vous sera demandé **à chaque fois** que vous voudrez effectuer un paiement sur cet appareil."),
             const SizedBox(height: 100),
             Stack(
               alignment: Alignment.centerRight,

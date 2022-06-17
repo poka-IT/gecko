@@ -40,44 +40,44 @@ class TransactionInProgress extends StatelessWidget {
     switch (transType) {
       case 'pay':
         {
-          _actionName = 'Transaction';
+          _actionName = 'transaction'.tr();
         }
         break;
       case 'cert':
         {
-          _actionName = 'Certification';
+          _actionName = 'certification'.tr();
         }
         break;
       case 'comfirmIdty':
         {
-          _actionName = "Confirmation d'identité";
+          _actionName = "identityConfirm".tr();
         }
         break;
       case 'revokeIdty':
         {
-          _actionName = "Révocation d'adhésion";
+          _actionName = "revokeAdhesion".tr();
         }
         break;
       default:
         {
-          _actionName = 'Transaction étrange';
+          _actionName = 'strangeTransaction'.tr();
         }
     }
 
     switch (_result) {
       case '':
         {
-          _resultText = 'Envoi en cours ...';
+          _resultText = 'sending'.tr();
         }
         break;
       case 'Ready':
         {
-          _resultText = 'En cours de propagation...';
+          _resultText = 'propagating'.tr();
         }
         break;
       case 'Broadcast':
         {
-          _resultText = 'En cours de validation ...';
+          _resultText = 'validating'.tr();
         }
         break;
       default:
@@ -90,7 +90,7 @@ class TransactionInProgress extends StatelessWidget {
             _resultText = '$_actionName validé !';
           } else {
             isValid = false;
-            _resultText = "Une erreur s'est produite:\n";
+            _resultText = "anErrorOccured".tr() + ":\n";
             final List _exceptionSplit = _result.split('Exception: ');
             String _exception;
             if (_exceptionSplit.length > 1) {
@@ -103,37 +103,33 @@ class TransactionInProgress extends StatelessWidget {
               case 'cert.NotRespectCertPeriod':
               case 'identity.CreatorNotAllowedToCreateIdty':
                 {
-                  _resultText =
-                      "Vous devez attendre 24h entre chaque certification";
+                  _resultText = "24hbetweenCerts".tr();
                 }
                 break;
               case 'cert.CannotCertifySelf':
                 {
-                  _resultText =
-                      "Vous ne pouvez pas vous certifier\nvous même ...";
+                  _resultText = "canNotCertifySelf".tr();
                 }
                 break;
               case 'identity.IdtyNameAlreadyExist':
                 {
-                  _resultText = "Ce nom est déjà pris";
+                  _resultText = "nameAlreadyExist".tr();
                 }
                 break;
               case 'balances.KeepAlive':
                 {
-                  _resultText =
-                      "Vous devez garder au moins 2ĞD sur votre compte pour le garder actif";
+                  _resultText = "2GDtoKeepAlive".tr();
                 }
                 break;
               case '1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low':
                 {
-                  _resultText =
-                      "Vous devez alimenter ce compte avant\nde pouvoir l'utiliser";
+                  _resultText = "youHaveToFeedThisAccountBeforeUsing".tr();
                 }
                 break;
 
               case 'timeout':
                 {
-                  _resultText += "Le délais d'éxecution est dépassé";
+                  _resultText += "execTimeoutOver".tr();
                 }
                 break;
               default:

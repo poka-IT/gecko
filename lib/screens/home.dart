@@ -112,8 +112,8 @@ class HomeScreen extends StatelessWidget {
                   // Check if versionData non compatible, drop everything
                   if (walletBox.isNotEmpty &&
                       walletBox.getAt(0)!.version! < dataVersion) {
-                    await infoPopup(context,
-                        "La version de vos coffres n'est plus comptabile avec cette version de Ğecko.\nTous vos coffres vont être oubliés, vous devez les importer de nouveau.");
+                    await infoPopup(
+                        context, "chestNotCompatibleMustReinstallGecko".tr());
                     await walletBox.clear();
                     await chestBox.clear();
                     await configBox.delete('defaultWallet');
@@ -128,7 +128,7 @@ class HomeScreen extends StatelessWidget {
                   if (connectivityResult != ConnectivityResult.mobile &&
                       connectivityResult != ConnectivityResult.wifi) {
                     _homeProvider.changeMessage(
-                        "Vous n'êtes pas connecté à internet", 0);
+                        "notConnectedToInternet".tr(), 0);
                     _sub.nodeConnected = false;
                   }
 
@@ -140,7 +140,7 @@ class HomeScreen extends StatelessWidget {
                       _sub.nodeConnected = false;
                       await _sub.sdk.api.setting.unsubscribeBestNumber();
                       _homeProvider.changeMessage(
-                          "Vous n'êtes pas connecté à internet", 0);
+                          "notConnectedToInternet".tr(), 0);
                       _sub.reload();
                     } else {
                       await _sub.connectNode(ctx);

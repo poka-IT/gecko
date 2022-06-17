@@ -98,9 +98,9 @@ class SettingsScreen extends StatelessWidget {
                     log.i('Oublier tous mes coffres');
                     await _myWallets.deleteAllWallet(context);
                   },
-                  child: const Text(
-                    'Oublier tous mes coffres',
-                    style: TextStyle(
+                  child: Text(
+                    'forgetAllMyChests'.tr(),
+                    style: const TextStyle(
                       fontSize: fontSize + 4,
                       color: Color(0xffD80000),
                       fontWeight: FontWeight.w600,

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
@@ -9,7 +10,6 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
@@ -40,9 +40,9 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
         appBar: AppBar(
           elevation: 0,
           toolbarHeight: 60 * ratio,
-          title: const SizedBox(
+          title: SizedBox(
             height: 22,
-            child: Text('Activité du compte'),
+            child: Text('accountActivity'.tr()),
           ),
         ),
         bottomNavigationBar: _homeProvider.bottomAppBar(context),
@@ -57,12 +57,12 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
         Provider.of<DuniterIndexer>(context, listen: false);
 
     if (indexerEndpoint == '') {
-      Column(children: const <Widget>[
-        SizedBox(height: 50),
+      Column(children: <Widget>[
+        const SizedBox(height: 50),
         Text(
-          "L'état du réseau ne permet pas\nd'afficher l'historique du compte",
+          "noNetworkNoHistory".tr(),
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 18),
+          style: const TextStyle(fontSize: 18),
         )
       ]);
     }
@@ -103,20 +103,20 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
 
               if (result.hasException) {
                 log.e('Error Indexer: ' + result.exception.toString());
-                return Column(children: const <Widget>[
-                  SizedBox(height: 50),
+                return Column(children: <Widget>[
+                  const SizedBox(height: 50),
                   Text(
-                    "L'état du réseau ne permet pas\nd'afficher l'historique du compte",
+                    "noNetworkNoHistory".tr(),
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 18),
+                    style: const TextStyle(fontSize: 18),
                   )
                 ]);
               } else if (result.data == null) {
-                return Column(children: const <Widget>[
-                  SizedBox(height: 50),
+                return Column(children: <Widget>[
+                  const SizedBox(height: 50),
                   Text(
-                    "Aucune donnée à afficher.",
-                    style: TextStyle(fontSize: 18),
+                    "noDataToDisplay".tr(),
+                    style: const TextStyle(fontSize: 18),
                   )
                 ]);
               }
@@ -159,11 +159,11 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
         Provider.of<DuniterIndexer>(context, listen: false);
 
     return _duniterIndexer.transBC == null
-        ? Column(children: const <Widget>[
-            SizedBox(height: 50),
+        ? Column(children: <Widget>[
+            const SizedBox(height: 50),
             Text(
-              "Aucune transaction à afficher.",
-              style: TextStyle(fontSize: 18),
+              "noTransactionToDisplay".tr(),
+              style: const TextStyle(fontSize: 18),
             )
           ])
         : Column(children: <Widget>[
@@ -202,19 +202,19 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
     bool isYesterday = false;
     bool isThisWeek = false;
 
-    const Map<int, String> monthsInYear = {
-      1: "Janvier",
-      2: "Février",
-      3: "Mars",
-      4: "Avril",
-      5: "Mai",
-      6: "Juin",
-      7: "Juillet",
-      8: "Aout",
-      9: "Septembre",
-      10: "Octobre",
-      11: "Novembre",
-      12: "Décembre"
+    final Map<int, String> monthsInYear = {
+      1: "month1".tr(),
+      2: "month2".tr(),
+      3: "month3".tr(),
+      4: "month4".tr(),
+      5: "month5".tr(),
+      6: "month6".tr(),
+      7: "month7".tr(),
+      8: "month8".tr(),
+      9: "month9".tr(),
+      10: "month10".tr(),
+      11: "month11".tr(),
+      12: "month12".tr()
     };
 
     return Column(
@@ -243,18 +243,18 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
       final yesterdayDate = DateTime(now.year, now.month, now.day - 1);
 
       if (transactionDate == todayDate && !isTody) {
-        dateDelimiter = lastDateDelimiter = "Aujourd'hui";
+        dateDelimiter = lastDateDelimiter = "today".tr();
         isTody = true;
       } else if (transactionDate == yesterdayDate && !isYesterday) {
-        dateDelimiter = lastDateDelimiter = "Hier";
+        dateDelimiter = lastDateDelimiter = "yesterday".tr();
         isYesterday = true;
       } else if (weekNumber(date) == weekNumber(now) &&
           date.year == now.year &&
-          lastDateDelimiter != "Cette semaine" &&
+          lastDateDelimiter != "thisWeek".tr() &&
           transactionDate != yesterdayDate &&
           transactionDate != todayDate &&
           !isThisWeek) {
-        dateDelimiter = lastDateDelimiter = "Cette semaine";
+        dateDelimiter = lastDateDelimiter = "thisWeek".tr();
         isThisWeek = true;
       } else if (lastDateDelimiter != monthsInYear[date.month] &&
           lastDateDelimiter != "${monthsInYear[date.month]} ${date.year}" &&

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -229,13 +230,13 @@ class DuniterIndexer with ChangeNotifier {
             }
 
             if (result.isLoading) {
-              return const Text('Loading');
+              return Text('loading'.tr());
             }
 
             final List identities = result.data?['search_identity'] ?? [];
 
             if (identities.isEmpty) {
-              return const Text('Aucun résultat');
+              return Text('noResult'.tr());
             }
 
             int keyID = 0;

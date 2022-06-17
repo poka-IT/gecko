@@ -70,9 +70,9 @@ class WalletViewScreen extends StatelessWidget {
               ),
             ),
           ],
-          title: const SizedBox(
+          title: SizedBox(
             height: 22,
-            child: Text('Voir un portefeuille'),
+            child: Text('seeAWallet'.tr()),
           ),
         ),
         bottomNavigationBar: _homeProvider.bottomAppBar(context),
@@ -137,6 +137,7 @@ class WalletViewScreen extends StatelessWidget {
                       final int _seconds = _durationSeconds.inSeconds;
                       final int _minutes = _durationSeconds.inMinutes;
 
+                      // TODO translate timing
                       if (_seconds <= 0) {
                         _duration = '0 secondes';
                       } else if (_seconds <= 60) {
@@ -260,7 +261,8 @@ class WalletViewScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              "Vous devez attendre\n$_duration avant\nde pouvoir certifier",
+                              "mustWaitXBeforeCertify"
+                                  .tr(args: [_duration.toString()]),
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   fontSize: buttonFontSize - 4,
@@ -290,7 +292,8 @@ class WalletViewScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              "Vous pourrez renouveller\ncette certification\ndans $_duration",
+                              "canRenewCertInX"
+                                  .tr(args: [_duration.toString()]),
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   fontSize: buttonFontSize - 4,
@@ -471,9 +474,9 @@ class WalletViewScreen extends StatelessWidget {
                         Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                'Effectuer un virement',
-                                style: TextStyle(
+                              Text(
+                                'executeATransfer'.tr(),
+                                style: const TextStyle(
                                     fontSize: 26, fontWeight: FontWeight.w700),
                               ),
                               IconButton(
@@ -681,9 +684,9 @@ class WalletViewScreen extends StatelessWidget {
                                     }
                                   }
                                 : null,
-                            child: const Text(
-                              'Effectuer le virement',
-                              style: TextStyle(
+                            child: Text(
+                              'executeTheTransfer'.tr(),
+                              style: const TextStyle(
                                   fontSize: 20, fontWeight: FontWeight.w600),
                             ),
                           ),

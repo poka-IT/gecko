@@ -758,13 +758,13 @@ class AddressInfo {
 void snackNode(BuildContext context, bool isConnected) {
   String _message;
   if (!isConnected) {
-    _message =
-        "Aucun noeud Duniter disponible, veuillez réessayer ultérieurement:\n${configBox.get('endpoint').first}";
+    _message = "noDuniterNodeAvailableTryLater".tr() +
+        ":\n${configBox.get('endpoint').first}";
   } else {
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    _message =
-        "Vous êtes connecté au noeud\n${_sub.getConnectedEndpoint()!.split('//')[1]}";
+    _message = "youAreConnectedToNode".tr() +
+        "\n${_sub.getConnectedEndpoint()!.split('//')[1]}";
   }
   final snackBar = SnackBar(
       padding: const EdgeInsets.all(20),

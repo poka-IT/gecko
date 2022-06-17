@@ -39,11 +39,11 @@ class OnboardingStepTen extends StatelessWidget {
         backgroundColor: backgroundColor,
         appBar: AppBar(
           toolbarHeight: 60 * ratio,
-          title: const SizedBox(
+          title: SizedBox(
             height: 22,
             child: Text(
-              'Mon code secret',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              'myPassword'.tr(),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ),

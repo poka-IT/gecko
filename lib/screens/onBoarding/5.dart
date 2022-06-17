@@ -38,11 +38,11 @@ class _ChooseChestState extends State<OnboardingStepFive> {
       backgroundColor: backgroundColor,
       appBar: AppBar(
         toolbarHeight: 60 * ratio,
-        title: const SizedBox(
+        title: SizedBox(
           height: 22,
           child: Text(
-            'Votre phrase de restauration',
-            style: TextStyle(fontWeight: FontWeight.w600),
+            'yourMnemonic'.tr(),
+            style: const TextStyle(fontWeight: FontWeight.w600),
           ),
         ),
       ),
@@ -52,8 +52,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
           SizedBox(height: isTall ? 40 : 20),
           common.buildProgressBar(4),
           SizedBox(height: isTall ? 40 : 20),
-          common.buildText(
-              'geckoGeneratedYourMnemonicKeepItSecret'.tr()),
+          common.buildText('geckoGeneratedYourMnemonicKeepItSecret'.tr()),
           SizedBox(height: 35 * ratio),
           sentanceArray(context),
           SizedBox(height: 17 * ratio),

@@ -1,5 +1,6 @@
 // ignore_for_file: file_names
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -41,11 +42,11 @@ class OnboardingStepSix extends StatelessWidget {
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           toolbarHeight: 60 * ratio,
-          title: const SizedBox(
+          title: SizedBox(
             height: 22,
             child: Text(
-              'Votre phrase de restauration',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              'yourMnemonic'.tr(),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ),
@@ -57,7 +58,8 @@ class OnboardingStepSix extends StatelessWidget {
               common.buildProgressBar(5),
               SizedBox(height: isTall ? 40 : 20),
               common.buildText(
-                  "Avez-vous bien noté votre phrase de restauration ?\n\nPour en être sûr, veuillez taper dans le champ ci-dessous le **${_generateWalletProvider.nbrWord + 1}ème mot** de votre phrase de restauration :",
+                  "didYouNoteMnemonicToBeSureTypeWord".tr(
+                      args: [(_generateWalletProvider.nbrWord + 1).toString()]),
                   20,
                   true),
               SizedBox(height: isTall ? 70 : 20),

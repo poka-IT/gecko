@@ -55,9 +55,11 @@
     "keepThisMnemonicSecure": "Conservez cette phrase précieusement, car sans elle Ğecko ne pourra pas reconstruire vos portefeuilles le jour où vous changez de téléphone.",
     "geckoGeneratedYourMnemonicKeepItSecret": "Gecko a généré votre phrase de restauration ! Tâchez de la garder bien secrète, car elle permet à quiconque la connaît d’accéder à tous vos portefeuilles.",
     "newWallet": "Nouveau portefeuille",
-    "itsTimeToUseAPenAndPaper": "Il est temps de vous munir d’**un papier et d’un crayon** afin de pouvoir noter votre phrase de restauration."
-
-
-
+    "itsTimeToUseAPenAndPaper": "Il est temps de vous munir d’**un papier et d’un crayon** afin de pouvoir noter votre phrase de restauration.",
+    "yourMnemonic": "Votre phrase de restauration",
+    "gecko_also_can_forget.png": "gecko_also_can_forget_fr.png",
+    "didYouNoteMnemonicToBeSureTypeWord": "Avez-vous bien noté votre phrase de restauration ?\n\nPour en être sûr, veuillez taper dans le champ ci-dessous le **{}ème mot** de votre phrase de restauration :",
+    "geckoWillGenerateAPassword": "Gecko va maintenant générer pour vous un code secret court qui vous permettra d’accéder rapidement à vos portefeuilles, sans avoir à taper votre phrase de restauration à chaque fois.",
+    "myPassword": "Mon code secret"
 
 }

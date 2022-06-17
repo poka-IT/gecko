@@ -19,11 +19,11 @@ class OnboardingStepFor extends StatelessWidget {
       backgroundColor: backgroundColor,
       appBar: AppBar(
         toolbarHeight: 60 * ratio,
-        title: const SizedBox(
+        title: SizedBox(
           height: 22,
           child: Text(
-            'Votre phrase de restauration',
-            style: TextStyle(fontWeight: FontWeight.w600),
+            'yourMnemonic'.tr(),
+            style: const TextStyle(fontWeight: FontWeight.w600),
           ),
         ),
       ),
@@ -32,7 +32,7 @@ class OnboardingStepFor extends StatelessWidget {
         child: common.infoIntro(
             context,
             'itsTimeToUseAPenAndPaper'.tr(),
-            'gecko-oublie-aussi.png',
+            'gecko_also_can_forget.png'.tr(),
             '>',
             const OnboardingStepFive(),
             3,

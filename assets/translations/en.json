@@ -54,8 +54,12 @@
     "keepThisMnemonicSecure": "Keep this sentence carefully, because without it Ğecko will not be able to rebuild your wallets the day you change your phone.",
     "geckoGeneratedYourMnemonicKeepItSecret": "Ğecko generated your mnemonic successfully! Keep it secret, because anyone who knows it can access all your wallets.",
     "newWallet": "New Wallet",
-    "itsTimeToUseAPenAndPaper": "Il est temps de vous munir d’**un papier et d’un crayon** afin de pouvoir noter votre phrase de restauration."
+    "itsTimeToUseAPenAndPaper": "It's time to take a **pen and paper** in order to write down your mnemonic.",
+    "yourMnemonic": "Your mnemonic",
+    "gecko_also_can_forget.png": "gecko_also_can_forget_en.png",
+    "didYouNoteMnemonicToBeSureTypeWord": "Did you write down your menmonic?\n\n To be sure, please type the **{}th word** of your restoration phrase in the field below:",
+    "geckoWillGenerateAPassword": "Gecko will now generate for you a short password that will allow you to quickly access your wallets, without having to type your recovery sentence every time.",
+    "myPassword": "My password"
 
-   
 
 }

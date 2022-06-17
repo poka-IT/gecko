@@ -60,18 +60,6 @@ class CommonElements {
         decoration: BoxDecoration(
             color: Colors.white, border: Border.all(color: Colors.grey[900]!)),
         child: MarkdownBody(data: text, styleSheet: style));
-
-    //   RichText(
-    //     textAlign: TextAlign.justify,
-    //     text: TextSpan(
-    //       style: TextStyle(
-    //           fontSize: isTall ? size : size * 0.9,
-    //           color: Colors.black,
-    //           letterSpacing: 0.3),
-    //       children: text,
-    //     ),
-    //   ),
-    // );
   }
 
   Widget nextButton(

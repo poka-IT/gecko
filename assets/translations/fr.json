@@ -51,6 +51,6 @@
     "confirm": "Confirmer",
     "confirmPayment": "Confirmer le paiement",
     "clickHereToConfirmIdentity": "Cliquez ici pour confirmer\nvotre nouvelle identité",
-    "geckoGenerateYourWalletFromMnemonic": "Gecko fabrique votre portefeuille à partir d’une **phrase de restauration**. Elle est un peu comme le plan qui permet de construire votre portefeuille.",
-    "keepThisMnemonicSecure": "Conservez cette phrase précieusement, car sans elle Gecko ne pourra pas reconstruire vos portefeuilles le jour où vous changez de téléphone."
+    "geckoGenerateYourWalletFromMnemonic": "Ğecko fabrique votre portefeuille à partir d’une **phrase de restauration**. Elle est un peu comme le plan qui permet de construire votre portefeuille.",
+    "keepThisMnemonicSecure": "Conservez cette phrase précieusement, car sans elle Ğecko ne pourra pas reconstruire vos portefeuilles le jour où vous changez de téléphone."
 }

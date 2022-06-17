@@ -50,8 +50,8 @@
     "confirm": "Confirm",
     "confirmPayment": "Confirm payment",
     "clickHereToConfirmIdentity": "Click here to confirm\nyour new identity",
-    "geckoGenerateYourWalletFromMnemonic": "Gecko builds your wallet from a **restoration sentence**. It is a bit like the blueprint that builds your wallet.",
-    "keepThisMnemonicSecure": "Keep this sentence carefully, because without it Gecko will not be able to rebuild your wallets the day you change your phone."
+    "geckoGenerateYourWalletFromMnemonic": "Ğecko builds your wallet from a **restoration sentence**. It is a bit like the blueprint that builds your wallet.",
+    "keepThisMnemonicSecure": "Keep this sentence carefully, because without it Ğecko will not be able to rebuild your wallets the day you change your phone."
    
 
 }

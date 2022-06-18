@@ -113,27 +113,13 @@ Future<void> main() async {
         ),
       ),
     );
-
-    // runZoned<Future<void>>(
-    //       () async {
-    //         runApp(Gecko(endPointGVA, _store));
-    //       },
-    //       onError: (dynamic error, StackTrace stackTrace) {
-    //         print("=================== CAUGHT DART ERROR");
-    //         // Sentry.captureException(
-    //         //   error,
-    //         //   stackTrace: stackTrace,
-    //         // );
-    //       },
-    //     ));
   } else {
     print('Debug mode enabled: No sentry alerte');
 
     runApp(
       EasyLocalization(
-        supportedLocales: const [Locale('en'), Locale('fr')],
-        path:
-            'assets/translations', // <-- change the path of the translation files
+        supportedLocales: const [Locale('en'), Locale('fr'), Locale('es')],
+        path: 'assets/translations',
         fallbackLocale: const Locale('fr'),
         child: Gecko(indexerEndpoint),
       ),

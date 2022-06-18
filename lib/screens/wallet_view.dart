@@ -137,7 +137,6 @@ class WalletViewScreen extends StatelessWidget {
                       final int _seconds = _durationSeconds.inSeconds;
                       final int _minutes = _durationSeconds.inMinutes;
 
-                      // TODO translate timing
                       if (_seconds <= 0) {
                         _duration = 'seconds'.tr(args: ['0']);
                       } else if (_seconds <= 60) {

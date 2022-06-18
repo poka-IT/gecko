@@ -1,5 +1,6 @@
 // ignore_for_file: file_names
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -41,11 +42,11 @@ class OnboardingStepSix extends StatelessWidget {
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           toolbarHeight: 60 * ratio,
-          title: const SizedBox(
+          title: SizedBox(
             height: 22,
             child: Text(
-              'Votre phrase de restauration',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              'yourMnemonic'.tr(),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ),
@@ -57,20 +58,10 @@ class OnboardingStepSix extends StatelessWidget {
               common.buildProgressBar(5),
               SizedBox(height: isTall ? 40 : 20),
               common.buildText(
-                <TextSpan>[
-                  TextSpan(
-                      text:
-                          "Avez-vous bien noté votre phrase de restauration ?\n\nPour en être sûr, veuillez taper dans le champ ci-dessous le ",
-                      style: TextStyle(fontSize: 16 * ratio)),
-                  TextSpan(
-                      text: '${_generateWalletProvider.nbrWord + 1}ème mot',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16 * ratio)),
-                  TextSpan(
-                      text: " de votre phrase de restauration :",
-                      style: TextStyle(fontSize: 16 * ratio)),
-                ],
-              ),
+                  "didYouNoteMnemonicToBeSureTypeWord".tr(
+                      args: [(_generateWalletProvider.nbrWord + 1).toString()]),
+                  20,
+                  true),
               SizedBox(height: isTall ? 70 : 20),
               Text('${_generateWalletProvider.nbrWord + 1}',
                   key: const Key('askedWord'),
@@ -105,8 +96,9 @@ class OnboardingStepSix extends StatelessWidget {
                             color: Colors.grey[500],
                             fontWeight: FontWeight.w500),
                         labelText: _generateWalletProvider.isAskedWordValid
-                            ? "C'est le bon mot !"
-                            : "${_generateWalletProvider.nbrWordAlpha} mot de votre phrase de restauration",
+                            ? "itsTheGoodWord".tr()
+                            : "${_generateWalletProvider.nbrWordAlpha} " +
+                                "nthMnemonicWord".tr(),
                         fillColor: const Color(0xffeeeedd),
                         filled: true,
                         contentPadding: const EdgeInsets.all(12),
@@ -122,7 +114,7 @@ class OnboardingStepSix extends StatelessWidget {
                     alignment: Alignment.bottomCenter,
                     child: nextButton(
                         context,
-                        'Continuer',
+                        'continue'.tr(),
                         skipIntro
                             ? const OnboardingStepNine()
                             : const OnboardingStepSeven(),

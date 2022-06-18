@@ -1,5 +1,6 @@
 // ignore_for_file: file_names
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -18,11 +19,11 @@ class OnboardingStepFor extends StatelessWidget {
       backgroundColor: backgroundColor,
       appBar: AppBar(
         toolbarHeight: 60 * ratio,
-        title: const SizedBox(
+        title: SizedBox(
           height: 22,
           child: Text(
-            'Votre phrase de restauration',
-            style: TextStyle(fontWeight: FontWeight.w600),
+            'yourMnemonic'.tr(),
+            style: const TextStyle(fontWeight: FontWeight.w600),
           ),
         ),
       ),
@@ -30,18 +31,12 @@ class OnboardingStepFor extends StatelessWidget {
       body: SafeArea(
         child: common.infoIntro(
             context,
-            <TextSpan>[
-              const TextSpan(text: 'Il est temps de vous munir d’'),
-              const TextSpan(
-                  text: 'un d’un papier et d’un crayon',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              const TextSpan(
-                  text: ' afin de pouvoir noter votre phrase de restauration.'),
-            ],
-            'gecko-oublie-aussi.png',
+            'itsTimeToUseAPenAndPaper'.tr(),
+            'gecko_also_can_forget.png'.tr(),
             '>',
             const OnboardingStepFive(),
-            3),
+            3,
+            isMd: true),
       ),
     );
   }

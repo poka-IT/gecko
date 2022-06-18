@@ -1,5 +1,7 @@
 import 'package:dots_indicator/dots_indicator.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:provider/provider.dart';
@@ -29,22 +31,28 @@ class CommonElements {
         child: Image.asset('assets/onBoarding/$assetName', width: imageWidth));
   }
 
-  Widget buildText(List<TextSpan> text, [double size = 20]) {
+  Widget buildText(String text, [double size = 20, bool isMd = false]) {
+    final mdStyle = MarkdownStyleSheet(
+      p: TextStyle(
+          fontSize: isTall ? size : size * 0.9,
+          color: Colors.black,
+          letterSpacing: 0.3),
+      textAlign: WrapAlignment.spaceBetween,
+    );
+
     return Container(
       padding: const EdgeInsets.all(12),
       width: 440,
       decoration: BoxDecoration(
           color: Colors.white, border: Border.all(color: Colors.grey[900]!)),
-      child: RichText(
-        textAlign: TextAlign.justify,
-        text: TextSpan(
-          style: TextStyle(
-              fontSize: isTall ? size : size * 0.9,
-              color: Colors.black,
-              letterSpacing: 0.3),
-          children: text,
-        ),
-      ),
+      child: isMd
+          ? MarkdownBody(data: text, styleSheet: mdStyle)
+          : Text(text,
+              textAlign: TextAlign.justify,
+              style: TextStyle(
+                  fontSize: isTall ? size : size * 0.9,
+                  color: Colors.black,
+                  letterSpacing: 0.3)),
     );
   }
 
@@ -85,11 +93,12 @@ class CommonElements {
 
   Widget infoIntro(
     BuildContext context,
-    List<TextSpan> text,
+    String text,
     String assetName,
     String buttonText,
     nextScreen,
     double pagePosition, {
+    bool isMd = false,
     bool isFast = false,
     double boxHeight = 440,
     double imageWidth = 350,
@@ -100,7 +109,8 @@ class CommonElements {
       buildProgressBar(pagePosition),
       SizedBox(height: isTall ? 40 : 20),
 
-      buildText(text, textSize),
+      buildText(text, textSize, isMd),
+
       buildImage(assetName, boxHeight, imageWidth),
       Expanded(
         child: Align(
@@ -239,9 +249,9 @@ Future<bool?> confirmPopup(BuildContext context, String title) async {
             children: [
               TextButton(
                 key: const Key('confirmPopop'),
-                child: const Text(
-                  "Oui",
-                  style: TextStyle(
+                child: Text(
+                  "yes".tr(),
+                  style: const TextStyle(
                     fontSize: 21,
                     color: Color(0xffD80000),
                   ),
@@ -252,9 +262,9 @@ Future<bool?> confirmPopup(BuildContext context, String title) async {
               ),
               const SizedBox(width: 20),
               TextButton(
-                child: const Text(
-                  "Non",
-                  style: TextStyle(fontSize: 21),
+                child: Text(
+                  "no".tr(),
+                  style: const TextStyle(fontSize: 21),
                 ),
                 onPressed: () {
                   Navigator.pop(context, false);

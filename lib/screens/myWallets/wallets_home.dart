@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
@@ -97,9 +98,9 @@ class WalletsHome extends StatelessWidget {
                 return ChestOptions(walletProvider: _myWalletProvider);
               }),
             ),
-            label: const Text(
-              "    Paramétrer ce coffre",
-              style: TextStyle(
+            label: Text(
+              "   " + "manageChest".tr(),
+              style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
                 color: Color(0xff8a3c0f),
@@ -108,7 +109,7 @@ class WalletsHome extends StatelessWidget {
           )),
       const SizedBox(height: 30),
       InkWell(
-        key: const Key('createNewChest'),
+        key: const Key('changeChest'),
         onTap: () {
           Navigator.push(
             context,
@@ -121,7 +122,7 @@ class WalletsHome extends StatelessWidget {
           width: 400,
           height: 50,
           child: Center(
-              child: Text('Changer de coffre',
+              child: Text('changeChest'.tr(),
                   style: TextStyle(
                       fontSize: 22,
                       color: orangeC,
@@ -360,7 +361,7 @@ class WalletsHome extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context);
 
     String _newDerivationName =
-        'Portefeuille ${_myWalletProvider.listWallets.last.number! + 2}';
+        'wallet'.tr() + ' ${_myWalletProvider.listWallets.last.number! + 2}';
     return Padding(
         padding: const EdgeInsets.all(16),
         child: ClipRRect(

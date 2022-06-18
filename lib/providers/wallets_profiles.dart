@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -126,14 +127,13 @@ class WalletsProfilesProvider with ChangeNotifier {
     return _balance;
   }
 
-
-Widget headerProfileView(
+  Widget headerProfileView(
       BuildContext context, String _address, String? username) {
     const double _avatarSize = 140;
 
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
-        CesiumPlusProvider _cesiumPlusProvider =
+    CesiumPlusProvider _cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
     // SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
@@ -181,13 +181,11 @@ Widget headerProfileView(
                   ),
                 ]),
                 const SizedBox(height: 25),
-
                 balance(context, _address, 22),
                 const SizedBox(height: 10),
                 _walletOptions.idtyStatus(context, _address,
                     isOwner: false, color: Colors.black),
                 getCerts(context, _address, 14),
-
                 if (username == null &&
                     g1WalletsBox.get(_address)?.username != null)
                   SizedBox(
@@ -215,10 +213,9 @@ Widget headerProfileView(
               ]),
           const Spacer(),
           Column(children: <Widget>[
-              ClipOval(
-                child: _cesiumPlusProvider.defaultAvatar(_avatarSize),
-              ),
-  
+            ClipOval(
+              child: _cesiumPlusProvider.defaultAvatar(_avatarSize),
+            ),
             const SizedBox(height: 25),
           ]),
         ]),
@@ -227,18 +224,16 @@ Widget headerProfileView(
     ]);
   }
 
-
-
   void reload() {
     notifyListeners();
   }
 }
 
 snackCopyKey(context) {
-  const snackBar = SnackBar(
-      padding: EdgeInsets.all(20),
-      content: Text("Cette adresse a été copié dans votre presse-papier.",
-          style: TextStyle(fontSize: 16)),
-      duration: Duration(seconds: 2));
+  final snackBar = SnackBar(
+      padding: const EdgeInsets.all(20),
+      content: Text("thisAddressHasBeenCopiedToClipboard".tr(),
+          style: const TextStyle(fontSize: 16)),
+      duration: const Duration(seconds: 2));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }

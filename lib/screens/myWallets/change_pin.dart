@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
@@ -63,7 +64,7 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
               ),
               const SizedBox(height: 80),
               Text(
-                'Choisissez un code secret autogénéré :',
+                'choosePassword'.tr(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontSize: 17.0,
@@ -126,9 +127,9 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                       Navigator.pop(context);
                     }
                   },
-                  child: const Text(
-                    'Confirmer',
-                    style: TextStyle(fontSize: 28),
+                  child: Text(
+                    'confirm'.tr(),
+                    style: const TextStyle(fontSize: 28),
                   ),
                 ),
               )

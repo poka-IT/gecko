@@ -1,4 +1,5 @@
 // ignore_for_file: file_names
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -18,11 +19,11 @@ class OnboardingStepEight extends StatelessWidget {
       backgroundColor: backgroundColor,
       appBar: AppBar(
         toolbarHeight: 60 * ratio,
-        title: const SizedBox(
+        title: SizedBox(
           height: 22,
           child: Text(
-            'Mon code secret',
-            style: TextStyle(fontWeight: FontWeight.w600),
+            'myPassword'.tr(),
+            style: const TextStyle(fontWeight: FontWeight.w600),
           ),
         ),
       ),
@@ -30,21 +31,12 @@ class OnboardingStepEight extends StatelessWidget {
       body: SafeArea(
         child: common.infoIntro(
             context,
-            <TextSpan>[
-              const TextSpan(
-                  text:
-                      'Ce code secret protège vos portefeuilles dans un coffre-fort '),
-              const TextSpan(
-                  text: 'dont vous seul possédez le code',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              const TextSpan(
-                  text:
-                      ', de sorte que vos portefeuilles seront inutilisables par d’autres.'),
-            ],
+            'thisPasswordProtectsYourWalletsInASecureChest'.tr(),
             'coffre-fort-protege-les-portefeuilles.png',
             '>',
             OnboardingStepNine(scanDerivation: scanDerivation),
-            7),
+            7,
+            isMd: true),
       ),
     );
   }

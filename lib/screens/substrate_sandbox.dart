@@ -21,7 +21,7 @@ class SubstrateSandBox extends StatelessWidget {
           toolbarHeight: 60 * ratio,
           title: const SizedBox(
             height: 22,
-            child: Text('Substrate Sandbox'),
+            child: Text('⏳ Substrate Sandbox'),
           ),
         ),
         body: SafeArea(
@@ -36,12 +36,12 @@ class SubstrateSandBox extends StatelessWidget {
                           await _sub.connectNode(context);
                         },
                         child: Text(
-                            'Noeud connecté ?: ${_sub.nodeConnected} (${_sub.sdk.api.connectedNode?.endpoint})')),
+                            '🌐 Noeud connecté ?: ${_sub.nodeConnected} (${_sub.sdk.api.connectedNode?.endpoint})')),
                     if (_sub.nodeConnected)
-                      Text('Noeud "$currencyName", bloc N°${_sub.blocNumber}'),
+                      Text('🏆 Noeud "$currencyName", bloc N°${_sub.blocNumber}'),
                     const SizedBox(height: 20),
                     Row(children: [
-                      const Text('Liste des coffres:'),
+                      const Text('💳 Liste des coffres:'),
                       const Spacer(),
                       InkWell(
                         child: Image.asset(
@@ -93,13 +93,13 @@ class SubstrateSandBox extends StatelessWidget {
                                         addressInfo.address!,
                                         2,
                                         _sub.keystorePassword.text),
-                                    child: const Text("Dériver"),
+                                    child: const Text("🏂 Dériver"),
                                   )
                                 ])
                           ]);
                         }),
                     const SizedBox(height: 20),
-                    const Text('Mot de passe du coffre:'),
+                    const Text('🔒 Mot de passe du coffre:'),
                     TextField(
                       controller: _sub.keystorePassword,
                       obscureText: true,
@@ -130,7 +130,7 @@ class SubstrateSandBox extends StatelessWidget {
                                   }
                                 : null,
                             child: const Text(
-                              'Importer depuis le presse-papier',
+                              '📎 Importer depuis le presse-papier',
                               style: TextStyle(fontSize: 20),
                             ),
                           ),
@@ -149,7 +149,7 @@ class SubstrateSandBox extends StatelessWidget {
                               snack(context, 'Le mnemonic a été copié');
                             },
                             child: const Text(
-                              "Générer un mnemonic et le copier",
+                              "🏦 Générer un mnemonic et le copier",
                               style: TextStyle(fontSize: 20),
                             ),
                           ),
@@ -161,7 +161,7 @@ class SubstrateSandBox extends StatelessWidget {
                               textAlign: TextAlign.center,
                             ),
                           ),
-                          const Text('--------'),
+                          const Text('-〰️---〰️---〰️-'),
                           const SizedBox(height: 10),
                           Text(_sub.debugConnection)
                         ])

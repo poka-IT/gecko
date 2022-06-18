@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
@@ -38,9 +39,9 @@ class SearchResultScreen extends StatelessWidget {
       appBar: AppBar(
         elevation: 1,
         toolbarHeight: 60 * ratio,
-        title: const SizedBox(
+        title: SizedBox(
           height: 22,
-          child: Text('Résultats de votre recherche'),
+          child: Text('researchResults'.tr()),
         ),
       ),
       bottomNavigationBar: _homeProvider.bottomAppBar(context),
@@ -59,8 +60,8 @@ class SearchResultScreen extends StatelessWidget {
                         color: Colors.grey[700],
                       ),
                       children: <TextSpan>[
-                        const TextSpan(
-                          text: "Résultats pour ",
+                        TextSpan(
+                          text: "resultsFor".tr(),
                         ),
                         TextSpan(
                           text: '"${_searchProvider.searchController.text}"',
@@ -71,7 +72,7 @@ class SearchResultScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 40),
                   Text(
-                    'Dans la blockchain $currencyName',
+                    'inBlockchainResult'.tr(args: [currencyName]),
                     style: const TextStyle(fontSize: 20),
                   ),
                   const SizedBox(height: 20),

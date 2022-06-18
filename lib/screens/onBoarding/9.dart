@@ -1,4 +1,5 @@
 // ignore_for_file: file_names
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -30,11 +31,11 @@ class OnboardingStepNine extends StatelessWidget {
         backgroundColor: backgroundColor,
         appBar: AppBar(
           toolbarHeight: 60 * ratio,
-          title: const SizedBox(
+          title: SizedBox(
             height: 22,
             child: Text(
-              'Mon code secret',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              'myPassword'.tr(),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ),
@@ -45,18 +46,9 @@ class OnboardingStepNine extends StatelessWidget {
             common.buildProgressBar(8),
             SizedBox(height: isTall ? 40 : 20),
             common.buildText(
-              <TextSpan>[
-                const TextSpan(
-                    text:
-                        "Et voilà votre code secret !\n\nMémorisez-le ou notez-le, car il vous sera demandé "),
-                const TextSpan(
-                    text: 'à chaque fois',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                const TextSpan(
-                    text:
-                        " que vous voudrez effectuer un paiement sur cet appareil."),
-              ],
-            ),
+                "hereIsThePasswordKeepIt".tr(),
+                20,
+                true),
             const SizedBox(height: 100),
             Stack(
               alignment: Alignment.centerRight,
@@ -98,13 +90,13 @@ class OnboardingStepNine extends StatelessWidget {
                           onPressed: () {
                             _generateWalletProvider.changePinCode(reload: true);
                           },
-                          child: Text("Choisir un autre code secret",
+                          child: Text("chooseAnotherPassword".tr(),
                               style: TextStyle(
                                   fontSize: 22 * ratio,
                                   fontWeight: FontWeight.w600))),
                     ))),
             SizedBox(height: 22 * ratio),
-            common.nextButton(context, "J'ai noté mon code secret",
+            common.nextButton(context, "iNotedMyPassword".tr(),
                 OnboardingStepTen(scanDerivation: scanDerivation), false),
             SizedBox(height: 35 * ratio),
           ]),

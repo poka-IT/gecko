@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
@@ -17,9 +18,9 @@ class TransactionCommentScreen extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           toolbarHeight: 60 * ratio,
-          title: const SizedBox(
+          title: SizedBox(
             height: 22,
-            child: Text('Confirmer le paiement'),
+            child: Text('confirmPayment'.tr()),
           ),
         ),
         body: SafeArea(

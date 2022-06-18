@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
@@ -50,16 +51,16 @@ class _CustomDerivationState extends State<CustomDerivation> {
       backgroundColor: backgroundColor,
       appBar: AppBar(
           toolbarHeight: 60 * ratio,
-          title: const SizedBox(
+          title: SizedBox(
             height: 22,
-            child: Text('Créer une dérivation personnalisé'),
+            child: Text('createCustomDerivation'.tr()),
           )),
       body: Center(
         child: SafeArea(
           child: Column(children: <Widget>[
             const Spacer(),
-            const Text(
-              'Choisissez une dérivation:',
+            Text(
+              'chooseDerivation'.tr(),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -124,8 +125,8 @@ class _CustomDerivationState extends State<CustomDerivation> {
                   }
 
                   if (_pin != null || _myWalletProvider.pinCode != '') {
-                    String _newDerivationName =
-                        'Portefeuille ${_myWalletProvider.listWallets.last.number! + 2}';
+                    String _newDerivationName = 'wallet'.tr() +
+                        ' ${_myWalletProvider.listWallets.last.number! + 2}';
                     if (dropdownValue == 'root') {
                       await _myWalletProvider.generateRootWallet(
                           context, 'Portefeuille racine');
@@ -146,9 +147,10 @@ class _CustomDerivationState extends State<CustomDerivation> {
                     // );
                   }
                 },
-                child: const Text(
-                  'Valider',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                child: Text(
+                  'validate'.tr(),
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.w600),
                 ),
               ),
             ),

@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
@@ -35,9 +36,9 @@ class ShowSeed extends StatelessWidget {
         backgroundColor: backgroundColor,
         appBar: AppBar(
             toolbarHeight: 60 * ratio,
-            title: const SizedBox(
+            title: SizedBox(
               height: 22,
-              child: Text('Ma phrase de restauration'),
+              child: Text('myMnemonic'.tr()),
             )),
         body: SafeArea(
           child: Column(children: <Widget>[
@@ -64,13 +65,7 @@ class ShowSeed extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Column(children: [
-                          common.buildText(
-                            <TextSpan>[
-                              const TextSpan(
-                                  text:
-                                      'Tâchez de garder cette phrase bien secrète, car elle permet à quiconque la connaît d’accéder à tous vos portefeuilles.'),
-                            ],
-                          ),
+                          common.buildText('keepYourMnemonicSecret'.tr()),
                           SizedBox(height: 35 * ratio),
                           sentanceArray(context, _seed.data!.split(' ')),
                           const SizedBox(height: 20),
@@ -97,7 +92,7 @@ class ShowSeed extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 7),
                                 Text(
-                                  'Copier',
+                                  'copy'.tr(),
                                   style: TextStyle(
                                       fontSize: 15, color: Colors.grey[50]),
                                 )
@@ -136,7 +131,7 @@ class ShowSeed extends StatelessWidget {
                   Navigator.pop(context);
                 },
                 child: Text(
-                  'Fermer',
+                  'close'.tr(),
                   style: TextStyle(
                       fontSize: 23 * ratio, fontWeight: FontWeight.w600),
                 ),
@@ -237,11 +232,11 @@ class PrintWallet extends StatelessWidget {
           backgroundColor: yellowC,
           foregroundColor: Colors.black,
           toolbarHeight: 60 * ratio,
-          title: const SizedBox(
+          title: SizedBox(
             height: 22,
             child: Text(
-              'Imprimer ma phrase de restauration',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              'printMyMnemonic'.tr(),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ),

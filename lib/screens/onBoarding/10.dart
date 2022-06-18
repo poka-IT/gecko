@@ -1,6 +1,7 @@
 // ignore_for_file: file_names
 
 import 'dart:async';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -38,11 +39,11 @@ class OnboardingStepTen extends StatelessWidget {
         backgroundColor: backgroundColor,
         appBar: AppBar(
           toolbarHeight: 60 * ratio,
-          title: const SizedBox(
+          title: SizedBox(
             height: 22,
             child: Text(
-              'Mon code secret',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              'myPassword'.tr(),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ),
@@ -52,12 +53,7 @@ class OnboardingStepTen extends StatelessWidget {
             SizedBox(height: isTall ? 40 : 20),
             common.buildProgressBar(9),
             SizedBox(height: isTall ? 40 : 20),
-            common.buildText(<TextSpan>[
-              TextSpan(
-                  text:
-                      "Gecko va vérifier avec vous si vous avez bien mémorisé votre code secret.\n\nTapez votre code secret dans le champ ci-dessous pour vérifier que vous l’avez bien noté.",
-                  style: TextStyle(fontSize: 16 * ratio))
-            ]),
+            common.buildText("geckoWillCheckPassword".tr()),
             SizedBox(height: isTall ? 80 : 20),
             Visibility(
               visible: _generateWalletProvider.scanedWalletNumber != -1,
@@ -107,7 +103,7 @@ class OnboardingStepTen extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Garder ce code en mémoire 15 minutes',
+                          'rememberPassword'.tr(),
                           style:
                               TextStyle(fontSize: 16, color: Colors.grey[700]),
                         ),
@@ -153,7 +149,7 @@ class OnboardingStepTen extends StatelessWidget {
             animationType: AnimationType.fade,
             validator: (v) {
               if (v!.length < _pinLenght) {
-                return "Votre code PIN fait $_pinLenght caractères";
+                return "yourPasswordLengthIsX".tr(args: [_pinLenght.toString()]);
               } else {
                 return null;
               }
@@ -206,7 +202,7 @@ class OnboardingStepTen extends StatelessWidget {
                       chest: configBox.get('currentChest'),
                       address: address,
                       number: 0,
-                      name: 'Mon portefeuille courant',
+                      name: 'currentWallet'.tr(),
                       derivation: 2,
                       imageDefaultPath: '0.png');
                   await walletBox.add(myWallet);

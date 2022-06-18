@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
@@ -90,7 +91,7 @@ class MyWalletsProvider with ChangeNotifier {
       log.w('DELETE ALL WALLETS ?');
 
       final bool? _answer = await (confirmPopup(
-          context, 'Êtes-vous sûr de vouloir oublier tous vos coffres ?'));
+          context, 'areYouSureForgetAllChests'.tr()));
       if (_answer!) {
         await walletBox.clear();
         await chestBox.clear();

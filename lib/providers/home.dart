@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 // import 'package:audioplayers/audio_cache.dart';
 // import 'package:audioplayers/audioplayers.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
@@ -25,10 +26,8 @@ class HomeProvider with ChangeNotifier {
   Icon searchIcon = const Icon(Icons.search);
   final TextEditingController searchQuery = TextEditingController();
   Widget appBarTitle = Text('Ğecko', style: TextStyle(color: Colors.grey[850]));
-  Widget appBarExplorer =
-      Text('Explorateur', style: TextStyle(color: Colors.grey[850]));
-  String homeMessage = "Chargement en cours ...";
-  String defaultMessage = "y'a pas de lézard ;-)";
+  String homeMessage = "loading".tr();
+  String defaultMessage = "noLizard".tr();
 
   Future<void> initHive() async {
     late Directory hivePath;
@@ -209,20 +208,6 @@ class HomeProvider with ChangeNotifier {
         ]),
       ),
     );
-  }
-
-  void handleSearchEnd() {
-    searchIcon = Icon(
-      Icons.search,
-      color: Colors.grey[850],
-    );
-    appBarTitle = Text('Ğecko', style: TextStyle(color: Colors.grey[850]));
-    appBarExplorer =
-        Text('Explorateur', style: TextStyle(color: Colors.grey[850]));
-    isSearching = false;
-    searchQuery.clear();
-
-    notifyListeners();
   }
 
   void rebuildWidget() {

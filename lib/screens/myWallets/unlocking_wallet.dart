@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'dart:async';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -90,11 +91,11 @@ class UnlockingWallet extends StatelessWidget {
                               )),
                         ]),
                     SizedBox(height: 30 * ratio),
-                    const SizedBox(
+                    SizedBox(
                         width: 400,
                         child: Text(
-                          'Pour déverrouiller votre coffre, composez votre code secret à l’abri des lézards indiscrets :',
-                          style: TextStyle(
+                          'toUnlockEnterPassword'.tr(),
+                          style: const TextStyle(
                               fontSize: 19,
                               color: Colors.black,
                               fontWeight: FontWeight.w400),
@@ -118,7 +119,7 @@ class UnlockingWallet extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Garder ce code en mémoire 15 minutes',
+                            'rememberPassword'.tr(),
                             style: TextStyle(
                                 fontSize: 16, color: Colors.grey[700]),
                           ),
@@ -142,7 +143,7 @@ class UnlockingWallet extends StatelessWidget {
                           height: 50,
                           child: Center(
                             child: Text(
-                              'Changer de coffre',
+                              'changeChest'.tr(),
                               style: TextStyle(
                                   fontSize: 22,
                                   color: orangeC,
@@ -200,7 +201,8 @@ class UnlockingWallet extends StatelessWidget {
             animationType: AnimationType.fade,
             validator: (v) {
               if (v!.length < _pinLenght) {
-                return "Votre code PIN fait $_pinLenght caractères";
+                return "yourPasswordLengthIsX"
+                    .tr(args: [_pinLenght.toString()]);
               } else {
                 return null;
               }

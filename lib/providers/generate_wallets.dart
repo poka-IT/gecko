@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:durt/durt.dart' as durt;
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -62,9 +63,9 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     String chestName;
     if (chestNumber == 0) {
-      chestName = 'Coffre à Ğecko';
+      chestName = 'geckoChest'.tr();
     } else {
-      chestName = 'Coffre à Ğecko ${chestNumber + 1}';
+      chestName = 'geckoChest'.tr() + '${chestNumber + 1}';
     }
     await configBox.put('currentChest', chestNumber);
 
@@ -119,18 +120,18 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   String? intToString(int _nbr) {
     Map nbrToString = {};
-    nbrToString[1] = 'Premier';
-    nbrToString[2] = 'Deuxième';
-    nbrToString[3] = 'Troisième';
-    nbrToString[4] = 'Quatrième';
-    nbrToString[5] = 'Cinquième';
-    nbrToString[6] = 'Sixième';
-    nbrToString[7] = 'Septième';
-    nbrToString[8] = 'Huitième';
-    nbrToString[9] = 'Neuvième';
-    nbrToString[10] = 'Dixième';
-    nbrToString[11] = 'Onzième';
-    nbrToString[12] = 'Douzième';
+    nbrToString[1] = '1th'.tr();
+    nbrToString[2] = '2th'.tr();
+    nbrToString[3] = '3th'.tr();
+    nbrToString[4] = '4th'.tr();
+    nbrToString[5] = '5th'.tr();
+    nbrToString[6] = '6th'.tr();
+    nbrToString[7] = '7th'.tr();
+    nbrToString[8] = '8th'.tr();
+    nbrToString[9] = '9th'.tr();
+    nbrToString[10] = '10th'.tr();
+    nbrToString[11] = '11th'.tr();
+    nbrToString[12] = '12th'.tr();
 
     nbrWordAlpha = nbrToString[_nbr];
 
@@ -400,8 +401,8 @@ class GenerateWalletsProvider with ChangeNotifier {
       if (balance != 0) {
         isAlive = true;
         String walletName = scanedWalletNumber == 0
-            ? 'Mon portefeuille courant'
-            : 'Portefeuille ${scanedWalletNumber + 1}';
+            ? 'currentWallet'.tr()
+            : 'wallet'.tr() + ' ${scanedWalletNumber + 1}';
         await _sub.importAccount(
             mnemonic: '',
             fromMnemonic: true,
@@ -437,7 +438,7 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     log.d(balance);
     if (balance != 0) {
-      String walletName = 'Mon portefeuille racine';
+      String walletName = 'myRootWallet'.tr();
       await _sub.importAccount(
           mnemonic: '', fromMnemonic: true, password: pin.text);
 

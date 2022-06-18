@@ -45,11 +45,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:window_size/window_size.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 const bool enableSentry = true;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     setWindowTitle('Ğecko');
     setWindowMinSize(const Size(400, 700));
@@ -97,27 +99,31 @@ Future<void> main() async {
     // // ]);
     // Catcher(rootWidget: Gecko(endPointGVA, _store), debugConfig: debugOptions);
 
-    await SentryFlutter.init((options) {
-      options.dsn =
-          'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
-    }, appRunner: () => runApp(Gecko(indexerEndpoint)));
-
-    // runZoned<Future<void>>(
-    //       () async {
-    //         runApp(Gecko(endPointGVA, _store));
-    //       },
-    //       onError: (dynamic error, StackTrace stackTrace) {
-    //         print("=================== CAUGHT DART ERROR");
-    //         // Sentry.captureException(
-    //         //   error,
-    //         //   stackTrace: stackTrace,
-    //         // );
-    //       },
-    //     ));
+    await SentryFlutter.init(
+      (options) {
+        options.dsn =
+            'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
+      },
+      appRunner: () => runApp(
+        EasyLocalization(
+          supportedLocales: const [Locale('en'), Locale('fr')],
+          path: 'assets/translations',
+          fallbackLocale: const Locale('en'),
+          child: Gecko(indexerEndpoint),
+        ),
+      ),
+    );
   } else {
     print('Debug mode enabled: No sentry alerte');
 
-    runApp(Gecko(indexerEndpoint));
+    runApp(
+      EasyLocalization(
+        supportedLocales: const [Locale('en'), Locale('fr'), Locale('es')],
+        path: 'assets/translations',
+        fallbackLocale: const Locale('fr'),
+        child: Gecko(indexerEndpoint),
+      ),
+    );
   }
 }
 
@@ -145,6 +151,9 @@ class Gecko extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => DuniterIndexer())
       ],
       child: MaterialApp(
+        localizationsDelegates: context.localizationDelegates,
+        supportedLocales: context.supportedLocales,
+        locale: context.locale,
         builder: (context, widget) => ResponsiveWrapper.builder(
             BouncingScrollWrapper.builder(context, widget!),
             maxWidth: 1200,

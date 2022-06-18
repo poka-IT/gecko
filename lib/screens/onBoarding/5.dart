@@ -1,5 +1,6 @@
 // ignore_for_file: file_names
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -37,11 +38,11 @@ class _ChooseChestState extends State<OnboardingStepFive> {
       backgroundColor: backgroundColor,
       appBar: AppBar(
         toolbarHeight: 60 * ratio,
-        title: const SizedBox(
+        title: SizedBox(
           height: 22,
           child: Text(
-            'Votre phrase de restauration',
-            style: TextStyle(fontWeight: FontWeight.w600),
+            'yourMnemonic'.tr(),
+            style: const TextStyle(fontWeight: FontWeight.w600),
           ),
         ),
       ),
@@ -51,13 +52,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
           SizedBox(height: isTall ? 40 : 20),
           common.buildProgressBar(4),
           SizedBox(height: isTall ? 40 : 20),
-          common.buildText(
-            <TextSpan>[
-              const TextSpan(
-                  text:
-                      'Gecko a généré votre phrase de restauration ! Tâchez de la garder bien secrète, car elle permet à quiconque la connaît d’accéder à tous vos portefeuilles.'),
-            ],
-          ),
+          common.buildText('geckoGeneratedYourMnemonicKeepItSecret'.tr()),
           SizedBox(height: 35 * ratio),
           sentanceArray(context),
           SizedBox(height: 17 * ratio),
@@ -93,7 +88,8 @@ class _ChooseChestState extends State<OnboardingStepFive> {
                       // _generateWalletProvider.reloadBuild();
                       setState(() {});
                     },
-                    child: Text("Choisir une autre phrase",
+                    child: Text("chooseAnotherMnemonic".tr(),
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                             fontSize: 22 * ratio,
                             fontWeight: FontWeight.w600))),
@@ -101,7 +97,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
             ),
           ),
           SizedBox(height: 22 * ratio),
-          nextButton(context, "J'ai noté ma phrase", false, widget.skipIntro),
+          nextButton(context, "iNotedMyMnemonic".tr(), false, widget.skipIntro),
           SizedBox(height: 35 * ratio),
         ]),
       ),
@@ -204,7 +200,7 @@ class PrintWallet extends StatelessWidget {
           title: const SizedBox(
             height: 22,
             child: Text(
-              'Imprimer ma phrase de restauration',
+              'printMyMnemonic',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),

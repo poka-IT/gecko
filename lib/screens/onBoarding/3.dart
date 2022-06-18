@@ -1,5 +1,6 @@
 // ignore_for_file: file_names
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -18,27 +19,18 @@ class OnboardingStepThree extends StatelessWidget {
       backgroundColor: backgroundColor,
       appBar: AppBar(
         toolbarHeight: 60 * ratio,
-        title: const SizedBox(
+        title: SizedBox(
           height: 22,
           child: Text(
-            'Votre phrase de restauration',
-            style: TextStyle(fontWeight: FontWeight.w600),
+            'yourMnemonic'.tr(),
+            style: const TextStyle(fontWeight: FontWeight.w600),
           ),
         ),
       ),
       extendBodyBehindAppBar: true,
       body: SafeArea(
-        child: common.infoIntro(
-            context,
-            <TextSpan>[
-              const TextSpan(
-                  text:
-                      'Dans une blockchain, pas de procédure de récupération par mail. Seule votre phrase de restauration peut vous permettre de récupérer vos Ğ1 à tout moment.'),
-            ],
-            'mot-de-passe-oublie.png',
-            '>',
-            const OnboardingStepFor(),
-            2),
+        child: common.infoIntro(context, 'warningForgotPassword'.tr(),
+            'forgot_password.png'.tr(), '>', const OnboardingStepFor(), 2),
       ),
     );
   }

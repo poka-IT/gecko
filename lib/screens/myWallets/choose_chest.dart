@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -35,9 +36,9 @@ class _ChooseChestState extends State<ChooseChest> {
         backgroundColor: backgroundColor,
         appBar: AppBar(
             toolbarHeight: 60 * ratio,
-            title: const SizedBox(
+            title: SizedBox(
               height: 22,
-              child: Text('Sélectionner mon coffre'),
+              child: Text('selectMyChest'.tr()),
             )),
         body: SafeArea(
           child: Column(children: <Widget>[
@@ -140,7 +141,7 @@ class _ChooseChestState extends State<ChooseChest> {
                   }
                 },
                 child: Text(
-                  'Ouvrir ce coffre',
+                  'openThisChest'.tr(),
                   style: TextStyle(
                       fontSize: 22,
                       color: backgroundColor,
@@ -166,7 +167,7 @@ class _ChooseChestState extends State<ChooseChest> {
                     width: 400,
                     height: 50,
                     child: Center(
-                        child: Text('Créer un nouveau coffre',
+                        child: Text('createChest'.tr(),
                             style: TextStyle(
                                 fontSize: 22,
                                 color: orangeC,
@@ -189,7 +190,7 @@ class _ChooseChestState extends State<ChooseChest> {
                   width: 400,
                   height: 50,
                   child: Center(
-                      child: Text('Importer un coffre',
+                      child: Text('importChest'.tr(),
                           style: TextStyle(
                               fontSize: 22,
                               color: orangeC,

@@ -1,5 +1,6 @@
 import 'package:bubble/bubble.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/stateful_wrapper.dart';
 import 'package:gecko/providers/chest_provider.dart';
@@ -62,7 +63,7 @@ class HomeScreen extends StatelessWidget {
               ),
               ListTile(
                 key: const Key('parameters'),
-                title: const Text('Paramètres'),
+                title: Text('parameters'.tr()),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(
@@ -111,8 +112,8 @@ class HomeScreen extends StatelessWidget {
                   // Check if versionData non compatible, drop everything
                   if (walletBox.isNotEmpty &&
                       walletBox.getAt(0)!.version! < dataVersion) {
-                    await infoPopup(context,
-                        "La version de vos coffres n'est plus comptabile avec cette version de Ğecko.\nTous vos coffres vont être oubliés, vous devez les importer de nouveau.");
+                    await infoPopup(
+                        context, "chestNotCompatibleMustReinstallGecko".tr());
                     await walletBox.clear();
                     await chestBox.clear();
                     await configBox.delete('defaultWallet');
@@ -127,7 +128,7 @@ class HomeScreen extends StatelessWidget {
                   if (connectivityResult != ConnectivityResult.mobile &&
                       connectivityResult != ConnectivityResult.wifi) {
                     _homeProvider.changeMessage(
-                        "Vous n'êtes pas connecté à internet", 0);
+                        "notConnectedToInternet".tr(), 0);
                     _sub.nodeConnected = false;
                   }
 
@@ -139,7 +140,7 @@ class HomeScreen extends StatelessWidget {
                       _sub.nodeConnected = false;
                       await _sub.sdk.api.setting.unsubscribeBestNumber();
                       _homeProvider.changeMessage(
-                          "Vous n'êtes pas connecté à internet", 0);
+                          "notConnectedToInternet".tr(), 0);
                       _sub.reload();
                     } else {
                       await _sub.connectNode(ctx);
@@ -302,7 +303,7 @@ Widget geckHome(context) {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  "Rechercher un\nportefeuille",
+                  "searchWallet".tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       color: Colors.white,
@@ -368,7 +369,7 @@ Widget geckHome(context) {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  "Gérer mes\nportefeuilles",
+                  "manageWallets".tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       color: Colors.white,
@@ -412,7 +413,7 @@ Widget geckHome(context) {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        "Scanner un\nQR code",
+                        "scanQRCode".tr(),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             color: Colors.white,
@@ -468,7 +469,7 @@ Widget welcomeHome(context) {
         child:
             Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
           Text(
-            "L’application de paiement $currencyName\nplus rapide qu’un reptile du Vietnam",
+            "fastAppDescription".tr(args: [currencyName]),
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: Colors.white,
@@ -520,7 +521,7 @@ Widget welcomeHome(context) {
                       ),
                       Positioned(
                         left: 180,
-                        child: bubbleSpeak("y'a pas de lézard !"),
+                        child: bubbleSpeak("noLizard".tr()),
                       ),
                       const Positioned(
                         left: 200,
@@ -551,10 +552,10 @@ Widget welcomeHome(context) {
                         ),
                       );
                     },
-                    child: const Text(
-                      'Créer un portefeuille',
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                    child: Text(
+                      'createWallet'.tr(),
+                      style: const TextStyle(
+                          fontSize: 24, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -576,7 +577,7 @@ Widget welcomeHome(context) {
                       );
                     },
                     child: Text(
-                      "Restaurer mes portefeuilles",
+                      "restoreWallet".tr(),
                       style: TextStyle(
                           fontSize: 24,
                           color: orangeC,

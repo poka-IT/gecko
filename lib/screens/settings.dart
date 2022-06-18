@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:durt/durt.dart';
 import 'package:flutter/services.dart';
@@ -39,9 +40,9 @@ class SettingsScreen extends StatelessWidget {
       backgroundColor: backgroundColor,
       appBar: AppBar(
           toolbarHeight: 60 * ratio,
-          title: const SizedBox(
+          title: SizedBox(
             height: 22,
-            child: Text('Paramètres'),
+            child: Text('parameters'.tr()),
           )),
       body: Column(
           // crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,7 +53,8 @@ class SettingsScreen extends StatelessWidget {
                 log.d(_sub.sdk.api.connectedNode?.endpoint);
                 return Expanded(
                   child: Row(children: [
-                    Text(' Noeud $currencyName :'),
+                    const SizedBox(width: 10),
+                    Text('currencyNode'.tr(args: [currencyName])),
                     const Spacer(),
                     Icon(_sub.nodeConnected && !_sub.isLoadingEndpoint
                         ? Icons.check
@@ -97,9 +99,9 @@ class SettingsScreen extends StatelessWidget {
                     log.i('Oublier tous mes coffres');
                     await _myWallets.deleteAllWallet(context);
                   },
-                  child: const Text(
-                    'Oublier tous mes coffres',
-                    style: TextStyle(
+                  child: Text(
+                    'forgetAllMyChests'.tr(),
+                    style: const TextStyle(
                       fontSize: fontSize + 4,
                       color: Color(0xffD80000),
                       fontWeight: FontWeight.w600,

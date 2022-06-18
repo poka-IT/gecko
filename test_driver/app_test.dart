@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_driver/flutter_driver.dart';
 import 'package:test/test.dart';
 // import 'package:flutter/services.dart';
@@ -160,7 +161,7 @@ void main() {
           await driver!.getText(find.byValueKey(
             'step6',
           )),
-          "J’ai généré votre phrase de restauration !\nTâchez de la garder bien secrète, car elle permet à quiconque la connaît d’accéder à tous vos portefeuilles.");
+          "iGeneratedYourMnemonicKeepItSecret".tr());
     });
 
     test('OnBoarding - Generate sentance and confirme it', (
@@ -255,7 +256,7 @@ void main() {
         {timeout = const Duration(seconds: 2)}) async {
       await tapOn('goWalletHome');
 
-      expect(await getText('myWallets'), "Coffre à Ğecko");
+      expect(await getText('myWallets'), "geckoChest".tr());
       await sleep(300);
 
       // Go to first derivation and rename it

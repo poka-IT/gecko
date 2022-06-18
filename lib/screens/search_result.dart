@@ -72,7 +72,7 @@ class SearchResultScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 40),
                   Text(
-                    'Dans la blockchain $currencyName',
+                    'inBlockchainResult'.tr(args: [currencyName]),
                     style: const TextStyle(fontSize: 20),
                   ),
                   const SizedBox(height: 20),

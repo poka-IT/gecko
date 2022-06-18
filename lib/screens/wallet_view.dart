@@ -113,7 +113,7 @@ class WalletViewScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 9),
                 Text(
-                  "Voir\nl'activité",
+                  "displayNActivity".tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       fontSize: buttonFontSize, fontWeight: FontWeight.w500),
@@ -139,32 +139,34 @@ class WalletViewScreen extends StatelessWidget {
 
                       // TODO translate timing
                       if (_seconds <= 0) {
-                        _duration = '0 secondes';
+                        _duration = 'seconds'.tr(args: ['0']);
                       } else if (_seconds <= 60) {
-                        _duration = '$_seconds secondes';
+                        _duration = 'seconds'.tr(args: [_seconds.toString()]);
                       } else if (_seconds <= 3600) {
-                        _duration = '$_minutes minutes';
+                        _duration = 'minutes'.tr(args: [_minutes.toString()]);
                       } else if (_seconds <= 86400) {
                         final int _hours = _durationSeconds.inHours;
                         final int _minutesLeft = _minutes - _hours * 60;
                         String _showMinutes = '';
                         if (_minutesLeft < 60) {}
-                        _showMinutes = ' $_minutesLeft minutes';
-                        _duration = '$_hours heures$_showMinutes';
+                        _showMinutes =
+                            'minutes'.tr(args: [_minutesLeft.toString()]);
+                        _duration =
+                            'hours'.tr(args: [_hours.toString(), _showMinutes]);
                       } else if (_seconds <= 2592000) {
                         final int _days = _durationSeconds.inDays;
-                        _duration = '$_days jours';
+                        _duration = 'days'.tr(args: [_days.toString()]);
                       } else {
                         final int _months =
                             (_durationSeconds.inDays / 30).round();
-                        _duration = '$_months mois';
+                        _duration = 'months'.tr(args: [_months.toString()]);
                       }
                     }
                     return Visibility(
                       visible: (snapshot.data != {}),
                       child: Column(children: <Widget>[
                         if (snapshot.data!['canCert'] != null ||
-                            _duration == '0 secondes')
+                            _duration == 'seconds'.tr(args: ['0']))
                           Column(children: <Widget>[
                             SizedBox(
                               height: buttonSize,
@@ -233,7 +235,7 @@ class WalletViewScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 9),
                             Text(
-                              "Certifier",
+                              "certify".tr(),
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   fontSize: buttonFontSize,
@@ -271,7 +273,7 @@ class WalletViewScreen extends StatelessWidget {
                             ),
                           ]),
                         if (snapshot.data!['certRenewable'] != null &&
-                            _duration != '0 secondes')
+                            _duration != 'seconds'.tr(args: ['0']))
                           Column(children: <Widget>[
                             SizedBox(
                               height: buttonSize,
@@ -336,29 +338,6 @@ class WalletViewScreen extends StatelessWidget {
                 ),
               ]),
             ]),
-            // FutureBuilder(
-            //   future: _walletOptions.generateQRcode(_historyProvider.pubkey),
-            //   builder: (context, snapshot) {
-            //     return snapshot.data != null
-            //         ? GestureDetector(
-            //             key: const Key('openQrcode'),
-            //             onTap: () {
-            //               Navigator.push(
-            //                 context,
-            //                 MaterialPageRoute(builder: (context) {
-            //                   return AvatarFullscreen(
-            //                     Image.memory(snapshot.data),
-            //                     title: 'QrCode du profil',
-            //                     color: Colors.white,
-            //                   );
-            //                 }),
-            //               );
-            //             },
-            //             child: Image.memory(snapshot.data, height: 60 * ratio),
-            //           )
-            //         : const Text('-', style: TextStyle(fontSize: 20));
-            //   },
-            // ),
             const Spacer(),
             Consumer<SubstrateSdk>(builder: (context, _sub, _) {
               return Opacity(
@@ -397,7 +376,7 @@ class WalletViewScreen extends StatelessWidget {
             const SizedBox(height: 9),
             Consumer<SubstrateSdk>(builder: (context, _sub, _) {
               return Text(
-                "Faire un\nvirement",
+                'doATransfer'.tr(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     color: _sub.nodeConnected ? Colors.black : Colors.grey[500],
@@ -489,7 +468,7 @@ class WalletViewScreen extends StatelessWidget {
                             ]),
                         const SizedBox(height: 20),
                         Text(
-                          'Depuis:',
+                          'from'.tr(),
                           style: TextStyle(
                               fontSize: 19,
                               fontWeight: FontWeight.w500,
@@ -579,7 +558,7 @@ class WalletViewScreen extends StatelessWidget {
 
                         // const SizedBox(height: 10),
                         Text(
-                          'Montant:',
+                          'amount'.tr(),
                           style: TextStyle(
                               fontSize: 19,
                               fontWeight: FontWeight.w500,

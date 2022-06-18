@@ -378,7 +378,7 @@ class WalletOptionsProvider with ChangeNotifier {
                 TextButton(
                   key: const Key('cancel'),
                   child: Text(
-                    "Annuler",
+                    "cancel".tr(),
                     style: TextStyle(
                         fontSize: 18,
                         color: Colors.grey[800],

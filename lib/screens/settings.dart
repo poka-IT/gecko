@@ -53,7 +53,8 @@ class SettingsScreen extends StatelessWidget {
                 log.d(_sub.sdk.api.connectedNode?.endpoint);
                 return Expanded(
                   child: Row(children: [
-                    Text(' Noeud $currencyName :'),
+                    const SizedBox(width: 10),
+                    Text('currencyNode'.tr(args: [currencyName])),
                     const Spacer(),
                     Icon(_sub.nodeConnected && !_sub.isLoadingEndpoint
                         ? Icons.check

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
@@ -31,9 +32,9 @@ class SearchScreen extends StatelessWidget {
         appBar: AppBar(
           elevation: 1,
           toolbarHeight: 60 * ratio,
-          title: const SizedBox(
+          title: SizedBox(
             height: 22,
-            child: Text('Rechercher'),
+            child: Text('search'.tr()),
           ),
           leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.black),
@@ -105,9 +106,10 @@ class SearchScreen extends StatelessWidget {
                           );
                         }
                       : null,
-                  child: const Text(
-                    'Rechercher',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                  child: Text(
+                    'search'.tr(),
+                    style: const TextStyle(
+                        fontSize: 24, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),

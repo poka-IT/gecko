@@ -87,7 +87,7 @@ class TransactionInProgress extends StatelessWidget {
           log.d(_result);
           if (_result.contains('blockHash: ')) {
             isValid = true;
-            _resultText = '$_actionName validé !';
+            _resultText = 'extrinsicValidated'.tr(args: [_actionName]);
           } else {
             isValid = false;
             _resultText = "anErrorOccured".tr() + ":\n";
@@ -159,7 +159,9 @@ class TransactionInProgress extends StatelessWidget {
                 height: 22,
                 child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[Text('$_actionName en cours')]),
+                    children: <Widget>[
+                      Text('extrinsicInProgress'.tr(args: [_actionName]))
+                    ]),
               )),
           body: SafeArea(
             child: Align(
@@ -186,10 +188,10 @@ class TransactionInProgress extends StatelessWidget {
                               fontSize: 18, fontWeight: FontWeight.w600),
                         ),
                       if (transType == 'pay') const SizedBox(height: 10),
-                      const Text(
-                        'de',
+                      Text(
+                        'fromMinus'.tr(),
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 18),
+                        style: const TextStyle(fontSize: 18),
                       ),
                       Text(
                         from,
@@ -198,10 +200,10 @@ class TransactionInProgress extends StatelessWidget {
                             fontSize: 18, fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 10),
-                      const Text(
-                        'vers',
+                      Text(
+                        'toMinus'.tr(),
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 18),
+                        style: const TextStyle(fontSize: 18),
                       ),
                       Text(
                         to,

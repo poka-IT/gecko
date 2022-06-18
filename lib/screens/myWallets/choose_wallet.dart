@@ -29,9 +29,9 @@ class ChooseWalletScreen extends StatelessWidget {
         backgroundColor: backgroundColor,
         appBar: AppBar(
             toolbarHeight: 60 * ratio,
-            title: const SizedBox(
+            title: SizedBox(
               height: 22,
-              child: Text('Choix du portefeuille source'),
+              child: Text('choiceOfSourceWallet'.tr()),
             )),
         body: SafeArea(
           child: Stack(children: [

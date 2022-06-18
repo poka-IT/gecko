@@ -490,9 +490,9 @@ class WalletOptions extends StatelessWidget {
                       height: 45,
                     ),
                     const SizedBox(width: 19),
-                    const Text('Supprimer ce portefeuille',
-                        style:
-                            TextStyle(fontSize: 20, color: Color(0xffD80000))),
+                    Text('deleteThisWallet'.tr(),
+                        style: const TextStyle(
+                            fontSize: 20, color: Color(0xffD80000))),
                   ])
                 : const SizedBox(width: 30),
           );

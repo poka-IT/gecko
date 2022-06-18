@@ -149,7 +149,8 @@ class OnboardingStepTen extends StatelessWidget {
             animationType: AnimationType.fade,
             validator: (v) {
               if (v!.length < _pinLenght) {
-                return "yourPasswordLengthIsX".tr(args: [_pinLenght.toString()]);
+                return "yourPasswordLengthIsX"
+                    .tr(args: [_pinLenght.toString()]);
               } else {
                 return null;
               }

@@ -90,8 +90,8 @@ class MyWalletsProvider with ChangeNotifier {
     try {
       log.w('DELETE ALL WALLETS ?');
 
-      final bool? _answer = await (confirmPopup(
-          context, 'areYouSureForgetAllChests'.tr()));
+      final bool? _answer =
+          await (confirmPopup(context, 'areYouSureForgetAllChests'.tr()));
       if (_answer!) {
         await walletBox.clear();
         await chestBox.clear();

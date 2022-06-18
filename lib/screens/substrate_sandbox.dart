@@ -38,7 +38,8 @@ class SubstrateSandBox extends StatelessWidget {
                         child: Text(
                             '🌐 Noeud connecté ?: ${_sub.nodeConnected} (${_sub.sdk.api.connectedNode?.endpoint})')),
                     if (_sub.nodeConnected)
-                      Text('🏆 Noeud "$currencyName", bloc N°${_sub.blocNumber}'),
+                      Text(
+                          '🏆 Noeud "$currencyName", bloc N°${_sub.blocNumber}'),
                     const SizedBox(height: 20),
                     Row(children: [
                       const Text('💳 Liste des coffres:'),

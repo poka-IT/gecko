@@ -45,10 +45,7 @@ class OnboardingStepNine extends StatelessWidget {
             SizedBox(height: isTall ? 40 : 20),
             common.buildProgressBar(8),
             SizedBox(height: isTall ? 40 : 20),
-            common.buildText(
-                "hereIsThePasswordKeepIt".tr(),
-                20,
-                true),
+            common.buildText("hereIsThePasswordKeepIt".tr(), 20, true),
             const SizedBox(height: 100),
             Stack(
               alignment: Alignment.centerRight,

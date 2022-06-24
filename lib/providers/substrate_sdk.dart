@@ -398,10 +398,12 @@ class SubstrateSdk with ChangeNotifier {
     );
     final txInfo = TxInfoData(
         'balances', amount == -1 ? 'transferAll' : 'transferKeepAlive', sender);
+
+    final int amountUnit = (amount * 100).toInt();
     try {
       final hash = await sdk.api.tx.signAndSend(
         txInfo,
-        [destAddress, amount == -1 ? false : (amount * 100)],
+        [destAddress, amount == -1 ? false : amountUnit],
         password,
         onStatusChange: (status) {
           log.d('Transaction status: ' + status);
@@ -611,6 +613,7 @@ class SubstrateSdk with ChangeNotifier {
       final int _removableOn = _certData['removableOn'] ?? 0;
       final int _renewableOn = _certData['renewableOn'] ?? 0;
       final int _nextIssuableOn = _certMeta['nextIssuableOn'] ?? 0;
+      //TODO: use _removableOn instead of _renewableOn
       log.d(_renewableOn.toString() +
           '\n' +
           _removableOn.toString() +

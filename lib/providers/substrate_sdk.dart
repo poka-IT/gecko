@@ -524,7 +524,7 @@ class SubstrateSdk with ChangeNotifier {
 
     if (idtyStatus != null) {
       final String _status = idtyStatus['status'];
-      log.d('Status $address: $_status');
+      // log.d('Status $address: $_status');
       return (_status);
     } else {
       return 'expired';
@@ -605,39 +605,27 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<Map<String, int>> certState(String from, String to) async {
-    // String from = await getMemberAddress();
+    Map<String, int> _result = {};
     if (from != to && await isMember(from)) {
-      Map<String, int> _result = {};
       final _certData = await getCertData(from, to);
       final _certMeta = await getCertMeta(from);
       final int _removableOn = _certData['removableOn'] ?? 0;
-      final int _renewableOn = _certData['renewableOn'] ?? 0;
       final int _nextIssuableOn = _certMeta['nextIssuableOn'] ?? 0;
-      //TODO: use _removableOn instead of _renewableOn
-      log.d(_renewableOn.toString() +
-          '\n' +
-          _removableOn.toString() +
-          '\n' +
-          _nextIssuableOn.toString());
-      if (_renewableOn != 0) {
-        final certRenewDuration = (_renewableOn - blocNumber) * 6;
+      final certRemovableDuration = (_removableOn - blocNumber) * 6;
+      const int renewDelay = 2 * 30 * 24 * 3600; // 2 months
+
+      if (certRemovableDuration >= renewDelay) {
+        final certRenewDuration = certRemovableDuration - renewDelay;
         _result.putIfAbsent('certRenewable', () => certRenewDuration);
-        return _result;
       } else if (_nextIssuableOn > blocNumber) {
         final certDelayDuration = (_nextIssuableOn - blocNumber) * 6;
         _result.putIfAbsent('certDelay', () => certDelayDuration);
-        return _result;
       } else {
         _result.putIfAbsent('canCert', () => 0);
-        return _result;
       }
     }
-    return {};
+    return _result;
   }
-
-  // Future<String> certState(String from, String to) async {
-  //   return '';
-  // }
 
   Future<Map> getCertMeta(String address) async {
     var idtyIndex = await sdk.webView!
@@ -648,7 +636,7 @@ class SubstrateSdk with ChangeNotifier {
         '';
     // if (_certMeta['nextIssuableOn'] != 0) return {};
 
-    log.d(_certMeta);
+    // log.d(_certMeta);
     return _certMeta;
   }
 

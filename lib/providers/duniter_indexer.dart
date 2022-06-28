@@ -32,7 +32,7 @@ class DuniterIndexer with ChangeNotifier {
     while (true) {
       await Future.delayed(const Duration(seconds: 30));
       final _client = HttpClient();
-      _client.connectionTimeout = const Duration(milliseconds: 1000);
+      _client.connectionTimeout = const Duration(milliseconds: 4000);
       try {
         final request =
             await _client.postUrl(Uri.parse('$oldEndpoint/v1/graphql'));
@@ -62,7 +62,7 @@ class DuniterIndexer with ChangeNotifier {
     int _statusCode = 0;
 
     final _client = HttpClient();
-    _client.connectionTimeout = const Duration(milliseconds: 1000);
+    _client.connectionTimeout = const Duration(milliseconds: 3000);
 
     do {
       int listLenght = _listEndpoints.length;

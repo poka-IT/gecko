@@ -19,8 +19,6 @@ import 'package:truncate/truncate.dart';
 // import 'package:web_socket_channel/io.dart';
 
 class SubstrateSdk with ChangeNotifier {
-  final int ss58 = 42;
-
   final WalletSDK sdk = WalletSDK();
   final Keyring keyring = Keyring();
   String generatedMnemonic = '';
@@ -262,6 +260,7 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<double> getBalance(String address, {bool isUd = false}) async {
     double balance = 0.0;
+
     // log.d('nodeConnected: ' + nodeConnected.toString());
     if (nodeConnected) {
       final brutBalance = await sdk.api.account.queryBalance(address);

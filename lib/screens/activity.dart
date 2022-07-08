@@ -111,7 +111,8 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
                     style: const TextStyle(fontSize: 18),
                   )
                 ]);
-              } else if (result.data == null) {
+              } else if (result
+                  .data?['transaction_connection']?['edges'].isEmpty) {
                 return Column(children: <Widget>[
                   const SizedBox(height: 50),
                   Text(

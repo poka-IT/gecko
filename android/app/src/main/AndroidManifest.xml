@@ -19,7 +19,6 @@
         <activity
             android:requestLegacyExternalStorage="true"
             android:name=".MainActivity"
-            android:resource="@style/NormalTheme"
             android:icon="@mipmap/ic_launcher"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"

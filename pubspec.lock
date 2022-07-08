@@ -1034,8 +1034,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: gecko-work
-      resolved-ref: "7b6ffbefcdcedf073eeba41881b8da2fac202e3f"
+      ref: gecko-old
+      resolved-ref: "87096351fb187614b6386343615db39a2f2b5b9b"
       url: "https://github.com/poka-IT/sdk.git"
     source: git
     version: "0.4.8"

@@ -64,10 +64,10 @@ dependencies:
   desktop_window: ^0.4.0
   durt: ^0.1.6
   package_info_plus: ^1.4.2
-  polkawallet_sdk: #^0.4.7
+  polkawallet_sdk: #^0.4.8
     git:
       url: https://github.com/poka-IT/sdk.git #https://github.com/poka-IT/sdk.git
-      ref: gecko-work
+      ref: gecko-old
   dots_indicator: ^2.1.0
   web_socket_channel: ^2.2.0
   connectivity_plus: ^2.3.3

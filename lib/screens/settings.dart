@@ -5,7 +5,9 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/globals.dart';
+import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:provider/provider.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 
 // ignore: must_be_immutable
 class SettingsScreen extends StatelessWidget {
@@ -14,28 +16,20 @@ class SettingsScreen extends StatelessWidget {
   SettingsScreen({Key? key}) : super(key: key);
 
   // Initial Selected Value
-  String dropdownvalue = 'Item 1';
-
-  // List of items in our dropdown menu
-  var items = [
-    'Item 1',
-    'Item 2',
-    'Item 3',
-    'Item 4',
-    'Item 5',
-  ];
+  String? selectedDuniterEndpoint;
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
-    TextEditingController _endpointController = TextEditingController(
-        text: _sub.sdk.api.connectedNode?.endpoint ??
-            configBox.get('endpoint').first);
 
     const double buttonHigh = 50;
     const double buttonWidth = 240;
     const double fontSize = 16;
+
+    // List of items in our dropdown menu
+    var duniterBootstrapNodes = _sub.getDuniterBootstrap();
+    selectedDuniterEndpoint = _sub.getConnectedEndpoint();
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -47,23 +41,7 @@ class SettingsScreen extends StatelessWidget {
           )),
       body: Column(children: <Widget>[
         const SizedBox(height: 60),
-        Consumer<SettingsProvider>(builder: (context, _set, _) {
-          return DropdownButton(
-            value: dropdownvalue,
-            icon: const Icon(Icons.keyboard_arrow_down),
-            items: items.map((String items) {
-              return DropdownMenuItem(
-                value: items,
-                child: Text(items),
-              );
-            }).toList(),
-            onChanged: (String? newValue) {
-              log.d('coucoucoucouc');
-              dropdownvalue = newValue!;
-              _set.reload();
-            },
-          );
-        }),
+
         Row(children: [
           Consumer<SubstrateSdk>(builder: (context, _sub, _) {
             log.d(_sub.sdk.api.connectedNode?.endpoint);
@@ -76,27 +54,50 @@ class SettingsScreen extends StatelessWidget {
                     ? Icons.check
                     : Icons.close),
                 const Spacer(),
-                SizedBox(
-                  width: 200,
-                  height: 50,
-                  child: TextField(
-                    controller: _endpointController,
-                    autocorrect: false,
-                  ),
-                ),
+                Consumer<SettingsProvider>(builder: (context, _set, _) {
+                  return DropdownButtonHideUnderline(
+                    child: DropdownButton(
+                      //TODO
+                      value: selectedDuniterEndpoint ??
+                          duniterBootstrapNodes.first.endpoint,
+                      icon: const Icon(Icons.keyboard_arrow_down),
+                      items: duniterBootstrapNodes
+                          .map((NetworkParams _endpointParams) {
+                        return DropdownMenuItem(
+                          value: _endpointParams.endpoint,
+                          child: Text(_endpointParams.endpoint!),
+                        );
+                      }).toList(),
+                      onChanged: (String? _newEndpoint) {
+                        log.d(_newEndpoint!);
+                        selectedDuniterEndpoint = _newEndpoint;
+                        _set.reload();
+                      },
+                    ),
+                  );
+                }),
                 const Spacer(flex: 5),
                 _sub.isLoadingEndpoint
                     ? CircularProgressIndicator(color: orangeC)
-                    : IconButton(
-                        icon: Icon(
-                          Icons.send,
-                          color: orangeC,
-                          size: 40,
-                        ),
-                        onPressed: () async {
-                          configBox.put('endpoint', [_endpointController.text]);
-                          await _sub.connectNode(context);
-                        }),
+                    : Consumer<SettingsProvider>(builder: (context, _set, _) {
+                        return IconButton(
+                            icon: Icon(
+                              Icons.send,
+                              color: selectedDuniterEndpoint !=
+                                      _sub.getConnectedEndpoint()
+                                  ? orangeC
+                                  : Colors.grey[500],
+                              size: 40,
+                            ),
+                            onPressed: selectedDuniterEndpoint !=
+                                    _sub.getConnectedEndpoint()
+                                ? () async {
+                                    configBox.put('customEndpoint',
+                                        selectedDuniterEndpoint);
+                                    await _sub.connectNode(context);
+                                  }
+                                : null);
+                      }),
                 const Spacer(flex: 8),
               ]),
             );

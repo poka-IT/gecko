@@ -46,7 +46,6 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<void> connectNode(BuildContext ctx) async {
-    List<NetworkParams> node = [];
     HomeProvider _homeProvider = Provider.of<HomeProvider>(ctx, listen: false);
 
     // var connectivityResult = await (Connectivity().checkConnectivity());
@@ -57,13 +56,14 @@ class SubstrateSdk with ChangeNotifier {
     // }
     _homeProvider.changeMessage("connectionPending".tr(), 0);
 
-    for (String _endpoint in configBox.get('endpoint')) {
-      final n = NetworkParams();
-      n.name = currencyName;
-      n.endpoint = _endpoint;
-      n.ss58 = ss58;
-      node.add(n);
-    }
+    // configBox.delete('customEndpoint');
+    final List<NetworkParams> listEndpoints =
+        configBox.containsKey('customEndpoint')
+            ? [getDuniterCustomEndpoint()]
+            : getDuniterBootstrap();
+
+    // final nodes = getDuniterBootstrap();
+
     int timeout = 10000;
 
     // if (n.endpoint!.startsWith('ws://')) {
@@ -93,7 +93,7 @@ class SubstrateSdk with ChangeNotifier {
 
     isLoadingEndpoint = true;
     notifyListeners();
-    final res = await sdk.api.connectNode(keyring, node).timeout(
+    final res = await sdk.api.connectNode(keyring, listEndpoints).timeout(
           Duration(milliseconds: timeout),
           onTimeout: () => null,
         );
@@ -131,6 +131,27 @@ class SubstrateSdk with ChangeNotifier {
     }
 
     log.d(sdk.api.connectedNode?.endpoint);
+  }
+
+  List<NetworkParams> getDuniterBootstrap() {
+    List<NetworkParams> node = [];
+
+    for (String _endpoint in configBox.get('endpoint')) {
+      final n = NetworkParams();
+      n.name = currencyName;
+      n.endpoint = _endpoint;
+      n.ss58 = ss58;
+      node.add(n);
+    }
+    return node;
+  }
+
+  NetworkParams getDuniterCustomEndpoint() {
+    final nodeParams = NetworkParams();
+    nodeParams.name = currencyName;
+    nodeParams.endpoint = configBox.get('customEndpoint');
+    nodeParams.ss58 = ss58;
+    return nodeParams;
   }
 
   Future<String> importAccount(

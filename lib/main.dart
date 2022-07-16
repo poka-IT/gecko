@@ -25,6 +25,7 @@ import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/generate_wallets.dart';
+import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/providers/home.dart';
@@ -59,11 +60,15 @@ Future<void> main() async {
   }
 
   HomeProvider _homeProvider = HomeProvider();
-  DuniterIndexer _duniterIndexer = DuniterIndexer();
+  // DuniterIndexer _duniterIndexer = DuniterIndexer();
   await initHiveForFlutter();
   await _homeProvider.initHive();
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
+
+  // Reset GraphQL cache
+  final cache = HiveStore();
+  cache.reset();
 
   // Configure Hive and open boxes
   Hive.registerAdapter(WalletDataAdapter());
@@ -83,8 +88,6 @@ Future<void> main() async {
     configBox.put('isCacheChecked', false);
   }
   // log.d(await configBox.get('endpoint'));
-
-  _duniterIndexer.getValidIndexerEndpoint();
 
   HttpOverrides.global = MyHttpOverrides();
 
@@ -148,7 +151,8 @@ class Gecko extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SearchProvider()),
         ChangeNotifierProvider(create: (_) => CesiumPlusProvider()),
         ChangeNotifierProvider(create: (_) => SubstrateSdk()),
-        ChangeNotifierProvider(create: (_) => DuniterIndexer())
+        ChangeNotifierProvider(create: (_) => DuniterIndexer()),
+        ChangeNotifierProvider(create: (_) => SettingsProvider())
       ],
       child: MaterialApp(
         localizationsDelegates: context.localizationDelegates,

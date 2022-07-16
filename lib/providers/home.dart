@@ -83,6 +83,9 @@ class HomeProvider with ChangeNotifier {
 
   Future<List?> getValidEndpoints() async {
     await configBox.delete('endpoint');
+    if (!configBox.containsKey('autoEndpoint')) {
+      configBox.put('autoEndpoint', true);
+    }
 
     List _listEndpoints = [];
     if (!configBox.containsKey('endpoint') ||

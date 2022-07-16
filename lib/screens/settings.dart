@@ -29,7 +29,32 @@ class SettingsScreen extends StatelessWidget {
 
     // List of items in our dropdown menu
     var duniterBootstrapNodes = _sub.getDuniterBootstrap();
-    selectedDuniterEndpoint = _sub.getConnectedEndpoint();
+    selectedDuniterEndpoint =
+        _sub.getConnectedEndpoint() ?? duniterBootstrapNodes.first.endpoint;
+
+    final customEndpoint = NetworkParams();
+    customEndpoint.name = currencyName;
+    customEndpoint.endpoint = 'Personnalisé';
+    customEndpoint.ss58 = ss58;
+
+    final automaticEndpoint = NetworkParams();
+    automaticEndpoint.name = currencyName;
+    automaticEndpoint.endpoint = 'Auto';
+    automaticEndpoint.ss58 = ss58;
+    // duniterBootstrapNodes.add(_sub.getDuniterCustomEndpoint());
+    duniterBootstrapNodes.insert(0, automaticEndpoint);
+    duniterBootstrapNodes.add(customEndpoint);
+
+    if (configBox.get('autoEndpoint') == true) {
+      selectedDuniterEndpoint = automaticEndpoint.endpoint;
+    } else if (configBox.containsKey('customEndpoint')) {
+      selectedDuniterEndpoint = customEndpoint.endpoint;
+    }
+
+    TextEditingController _endpointController = TextEditingController(
+        text: configBox.containsKey('customEndpoint')
+            ? configBox.get('customEndpoint')
+            : 'wss://');
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -57,9 +82,8 @@ class SettingsScreen extends StatelessWidget {
                 Consumer<SettingsProvider>(builder: (context, _set, _) {
                   return DropdownButtonHideUnderline(
                     child: DropdownButton(
-                      //TODO
-                      value: selectedDuniterEndpoint ??
-                          duniterBootstrapNodes.first.endpoint,
+                      // alignment: AlignmentDirectional.topStart,
+                      value: selectedDuniterEndpoint,
                       icon: const Icon(Icons.keyboard_arrow_down),
                       items: duniterBootstrapNodes
                           .map((NetworkParams _endpointParams) {
@@ -92,8 +116,19 @@ class SettingsScreen extends StatelessWidget {
                             onPressed: selectedDuniterEndpoint !=
                                     _sub.getConnectedEndpoint()
                                 ? () async {
-                                    configBox.put('customEndpoint',
-                                        selectedDuniterEndpoint);
+                                    if (selectedDuniterEndpoint == 'Auto') {
+                                      configBox.delete('customEndpoint');
+                                      configBox.put('autoEndpoint', true);
+                                    } else {
+                                      configBox.put('autoEndpoint', false);
+                                      final finalEndpoint =
+                                          selectedDuniterEndpoint ==
+                                                  'Personnalisé'
+                                              ? _endpointController.text
+                                              : selectedDuniterEndpoint;
+                                      configBox.put(
+                                          'customEndpoint', finalEndpoint);
+                                    }
                                     await _sub.connectNode(context);
                                   }
                                 : null);
@@ -103,6 +138,39 @@ class SettingsScreen extends StatelessWidget {
             );
           }),
         ]),
+        Consumer<SettingsProvider>(builder: (context, _set, _) {
+          return Visibility(
+            visible: selectedDuniterEndpoint == 'Personnalisé',
+            child: SizedBox(
+              width: 200,
+              height: 50,
+              child: TextField(
+                controller: _endpointController,
+                autocorrect: false,
+              ),
+            ),
+          );
+        }),
+        Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+          return Consumer<SettingsProvider>(builder: (context, _set, _) {
+            return Visibility(
+              visible: selectedDuniterEndpoint == 'Auto',
+              child: SizedBox(
+                width: 250,
+                height: 60,
+                child: Text(
+                  _sub.getConnectedEndpoint() ??
+                      "Un noeud sûr et valide sera choisi automatiquement parmis une liste aléatoire.",
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey[700]),
+                ),
+              ),
+            );
+          });
+        }),
+
         // SizedBox(height: isTall ? 80 : 120),
         const Spacer(),
         SizedBox(

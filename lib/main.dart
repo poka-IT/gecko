@@ -60,11 +60,15 @@ Future<void> main() async {
   }
 
   HomeProvider _homeProvider = HomeProvider();
-  DuniterIndexer _duniterIndexer = DuniterIndexer();
+  // DuniterIndexer _duniterIndexer = DuniterIndexer();
   await initHiveForFlutter();
   await _homeProvider.initHive();
   appVersion = await _homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
+
+  // Reset GraphQL cache
+  final cache = HiveStore();
+  cache.reset();
 
   // Configure Hive and open boxes
   Hive.registerAdapter(WalletDataAdapter());
@@ -84,8 +88,6 @@ Future<void> main() async {
     configBox.put('isCacheChecked', false);
   }
   // log.d(await configBox.get('endpoint'));
-
-  _duniterIndexer.getValidIndexerEndpoint();
 
   HttpOverrides.global = MyHttpOverrides();
 

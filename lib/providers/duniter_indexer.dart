@@ -22,40 +22,81 @@ class DuniterIndexer with ChangeNotifier {
   int nPage = 1;
   int nRepositories = 20;
   List? transBC;
+  List listIndexerEndpoints = [];
+  bool isLoadingIndexer = false;
 
   void reload() {
     notifyListeners();
   }
 
-  Future checkIndexerEndpoint() async {
-    final oldEndpoint = indexerEndpoint;
-    while (true) {
-      await Future.delayed(const Duration(seconds: 30));
-      final _client = HttpClient();
-      _client.connectionTimeout = const Duration(milliseconds: 4000);
-      try {
-        final request =
-            await _client.postUrl(Uri.parse('$oldEndpoint/v1/graphql'));
-        final response = await request.close();
-        if (response.statusCode != 200) {
-          log.d('INDEXER IS OFFILINE');
-          indexerEndpoint = '';
-        } else {
-          // log.d('Indexer is online');
-          indexerEndpoint = oldEndpoint;
-        }
-      } catch (e) {
+  Future<bool> checkIndexerEndpoint(String endpoint) async {
+    isLoadingIndexer = true;
+    notifyListeners();
+    final _client = HttpClient();
+    _client.connectionTimeout = const Duration(milliseconds: 4000);
+    try {
+      final request = await _client.postUrl(Uri.parse('$endpoint/v1/graphql'));
+      final response = await request.close();
+      if (response.statusCode != 200) {
         log.d('INDEXER IS OFFILINE');
         indexerEndpoint = '';
+        isLoadingIndexer = false;
+        notifyListeners();
+        return false;
+      } else {
+        indexerEndpoint = endpoint;
+        await configBox.put('indexerEndpoint', endpoint);
+        // await configBox.put('customEndpoint', endpoint);
+        isLoadingIndexer = false;
+        notifyListeners();
+        final cache = HiveStore();
+        cache.reset();
+        return true;
       }
+    } catch (e) {
+      log.d('INDEXER IS OFFILINE');
+      indexerEndpoint = '';
+      isLoadingIndexer = false;
+      notifyListeners();
+      return false;
     }
   }
 
+  // Future checkIndexerEndpointBackground() async {
+  //   final oldEndpoint = indexerEndpoint;
+  //   while (true) {
+  //     await Future.delayed(const Duration(seconds: 30));
+  //     final isValid = await checkIndexerEndpoint(oldEndpoint);
+  //     if (!isValid) {
+  //       log.d('INDEXER IS OFFILINE');
+  //       indexerEndpoint = '';
+  //     } else {
+  //       // log.d('Indexer is online');
+  //       indexerEndpoint = oldEndpoint;
+  //     }
+  //   }
+  // }
+
   Future<String> getValidIndexerEndpoint() async {
-    List _listEndpoints = await rootBundle
+    // await configBox.delete('indexerEndpoint');
+
+    listIndexerEndpoints = await rootBundle
         .loadString('config/indexer_endpoints.json')
         .then((jsonStr) => jsonDecode(jsonStr));
     // _listEndpoints.shuffle();
+
+    log.d(listIndexerEndpoints);
+
+    if (configBox.containsKey('customIndexer')) {
+      // return configBox.get('customIndexer');
+      listIndexerEndpoints.insert(0, configBox.get('customIndexer'));
+    }
+
+    if (configBox.containsKey('indexerEndpoint')) {
+      if (await checkIndexerEndpoint(configBox.get('indexerEndpoint'))) {
+        return configBox.get('indexerEndpoint');
+      }
+    }
 
     int i = 0;
     // String _endpoint = '';
@@ -65,25 +106,28 @@ class DuniterIndexer with ChangeNotifier {
     _client.connectionTimeout = const Duration(milliseconds: 3000);
 
     do {
-      int listLenght = _listEndpoints.length;
+      int listLenght = listIndexerEndpoints.length;
       if (i >= listLenght) {
         log.e('NO VALID INDEXER ENDPOINT FOUND');
         indexerEndpoint = '';
         break;
       }
-      log.d(
-          (i + 1).toString() + 'n indexer endpoint try: ${_listEndpoints[i]}');
+      log.d((i + 1).toString() +
+          'n indexer endpoint try: ${listIndexerEndpoints[i]}');
 
       if (i != 0) {
         await Future.delayed(const Duration(milliseconds: 300));
       }
 
       try {
-        final request =
-            await _client.postUrl(Uri.parse('${_listEndpoints[i]}/v1/graphql'));
+        String endpointPath = '${listIndexerEndpoints[i]}/v1/graphql';
+
+        final request = await _client.postUrl(Uri.parse(endpointPath));
         final response = await request.close();
 
-        indexerEndpoint = _listEndpoints[i];
+        indexerEndpoint = listIndexerEndpoints[i];
+        await configBox.put('indexerEndpoint', listIndexerEndpoints[i]);
+
         _statusCode = response.statusCode;
         i++;
       } on TimeoutException catch (_) {
@@ -202,13 +246,15 @@ class DuniterIndexer with ChangeNotifier {
       return const Text('Aucun résultat');
     }
 
+    log.d(indexerEndpoint);
     final _httpLink = HttpLink(
       '$indexerEndpoint/v1/graphql',
     );
 
     final _client = ValueNotifier(
       GraphQLClient(
-        cache: GraphQLCache(store: HiveStore()),
+        cache: GraphQLCache(
+            store: HiveStore()), // GraphQLCache(store: HiveStore())
         link: _httpLink,
       ),
     );

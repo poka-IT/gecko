@@ -107,6 +107,10 @@ class HomeScreen extends StatelessWidget {
         builder: (ctx) => StatefulWrapper(
             onInit: () {
               WidgetsBinding.instance.addPostFrameCallback((_) async {
+                DuniterIndexer _duniterIndexer =
+                    Provider.of<DuniterIndexer>(ctx, listen: false);
+                _duniterIndexer.getValidIndexerEndpoint();
+
                 if (!_sub.sdkReady && !_sub.sdkLoading) await _sub.initApi();
                 if (_sub.sdkReady && !_sub.nodeConnected) {
                   // Check if versionData non compatible, drop everything
@@ -147,9 +151,7 @@ class HomeScreen extends StatelessWidget {
                     }
                   });
                 }
-                DuniterIndexer _duniterIndexer =
-                    Provider.of<DuniterIndexer>(ctx, listen: false);
-                _duniterIndexer.checkIndexerEndpoint();
+                // _duniterIndexer.checkIndexerEndpointBackground();
               });
             },
             child: isWalletsExists ? geckHome(context) : welcomeHome(context)

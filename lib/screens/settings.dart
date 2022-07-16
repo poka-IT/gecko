@@ -213,7 +213,7 @@ class SettingsScreen extends StatelessWidget {
 
     String? selectedIndexerEndpoint;
     if (configBox.containsKey('customIndexer')) {
-      selectedIndexerEndpoint = '';
+      selectedIndexerEndpoint = 'Personnalisé';
     } else {
       selectedIndexerEndpoint = indexerEndpoint;
     }
@@ -222,7 +222,7 @@ class SettingsScreen extends StatelessWidget {
       selectedIndexerEndpoint = _indexer.listIndexerEndpoints[0];
     }
 
-    TextEditingController _endpointController = TextEditingController(
+    TextEditingController _indexerEndpointController = TextEditingController(
         text: configBox.containsKey('customIndexer')
             ? configBox.get('customIndexer')
             : 'https://');
@@ -274,10 +274,21 @@ class SettingsScreen extends StatelessWidget {
                           ),
                           onPressed: selectedIndexerEndpoint != indexerEndpoint
                               ? () async {
-                                  log.d(
-                                      'connection to indexer $selectedIndexerEndpoint');
-                                  await _indexer.checkIndexerEndpoint(
-                                      selectedIndexerEndpoint!);
+                                  final finalEndpoint =
+                                      selectedIndexerEndpoint == 'Personnalisé'
+                                          ? _indexerEndpointController.text
+                                          : selectedIndexerEndpoint!;
+
+                                  if (selectedIndexerEndpoint ==
+                                      'Personnalisé') {
+                                    configBox.put('customIndexer',
+                                        _indexerEndpointController.text);
+                                  } else {
+                                    configBox.delete('customIndexer');
+                                  }
+                                  log.d('connection to indexer $finalEndpoint');
+                                  await _indexer
+                                      .checkIndexerEndpoint(finalEndpoint);
                                 }
                               : null);
                     }),
@@ -293,7 +304,7 @@ class SettingsScreen extends StatelessWidget {
             width: 200,
             height: 50,
             child: TextField(
-              controller: _endpointController,
+              controller: _indexerEndpointController,
               autocorrect: false,
             ),
           ),

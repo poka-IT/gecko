@@ -86,10 +86,11 @@ class DuniterIndexer with ChangeNotifier {
     // _listEndpoints.shuffle();
 
     log.d(listIndexerEndpoints);
+    listIndexerEndpoints.add('Personnalisé');
 
     if (configBox.containsKey('customIndexer')) {
-      // return configBox.get('customIndexer');
-      listIndexerEndpoints.insert(0, configBox.get('customIndexer'));
+      return configBox.get('customIndexer');
+      // listIndexerEndpoints.insert(0, configBox.get('customIndexer'));
     }
 
     if (configBox.containsKey('indexerEndpoint')) {

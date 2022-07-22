@@ -20,7 +20,6 @@ import 'package:gecko/screens/onBoarding/1.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/settings.dart';
 import 'package:flutter/services.dart';
-import 'package:gecko/screens/substrate_sandbox.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -74,19 +73,19 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
               ),
-              ListTile(
-                key: const Key('substrateSandbox'),
-                title: const Text('Substrate debug'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) {
-                      return const SubstrateSandBox();
-                    }),
-                  );
-                },
-              ),
+              // ListTile(
+              //   key: const Key('substrateSandbox'),
+              //   title: const Text('Substrate debug'),
+              //   onTap: () {
+              //     Navigator.pop(context);
+              //     Navigator.push(
+              //       context,
+              //       MaterialPageRoute(builder: (context) {
+              //         return const SubstrateSandBox();
+              //       }),
+              //     );
+              //   },
+              // ),
 
               // ListTile(
               //   title: const Text('A propos'),

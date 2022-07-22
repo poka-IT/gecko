@@ -194,23 +194,32 @@ class SettingsScreen extends StatelessWidget {
         );
       }),
       Consumer<SubstrateSdk>(builder: (context, _sub, _) {
-        return Consumer<SettingsProvider>(builder: (context, _set, _) {
-          return Visibility(
-            visible: selectedDuniterEndpoint == 'Auto',
-            child: SizedBox(
-              width: 250,
-              height: _sub.getConnectedEndpoint() == null ? 60 : 20,
-              child: Text(
-                _sub.getConnectedEndpoint() ??
-                    "Un noeud sûr et valide sera choisi automatiquement parmis une liste aléatoire.",
-                style: TextStyle(
-                    fontSize: 15,
-                    fontStyle: FontStyle.italic,
-                    color: Colors.grey[700]),
-              ),
-            ),
-          );
-        });
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Consumer<SettingsProvider>(builder: (context, _set, _) {
+              return Visibility(
+                visible: selectedDuniterEndpoint == 'Auto',
+                child: SizedBox(
+                  width: 250,
+                  height: _sub.getConnectedEndpoint() == null ? 60 : 20,
+                  child: Text(
+                    _sub.getConnectedEndpoint() ??
+                        "Un noeud sûr et valide sera choisi automatiquement parmis une liste aléatoire.",
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey[700]),
+                  ),
+                ),
+              );
+            }),
+            Text(
+              'bloc N°${_sub.blocNumber}',
+              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+            )
+          ],
+        );
       }),
     ]);
   }

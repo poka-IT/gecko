@@ -67,8 +67,8 @@ Future<void> main() async {
   prefs = await SharedPreferences.getInstance();
 
   // Reset GraphQL cache
-  final cache = HiveStore();
-  cache.reset();
+  // final cache = HiveStore();
+  // cache.reset();
 
   // Configure Hive and open boxes
   Hive.registerAdapter(WalletDataAdapter());

@@ -74,6 +74,25 @@ class WalletOptions extends StatelessWidget {
               return Text(wallet.name!);
             }),
           ),
+          actions: [
+            InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return QrCodeFullscreen(
+                      _walletOptions.address.text,
+                    );
+                  }),
+                );
+              },
+              child: QrImageWidget(
+                data: _walletOptions.address.text,
+                version: QrVersions.auto,
+                size: 80,
+              ),
+            ),
+          ],
         ),
         bottomNavigationBar: _homeProvider.bottomAppBar(context),
         body: Stack(children: [
@@ -141,24 +160,24 @@ class WalletOptions extends StatelessWidget {
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
-                          InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) {
-                                  return QrCodeFullscreen(
-                                    _walletOptions.address.text,
-                                  );
-                                }),
-                              );
-                            },
-                            child: QrImageWidget(
-                              data: _walletOptions.address.text,
-                              version: QrVersions.auto,
-                              size: isTall ? 150 : 80,
-                            ),
-                          ),
-                          SizedBox(height: 15 * ratio),
+                          // InkWell(
+                          //   onTap: () {
+                          //     Navigator.push(
+                          //       context,
+                          //       MaterialPageRoute(builder: (context) {
+                          //         return QrCodeFullscreen(
+                          //           _walletOptions.address.text,
+                          //         );
+                          //       }),
+                          //     );
+                          //   },
+                          //   child: QrImageWidget(
+                          //     data: _walletOptions.address.text,
+                          //     version: QrVersions.auto,
+                          //     size: isTall ? 150 : 80,
+                          //   ),
+                          // ),
+                          SizedBox(height: 30 * ratio),
                           Consumer<WalletOptionsProvider>(
                               builder: (context, walletProvider, _) {
                             return Column(children: [

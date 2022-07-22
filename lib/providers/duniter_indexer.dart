@@ -14,6 +14,7 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:truncate/truncate.dart';
 
 class DuniterIndexer with ChangeNotifier {
   Map<String, String?> walletNameIndexer = {};
@@ -224,7 +225,7 @@ class DuniterIndexer with ChangeNotifier {
             return Text(
               _color == Colors.grey[700]!
                   ? '(${walletNameIndexer[address]!})'
-                  : walletNameIndexer[address]!,
+                  : truncate(walletNameIndexer[address]!, 20),
               style: TextStyle(
                 fontSize: size,
                 color: _color,

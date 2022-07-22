@@ -14,6 +14,7 @@ import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:truncate/truncate.dart';
 
 class WalletOptionsProvider with ChangeNotifier {
   TextEditingController address = TextEditingController();
@@ -504,22 +505,22 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Widget walletName(BuildContext context, WalletData wallet,
       [double size = 20, Color color = Colors.black]) {
-    return SizedBox(
-      width: 260,
-      child:
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-        Text(
-          wallet.name!,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: isTall ? size : size * 0.9,
-            color: color,
-            fontWeight: FontWeight.w400,
-            fontStyle: FontStyle.italic,
-          ),
+    double newSize = wallet.name!.length <= 15 ? size : size - 2;
+
+    return Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+      Text(
+        truncate(wallet.name!, 20),
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: isTall ? newSize : newSize * 0.9,
+          color: color,
+          fontWeight: FontWeight.w400,
+          fontStyle: FontStyle.italic,
         ),
-      ]),
-    );
+        softWrap: false,
+        overflow: TextOverflow.ellipsis,
+      ),
+    ]);
   }
 }
 

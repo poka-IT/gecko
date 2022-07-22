@@ -138,8 +138,6 @@ class WalletsHome extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context);
     WalletOptionsProvider _walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
-    DuniterIndexer _duniterIndexer =
-        Provider.of<DuniterIndexer>(context, listen: false);
     final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
 
     if (!isWalletsExists) {
@@ -183,8 +181,6 @@ class WalletsHome extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   child: GestureDetector(
                     onTap: () {
-                      // _walletOptions.readLocalWallet(context, _repository,
-                      //     _myWalletProvider.pinCode, pinLength);
                       _walletOptions.getAddress(
                           _currentChestNumber, _repository.derivation!);
                       Navigator.push(
@@ -195,11 +191,6 @@ class WalletsHome extends StatelessWidget {
                           ),
                         ),
                       );
-
-                      // Navigator.push(context,
-                      //     MaterialPageRoute(builder: (context) {
-                      //   return UnlockingWallet(wallet: _repository);
-                      // }));
                     },
                     child: ClipOvalShadow(
                       shadow: const Shadow(
@@ -248,67 +239,12 @@ class WalletsHome extends StatelessWidget {
                                         ),
                                       ),
                           )),
-                          balanceBuilder(context, _repository.address!,
-                              _repository.address == defaultWallet.address),
-                          ListTile(
-                            shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                    bottom: Radius.circular(12))),
-                            // contentPadding: const EdgeInsets.only(left: 7.0),
-                            tileColor:
-                                _repository.address == defaultWallet.address
-                                    ? orangeC
-                                    : const Color(0xffFFD58D),
-                            // leading: Text('IMAGE'),
-
-                            // subtitle: Text(_repository.split(':')[3],
-                            //     style: TextStyle(fontSize: 12.0, fontFamily: 'Monospace')),
-                            title: Center(
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 5),
-                                child: _duniterIndexer.getNameByAddress(
-                                    context,
-                                    _repository.address!,
-                                    _repository,
-                                    17,
-                                    true,
-                                    _repository.id()[1] == defaultWallet.id()[1]
-                                        ? const Color(0xffF9F9F1)
-                                        : Colors.black),
-
-                                //  Text(
-                                //   _repository.name!,
-                                //   textAlign: TextAlign.center,
-                                //   style: TextStyle(
-                                //       fontSize: 17.0,
-                                //       color: _repository.id()[1] ==
-                                //               defaultWallet.id()[1]
-                                //           ? const Color(0xffF9F9F1)
-                                //           : Colors.black,
-                                //       fontStyle: FontStyle.italic),
-                                // ),
-                              ),
-                            ),
-                            // dense: true,
-                            onTap: () {
-                              // _walletOptions.readLocalWallet(
-                              //     context,
-                              //     _repository,
-                              //     _myWalletProvider.pinCode,
-                              //     pinLength);
-                              _walletOptions.getAddress(
-                                  _currentChestNumber, _repository.derivation!);
-                              Navigator.push(
-                                context,
-                                SmoothTransition(
-                                  page: WalletOptions(
-                                    wallet: _repository,
-                                  ),
-                                ),
-                              );
-                            },
-                          )
+                          Stack(children: <Widget>[
+                            balanceBuilder(context, _repository.address!,
+                                _repository.address == defaultWallet.address),
+                            nameBuilder(context, _repository, defaultWallet,
+                                _currentChestNumber),
+                          ]),
                         ]),
                       ),
                     ),
@@ -336,23 +272,65 @@ class WalletsHome extends StatelessWidget {
     return Container(
       width: double.infinity,
       color: isDefault ? orangeC : yellowC,
-      child: SizedBox(
-        height: 25,
-        child: Column(children: [
-          const Spacer(),
-          // Text(
-          //   '0.0 gd',
-          //   textAlign: TextAlign.center,
-          //   style: TextStyle(color: isDefault ? Colors.white : Colors.black),
-          // ),
-          balance(
+      child: Padding(
+          padding: const EdgeInsets.only(left: 5, right: 5, top: 38),
+          child: balance(
               context,
               _address,
               15,
               isDefault ? Colors.white : Colors.black,
-              isDefault ? yellowC : orangeC)
-        ]),
+              isDefault ? yellowC : orangeC)),
+    );
+  }
+
+  Widget nameBuilder(BuildContext context, WalletData _repository,
+      WalletData defaultWallet, int _currentChestNumber) {
+    WalletOptionsProvider _walletOptions =
+        Provider.of<WalletOptionsProvider>(context, listen: false);
+    DuniterIndexer _duniterIndexer =
+        Provider.of<DuniterIndexer>(context, listen: false);
+    return ListTile(
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(12))),
+      // contentPadding: const EdgeInsets.only(left: 7.0),
+      tileColor: _repository.address == defaultWallet.address
+          ? orangeC
+          : const Color(0xffFFD58D),
+      // leading: Text('IMAGE'),
+
+      // subtitle: Text(_repository.split(':')[3],
+      //     style: TextStyle(fontSize: 12.0, fontFamily: 'Monospace')),
+      title: Center(
+        child: Padding(
+          padding: const EdgeInsets.only(left: 5, right: 5, bottom: 35, top: 5),
+          child: _duniterIndexer.getNameByAddress(
+              context,
+              _repository.address!,
+              _repository,
+              20,
+              true,
+              _repository.id()[1] == defaultWallet.id()[1]
+                  ? const Color(0xffF9F9F1)
+                  : Colors.black),
+        ),
       ),
+      // dense: true,
+      onTap: () {
+        // _walletOptions.readLocalWallet(
+        //     context,
+        //     _repository,
+        //     _myWalletProvider.pinCode,
+        //     pinLength);
+        _walletOptions.getAddress(_currentChestNumber, _repository.derivation!);
+        Navigator.push(
+          context,
+          SmoothTransition(
+            page: WalletOptions(
+              wallet: _repository,
+            ),
+          ),
+        );
+      },
     );
   }
 

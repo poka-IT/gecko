@@ -107,33 +107,41 @@ class SettingsScreen extends StatelessWidget {
           return Expanded(
             child: Row(children: [
               const SizedBox(width: 10),
-              Text('currencyNode'.tr(args: [currencyName])),
+              SizedBox(
+                width: 100,
+                child: Text(
+                  'currencyNode'.tr(args: [currencyName]),
+                ),
+              ),
               const Spacer(),
               Icon(_sub.nodeConnected && !_sub.isLoadingEndpoint
                   ? Icons.check
                   : Icons.close),
               const Spacer(),
-              Consumer<SettingsProvider>(builder: (context, _set, _) {
-                return DropdownButtonHideUnderline(
-                  child: DropdownButton(
-                    // alignment: AlignmentDirectional.topStart,
-                    value: selectedDuniterEndpoint,
-                    icon: const Icon(Icons.keyboard_arrow_down),
-                    items: duniterBootstrapNodes
-                        .map((NetworkParams _endpointParams) {
-                      return DropdownMenuItem(
-                        value: _endpointParams.endpoint,
-                        child: Text(_endpointParams.endpoint!),
-                      );
-                    }).toList(),
-                    onChanged: (String? _newEndpoint) {
-                      log.d(_newEndpoint!);
-                      selectedDuniterEndpoint = _newEndpoint;
-                      _set.reload();
-                    },
-                  ),
-                );
-              }),
+              SizedBox(
+                width: 265,
+                child: Consumer<SettingsProvider>(builder: (context, _set, _) {
+                  return DropdownButtonHideUnderline(
+                    child: DropdownButton(
+                      // alignment: AlignmentDirectional.topStart,
+                      value: selectedDuniterEndpoint,
+                      icon: const Icon(Icons.keyboard_arrow_down),
+                      items: duniterBootstrapNodes
+                          .map((NetworkParams _endpointParams) {
+                        return DropdownMenuItem(
+                          value: _endpointParams.endpoint,
+                          child: Text(_endpointParams.endpoint!),
+                        );
+                      }).toList(),
+                      onChanged: (String? _newEndpoint) {
+                        log.d(_newEndpoint!);
+                        selectedDuniterEndpoint = _newEndpoint;
+                        _set.reload();
+                      },
+                    ),
+                  );
+                }),
+              ),
               const Spacer(flex: 5),
               _sub.isLoadingEndpoint
                   ? CircularProgressIndicator(color: orangeC)
@@ -235,31 +243,37 @@ class SettingsScreen extends StatelessWidget {
           return Expanded(
             child: Row(children: [
               const SizedBox(width: 10),
-              const Text('Indexer : '),
+              const SizedBox(
+                width: 100,
+                child: Text('Indexer : '),
+              ),
               const Spacer(),
               Icon(indexerEndpoint != '' ? Icons.check : Icons.close),
               const Spacer(),
-              Consumer<SettingsProvider>(builder: (context, _set, _) {
-                return DropdownButtonHideUnderline(
-                  child: DropdownButton(
-                    // alignment: AlignmentDirectional.topStart,
-                    value: selectedIndexerEndpoint,
-                    icon: const Icon(Icons.keyboard_arrow_down),
-                    items:
-                        _indexer.listIndexerEndpoints.map((_indexerEndpoint) {
-                      return DropdownMenuItem(
-                        value: _indexerEndpoint,
-                        child: Text(_indexerEndpoint),
-                      );
-                    }).toList(),
-                    onChanged: (_newEndpoint) {
-                      log.d(_newEndpoint!);
-                      selectedIndexerEndpoint = _newEndpoint.toString();
-                      _set.reload();
-                    },
-                  ),
-                );
-              }),
+              SizedBox(
+                width: 265,
+                child: Consumer<SettingsProvider>(builder: (context, _set, _) {
+                  return DropdownButtonHideUnderline(
+                    child: DropdownButton(
+                      // alignment: AlignmentDirectional.topStart,
+                      value: selectedIndexerEndpoint,
+                      icon: const Icon(Icons.keyboard_arrow_down),
+                      items:
+                          _indexer.listIndexerEndpoints.map((_indexerEndpoint) {
+                        return DropdownMenuItem(
+                          value: _indexerEndpoint,
+                          child: Text(_indexerEndpoint),
+                        );
+                      }).toList(),
+                      onChanged: (_newEndpoint) {
+                        log.d(_newEndpoint!);
+                        selectedIndexerEndpoint = _newEndpoint.toString();
+                        _set.reload();
+                      },
+                    ),
+                  );
+                }),
+              ),
               const Spacer(flex: 5),
               _indexer.isLoadingIndexer
                   ? CircularProgressIndicator(color: orangeC)

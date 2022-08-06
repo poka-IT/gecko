@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:bubble/bubble.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -29,12 +31,12 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     homeContext = context;
-    MyWalletsProvider _myWalletProvider =
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
     Provider.of<ChestProvider>(context);
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
+    final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
 
     isTall = false;
     ratio = 1;
@@ -50,15 +52,15 @@ class HomeScreen extends StatelessWidget {
             Expanded(
                 child: ListView(padding: EdgeInsets.zero, children: <Widget>[
               DrawerHeader(
+                decoration: BoxDecoration(
+                  color: orangeC,
+                ),
                 child: Column(children: const <Widget>[
                   SizedBox(height: 0),
                   Image(
                       image: AssetImage('assets/icon/gecko_final.png'),
                       height: 130),
                 ]),
-                decoration: BoxDecoration(
-                  color: orangeC,
-                ),
               ),
               ListTile(
                 key: const Key('parameters'),
@@ -106,12 +108,12 @@ class HomeScreen extends StatelessWidget {
         builder: (ctx) => StatefulWrapper(
             onInit: () {
               WidgetsBinding.instance.addPostFrameCallback((_) async {
-                DuniterIndexer _duniterIndexer =
+                DuniterIndexer duniterIndexer =
                     Provider.of<DuniterIndexer>(ctx, listen: false);
-                _duniterIndexer.getValidIndexerEndpoint();
+                duniterIndexer.getValidIndexerEndpoint();
 
-                if (!_sub.sdkReady && !_sub.sdkLoading) await _sub.initApi();
-                if (_sub.sdkReady && !_sub.nodeConnected) {
+                if (!sub.sdkReady && !sub.sdkLoading) await sub.initApi();
+                if (sub.sdkReady && !sub.nodeConnected) {
                   // Check if versionData non compatible, drop everything
                   if (walletBox.isNotEmpty &&
                       walletBox.getAt(0)!.version! < dataVersion) {
@@ -120,19 +122,19 @@ class HomeScreen extends StatelessWidget {
                     await walletBox.clear();
                     await chestBox.clear();
                     await configBox.delete('defaultWallet');
-                    await _sub.deleteAllAccounts();
-                    _myWalletProvider.rebuildWidget();
+                    await sub.deleteAllAccounts();
+                    myWalletProvider.rebuildWidget();
                   }
 
                   var connectivityResult =
                       await (Connectivity().checkConnectivity());
-                  HomeProvider _homeProvider =
+                  HomeProvider homeProvider =
                       Provider.of<HomeProvider>(ctx, listen: false);
                   if (connectivityResult != ConnectivityResult.mobile &&
                       connectivityResult != ConnectivityResult.wifi) {
-                    _homeProvider.changeMessage(
+                    homeProvider.changeMessage(
                         "notConnectedToInternet".tr(), 0);
-                    _sub.nodeConnected = false;
+                    sub.nodeConnected = false;
                   }
 
                   Connectivity()
@@ -140,13 +142,13 @@ class HomeScreen extends StatelessWidget {
                       .listen((ConnectivityResult result) async {
                     log.d('Network changed: $result');
                     if (result == ConnectivityResult.none) {
-                      _sub.nodeConnected = false;
-                      await _sub.sdk.api.setting.unsubscribeBestNumber();
-                      _homeProvider.changeMessage(
+                      sub.nodeConnected = false;
+                      await sub.sdk.api.setting.unsubscribeBestNumber();
+                      homeProvider.changeMessage(
                           "notConnectedToInternet".tr(), 0);
-                      _sub.reload();
+                      sub.reload();
                     } else {
-                      await _sub.connectNode(ctx);
+                      await sub.connectNode(ctx);
                     }
                   });
                 }
@@ -182,10 +184,10 @@ class HomeScreen extends StatelessWidget {
 }
 
 Widget geckHome(context) {
-  MyWalletsProvider _myWalletProvider = Provider.of<MyWalletsProvider>(context);
+  MyWalletsProvider myWalletProvider = Provider.of<MyWalletsProvider>(context);
   Provider.of<ChestProvider>(context);
 
-  WalletsProfilesProvider _historyProvider =
+  WalletsProfilesProvider historyProvider =
       Provider.of<WalletsProfilesProvider>(context);
   final double statusBarHeight = MediaQuery.of(context).padding.top;
   return Container(
@@ -241,9 +243,9 @@ Widget geckHome(context) {
                 ),
               ],
             ),
-            child: Consumer<HomeProvider>(builder: (context, _homeP, _) {
+            child: Consumer<HomeProvider>(builder: (context, homeP, _) {
               return AnimatedFadeOutIn<String>(
-                data: _homeP.homeMessage,
+                data: homeP.homeMessage,
                 duration: const Duration(milliseconds: 100),
                 builder: (value) => Text(value),
               );
@@ -270,6 +272,16 @@ Widget geckHome(context) {
             Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
               Column(children: <Widget>[
                 Container(
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black,
+                    boxShadow: [
+                      BoxShadow(
+                          blurRadius: 2,
+                          offset: Offset(1, 1.5),
+                          spreadRadius: 0.5)
+                    ],
+                  ),
                   child: ClipOval(
                     child: Material(
                       color: orangeC, // button color
@@ -291,16 +303,6 @@ Widget geckHome(context) {
                           }),
                     ),
                   ),
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black,
-                    boxShadow: [
-                      BoxShadow(
-                          blurRadius: 2,
-                          offset: Offset(1, 1.5),
-                          spreadRadius: 0.5)
-                    ],
-                  ),
                 ),
                 const SizedBox(height: 12),
                 Text(
@@ -315,6 +317,16 @@ Widget geckHome(context) {
               const SizedBox(width: 120),
               Column(children: <Widget>[
                 Container(
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black,
+                    boxShadow: [
+                      BoxShadow(
+                          blurRadius: 2,
+                          offset: Offset(1, 1.5),
+                          spreadRadius: 0.5)
+                    ],
+                  ),
                   child: ClipOval(
                     key: const Key('manageWallets'),
                     child: Material(
@@ -328,10 +340,10 @@ Widget geckHome(context) {
                                   height: 68 * ratio)),
                           onTap: () async {
                             WalletData? defaultWallet =
-                                _myWalletProvider.getDefaultWallet();
-                            String? _pin;
-                            if (_myWalletProvider.pinCode == '') {
-                              _pin = await Navigator.push(
+                                myWalletProvider.getDefaultWallet();
+                            String? pin;
+                            if (myWalletProvider.pinCode == '') {
+                              pin = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (homeContext) {
@@ -341,8 +353,7 @@ Widget geckHome(context) {
                                 ),
                               );
                             }
-                            if (_pin != null ||
-                                _myWalletProvider.pinCode != '') {
+                            if (pin != null || myWalletProvider.pinCode != '') {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) {
@@ -356,16 +367,6 @@ Widget geckHome(context) {
                             //     context, '/mywallets')));
                           }),
                     ),
-                  ),
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black,
-                    boxShadow: [
-                      BoxShadow(
-                          blurRadius: 2,
-                          offset: Offset(1, 1.5),
-                          spreadRadius: 0.5)
-                    ],
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -386,6 +387,16 @@ Widget geckHome(context) {
                   children: <Widget>[
                     Column(children: <Widget>[
                       Container(
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.black,
+                          boxShadow: [
+                            BoxShadow(
+                                blurRadius: 2,
+                                offset: Offset(1, 1.5),
+                                spreadRadius: 0.5)
+                          ],
+                        ),
                         child: ClipOval(
                           child: Material(
                             color: orangeC, // button color
@@ -397,19 +408,9 @@ Widget geckHome(context) {
                                             'assets/home/qrcode.png'),
                                         height: 68 * ratio)),
                                 onTap: () async {
-                                  await _historyProvider.scan(context);
+                                  await historyProvider.scan(context);
                                 }),
                           ),
-                        ),
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.black,
-                          boxShadow: [
-                            BoxShadow(
-                                blurRadius: 2,
-                                offset: Offset(1, 1.5),
-                                spreadRadius: 0.5)
-                          ],
                         ),
                       ),
                       const SizedBox(height: 12),

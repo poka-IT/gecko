@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -29,7 +31,7 @@ class _ChooseChestState extends State<ChooseChest> {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    MyWalletsProvider _myWalletProvider =
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
 
     return Scaffold(
@@ -114,10 +116,10 @@ class _ChooseChestState extends State<ChooseChest> {
                 ),
                 onPressed: () async {
                   await configBox.put('currentChest', currentChest);
-                  _myWalletProvider.pinCode = '';
+                  myWalletProvider.pinCode = '';
                   WalletData? defaultWallet =
-                      _myWalletProvider.getDefaultWallet();
-                  _myWalletProvider.rebuildWidget();
+                      myWalletProvider.getDefaultWallet();
+                  myWalletProvider.rebuildWidget();
 
                   await Navigator.push(
                     context,
@@ -131,7 +133,7 @@ class _ChooseChestState extends State<ChooseChest> {
                     context,
                     ModalRoute.withName('/'),
                   );
-                  if (_myWalletProvider.pinCode != '') {
+                  if (myWalletProvider.pinCode != '') {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) {

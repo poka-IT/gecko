@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -70,7 +72,7 @@ class HomeProvider with ChangeNotifier {
         : (int.parse(packageInfo.buildNumber) - 1000).toString();
 
     notifyListeners();
-    return version + '+' + buildNumber;
+    return '$version+$buildNumber';
   }
 
   Future changeMessage(String newMessage, int seconds) async {
@@ -87,19 +89,19 @@ class HomeProvider with ChangeNotifier {
       configBox.put('autoEndpoint', true);
     }
 
-    List _listEndpoints = [];
+    List listEndpoints = [];
     if (!configBox.containsKey('endpoint') ||
         configBox.get('endpoint') == [] ||
         configBox.get('endpoint') == '') {
-      _listEndpoints = await rootBundle
+      listEndpoints = await rootBundle
           .loadString('config/gdev_endpoints.json')
           .then((jsonStr) => jsonDecode(jsonStr));
-      _listEndpoints.shuffle();
-      configBox.put('endpoint', _listEndpoints);
+      listEndpoints.shuffle();
+      configBox.put('endpoint', listEndpoints);
     }
 
-    log.i('ENDPOINT: ' + _listEndpoints.toString());
-    return _listEndpoints;
+    log.i('ENDPOINT: $listEndpoints');
+    return listEndpoints;
   }
 
   T getRandomElement<T>(List<T> list) {
@@ -119,17 +121,17 @@ class HomeProvider with ChangeNotifier {
   // }
 
   Widget bottomAppBar(BuildContext context) {
-    MyWalletsProvider _myWalletProvider =
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
-    WalletsProfilesProvider _historyProvider =
+    WalletsProfilesProvider historyProvider =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
 
     final size = MediaQuery.of(context).size;
 
-    const bool _showBottomBar = true;
+    const bool showBottomBar = true;
 
     return Visibility(
-      visible: _showBottomBar,
+      visible: showBottomBar,
       child: Container(
         color: yellowC,
         width: size.width,
@@ -171,7 +173,7 @@ class HomeProvider with ChangeNotifier {
                 context,
                 ModalRoute.withName('/'),
               );
-              _historyProvider.scan(homeContext);
+              historyProvider.scan(homeContext);
             },
           ),
           const Spacer(),
@@ -180,10 +182,10 @@ class HomeProvider with ChangeNotifier {
             iconSize: 60,
             icon: const Image(image: AssetImage('assets/wallet.png')),
             onPressed: () async {
-              WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
-              String? _pin;
-              if (_myWalletProvider.pinCode == '') {
-                _pin = await Navigator.push(
+              WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
+              String? pin;
+              if (myWalletProvider.pinCode == '') {
+                pin = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (homeContext) {
@@ -193,7 +195,7 @@ class HomeProvider with ChangeNotifier {
                 );
               }
 
-              if (_pin != null || _myWalletProvider.pinCode != '') {
+              if (pin != null || myWalletProvider.pinCode != '') {
                 Navigator.popUntil(
                   context,
                   ModalRoute.withName('/'),

@@ -13,18 +13,18 @@ class CesiumPlusProvider with ChangeNotifier {
 
   CancelToken avatarCancelToken = CancelToken();
 
-  Future<List> _buildQuery(_pubkey) async {
+  Future<List> _buildQuery(pubkey) async {
     var queryGetAvatar = json.encode({
       "query": {
         "bool": {
           "should": [
             {
               "match": {
-                '_id': {"query": _pubkey, "boost": 2}
+                '_id': {"query": pubkey, "boost": 2}
               }
             },
             {
-              "prefix": {'_id': _pubkey}
+              "prefix": {'_id': pubkey}
             }
           ]
         }
@@ -60,14 +60,14 @@ class CesiumPlusProvider with ChangeNotifier {
     return [podRequest, queryGetAvatar, headers];
   }
 
-  Future<String> getName(String? _pubkey) async {
-    String? _name;
+  Future<String> getName(String? pubkey) async {
+    String? name;
 
-    if (g1WalletsBox.get(_pubkey)?.csName != null) {
-      return g1WalletsBox.get(_pubkey)!.csName!;
+    if (g1WalletsBox.get(pubkey)?.csName != null) {
+      return g1WalletsBox.get(pubkey)!.csName!;
     }
 
-    List queryOptions = await _buildQuery(_pubkey);
+    List queryOptions = await _buildQuery(pubkey);
 
     var dio = Dio();
     late Response response;
@@ -90,28 +90,28 @@ class CesiumPlusProvider with ChangeNotifier {
     if (response.data['hits']['hits'].toString() == '[]') {
       return '';
     }
-    final bool _nameExist =
+    final bool nameExist =
         response.data['hits']['hits'][0]['_source'].containsKey("title");
-    if (!_nameExist) {
+    if (!nameExist) {
       return '';
     }
-    _name = response.data['hits']['hits'][0]['_source']['title'];
+    name = response.data['hits']['hits'][0]['_source']['title'];
 
-    _name ??= '';
-    g1WalletsBox.get(_pubkey)!.csName = _name;
+    name ??= '';
+    g1WalletsBox.get(pubkey)!.csName = name;
 
-    return _name;
+    return name;
   }
 
-  Future<Image?> getAvatar(String? _pubkey, double size) async {
-    if (g1WalletsBox.get(_pubkey)?.avatar != null) {
-      return g1WalletsBox.get(_pubkey)!.avatar;
+  Future<Image?> getAvatar(String? pubkey, double size) async {
+    if (g1WalletsBox.get(pubkey)?.avatar != null) {
+      return g1WalletsBox.get(pubkey)!.avatar;
     }
     var dio = Dio();
 
     // log.d(_pubkey);
 
-    List queryOptions = await _buildQuery(_pubkey);
+    List queryOptions = await _buildQuery(pubkey);
 
     late Response response;
     try {
@@ -138,12 +138,12 @@ class CesiumPlusProvider with ChangeNotifier {
       return defaultAvatar(size);
     }
 
-    final _avatar =
+    final avatar =
         response.data['hits']['hits'][0]['_source']['avatar']['_content'];
 
     var avatarFile =
-        File('${(await getTemporaryDirectory()).path}/avatar_$_pubkey.png');
-    await avatarFile.writeAsBytes(base64.decode(_avatar));
+        File('${(await getTemporaryDirectory()).path}/avatar_$pubkey.png');
+    await avatarFile.writeAsBytes(base64.decode(avatar));
 
     final finalAvatar = Image.file(
       avatarFile,
@@ -151,7 +151,7 @@ class CesiumPlusProvider with ChangeNotifier {
       fit: BoxFit.fitWidth,
     );
 
-    g1WalletsBox.get(_pubkey)!.avatar = finalAvatar;
+    g1WalletsBox.get(pubkey)!.avatar = finalAvatar;
 
     return finalAvatar;
   }

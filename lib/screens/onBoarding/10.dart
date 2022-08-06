@@ -28,12 +28,12 @@ class OnboardingStepTen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    GenerateWalletsProvider _generateWalletProvider =
+    GenerateWalletsProvider generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
-    WalletOptionsProvider _walletOptions =
+    WalletOptionsProvider walletOptions =
         Provider.of<WalletOptionsProvider>(context);
     CommonElements common = CommonElements();
-    final int _pinLenght = _generateWalletProvider.pin.text.length;
+    final int pinLenght = generateWalletProvider.pin.text.length;
 
     return Scaffold(
         backgroundColor: backgroundColor,
@@ -56,7 +56,7 @@ class OnboardingStepTen extends StatelessWidget {
             common.buildText("geckoWillCheckPassword".tr()),
             SizedBox(height: isTall ? 80 : 20),
             Visibility(
-              visible: _generateWalletProvider.scanedWalletNumber != -1,
+              visible: generateWalletProvider.scanedWalletNumber != -1,
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 15),
                 child: SizedBox(
@@ -69,9 +69,9 @@ class OnboardingStepTen extends StatelessWidget {
                 ),
               ),
             ),
-            Consumer<SubstrateSdk>(builder: (context, _sub, _) {
-              return _sub.nodeConnected
-                  ? pinForm(context, _walletOptions, _pinLenght, 1, 2)
+            Consumer<SubstrateSdk>(builder: (context, sub, _) {
+              return sub.nodeConnected
+                  ? pinForm(context, walletOptions, pinLenght, 1, 2)
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: const [
@@ -86,11 +86,11 @@ class OnboardingStepTen extends StatelessWidget {
                           ),
                         ]);
             }),
-            Consumer<SubstrateSdk>(builder: (context, _sub, _) {
-              return _sub.nodeConnected
+            Consumer<SubstrateSdk>(builder: (context, sub, _) {
+              return sub.nodeConnected
                   ? InkWell(
                       onTap: () {
-                        _walletOptions.changePinCacheChoice();
+                        walletOptions.changePinCacheChoice();
                       },
                       child: Row(children: [
                         const SizedBox(height: 30),
@@ -116,20 +116,20 @@ class OnboardingStepTen extends StatelessWidget {
         ));
   }
 
-  Widget pinForm(context, WalletOptionsProvider _walletOptions, _pinLenght,
-      int _walletNbr, int _derivation) {
+  Widget pinForm(context, WalletOptionsProvider walletOptions, pinLenght,
+      int walletNbr, int derivation) {
     // var _walletPin = '';
 // ignore: close_sinks
     StreamController<ErrorAnimationType> errorController =
         StreamController<ErrorAnimationType>();
-    TextEditingController _enterPin = TextEditingController();
-    MyWalletsProvider _myWalletProvider =
+    TextEditingController enterPin = TextEditingController();
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
-    GenerateWalletsProvider _generateWalletProvider =
+    GenerateWalletsProvider generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    final int? _currentChest = _myWalletProvider.getCurrentChest();
+    final int currentChest = myWalletProvider.getCurrentChest();
 
     return Form(
       key: formKey,
@@ -143,14 +143,13 @@ class OnboardingStepTen extends StatelessWidget {
               color: Colors.green.shade600,
               fontWeight: FontWeight.bold,
             ),
-            length: _pinLenght,
+            length: pinLenght,
             obscureText: true,
             obscuringCharacter: '*',
             animationType: AnimationType.fade,
             validator: (v) {
-              if (v!.length < _pinLenght) {
-                return "yourPasswordLengthIsX"
-                    .tr(args: [_pinLenght.toString()]);
+              if (v!.length < pinLenght) {
+                return "yourPasswordLengthIsX".tr(args: [pinLenght.toString()]);
               } else {
                 return null;
               }
@@ -170,7 +169,7 @@ class OnboardingStepTen extends StatelessWidget {
             backgroundColor: const Color(0xffF9F9F1),
             enableActiveFill: false,
             errorAnimationController: errorController,
-            controller: _enterPin,
+            controller: enterPin,
             keyboardType: TextInputType.visiblePassword,
             boxShadows: const [
               BoxShadow(
@@ -179,25 +178,25 @@ class OnboardingStepTen extends StatelessWidget {
                 blurRadius: 10,
               )
             ],
-            onCompleted: (_pin) async {
-              _myWalletProvider.pinCode = _pin.toUpperCase();
-              _myWalletProvider.pinLenght = _pinLenght;
-              log.d(_pin + ' || ' + _generateWalletProvider.pin.text);
-              if (_pin.toUpperCase() == _generateWalletProvider.pin.text) {
+            onCompleted: (pin) async {
+              myWalletProvider.pinCode = pin.toUpperCase();
+              myWalletProvider.pinLenght = pinLenght;
+              log.d('$pin || ${generateWalletProvider.pin.text}');
+              if (pin.toUpperCase() == generateWalletProvider.pin.text) {
                 pinColor = Colors.green[500];
 
-                await _generateWalletProvider.storeHDWChest(context);
+                await generateWalletProvider.storeHDWChest(context);
                 bool isAlive = false;
                 if (scanDerivation) {
-                  isAlive = await _generateWalletProvider
+                  isAlive = await generateWalletProvider
                       .scanDerivations(context, numberScan: 20);
                 }
                 if (!isAlive) {
-                  final address = await _sub.importAccount(
+                  final address = await sub.importAccount(
                       fromMnemonic: true,
-                      mnemonic: _generateWalletProvider.generatedMnemonic!,
+                      mnemonic: generateWalletProvider.generatedMnemonic!,
                       derivePath: '//2',
-                      password: _generateWalletProvider.pin.text);
+                      password: generateWalletProvider.pin.text);
                   WalletData myWallet = WalletData(
                       version: dataVersion,
                       chest: configBox.get('currentChest'),
@@ -208,11 +207,11 @@ class OnboardingStepTen extends StatelessWidget {
                       imageDefaultPath: '0.png');
                   await walletBox.add(myWallet);
                 }
-                _myWalletProvider.readAllWallets(_currentChest);
-                _myWalletProvider.rebuildWidget();
+                myWalletProvider.readAllWallets(currentChest);
+                myWalletProvider.rebuildWidget();
 
-                _generateWalletProvider.generatedMnemonic = '';
-                _myWalletProvider.resetPinCode();
+                generateWalletProvider.generatedMnemonic = '';
+                myWalletProvider.resetPinCode();
                 Navigator.push(
                   context,
                   FaderTransition(
@@ -223,7 +222,7 @@ class OnboardingStepTen extends StatelessWidget {
                     .shake); // Triggering error shake animation
                 hasError = true;
                 pinColor = Colors.red[600];
-                _walletOptions.reloadBuild();
+                walletOptions.reloadBuild();
               }
             },
             onChanged: (value) {

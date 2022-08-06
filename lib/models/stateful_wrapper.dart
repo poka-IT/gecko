@@ -6,10 +6,10 @@ class StatefulWrapper extends StatefulWidget {
   const StatefulWrapper({Key? key, required this.onInit, required this.child})
       : super(key: key);
   @override
-  _StatefulWrapperState createState() => _StatefulWrapperState();
+  StatefulWrapperState createState() => StatefulWrapperState();
 }
 
-class _StatefulWrapperState extends State<StatefulWrapper> {
+class StatefulWrapperState extends State<StatefulWrapper> {
   @override
   void initState() {
     widget.onInit();

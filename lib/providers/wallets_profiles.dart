@@ -100,8 +100,8 @@ class WalletsProfilesProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  String generateIdenticon(String _pubkey) {
-    return Jdenticon.toSvg(_pubkey);
+  String generateIdenticon(String pubkey) {
+    return Jdenticon.toSvg(pubkey);
   }
 
   // Future<num> getBalance(String _pubkey) async {
@@ -119,7 +119,7 @@ class WalletsProfilesProvider with ChangeNotifier {
   //   return balance;
   // }
 
-  Future<num?> getBalance(String? _pubkey) async {
+  Future<num?> getBalance(String? pubkey) async {
     while (_balance == null) {
       await Future.delayed(const Duration(milliseconds: 50));
     }
@@ -128,19 +128,19 @@ class WalletsProfilesProvider with ChangeNotifier {
   }
 
   Widget headerProfileView(
-      BuildContext context, String _address, String? username) {
-    const double _avatarSize = 140;
+      BuildContext context, String address, String? username) {
+    const double avatarSize = 140;
 
-    WalletOptionsProvider _walletOptions =
+    WalletOptionsProvider walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
-    CesiumPlusProvider _cesiumPlusProvider =
+    CesiumPlusProvider cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
     // SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    bool isAccountExist = balanceCache[_address] != 0;
+    bool isAccountExist = balanceCache[address] != 0;
 
     return Stack(children: <Widget>[
-      Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+      Consumer<SubstrateSdk>(builder: (context, sub, _) {
         return Container(
             height: 180,
             decoration: BoxDecoration(
@@ -168,11 +168,11 @@ class WalletsProfilesProvider with ChangeNotifier {
                   GestureDetector(
                     key: const Key('copyPubkey'),
                     onTap: () {
-                      Clipboard.setData(ClipboardData(text: _address));
+                      Clipboard.setData(ClipboardData(text: address));
                       snackCopyKey(context);
                     },
                     child: Text(
-                      getShortPubkey(_address),
+                      getShortPubkey(address),
                       style: const TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.w800,
@@ -181,17 +181,17 @@ class WalletsProfilesProvider with ChangeNotifier {
                   ),
                 ]),
                 const SizedBox(height: 25),
-                balance(context, _address, 22),
+                balance(context, address, 22),
                 const SizedBox(height: 10),
-                _walletOptions.idtyStatus(context, _address,
+                walletOptions.idtyStatus(context, address,
                     isOwner: false, color: Colors.black),
-                getCerts(context, _address, 14),
+                getCerts(context, address, 14),
                 if (username == null &&
-                    g1WalletsBox.get(_address)?.username != null)
+                    g1WalletsBox.get(address)?.username != null)
                   SizedBox(
                     width: 230,
                     child: Text(
-                      g1WalletsBox.get(_address)?.username ?? '',
+                      g1WalletsBox.get(address)?.username ?? '',
                       style: const TextStyle(
                         fontSize: 27,
                         color: Color(0xff814C00),
@@ -214,7 +214,7 @@ class WalletsProfilesProvider with ChangeNotifier {
           const Spacer(),
           Column(children: <Widget>[
             ClipOval(
-              child: _cesiumPlusProvider.defaultAvatar(_avatarSize),
+              child: cesiumPlusProvider.defaultAvatar(avatarSize),
             ),
             const SizedBox(height: 25),
           ]),

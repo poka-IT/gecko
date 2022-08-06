@@ -18,123 +18,123 @@ class TransactionInProgress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: true);
-    WalletsProfilesProvider _walletViewProvider =
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: true);
+    WalletsProfilesProvider walletViewProvider =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
-    MyWalletsProvider _myWalletProvider =
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     bool isValid = false;
 
-    String _resultText;
+    String resultText;
     bool isLoading = true;
     // Map jsonResult;
-    final _result = _sub.transactionStatus;
+    final result = sub.transactionStatus;
 
-    log.d(_walletViewProvider.address!);
+    log.d(walletViewProvider.address!);
 
-    final from = _myWalletProvider.getDefaultWallet().name!;
-    final to = getShortPubkey(_walletViewProvider.address!);
-    final amount = _walletViewProvider.payAmount.text;
-    String _actionName = '';
+    final from = myWalletProvider.getDefaultWallet().name!;
+    final to = getShortPubkey(walletViewProvider.address!);
+    final amount = walletViewProvider.payAmount.text;
+    String actionName = '';
 
     switch (transType) {
       case 'pay':
         {
-          _actionName = 'transaction'.tr();
+          actionName = 'transaction'.tr();
         }
         break;
       case 'cert':
         {
-          _actionName = 'certification'.tr();
+          actionName = 'certification'.tr();
         }
         break;
       case 'comfirmIdty':
         {
-          _actionName = "identityConfirm".tr();
+          actionName = "identityConfirm".tr();
         }
         break;
       case 'revokeIdty':
         {
-          _actionName = "revokeAdhesion".tr();
+          actionName = "revokeAdhesion".tr();
         }
         break;
       default:
         {
-          _actionName = 'strangeTransaction'.tr();
+          actionName = 'strangeTransaction'.tr();
         }
     }
 
-    switch (_result) {
+    switch (result) {
       case '':
         {
-          _resultText = 'sending'.tr();
+          resultText = 'sending'.tr();
         }
         break;
       case 'Ready':
         {
-          _resultText = 'propagating'.tr();
+          resultText = 'propagating'.tr();
         }
         break;
       case 'Broadcast':
         {
-          _resultText = 'validating'.tr();
+          resultText = 'validating'.tr();
         }
         break;
       default:
         {
           isLoading = false;
           // jsonResult = json.decode(_result);
-          log.d(_result);
-          if (_result.contains('blockHash: ')) {
+          log.d(result);
+          if (result.contains('blockHash: ')) {
             isValid = true;
-            _resultText = 'extrinsicValidated'.tr(args: [_actionName]);
+            resultText = 'extrinsicValidated'.tr(args: [actionName]);
           } else {
             isValid = false;
-            _resultText = "anErrorOccured".tr() + ":\n";
-            final List _exceptionSplit = _result.split('Exception: ');
-            String _exception;
-            if (_exceptionSplit.length > 1) {
-              _exception = _exceptionSplit[1];
+            resultText = "${"anErrorOccured".tr()}:\n";
+            final List exceptionSplit = result.split('Exception: ');
+            String exception;
+            if (exceptionSplit.length > 1) {
+              exception = exceptionSplit[1];
             } else {
-              _exception = _exceptionSplit[0];
+              exception = exceptionSplit[0];
             }
             // log.d('expection: $_exception');
-            switch (_exception) {
+            switch (exception) {
               case 'cert.NotRespectCertPeriod':
               case 'identity.CreatorNotAllowedToCreateIdty':
                 {
-                  _resultText = "24hbetweenCerts".tr();
+                  resultText = "24hbetweenCerts".tr();
                 }
                 break;
               case 'cert.CannotCertifySelf':
                 {
-                  _resultText = "canNotCertifySelf".tr();
+                  resultText = "canNotCertifySelf".tr();
                 }
                 break;
               case 'identity.IdtyNameAlreadyExist':
                 {
-                  _resultText = "nameAlreadyExist".tr();
+                  resultText = "nameAlreadyExist".tr();
                 }
                 break;
               case 'balances.KeepAlive':
                 {
-                  _resultText = "2GDtoKeepAlive".tr();
+                  resultText = "2GDtoKeepAlive".tr();
                 }
                 break;
               case '1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low':
                 {
-                  _resultText = "youHaveToFeedThisAccountBeforeUsing".tr();
+                  resultText = "youHaveToFeedThisAccountBeforeUsing".tr();
                 }
                 break;
 
               case 'timeout':
                 {
-                  _resultText += "execTimeoutOver".tr();
+                  resultText += "execTimeoutOver".tr();
                 }
                 break;
               default:
                 {
-                  _resultText += "\n$_exception";
+                  resultText += "\n$exception";
                 }
                 break;
             }
@@ -144,7 +144,7 @@ class TransactionInProgress extends StatelessWidget {
 
     return WillPopScope(
         onWillPop: () {
-          _sub.transactionStatus = '';
+          sub.transactionStatus = '';
           Navigator.pop(context);
           if (transType == 'pay') Navigator.pop(context);
           return Future<bool>.value(true);
@@ -160,7 +160,7 @@ class TransactionInProgress extends StatelessWidget {
                 child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      Text('extrinsicInProgress'.tr(args: [_actionName]))
+                      Text('extrinsicInProgress'.tr(args: [actionName]))
                     ]),
               )),
           body: SafeArea(
@@ -238,7 +238,7 @@ class TransactionInProgress extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      _resultText,
+                      resultText,
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 19 * ratio),
                     ),
@@ -258,7 +258,7 @@ class TransactionInProgress extends StatelessWidget {
                           ),
                           onPressed: () {
                             Navigator.pop(context);
-                            _sub.transactionStatus = '';
+                            sub.transactionStatus = '';
                             if (transType == 'pay') Navigator.pop(context);
                           },
                           child: Text(

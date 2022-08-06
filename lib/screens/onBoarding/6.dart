@@ -24,7 +24,7 @@ class OnboardingStepSix extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    GenerateWalletsProvider _generateWalletProvider =
+    GenerateWalletsProvider generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context, listen: true);
 
     CommonElements common = CommonElements();
@@ -32,8 +32,8 @@ class OnboardingStepSix extends StatelessWidget {
 
     return WillPopScope(
       onWillPop: () {
-        _generateWalletProvider.isAskedWordValid = false;
-        _generateWalletProvider.askedWordColor = Colors.black;
+        generateWalletProvider.isAskedWordValid = false;
+        generateWalletProvider.askedWordColor = Colors.black;
         return Future<bool>.value(true);
       },
       child: Scaffold(
@@ -59,11 +59,11 @@ class OnboardingStepSix extends StatelessWidget {
               SizedBox(height: isTall ? 40 : 20),
               common.buildText(
                   "didYouNoteMnemonicToBeSureTypeWord".tr(
-                      args: [(_generateWalletProvider.nbrWord + 1).toString()]),
+                      args: [(generateWalletProvider.nbrWord + 1).toString()]),
                   20,
                   true),
               SizedBox(height: isTall ? 70 : 20),
-              Text('${_generateWalletProvider.nbrWord + 1}',
+              Text('${generateWalletProvider.nbrWord + 1}',
                   key: const Key('askedWord'),
                   style: TextStyle(
                       fontSize: isTall ? 17 : 15,
@@ -81,11 +81,11 @@ class OnboardingStepSix extends StatelessWidget {
                   child: TextFormField(
                       key: const Key('inputWord'),
                       autofocus: true,
-                      enabled: !_generateWalletProvider.isAskedWordValid,
+                      enabled: !generateWalletProvider.isAskedWordValid,
                       controller: wordController,
                       textInputAction: TextInputAction.next,
                       onChanged: (value) {
-                        _generateWalletProvider.checkAskedWord(
+                        generateWalletProvider.checkAskedWord(
                             value, _mnemonicController.text);
                       },
                       maxLines: 1,
@@ -95,20 +95,19 @@ class OnboardingStepSix extends StatelessWidget {
                             fontSize: 22.0,
                             color: Colors.grey[500],
                             fontWeight: FontWeight.w500),
-                        labelText: _generateWalletProvider.isAskedWordValid
+                        labelText: generateWalletProvider.isAskedWordValid
                             ? "itsTheGoodWord".tr()
-                            : "${_generateWalletProvider.nbrWordAlpha} " +
-                                "nthMnemonicWord".tr(),
+                            : "${generateWalletProvider.nbrWordAlpha} ${"nthMnemonicWord".tr()}",
                         fillColor: const Color(0xffeeeedd),
                         filled: true,
                         contentPadding: const EdgeInsets.all(12),
                       ),
                       style: TextStyle(
                           fontSize: 40.0,
-                          color: _generateWalletProvider.askedWordColor,
+                          color: generateWalletProvider.askedWordColor,
                           fontWeight: FontWeight.w500))),
               Visibility(
-                visible: _generateWalletProvider.isAskedWordValid,
+                visible: generateWalletProvider.isAskedWordValid,
                 child: Expanded(
                   child: Align(
                     alignment: Alignment.bottomCenter,
@@ -141,7 +140,7 @@ class OnboardingStepSix extends StatelessWidget {
 }
 
 Widget sentanceArray(BuildContext context) {
-  GenerateWalletsProvider _generateWalletProvider =
+  GenerateWalletsProvider generateWalletProvider =
       Provider.of<GenerateWalletsProvider>(context);
 
   return Padding(
@@ -156,9 +155,9 @@ Widget sentanceArray(BuildContext context) {
           )),
       padding: const EdgeInsets.all(20),
       child: FutureBuilder(
-          future: _generateWalletProvider.generateWordList(context),
-          builder: (BuildContext context, AsyncSnapshot<List> _data) {
-            if (!_data.hasData) {
+          future: generateWalletProvider.generateWordList(context),
+          builder: (BuildContext context, AsyncSnapshot<List> data) {
+            if (!data.hasData) {
               return const Text('');
             } else {
               return Column(
@@ -167,24 +166,24 @@ Widget sentanceArray(BuildContext context) {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     Row(children: <Widget>[
-                      arrayCell(_data.data![0]),
-                      arrayCell(_data.data![1]),
-                      arrayCell(_data.data![2]),
-                      arrayCell(_data.data![3]),
+                      arrayCell(data.data![0]),
+                      arrayCell(data.data![1]),
+                      arrayCell(data.data![2]),
+                      arrayCell(data.data![3]),
                     ]),
                     const SizedBox(height: 15),
                     Row(children: <Widget>[
-                      arrayCell(_data.data![4]),
-                      arrayCell(_data.data![5]),
-                      arrayCell(_data.data![6]),
-                      arrayCell(_data.data![7]),
+                      arrayCell(data.data![4]),
+                      arrayCell(data.data![5]),
+                      arrayCell(data.data![6]),
+                      arrayCell(data.data![7]),
                     ]),
                     const SizedBox(height: 15),
                     Row(children: <Widget>[
-                      arrayCell(_data.data![8]),
-                      arrayCell(_data.data![9]),
-                      arrayCell(_data.data![10]),
-                      arrayCell(_data.data![11]),
+                      arrayCell(data.data![8]),
+                      arrayCell(data.data![9]),
+                      arrayCell(data.data![10]),
+                      arrayCell(data.data![11]),
                     ]),
                   ]);
             }
@@ -211,11 +210,11 @@ Widget arrayCell(dataWord) {
 }
 
 Widget nextButton(BuildContext context, String text, nextScreen, bool isFast) {
-  GenerateWalletsProvider _generateWalletProvider =
+  GenerateWalletsProvider generateWalletProvider =
       Provider.of<GenerateWalletsProvider>(context, listen: false);
 
-  _generateWalletProvider.isAskedWordValid = false;
-  _generateWalletProvider.askedWordColor = Colors.black;
+  generateWalletProvider.isAskedWordValid = false;
+  generateWalletProvider.askedWordColor = Colors.black;
 
   return SizedBox(
     width: 380 * ratio,

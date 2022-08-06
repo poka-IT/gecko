@@ -31,11 +31,11 @@ class MyWalletsProvider with ChangeNotifier {
     }
   }
 
-  List<WalletData> readAllWallets([int? _chest]) {
-    _chest = _chest ?? configBox.get('currentChest') ?? 0;
+  List<WalletData> readAllWallets([int? chest]) {
+    chest = chest ?? configBox.get('currentChest') ?? 0;
     listWallets.clear();
     walletBox.toMap().forEach((key, value) {
-      if (value.chest == _chest) {
+      if (value.chest == chest) {
         listWallets.add(value);
       }
     });
@@ -43,33 +43,33 @@ class MyWalletsProvider with ChangeNotifier {
     return listWallets;
   }
 
-  WalletData? getWalletDataById(List<int?> _id) {
-    if (_id.isEmpty) return WalletData();
-    int? _chest = _id[0];
-    int? _nbr = _id[1];
-    WalletData? _targetedWallet;
+  WalletData? getWalletDataById(List<int?> id) {
+    if (id.isEmpty) return WalletData();
+    int? chest = id[0];
+    int? nbr = id[1];
+    WalletData? targetedWallet;
 
     walletBox.toMap().forEach((key, value) {
-      if (value.chest == _chest && value.number == _nbr) {
-        _targetedWallet = value;
+      if (value.chest == chest && value.number == nbr) {
+        targetedWallet = value;
         return;
       }
     });
 
-    return _targetedWallet;
+    return targetedWallet;
   }
 
   WalletData? getWalletDataByAddress(String address) {
-    WalletData? _targetedWallet;
+    WalletData? targetedWallet;
 
     walletBox.toMap().forEach((key, value) {
       if (value.address == address) {
-        _targetedWallet = value;
+        targetedWallet = value;
         return;
       }
     });
 
-    return _targetedWallet;
+    return targetedWallet;
   }
 
   WalletData getDefaultWallet([int? chest]) {
@@ -84,21 +84,21 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   Future<int> deleteAllWallet(context) async {
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
-    MyWalletsProvider _myWalletProvider =
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     try {
       log.w('DELETE ALL WALLETS ?');
 
-      final bool? _answer =
+      final bool? answer =
           await (confirmPopup(context, 'areYouSureForgetAllChests'.tr()));
-      if (_answer!) {
+      if (answer!) {
         await walletBox.clear();
         await chestBox.clear();
         await configBox.delete('defaultWallet');
-        await _sub.deleteAllAccounts();
+        await sub.deleteAllAccounts();
 
-        _myWalletProvider.pinCode = '';
+        myWalletProvider.pinCode = '';
 
         await Navigator.of(context).pushNamedAndRemoveUntil(
           '/',
@@ -111,32 +111,32 @@ class MyWalletsProvider with ChangeNotifier {
     }
   }
 
-  Future<void> generateNewDerivation(context, String _name,
+  Future<void> generateNewDerivation(context, String name,
       [int? number]) async {
     isNewDerivationLoading = true;
     notifyListeners();
 
     final List idList = getNextWalletNumberAndDerivation();
-    int _newWalletNbr = idList[0];
-    int _newDerivationNbr = number ?? idList[1];
+    int newWalletNbr = idList[0];
+    int newDerivationNbr = number ?? idList[1];
 
-    int? _chest = getCurrentChest();
+    int? chest = getCurrentChest();
 
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     WalletData defaultWallet = getDefaultWallet();
 
-    final address = await _sub.derive(
-        context, defaultWallet.address!, _newDerivationNbr, pinCode);
+    final address = await sub.derive(
+        context, defaultWallet.address!, newDerivationNbr, pinCode);
 
     WalletData newWallet = WalletData(
         version: dataVersion,
-        chest: _chest,
+        chest: chest,
         address: address,
-        number: _newWalletNbr,
-        name: _name,
-        derivation: _newDerivationNbr,
-        imageDefaultPath: '${_newWalletNbr % 4}.png');
+        number: newWalletNbr,
+        name: name,
+        derivation: newDerivationNbr,
+        imageDefaultPath: '${newWalletNbr % 4}.png');
 
     await walletBox.add(newWallet);
 
@@ -144,37 +144,37 @@ class MyWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> generateRootWallet(context, String _name) async {
-    MyWalletsProvider _myWalletProvider =
+  Future<void> generateRootWallet(context, String name) async {
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
     isNewDerivationLoading = true;
     notifyListeners();
-    int _newWalletNbr;
-    int? _chest = getCurrentChest();
+    int newWalletNbr;
+    int? chest = getCurrentChest();
 
-    List<WalletData> _walletConfig = readAllWallets(_chest);
+    List<WalletData> walletConfig = readAllWallets(chest);
 
-    if (_walletConfig.isEmpty) {
-      _newWalletNbr = 0;
+    if (walletConfig.isEmpty) {
+      newWalletNbr = 0;
     } else {
-      _newWalletNbr = _walletConfig.last.number! + 1;
+      newWalletNbr = walletConfig.last.number! + 1;
     }
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    WalletData defaultWallet = _myWalletProvider.getDefaultWallet();
+    WalletData defaultWallet = myWalletProvider.getDefaultWallet();
 
     final address =
-        await _sub.generateRootKeypair(defaultWallet.address!, pinCode);
+        await sub.generateRootKeypair(defaultWallet.address!, pinCode);
 
     WalletData newWallet = WalletData(
         version: dataVersion,
-        chest: _chest,
+        chest: chest,
         address: address,
-        number: _newWalletNbr,
-        name: _name,
+        number: newWalletNbr,
+        name: name,
         derivation: -1,
-        imageDefaultPath: '${_newWalletNbr % 4}.png');
+        imageDefaultPath: '${newWalletNbr % 4}.png');
 
     await walletBox.add(newWallet);
 
@@ -184,29 +184,29 @@ class MyWalletsProvider with ChangeNotifier {
 
   List<int> getNextWalletNumberAndDerivation(
       {int? chestNumber, bool isOneshoot = false}) {
-    int _newDerivationNbr = 0;
-    int _newWalletNbr = 0;
+    int newDerivationNbr = 0;
+    int newWalletNbr = 0;
 
     chestNumber ??= getCurrentChest();
 
-    List<WalletData> _walletConfig = readAllWallets(chestNumber);
+    List<WalletData> walletConfig = readAllWallets(chestNumber);
 
-    if (_walletConfig.isEmpty) {
-      _newDerivationNbr = 2;
+    if (walletConfig.isEmpty) {
+      newDerivationNbr = 2;
     } else {
-      WalletData _lastWallet = _walletConfig.reduce(
+      WalletData lastWallet = walletConfig.reduce(
           (curr, next) => curr.derivation! > next.derivation! ? curr : next);
 
-      if (_lastWallet.derivation == -1) {
-        _newDerivationNbr = 2;
+      if (lastWallet.derivation == -1) {
+        newDerivationNbr = 2;
       } else {
-        _newDerivationNbr = _lastWallet.derivation! + (isOneshoot ? 1 : 2);
+        newDerivationNbr = lastWallet.derivation! + (isOneshoot ? 1 : 2);
       }
 
-      _newWalletNbr = _walletConfig.last.number! + 1;
+      newWalletNbr = walletConfig.last.number! + 1;
     }
 
-    return [_newWalletNbr, _newDerivationNbr];
+    return [newWalletNbr, newDerivationNbr];
   }
 
   int lockPin = 0;

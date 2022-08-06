@@ -13,16 +13,16 @@ class ChestProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future deleteChest(context, ChestData _chest) async {
-    final bool? _answer = await (_confirmDeletingChest(context, _chest.name));
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
-    if (_answer ?? false) {
-      await _sub.deleteAccounts(getChestWallets(_chest));
-      await chestBox.delete(_chest.key);
-      MyWalletsProvider _myWalletProvider =
+  Future deleteChest(context, ChestData chest) async {
+    final bool? answer = await (_confirmDeletingChest(context, chest.name));
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    if (answer ?? false) {
+      await sub.deleteAccounts(getChestWallets(chest));
+      await chestBox.delete(chest.key);
+      MyWalletsProvider myWalletProvider =
           Provider.of<MyWalletsProvider>(context, listen: false);
 
-      _myWalletProvider.pinCode = '';
+      myWalletProvider.pinCode = '';
 
       if (chestBox.isEmpty) {
         await configBox.put('currentChest', 0);
@@ -39,24 +39,24 @@ class ChestProvider with ChangeNotifier {
     }
   }
 
-  List<String> getChestWallets(ChestData _chest) {
+  List<String> getChestWallets(ChestData chest) {
     List<String> toDelete = [];
-    log.d(_chest.key);
+    log.d(chest.key);
     walletBox.toMap().forEach((key, WalletData value) {
-      if (value.chest == _chest.key) {
+      if (value.chest == chest.key) {
         toDelete.add(value.address!);
       }
     });
     return toDelete;
   }
 
-  Future<bool?> _confirmDeletingChest(context, String? _walletName) async {
+  Future<bool?> _confirmDeletingChest(context, String? walletName) async {
     return showDialog<bool>(
       context: context,
       barrierDismissible: true, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('areYouSureToDeleteWallet'.tr(args: [_walletName!])),
+          title: Text('areYouSureToDeleteWallet'.tr(args: [walletName!])),
           actions: <Widget>[
             TextButton(
               child: Text("no".tr(), key: const Key('cancelDeleting')),

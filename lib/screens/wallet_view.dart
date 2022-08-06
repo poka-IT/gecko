@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -31,19 +33,19 @@ class WalletViewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    WalletsProfilesProvider _walletProfile =
+    WalletsProfilesProvider walletProfile =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
-    CesiumPlusProvider _cesiumPlusProvider =
+    CesiumPlusProvider cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
-    _walletProfile.address = pubkey!;
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
-    HomeProvider _homeProvider =
+    walletProfile.address = pubkey!;
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    HomeProvider homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
 
-    MyWalletsProvider _myWalletProvider =
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
-    WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
-    _sub.setCurrentWallet(defaultWallet);
+    WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
+    sub.setCurrentWallet(defaultWallet);
 
     return Scaffold(
         backgroundColor: backgroundColor,
@@ -58,13 +60,13 @@ class WalletViewScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(builder: (context) {
                     return QrCodeFullscreen(
-                      _walletProfile.address!,
+                      walletProfile.address!,
                     );
                   }),
                 );
               },
               child: QrImageWidget(
-                data: _walletProfile.address!,
+                data: walletProfile.address!,
                 version: QrVersions.auto,
                 size: 80,
               ),
@@ -75,10 +77,10 @@ class WalletViewScreen extends StatelessWidget {
             child: Text('seeAWallet'.tr()),
           ),
         ),
-        bottomNavigationBar: _homeProvider.bottomAppBar(context),
+        bottomNavigationBar: homeProvider.bottomAppBar(context),
         body: SafeArea(
           child: Column(children: <Widget>[
-            _walletProfile.headerProfileView(context, pubkey!, username),
+            walletProfile.headerProfileView(context, pubkey!, username),
             SizedBox(height: isTall ? 10 : 0),
             Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
               Column(children: <Widget>[
@@ -104,7 +106,7 @@ class WalletViewScreen extends StatelessWidget {
                                 return ActivityScreen(
                                     address: pubkey,
                                     avatar:
-                                        _cesiumPlusProvider.defaultAvatar(50));
+                                        cesiumPlusProvider.defaultAvatar(50));
                               }),
                             );
                           }),
@@ -119,53 +121,52 @@ class WalletViewScreen extends StatelessWidget {
                       fontSize: buttonFontSize, fontWeight: FontWeight.w500),
                 ),
               ]),
-              Consumer<SubstrateSdk>(builder: (context, _sub, _) {
-                WalletData? _defaultWallet =
-                    _myWalletProvider.getDefaultWallet();
+              Consumer<SubstrateSdk>(builder: (context, sub, _) {
+                WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
                 return FutureBuilder(
-                  future: _sub.certState(_defaultWallet.address!,
+                  future: sub.certState(defaultWallet.address!,
                       pubkey!), // .canCertify(_defaultWallet.address!, pubkey!),
                   builder: (context, AsyncSnapshot<Map<String, int>> snapshot) {
                     // log.d(snapshot.data);
                     if (snapshot.data == null) return const SizedBox();
-                    String _duration = '';
+                    String duration = '';
                     if (snapshot.data!['certDelay'] != null ||
                         snapshot.data!['certRenewable'] != null) {
-                      final Duration _durationSeconds = Duration(
+                      final Duration durationSeconds = Duration(
                           seconds: snapshot.data!['certDelay'] ??
                               snapshot.data!['certRenewable']!);
-                      final int _seconds = _durationSeconds.inSeconds;
-                      final int _minutes = _durationSeconds.inMinutes;
+                      final int seconds = durationSeconds.inSeconds;
+                      final int minutes = durationSeconds.inMinutes;
 
-                      if (_seconds <= 0) {
-                        _duration = 'seconds'.tr(args: ['0']);
-                      } else if (_seconds <= 60) {
-                        _duration = 'seconds'.tr(args: [_seconds.toString()]);
-                      } else if (_seconds <= 3600) {
-                        _duration = 'minutes'.tr(args: [_minutes.toString()]);
-                      } else if (_seconds <= 86400) {
-                        final int _hours = _durationSeconds.inHours;
-                        final int _minutesLeft = _minutes - _hours * 60;
-                        String _showMinutes = '';
-                        if (_minutesLeft < 60) {}
-                        _showMinutes =
-                            'minutes'.tr(args: [_minutesLeft.toString()]);
-                        _duration =
-                            'hours'.tr(args: [_hours.toString(), _showMinutes]);
-                      } else if (_seconds <= 2592000) {
-                        final int _days = _durationSeconds.inDays;
-                        _duration = 'days'.tr(args: [_days.toString()]);
+                      if (seconds <= 0) {
+                        duration = 'seconds'.tr(args: ['0']);
+                      } else if (seconds <= 60) {
+                        duration = 'seconds'.tr(args: [seconds.toString()]);
+                      } else if (seconds <= 3600) {
+                        duration = 'minutes'.tr(args: [minutes.toString()]);
+                      } else if (seconds <= 86400) {
+                        final int hours = durationSeconds.inHours;
+                        final int minutesLeft = minutes - hours * 60;
+                        String showMinutes = '';
+                        if (minutesLeft < 60) {}
+                        showMinutes =
+                            'minutes'.tr(args: [minutesLeft.toString()]);
+                        duration =
+                            'hours'.tr(args: [hours.toString(), showMinutes]);
+                      } else if (seconds <= 2592000) {
+                        final int days = durationSeconds.inDays;
+                        duration = 'days'.tr(args: [days.toString()]);
                       } else {
-                        final int _months =
-                            (_durationSeconds.inDays / 30).round();
-                        _duration = 'months'.tr(args: [_months.toString()]);
+                        final int months =
+                            (durationSeconds.inDays / 30).round();
+                        duration = 'months'.tr(args: [months.toString()]);
                       }
                     }
                     return Visibility(
                       visible: (snapshot.data != {}),
                       child: Column(children: <Widget>[
                         if (snapshot.data!['canCert'] != null ||
-                            _duration == 'seconds'.tr(args: ['0']))
+                            duration == 'seconds'.tr(args: ['0']))
                           Column(children: <Widget>[
                             SizedBox(
                               height: buttonSize,
@@ -183,18 +184,17 @@ class WalletViewScreen extends StatelessWidget {
                                                 'assets/gecko_certify.png')),
                                       ),
                                       onTap: () async {
-                                        final bool? _result =
-                                            await confirmPopup(
-                                                context,
-                                                "areYouSureYouWantToCertify".tr(
-                                                    args: [
-                                                      getShortPubkey(pubkey!)
-                                                    ]));
+                                        final bool? result = await confirmPopup(
+                                            context,
+                                            "areYouSureYouWantToCertify".tr(
+                                                args: [
+                                                  getShortPubkey(pubkey!)
+                                                ]));
 
-                                        if (_result ?? false) {
-                                          String? _pin;
-                                          if (_myWalletProvider.pinCode == '') {
-                                            _pin = await Navigator.push(
+                                        if (result ?? false) {
+                                          String? pin;
+                                          if (myWalletProvider.pinCode == '') {
+                                            pin = await Navigator.push(
                                               context,
                                               MaterialPageRoute(
                                                 builder: (homeContext) {
@@ -204,19 +204,18 @@ class WalletViewScreen extends StatelessWidget {
                                               ),
                                             );
                                           }
-                                          if (_pin != null ||
-                                              _myWalletProvider.pinCode != '') {
+                                          if (pin != null ||
+                                              myWalletProvider.pinCode != '') {
                                             WalletsProfilesProvider
-                                                _walletViewProvider = Provider
+                                                walletViewProvider = Provider
                                                     .of<WalletsProfilesProvider>(
                                                         context,
                                                         listen: false);
-                                            final acc = _sub.getCurrentWallet();
-                                            _sub.certify(
+                                            final acc = sub.getCurrentWallet();
+                                            sub.certify(
                                                 acc.address!,
-                                                _pin ??
-                                                    _myWalletProvider.pinCode,
-                                                _walletViewProvider.address!);
+                                                pin ?? myWalletProvider.pinCode,
+                                                walletViewProvider.address!);
 
                                             Navigator.push(
                                               context,
@@ -263,7 +262,7 @@ class WalletViewScreen extends StatelessWidget {
                             ),
                             Text(
                               "mustWaitXBeforeCertify"
-                                  .tr(args: [_duration.toString()]),
+                                  .tr(args: [duration.toString()]),
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   fontSize: buttonFontSize - 4,
@@ -272,7 +271,7 @@ class WalletViewScreen extends StatelessWidget {
                             ),
                           ]),
                         if (snapshot.data!['certRenewable'] != null &&
-                            _duration != 'seconds'.tr(args: ['0']))
+                            duration != 'seconds'.tr(args: ['0']))
                           Column(children: <Widget>[
                             SizedBox(
                               height: buttonSize,
@@ -293,8 +292,7 @@ class WalletViewScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              "canRenewCertInX"
-                                  .tr(args: [_duration.toString()]),
+                              "canRenewCertInX".tr(args: [duration.toString()]),
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   fontSize: buttonFontSize - 4,
@@ -338,9 +336,9 @@ class WalletViewScreen extends StatelessWidget {
               ]),
             ]),
             const Spacer(),
-            Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+            Consumer<SubstrateSdk>(builder: (context, sub, _) {
               return Opacity(
-                opacity: _sub.nodeConnected ? 1 : 0.5,
+                opacity: sub.nodeConnected ? 1 : 0.5,
                 child: Container(
                   height: buttonSize,
                   decoration: BoxDecoration(
@@ -356,29 +354,29 @@ class WalletViewScreen extends StatelessWidget {
                       color: orangeC, // button color
                       child: InkWell(
                           key: const Key('pay'),
-                          splashColor: yellowC, // inkwell color
+                          splashColor: yellowC,
+                          onTap: sub.nodeConnected
+                              ? () {
+                                  paymentPopup(context, walletProfile);
+                                }
+                              : null, // inkwell color
                           child: const Padding(
                               padding: EdgeInsets.all(14),
                               child: Image(
                                 image: AssetImage('assets/vector_white.png'),
-                              )),
-                          onTap: _sub.nodeConnected
-                              ? () {
-                                  paymentPopup(context, _walletProfile);
-                                }
-                              : null),
+                              ))),
                     ),
                   ),
                 ),
               );
             }),
             const SizedBox(height: 9),
-            Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+            Consumer<SubstrateSdk>(builder: (context, sub, _) {
               return Text(
                 'doATransfer'.tr(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    color: _sub.nodeConnected ? Colors.black : Colors.grey[500],
+                    color: sub.nodeConnected ? Colors.black : Colors.grey[500],
                     fontSize: buttonFontSize,
                     fontWeight: FontWeight.w500),
               );
@@ -389,16 +387,16 @@ class WalletViewScreen extends StatelessWidget {
   }
 
   void paymentPopup(
-      BuildContext context, WalletsProfilesProvider _walletViewProvider) {
+      BuildContext context, WalletsProfilesProvider walletViewProvider) {
     // WalletsProfilesProvider _walletViewProvider =
     //     Provider.of<WalletsProfilesProvider>(context, listen: false);
 
-    MyWalletsProvider _myWalletProvider =
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     // SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     const double shapeSize = 20;
-    WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
+    WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
     log.d(defaultWallet.address);
 
     bool canValidate = false;
@@ -415,12 +413,12 @@ class WalletViewScreen extends StatelessWidget {
         builder: (BuildContext context) {
           return StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
-            if (_walletViewProvider.payAmount.text != '' &&
-                (double.parse(_walletViewProvider.payAmount.text) + 2) <=
+            if (walletViewProvider.payAmount.text != '' &&
+                (double.parse(walletViewProvider.payAmount.text) + 2) <=
                     (balanceCache[defaultWallet.address] ?? 0) &&
-                _walletViewProvider.address != defaultWallet.address) {
+                walletViewProvider.address != defaultWallet.address) {
               if ((balanceCache[pubkey] == 0 || balanceCache[pubkey] == null) &&
-                  double.parse(_walletViewProvider.payAmount.text) < 5) {
+                  double.parse(walletViewProvider.payAmount.text) < 5) {
                 canValidate = false;
               } else {
                 canValidate = true;
@@ -474,12 +472,12 @@ class WalletViewScreen extends StatelessWidget {
                               color: Colors.grey[600]),
                         ),
                         const SizedBox(height: 10),
-                        Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+                        Consumer<SubstrateSdk>(builder: (context, sub, _) {
                           return InkWell(
                             onTap: () async {
-                              String? _pin;
-                              if (_myWalletProvider.pinCode == '') {
-                                _pin = await Navigator.push(
+                              String? pin;
+                              if (myWalletProvider.pinCode == '') {
+                                pin = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (homeContext) {
@@ -489,13 +487,13 @@ class WalletViewScreen extends StatelessWidget {
                                   ),
                                 );
                               }
-                              if (_pin != null ||
-                                  _myWalletProvider.pinCode != '') {
+                              if (pin != null ||
+                                  myWalletProvider.pinCode != '') {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(builder: (context) {
                                     return ChooseWalletScreen(
-                                        pin: _pin ?? _myWalletProvider.pinCode);
+                                        pin: pin ?? myWalletProvider.pinCode);
                                   }),
                                 );
                               }
@@ -515,12 +513,12 @@ class WalletViewScreen extends StatelessWidget {
                                 const Spacer(),
                                 FutureBuilder(
                                     future:
-                                        _sub.getBalance(defaultWallet.address!),
+                                        sub.getBalance(defaultWallet.address!),
                                     builder: (BuildContext context,
-                                        AsyncSnapshot<double> _balance) {
-                                      if (_balance.connectionState !=
+                                        AsyncSnapshot<double> balance) {
+                                      if (balance.connectionState !=
                                               ConnectionState.done ||
-                                          _balance.hasError) {
+                                          balance.hasError) {
                                         if (balanceCache[
                                                 defaultWallet.address!] !=
                                             null) {
@@ -541,7 +539,7 @@ class WalletViewScreen extends StatelessWidget {
                                         }
                                       }
                                       balanceCache[defaultWallet.address!] =
-                                          _balance.data!;
+                                          balance.data!;
                                       return Text(
                                         "${balanceCache[defaultWallet.address!]} $currencyName",
                                         style: const TextStyle(
@@ -565,7 +563,7 @@ class WalletViewScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 10),
                         TextField(
-                          controller: _walletViewProvider.payAmount,
+                          controller: walletViewProvider.payAmount,
                           autofocus: true,
                           maxLines: 1,
                           textAlign: TextAlign.center,
@@ -617,9 +615,9 @@ class WalletViewScreen extends StatelessWidget {
                             ),
                             onPressed: canValidate
                                 ? () async {
-                                    String? _pin;
-                                    if (_myWalletProvider.pinCode == '') {
-                                      _pin = await Navigator.push(
+                                    String? pin;
+                                    if (myWalletProvider.pinCode == '') {
+                                      pin = await Navigator.push(
                                         context,
                                         MaterialPageRoute(
                                           builder: (homeContext) {
@@ -629,30 +627,30 @@ class WalletViewScreen extends StatelessWidget {
                                         ),
                                       );
                                     }
-                                    log.d(_pin);
-                                    if (_pin != null ||
-                                        _myWalletProvider.pinCode != '') {
+                                    log.d(pin);
+                                    if (pin != null ||
+                                        myWalletProvider.pinCode != '') {
                                       // Payment workflow !
                                       WalletsProfilesProvider
-                                          _walletViewProvider =
+                                          walletViewProvider =
                                           Provider.of<WalletsProfilesProvider>(
                                               context,
                                               listen: false);
-                                      SubstrateSdk _sub =
+                                      SubstrateSdk sub =
                                           Provider.of<SubstrateSdk>(context,
                                               listen: false);
-                                      final acc = _sub.getCurrentWallet();
+                                      final acc = sub.getCurrentWallet();
                                       log.d(
-                                          "fromAddress: ${acc.address!},destAddress: ${_walletViewProvider.address!}, amount: ${double.parse(_walletViewProvider.payAmount.text)},  password: $_pin");
-                                      _sub.pay(
+                                          "fromAddress: ${acc.address!},destAddress: ${walletViewProvider.address!}, amount: ${double.parse(walletViewProvider.payAmount.text)},  password: $pin");
+                                      sub.pay(
                                           fromAddress: acc.address!,
                                           destAddress:
-                                              _walletViewProvider.address!,
+                                              walletViewProvider.address!,
                                           amount: double.parse(
-                                              _walletViewProvider
+                                              walletViewProvider
                                                   .payAmount.text),
-                                          password: _pin ??
-                                              _myWalletProvider.pinCode);
+                                          password:
+                                              pin ?? myWalletProvider.pinCode);
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(builder: (context) {
@@ -675,6 +673,6 @@ class WalletViewScreen extends StatelessWidget {
               ),
             );
           });
-        }).then((value) => _walletViewProvider.payAmount.text = '');
+        }).then((value) => walletViewProvider.payAmount.text = '');
   }
 }

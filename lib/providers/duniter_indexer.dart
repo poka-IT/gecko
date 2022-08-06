@@ -33,10 +33,10 @@ class DuniterIndexer with ChangeNotifier {
   Future<bool> checkIndexerEndpoint(String endpoint) async {
     isLoadingIndexer = true;
     notifyListeners();
-    final _client = HttpClient();
-    _client.connectionTimeout = const Duration(milliseconds: 4000);
+    final client = HttpClient();
+    client.connectionTimeout = const Duration(milliseconds: 4000);
     try {
-      final request = await _client.postUrl(Uri.parse('$endpoint/v1/graphql'));
+      final request = await client.postUrl(Uri.parse('$endpoint/v1/graphql'));
       final response = await request.close();
       if (response.statusCode != 200) {
         log.d('INDEXER IS OFFILINE');
@@ -102,10 +102,10 @@ class DuniterIndexer with ChangeNotifier {
 
     int i = 0;
     // String _endpoint = '';
-    int _statusCode = 0;
+    int statusCode = 0;
 
-    final _client = HttpClient();
-    _client.connectionTimeout = const Duration(milliseconds: 3000);
+    final client = HttpClient();
+    client.connectionTimeout = const Duration(milliseconds: 3000);
 
     do {
       int listLenght = listIndexerEndpoints.length;
@@ -114,8 +114,7 @@ class DuniterIndexer with ChangeNotifier {
         indexerEndpoint = '';
         break;
       }
-      log.d((i + 1).toString() +
-          'n indexer endpoint try: ${listIndexerEndpoints[i]}');
+      log.d('${i + 1}n indexer endpoint try: ${listIndexerEndpoints[i]}');
 
       if (i != 0) {
         await Future.delayed(const Duration(milliseconds: 300));
@@ -124,33 +123,33 @@ class DuniterIndexer with ChangeNotifier {
       try {
         String endpointPath = '${listIndexerEndpoints[i]}/v1/graphql';
 
-        final request = await _client.postUrl(Uri.parse(endpointPath));
+        final request = await client.postUrl(Uri.parse(endpointPath));
         final response = await request.close();
 
         indexerEndpoint = listIndexerEndpoints[i];
         await configBox.put('indexerEndpoint', listIndexerEndpoints[i]);
 
-        _statusCode = response.statusCode;
+        statusCode = response.statusCode;
         i++;
       } on TimeoutException catch (_) {
         log.e('This endpoint is timeout, next');
-        _statusCode = 50;
+        statusCode = 50;
         i++;
         continue;
       } on SocketException catch (_) {
         log.e('This endpoint is a bad endpoint, next');
-        _statusCode = 70;
+        statusCode = 70;
         i++;
         continue;
       } on Exception {
         log.e('Unknown error');
-        _statusCode = 60;
+        statusCode = 60;
         i++;
         continue;
       }
-    } while (_statusCode != 200);
+    } while (statusCode != 200);
 
-    log.i('INDEXER: ' + indexerEndpoint);
+    log.i('INDEXER: $indexerEndpoint');
     return indexerEndpoint;
   }
 
@@ -158,34 +157,34 @@ class DuniterIndexer with ChangeNotifier {
       [WalletData? wallet,
       double size = 20,
       bool canEdit = false,
-      Color _color = Colors.black,
+      Color color = Colors.black,
       FontWeight fontWeight = FontWeight.w400,
       FontStyle fontStyle = FontStyle.italic]) {
-    WalletOptionsProvider _walletOptions =
+    WalletOptionsProvider walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
     if (indexerEndpoint == '') {
       if (wallet == null) {
         return const SizedBox();
       } else {
         if (canEdit) {
-          return _walletOptions.walletName(context, wallet, size, _color);
+          return walletOptions.walletName(context, wallet, size, color);
         } else {
-          return _walletOptions.walletNameController(context, wallet, size);
+          return walletOptions.walletNameController(context, wallet, size);
         }
       }
     }
-    final _httpLink = HttpLink(
+    final httpLink = HttpLink(
       '$indexerEndpoint/v1/graphql',
     );
 
-    final _client = ValueNotifier(
+    final client = ValueNotifier(
       GraphQLClient(
         cache: GraphQLCache(store: HiveStore()),
-        link: _httpLink,
+        link: httpLink,
       ),
     );
     return GraphQLProvider(
-      client: _client,
+      client: client,
       child: Query(
           options: QueryOptions(
             document: gql(
@@ -213,22 +212,21 @@ class DuniterIndexer with ChangeNotifier {
                 return const SizedBox();
               } else {
                 if (canEdit) {
-                  return _walletOptions.walletName(
-                      context, wallet, size, _color);
+                  return walletOptions.walletName(context, wallet, size, color);
                 } else {
-                  return _walletOptions.walletNameController(
+                  return walletOptions.walletNameController(
                       context, wallet, size);
                 }
               }
             }
 
             return Text(
-              _color == Colors.grey[700]!
+              color == Colors.grey[700]!
                   ? '(${walletNameIndexer[address]!})'
                   : truncate(walletNameIndexer[address]!, 20),
               style: TextStyle(
                 fontSize: size,
-                color: _color,
+                color: color,
                 fontWeight: fontWeight,
                 fontStyle: fontStyle,
               ),
@@ -240,28 +238,28 @@ class DuniterIndexer with ChangeNotifier {
   Widget searchIdentity(BuildContext context, String name) {
     // WalletOptionsProvider _walletOptions =
     //     Provider.of<WalletOptionsProvider>(context, listen: false);
-    CesiumPlusProvider _cesiumPlusProvider =
+    CesiumPlusProvider cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
-    WalletsProfilesProvider _walletsProfiles =
+    WalletsProfilesProvider walletsProfiles =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     if (indexerEndpoint == '') {
       return const Text('Aucun résultat');
     }
 
     log.d(indexerEndpoint);
-    final _httpLink = HttpLink(
+    final httpLink = HttpLink(
       '$indexerEndpoint/v1/graphql',
     );
 
-    final _client = ValueNotifier(
+    final client = ValueNotifier(
       GraphQLClient(
         cache: GraphQLCache(
             store: HiveStore()), // GraphQLCache(store: HiveStore())
-        link: _httpLink,
+        link: httpLink,
       ),
     );
     return GraphQLProvider(
-      client: _client,
+      client: client,
       child: Query(
           options: QueryOptions(
             document: gql(
@@ -288,7 +286,7 @@ class DuniterIndexer with ChangeNotifier {
             }
 
             int keyID = 0;
-            double _avatarSize = 55;
+            double avatarSize = 55;
             return Expanded(
               child: ListView(children: <Widget>[
                 for (Map profile in identities)
@@ -298,7 +296,7 @@ class DuniterIndexer with ChangeNotifier {
                         key: Key('searchResult${keyID++}'),
                         horizontalTitleGap: 40,
                         contentPadding: const EdgeInsets.all(5),
-                        leading: _cesiumPlusProvider.defaultAvatar(_avatarSize),
+                        leading: cesiumPlusProvider.defaultAvatar(avatarSize),
                         title: Row(children: <Widget>[
                           Text(getShortPubkey(profile['id']),
                               style: const TextStyle(
@@ -322,7 +320,7 @@ class DuniterIndexer with ChangeNotifier {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) {
-                              _walletsProfiles.address = profile['id'];
+                              walletsProfiles.address = profile['id'];
                               return WalletViewScreen(
                                 pubkey: profile['id'],
                                 username: g1WalletsBox
@@ -341,14 +339,14 @@ class DuniterIndexer with ChangeNotifier {
     );
   }
 
-  List parseHistory(blockchainTX, _pubkey) {
+  List parseHistory(blockchainTX, pubkey) {
     var transBC = [];
     int i = 0;
 
     for (final trans in blockchainTX) {
       final transaction = trans['node'];
       final direction =
-          transaction['issuer_id'] != _pubkey ? 'RECEIVED' : 'SENT';
+          transaction['issuer_id'] != pubkey ? 'RECEIVED' : 'SENT';
 
       transBC.add(i);
       transBC[i] = [];
@@ -362,7 +360,7 @@ class DuniterIndexer with ChangeNotifier {
       } else if (direction == "SENT") {
         transBC[i].add(transaction['receiver_id']);
         transBC[i].add(transaction['receiver']['identity']?['name'] ?? '');
-        transBC[i].add('- ' + amount.toString());
+        transBC[i].add('- $amount');
       }
       // transBC[i].add(''); //transaction comment
 
@@ -371,7 +369,7 @@ class DuniterIndexer with ChangeNotifier {
     return transBC;
   }
 
-  FetchMoreOptions? checkQueryResult(result, opts, _pubkey) {
+  FetchMoreOptions? checkQueryResult(result, opts, pubkey) {
     final List<dynamic>? blockchainTX =
         (result.data['transaction_connection']['edges'] as List<dynamic>?);
     // final List<dynamic> mempoolTX =
@@ -402,9 +400,9 @@ class DuniterIndexer with ChangeNotifier {
                 as List<dynamic>
           ];
 
-          log.d('repos:  ' + previousResultData.toString());
-          log.d('repos:  ' + fetchMoreResultData.toString());
-          log.d('repos:  ' + repos.toString());
+          log.d('repos:  $previousResultData');
+          log.d('repos:  $fetchMoreResultData');
+          log.d('repos:  $repos');
 
           fetchMoreResultData['transaction_connection']['edges'] = repos;
           return fetchMoreResultData;
@@ -415,7 +413,7 @@ class DuniterIndexer with ChangeNotifier {
     log.d(
         "###### DEBUG H Parse blockchainTX list. Cursor: $fetchMoreCursor ######");
     if (fetchMoreCursor != null) {
-      transBC = parseHistory(blockchainTX, _pubkey);
+      transBC = parseHistory(blockchainTX, pubkey);
     } else {
       log.i("###### DEBUG H - Début de l'historique");
     }

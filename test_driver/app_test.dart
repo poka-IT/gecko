@@ -1,9 +1,8 @@
-// ignore_for_file: avoid_print
-
 import 'dart:async';
 import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_driver/flutter_driver.dart';
+import 'package:gecko/globals.dart';
 import 'package:test/test.dart';
 // import 'package:flutter/services.dart';
 
@@ -56,8 +55,8 @@ void main() {
     }
 
     // Easy sleep
-    Future sleep(int _time) async {
-      await Future.delayed(Duration(milliseconds: _time));
+    Future sleep(int time) async {
+      await Future.delayed(Duration(milliseconds: time));
     }
 
     // Test if widget exist on screen, return a boolean
@@ -78,10 +77,10 @@ void main() {
     }
 
     // Delete a derivation
-    Future deleteWallet(bool _confirm) async {
+    Future deleteWallet(bool confirm) async {
       await tapOn('deleteWallet');
       await sleep(100);
-      _confirm ? await tapOn('confirmDeleting') : await tapOn('cancelDeleting');
+      confirm ? await tapOn('confirmDeleting') : await tapOn('cancelDeleting');
       await sleep(300);
     }
 
@@ -105,7 +104,7 @@ void main() {
       await sleep(300);
       await tapOn('generateKeychain');
       while (await getText('generatedPin') == '') {
-        print('Waiting for pin code generation...');
+        log.d('Waiting for pin code generation...');
         await sleep(100);
       }
       pinCode = await getText('generatedPin');
@@ -169,7 +168,7 @@ void main() {
       await tapOn('goStep7');
 
       while (await getText('word1') == '...') {
-        print('Waiting for Mnemonic generation...');
+        log.d('Waiting for Mnemonic generation...');
         await sleep(100);
       }
 
@@ -224,7 +223,7 @@ void main() {
       await tapOn('goStep11');
 
       while (await getText('generatedPin') == '') {
-        print('Waiting for pin code generation...');
+        log.d('Waiting for pin code generation...');
         await sleep(100);
       }
 

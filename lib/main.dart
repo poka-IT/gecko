@@ -13,8 +13,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// ignore_for_file: avoid_print
-
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/services.dart';
@@ -44,7 +42,6 @@ import 'package:flutter/foundation.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:window_size/window_size.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -53,17 +50,12 @@ const bool enableSentry = true;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
-  if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
-    setWindowTitle('Ğecko');
-    setWindowMinSize(const Size(400, 700));
-    setWindowMaxSize(const Size(800, 1000));
-  }
 
-  HomeProvider _homeProvider = HomeProvider();
+  HomeProvider homeProvider = HomeProvider();
   // DuniterIndexer _duniterIndexer = DuniterIndexer();
   await initHiveForFlutter();
-  await _homeProvider.initHive();
-  appVersion = await _homeProvider.getAppVersion();
+  await homeProvider.initHive();
+  appVersion = await homeProvider.getAppVersion();
   prefs = await SharedPreferences.getInstance();
 
   // Reset GraphQL cache
@@ -82,7 +74,7 @@ Future<void> main() async {
   await Hive.deleteBoxFromDisk('g1WalletsBox');
   g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
 
-  await _homeProvider.getValidEndpoints();
+  await homeProvider.getValidEndpoints();
   // await configBox.delete('isCacheChecked');
   if (configBox.get('isCacheChecked') == null) {
     configBox.put('isCacheChecked', false);
@@ -117,7 +109,7 @@ Future<void> main() async {
       ),
     );
   } else {
-    print('Debug mode enabled: No sentry alerte');
+    log.i('Debug mode enabled: No sentry alerte');
 
     runApp(
       EasyLocalization(

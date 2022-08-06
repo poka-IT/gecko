@@ -20,19 +20,19 @@ class SearchResultScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    SearchProvider _searchProvider =
+    SearchProvider searchProvider =
         Provider.of<SearchProvider>(context, listen: false);
-    CesiumPlusProvider _cesiumPlusProvider =
+    CesiumPlusProvider cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
-    WalletsProfilesProvider _walletsProfilesClass =
+    WalletsProfilesProvider walletsProfilesClass =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
-    HomeProvider _homeProvider =
+    HomeProvider homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
-    DuniterIndexer _duniterIndexer =
+    DuniterIndexer duniterIndexer =
         Provider.of<DuniterIndexer>(context, listen: false);
 
     int keyID = 0;
-    double _avatarSize = 55;
+    double avatarSize = 55;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -44,7 +44,7 @@ class SearchResultScreen extends StatelessWidget {
           child: Text('researchResults'.tr()),
         ),
       ),
-      bottomNavigationBar: _homeProvider.bottomAppBar(context),
+      bottomNavigationBar: homeProvider.bottomAppBar(context),
       body: SafeArea(
         child: Stack(children: [
           Padding(
@@ -64,7 +64,7 @@ class SearchResultScreen extends StatelessWidget {
                           text: "resultsFor".tr(),
                         ),
                         TextSpan(
-                          text: '"${_searchProvider.searchController.text}"',
+                          text: '"${searchProvider.searchController.text}"',
                           style: const TextStyle(fontStyle: FontStyle.italic),
                         ),
                       ],
@@ -77,13 +77,13 @@ class SearchResultScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   FutureBuilder(
-                    future: _searchProvider.searchAddress(),
+                    future: searchProvider.searchAddress(),
                     builder: (context, AsyncSnapshot<List?> snapshot) {
                       if (snapshot.connectionState == ConnectionState.done) {
                         log.d(snapshot.data);
                         if (snapshot.data?.isEmpty ?? true) {
-                          return _duniterIndexer.searchIdentity(
-                              context, _searchProvider.searchController.text);
+                          return duniterIndexer.searchIdentity(
+                              context, searchProvider.searchController.text);
 
                           // const Text('Aucun résultat');
                         } else {
@@ -98,8 +98,8 @@ class SearchResultScreen extends StatelessWidget {
                                       key: Key('searchResult${keyID++}'),
                                       horizontalTitleGap: 40,
                                       contentPadding: const EdgeInsets.all(5),
-                                      leading: _cesiumPlusProvider
-                                          .defaultAvatar(_avatarSize),
+                                      leading: cesiumPlusProvider
+                                          .defaultAvatar(avatarSize),
                                       title: Row(children: <Widget>[
                                         Text(getShortPubkey(g1Wallet.pubkey!),
                                             style: const TextStyle(
@@ -116,7 +116,7 @@ class SearchResultScreen extends StatelessWidget {
                                                 context, g1Wallet.pubkey!, 16)
                                           ]),
                                       subtitle: Row(children: <Widget>[
-                                        _duniterIndexer.getNameByAddress(
+                                        duniterIndexer.getNameByAddress(
                                             context, g1Wallet.pubkey!)
                                       ]),
                                       dense: false,
@@ -125,7 +125,7 @@ class SearchResultScreen extends StatelessWidget {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(builder: (context) {
-                                            _walletsProfilesClass.address =
+                                            walletsProfilesClass.address =
                                                 g1Wallet.pubkey;
                                             return WalletViewScreen(
                                               pubkey: g1Wallet.pubkey,

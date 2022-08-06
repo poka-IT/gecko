@@ -29,7 +29,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    GenerateWalletsProvider _generateWalletProvider =
+    GenerateWalletsProvider generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context, listen: false);
 
     final CommonElements common = CommonElements();
@@ -61,7 +61,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) {
-                  return PrintWallet(_generateWalletProvider.generatedMnemonic);
+                  return PrintWallet(generateWalletProvider.generatedMnemonic);
                 }),
               );
             },
@@ -106,7 +106,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
 }
 
 Widget sentanceArray(BuildContext context) {
-  GenerateWalletsProvider _generateWalletProvider =
+  GenerateWalletsProvider generateWalletProvider =
       Provider.of<GenerateWalletsProvider>(context, listen: false);
 
   return Padding(
@@ -121,36 +121,36 @@ Widget sentanceArray(BuildContext context) {
           )),
       padding: const EdgeInsets.all(20),
       child: FutureBuilder(
-          future: _generateWalletProvider.generateWordList(context),
-          builder: (BuildContext context, AsyncSnapshot<List> _data) {
-            if (!_data.hasData) {
+          future: generateWalletProvider.generateWordList(context),
+          builder: (BuildContext context, AsyncSnapshot<List> data) {
+            if (!data.hasData) {
               return const Text('');
             } else {
-              mnemoList = _data;
+              mnemoList = data;
               return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.max,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     Row(children: <Widget>[
-                      arrayCell(_data.data![0]),
-                      arrayCell(_data.data![1]),
-                      arrayCell(_data.data![2]),
-                      arrayCell(_data.data![3]),
+                      arrayCell(data.data![0]),
+                      arrayCell(data.data![1]),
+                      arrayCell(data.data![2]),
+                      arrayCell(data.data![3]),
                     ]),
                     const SizedBox(height: 15),
                     Row(children: <Widget>[
-                      arrayCell(_data.data![4]),
-                      arrayCell(_data.data![5]),
-                      arrayCell(_data.data![6]),
-                      arrayCell(_data.data![7]),
+                      arrayCell(data.data![4]),
+                      arrayCell(data.data![5]),
+                      arrayCell(data.data![6]),
+                      arrayCell(data.data![7]),
                     ]),
                     const SizedBox(height: 15),
                     Row(children: <Widget>[
-                      arrayCell(_data.data![8]),
-                      arrayCell(_data.data![9]),
-                      arrayCell(_data.data![10]),
-                      arrayCell(_data.data![11]),
+                      arrayCell(data.data![8]),
+                      arrayCell(data.data![9]),
+                      arrayCell(data.data![10]),
+                      arrayCell(data.data![11]),
                     ]),
                   ]);
             }
@@ -184,7 +184,7 @@ class PrintWallet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    GenerateWalletsProvider _generateWalletProvider =
+    GenerateWalletsProvider generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context, listen: false);
     return MaterialApp(
       home: Scaffold(
@@ -208,7 +208,7 @@ class PrintWallet extends StatelessWidget {
         body: PdfPreview(
           canDebug: false,
           canChangeOrientation: false,
-          build: (format) => _generateWalletProvider.printWallet(mnemoList),
+          build: (format) => generateWalletProvider.printWallet(mnemoList),
         ),
       ),
     );
@@ -217,9 +217,9 @@ class PrintWallet extends StatelessWidget {
 
 Widget nextButton(
     BuildContext context, String text, bool isFast, bool skipIntro) {
-  GenerateWalletsProvider _generateWalletProvider =
+  GenerateWalletsProvider generateWalletProvider =
       Provider.of<GenerateWalletsProvider>(context, listen: false);
-  MyWalletsProvider _myWalletProvider =
+  MyWalletsProvider myWalletProvider =
       Provider.of<MyWalletsProvider>(context, listen: false);
   return SizedBox(
     width: 380 * ratio,
@@ -231,17 +231,16 @@ Widget nextButton(
         onPrimary: Colors.white, // foreground
       ),
       onPressed: () {
-        _generateWalletProvider.nbrWord =
-            _generateWalletProvider.getRandomInt();
-        _generateWalletProvider.nbrWordAlpha = _generateWalletProvider
-            .intToString(_generateWalletProvider.nbrWord + 1);
-        _myWalletProvider.mnemonic = _generateWalletProvider.generatedMnemonic!;
+        generateWalletProvider.nbrWord = generateWalletProvider.getRandomInt();
+        generateWalletProvider.nbrWordAlpha = generateWalletProvider
+            .intToString(generateWalletProvider.nbrWord + 1);
+        myWalletProvider.mnemonic = generateWalletProvider.generatedMnemonic!;
 
         Navigator.push(
           context,
           FaderTransition(
               page: OnboardingStepSix(
-                  generatedMnemonic: _generateWalletProvider.generatedMnemonic,
+                  generatedMnemonic: generateWalletProvider.generatedMnemonic,
                   skipIntro: skipIntro),
               isFast: true),
         );

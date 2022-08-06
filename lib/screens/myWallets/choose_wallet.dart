@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
@@ -22,7 +24,7 @@ class ChooseWalletScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
     final int chest = configBox.get('currentChest');
 
     return Scaffold(
@@ -50,10 +52,10 @@ class ChooseWalletScreen extends StatelessWidget {
                       onPrimary: Colors.white, // foreground
                     ),
                     onPressed: () async {
-                      await _sub.setCurrentWallet(selectedWallet!);
+                      await sub.setCurrentWallet(selectedWallet!);
 
                       // _walletViewProvider.reload();
-                      _sub.reload();
+                      sub.reload();
 
                       // Navigator.pop(context);
                       Navigator.pop(context);
@@ -73,21 +75,21 @@ class ChooseWalletScreen extends StatelessWidget {
   }
 
   Widget myWalletsTiles(BuildContext context, int? currentChest) {
-    MyWalletsProvider _myWalletProvider =
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
     // SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
-    WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
+    final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
+    WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
 
     selectedWallet ??= defaultWallet;
-    _myWalletProvider.readAllWallets(currentChest);
+    myWalletProvider.readAllWallets(currentChest);
 
     if (!isWalletsExists) {
       return const Text('');
     }
 
-    if (_myWalletProvider.listWallets.isEmpty) {
+    if (myWalletProvider.listWallets.isEmpty) {
       return Column(children: const <Widget>[
         Center(
             child: Text(
@@ -97,7 +99,7 @@ class ChooseWalletScreen extends StatelessWidget {
       ]);
     }
 
-    List _listWallets = _myWalletProvider.listWallets;
+    List listWallets = myWalletProvider.listWallets;
     final double screenWidth = MediaQuery.of(context).size.width;
     int nTule = 2;
 
@@ -116,13 +118,13 @@ class ChooseWalletScreen extends StatelessWidget {
           crossAxisSpacing: 0,
           mainAxisSpacing: 0,
           children: <Widget>[
-            for (WalletData _repository in _listWallets as Iterable<WalletData>)
+            for (WalletData repository in listWallets as Iterable<WalletData>)
               Padding(
                   padding: const EdgeInsets.all(16),
                   child: GestureDetector(
                     onTap: () {
-                      selectedWallet = _repository;
-                      _myWalletProvider.rebuildWidget();
+                      selectedWallet = repository;
+                      myWalletProvider.rebuildWidget();
                     },
                     child: ClipOvalShadow(
                       shadow: const Shadow(
@@ -147,9 +149,9 @@ class ChooseWalletScreen extends StatelessWidget {
                                 const Color(0xFFE7E7A6),
                               ],
                             )),
-                            child: _repository.imageCustomPath == null
+                            child: repository.imageCustomPath == null
                                 ? Image.asset(
-                                    'assets/avatars/${_repository.imageDefaultPath}',
+                                    'assets/avatars/${repository.imageDefaultPath}',
                                     alignment: Alignment.bottomCenter,
                                     scale: 0.5,
                                   )
@@ -162,14 +164,14 @@ class ChooseWalletScreen extends StatelessWidget {
                                       image: DecorationImage(
                                         fit: BoxFit.contain,
                                         image: FileImage(
-                                          File(_repository.imageCustomPath!),
+                                          File(repository.imageCustomPath!),
                                         ),
                                       ),
                                     ),
                                   ),
                           )),
-                          balanceBuilder(context, _repository.address!,
-                              selectedWallet!.address == _repository.address!),
+                          balanceBuilder(context, repository.address!,
+                              selectedWallet!.address == repository.address!),
                           ListTile(
                             shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.vertical(
@@ -177,7 +179,7 @@ class ChooseWalletScreen extends StatelessWidget {
                               ),
                             ),
                             tileColor:
-                                _repository.address == selectedWallet!.address
+                                repository.address == selectedWallet!.address
                                     ? orangeC
                                     : const Color(0xffFFD58D),
                             title: Center(
@@ -185,11 +187,11 @@ class ChooseWalletScreen extends StatelessWidget {
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 5),
                                 child: Text(
-                                  _repository.name!,
+                                  repository.name!,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                       fontSize: 17.0,
-                                      color: _repository.address ==
+                                      color: repository.address ==
                                               selectedWallet!.address
                                           ? const Color(0xffF9F9F1)
                                           : Colors.black,
@@ -198,8 +200,8 @@ class ChooseWalletScreen extends StatelessWidget {
                               ),
                             ),
                             onTap: () async {
-                              selectedWallet = _repository;
-                              _myWalletProvider.rebuildWidget();
+                              selectedWallet = repository;
+                              myWalletProvider.rebuildWidget();
                             },
                           )
                         ]),
@@ -210,7 +212,7 @@ class ChooseWalletScreen extends StatelessWidget {
     ]);
   }
 
-  Widget balanceBuilder(context, String _address, bool isDefault) {
+  Widget balanceBuilder(context, String address, bool isDefault) {
     return Container(
       width: double.infinity,
       color: isDefault ? orangeC : yellowC,
@@ -223,8 +225,7 @@ class ChooseWalletScreen extends StatelessWidget {
           //   textAlign: TextAlign.center,
           //   style: TextStyle(color: isDefault ? Colors.white : Colors.black),
           // ),
-          balance(
-              context, _address, 15, isDefault ? Colors.white : Colors.black)
+          balance(context, address, 15, isDefault ? Colors.white : Colors.black)
         ]),
       ),
     );

@@ -24,13 +24,13 @@ class ShowSeed extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    MyWalletsProvider _myWalletProvider =
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     CommonElements common = CommonElements();
 
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    WalletData defaultWallet = _myWalletProvider.getDefaultWallet();
+    WalletData defaultWallet = myWalletProvider.getDefaultWallet();
 
     return Scaffold(
         backgroundColor: backgroundColor,
@@ -44,11 +44,11 @@ class ShowSeed extends StatelessWidget {
           child: Column(children: <Widget>[
             const Spacer(flex: 1),
             FutureBuilder(
-                future: _sub.getSeed(
-                    defaultWallet.address!, walletProvider.pinCode),
-                builder: (BuildContext context, AsyncSnapshot<String?> _seed) {
-                  if (_seed.connectionState != ConnectionState.done ||
-                      _seed.hasError) {
+                future:
+                    sub.getSeed(defaultWallet.address!, walletProvider.pinCode),
+                builder: (BuildContext context, AsyncSnapshot<String?> seed) {
+                  if (seed.connectionState != ConnectionState.done ||
+                      seed.hasError) {
                     return SizedBox(
                       height: 15,
                       width: 15,
@@ -57,7 +57,7 @@ class ShowSeed extends StatelessWidget {
                         strokeWidth: 2,
                       ),
                     );
-                  } else if (!_seed.hasData) {
+                  } else if (!seed.hasData) {
                     return const Text('');
                   }
 
@@ -67,7 +67,7 @@ class ShowSeed extends StatelessWidget {
                         Column(children: [
                           common.buildText('keepYourMnemonicSecret'.tr()),
                           SizedBox(height: 35 * ratio),
-                          sentanceArray(context, _seed.data!.split(' ')),
+                          sentanceArray(context, seed.data!.split(' ')),
                           const SizedBox(height: 20),
                           SizedBox(
                             height: 40,
@@ -82,7 +82,7 @@ class ShowSeed extends StatelessWidget {
                               ),
                               onPressed: () {
                                 Clipboard.setData(
-                                    ClipboardData(text: _seed.data));
+                                    ClipboardData(text: seed.data));
                                 snackCopyKey(context);
                               },
                               child: Row(children: <Widget>[
@@ -105,7 +105,7 @@ class ShowSeed extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) {
-                                  return PrintWallet(_seed.data);
+                                  return PrintWallet(seed.data);
                                 }),
                               );
                             },
@@ -152,7 +152,7 @@ class ShowSeed extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  Widget sentanceArray(BuildContext context, List _mnemonic) {
+  Widget sentanceArray(BuildContext context, List mnemonic) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 3),
       child: Container(
@@ -170,24 +170,24 @@ class ShowSeed extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 Row(children: <Widget>[
-                  arrayCell(_mnemonic[0], 1),
-                  arrayCell(_mnemonic[1], 2),
-                  arrayCell(_mnemonic[2], 3),
-                  arrayCell(_mnemonic[3], 4),
+                  arrayCell(mnemonic[0], 1),
+                  arrayCell(mnemonic[1], 2),
+                  arrayCell(mnemonic[2], 3),
+                  arrayCell(mnemonic[3], 4),
                 ]),
                 const SizedBox(height: 15),
                 Row(children: <Widget>[
-                  arrayCell(_mnemonic[4], 5),
-                  arrayCell(_mnemonic[5], 6),
-                  arrayCell(_mnemonic[6], 7),
-                  arrayCell(_mnemonic[7], 8),
+                  arrayCell(mnemonic[4], 5),
+                  arrayCell(mnemonic[5], 6),
+                  arrayCell(mnemonic[6], 7),
+                  arrayCell(mnemonic[7], 8),
                 ]),
                 const SizedBox(height: 15),
                 Row(children: <Widget>[
-                  arrayCell(_mnemonic[8], 9),
-                  arrayCell(_mnemonic[9], 10),
-                  arrayCell(_mnemonic[10], 11),
-                  arrayCell(_mnemonic[11], 12),
+                  arrayCell(mnemonic[8], 9),
+                  arrayCell(mnemonic[9], 10),
+                  arrayCell(mnemonic[10], 11),
+                  arrayCell(mnemonic[11], 12),
                 ]),
               ])),
     );
@@ -249,26 +249,26 @@ class PrintWallet extends StatelessWidget {
     );
   }
 
-  Future<Uint8List> printWallet(String _seed) async {
+  Future<Uint8List> printWallet(String seed) async {
     final ByteData fontData =
         await rootBundle.load("assets/OpenSans-Regular.ttf");
     final pw.Font ttf = pw.Font.ttf(fontData.buffer.asByteData());
     final pdf = pw.Document();
     int nbr = 1;
 
-    final _seedList = _seed.split(' ');
+    final seedList = seed.split(' ');
 
     // const imageProvider = AssetImage('assets/icon/gecko_final.png');
     // final geckoLogo = await flutterImageProvider(imageProvider);
 
-    pw.Widget arrayCell(String dataWord, int _nbr) {
+    pw.Widget arrayCell(String dataWord, int nbr) {
       nbr++;
 
       return pw.SizedBox(
         width: 120,
         child: pw.Column(children: <pw.Widget>[
           pw.Text(
-            _nbr.toString(),
+            nbr.toString(),
             style: pw.TextStyle(
                 fontSize: 15, color: const PdfColor(0.5, 0, 0), font: ttf),
           ),
@@ -292,22 +292,22 @@ class PrintWallet extends StatelessWidget {
             // crossAxisAlignment: pw.CrossAxisAlignment.center,
             children: <pw.Widget>[
               pw.Row(children: <pw.Widget>[
-                arrayCell(_seedList[0], nbr),
-                arrayCell(_seedList[1], nbr),
-                arrayCell(_seedList[2], nbr),
-                arrayCell(_seedList[3], nbr),
+                arrayCell(seedList[0], nbr),
+                arrayCell(seedList[1], nbr),
+                arrayCell(seedList[2], nbr),
+                arrayCell(seedList[3], nbr),
               ]),
               pw.Row(children: <pw.Widget>[
-                arrayCell(_seedList[4], nbr),
-                arrayCell(_seedList[5], nbr),
-                arrayCell(_seedList[6], nbr),
-                arrayCell(_seedList[7], nbr),
+                arrayCell(seedList[4], nbr),
+                arrayCell(seedList[5], nbr),
+                arrayCell(seedList[6], nbr),
+                arrayCell(seedList[7], nbr),
               ]),
               pw.Row(children: <pw.Widget>[
-                arrayCell(_seedList[8], nbr),
-                arrayCell(_seedList[9], nbr),
-                arrayCell(_seedList[10], nbr),
-                arrayCell(_seedList[11], nbr)
+                arrayCell(seedList[8], nbr),
+                arrayCell(seedList[9], nbr),
+                arrayCell(seedList[10], nbr),
+                arrayCell(seedList[11], nbr)
               ]),
               pw.Expanded(
                   child: pw.Align(

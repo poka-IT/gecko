@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -31,43 +33,43 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Future<NewWallet>? get badWallet => null;
 
-  int getPinLenght(_walletNbr) {
+  int getPinLenght(walletNbr) {
     return pinLength;
   }
 
-  void _renameWallet(List<int?> _walletID, String _newName,
+  void _renameWallet(List<int?> walletID, String newName,
       {required bool isCesium}) async {
     MyWalletsProvider myWalletClass = MyWalletsProvider();
 
-    WalletData _walletTarget = myWalletClass.getWalletDataById(_walletID)!;
-    _walletTarget.name = _newName;
-    await walletBox.put(_walletTarget.key, _walletTarget);
+    WalletData walletTarget = myWalletClass.getWalletDataById(walletID)!;
+    walletTarget.name = newName;
+    await walletBox.put(walletTarget.key, walletTarget);
 
     _newWalletName.text = '';
   }
 
   Future<int> deleteWallet(context, WalletData wallet) async {
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final bool? _answer = await (confirmPopup(
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final bool? answer = await (confirmPopup(
         context, 'areYouSureToForgetWallet'.tr(args: [wallet.name!])));
 
-    if (_answer ?? false) {
+    if (answer ?? false) {
       //Check if balance is null
-      final _balance = await _sub.getBalance(wallet.address!);
-      if (_balance != 0) {
-        MyWalletsProvider _myWalletProvider =
+      final balance = await sub.getBalance(wallet.address!);
+      if (balance != 0) {
+        MyWalletsProvider myWalletProvider =
             Provider.of<MyWalletsProvider>(context, listen: false);
-        final _defaultWallet = _myWalletProvider.getDefaultWallet();
-        log.d(_defaultWallet.address);
-        _sub.pay(
+        final defaultWallet = myWalletProvider.getDefaultWallet();
+        log.d(defaultWallet.address);
+        sub.pay(
             fromAddress: wallet.address!,
-            destAddress: _defaultWallet.address!,
+            destAddress: defaultWallet.address!,
             amount: -1,
-            password: _myWalletProvider.pinCode);
+            password: myWalletProvider.pinCode);
       }
 
       await walletBox.delete(wallet.key);
-      await _sub.deleteAccounts([wallet.address!]);
+      await sub.deleteAccounts([wallet.address!]);
 
       Navigator.pop(context);
     }
@@ -130,11 +132,11 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Widget idtyStatus(BuildContext context, String address,
       {bool isOwner = false, Color color = Colors.black}) {
-    DuniterIndexer _duniterIndexer =
+    DuniterIndexer duniterIndexer =
         Provider.of<DuniterIndexer>(context, listen: false);
 
     _showText(String text,
-        [double size = 18, bool _bold = false, bool smooth = true]) {
+        [double size = 18, bool bold = false, bool smooth = true]) {
       log.d(text);
       return AnimatedFadeOutIn<String>(
         data: text,
@@ -144,15 +146,15 @@ class WalletOptionsProvider with ChangeNotifier {
           textAlign: TextAlign.center,
           style: TextStyle(
               fontSize: size,
-              color: _bold ? color : Colors.black,
-              fontWeight: _bold ? FontWeight.w500 : FontWeight.w400),
+              color: bold ? color : Colors.black,
+              fontWeight: bold ? FontWeight.w500 : FontWeight.w400),
         ),
       );
     }
 
-    return Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+    return Consumer<SubstrateSdk>(builder: (context, sub, _) {
       return FutureBuilder(
-          future: _sub.idtyStatus(address),
+          future: sub.idtyStatus(address),
           initialData: '',
           builder: (context, snapshot) {
             switch (snapshot.data.toString()) {
@@ -176,7 +178,7 @@ class WalletOptionsProvider with ChangeNotifier {
                 {
                   return isOwner
                       ? _showText('identityConfirmed'.tr())
-                      : _duniterIndexer.getNameByAddress(
+                      : duniterIndexer.getNameByAddress(
                           context,
                           address,
                           null,
@@ -191,7 +193,7 @@ class WalletOptionsProvider with ChangeNotifier {
                 {
                   return isOwner
                       ? _showText('memberValidated'.tr(), 18, true)
-                      : _duniterIndexer.getNameByAddress(
+                      : duniterIndexer.getNameByAddress(
                           context,
                           address,
                           null,
@@ -215,16 +217,16 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Future<bool> isMember(BuildContext context, String address) async {
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
-    return await _sub.idtyStatus(address) == 'Validated';
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    return await sub.idtyStatus(address) == 'Validated';
   }
 
   Future<String?> validateIdentity(BuildContext context) async {
     TextEditingController idtyName = TextEditingController();
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
-    WalletOptionsProvider _walletOptions =
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    WalletOptionsProvider walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
-    MyWalletsProvider _myWalletProvider =
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
     return showDialog<String>(
@@ -259,7 +261,7 @@ class WalletOptionsProvider with ChangeNotifier {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Consumer<WalletOptionsProvider>(
-                    builder: (context, _wOptions, _) {
+                    builder: (context, wOptions, _) {
                   return TextButton(
                     key: const Key('infoPopup'),
                     child: Text(
@@ -274,11 +276,11 @@ class WalletOptionsProvider with ChangeNotifier {
                     onPressed: () async {
                       if (idtyName.text.length >= 2) {
                         WalletData? defaultWallet =
-                            _myWalletProvider.getDefaultWallet();
+                            myWalletProvider.getDefaultWallet();
 
-                        String? _pin;
-                        if (_myWalletProvider.pinCode == '') {
-                          _pin = await Navigator.push(
+                        String? pin;
+                        if (myWalletProvider.pinCode == '') {
+                          pin = await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (homeContext) {
@@ -287,12 +289,12 @@ class WalletOptionsProvider with ChangeNotifier {
                             ),
                           );
                         }
-                        if (_pin != null || _myWalletProvider.pinCode != '') {
-                          final _wallet = _myWalletProvider
+                        if (pin != null || myWalletProvider.pinCode != '') {
+                          final wallet = myWalletProvider
                               .getWalletDataByAddress(address.text);
-                          await _sub.setCurrentWallet(_wallet!);
-                          _sub.confirmIdentity(_walletOptions.address.text,
-                              idtyName.text, _myWalletProvider.pinCode);
+                          await sub.setCurrentWallet(wallet!);
+                          sub.confirmIdentity(walletOptions.address.text,
+                              idtyName.text, myWalletProvider.pinCode);
                           Navigator.pop(context);
 
                           Navigator.push(
@@ -316,7 +318,7 @@ class WalletOptionsProvider with ChangeNotifier {
     );
   }
 
-  Future<String?> editWalletName(BuildContext context, List<int?> _wID) async {
+  Future<String?> editWalletName(BuildContext context, List<int?> wID) async {
     TextEditingController walletName = TextEditingController();
     canValidateNameBool = false;
 
@@ -348,7 +350,7 @@ class WalletOptionsProvider with ChangeNotifier {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Consumer<WalletOptionsProvider>(
-                    builder: (context, _wOptions, _) {
+                    builder: (context, wOptions, _) {
                   return TextButton(
                     key: const Key('infoPopup'),
                     child: Text(
@@ -364,7 +366,7 @@ class WalletOptionsProvider with ChangeNotifier {
                     onPressed: () async {
                       if (canValidateNameBool) {
                         nameController.text = walletName.text;
-                        _renameWallet(_wID, walletName.text, isCesium: false);
+                        _renameWallet(wID, walletName.text, isCesium: false);
                         // notifyListeners();
                         Navigator.pop(context);
                       }
@@ -399,7 +401,7 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   bool canValidateName(BuildContext context, TextEditingController walletName) {
-    MyWalletsProvider _myWalletProvider =
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
     bool isNameValid = walletName.text.length >= 2 &&
@@ -407,7 +409,7 @@ class WalletOptionsProvider with ChangeNotifier {
         walletName.text.length <= 39;
 
     if (isNameValid) {
-      for (var wallet in _myWalletProvider.listWallets) {
+      for (var wallet in myWalletProvider.listWallets) {
         if (walletName.text == wallet.name!) {
           canValidateNameBool = false;
           break;
@@ -432,26 +434,22 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   String? getAddress(int chest, int derivation) {
-    String? _address;
+    String? addressGet;
     walletBox.toMap().forEach((key, value) {
       if (value.chest == chest && value.derivation == derivation) {
-        _address = value.address!;
+        addressGet = value.address!;
         return;
       }
     });
 
-    address.text = _address ?? '';
+    address.text = addressGet ?? '';
 
-    return _address;
+    return addressGet;
   }
 
   Widget walletNameController(BuildContext context, WalletData wallet,
       [double size = 20]) {
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    log.d('aaaaaaaaaaaaaaaaaaaaa: ${wallet.name}');
     nameController.text = wallet.name!;
-    // _walletOptions.reloadBuild();
-    // });
 
     return SizedBox(
       width: 260,
@@ -527,39 +525,39 @@ class WalletOptionsProvider with ChangeNotifier {
 Map<String, double> balanceCache = {};
 
 Widget balance(BuildContext context, String address, double size,
-    [Color _color = Colors.black,
-    Color _loadingColor = const Color(0xffd07316)]) {
+    [Color color = Colors.black,
+    Color loadingColor = const Color(0xffd07316)]) {
   return Column(children: <Widget>[
-    Consumer<SubstrateSdk>(builder: (context, _sdk, _) {
+    Consumer<SubstrateSdk>(builder: (context, sdk, _) {
       return FutureBuilder(
-          future: _sdk.getBalance(address),
-          builder: (BuildContext context, AsyncSnapshot<double> _balance) {
-            if (_balance.connectionState != ConnectionState.done ||
-                _balance.hasError) {
+          future: sdk.getBalance(address),
+          builder: (BuildContext context, AsyncSnapshot<double> balance) {
+            if (balance.connectionState != ConnectionState.done ||
+                balance.hasError) {
               if (balanceCache[address] != null &&
                   balanceCache[address] != -1) {
                 return Text(
                     "${balanceCache[address]!.toString()} $currencyName",
                     style: TextStyle(
-                        fontSize: isTall ? size : size * 0.9, color: _color));
+                        fontSize: isTall ? size : size * 0.9, color: color));
               } else {
                 return SizedBox(
                   height: 15,
                   width: 15,
                   child: CircularProgressIndicator(
-                    color: _loadingColor,
+                    color: loadingColor,
                     strokeWidth: 2,
                   ),
                 );
               }
             }
-            balanceCache[address] = _balance.data!;
+            balanceCache[address] = balance.data!;
             if (balanceCache[address] != -1) {
               return Text(
                 "${balanceCache[address]!.toString()} $currencyName",
                 style: TextStyle(
                   fontSize: isTall ? size : size * 0.9,
-                  color: _color,
+                  color: color,
                 ),
               );
             } else {
@@ -571,24 +569,24 @@ Widget balance(BuildContext context, String address, double size,
 }
 
 Widget getCerts(BuildContext context, String address, double size,
-    [Color _color = Colors.black]) {
+    [Color color = Colors.black]) {
   return Column(children: <Widget>[
-    Consumer<SubstrateSdk>(builder: (context, _sdk, _) {
+    Consumer<SubstrateSdk>(builder: (context, sdk, _) {
       return FutureBuilder(
-          future: _sdk.getCerts(address),
-          builder: (BuildContext context, AsyncSnapshot<List<int>> _certs) {
+          future: sdk.getCerts(address),
+          builder: (BuildContext context, AsyncSnapshot<List<int>> certs) {
             // log.d(_certs.data);
 
-            return _certs.data?[0] != 0 && _certs.data != null
+            return certs.data?[0] != 0 && certs.data != null
                 ? Row(
                     children: [
                       Image.asset('assets/medal.png', height: 20),
                       const SizedBox(width: 1),
-                      Text(_certs.data?[0].toString() ?? '0',
+                      Text(certs.data?[0].toString() ?? '0',
                           style: const TextStyle(fontSize: 20)),
                       const SizedBox(width: 5),
                       Text(
-                        "(${_certs.data?[1].toString() ?? '0'})",
+                        "(${certs.data?[1].toString() ?? '0'})",
                         style: const TextStyle(fontSize: 14),
                       )
                     ],

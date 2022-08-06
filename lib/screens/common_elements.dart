@@ -131,6 +131,17 @@ class CommonElements {
     EdgeInsets padding,
   ) {
     return Container(
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+              color: Colors.grey,
+              blurRadius: 4.0,
+              offset: Offset(2.0, 2.5),
+              spreadRadius: 0.5)
+        ],
+      ),
       child: ClipOval(
         child: Material(
           color: const Color(0xffFFD58D), // button color
@@ -144,26 +155,15 @@ class CommonElements {
               }),
         ),
       ),
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-              color: Colors.grey,
-              blurRadius: 4.0,
-              offset: Offset(2.0, 2.5),
-              spreadRadius: 0.5)
-        ],
-      ),
     );
   }
 
   Widget offlineInfo(BuildContext context) {
     // SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
     final double screenWidth = MediaQuery.of(context).size.width;
-    return Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+    return Consumer<SubstrateSdk>(builder: (context, sub, _) {
       return Visibility(
-        visible: !_sub.nodeConnected,
+        visible: !sub.nodeConnected,
         child: Positioned(
           top: 0,
           child: Container(

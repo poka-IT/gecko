@@ -16,14 +16,14 @@ class SearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    SearchProvider _searchProvider = Provider.of<SearchProvider>(context);
+    SearchProvider searchProvider = Provider.of<SearchProvider>(context);
     final double screenHeight = MediaQuery.of(context).size.height;
     // HomeProvider _homeProvider =
     //     Provider.of<HomeProvider>(context, listen: false);
 
     return WillPopScope(
       onWillPop: () {
-        _searchProvider.searchController.text = '';
+        searchProvider.searchController.text = '';
         return Future<bool>.value(true);
       },
       child: Scaffold(
@@ -39,7 +39,7 @@ class SearchScreen extends StatelessWidget {
           leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.black),
               onPressed: () {
-                _searchProvider.searchController.text = '';
+                searchProvider.searchController.text = '';
                 Navigator.of(context).pop();
               }),
         ),
@@ -51,11 +51,11 @@ class SearchScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 17),
                 child: TextField(
-                  controller: _searchProvider.searchController,
+                  controller: searchProvider.searchController,
                   autofocus: true,
                   maxLines: 1,
                   textAlign: TextAlign.left,
-                  onChanged: (v) => _searchProvider.rebuildWidget(),
+                  onChanged: (v) => searchProvider.rebuildWidget(),
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Colors.white,
@@ -96,7 +96,7 @@ class SearchScreen extends StatelessWidget {
                     primary: orangeC, // background
                     onPrimary: Colors.white, // foreground
                   ),
-                  onPressed: _searchProvider.searchController.text.length >= 2
+                  onPressed: searchProvider.searchController.text.length >= 2
                       ? () {
                           Navigator.push(
                             context,

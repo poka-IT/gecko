@@ -26,13 +26,13 @@ class WalletsHome extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
-    HomeProvider _homeProvider =
+    HomeProvider homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
 
-    final int? _currentChestNumber = myWalletProvider.getCurrentChest();
-    final ChestData _currentChest = chestBox.get(_currentChestNumber)!;
+    final int currentChestNumber = myWalletProvider.getCurrentChest();
+    final ChestData currentChest = chestBox.get(currentChestNumber)!;
     myWalletProvider.listWallets =
-        myWalletProvider.readAllWallets(_currentChestNumber);
+        myWalletProvider.readAllWallets(currentChestNumber);
 
     return WillPopScope(
       onWillPop: () {
@@ -57,16 +57,16 @@ class WalletsHome extends StatelessWidget {
                   ModalRoute.withName('/'),
                 );
               }),
-          title: Text(_currentChest.name!,
+          title: Text(currentChest.name!,
               key: const Key('myWallets'),
               style: TextStyle(color: Colors.grey[850])),
           backgroundColor: const Color(0xffFFD58D),
         ),
-        bottomNavigationBar: _homeProvider.bottomAppBar(context),
+        bottomNavigationBar: homeProvider.bottomAppBar(context),
         body: SafeArea(
           child: Stack(
             children: [
-              myWalletsTiles(context, _currentChestNumber!),
+              myWalletsTiles(context, currentChestNumber),
               CommonElements().offlineInfo(context),
             ],
           ),
@@ -76,7 +76,7 @@ class WalletsHome extends StatelessWidget {
   }
 
   Widget chestOptions(
-      BuildContext context, MyWalletsProvider _myWalletProvider) {
+      BuildContext context, MyWalletsProvider myWalletProvider) {
     return Column(children: [
       const SizedBox(height: 50),
       SizedBox(
@@ -95,11 +95,11 @@ class WalletsHome extends StatelessWidget {
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (context) {
-                return ChestOptions(walletProvider: _myWalletProvider);
+                return ChestOptions(walletProvider: myWalletProvider);
               }),
             ),
             label: Text(
-              "   " + "manageChest".tr(),
+              "   ${"manageChest".tr()}",
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
@@ -133,18 +133,18 @@ class WalletsHome extends StatelessWidget {
     ]);
   }
 
-  Widget myWalletsTiles(BuildContext context, int _currentChestNumber) {
-    MyWalletsProvider _myWalletProvider =
+  Widget myWalletsTiles(BuildContext context, int currentChestNumber) {
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
-    WalletOptionsProvider _walletOptions =
+    WalletOptionsProvider walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
-    final bool isWalletsExists = _myWalletProvider.checkIfWalletExist();
+    final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
 
     if (!isWalletsExists) {
       return const Text('');
     }
 
-    if (_myWalletProvider.listWallets.isEmpty) {
+    if (myWalletProvider.listWallets.isEmpty) {
       return Expanded(
           child: Column(children: const <Widget>[
         Center(
@@ -155,8 +155,8 @@ class WalletsHome extends StatelessWidget {
       ]));
     }
 
-    List _listWallets = _myWalletProvider.listWallets;
-    WalletData? defaultWallet = _myWalletProvider.getDefaultWallet();
+    List listWallets = myWalletProvider.listWallets;
+    WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
     final double screenWidth = MediaQuery.of(context).size.width;
     int nTule = 2;
 
@@ -176,18 +176,18 @@ class WalletsHome extends StatelessWidget {
           crossAxisSpacing: 0,
           mainAxisSpacing: 0,
           children: <Widget>[
-            for (WalletData _repository in _listWallets as Iterable<WalletData>)
+            for (WalletData repository in listWallets as Iterable<WalletData>)
               Padding(
                   padding: const EdgeInsets.all(16),
                   child: GestureDetector(
                     onTap: () {
-                      _walletOptions.getAddress(
-                          _currentChestNumber, _repository.derivation!);
+                      walletOptions.getAddress(
+                          currentChestNumber, repository.derivation!);
                       Navigator.push(
                         context,
                         SmoothTransition(
                           page: WalletOptions(
-                            wallet: _repository,
+                            wallet: repository,
                           ),
                         ),
                       );
@@ -218,10 +218,10 @@ class WalletsHome extends StatelessWidget {
                             child:
                                 // SvgPicture.asset('assets/chopp-gecko2.png',
                                 //         semanticsLabel: 'Gecko', height: 48),
-                                _repository.imageCustomPath == null ||
-                                        _repository.imageCustomPath == ''
+                                repository.imageCustomPath == null ||
+                                        repository.imageCustomPath == ''
                                     ? Image.asset(
-                                        'assets/avatars/${_repository.imageDefaultPath}',
+                                        'assets/avatars/${repository.imageDefaultPath}',
                                         alignment: Alignment.bottomCenter,
                                         scale: 0.5,
                                       )
@@ -232,25 +232,24 @@ class WalletsHome extends StatelessWidget {
                                           image: DecorationImage(
                                             fit: BoxFit.fitHeight,
                                             image: FileImage(
-                                              File(
-                                                  _repository.imageCustomPath!),
+                                              File(repository.imageCustomPath!),
                                             ),
                                           ),
                                         ),
                                       ),
                           )),
                           Stack(children: <Widget>[
-                            balanceBuilder(context, _repository.address!,
-                                _repository.address == defaultWallet.address),
-                            nameBuilder(context, _repository, defaultWallet,
-                                _currentChestNumber),
+                            balanceBuilder(context, repository.address!,
+                                repository.address == defaultWallet.address),
+                            nameBuilder(context, repository, defaultWallet,
+                                currentChestNumber),
                           ]),
                         ]),
                       ),
                     ),
                   )),
-            Consumer<SubstrateSdk>(builder: (context, _sub, _) {
-              return _sub.nodeConnected
+            Consumer<SubstrateSdk>(builder: (context, sub, _) {
+              return sub.nodeConnected
                   ? addNewDerivation(context)
                   : const Text('');
             }),
@@ -264,11 +263,11 @@ class WalletsHome extends StatelessWidget {
             //     ))
           ]),
       // SliverToBoxAdapter(child: Spacer()),
-      SliverToBoxAdapter(child: chestOptions(context, _myWalletProvider)),
+      SliverToBoxAdapter(child: chestOptions(context, myWalletProvider)),
     ]);
   }
 
-  Widget balanceBuilder(context, String _address, bool isDefault) {
+  Widget balanceBuilder(context, String address, bool isDefault) {
     return Container(
       width: double.infinity,
       color: isDefault ? orangeC : yellowC,
@@ -276,24 +275,24 @@ class WalletsHome extends StatelessWidget {
           padding: const EdgeInsets.only(left: 5, right: 5, top: 38),
           child: balance(
               context,
-              _address,
+              address,
               15,
               isDefault ? Colors.white : Colors.black,
               isDefault ? yellowC : orangeC)),
     );
   }
 
-  Widget nameBuilder(BuildContext context, WalletData _repository,
-      WalletData defaultWallet, int _currentChestNumber) {
-    WalletOptionsProvider _walletOptions =
+  Widget nameBuilder(BuildContext context, WalletData repository,
+      WalletData defaultWallet, int currentChestNumber) {
+    WalletOptionsProvider walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
-    DuniterIndexer _duniterIndexer =
+    DuniterIndexer duniterIndexer =
         Provider.of<DuniterIndexer>(context, listen: false);
     return ListTile(
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(12))),
       // contentPadding: const EdgeInsets.only(left: 7.0),
-      tileColor: _repository.address == defaultWallet.address
+      tileColor: repository.address == defaultWallet.address
           ? orangeC
           : const Color(0xffFFD58D),
       // leading: Text('IMAGE'),
@@ -303,13 +302,13 @@ class WalletsHome extends StatelessWidget {
       title: Center(
         child: Padding(
           padding: const EdgeInsets.only(left: 5, right: 5, bottom: 35, top: 5),
-          child: _duniterIndexer.getNameByAddress(
+          child: duniterIndexer.getNameByAddress(
               context,
-              _repository.address!,
-              _repository,
+              repository.address!,
+              repository,
               20,
               true,
-              _repository.id()[1] == defaultWallet.id()[1]
+              repository.id()[1] == defaultWallet.id()[1]
                   ? const Color(0xffF9F9F1)
                   : Colors.black),
         ),
@@ -321,12 +320,12 @@ class WalletsHome extends StatelessWidget {
         //     _repository,
         //     _myWalletProvider.pinCode,
         //     pinLength);
-        _walletOptions.getAddress(_currentChestNumber, _repository.derivation!);
+        walletOptions.getAddress(currentChestNumber, repository.derivation!);
         Navigator.push(
           context,
           SmoothTransition(
             page: WalletOptions(
-              wallet: _repository,
+              wallet: repository,
             ),
           ),
         );
@@ -335,11 +334,11 @@ class WalletsHome extends StatelessWidget {
   }
 
   Widget addNewDerivation(context) {
-    MyWalletsProvider _myWalletProvider =
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
 
-    String _newDerivationName =
-        'wallet'.tr() + ' ${_myWalletProvider.listWallets.last.number! + 2}';
+    String newDerivationName =
+        '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number! + 2}';
     return Padding(
         padding: const EdgeInsets.all(16),
         child: ClipRRect(
@@ -349,12 +348,12 @@ class WalletsHome extends StatelessWidget {
                 child: InkWell(
                     key: const Key('addDerivation'),
                     onTap: () async {
-                      if (!_myWalletProvider.isNewDerivationLoading) {
+                      if (!myWalletProvider.isNewDerivationLoading) {
                         WalletData? defaultWallet =
-                            _myWalletProvider.getDefaultWallet();
-                        String? _pin;
-                        if (_myWalletProvider.pinCode == '') {
-                          _pin = await Navigator.push(
+                            myWalletProvider.getDefaultWallet();
+                        String? pin;
+                        if (myWalletProvider.pinCode == '') {
+                          pin = await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (homeContext) {
@@ -363,9 +362,9 @@ class WalletsHome extends StatelessWidget {
                             ),
                           );
                         }
-                        if (_pin != null || _myWalletProvider.pinCode != '') {
-                          await _myWalletProvider.generateNewDerivation(
-                              context, _newDerivationName);
+                        if (pin != null || myWalletProvider.pinCode != '') {
+                          await myWalletProvider.generateNewDerivation(
+                              context, newDerivationName);
                         }
                       }
                     },
@@ -374,7 +373,7 @@ class WalletsHome extends StatelessWidget {
                       height: double.infinity,
                       decoration: BoxDecoration(color: floattingYellow),
                       child: Center(
-                          child: _myWalletProvider.isNewDerivationLoading
+                          child: myWalletProvider.isNewDerivationLoading
                               ? SizedBox(
                                   height: 60,
                                   width: 60,
@@ -435,7 +434,7 @@ class ClipOvalShadow extends StatelessWidget {
         clipper: clipper,
         shadow: shadow,
       ),
-      child: ClipRect(child: child, clipper: clipper),
+      child: ClipRect(clipper: clipper, child: child),
     );
   }
 }

@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -23,9 +25,9 @@ class ChestOptions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    ChestProvider _chestProvider =
+    ChestProvider chestProvider =
         Provider.of<ChestProvider>(context, listen: false);
-    HomeProvider _homeProvider =
+    HomeProvider homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
 
     ChestData currentChest = chestBox.get(configBox.get('currentChest'))!;
@@ -49,7 +51,7 @@ class ChestOptions extends StatelessWidget {
             height: 22,
             child: Text(currentChest.name!),
           )),
-      bottomNavigationBar: _homeProvider.bottomAppBar(context),
+      bottomNavigationBar: homeProvider.bottomAppBar(context),
       body: Stack(children: [
         Builder(
           builder: (ctx) => SafeArea(
@@ -58,12 +60,12 @@ class ChestOptions extends StatelessWidget {
               InkWell(
                 key: const Key('showSeed'),
                 onTap: () async {
-                  MyWalletsProvider _myWalletProvider =
+                  MyWalletsProvider myWalletProvider =
                       Provider.of<MyWalletsProvider>(context, listen: false);
                   WalletData? defaultWallet =
-                      _myWalletProvider.getDefaultWallet();
-                  String? _pin;
-                  _pin = await Navigator.push(
+                      myWalletProvider.getDefaultWallet();
+                  String? pin;
+                  pin = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (homeContext) {
@@ -72,7 +74,7 @@ class ChestOptions extends StatelessWidget {
                     ),
                   );
 
-                  if (_pin != null) {
+                  if (pin != null) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) {
@@ -104,10 +106,10 @@ class ChestOptions extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 10 * ratio),
-              Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+              Consumer<SubstrateSdk>(builder: (context, sub, _) {
                 return InkWell(
                   key: const Key('changePin'),
-                  onTap: _sub.nodeConnected
+                  onTap: sub.nodeConnected
                       ? () async {
                           // await _chestProvider.changePin(context, cesiumWallet);
                           String? pinResult = await Navigator.push(
@@ -140,7 +142,7 @@ class ChestOptions extends StatelessWidget {
                           'changePassword'.tr(),
                           style: TextStyle(
                               fontSize: 20,
-                              color: _sub.nodeConnected
+                              color: sub.nodeConnected
                                   ? Colors.black
                                   : Colors.grey[500]),
                         ),
@@ -148,10 +150,10 @@ class ChestOptions extends StatelessWidget {
                 );
               }),
               SizedBox(height: 10 * ratio),
-              Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+              Consumer<SubstrateSdk>(builder: (context, sub, _) {
                 return InkWell(
                   key: const Key('createRootDerivation'),
-                  onTap: _sub.nodeConnected
+                  onTap: sub.nodeConnected
                       ? () async {
                           await Navigator.push(
                             context,
@@ -176,7 +178,7 @@ class ChestOptions extends StatelessWidget {
                         'createDerivation'.tr(),
                         style: TextStyle(
                             fontSize: 20,
-                            color: _sub.nodeConnected
+                            color: sub.nodeConnected
                                 ? Colors.black
                                 : Colors.grey[500]),
                       ),
@@ -188,7 +190,7 @@ class ChestOptions extends StatelessWidget {
               InkWell(
                 key: const Key('deleteChest'),
                 onTap: () async {
-                  await _chestProvider.deleteChest(context, currentChest);
+                  await chestProvider.deleteChest(context, currentChest);
                 },
                 child: SizedBox(
                   height: 50,

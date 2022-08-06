@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -26,7 +28,7 @@ class _CustomDerivationState extends State<CustomDerivation> {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    MyWalletsProvider _myWalletProvider =
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
     final derivationList = <String>[
@@ -34,11 +36,11 @@ class _CustomDerivationState extends State<CustomDerivation> {
       for (var i = 0; i < 51; i += 1) i.toString()
     ];
 
-    final listWallets = _myWalletProvider.readAllWallets();
+    final listWallets = myWalletProvider.readAllWallets();
 
-    for (WalletData _wallet in listWallets) {
-      derivationList.remove(_wallet.derivation.toString());
-      if (_wallet.derivation == -1) {
+    for (WalletData wallet in listWallets) {
+      derivationList.remove(wallet.derivation.toString());
+      if (wallet.derivation == -1) {
         derivationList.remove('root');
       }
     }
@@ -111,10 +113,10 @@ class _CustomDerivationState extends State<CustomDerivation> {
                 ),
                 onPressed: () async {
                   WalletData? defaultWallet =
-                      _myWalletProvider.getDefaultWallet();
-                  String? _pin;
-                  if (_myWalletProvider.pinCode == '') {
-                    _pin = await Navigator.push(
+                      myWalletProvider.getDefaultWallet();
+                  String? pin;
+                  if (myWalletProvider.pinCode == '') {
+                    pin = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (homeContext) {
@@ -124,16 +126,16 @@ class _CustomDerivationState extends State<CustomDerivation> {
                     );
                   }
 
-                  if (_pin != null || _myWalletProvider.pinCode != '') {
-                    String _newDerivationName = 'wallet'.tr() +
-                        ' ${_myWalletProvider.listWallets.last.number! + 2}';
+                  if (pin != null || myWalletProvider.pinCode != '') {
+                    String newDerivationName =
+                        '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number! + 2}';
                     if (dropdownValue == 'root') {
-                      await _myWalletProvider.generateRootWallet(
+                      await myWalletProvider.generateRootWallet(
                           context, 'Portefeuille racine');
                     } else {
-                      await _myWalletProvider.generateNewDerivation(
+                      await myWalletProvider.generateNewDerivation(
                         context,
-                        _newDerivationName,
+                        newDerivationName,
                         int.parse(dropdownValue!),
                       );
                     }

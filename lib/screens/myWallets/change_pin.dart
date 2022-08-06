@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:durt/durt.dart';
@@ -28,8 +30,8 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
-    MyWalletsProvider _myWalletProvider =
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
     return WillPopScope(
@@ -106,11 +108,11 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                   ),
                   onPressed: () async {
                     WalletData defaultWallet =
-                        _myWalletProvider.getDefaultWallet();
+                        myWalletProvider.getDefaultWallet();
 
-                    String? _pin;
-                    if (_myWalletProvider.pinCode == '') {
-                      _pin = await Navigator.push(
+                    String? pin;
+                    if (myWalletProvider.pinCode == '') {
+                      pin = await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (homeContext) {
@@ -119,8 +121,8 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                         ),
                       );
                     }
-                    if (_pin != null || _myWalletProvider.pinCode != '') {
-                      await _sub.changePassword(context, defaultWallet.address!,
+                    if (pin != null || myWalletProvider.pinCode != '') {
+                      await sub.changePassword(context, defaultWallet.address!,
                           walletProvider.pinCode, newPin.text);
                       walletProvider.pinCode = newPin.text;
                       newPin.text = '';

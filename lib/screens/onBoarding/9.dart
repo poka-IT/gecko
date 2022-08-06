@@ -17,15 +17,15 @@ class OnboardingStepNine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    GenerateWalletsProvider _generateWalletProvider =
+    GenerateWalletsProvider generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
     // MyWalletsProvider myWalletProvider =
     //     Provider.of<MyWalletsProvider>(context);
     CommonElements common = CommonElements();
 
-    _generateWalletProvider.pin.text = debugPin // kDebugMode &&
+    generateWalletProvider.pin.text = debugPin // kDebugMode &&
         ? 'AAAAA'
-        : _generateWalletProvider.changePinCode(reload: false).toUpperCase();
+        : generateWalletProvider.changePinCode(reload: false).toUpperCase();
 
     return Scaffold(
         backgroundColor: backgroundColor,
@@ -53,7 +53,7 @@ class OnboardingStepNine extends StatelessWidget {
                 TextField(
                     key: const Key('generatedPin'),
                     enabled: false,
-                    controller: _generateWalletProvider.pin,
+                    controller: generateWalletProvider.pin,
                     maxLines: 1,
                     textAlign: TextAlign.center,
                     decoration: const InputDecoration(),
@@ -66,7 +66,7 @@ class OnboardingStepNine extends StatelessWidget {
                   icon: const Icon(Icons.replay),
                   color: orangeC,
                   onPressed: () {
-                    _generateWalletProvider.changePinCode(reload: true);
+                    generateWalletProvider.changePinCode(reload: true);
                   },
                 ),
               ],
@@ -85,7 +85,7 @@ class OnboardingStepNine extends StatelessWidget {
                             onPrimary: Colors.black, // foreground
                           ),
                           onPressed: () {
-                            _generateWalletProvider.changePinCode(reload: true);
+                            generateWalletProvider.changePinCode(reload: true);
                           },
                           child: Text("chooseAnotherPassword".tr(),
                               style: TextStyle(

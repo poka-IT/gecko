@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
@@ -32,14 +30,14 @@ class UnlockingWallet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    WalletOptionsProvider _walletOptions =
+    WalletOptionsProvider walletOptions =
         Provider.of<WalletOptionsProvider>(context);
     // final double statusBarHeight = MediaQuery.of(context).padding.top;
 
     currentChestNumber = configBox.get('currentChest');
     currentChest = chestBox.get(currentChestNumber)!;
 
-    int _pinLenght = _walletOptions.getPinLenght(wallet!.number);
+    int pinLenght = walletOptions.getPinLenght(wallet!.number);
     errorController = StreamController<ErrorAnimationType>();
 
     return Scaffold(
@@ -101,12 +99,12 @@ class UnlockingWallet extends StatelessWidget {
                               fontWeight: FontWeight.w400),
                         )),
                     SizedBox(height: 40 * ratio),
-                    pinForm(context, _pinLenght),
+                    pinForm(context, pinLenght),
                     SizedBox(height: 3 * ratio),
                     if (canUnlock)
                       InkWell(
                         onTap: () {
-                          _walletOptions.changePinCacheChoice();
+                          walletOptions.changePinCacheChoice();
                         },
                         child: Row(children: [
                           const SizedBox(height: 30),
@@ -157,20 +155,20 @@ class UnlockingWallet extends StatelessWidget {
         ));
   }
 
-  Widget pinForm(context, _pinLenght) {
+  Widget pinForm(context, pinLenght) {
     // var _walletPin = '';
 // ignore: close_sinks
     StreamController<ErrorAnimationType> errorController =
         StreamController<ErrorAnimationType>();
-    TextEditingController _enterPin = TextEditingController();
-    WalletOptionsProvider _walletOptions =
+    TextEditingController enterPin = TextEditingController();
+    WalletOptionsProvider walletOptions =
         Provider.of<WalletOptionsProvider>(context);
-    MyWalletsProvider _myWalletProvider =
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
     FocusNode pinFocus = FocusNode();
 
-    WalletData defaultWallet = _myWalletProvider.getDefaultWallet();
+    WalletData defaultWallet = myWalletProvider.getDefaultWallet();
 
     // defaultWallet.address = null;
     if (defaultWallet.address == null) {
@@ -195,14 +193,13 @@ class UnlockingWallet extends StatelessWidget {
               color: Colors.green.shade600,
               fontWeight: FontWeight.bold,
             ),
-            length: _pinLenght,
+            length: pinLenght,
             obscureText: true,
             obscuringCharacter: '*',
             animationType: AnimationType.fade,
             validator: (v) {
-              if (v!.length < _pinLenght) {
-                return "yourPasswordLengthIsX"
-                    .tr(args: [_pinLenght.toString()]);
+              if (v!.length < pinLenght) {
+                return "yourPasswordLengthIsX".tr(args: [pinLenght.toString()]);
               } else {
                 return null;
               }
@@ -222,7 +219,7 @@ class UnlockingWallet extends StatelessWidget {
             backgroundColor: const Color(0xffF9F9F1),
             enableActiveFill: false,
             errorAnimationController: errorController,
-            controller: _enterPin,
+            controller: enterPin,
             keyboardType: TextInputType.visiblePassword,
             boxShadows: const [
               BoxShadow(
@@ -231,23 +228,23 @@ class UnlockingWallet extends StatelessWidget {
                 blurRadius: 10,
               )
             ],
-            onCompleted: (_pin) async {
-              _myWalletProvider.pinCode = _pin.toUpperCase();
-              final isValid = await _sub.checkPassword(
-                  defaultWallet.address!, _pin.toUpperCase());
+            onCompleted: (pin) async {
+              myWalletProvider.pinCode = pin.toUpperCase();
+              final isValid = await sub.checkPassword(
+                  defaultWallet.address!, pin.toUpperCase());
 
               if (!isValid) {
                 await Future.delayed(const Duration(milliseconds: 50));
                 errorController.add(ErrorAnimationType
                     .shake); // Triggering error shake animation
                 pinColor = Colors.red[600];
-                _myWalletProvider.pinCode = _myWalletProvider.mnemonic = '';
-                _walletOptions.reloadBuild();
+                myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
+                walletOptions.reloadBuild();
                 pinFocus.requestFocus();
               } else {
                 pinColor = Colors.green[400];
-                _myWalletProvider.resetPinCode();
-                Navigator.pop(context, _pin.toUpperCase());
+                myWalletProvider.resetPinCode();
+                Navigator.pop(context, pin.toUpperCase());
               }
             },
             onChanged: (value) {

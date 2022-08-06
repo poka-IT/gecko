@@ -26,30 +26,30 @@ class WalletOptions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    WalletOptionsProvider _walletOptions =
+    WalletOptionsProvider walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
-    WalletsProfilesProvider _historyProvider =
+    WalletsProfilesProvider historyProvider =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
-    MyWalletsProvider _myWalletProvider =
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
-    HomeProvider _homeProvider =
+    HomeProvider homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
-    DuniterIndexer _duniterIndexer =
+    DuniterIndexer duniterIndexer =
         Provider.of<DuniterIndexer>(context, listen: false);
 
-    log.d(_walletOptions.address.text);
+    log.d(walletOptions.address.text);
 
-    final int _currentChest = _myWalletProvider.getCurrentChest();
+    final int currentChest = myWalletProvider.getCurrentChest();
 
     // final currentWallet = _myWalletProvider.getDefaultWallet();
     // log.d(_walletOptions.getAddress(_currentChest, 3));
-    log.d("Wallet options: $_currentChest:${wallet.derivation}");
+    log.d("Wallet options: $currentChest:${wallet.derivation}");
 
     return WillPopScope(
       onWillPop: () {
-        _walletOptions.isEditing = false;
-        _walletOptions.isBalanceBlur = false;
-        _myWalletProvider.rebuildWidget();
+        walletOptions.isEditing = false;
+        walletOptions.isBalanceBlur = false;
+        myWalletProvider.rebuildWidget();
         Navigator.pop(context);
         return Future<bool>.value(true);
       },
@@ -62,9 +62,9 @@ class WalletOptions extends StatelessWidget {
           leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.black),
               onPressed: () {
-                _walletOptions.isEditing = false;
-                _walletOptions.isBalanceBlur = false;
-                _myWalletProvider.rebuildWidget();
+                walletOptions.isEditing = false;
+                walletOptions.isBalanceBlur = false;
+                myWalletProvider.rebuildWidget();
                 Navigator.pop(context);
               }),
           title: SizedBox(
@@ -81,20 +81,20 @@ class WalletOptions extends StatelessWidget {
                   context,
                   MaterialPageRoute(builder: (context) {
                     return QrCodeFullscreen(
-                      _walletOptions.address.text,
+                      walletOptions.address.text,
                     );
                   }),
                 );
               },
               child: QrImageWidget(
-                data: _walletOptions.address.text,
+                data: walletOptions.address.text,
                 version: QrVersions.auto,
                 size: 80,
               ),
             ),
           ],
         ),
-        bottomNavigationBar: _homeProvider.bottomAppBar(context),
+        bottomNavigationBar: homeProvider.bottomAppBar(context),
         body: Stack(children: [
           Builder(
             builder: (ctx) => SafeArea(
@@ -124,7 +124,7 @@ class WalletOptions extends StatelessWidget {
                           Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: <Widget>[
-                                _duniterIndexer.getNameByAddress(
+                                duniterIndexer.getNameByAddress(
                                     context,
                                     walletProvider.address.text,
                                     wallet,
@@ -143,8 +143,8 @@ class WalletOptions extends StatelessWidget {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
                                     children: [
-                                      _walletOptions.idtyStatus(
-                                          context, _walletOptions.address.text,
+                                      walletOptions.idtyStatus(
+                                          context, walletOptions.address.text,
                                           isOwner: true, color: orangeC),
                                       getCerts(context,
                                           walletProvider.address.text, 15),
@@ -184,34 +184,34 @@ class WalletOptions extends StatelessWidget {
                               pubkeyWidget(walletProvider, ctx),
                               SizedBox(height: 10 * ratio),
                               activityWidget(
-                                  context, _historyProvider, walletProvider),
+                                  context, historyProvider, walletProvider),
                               SizedBox(height: 12 * ratio),
                               setDefaultWalletWidget(
                                   context,
                                   walletProvider,
-                                  _myWalletProvider,
-                                  _walletOptions,
-                                  _currentChest),
+                                  myWalletProvider,
+                                  walletOptions,
+                                  currentChest),
                               SizedBox(height: 17 * ratio),
                               // walletProvider.isMember(context, _walletOptions.address.text)
                               FutureBuilder(
                                   future: walletProvider.isMember(
-                                      context, _walletOptions.address.text),
+                                      context, walletOptions.address.text),
                                   builder: (BuildContext context,
-                                      AsyncSnapshot<bool> _isMember) {
-                                    if (_isMember.connectionState !=
+                                      AsyncSnapshot<bool> isMember) {
+                                    if (isMember.connectionState !=
                                             ConnectionState.done ||
-                                        _isMember.hasError) {
+                                        isMember.hasError) {
                                       return const Text('');
                                     }
                                     return Column(children: [
                                       if (!walletProvider.isDefaultWallet &&
-                                          !_isMember.data!)
+                                          !isMember.data!)
                                         deleteWallet(context, walletProvider,
-                                            _currentChest)
+                                            currentChest)
                                       else
                                         const SizedBox(),
-                                      if (_isMember.data!)
+                                      if (isMember.data!)
                                         manageMemberStatus(context)
                                     ]);
                                   }),
@@ -234,9 +234,9 @@ class WalletOptions extends StatelessWidget {
       children: <Widget>[
         InkWell(
           onTap: () async {
-            final _newPath = await (walletProvider.changeAvatar());
-            if (_newPath != '') {
-              wallet.imageCustomPath = _newPath;
+            final newPath = await (walletProvider.changeAvatar());
+            if (newPath != '') {
+              wallet.imageCustomPath = newPath;
               walletBox.put(wallet.key, wallet);
             }
             walletProvider.reloadBuild();
@@ -339,7 +339,7 @@ class WalletOptions extends StatelessWidget {
 
   Widget activityWidget(
       BuildContext context,
-      WalletsProfilesProvider _historyProvider,
+      WalletsProfilesProvider historyProvider,
       WalletOptionsProvider walletProvider) {
     return InkWell(
       key: const Key('displayActivity'),
@@ -380,7 +380,7 @@ class WalletOptions extends StatelessWidget {
   }
 
   Widget manageMemberStatus(BuildContext context) {
-    WalletOptionsProvider _walletOptions =
+    WalletOptionsProvider walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
     return InkWell(
       key: const Key('manageStatus'),
@@ -389,7 +389,7 @@ class WalletOptions extends StatelessWidget {
           context,
           MaterialPageRoute(builder: (context) {
             return ManageMembership(
-              address: _walletOptions.address.text,
+              address: walletOptions.address.text,
             );
           }),
         );
@@ -412,18 +412,17 @@ class WalletOptions extends StatelessWidget {
   Widget setDefaultWalletWidget(
       BuildContext context,
       WalletOptionsProvider walletProvider,
-      MyWalletsProvider _myWalletProvider,
-      WalletOptionsProvider _walletOptions,
-      int _currentChest) {
-    return Consumer<MyWalletsProvider>(
-        builder: (context, _myWalletProvider, _) {
-      WalletData defaultWallet = _myWalletProvider.getDefaultWallet();
-      _walletOptions.isDefaultWallet = (defaultWallet.number == wallet.id()[1]);
+      MyWalletsProvider myWalletProvider,
+      WalletOptionsProvider walletOptions,
+      int currentChest) {
+    return Consumer<MyWalletsProvider>(builder: (context, myWalletProvider, _) {
+      WalletData defaultWallet = myWalletProvider.getDefaultWallet();
+      walletOptions.isDefaultWallet = (defaultWallet.number == wallet.id()[1]);
       return InkWell(
         key: const Key('setDefaultWallet'),
         onTap: !walletProvider.isDefaultWallet
             ? () async {
-                await setDefaultWallet(context, _currentChest);
+                await setDefaultWallet(context, currentChest);
               }
             : null,
         child: SizedBox(
@@ -454,50 +453,50 @@ class WalletOptions extends StatelessWidget {
     });
   }
 
-  Future setDefaultWallet(BuildContext context, int _currentChest) async {
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
-    MyWalletsProvider _myWalletProvider =
+  Future setDefaultWallet(BuildContext context, int currentChest) async {
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
     // WalletData defaultWallet = _myWalletProvider.getDefaultWallet()!;
     // defaultWallet = wallet;
-    await _sub.setCurrentWallet(wallet);
-    _myWalletProvider.readAllWallets(_currentChest);
-    _myWalletProvider.rebuildWidget();
+    await sub.setCurrentWallet(wallet);
+    myWalletProvider.readAllWallets(currentChest);
+    myWalletProvider.rebuildWidget();
   }
 
   Widget deleteWallet(BuildContext context,
-      WalletOptionsProvider walletProvider, int _currentChest) {
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
-    MyWalletsProvider _myWalletProvider =
+      WalletOptionsProvider walletProvider, int currentChest) {
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
-    final _defaultWallet = _myWalletProvider.getDefaultWallet();
+    final defaultWallet = myWalletProvider.getDefaultWallet();
     final bool isDefaultWallet =
-        walletProvider.address.text == _defaultWallet.address;
+        walletProvider.address.text == defaultWallet.address;
     // return Consumer<MyWalletsProvider>(
     //     builder: (context, _myWalletProvider, _) {
     return FutureBuilder(
-        future: _sub.hasAccountConsumers(wallet.address!),
-        builder: (BuildContext context, AsyncSnapshot<bool> _hasConsumers) {
-          if (_hasConsumers.connectionState != ConnectionState.done ||
-              _hasConsumers.hasError) {
+        future: sub.hasAccountConsumers(wallet.address!),
+        builder: (BuildContext context, AsyncSnapshot<bool> hasConsumers) {
+          if (hasConsumers.connectionState != ConnectionState.done ||
+              hasConsumers.hasError) {
             return const Text('');
           }
-          final double _balance =
+          final double balance =
               balanceCache[walletProvider.address.text] ?? -1;
           final bool canDelete = !isDefaultWallet &&
-              !_hasConsumers.data! &&
-              (_balance > 2 || _balance == 0);
+              !hasConsumers.data! &&
+              (balance > 2 || balance == 0);
           return InkWell(
             key: const Key('deleteWallet'),
             onTap: canDelete
                 ? () async {
                     await walletProvider.deleteWallet(context, wallet);
                     WidgetsBinding.instance.addPostFrameCallback((_) {
-                      _myWalletProvider.listWallets =
-                          _myWalletProvider.readAllWallets(_currentChest);
-                      _myWalletProvider.rebuildWidget();
+                      myWalletProvider.listWallets =
+                          myWalletProvider.readAllWallets(currentChest);
+                      myWalletProvider.rebuildWidget();
                     });
                   }
                 : null,

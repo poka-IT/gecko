@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -46,7 +44,7 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<void> connectNode(BuildContext ctx) async {
-    HomeProvider _homeProvider = Provider.of<HomeProvider>(ctx, listen: false);
+    HomeProvider homeProvider = Provider.of<HomeProvider>(ctx, listen: false);
 
     // var connectivityResult = await (Connectivity().checkConnectivity());
     // if (connectivityResult == ConnectivityResult.mobile ||
@@ -54,7 +52,7 @@ class SubstrateSdk with ChangeNotifier {
     //   _homeProvider.changeMessage("Vous n'êtes pas connecté à internet", 0);
     //   return;
     // }
-    _homeProvider.changeMessage("connectionPending".tr(), 0);
+    homeProvider.changeMessage("connectionPending".tr(), 0);
 
     // configBox.delete('customEndpoint');
     final List<NetworkParams> listEndpoints =
@@ -108,7 +106,7 @@ class SubstrateSdk with ChangeNotifier {
         // log.d(sdk.api.connectedNode?.endpoint);
         if (sdk.api.connectedNode?.endpoint == null) {
           nodeConnected = false;
-          _homeProvider.changeMessage("networkLost".tr(), 0);
+          homeProvider.changeMessage("networkLost".tr(), 0);
         } else {
           nodeConnected = true;
         }
@@ -117,7 +115,7 @@ class SubstrateSdk with ChangeNotifier {
 
       // currencyName = await getCurencyName();
       notifyListeners();
-      _homeProvider.changeMessage(
+      homeProvider.changeMessage(
           "wellConnectedToNode"
               .tr(args: [getConnectedEndpoint()!.split('/')[2]]),
           5);
@@ -126,7 +124,7 @@ class SubstrateSdk with ChangeNotifier {
       nodeConnected = false;
       debugConnection = res.toString();
       notifyListeners();
-      _homeProvider.changeMessage("noDuniterEndointAvailable".tr(), 0);
+      homeProvider.changeMessage("noDuniterEndointAvailable".tr(), 0);
       // snackNode(ctx, false);
     }
 
@@ -136,10 +134,10 @@ class SubstrateSdk with ChangeNotifier {
   List<NetworkParams> getDuniterBootstrap() {
     List<NetworkParams> node = [];
 
-    for (String _endpoint in configBox.get('endpoint')) {
+    for (String endpoint in configBox.get('endpoint')) {
       final n = NetworkParams();
       n.name = currencyName;
-      n.endpoint = _endpoint;
+      n.endpoint = endpoint;
       n.ss58 = ss58;
       node.add(n);
     }
@@ -199,7 +197,7 @@ class SubstrateSdk with ChangeNotifier {
       notifyListeners();
     });
     if (json == null) return '';
-    print(json);
+    log.d(json);
     try {
       await sdk.api.keyring.addAccount(
         keyring,
@@ -209,7 +207,7 @@ class SubstrateSdk with ChangeNotifier {
       );
       // Clipboard.setData(ClipboardData(text: jsonEncode(acc.toJson())));
     } catch (e) {
-      print(e);
+      log.e(e);
       importIsLoading = false;
       notifyListeners();
     }
@@ -247,11 +245,11 @@ class SubstrateSdk with ChangeNotifier {
         .evalJavascript('api.query.identity.identityIndexOf("$address")');
     // log.d('u32: ' + idtyIndex.toString());
 
-    final _certsReceiver = await sdk.webView!
+    final certsReceiver = await sdk.webView!
             .evalJavascript('api.query.cert.storageIdtyCertMeta($idtyIndex)') ??
         [];
 
-    return [_certsReceiver['receivedCount'], _certsReceiver['issuedCount']];
+    return [certsReceiver['receivedCount'], certsReceiver['issuedCount']];
   }
 
   Future<Map> getCertData(String from, String to) async {
@@ -261,22 +259,22 @@ class SubstrateSdk with ChangeNotifier {
     final idtyIndexTo = await sdk.webView!
         .evalJavascript('api.query.identity.identityIndexOf("$to")');
 
-    final _certData = await sdk.webView!.evalJavascript(
+    final certData = await sdk.webView!.evalJavascript(
             'api.query.cert.storageCertsByIssuer($idtyIndexFrom, $idtyIndexTo)') ??
         '';
 
-    if (_certData == '') return {};
+    if (certData == '') return {};
 
     // log.d(_certData);
-    return _certData;
+    return certData;
   }
 
   Future<bool> hasAccountConsumers(String address) async {
-    final _accountInfo = await sdk.webView!
+    final accountInfo = await sdk.webView!
         .evalJavascript('api.query.system.account("$address")');
-    final _consumers = _accountInfo['consumers'];
+    final consumers = accountInfo['consumers'];
     // log.d('Consumers: $_consumers');
-    return _consumers == 0 ? false : true;
+    return consumers == 0 ? false : true;
   }
 
   Future<double> getBalance(String address, {bool isUd = false}) async {
@@ -295,8 +293,8 @@ class SubstrateSdk with ChangeNotifier {
   Future<double> subscribeBalance(String address, {bool isUd = false}) async {
     double balance = 0.0;
     if (nodeConnected) {
-      await sdk.api.account.subscribeBalance(address, (_balance) {
-        balance = int.parse(_balance.freeBalance) / 100;
+      await sdk.api.account.subscribeBalance(address, (balanceData) {
+        balance = int.parse(balanceData.freeBalance) / 100;
         notifyListeners();
       });
     }
@@ -316,21 +314,21 @@ class SubstrateSdk with ChangeNotifier {
     return await sdk.api.keyring.checkPassword(account, pass);
   }
 
-  Future<String> getSeed(String address, String _pin) async {
+  Future<String> getSeed(String address, String pin) async {
     final account = getKeypair(address);
     keyring.setCurrent(account);
 
-    final _seed = await sdk.api.keyring.getDecryptedSeed(keyring, _pin);
+    final seed = await sdk.api.keyring.getDecryptedSeed(keyring, pin);
 
-    String _seedText;
-    if (_seed == null) {
-      _seedText = '';
+    String seedText;
+    if (seed == null) {
+      seedText = '';
     } else {
-      _seedText = _seed.seed!.split('//')[0];
+      seedText = seed.seed!.split('//')[0];
     }
 
-    log.d(_seedText);
-    return _seedText;
+    log.d(seedText);
+    return seedText;
   }
 
   int getDerivationNumber(String address) {
@@ -342,10 +340,10 @@ class SubstrateSdk with ChangeNotifier {
   Future<KeyPairData?> changePassword(BuildContext context, String address,
       String passOld, String? passNew) async {
     final account = getKeypair(address);
-    MyWalletsProvider _myWalletProvider =
+    MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     keyring.setCurrent(account);
-    _myWalletProvider.resetPinCode();
+    myWalletProvider.resetPinCode();
 
     return await sdk.api.keyring.changePassword(keyring, passOld, passNew);
   }
@@ -372,14 +370,14 @@ class SubstrateSdk with ChangeNotifier {
     return gen.mnemonic!;
   }
 
-  Future<String> setCurrentWallet(WalletData _wallet) async {
+  Future<String> setCurrentWallet(WalletData wallet) async {
     final currentChestNumber = configBox.get('currentChest');
-    ChestData _newChestData = chestBox.get(currentChestNumber)!;
-    _newChestData.defaultWallet = _wallet.number;
-    await chestBox.put(currentChestNumber, _newChestData);
+    ChestData newChestData = chestBox.get(currentChestNumber)!;
+    newChestData.defaultWallet = wallet.number;
+    await chestBox.put(currentChestNumber, newChestData);
 
     try {
-      final acc = getKeypair(_wallet.address!);
+      final acc = getKeypair(wallet.address!);
       keyring.setCurrent(acc);
       return acc.address!;
     } catch (e) {
@@ -426,7 +424,7 @@ class SubstrateSdk with ChangeNotifier {
         [destAddress, amount == -1 ? false : amountUnit],
         password,
         onStatusChange: (status) {
-          log.d('Transaction status: ' + status);
+          log.d('Transaction status: $status');
           transactionStatus = status;
           notifyListeners();
         },
@@ -457,16 +455,16 @@ class SubstrateSdk with ChangeNotifier {
     transactionStatus = '';
 
     // setCurrentWallet(fromAddress);
-    log.d('me: ' + fromAddress);
-    log.d('to: ' + toAddress);
+    log.d('me: $fromAddress');
+    log.d('to: $toAddress');
 
-    final _myIdtyStatus = await idtyStatus(fromAddress);
-    final _toIdtyStatus = await idtyStatus(toAddress);
+    final myIdtyStatus = await idtyStatus(fromAddress);
+    final toIdtyStatus = await idtyStatus(toAddress);
 
-    log.d(_myIdtyStatus);
-    log.d(_toIdtyStatus);
+    log.d(myIdtyStatus);
+    log.d(toIdtyStatus);
 
-    if (_myIdtyStatus != 'Validated') {
+    if (myIdtyStatus != 'Validated') {
       transactionStatus = 'notMember';
       notifyListeners();
       return 'notMember';
@@ -478,14 +476,14 @@ class SubstrateSdk with ChangeNotifier {
     );
     TxInfoData txInfo;
 
-    if (_toIdtyStatus == 'noid') {
+    if (toIdtyStatus == 'noid') {
       txInfo = TxInfoData(
         'identity',
         'createIdentity',
         sender,
       );
-    } else if (_toIdtyStatus == 'Validated' ||
-        _toIdtyStatus == 'ConfirmedByOwner') {
+    } else if (toIdtyStatus == 'Validated' ||
+        toIdtyStatus == 'ConfirmedByOwner') {
       txInfo = TxInfoData(
         'cert',
         'addCert',
@@ -497,7 +495,7 @@ class SubstrateSdk with ChangeNotifier {
       return 'cantBeCert';
     }
 
-    log.d('Cert action: ' + txInfo.call!);
+    log.d('Cert action: ${txInfo.call!}');
 
     try {
       final hash = await sdk.api.tx
@@ -543,9 +541,9 @@ class SubstrateSdk with ChangeNotifier {
         .evalJavascript('api.query.identity.identities($idtyIndex)');
 
     if (idtyStatus != null) {
-      final String _status = idtyStatus['status'];
+      final String status = idtyStatus['status'];
       // log.d('Status $address: $_status');
-      return (_status);
+      return (status);
     } else {
       return 'expired';
     }
@@ -555,7 +553,7 @@ class SubstrateSdk with ChangeNotifier {
       String fromAddress, String name, String password) async {
     // Confirm identity
     // setCurrentWallet(fromAddress);
-    log.d('me: ' + keyring.current.address!);
+    log.d('me: ${keyring.current.address!}');
 
     final sender = TxSenderData(
       keyring.current.address,
@@ -574,7 +572,7 @@ class SubstrateSdk with ChangeNotifier {
         [name],
         password,
         onStatusChange: (status) {
-          log.d('Transaction status: ' + status);
+          log.d('Transaction status: $status');
           transactionStatus = status;
           notifyListeners();
         },
@@ -601,7 +599,7 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
-  Future<bool> isMember(String address) async {
+  Future<bool> isMemberGet(String address) async {
     return await idtyStatus(address) == 'Validated';
   }
 
@@ -609,13 +607,13 @@ class SubstrateSdk with ChangeNotifier {
     // TODOO: Continue digging memberAddress detection
     String memberAddress = '';
     walletBox.toMap().forEach((key, value) async {
-      final bool _isMember = await isMember(value.address!);
-      log.d(_isMember);
-      if (_isMember) {
+      final bool isMember = await isMemberGet(value.address!);
+      log.d(isMember);
+      if (isMember) {
         final currentChestNumber = configBox.get('currentChest');
-        ChestData _newChestData = chestBox.get(currentChestNumber)!;
-        _newChestData.memberWallet = value.number;
-        await chestBox.put(currentChestNumber, _newChestData);
+        ChestData newChestData = chestBox.get(currentChestNumber)!;
+        newChestData.memberWallet = value.number;
+        await chestBox.put(currentChestNumber, newChestData);
         memberAddress = value.address!;
         return;
       }
@@ -625,39 +623,39 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<Map<String, int>> certState(String from, String to) async {
-    Map<String, int> _result = {};
-    if (from != to && await isMember(from)) {
-      final _certData = await getCertData(from, to);
-      final _certMeta = await getCertMeta(from);
-      final int _removableOn = _certData['removableOn'] ?? 0;
-      final int _nextIssuableOn = _certMeta['nextIssuableOn'] ?? 0;
-      final certRemovableDuration = (_removableOn - blocNumber) * 6;
+    Map<String, int> result = {};
+    if (from != to && await isMemberGet(from)) {
+      final certData = await getCertData(from, to);
+      final certMeta = await getCertMeta(from);
+      final int removableOn = certData['removableOn'] ?? 0;
+      final int nextIssuableOn = certMeta['nextIssuableOn'] ?? 0;
+      final certRemovableDuration = (removableOn - blocNumber) * 6;
       const int renewDelay = 2 * 30 * 24 * 3600; // 2 months
 
       if (certRemovableDuration >= renewDelay) {
         final certRenewDuration = certRemovableDuration - renewDelay;
-        _result.putIfAbsent('certRenewable', () => certRenewDuration);
-      } else if (_nextIssuableOn > blocNumber) {
-        final certDelayDuration = (_nextIssuableOn - blocNumber) * 6;
-        _result.putIfAbsent('certDelay', () => certDelayDuration);
+        result.putIfAbsent('certRenewable', () => certRenewDuration);
+      } else if (nextIssuableOn > blocNumber) {
+        final certDelayDuration = (nextIssuableOn - blocNumber) * 6;
+        result.putIfAbsent('certDelay', () => certDelayDuration);
       } else {
-        _result.putIfAbsent('canCert', () => 0);
+        result.putIfAbsent('canCert', () => 0);
       }
     }
-    return _result;
+    return result;
   }
 
   Future<Map> getCertMeta(String address) async {
     var idtyIndex = await sdk.webView!
         .evalJavascript('api.query.identity.identityIndexOf("$address")');
 
-    final _certMeta = await sdk.webView!
+    final certMeta = await sdk.webView!
             .evalJavascript('api.query.cert.storageIdtyCertMeta($idtyIndex)') ??
         '';
     // if (_certMeta['nextIssuableOn'] != 0) return {};
 
     // log.d(_certMeta);
-    return _certMeta;
+    return certMeta;
   }
 
   Future revokeIdentity(String address, String password) async {
@@ -767,19 +765,19 @@ class AddressInfo {
 }
 
 void snackNode(BuildContext context, bool isConnected) {
-  String _message;
+  String message;
   if (!isConnected) {
-    _message = "noDuniterNodeAvailableTryLater".tr() +
-        ":\n${configBox.get('endpoint').first}";
+    message =
+        "${"noDuniterNodeAvailableTryLater".tr()}:\n${configBox.get('endpoint').first}";
   } else {
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    _message = "youAreConnectedToNode".tr() +
-        "\n${_sub.getConnectedEndpoint()!.split('//')[1]}";
+    message =
+        "${"youAreConnectedToNode".tr()}\n${sub.getConnectedEndpoint()!.split('//')[1]}";
   }
   final snackBar = SnackBar(
       padding: const EdgeInsets.all(20),
-      content: Text(_message, style: const TextStyle(fontSize: 16)),
+      content: Text(message, style: const TextStyle(fontSize: 16)),
       duration: const Duration(seconds: 4));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }

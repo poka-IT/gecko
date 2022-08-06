@@ -30,9 +30,9 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    WalletsProfilesProvider _walletProfile =
+    WalletsProfilesProvider walletProfile =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
-    HomeProvider _homeProvider =
+    HomeProvider homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
 
     return Scaffold(
@@ -45,15 +45,15 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
             child: Text('accountActivity'.tr()),
           ),
         ),
-        bottomNavigationBar: _homeProvider.bottomAppBar(context),
+        bottomNavigationBar: homeProvider.bottomAppBar(context),
         body: Column(children: <Widget>[
-          _walletProfile.headerProfileView(context, address!, username),
+          walletProfile.headerProfileView(context, address!, username),
           historyQuery(context),
         ]));
   }
 
   Widget historyQuery(context) {
-    DuniterIndexer _duniterIndexer =
+    DuniterIndexer duniterIndexer =
         Provider.of<DuniterIndexer>(context, listen: false);
 
     if (indexerEndpoint == '') {
@@ -67,19 +67,19 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
       ]);
     }
 
-    final _httpLink = HttpLink(
+    final httpLink = HttpLink(
       '$indexerEndpoint/v1beta1/relay',
     );
 
-    final _client = ValueNotifier(
+    final client = ValueNotifier(
       GraphQLClient(
         cache: GraphQLCache(),
-        link: _httpLink,
+        link: httpLink,
       ),
     );
 
     return GraphQLProvider(
-      client: _client,
+      client: client,
       child: Expanded(
           child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -102,7 +102,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
               }
 
               if (result.hasException) {
-                log.e('Error Indexer: ' + result.exception.toString());
+                log.e('Error Indexer: ${result.exception}');
                 return Column(children: <Widget>[
                   const SizedBox(height: 50),
                   Text(
@@ -124,7 +124,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
 
               if (result.isNotLoading) {
                 // log.d(result.data);
-                opts = _duniterIndexer.checkQueryResult(result, opts, address!);
+                opts = duniterIndexer.checkQueryResult(result, opts, address!);
               }
 
               // Build history list
@@ -142,7 +142,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
                     if (t is ScrollEndNotification &&
                         scrollController.position.pixels >=
                             scrollController.position.maxScrollExtent * 0.7 &&
-                        _duniterIndexer.pageInfo!['hasNextPage'] &&
+                        duniterIndexer.pageInfo!['hasNextPage'] &&
                         result.isNotLoading) {
                       fetchMore!(opts!);
                     }
@@ -156,10 +156,10 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
   }
 
   Widget historyView(context, result) {
-    DuniterIndexer _duniterIndexer =
+    DuniterIndexer duniterIndexer =
         Provider.of<DuniterIndexer>(context, listen: false);
 
-    return _duniterIndexer.transBC == null
+    return duniterIndexer.transBC == null
         ? Column(children: <Widget>[
             const SizedBox(height: 50),
             Text(
@@ -168,16 +168,15 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
             )
           ])
         : Column(children: <Widget>[
-            getTransactionTile(context, _duniterIndexer),
-            if (result.isLoading &&
-                _duniterIndexer.pageInfo!['hasPreviousPage'])
+            getTransactionTile(context, duniterIndexer),
+            if (result.isLoading && duniterIndexer.pageInfo!['hasPreviousPage'])
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: const <Widget>[
                   CircularProgressIndicator(),
                 ],
               ),
-            if (!_duniterIndexer.pageInfo!['hasNextPage'])
+            if (!duniterIndexer.pageInfo!['hasNextPage'])
               Column(
                 children: const <Widget>[
                   SizedBox(height: 15),
@@ -191,13 +190,13 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
   }
 
   Widget getTransactionTile(
-      BuildContext context, DuniterIndexer _duniterIndexer) {
-    CesiumPlusProvider _cesiumPlusProvider =
+      BuildContext context, DuniterIndexer duniterIndexer) {
+    CesiumPlusProvider cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
     int keyID = 0;
     String? dateDelimiter;
     String? lastDateDelimiter;
-    const double _avatarSize = 200;
+    const double avatarSize = 200;
 
     bool isTody = false;
     bool isYesterday = false;
@@ -219,7 +218,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
     };
 
     return Column(
-        children: _duniterIndexer.transBC!.map((repository) {
+        children: duniterIndexer.transBC!.map((repository) {
       // log.d('bbbbbbbbbbbbbbbbbbbbbb: ' + repository.toString());
 
       DateTime now = DateTime.now();
@@ -291,7 +290,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
                   contentPadding: const EdgeInsets.only(
                       left: 20, right: 30, top: 15, bottom: 15),
                   leading: ClipOval(
-                    child: _cesiumPlusProvider.defaultAvatar(_avatarSize),
+                    child: cesiumPlusProvider.defaultAvatar(avatarSize),
                   ),
                   title: Padding(
                     padding: const EdgeInsets.only(bottom: 5),
@@ -334,7 +333,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
                   dense: false,
                   isThreeLine: false,
                   onTap: () {
-                    _duniterIndexer.nPage = 1;
+                    duniterIndexer.nPage = 1;
                     // _cesiumPlusProvider.avatarCancelToken.cancel('cancelled');
                     Navigator.push(
                       context,

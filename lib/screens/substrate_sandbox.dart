@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/stateful_wrapper.dart';
@@ -25,21 +27,21 @@ class SubstrateSandBox extends StatelessWidget {
           ),
         ),
         body: SafeArea(
-          child: Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+          child: Consumer<SubstrateSdk>(builder: (context, sub, _) {
             return SingleChildScrollView(
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text('js-api chargé ?: ${_sub.sdkReady}'),
+                    Text('js-api chargé ?: ${sub.sdkReady}'),
                     InkWell(
                         onTap: () async {
-                          await _sub.connectNode(context);
+                          await sub.connectNode(context);
                         },
                         child: Text(
-                            '🌐 Noeud connecté ?: ${_sub.nodeConnected} (${_sub.sdk.api.connectedNode?.endpoint})')),
-                    if (_sub.nodeConnected)
+                            '🌐 Noeud connecté ?: ${sub.nodeConnected} (${sub.sdk.api.connectedNode?.endpoint})')),
+                    if (sub.nodeConnected)
                       Text(
-                          '🏆 Noeud "$currencyName", bloc N°${_sub.blocNumber}'),
+                          '🏆 Noeud "$currencyName", bloc N°${sub.blocNumber}'),
                     const SizedBox(height: 20),
                     Row(children: [
                       const Text('💳 Liste des coffres:'),
@@ -50,22 +52,22 @@ class SubstrateSandBox extends StatelessWidget {
                           height: 35,
                         ),
                         onTap: () async {
-                          await _sub.deleteAllAccounts();
-                          _sub.reload();
+                          await sub.deleteAllAccounts();
+                          sub.reload();
                         },
                       ),
                       const SizedBox(width: 10),
                     ]),
                     FutureBuilder(
-                        future: _sub.getKeyStoreAddress(),
+                        future: sub.getKeyStoreAddress(),
                         builder: (BuildContext context,
-                            AsyncSnapshot<List<AddressInfo>> _data) {
+                            AsyncSnapshot<List<AddressInfo>> data) {
                           return Column(children: [
-                            if (_data.data != null)
-                              for (final AddressInfo addressInfo in _data.data!)
+                            if (data.data != null)
+                              for (final AddressInfo addressInfo in data.data!)
                                 Row(children: [
                                   InkWell(
-                                    onTap: () => _sub.keyring.setCurrent(_sub
+                                    onTap: () => sub.keyring.setCurrent(sub
                                         .keyring.keyPairs
                                         .firstWhere((element) =>
                                             element.address ==
@@ -89,11 +91,11 @@ class SubstrateSandBox extends StatelessWidget {
                                   // ),
                                   const SizedBox(width: 20),
                                   InkWell(
-                                    onTap: () async => await _sub.derive(
+                                    onTap: () async => await sub.derive(
                                         context,
                                         addressInfo.address!,
                                         2,
-                                        _sub.keystorePassword.text),
+                                        sub.keystorePassword.text),
                                     child: const Text("🏂 Dériver"),
                                   )
                                 ])
@@ -102,12 +104,12 @@ class SubstrateSandBox extends StatelessWidget {
                     const SizedBox(height: 20),
                     const Text('🔒 Mot de passe du coffre:'),
                     TextField(
-                      controller: _sub.keystorePassword,
+                      controller: sub.keystorePassword,
                       obscureText: true,
                       obscuringCharacter: '•',
                       enableSuggestions: false,
                       autocorrect: false,
-                      onChanged: (_) => _sub.reload(),
+                      onChanged: (_) => sub.reload(),
                     ),
                     Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -118,11 +120,11 @@ class SubstrateSandBox extends StatelessWidget {
                               primary: yellowC, // background
                               onPrimary: Colors.black, // foreground
                             ),
-                            onPressed: _sub.keystorePassword.text.isNotEmpty
+                            onPressed: sub.keystorePassword.text.isNotEmpty
                                 ? () async {
-                                    final res = await _sub.importAccount();
-                                    _sub.importIsLoading = false;
-                                    _sub.reload();
+                                    final res = await sub.importAccount();
+                                    sub.importIsLoading = false;
+                                    sub.reload();
                                     snack(
                                         context,
                                         res != ''
@@ -135,7 +137,7 @@ class SubstrateSandBox extends StatelessWidget {
                               style: TextStyle(fontSize: 20),
                             ),
                           ),
-                          if (_sub.importIsLoading)
+                          if (sub.importIsLoading)
                             const CircularProgressIndicator(),
                           const SizedBox(height: 20),
                           ElevatedButton(
@@ -144,9 +146,9 @@ class SubstrateSandBox extends StatelessWidget {
                               onPrimary: Colors.black, // foreground
                             ),
                             onPressed: () async {
-                              await _sub.generateMnemonic();
-                              _sub.importIsLoading = false;
-                              _sub.reload();
+                              await sub.generateMnemonic();
+                              sub.importIsLoading = false;
+                              sub.reload();
                               snack(context, 'Le mnemonic a été copié');
                             },
                             child: const Text(
@@ -158,13 +160,13 @@ class SubstrateSandBox extends StatelessWidget {
                           SizedBox(
                             width: 400,
                             child: Text(
-                              _sub.generatedMnemonic,
+                              sub.generatedMnemonic,
                               textAlign: TextAlign.center,
                             ),
                           ),
                           const Text('-〰️---〰️---〰️-'),
                           const SizedBox(height: 10),
-                          Text(_sub.debugConnection)
+                          Text(sub.debugConnection)
                         ])
                   ]),
             );

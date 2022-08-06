@@ -21,7 +21,7 @@ class RestoreChest extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     GenerateWalletsProvider genW =
         Provider.of<GenerateWalletsProvider>(context, listen: false);
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     genW.actualWallet = null;
     if (genW.isSentenceComplete(context)) {
@@ -96,7 +96,7 @@ class RestoreChest extends StatelessWidget {
                       onPrimary: Colors.white, // foreground
                     ),
                     onPressed: () async {
-                      if (await _sub.isMnemonicValid(genW.generatedMnemonic!)) {
+                      if (await sub.isMnemonicValid(genW.generatedMnemonic!)) {
                         genW.resetImportView();
                         await Navigator.push(
                           context,
@@ -184,6 +184,12 @@ class RestoreChest extends StatelessWidget {
     return Container(
       width: 102,
       height: 40 * ratio,
+      // ),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(3),
+      ),
       // child: RawKeyboardListener(
       //   focusNode: FocusNode(), // or FocusNode()
       //   onKey: (event) {
@@ -209,12 +215,6 @@ class RestoreChest extends StatelessWidget {
         },
         textAlign: TextAlign.center,
         style: const TextStyle(fontSize: 20),
-      ),
-      // ),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(3),
       ),
     );
   }

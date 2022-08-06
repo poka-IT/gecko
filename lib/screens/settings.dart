@@ -68,13 +68,13 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget duniterEndpointSelection(BuildContext context) {
-    SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
     String? selectedDuniterEndpoint;
 
     // List of items in our dropdown menu
-    var duniterBootstrapNodes = _sub.getDuniterBootstrap();
+    var duniterBootstrapNodes = sub.getDuniterBootstrap();
     selectedDuniterEndpoint =
-        _sub.getConnectedEndpoint() ?? duniterBootstrapNodes.first.endpoint;
+        sub.getConnectedEndpoint() ?? duniterBootstrapNodes.first.endpoint;
 
     final customEndpoint = NetworkParams();
     customEndpoint.name = currencyName;
@@ -95,15 +95,15 @@ class SettingsScreen extends StatelessWidget {
       selectedDuniterEndpoint = customEndpoint.endpoint;
     }
 
-    TextEditingController _endpointController = TextEditingController(
+    TextEditingController endpointController = TextEditingController(
         text: configBox.containsKey('customEndpoint')
             ? configBox.get('customEndpoint')
             : 'wss://');
 
     return Column(children: <Widget>[
       Row(children: [
-        Consumer<SubstrateSdk>(builder: (context, _sub, _) {
-          log.d(_sub.sdk.api.connectedNode?.endpoint);
+        Consumer<SubstrateSdk>(builder: (context, sub, _) {
+          log.d(sub.sdk.api.connectedNode?.endpoint);
           return Expanded(
             child: Row(children: [
               const SizedBox(width: 10),
@@ -114,49 +114,49 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Icon(_sub.nodeConnected && !_sub.isLoadingEndpoint
+              Icon(sub.nodeConnected && !sub.isLoadingEndpoint
                   ? Icons.check
                   : Icons.close),
               const Spacer(),
               SizedBox(
                 width: 265,
-                child: Consumer<SettingsProvider>(builder: (context, _set, _) {
+                child: Consumer<SettingsProvider>(builder: (context, set, _) {
                   return DropdownButtonHideUnderline(
                     child: DropdownButton(
                       // alignment: AlignmentDirectional.topStart,
                       value: selectedDuniterEndpoint,
                       icon: const Icon(Icons.keyboard_arrow_down),
                       items: duniterBootstrapNodes
-                          .map((NetworkParams _endpointParams) {
+                          .map((NetworkParams endpointParams) {
                         return DropdownMenuItem(
-                          value: _endpointParams.endpoint,
-                          child: Text(_endpointParams.endpoint!),
+                          value: endpointParams.endpoint,
+                          child: Text(endpointParams.endpoint!),
                         );
                       }).toList(),
-                      onChanged: (String? _newEndpoint) {
-                        log.d(_newEndpoint!);
-                        selectedDuniterEndpoint = _newEndpoint;
-                        _set.reload();
+                      onChanged: (String? newEndpoint) {
+                        log.d(newEndpoint!);
+                        selectedDuniterEndpoint = newEndpoint;
+                        set.reload();
                       },
                     ),
                   );
                 }),
               ),
               const Spacer(flex: 5),
-              _sub.isLoadingEndpoint
+              sub.isLoadingEndpoint
                   ? CircularProgressIndicator(color: orangeC)
-                  : Consumer<SettingsProvider>(builder: (context, _set, _) {
+                  : Consumer<SettingsProvider>(builder: (context, set, _) {
                       return IconButton(
                           icon: Icon(
                             Icons.send,
                             color: selectedDuniterEndpoint !=
-                                    _sub.getConnectedEndpoint()
+                                    sub.getConnectedEndpoint()
                                 ? orangeC
                                 : Colors.grey[500],
                             size: 40,
                           ),
                           onPressed: selectedDuniterEndpoint !=
-                                  _sub.getConnectedEndpoint()
+                                  sub.getConnectedEndpoint()
                               ? () async {
                                   if (selectedDuniterEndpoint == 'Auto') {
                                     configBox.delete('customEndpoint');
@@ -166,12 +166,12 @@ class SettingsScreen extends StatelessWidget {
                                     final finalEndpoint =
                                         selectedDuniterEndpoint ==
                                                 'Personnalisé'
-                                            ? _endpointController.text
+                                            ? endpointController.text
                                             : selectedDuniterEndpoint;
                                     configBox.put(
                                         'customEndpoint', finalEndpoint);
                                   }
-                                  await _sub.connectNode(context);
+                                  await sub.connectNode(context);
                                 }
                               : null);
                     }),
@@ -180,31 +180,31 @@ class SettingsScreen extends StatelessWidget {
           );
         }),
       ]),
-      Consumer<SettingsProvider>(builder: (context, _set, _) {
+      Consumer<SettingsProvider>(builder: (context, set, _) {
         return Visibility(
           visible: selectedDuniterEndpoint == 'Personnalisé',
           child: SizedBox(
             width: 200,
             height: 50,
             child: TextField(
-              controller: _endpointController,
+              controller: endpointController,
               autocorrect: false,
             ),
           ),
         );
       }),
-      Consumer<SubstrateSdk>(builder: (context, _sub, _) {
+      Consumer<SubstrateSdk>(builder: (context, sub, _) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Consumer<SettingsProvider>(builder: (context, _set, _) {
+            Consumer<SettingsProvider>(builder: (context, set, _) {
               return Visibility(
                 visible: selectedDuniterEndpoint == 'Auto',
                 child: SizedBox(
                   width: 250,
-                  height: _sub.getConnectedEndpoint() == null ? 60 : 20,
+                  height: sub.getConnectedEndpoint() == null ? 60 : 20,
                   child: Text(
-                    _sub.getConnectedEndpoint() ??
+                    sub.getConnectedEndpoint() ??
                         "Un noeud sûr et valide sera choisi automatiquement parmis une liste aléatoire.",
                     style: TextStyle(
                         fontSize: 15,
@@ -215,7 +215,7 @@ class SettingsScreen extends StatelessWidget {
               );
             }),
             Text(
-              'bloc N°${_sub.blocNumber}',
+              'bloc N°${sub.blocNumber}',
               style: TextStyle(fontSize: 14, color: Colors.grey[700]),
             )
           ],
@@ -225,7 +225,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget indexerEndpointSelection(BuildContext context) {
-    DuniterIndexer _indexer =
+    DuniterIndexer indexer =
         Provider.of<DuniterIndexer>(context, listen: false);
 
     String? selectedIndexerEndpoint;
@@ -236,19 +236,19 @@ class SettingsScreen extends StatelessWidget {
     }
 
     if (selectedIndexerEndpoint == '') {
-      selectedIndexerEndpoint = _indexer.listIndexerEndpoints[0];
+      selectedIndexerEndpoint = indexer.listIndexerEndpoints[0];
     }
 
-    TextEditingController _indexerEndpointController = TextEditingController(
+    TextEditingController indexerEndpointController = TextEditingController(
         text: configBox.containsKey('customIndexer')
             ? configBox.get('customIndexer')
             : 'https://');
 
     return Column(children: <Widget>[
       Row(children: [
-        Consumer<DuniterIndexer>(builder: (context, _indexer, _) {
+        Consumer<DuniterIndexer>(builder: (context, indexer, _) {
           log.d(selectedIndexerEndpoint);
-          log.d(_indexer.listIndexerEndpoints);
+          log.d(indexer.listIndexerEndpoints);
           return Expanded(
             child: Row(children: [
               const SizedBox(width: 10),
@@ -261,32 +261,32 @@ class SettingsScreen extends StatelessWidget {
               const Spacer(),
               SizedBox(
                 width: 265,
-                child: Consumer<SettingsProvider>(builder: (context, _set, _) {
+                child: Consumer<SettingsProvider>(builder: (context, set, _) {
                   return DropdownButtonHideUnderline(
                     child: DropdownButton(
                       // alignment: AlignmentDirectional.topStart,
                       value: selectedIndexerEndpoint,
                       icon: const Icon(Icons.keyboard_arrow_down),
                       items:
-                          _indexer.listIndexerEndpoints.map((_indexerEndpoint) {
+                          indexer.listIndexerEndpoints.map((indexerEndpoint) {
                         return DropdownMenuItem(
-                          value: _indexerEndpoint,
-                          child: Text(_indexerEndpoint),
+                          value: indexerEndpoint,
+                          child: Text(indexerEndpoint),
                         );
                       }).toList(),
-                      onChanged: (_newEndpoint) {
-                        log.d(_newEndpoint!);
-                        selectedIndexerEndpoint = _newEndpoint.toString();
-                        _set.reload();
+                      onChanged: (newEndpoint) {
+                        log.d(newEndpoint!);
+                        selectedIndexerEndpoint = newEndpoint.toString();
+                        set.reload();
                       },
                     ),
                   );
                 }),
               ),
               const Spacer(flex: 5),
-              _indexer.isLoadingIndexer
+              indexer.isLoadingIndexer
                   ? CircularProgressIndicator(color: orangeC)
-                  : Consumer<SettingsProvider>(builder: (context, _set, _) {
+                  : Consumer<SettingsProvider>(builder: (context, set, _) {
                       return IconButton(
                           icon: Icon(
                             Icons.send,
@@ -299,18 +299,18 @@ class SettingsScreen extends StatelessWidget {
                               ? () async {
                                   final finalEndpoint =
                                       selectedIndexerEndpoint == 'Personnalisé'
-                                          ? _indexerEndpointController.text
+                                          ? indexerEndpointController.text
                                           : selectedIndexerEndpoint!;
 
                                   if (selectedIndexerEndpoint ==
                                       'Personnalisé') {
                                     configBox.put('customIndexer',
-                                        _indexerEndpointController.text);
+                                        indexerEndpointController.text);
                                   } else {
                                     configBox.delete('customIndexer');
                                   }
                                   log.d('connection to indexer $finalEndpoint');
-                                  await _indexer
+                                  await indexer
                                       .checkIndexerEndpoint(finalEndpoint);
                                 }
                               : null);
@@ -320,28 +320,28 @@ class SettingsScreen extends StatelessWidget {
           );
         }),
       ]),
-      Consumer<SettingsProvider>(builder: (context, _set, _) {
+      Consumer<SettingsProvider>(builder: (context, set, _) {
         return Visibility(
           visible: selectedIndexerEndpoint == 'Personnalisé',
           child: SizedBox(
             width: 200,
             height: 50,
             child: TextField(
-              controller: _indexerEndpointController,
+              controller: indexerEndpointController,
               autocorrect: false,
             ),
           ),
         );
       }),
-      Consumer<SubstrateSdk>(builder: (context, _sub, _) {
-        return Consumer<SettingsProvider>(builder: (context, _set, _) {
+      Consumer<SubstrateSdk>(builder: (context, sub, _) {
+        return Consumer<SettingsProvider>(builder: (context, set, _) {
           return Visibility(
             visible: selectedIndexerEndpoint == 'Auto',
             child: SizedBox(
               width: 250,
               height: 60,
               child: Text(
-                _sub.getConnectedEndpoint() ??
+                sub.getConnectedEndpoint() ??
                     "Un noeud sûr et valide sera choisi automatiquement parmis une liste aléatoire.",
                 style: TextStyle(
                     fontSize: 15,

@@ -255,15 +255,46 @@ class SubstrateSdk with ChangeNotifier {
     return consumers == 0 ? false : true;
   }
 
-  Future<double> getBalance(String address, {bool isUd = false}) async {
+  Future<double> getBalance(String address) async {
     double balance = 0.0;
 
     if (nodeConnected) {
       final brutBalance = await sdk.api.account.queryBalance(address);
+      // log.d(brutBalance?.toJson());
       balance = int.parse(brutBalance!.freeBalance) / 100;
     } else {
       balance = -1;
     }
+    return balance;
+  }
+
+  Future<double> getUnclaimedUd(String address) async {
+// TODO: Implement unclaimedUd evaluation
+// Pour ce faire, il vous faut requêter cinq éléments de storage :
+
+//     system.account(address)
+//     identity.identityIndexOf(address)
+//     identity.identities(idtyIndex)
+//     universalDividend.currentUdIndex()
+//     universalDividend.pastReevals()
+
+// const api = await ApiPromise.create(...);
+// const { data: balance } = await api.query.system.account(address);
+// const idtyIndex = await api.query.identity.identityIndexOf(address);
+// const { data: idtyData } = await api.query.identity.identies(idtyIndex);
+// const currentUdIndex = await api.query.universalDividend.currentUdIndex();
+// const pastReevals = await api.query.universalDividend.pastReevals();
+
+// let newUdsAmount = computeClaimUds(currentUdIndex, idtyData.firstEligibleUd, pastReevals);
+// let transferableBalance = balance.free + newUdsAmount;
+// let potentialBalance = balance.reserved + transferableBalance;
+
+    double balance = 0.0;
+
+    final brutBalance = await sdk.api.account.queryBalance(address);
+    // log.d(brutBalance?.toJson());
+    balance = int.parse(brutBalance!.freeBalance) / 100;
+
     return balance;
   }
 

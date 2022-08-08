@@ -257,21 +257,24 @@ class SubstrateSdk with ChangeNotifier {
     return [certsReceiver['receivedCount'], certsReceiver['issuedCount']];
   }
 
-  Future<Map> getCertData(String from, String to) async {
+  Future<int> getCertValidityPeriod(String from, String to) async {
     final idtyIndexFrom = await getIdentityIndexOf(from);
-
     final idtyIndexTo = await getIdentityIndexOf(to);
 
-    if (idtyIndexFrom == 0 || idtyIndexTo == 0) return {};
+    if (idtyIndexFrom == 0 || idtyIndexTo == 0) return 0;
 
-    final certData = await sdk.webView!.evalJavascript(
-            'api.query.cert.storageCertsByIssuer($idtyIndexFrom, $idtyIndexTo)') ??
-        '';
+    final List certData = await sdk.webView!
+            .evalJavascript('api.query.cert.certsByReceiver($idtyIndexTo)') ??
+        [];
 
-    if (certData == '') return {};
+    if (certData.isEmpty) return 0;
+    for (List certInfo in certData) {
+      if (certInfo[0] == idtyIndexFrom) {
+        return certInfo[1];
+      }
+    }
 
-    // log.d(_certData);
-    return certData;
+    return 0;
   }
 
   Future<Map<String, dynamic>> getParameters() async {
@@ -666,9 +669,8 @@ class SubstrateSdk with ChangeNotifier {
   Future<Map<String, int>> certState(String from, String to) async {
     Map<String, int> result = {};
     if (from != to && await isMemberGet(from)) {
-      final certData = await getCertData(from, to);
+      final removableOn = await getCertValidityPeriod(from, to);
       final certMeta = await getCertMeta(from);
-      final int removableOn = certData['removableOn'] ?? 0;
       final int nextIssuableOn = certMeta['nextIssuableOn'] ?? 0;
       final certRemovableDuration = (removableOn - blocNumber) * 6;
       const int renewDelay = 2 * 30 * 24 * 3600; // 2 months

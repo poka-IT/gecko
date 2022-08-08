@@ -129,6 +129,9 @@ class WalletViewScreen extends StatelessWidget {
                   builder: (context, AsyncSnapshot<Map<String, int>> snapshot) {
                     if (snapshot.data == null) return const SizedBox();
                     String duration = '';
+                    log.d(snapshot.data!['certDelay']);
+                    log.d(snapshot.data!['certRenewable']);
+
                     if (snapshot.data!['certDelay'] != null ||
                         snapshot.data!['certRenewable'] != null) {
                       final Duration durationSeconds = Duration(

@@ -259,6 +259,8 @@ class SubstrateSdk with ChangeNotifier {
     final idtyIndexTo = await sdk.webView!
         .evalJavascript('api.query.identity.identityIndexOf("$to")');
 
+    if (idtyIndexFrom == null || idtyIndexTo == null) return {};
+
     final certData = await sdk.webView!.evalJavascript(
             'api.query.cert.storageCertsByIssuer($idtyIndexFrom, $idtyIndexTo)') ??
         '';

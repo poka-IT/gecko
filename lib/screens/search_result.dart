@@ -80,7 +80,6 @@ class SearchResultScreen extends StatelessWidget {
                     future: searchProvider.searchAddress(),
                     builder: (context, AsyncSnapshot<List?> snapshot) {
                       if (snapshot.connectionState == ConnectionState.done) {
-                        log.d(snapshot.data);
                         if (snapshot.data?.isEmpty ?? true) {
                           return duniterIndexer.searchIdentity(
                               context, searchProvider.searchController.text);

@@ -127,7 +127,6 @@ class WalletViewScreen extends StatelessWidget {
                   future: sub.certState(defaultWallet.address!,
                       pubkey!), // .canCertify(_defaultWallet.address!, pubkey!),
                   builder: (context, AsyncSnapshot<Map<String, int>> snapshot) {
-                    // log.d(snapshot.data);
                     if (snapshot.data == null) return const SizedBox();
                     String duration = '';
                     if (snapshot.data!['certDelay'] != null ||
@@ -162,6 +161,7 @@ class WalletViewScreen extends StatelessWidget {
                         duration = 'months'.tr(args: [months.toString()]);
                       }
                     }
+
                     return Visibility(
                       visible: (snapshot.data != {}),
                       child: Column(children: <Widget>[
@@ -175,7 +175,7 @@ class WalletViewScreen extends StatelessWidget {
                                   color:
                                       const Color(0xffFFD58D), // button color
                                   child: InkWell(
-                                      key: const Key('copyKey'),
+                                      key: const Key('certify'),
                                       splashColor: orangeC, // inkwell color
                                       child: const Padding(
                                         padding: EdgeInsets.only(bottom: 0),

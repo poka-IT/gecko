@@ -137,7 +137,7 @@ class WalletOptionsProvider with ChangeNotifier {
 
     _showText(String text,
         [double size = 18, bool bold = false, bool smooth = true]) {
-      log.d(text);
+      log.d('$address $text');
       return AnimatedFadeOutIn<String>(
         data: text,
         duration: Duration(milliseconds: smooth ? 200 : 0),

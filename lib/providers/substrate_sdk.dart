@@ -240,9 +240,14 @@ class SubstrateSdk with ChangeNotifier {
     return result;
   }
 
+  Future<int> getIdentityIndexOf(String address) async {
+    return await sdk.webView!
+            .evalJavascript('api.query.identity.identityIndexOf("$address")') ??
+        0;
+  }
+
   Future<List<int>> getCerts(String address) async {
-    final idtyIndex = await sdk.webView!
-        .evalJavascript('api.query.identity.identityIndexOf("$address")');
+    final idtyIndex = await getIdentityIndexOf(address);
     // log.d('u32: ' + idtyIndex.toString());
 
     final certsReceiver = await sdk.webView!
@@ -253,13 +258,11 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<Map> getCertData(String from, String to) async {
-    final idtyIndexFrom = await sdk.webView!
-        .evalJavascript('api.query.identity.identityIndexOf("$from")');
+    final idtyIndexFrom = await getIdentityIndexOf(from);
 
-    final idtyIndexTo = await sdk.webView!
-        .evalJavascript('api.query.identity.identityIndexOf("$to")');
+    final idtyIndexTo = await getIdentityIndexOf(to);
 
-    if (idtyIndexFrom == null || idtyIndexTo == null) return {};
+    if (idtyIndexFrom == 0 || idtyIndexTo == 0) return {};
 
     final certData = await sdk.webView!.evalJavascript(
             'api.query.cert.storageCertsByIssuer($idtyIndexFrom, $idtyIndexTo)') ??
@@ -269,6 +272,13 @@ class SubstrateSdk with ChangeNotifier {
 
     // log.d(_certData);
     return certData;
+  }
+
+  Future<Map<String, dynamic>> getParameters() async {
+    final currencyParameters = await sdk.webView!
+            .evalJavascript('api.query.parameters.parametersStorage()') ??
+        {};
+    return currencyParameters;
   }
 
   Future<bool> hasAccountConsumers(String address) async {
@@ -463,6 +473,9 @@ class SubstrateSdk with ChangeNotifier {
     final myIdtyStatus = await idtyStatus(fromAddress);
     final toIdtyStatus = await idtyStatus(toAddress);
 
+    final fromIndex = await getIdentityIndexOf(fromAddress);
+    final toIndex = await getIdentityIndexOf(toAddress);
+
     log.d(myIdtyStatus);
     log.d(toIdtyStatus);
 
@@ -471,6 +484,9 @@ class SubstrateSdk with ChangeNotifier {
       notifyListeners();
       return 'notMember';
     }
+
+    final toCerts = await getCerts(toAddress);
+    final currencyParameters = await getParameters();
 
     final sender = TxSenderData(
       keyring.current.address,
@@ -486,11 +502,21 @@ class SubstrateSdk with ChangeNotifier {
       );
     } else if (toIdtyStatus == 'Validated' ||
         toIdtyStatus == 'ConfirmedByOwner') {
-      txInfo = TxInfoData(
-        'cert',
-        'addCert',
-        sender,
-      );
+      if (toCerts[0] >= currencyParameters['wotMinCertForMembership'] &&
+          toIdtyStatus != 'Validated') {
+        log.d('Batch cert and membership validation');
+        txInfo = TxInfoData(
+          'utility',
+          'batchAll',
+          sender,
+        );
+      } else {
+        txInfo = TxInfoData(
+          'cert',
+          'addCert',
+          sender,
+        );
+      }
     } else {
       transactionStatus = 'cantBeCert';
       notifyListeners();
@@ -500,10 +526,24 @@ class SubstrateSdk with ChangeNotifier {
     log.d('Cert action: ${txInfo.call!}');
 
     try {
+      List txOptions = [];
+      if (txInfo.call == 'batchAll') {
+        txOptions = [
+          'cert.addCert($fromIndex, $toIndex)',
+          'identity.validateIdentity($toIndex)'
+        ];
+      } else if (txInfo.call == 'createIdentity') {
+        txOptions = [toAddress];
+      } else if (txInfo.call == 'addCert') {
+        txOptions = [fromIndex, toIndex];
+      } else {
+        log.e('TX call is unexpected');
+        return 'Ğecko says: TX call is unexpected';
+      }
       final hash = await sdk.api.tx
           .signAndSend(
             txInfo,
-            [toAddress],
+            txOptions,
             password,
           )
           .timeout(
@@ -532,10 +572,9 @@ class SubstrateSdk with ChangeNotifier {
     //   var tata = await sdk.webView!
     //       .evalJavascript('api.query.system.account("$address")');
 
-    var idtyIndex = await sdk.webView!
-        .evalJavascript('api.query.identity.identityIndexOf("$address")');
+    var idtyIndex = await getIdentityIndexOf(address);
 
-    if (idtyIndex == null) {
+    if (idtyIndex == 0) {
       return 'noid';
     }
 
@@ -648,21 +687,17 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<Map> getCertMeta(String address) async {
-    var idtyIndex = await sdk.webView!
-        .evalJavascript('api.query.identity.identityIndexOf("$address")');
+    var idtyIndex = await getIdentityIndexOf(address);
 
     final certMeta = await sdk.webView!
             .evalJavascript('api.query.cert.storageIdtyCertMeta($idtyIndex)') ??
         '';
-    // if (_certMeta['nextIssuableOn'] != 0) return {};
 
-    // log.d(_certMeta);
     return certMeta;
   }
 
   Future revokeIdentity(String address, String password) async {
-    final idtyIndex = await sdk.webView!
-        .evalJavascript('api.query.identity.identityIndexOf("$address")');
+    final idtyIndex = await getIdentityIndexOf(address);
 
     final sender = TxSenderData(
       keyring.current.address,

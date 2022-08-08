@@ -385,7 +385,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     }
 
     for (var derivationNbr in [for (var i = 0; i < numberScan; i += 1) i]) {
-      final addressData = await sub.sdk.api.keyring.addressFromMnemonic(ss58,
+      final addressData = await sub.sdk.api.keyring.addressFromMnemonic(sub.ss58,
           cryptoType: CryptoType.sr25519,
           mnemonic: generatedMnemonic!,
           derivePath: '//$derivationNbr');
@@ -426,7 +426,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   Future<bool> scanRootBalance(SubstrateSdk sub, int currentChestNumber) async {
-    final addressData = await sub.sdk.api.keyring.addressFromMnemonic(ss58,
+    final addressData = await sub.sdk.api.keyring.addressFromMnemonic(sub.ss58,
         cryptoType: CryptoType.sr25519, mnemonic: generatedMnemonic!);
 
     final balance = await sub.getBalance(addressData.address!).timeout(

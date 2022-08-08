@@ -46,7 +46,6 @@ Color floattingYellow = const Color(0xffEFEFBF);
 Color backgroundColor = const Color(0xFFF5F5F5);
 
 // Substrate settings
-const int ss58 = 42;
 String currencyName = 'ĞD';
 
 // Debug

@@ -28,6 +28,7 @@ class SubstrateSdk with ChangeNotifier {
   bool isLoadingEndpoint = false;
   String debugConnection = '';
   String transactionStatus = '';
+  int ss58 = 42;
 
   TextEditingController jsonKeystore = TextEditingController();
   TextEditingController keystorePassword = TextEditingController();
@@ -46,12 +47,6 @@ class SubstrateSdk with ChangeNotifier {
   Future<void> connectNode(BuildContext ctx) async {
     HomeProvider homeProvider = Provider.of<HomeProvider>(ctx, listen: false);
 
-    // var connectivityResult = await (Connectivity().checkConnectivity());
-    // if (connectivityResult == ConnectivityResult.mobile ||
-    //     connectivityResult == ConnectivityResult.wifi) {
-    //   _homeProvider.changeMessage("Vous n'êtes pas connecté à internet", 0);
-    //   return;
-    // }
     homeProvider.changeMessage("connectionPending".tr(), 0);
 
     // configBox.delete('customEndpoint');
@@ -60,30 +55,7 @@ class SubstrateSdk with ChangeNotifier {
             ? [getDuniterCustomEndpoint()]
             : getDuniterBootstrap();
 
-    // final nodes = getDuniterBootstrap();
-
     int timeout = 10000;
-
-    // if (n.endpoint!.startsWith('ws://')) {
-    //   timeout = 5000;
-    // }
-
-    //// Check websocket conenction - only for wss
-    // final channel = IOWebSocketChannel.connect(
-    //   Uri.parse('wss://192.168.1.72:9944'),
-    // );
-
-    // channel.stream.listen(
-    //   (dynamic message) {
-    //     log.d('message $message');
-    //   },
-    //   onDone: () {
-    //     log.d('ws channel closed');
-    //   },
-    //   onError: (error) {
-    //     log.d('ws error $error');
-    //   },
-    // );
 
     if (sdk.api.connectedNode?.endpoint != null) {
       await sdk.api.setting.unsubscribeBestNumber();
@@ -99,6 +71,7 @@ class SubstrateSdk with ChangeNotifier {
     notifyListeners();
     if (res != null) {
       nodeConnected = true;
+      // await getSs58Prefix();
 
       // Subscribe bloc number
       sdk.api.setting.subscribeBestNumber((res) {
@@ -197,7 +170,7 @@ class SubstrateSdk with ChangeNotifier {
       notifyListeners();
     });
     if (json == null) return '';
-    log.d(json);
+    // log.d(json);
     try {
       await sdk.api.keyring.addAccount(
         keyring,
@@ -205,7 +178,6 @@ class SubstrateSdk with ChangeNotifier {
         acc: json,
         password: password,
       );
-      // Clipboard.setData(ClipboardData(text: jsonEncode(acc.toJson())));
     } catch (e) {
       log.e(e);
       importIsLoading = false;
@@ -225,14 +197,8 @@ class SubstrateSdk with ChangeNotifier {
   Future<List<AddressInfo>> getKeyStoreAddress() async {
     List<AddressInfo> result = [];
 
-    // sdk.api.account.unsubscribeBalance();
     for (var element in keyring.allAccounts) {
-      // Clipboard.setData(ClipboardData(text: jsonEncode(element)));
       final account = AddressInfo(address: element.address);
-      // await sdk.api.account.subscribeBalance(element.address, (p0) {
-      //   account.balance = int.parse(p0.freeBalance) / 100;
-      // });
-      // sdk.api.setting.unsubscribeBestNumber();
       account.balance = await getBalance(element.address!);
       result.add(account);
     }
@@ -248,8 +214,6 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<List<int>> getCerts(String address) async {
     final idtyIndex = await getIdentityIndexOf(address);
-    // log.d('u32: ' + idtyIndex.toString());
-
     final certsReceiver = await sdk.webView!
             .evalJavascript('api.query.cert.storageIdtyCertMeta($idtyIndex)') ??
         [];
@@ -288,14 +252,12 @@ class SubstrateSdk with ChangeNotifier {
     final accountInfo = await sdk.webView!
         .evalJavascript('api.query.system.account("$address")');
     final consumers = accountInfo['consumers'];
-    // log.d('Consumers: $_consumers');
     return consumers == 0 ? false : true;
   }
 
   Future<double> getBalance(String address, {bool isUd = false}) async {
     double balance = 0.0;
 
-    // log.d('nodeConnected: ' + nodeConnected.toString());
     if (nodeConnected) {
       final brutBalance = await sdk.api.account.queryBalance(address);
       balance = int.parse(brutBalance!.freeBalance) / 100;
@@ -324,7 +286,6 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<bool> checkPassword(String address, String pass) async {
     final account = getKeypair(address);
-    // log.d(account.address);
 
     return await sdk.api.keyring.checkPassword(account, pass);
   }
@@ -380,8 +341,6 @@ class SubstrateSdk with ChangeNotifier {
     final gen = await sdk.api.keyring.generateMnemonic(ss58);
     generatedMnemonic = gen.mnemonic!;
 
-    // final res = await importAccount(fromMnemonic: true);
-    // await Clipboard.setData(ClipboardData(text: generatedMnemonic));
     return gen.mnemonic!;
   }
 
@@ -416,12 +375,9 @@ class SubstrateSdk with ChangeNotifier {
       required String password}) async {
     transactionStatus = '';
 
-    // setCurrentWallet(fromAddress);
-
     log.d(keyring.current.address);
     log.d(fromAddress);
     log.d(password);
-    // log.d(await checkPassword(fromAddress, password));
 
     final fromPubkey = await sdk.api.account.decodeAddress([fromAddress]);
     log.d(fromPubkey!.keys.first);
@@ -469,7 +425,6 @@ class SubstrateSdk with ChangeNotifier {
       String fromAddress, String password, String toAddress) async {
     transactionStatus = '';
 
-    // setCurrentWallet(fromAddress);
     log.d('me: $fromAddress');
     log.d('to: $toAddress');
 
@@ -507,7 +462,7 @@ class SubstrateSdk with ChangeNotifier {
         toIdtyStatus == 'ConfirmedByOwner') {
       if (toCerts[0] >= currencyParameters['wotMinCertForMembership'] &&
           toIdtyStatus != 'Validated') {
-        log.d('Batch cert and membership validation');
+        log.i('Batch cert and membership validation');
         txInfo = TxInfoData(
           'utility',
           'batchAll',
@@ -572,9 +527,6 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<String> idtyStatus(String address, [bool smooth = true]) async {
-    //   var tata = await sdk.webView!
-    //       .evalJavascript('api.query.system.account("$address")');
-
     var idtyIndex = await getIdentityIndexOf(address);
 
     if (idtyIndex == 0) {
@@ -586,7 +538,7 @@ class SubstrateSdk with ChangeNotifier {
 
     if (idtyStatus != null) {
       final String status = idtyStatus['status'];
-      // log.d('Status $address: $_status');
+
       return (status);
     } else {
       return 'expired';
@@ -595,8 +547,6 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<String> confirmIdentity(
       String fromAddress, String name, String password) async {
-    // Confirm identity
-    // setCurrentWallet(fromAddress);
     log.d('me: ${keyring.current.address!}');
 
     final sender = TxSenderData(
@@ -787,6 +737,17 @@ class SubstrateSdk with ChangeNotifier {
 
   String? getConnectedEndpoint() {
     return sdk.api.connectedNode?.endpoint;
+  }
+
+  Future<int> getSs58Prefix() async {
+    final List res = await sdk.webView!.evalJavascript(
+            'api.consts.system.ss58Prefix.words',
+            wrapPromise: false) ??
+        [42];
+
+    ss58 = res[0];
+    log.d(ss58);
+    return ss58;
   }
 }
 

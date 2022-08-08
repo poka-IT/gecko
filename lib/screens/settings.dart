@@ -77,14 +77,9 @@ class SettingsScreen extends StatelessWidget {
         sub.getConnectedEndpoint() ?? duniterBootstrapNodes.first.endpoint;
 
     final customEndpoint = NetworkParams();
-    customEndpoint.name = currencyName;
     customEndpoint.endpoint = 'Personnalisé';
-    customEndpoint.ss58 = ss58;
-
     final automaticEndpoint = NetworkParams();
-    automaticEndpoint.name = currencyName;
     automaticEndpoint.endpoint = 'Auto';
-    automaticEndpoint.ss58 = ss58;
     // duniterBootstrapNodes.add(_sub.getDuniterCustomEndpoint());
     duniterBootstrapNodes.insert(0, automaticEndpoint);
     duniterBootstrapNodes.add(customEndpoint);

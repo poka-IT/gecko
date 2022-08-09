@@ -33,6 +33,10 @@ class SubstrateSdk with ChangeNotifier {
   TextEditingController jsonKeystore = TextEditingController();
   TextEditingController keystorePassword = TextEditingController();
 
+  Future getStorage(String call) async {
+    return await sdk.webView!.evalJavascript('api.query.$call');
+  }
+
   Future<void> initApi() async {
     sdkLoading = true;
     await keyring.init([ss58]);
@@ -207,16 +211,13 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<int> getIdentityIndexOf(String address) async {
-    return await sdk.webView!
-            .evalJavascript('api.query.identity.identityIndexOf("$address")') ??
-        0;
+    return await getStorage('identity.identityIndexOf("$address")') ?? 0;
   }
 
   Future<List<int>> getCerts(String address) async {
     final idtyIndex = await getIdentityIndexOf(address);
-    final certsReceiver = await sdk.webView!
-            .evalJavascript('api.query.cert.storageIdtyCertMeta($idtyIndex)') ??
-        [];
+    final certsReceiver =
+        await getStorage('cert.storageIdtyCertMeta($idtyIndex)') ?? [];
 
     return [certsReceiver['receivedCount'], certsReceiver['issuedCount']];
   }
@@ -227,9 +228,8 @@ class SubstrateSdk with ChangeNotifier {
 
     if (idtyIndexFrom == 0 || idtyIndexTo == 0) return 0;
 
-    final List certData = await sdk.webView!
-            .evalJavascript('api.query.cert.certsByReceiver($idtyIndexTo)') ??
-        [];
+    final List certData =
+        await getStorage('cert.certsByReceiver($idtyIndexTo)') ?? [];
 
     if (certData.isEmpty) return 0;
     for (List certInfo in certData) {
@@ -242,72 +242,80 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<Map<String, dynamic>> getParameters() async {
-    final currencyParameters = await sdk.webView!
-            .evalJavascript('api.query.parameters.parametersStorage()') ??
-        {};
+    final currencyParameters =
+        await getStorage('parameters.parametersStorage()') ?? {};
     return currencyParameters;
   }
 
   Future<bool> hasAccountConsumers(String address) async {
-    final accountInfo = await sdk.webView!
-        .evalJavascript('api.query.system.account("$address")');
+    final accountInfo = await getStorage('system.account("$address")');
     final consumers = accountInfo['consumers'];
     return consumers == 0 ? false : true;
   }
 
+  // Future<double> getBalance(String address) async {
+  //   double balance = 0.0;
+
+  //   if (nodeConnected) {
+  //     final brutBalance = await sdk.api.account.queryBalance(address);
+  //     // log.d(brutBalance?.toJson());
+  //     balance = int.parse(brutBalance!.freeBalance) / 100;
+  //   } else {
+  //     balance = -1;
+  //   }
+
+  //   await getUnclaimedUd(address);
+  //   return balance;
+  // }
+
   Future<double> getBalance(String address) async {
-    double balance = 0.0;
+    final balanceGlobal = await getStorage('system.account("$address")');
 
-    if (nodeConnected) {
-      final brutBalance = await sdk.api.account.queryBalance(address);
-      // log.d(brutBalance?.toJson());
-      balance = int.parse(brutBalance!.freeBalance) / 100;
-    } else {
-      balance = -1;
-    }
+    // Get onchain storage values
+    final idtyIndex = await getStorage('identity.identityIndexOf("$address")');
+    final idtyData = await getStorage('identity.identities($idtyIndex)');
+    final int currentUdIndex =
+        int.parse(await getStorage('universalDividend.currentUdIndex()'));
+    final List pastReevals =
+        await getStorage('universalDividend.pastReevals()');
 
-    await getUnclaimedUd(address);
-    return balance;
-  }
-
-  Future<double> getUnclaimedUd(String address) async {
-    final balanceGlobal = await sdk.webView!
-        .evalJavascript('api.query.system.account("$address")');
-
-    final idtyIndex = await sdk.webView!
-        .evalJavascript('api.query.identity.identityIndexOf("$address")');
-    final idtyData = await sdk.webView!
-        .evalJavascript('api.query.identity.identities($idtyIndex)');
-
-    final int currentUdIndex = int.parse(await sdk.webView!
-        .evalJavascript('api.query.universalDividend.currentUdIndex()'));
-
-    final List pastReevals = await sdk.webView!
-        .evalJavascript('api.query.universalDividend.pastReevals()');
-
-    log.d(
-        'DEBUGG ${getShortPubkey(address)} : $balanceGlobal |---| $idtyIndex |---| $idtyData |---| $currentUdIndex |---| $pastReevals');
-
+    // Compute amount of claimable UDs
     final int newUdsAmount = _computeClaimUds(currentUdIndex,
         idtyData?['data']?['firstEligibleUd'] ?? 0, pastReevals);
 
-    final double transferableBalance =
-        (balanceGlobal['data']['free'] + newUdsAmount) / 100;
-    final double potentialBalance =
-        (balanceGlobal['data']['reserved'] + transferableBalance) / 100;
+    // Calculate transferable and potential balance
+    final int transferableBalance =
+        (balanceGlobal['data']['free'] + newUdsAmount);
+    final int potentialBalance =
+        (balanceGlobal['data']['reserved'] + transferableBalance);
 
     log.i(
         'transferableBalance: $transferableBalance --- potentialBalance: $potentialBalance');
 
-    return transferableBalance;
+    return transferableBalance / 100;
   }
 
   int _computeClaimUds(
       int currentUdIndex, int firstEligibleUd, List pastReevals) {
-    // TODO: Implement _computeClaimUds
+    int totalAmount = 0;
 
-    log.d('DEBUGGG: $currentUdIndex - $firstEligibleUd - $pastReevals');
-    return 0;
+    for (var reval in pastReevals.reversed) {
+      final int revalNbr = reval[0];
+      final int revalValue = reval[1];
+
+      // Loop each UDs revaluations and sum unclaimed balance
+      if (revalNbr <= firstEligibleUd) {
+        final count = currentUdIndex - firstEligibleUd;
+        totalAmount += count * revalValue;
+        break;
+      } else {
+        final count = currentUdIndex - revalNbr;
+        totalAmount += count * revalValue;
+        currentUdIndex = revalNbr;
+      }
+    }
+
+    return totalAmount;
   }
 
   Future<double> subscribeBalance(String address, {bool isUd = false}) async {
@@ -576,8 +584,7 @@ class SubstrateSdk with ChangeNotifier {
       return 'noid';
     }
 
-    final idtyStatus = await sdk.webView!
-        .evalJavascript('api.query.identity.identities($idtyIndex)');
+    final idtyStatus = await getStorage('identity.identities($idtyIndex)');
 
     if (idtyStatus != null) {
       final String status = idtyStatus['status'];
@@ -684,9 +691,8 @@ class SubstrateSdk with ChangeNotifier {
   Future<Map> getCertMeta(String address) async {
     var idtyIndex = await getIdentityIndexOf(address);
 
-    final certMeta = await sdk.webView!
-            .evalJavascript('api.query.cert.storageIdtyCertMeta($idtyIndex)') ??
-        '';
+    final certMeta =
+        await getStorage('cert.storageIdtyCertMeta($idtyIndex)') ?? '';
 
     return certMeta;
   }

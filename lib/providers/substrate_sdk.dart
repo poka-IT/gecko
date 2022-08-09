@@ -269,11 +269,13 @@ class SubstrateSdk with ChangeNotifier {
   // }
 
   Future<double> getBalance(String address) async {
-    final balanceGlobal = await getStorage('system.account("$address")');
-
     // Get onchain storage values
-    final idtyIndex = await getStorage('identity.identityIndexOf("$address")');
-    final idtyData = await getStorage('identity.identities($idtyIndex)');
+    final Map balanceGlobal = await getStorage('system.account("$address")');
+    final int? idtyIndex =
+        await getStorage('identity.identityIndexOf("$address")');
+    final Map? idtyData = idtyIndex == null
+        ? null
+        : await getStorage('identity.identities($idtyIndex)');
     final int currentUdIndex =
         int.parse(await getStorage('universalDividend.currentUdIndex()'));
     final List pastReevals =
@@ -299,7 +301,9 @@ class SubstrateSdk with ChangeNotifier {
       int currentUdIndex, int firstEligibleUd, List pastReevals) {
     int totalAmount = 0;
 
-    for (var reval in pastReevals.reversed) {
+    if (firstEligibleUd == 0) return 0;
+
+    for (final List reval in pastReevals.reversed) {
       final int revalNbr = reval[0];
       final int revalValue = reval[1];
 

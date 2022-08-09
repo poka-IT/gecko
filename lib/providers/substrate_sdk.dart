@@ -265,37 +265,49 @@ class SubstrateSdk with ChangeNotifier {
     } else {
       balance = -1;
     }
+
+    await getUnclaimedUd(address);
     return balance;
   }
 
   Future<double> getUnclaimedUd(String address) async {
-// TODO: Implement unclaimedUd evaluation
-// Pour ce faire, il vous faut requêter cinq éléments de storage :
+    final balanceGlobal = await sdk.webView!
+        .evalJavascript('api.query.system.account("$address")');
 
-//     system.account(address)
-//     identity.identityIndexOf(address)
-//     identity.identities(idtyIndex)
-//     universalDividend.currentUdIndex()
-//     universalDividend.pastReevals()
+    final idtyIndex = await sdk.webView!
+        .evalJavascript('api.query.identity.identityIndexOf("$address")');
+    final idtyData = await sdk.webView!
+        .evalJavascript('api.query.identity.identities($idtyIndex)');
 
-// const api = await ApiPromise.create(...);
-// const { data: balance } = await api.query.system.account(address);
-// const idtyIndex = await api.query.identity.identityIndexOf(address);
-// const { data: idtyData } = await api.query.identity.identies(idtyIndex);
-// const currentUdIndex = await api.query.universalDividend.currentUdIndex();
-// const pastReevals = await api.query.universalDividend.pastReevals();
+    final int currentUdIndex = int.parse(await sdk.webView!
+        .evalJavascript('api.query.universalDividend.currentUdIndex()'));
 
-// let newUdsAmount = computeClaimUds(currentUdIndex, idtyData.firstEligibleUd, pastReevals);
-// let transferableBalance = balance.free + newUdsAmount;
-// let potentialBalance = balance.reserved + transferableBalance;
+    final List pastReevals = await sdk.webView!
+        .evalJavascript('api.query.universalDividend.pastReevals()');
 
-    double balance = 0.0;
+    log.d(
+        'DEBUGG ${getShortPubkey(address)} : $balanceGlobal |---| $idtyIndex |---| $idtyData |---| $currentUdIndex |---| $pastReevals');
 
-    final brutBalance = await sdk.api.account.queryBalance(address);
-    // log.d(brutBalance?.toJson());
-    balance = int.parse(brutBalance!.freeBalance) / 100;
+    final int newUdsAmount = _computeClaimUds(currentUdIndex,
+        idtyData?['data']?['firstEligibleUd'] ?? 0, pastReevals);
 
-    return balance;
+    final double transferableBalance =
+        (balanceGlobal['data']['free'] + newUdsAmount) / 100;
+    final double potentialBalance =
+        (balanceGlobal['data']['reserved'] + transferableBalance) / 100;
+
+    log.i(
+        'transferableBalance: $transferableBalance --- potentialBalance: $potentialBalance');
+
+    return transferableBalance;
+  }
+
+  int _computeClaimUds(
+      int currentUdIndex, int firstEligibleUd, List pastReevals) {
+    // TODO: Implement _computeClaimUds
+
+    log.d('DEBUGGG: $currentUdIndex - $firstEligibleUd - $pastReevals');
+    return 0;
   }
 
   Future<double> subscribeBalance(String address, {bool isUd = false}) async {

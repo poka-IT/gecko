@@ -506,6 +506,7 @@ class SubstrateSdk with ChangeNotifier {
       keyring.current.pubKey,
     );
     TxInfoData txInfo;
+    List txOptions = [];
 
     if (toIdtyStatus == 'noid') {
       txInfo = TxInfoData(
@@ -513,6 +514,7 @@ class SubstrateSdk with ChangeNotifier {
         'createIdentity',
         sender,
       );
+      txOptions = [toAddress];
     } else if (toIdtyStatus == 'Validated' ||
         toIdtyStatus == 'ConfirmedByOwner') {
       if (toCerts[0] >= currencyParameters['wotMinCertForMembership'] &&
@@ -523,12 +525,17 @@ class SubstrateSdk with ChangeNotifier {
           'batchAll',
           sender,
         );
+        txOptions = [
+          'cert.addCert($fromIndex, $toIndex)',
+          'identity.validateIdentity($toIndex)'
+        ];
       } else {
         txInfo = TxInfoData(
           'cert',
           'addCert',
           sender,
         );
+        txOptions = [fromIndex, toIndex];
       }
     } else {
       transactionStatus = 'cantBeCert';
@@ -539,20 +546,6 @@ class SubstrateSdk with ChangeNotifier {
     log.d('Cert action: ${txInfo.call!}');
 
     try {
-      List txOptions = [];
-      if (txInfo.call == 'batchAll') {
-        txOptions = [
-          'cert.addCert($fromIndex, $toIndex)',
-          'identity.validateIdentity($toIndex)'
-        ];
-      } else if (txInfo.call == 'createIdentity') {
-        txOptions = [toAddress];
-      } else if (txInfo.call == 'addCert') {
-        txOptions = [fromIndex, toIndex];
-      } else {
-        log.e('TX call is unexpected');
-        return 'Ğecko says: TX call is unexpected';
-      }
       final hash = await sdk.api.tx
           .signAndSend(
             txInfo,

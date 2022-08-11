@@ -518,10 +518,10 @@ class WalletViewScreen extends StatelessWidget {
                                     future:
                                         sub.getBalance(defaultWallet.address!),
                                     builder: (BuildContext context,
-                                        AsyncSnapshot<double> balance) {
-                                      if (balance.connectionState !=
+                                        AsyncSnapshot<Map<String, double>> globalBalance) {
+                                      if (globalBalance.connectionState !=
                                               ConnectionState.done ||
-                                          balance.hasError) {
+                                          globalBalance.hasError) {
                                         if (balanceCache[
                                                 defaultWallet.address!] !=
                                             null) {
@@ -542,7 +542,7 @@ class WalletViewScreen extends StatelessWidget {
                                         }
                                       }
                                       balanceCache[defaultWallet.address!] =
-                                          balance.data!;
+                                          globalBalance.data!['transferableBalance']!;
                                       return Text(
                                         "${balanceCache[defaultWallet.address!]} $currencyName",
                                         style: const TextStyle(

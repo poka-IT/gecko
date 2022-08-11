@@ -78,9 +78,8 @@ class SubstrateSdk with ChangeNotifier {
       'batchAll',
       sender,
     );
-    List txOptions = calls;
 
-    return [txInfo, txOptions];
+    return [txInfo, calls];
   }
 
   TxSenderData _setSender() {
@@ -99,7 +98,9 @@ class SubstrateSdk with ChangeNotifier {
 
     for (var element in keyring.allAccounts) {
       final account = AddressInfo(address: element.address);
-      account.balance = await getBalance(element.address!);
+      final globalBalance = await getBalance(element.address!);
+      account.balance = globalBalance['transferableBalance']!;
+
       result.add(account);
     }
 
@@ -164,7 +165,7 @@ class SubstrateSdk with ChangeNotifier {
   //   return balance;
   // }
 
-  Future<double> getBalance(String address) async {
+  Future<Map<String, double>> getBalance(String address) async {
     // Get onchain storage values
     final Map balanceGlobal = await getStorage('system.account("$address")');
     final int? idtyIndex =
@@ -178,22 +179,26 @@ class SubstrateSdk with ChangeNotifier {
         await getStorage('universalDividend.pastReevals()');
 
     // Compute amount of claimable UDs
-    final int newUdsAmount = _computeClaimUds(currentUdIndex,
+    final int unclaimedUds = _computeUnclaimUds(currentUdIndex,
         idtyData?['data']?['firstEligibleUd'] ?? 0, pastReevals);
 
     // Calculate transferable and potential balance
     final int transferableBalance =
-        (balanceGlobal['data']['free'] + newUdsAmount);
-    final int potentialBalance =
-        (balanceGlobal['data']['reserved'] + transferableBalance);
+        (balanceGlobal['data']['free'] + unclaimedUds);
 
-    log.i(
-        'transferableBalance: $transferableBalance --- potentialBalance: $potentialBalance');
+    Map<String, double> finalBalances = {
+      'transferableBalance': transferableBalance / 100,
+      'free': balanceGlobal['data']['free'] / 100,
+      'unclaimedUds': unclaimedUds / 100,
+      'reserved': balanceGlobal['data']['reserved'] / 100,
+    };
 
-    return transferableBalance / 100;
+    // log.i(finalBalances);
+
+    return finalBalances;
   }
 
-  int _computeClaimUds(
+  int _computeUnclaimUds(
       int currentUdIndex, int firstEligibleUd, List pastReevals) {
     int totalAmount = 0;
 
@@ -618,9 +623,50 @@ class SubstrateSdk with ChangeNotifier {
       fromPubkey!.keys.first,
     );
 
-    final txInfo = TxInfoData(
-        'balances', amount == -1 ? 'transferAll' : 'transferKeepAlive', sender);
-    final txOptions = [destAddress, amount == -1 ? false : amountUnit];
+    final globalBalance = await getBalance(fromAddress);
+    TxInfoData txInfo;
+    List txOptions;
+
+    log.d(globalBalance);
+
+    // if (globalBalance['unclaimedUds'] != 0) {
+    //   claimUDs(password);
+    // }
+
+    // txInfo = TxInfoData(
+    //     'balances', amount == -1 ? 'transferAll' : 'transferKeepAlive', sender);
+    // txOptions = [destAddress, amount == -1 ? false : amountUnit];
+
+    if (globalBalance['unclaimedUds'] == 0) {
+      txInfo = TxInfoData('balances',
+          amount == -1 ? 'transferAll' : 'transferKeepAlive', sender);
+      txOptions = [destAddress, amount == -1 ? false : amountUnit];
+    } else {
+      txInfo = TxInfoData(
+        'utility',
+        'batchAll',
+        sender,
+      );
+
+      txOptions = [
+        ['api.tx.universalDividend.claimUds()']
+      ];
+      // 'balances.transferKeepAlive($destAddress, $amountUnit)'
+      // amount == -1
+      //     ? 'balances.transferAll(false)'
+      //     : 'balances.transferKeepAlive([$destAddress, $amountUnit])'
+    }
+
+    log.d('yooooo:  ${txInfo.module}, ${txInfo.call}, $txOptions');
+    // Map tata = await sdk.webView!
+    //     .evalJavascript('api.tx.universalDividend.claimUds()',
+    //         wrapPromise: false)
+    //     .timeout(
+    //       const Duration(seconds: 12),
+    //       onTimeout: () => {},
+    //     );
+
+    // return tata.toString();
 
     return await executeCall(txInfo, txOptions, password);
   }

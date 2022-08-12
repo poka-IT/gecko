@@ -37,15 +37,11 @@ class SubstrateSdk with ChangeNotifier {
   ////////// 1: API METHODS ///////////
   /////////////////////////////////////
 
-  Future<String> executeCall(
-      TxInfoData txInfo, txOptions, String password) async {
+  Future<String> executeCall(TxInfoData txInfo, txOptions, String password,
+      [String? rawParams]) async {
     try {
       final hash = await sdk.api.tx
-          .signAndSend(
-            txInfo,
-            txOptions,
-            password,
-          )
+          .signAndSend(txInfo, txOptions, password, rawParam: rawParams)
           .timeout(
             const Duration(seconds: 12),
             onTimeout: () => {},
@@ -70,16 +66,6 @@ class SubstrateSdk with ChangeNotifier {
 
   Future getStorage(String call) async {
     return await sdk.webView!.evalJavascript('api.query.$call');
-  }
-
-  List batchCall(TxSenderData sender, List calls) {
-    TxInfoData txInfo = TxInfoData(
-      'utility',
-      'batchAll',
-      sender,
-    );
-
-    return [txInfo, calls];
   }
 
   TxSenderData _setSender() {
@@ -625,17 +611,8 @@ class SubstrateSdk with ChangeNotifier {
 
     final globalBalance = await getBalance(fromAddress);
     TxInfoData txInfo;
-    List txOptions;
-
-    log.d(globalBalance);
-
-    // if (globalBalance['unclaimedUds'] != 0) {
-    //   claimUDs(password);
-    // }
-
-    // txInfo = TxInfoData(
-    //     'balances', amount == -1 ? 'transferAll' : 'transferKeepAlive', sender);
-    // txOptions = [destAddress, amount == -1 ? false : amountUnit];
+    List txOptions = [];
+    String? rawParams;
 
     if (globalBalance['unclaimedUds'] == 0) {
       txInfo = TxInfoData('balances',
@@ -647,28 +624,16 @@ class SubstrateSdk with ChangeNotifier {
         'batchAll',
         sender,
       );
+      const tx1 = 'api.tx.universalDividend.claimUds()';
+      final tx2 = amount == -1
+          ? 'api.tx.balances.transferAll(false)'
+          : 'api.tx.balances.transferKeepAlive("$destAddress", $amountUnit)';
 
-      txOptions = [
-        ['api.tx.universalDividend.claimUds()']
-      ];
-      // 'balances.transferKeepAlive($destAddress, $amountUnit)'
-      // amount == -1
-      //     ? 'balances.transferAll(false)'
-      //     : 'balances.transferKeepAlive([$destAddress, $amountUnit])'
+      rawParams = '[[$tx1, $tx2]]';
     }
 
-    log.d('yooooo:  ${txInfo.module}, ${txInfo.call}, $txOptions');
-    // Map tata = await sdk.webView!
-    //     .evalJavascript('api.tx.universalDividend.claimUds()',
-    //         wrapPromise: false)
-    //     .timeout(
-    //       const Duration(seconds: 12),
-    //       onTimeout: () => {},
-    //     );
-
-    // return tata.toString();
-
-    return await executeCall(txInfo, txOptions, password);
+    // log.d('yooooo:  ${txInfo.module}, ${txInfo.call}, $txOptions, $rawParams');
+    return await executeCall(txInfo, txOptions, password, rawParams);
   }
 
   Future<String> certify(
@@ -690,6 +655,7 @@ class SubstrateSdk with ChangeNotifier {
     final sender = _setSender();
     TxInfoData txInfo;
     List txOptions = [];
+    String? rawParams;
 
     final toCerts = await getCerts(toAddress);
     final currencyParameters = await getParameters();
@@ -706,12 +672,15 @@ class SubstrateSdk with ChangeNotifier {
       if (toCerts[0] >= currencyParameters['wotMinCertForMembership'] &&
           toIdtyStatus != 'Validated') {
         log.i('Batch cert and membership validation');
-        List batch = batchCall(sender, [
-          'cert.addCert($fromIndex, $toIndex)',
-          'identity.validateIdentity($toIndex)'
-        ]);
-        txInfo = batch[0];
-        txOptions = batch[1];
+        txInfo = TxInfoData(
+          'utility',
+          'batchAll',
+          sender,
+        );
+        final tx1 = 'cert.addCert($fromIndex, $toIndex)';
+        final tx2 = 'identity.validateIdentity($toIndex)';
+
+        rawParams = '[[$tx1, $tx2]]';
       } else {
         txInfo = TxInfoData(
           'cert',
@@ -727,23 +696,23 @@ class SubstrateSdk with ChangeNotifier {
     }
 
     log.d('Cert action: ${txInfo.call!}');
-    return await executeCall(txInfo, txOptions, password);
+    return await executeCall(txInfo, txOptions, password, rawParams);
   }
 
-  Future claimUDs(String password) async {
-    final sender = TxSenderData(
-      keyring.current.address,
-      keyring.current.pubKey,
-    );
+  // Future claimUDs(String password) async {
+  //   final sender = TxSenderData(
+  //     keyring.current.address,
+  //     keyring.current.pubKey,
+  //   );
 
-    final txInfo = TxInfoData(
-      'universalDividend',
-      'claimUds',
-      sender,
-    );
+  //   final txInfo = TxInfoData(
+  //     'universalDividend',
+  //     'claimUds',
+  //     sender,
+  //   );
 
-    return await executeCall(txInfo, [], password);
-  }
+  //   return await executeCall(txInfo, [], password);
+  // }
 
   Future<String> confirmIdentity(
       String fromAddress, String name, String password) async {

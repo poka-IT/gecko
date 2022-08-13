@@ -261,7 +261,9 @@ class SubstrateSdk with ChangeNotifier {
       } else {
         result.putIfAbsent('canCert', () => 0);
       }
+      log.d('tatatatata: ${nextIssuableOn - blocNumber}');
     }
+
     return result;
   }
 
@@ -632,7 +634,7 @@ class SubstrateSdk with ChangeNotifier {
       rawParams = '[[$tx1, $tx2]]';
     }
 
-    // log.d('yooooo:  ${txInfo.module}, ${txInfo.call}, $txOptions, $rawParams');
+    // log.d('pay args:  ${txInfo.module}, ${txInfo.call}, $txOptions, $rawParams');
     return await executeCall(txInfo, txOptions, password, rawParams);
   }
 

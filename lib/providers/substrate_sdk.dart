@@ -79,20 +79,6 @@ class SubstrateSdk with ChangeNotifier {
   ////////// 2: GET ONCHAIN STORAGE //////////
   ////////////////////////////////////////////
 
-  Future<List<AddressInfo>> getKeyStoreAddress() async {
-    List<AddressInfo> result = [];
-
-    for (var element in keyring.allAccounts) {
-      final account = AddressInfo(address: element.address);
-      final globalBalance = await getBalance(element.address!);
-      account.balance = globalBalance['transferableBalance']!;
-
-      result.add(account);
-    }
-
-    return result;
-  }
-
   Future<int> getIdentityIndexOf(String address) async {
     return await getStorage('identity.identityIndexOf("$address")') ?? 0;
   }
@@ -231,25 +217,6 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<bool> isMemberGet(String address) async {
     return await idtyStatus(address) == 'Validated';
-  }
-
-  Future<String> getMemberAddress() async {
-    // TODOO: Continue digging memberAddress detection
-    String memberAddress = '';
-    walletBox.toMap().forEach((key, value) async {
-      final bool isMember = await isMemberGet(value.address!);
-      log.d(isMember);
-      if (isMember) {
-        final currentChestNumber = configBox.get('currentChest');
-        ChestData newChestData = chestBox.get(currentChestNumber)!;
-        newChestData.memberWallet = value.number;
-        await chestBox.put(currentChestNumber, newChestData);
-        memberAddress = value.address!;
-        return;
-      }
-    });
-    log.d(memberAddress);
-    return memberAddress;
   }
 
   Future<Map<String, int>> certState(String from, String to) async {

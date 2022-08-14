@@ -187,29 +187,29 @@ class WalletsProfilesProvider with ChangeNotifier {
                 walletOptions.idtyStatus(context, address,
                     isOwner: false, color: Colors.black),
                 getCerts(context, address, 14),
-                if (username == null &&
-                    g1WalletsBox.get(address)?.username != null)
-                  SizedBox(
-                    width: 230,
-                    child: Text(
-                      g1WalletsBox.get(address)?.username ?? '',
-                      style: const TextStyle(
-                        fontSize: 27,
-                        color: Color(0xff814C00),
-                      ),
-                    ),
-                  ),
-                if (username != null)
-                  SizedBox(
-                    width: 230,
-                    child: Text(
-                      username,
-                      style: const TextStyle(
-                        fontSize: 27,
-                        color: Color(0xff814C00),
-                      ),
-                    ),
-                  ),
+                // if (username == null &&
+                //     g1WalletsBox.get(address)?.username != null)
+                //   SizedBox(
+                //     width: 230,
+                //     child: Text(
+                //       g1WalletsBox.get(address)?.username ?? '',
+                //       style: const TextStyle(
+                //         fontSize: 27,
+                //         color: Color(0xff814C00),
+                //       ),
+                //     ),
+                //   ),
+                // if (username != null)
+                //   SizedBox(
+                //     width: 230,
+                //     child: Text(
+                //       username,
+                //       style: const TextStyle(
+                //         fontSize: 27,
+                //         color: Color(0xff814C00),
+                //       ),
+                //     ),
+                //   ),
                 const SizedBox(height: 55),
               ]),
           const Spacer(),
@@ -229,12 +229,12 @@ class WalletsProfilesProvider with ChangeNotifier {
     return contactsBox.containsKey(address);
   }
 
-  void addContact(G1WalletsList profile) {
-    log.d(profile.username);
+  Future addContact(G1WalletsList profile) async {
+    // log.d(profile.username);
     if (isContact(profile.pubkey!)) {
-      contactsBox.delete(profile.pubkey);
+      await contactsBox.delete(profile.pubkey);
     } else {
-      contactsBox.put(profile.pubkey, profile);
+      await contactsBox.put(profile.pubkey, profile);
     }
     notifyListeners();
   }

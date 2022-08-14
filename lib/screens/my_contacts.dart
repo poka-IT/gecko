@@ -22,7 +22,7 @@ class ContactsScreen extends StatelessWidget {
     CesiumPlusProvider cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
     WalletsProfilesProvider walletsProfilesClass =
-        Provider.of<WalletsProfilesProvider>(context, listen: false);
+        Provider.of<WalletsProfilesProvider>(context, listen: true);
     HomeProvider homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
     DuniterIndexer duniterIndexer =
@@ -32,11 +32,15 @@ class ContactsScreen extends StatelessWidget {
     double avatarSize = 55;
 
     final myContacts = contactsBox.toMap().values.toList();
-    // myContacts.sort((a, b) {
-    //   final aa = a.username?.toLowerCase() ?? '';
-    //   final bb = b.username?.toLowerCase() ?? '';
-    //   return aa.compareTo(bb);
-    // });
+
+    // for (var element in myContacts) {
+    //   log.d('yooo: ${element.pubkey} ${element.username}');
+    // }
+
+    myContacts.sort((p1, p2) {
+      return Comparable.compare(p1.username?.toLowerCase() ?? 'zz',
+          p2.username?.toLowerCase() ?? 'zz');
+    });
 
     return Scaffold(
       backgroundColor: backgroundColor,

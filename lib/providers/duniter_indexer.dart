@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/cesium_plus.dart';
@@ -206,6 +207,13 @@ class DuniterIndexer with ChangeNotifier {
 
             walletNameIndexer[address] =
                 result.data?['account_by_pk']?['identity']?['name'];
+
+            g1WalletsBox.put(
+                address,
+                G1WalletsList(
+                    pubkey: address, username: walletNameIndexer[address]));
+
+            // log.d(g1WalletsBox.toMap().values.first.username);
 
             if (walletNameIndexer[address] == null) {
               if (wallet == null) {

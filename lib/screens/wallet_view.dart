@@ -60,10 +60,14 @@ class WalletViewScreen extends StatelessWidget {
                 Consumer<WalletsProfilesProvider>(
                     builder: (context, walletProfile, _) {
                   return IconButton(
-                    onPressed: () {
-                      final newContact =
-                          G1WalletsList(pubkey: pubkey!, username: username);
-                      walletProfile.addContact(newContact);
+                    onPressed: () async {
+                      G1WalletsList? newContact;
+                      g1WalletsBox.toMap().forEach((key, value) {
+                        if (key == pubkey) newContact = value;
+                      });
+                      // G1WalletsList(pubkey: pubkey!, username: username);
+                      await walletProfile.addContact(
+                          newContact ?? G1WalletsList(pubkey: pubkey!));
                     },
                     icon: Icon(
                       walletProfile.isContact(pubkey!)

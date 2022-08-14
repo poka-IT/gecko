@@ -22,6 +22,7 @@ late Box<WalletData> walletBox;
 late Box<ChestData> chestBox;
 late Box configBox;
 late Box<G1WalletsList> g1WalletsBox;
+late Box<G1WalletsList> contactsBox;
 // late Box keystoreBox;
 late Directory imageDirectory;
 

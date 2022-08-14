@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
@@ -222,6 +223,20 @@ class WalletsProfilesProvider with ChangeNotifier {
       ),
       CommonElements().offlineInfo(context),
     ]);
+  }
+
+  bool isContact(String address) {
+    return contactsBox.containsKey(address);
+  }
+
+  void addContact(G1WalletsList profile) {
+    log.d(profile.username);
+    if (isContact(profile.pubkey!)) {
+      contactsBox.delete(profile.pubkey);
+    } else {
+      contactsBox.put(profile.pubkey, profile);
+    }
+    notifyListeners();
   }
 
   void reload() {

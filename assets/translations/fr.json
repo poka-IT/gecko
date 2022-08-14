@@ -169,5 +169,11 @@
     "cancel": "Annuler",
     "inBlockchainResult": "Dans la blockchain {}",
     "search": "Rechercher",
-    "currencyNode": "Noeud {} :"
+    "currencyNode": "Noeud {} :",
+    "contactsManagementWithNbr": "Mes contacts ({})",
+    "contactsManagement": "Mes contacts",
+    "noContacts": "Vous n'avez aucun contact",
+    "addContact": "Ajouter\naux contacts",
+    "removeContact": "Supprimer\nce contact"
+
 }

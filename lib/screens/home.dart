@@ -23,6 +23,7 @@ import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/settings.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:gecko/screens/my_contacts.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -75,6 +76,20 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
               ),
+              ListTile(
+                key: const Key('contacts'),
+                title: Text('contactsManagement'.tr()),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return const ContactsScreen();
+                    }),
+                  );
+                },
+              ),
+
               // ListTile(
               //   key: const Key('substrateSandbox'),
               //   title: const Text('Substrate debug'),

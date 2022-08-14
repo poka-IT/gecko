@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -54,23 +55,44 @@ class WalletViewScreen extends StatelessWidget {
           elevation: 0,
           toolbarHeight: 60 * ratio,
           actions: [
-            InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) {
-                    return QrCodeFullscreen(
-                      walletProfile.address!,
+            Row(
+              children: [
+                Consumer<WalletsProfilesProvider>(
+                    builder: (context, walletProfile, _) {
+                  return IconButton(
+                    onPressed: () {
+                      final newContact =
+                          G1WalletsList(pubkey: pubkey!, username: username);
+                      walletProfile.addContact(newContact);
+                    },
+                    icon: Icon(
+                      walletProfile.isContact(pubkey!)
+                          ? Icons.add_reaction_rounded
+                          : Icons.add_reaction_outlined,
+                      size: 35,
+                    ),
+                  );
+                }),
+                const SizedBox(width: 10),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return QrCodeFullscreen(
+                          walletProfile.address!,
+                        );
+                      }),
                     );
-                  }),
-                );
-              },
-              child: QrImageWidget(
-                data: walletProfile.address!,
-                version: QrVersions.auto,
-                size: 80,
-              ),
-            ),
+                  },
+                  child: QrImageWidget(
+                    data: walletProfile.address!,
+                    version: QrVersions.auto,
+                    size: 80,
+                  ),
+                ),
+              ],
+            )
           ],
           title: SizedBox(
             height: 22,

@@ -457,12 +457,15 @@ class WalletOptions extends StatelessWidget {
     SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
+    WalletOptionsProvider walletOptions =
+        Provider.of<WalletOptionsProvider>(context, listen: false);
 
     // WalletData defaultWallet = _myWalletProvider.getDefaultWallet()!;
     // defaultWallet = wallet;
     await sub.setCurrentWallet(wallet);
     myWalletProvider.readAllWallets(currentChest);
     myWalletProvider.rebuildWidget();
+    walletOptions.reloadBuild();
   }
 
   Widget deleteWallet(BuildContext context,

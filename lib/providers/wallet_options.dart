@@ -56,7 +56,7 @@ class WalletOptionsProvider with ChangeNotifier {
     if (answer ?? false) {
       //Check if balance is null
       final balance = await sub.getBalance(wallet.address!);
-      if (balance != 0) {
+      if (balance != {}) {
         MyWalletsProvider myWalletProvider =
             Provider.of<MyWalletsProvider>(context, listen: false);
         final defaultWallet = myWalletProvider.getDefaultWallet();
@@ -531,9 +531,10 @@ Widget balance(BuildContext context, String address, double size,
     Consumer<SubstrateSdk>(builder: (context, sdk, _) {
       return FutureBuilder(
           future: sdk.getBalance(address),
-          builder: (BuildContext context, AsyncSnapshot<double> balance) {
-            if (balance.connectionState != ConnectionState.done ||
-                balance.hasError) {
+          builder: (BuildContext context,
+              AsyncSnapshot<Map<String, double>> globalBalance) {
+            if (globalBalance.connectionState != ConnectionState.done ||
+                globalBalance.hasError) {
               if (balanceCache[address] != null &&
                   balanceCache[address] != -1) {
                 return Text(
@@ -551,7 +552,7 @@ Widget balance(BuildContext context, String address, double size,
                 );
               }
             }
-            balanceCache[address] = balance.data!;
+            balanceCache[address] = globalBalance.data!['transferableBalance']!;
             if (balanceCache[address] != -1) {
               return Text(
                 "${balanceCache[address]!.toString()} $currencyName",

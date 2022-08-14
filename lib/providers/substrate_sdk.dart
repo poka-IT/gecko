@@ -28,9 +28,286 @@ class SubstrateSdk with ChangeNotifier {
   bool isLoadingEndpoint = false;
   String debugConnection = '';
   String transactionStatus = '';
+  int ss58 = 42;
 
   TextEditingController jsonKeystore = TextEditingController();
   TextEditingController keystorePassword = TextEditingController();
+
+  /////////////////////////////////////
+  ////////// 1: API METHODS ///////////
+  /////////////////////////////////////
+
+  Future<String> executeCall(TxInfoData txInfo, txOptions, String password,
+      [String? rawParams]) async {
+    try {
+      final hash = await sdk.api.tx
+          .signAndSend(txInfo, txOptions, password, rawParam: rawParams)
+          .timeout(
+            const Duration(seconds: 12),
+            onTimeout: () => {},
+          );
+      log.d(hash);
+      if (hash.isEmpty) {
+        transactionStatus = 'timeout';
+        notifyListeners();
+
+        return 'timeout';
+      } else {
+        transactionStatus = hash.toString();
+        notifyListeners();
+        return hash.toString();
+      }
+    } catch (e) {
+      transactionStatus = e.toString();
+      notifyListeners();
+      return e.toString();
+    }
+  }
+
+  Future getStorage(String call) async {
+    return await sdk.webView!.evalJavascript('api.query.$call');
+  }
+
+  TxSenderData _setSender() {
+    return TxSenderData(
+      keyring.current.address,
+      keyring.current.pubKey,
+    );
+  }
+
+  ////////////////////////////////////////////
+  ////////// 2: GET ONCHAIN STORAGE //////////
+  ////////////////////////////////////////////
+
+  Future<List<AddressInfo>> getKeyStoreAddress() async {
+    List<AddressInfo> result = [];
+
+    for (var element in keyring.allAccounts) {
+      final account = AddressInfo(address: element.address);
+      final globalBalance = await getBalance(element.address!);
+      account.balance = globalBalance['transferableBalance']!;
+
+      result.add(account);
+    }
+
+    return result;
+  }
+
+  Future<int> getIdentityIndexOf(String address) async {
+    return await getStorage('identity.identityIndexOf("$address")') ?? 0;
+  }
+
+  Future<List<int>> getCerts(String address) async {
+    final idtyIndex = await getIdentityIndexOf(address);
+    final certsReceiver =
+        await getStorage('cert.storageIdtyCertMeta($idtyIndex)') ?? [];
+
+    return [certsReceiver['receivedCount'], certsReceiver['issuedCount']];
+  }
+
+  Future<int> getCertValidityPeriod(String from, String to) async {
+    final idtyIndexFrom = await getIdentityIndexOf(from);
+    final idtyIndexTo = await getIdentityIndexOf(to);
+
+    if (idtyIndexFrom == 0 || idtyIndexTo == 0) return 0;
+
+    final List certData =
+        await getStorage('cert.certsByReceiver($idtyIndexTo)') ?? [];
+
+    if (certData.isEmpty) return 0;
+    for (List certInfo in certData) {
+      if (certInfo[0] == idtyIndexFrom) {
+        return certInfo[1];
+      }
+    }
+
+    return 0;
+  }
+
+  Future<Map<String, dynamic>> getParameters() async {
+    final currencyParameters =
+        await getStorage('parameters.parametersStorage()') ?? {};
+    return currencyParameters;
+  }
+
+  Future<bool> hasAccountConsumers(String address) async {
+    final accountInfo = await getStorage('system.account("$address")');
+    final consumers = accountInfo['consumers'];
+    return consumers == 0 ? false : true;
+  }
+
+  // Future<double> getBalance(String address) async {
+  //   double balance = 0.0;
+
+  //   if (nodeConnected) {
+  //     final brutBalance = await sdk.api.account.queryBalance(address);
+  //     // log.d(brutBalance?.toJson());
+  //     balance = int.parse(brutBalance!.freeBalance) / 100;
+  //   } else {
+  //     balance = -1;
+  //   }
+
+  //   await getUnclaimedUd(address);
+  //   return balance;
+  // }
+
+  Future<Map<String, double>> getBalance(String address) async {
+    if (!nodeConnected) {
+      return {
+        'transferableBalance': 0,
+        'free': 0,
+        'unclaimedUds': 0,
+        'reserved': 0,
+      };
+    }
+
+    // Get onchain storage values
+    final Map balanceGlobal = await getStorage('system.account("$address")');
+    final int? idtyIndex =
+        await getStorage('identity.identityIndexOf("$address")');
+    final Map? idtyData = idtyIndex == null
+        ? null
+        : await getStorage('identity.identities($idtyIndex)');
+    final int currentUdIndex =
+        int.parse(await getStorage('universalDividend.currentUdIndex()'));
+    final List pastReevals =
+        await getStorage('universalDividend.pastReevals()');
+
+    // Compute amount of claimable UDs
+    final int unclaimedUds = _computeUnclaimUds(currentUdIndex,
+        idtyData?['data']?['firstEligibleUd'] ?? 0, pastReevals);
+
+    // Calculate transferable and potential balance
+    final int transferableBalance =
+        (balanceGlobal['data']['free'] + unclaimedUds);
+
+    Map<String, double> finalBalances = {
+      'transferableBalance': transferableBalance / 100,
+      'free': balanceGlobal['data']['free'] / 100,
+      'unclaimedUds': unclaimedUds / 100,
+      'reserved': balanceGlobal['data']['reserved'] / 100,
+    };
+
+    // log.i(finalBalances);
+
+    return finalBalances;
+  }
+
+  int _computeUnclaimUds(
+      int currentUdIndex, int firstEligibleUd, List pastReevals) {
+    int totalAmount = 0;
+
+    if (firstEligibleUd == 0) return 0;
+
+    for (final List reval in pastReevals.reversed) {
+      final int revalNbr = reval[0];
+      final int revalValue = reval[1];
+
+      // Loop each UDs revaluations and sum unclaimed balance
+      if (revalNbr <= firstEligibleUd) {
+        final count = currentUdIndex - firstEligibleUd;
+        totalAmount += count * revalValue;
+        break;
+      } else {
+        final count = currentUdIndex - revalNbr;
+        totalAmount += count * revalValue;
+        currentUdIndex = revalNbr;
+      }
+    }
+
+    return totalAmount;
+  }
+
+  Future<int> getSs58Prefix() async {
+    final List res = await sdk.webView!.evalJavascript(
+            'api.consts.system.ss58Prefix.words',
+            wrapPromise: false) ??
+        [42];
+
+    ss58 = res[0];
+    log.d(ss58);
+    return ss58;
+  }
+
+  Future<bool> isMemberGet(String address) async {
+    return await idtyStatus(address) == 'Validated';
+  }
+
+  Future<String> getMemberAddress() async {
+    // TODOO: Continue digging memberAddress detection
+    String memberAddress = '';
+    walletBox.toMap().forEach((key, value) async {
+      final bool isMember = await isMemberGet(value.address!);
+      log.d(isMember);
+      if (isMember) {
+        final currentChestNumber = configBox.get('currentChest');
+        ChestData newChestData = chestBox.get(currentChestNumber)!;
+        newChestData.memberWallet = value.number;
+        await chestBox.put(currentChestNumber, newChestData);
+        memberAddress = value.address!;
+        return;
+      }
+    });
+    log.d(memberAddress);
+    return memberAddress;
+  }
+
+  Future<Map<String, int>> certState(String from, String to) async {
+    Map<String, int> result = {};
+    if (from != to && await isMemberGet(from)) {
+      final removableOn = await getCertValidityPeriod(from, to);
+      final certMeta = await getCertMeta(from);
+      final int nextIssuableOn = certMeta['nextIssuableOn'] ?? 0;
+      final certRemovableDuration = (removableOn - blocNumber) * 6;
+      const int renewDelay = 2 * 30 * 24 * 3600; // 2 months
+
+      if (certRemovableDuration >= renewDelay) {
+        final certRenewDuration = certRemovableDuration - renewDelay;
+        result.putIfAbsent('certRenewable', () => certRenewDuration);
+      } else if (nextIssuableOn > blocNumber) {
+        final certDelayDuration = (nextIssuableOn - blocNumber) * 6;
+        result.putIfAbsent('certDelay', () => certDelayDuration);
+      } else {
+        result.putIfAbsent('canCert', () => 0);
+      }
+      log.d('tatatatata: ${nextIssuableOn - blocNumber}');
+    }
+
+    return result;
+  }
+
+  Future<Map> getCertMeta(String address) async {
+    var idtyIndex = await getIdentityIndexOf(address);
+
+    final certMeta =
+        await getStorage('cert.storageIdtyCertMeta($idtyIndex)') ?? '';
+
+    return certMeta;
+  }
+
+  Future<String> idtyStatus(String address, [bool smooth = true]) async {
+    var idtyIndex = await getIdentityIndexOf(address);
+
+    if (idtyIndex == 0) {
+      return 'noid';
+    }
+
+    final idtyStatus = await getStorage('identity.identities($idtyIndex)');
+
+    if (idtyStatus != null) {
+      final String status = idtyStatus['status'];
+
+      return (status);
+    } else {
+      return 'expired';
+    }
+  }
+
+  Future getCurencyName() async {}
+
+  /////////////////////////////////////
+  ////// 3: SUBSTRATE CONNECTION //////
+  /////////////////////////////////////
 
   Future<void> initApi() async {
     sdkLoading = true;
@@ -43,15 +320,13 @@ class SubstrateSdk with ChangeNotifier {
     notifyListeners();
   }
 
+  String? getConnectedEndpoint() {
+    return sdk.api.connectedNode?.endpoint;
+  }
+
   Future<void> connectNode(BuildContext ctx) async {
     HomeProvider homeProvider = Provider.of<HomeProvider>(ctx, listen: false);
 
-    // var connectivityResult = await (Connectivity().checkConnectivity());
-    // if (connectivityResult == ConnectivityResult.mobile ||
-    //     connectivityResult == ConnectivityResult.wifi) {
-    //   _homeProvider.changeMessage("Vous n'êtes pas connecté à internet", 0);
-    //   return;
-    // }
     homeProvider.changeMessage("connectionPending".tr(), 0);
 
     // configBox.delete('customEndpoint');
@@ -60,30 +335,7 @@ class SubstrateSdk with ChangeNotifier {
             ? [getDuniterCustomEndpoint()]
             : getDuniterBootstrap();
 
-    // final nodes = getDuniterBootstrap();
-
     int timeout = 10000;
-
-    // if (n.endpoint!.startsWith('ws://')) {
-    //   timeout = 5000;
-    // }
-
-    //// Check websocket conenction - only for wss
-    // final channel = IOWebSocketChannel.connect(
-    //   Uri.parse('wss://192.168.1.72:9944'),
-    // );
-
-    // channel.stream.listen(
-    //   (dynamic message) {
-    //     log.d('message $message');
-    //   },
-    //   onDone: () {
-    //     log.d('ws channel closed');
-    //   },
-    //   onError: (error) {
-    //     log.d('ws error $error');
-    //   },
-    // );
 
     if (sdk.api.connectedNode?.endpoint != null) {
       await sdk.api.setting.unsubscribeBestNumber();
@@ -99,6 +351,7 @@ class SubstrateSdk with ChangeNotifier {
     notifyListeners();
     if (res != null) {
       nodeConnected = true;
+      // await getSs58Prefix();
 
       // Subscribe bloc number
       sdk.api.setting.subscribeBestNumber((res) {
@@ -197,7 +450,7 @@ class SubstrateSdk with ChangeNotifier {
       notifyListeners();
     });
     if (json == null) return '';
-    log.d(json);
+    // log.d(json);
     try {
       await sdk.api.keyring.addAccount(
         keyring,
@@ -205,7 +458,6 @@ class SubstrateSdk with ChangeNotifier {
         acc: json,
         password: password,
       );
-      // Clipboard.setData(ClipboardData(text: jsonEncode(acc.toJson())));
     } catch (e) {
       log.e(e);
       importIsLoading = false;
@@ -218,91 +470,9 @@ class SubstrateSdk with ChangeNotifier {
     return keyring.allAccounts.last.address!;
   }
 
-  void reload() {
-    notifyListeners();
-  }
-
-  Future<List<AddressInfo>> getKeyStoreAddress() async {
-    List<AddressInfo> result = [];
-
-    // sdk.api.account.unsubscribeBalance();
-    for (var element in keyring.allAccounts) {
-      // Clipboard.setData(ClipboardData(text: jsonEncode(element)));
-      final account = AddressInfo(address: element.address);
-      // await sdk.api.account.subscribeBalance(element.address, (p0) {
-      //   account.balance = int.parse(p0.freeBalance) / 100;
-      // });
-      // sdk.api.setting.unsubscribeBestNumber();
-      account.balance = await getBalance(element.address!);
-      result.add(account);
-    }
-
-    return result;
-  }
-
-  Future<List<int>> getCerts(String address) async {
-    final idtyIndex = await sdk.webView!
-        .evalJavascript('api.query.identity.identityIndexOf("$address")');
-    // log.d('u32: ' + idtyIndex.toString());
-
-    final certsReceiver = await sdk.webView!
-            .evalJavascript('api.query.cert.storageIdtyCertMeta($idtyIndex)') ??
-        [];
-
-    return [certsReceiver['receivedCount'], certsReceiver['issuedCount']];
-  }
-
-  Future<Map> getCertData(String from, String to) async {
-    final idtyIndexFrom = await sdk.webView!
-        .evalJavascript('api.query.identity.identityIndexOf("$from")');
-
-    final idtyIndexTo = await sdk.webView!
-        .evalJavascript('api.query.identity.identityIndexOf("$to")');
-
-    if (idtyIndexFrom == null || idtyIndexTo == null) return {};
-
-    final certData = await sdk.webView!.evalJavascript(
-            'api.query.cert.storageCertsByIssuer($idtyIndexFrom, $idtyIndexTo)') ??
-        '';
-
-    if (certData == '') return {};
-
-    // log.d(_certData);
-    return certData;
-  }
-
-  Future<bool> hasAccountConsumers(String address) async {
-    final accountInfo = await sdk.webView!
-        .evalJavascript('api.query.system.account("$address")');
-    final consumers = accountInfo['consumers'];
-    // log.d('Consumers: $_consumers');
-    return consumers == 0 ? false : true;
-  }
-
-  Future<double> getBalance(String address, {bool isUd = false}) async {
-    double balance = 0.0;
-
-    // log.d('nodeConnected: ' + nodeConnected.toString());
-    if (nodeConnected) {
-      final brutBalance = await sdk.api.account.queryBalance(address);
-      balance = int.parse(brutBalance!.freeBalance) / 100;
-    } else {
-      balance = -1;
-    }
-    return balance;
-  }
-
-  Future<double> subscribeBalance(String address, {bool isUd = false}) async {
-    double balance = 0.0;
-    if (nodeConnected) {
-      await sdk.api.account.subscribeBalance(address, (balanceData) {
-        balance = int.parse(balanceData.freeBalance) / 100;
-        notifyListeners();
-      });
-    }
-
-    return balance;
-  }
+  //////////////////////////////////
+  /////// 4: CRYPTOGRAPHY //////////
+  //////////////////////////////////
 
   KeyPairData getKeypair(String address) {
     return keyring.keyPairs.firstWhere((kp) => kp.address == address,
@@ -311,7 +481,6 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<bool> checkPassword(String address, String pass) async {
     final account = getKeypair(address);
-    // log.d(account.address);
 
     return await sdk.api.keyring.checkPassword(account, pass);
   }
@@ -367,8 +536,6 @@ class SubstrateSdk with ChangeNotifier {
     final gen = await sdk.api.keyring.generateMnemonic(ss58);
     generatedMnemonic = gen.mnemonic!;
 
-    // final res = await importAccount(fromMnemonic: true);
-    // await Clipboard.setData(ClipboardData(text: generatedMnemonic));
     return gen.mnemonic!;
   }
 
@@ -395,319 +562,6 @@ class SubstrateSdk with ChangeNotifier {
       return KeyPairData();
     }
   }
-
-  Future<String> pay(
-      {required String fromAddress,
-      required String destAddress,
-      required double amount,
-      required String password}) async {
-    transactionStatus = '';
-
-    // setCurrentWallet(fromAddress);
-
-    log.d(keyring.current.address);
-    log.d(fromAddress);
-    log.d(password);
-    // log.d(await checkPassword(fromAddress, password));
-
-    final fromPubkey = await sdk.api.account.decodeAddress([fromAddress]);
-    log.d(fromPubkey!.keys.first);
-    final sender = TxSenderData(
-      fromAddress,
-      fromPubkey.keys.first,
-    );
-    final txInfo = TxInfoData(
-        'balances', amount == -1 ? 'transferAll' : 'transferKeepAlive', sender);
-
-    final int amountUnit = (amount * 100).toInt();
-    try {
-      final hash = await sdk.api.tx.signAndSend(
-        txInfo,
-        [destAddress, amount == -1 ? false : amountUnit],
-        password,
-        onStatusChange: (status) {
-          log.d('Transaction status: $status');
-          transactionStatus = status;
-          notifyListeners();
-        },
-      ).timeout(
-        const Duration(seconds: 12),
-        onTimeout: () => {},
-      );
-      log.d(hash.toString());
-      if (hash.isEmpty) {
-        transactionStatus = 'timeout';
-        notifyListeners();
-
-        return 'timeout';
-      } else {
-        transactionStatus = hash.toString();
-        notifyListeners();
-        return hash.toString();
-      }
-    } catch (e) {
-      transactionStatus = e.toString();
-      notifyListeners();
-      return e.toString();
-    }
-  }
-
-  Future<String> certify(
-      String fromAddress, String password, String toAddress) async {
-    transactionStatus = '';
-
-    // setCurrentWallet(fromAddress);
-    log.d('me: $fromAddress');
-    log.d('to: $toAddress');
-
-    final myIdtyStatus = await idtyStatus(fromAddress);
-    final toIdtyStatus = await idtyStatus(toAddress);
-
-    log.d(myIdtyStatus);
-    log.d(toIdtyStatus);
-
-    if (myIdtyStatus != 'Validated') {
-      transactionStatus = 'notMember';
-      notifyListeners();
-      return 'notMember';
-    }
-
-    final sender = TxSenderData(
-      keyring.current.address,
-      keyring.current.pubKey,
-    );
-    TxInfoData txInfo;
-
-    if (toIdtyStatus == 'noid') {
-      txInfo = TxInfoData(
-        'identity',
-        'createIdentity',
-        sender,
-      );
-    } else if (toIdtyStatus == 'Validated' ||
-        toIdtyStatus == 'ConfirmedByOwner') {
-      txInfo = TxInfoData(
-        'cert',
-        'addCert',
-        sender,
-      );
-    } else {
-      transactionStatus = 'cantBeCert';
-      notifyListeners();
-      return 'cantBeCert';
-    }
-
-    log.d('Cert action: ${txInfo.call!}');
-
-    try {
-      final hash = await sdk.api.tx
-          .signAndSend(
-            txInfo,
-            [toAddress],
-            password,
-          )
-          .timeout(
-            const Duration(seconds: 12),
-            onTimeout: () => {},
-          );
-      log.d(hash);
-      if (hash.isEmpty) {
-        transactionStatus = 'timeout';
-        notifyListeners();
-
-        return 'timeout';
-      } else {
-        transactionStatus = hash.toString();
-        notifyListeners();
-        return hash.toString();
-      }
-    } catch (e) {
-      transactionStatus = e.toString();
-      notifyListeners();
-      return e.toString();
-    }
-  }
-
-  Future<String> idtyStatus(String address, [bool smooth = true]) async {
-    //   var tata = await sdk.webView!
-    //       .evalJavascript('api.query.system.account("$address")');
-
-    var idtyIndex = await sdk.webView!
-        .evalJavascript('api.query.identity.identityIndexOf("$address")');
-
-    if (idtyIndex == null) {
-      return 'noid';
-    }
-
-    final idtyStatus = await sdk.webView!
-        .evalJavascript('api.query.identity.identities($idtyIndex)');
-
-    if (idtyStatus != null) {
-      final String status = idtyStatus['status'];
-      // log.d('Status $address: $_status');
-      return (status);
-    } else {
-      return 'expired';
-    }
-  }
-
-  Future<String> confirmIdentity(
-      String fromAddress, String name, String password) async {
-    // Confirm identity
-    // setCurrentWallet(fromAddress);
-    log.d('me: ${keyring.current.address!}');
-
-    final sender = TxSenderData(
-      keyring.current.address,
-      keyring.current.pubKey,
-    );
-
-    final txInfo = TxInfoData(
-      'identity',
-      'confirmIdentity',
-      sender,
-    );
-
-    try {
-      final hash = await sdk.api.tx.signAndSend(
-        txInfo,
-        [name],
-        password,
-        onStatusChange: (status) {
-          log.d('Transaction status: $status');
-          transactionStatus = status;
-          notifyListeners();
-        },
-      ).timeout(
-        const Duration(seconds: 12),
-        onTimeout: () => {},
-      );
-      log.d(hash);
-      if (hash.isEmpty) {
-        transactionStatus = 'timeout';
-        notifyListeners();
-
-        return 'timeout';
-      } else {
-        transactionStatus = hash.toString();
-        notifyListeners();
-        return hash.toString();
-      }
-    } on Exception catch (e) {
-      log.e(e);
-      transactionStatus = e.toString();
-      notifyListeners();
-      return e.toString();
-    }
-  }
-
-  Future<bool> isMemberGet(String address) async {
-    return await idtyStatus(address) == 'Validated';
-  }
-
-  Future<String> getMemberAddress() async {
-    // TODOO: Continue digging memberAddress detection
-    String memberAddress = '';
-    walletBox.toMap().forEach((key, value) async {
-      final bool isMember = await isMemberGet(value.address!);
-      log.d(isMember);
-      if (isMember) {
-        final currentChestNumber = configBox.get('currentChest');
-        ChestData newChestData = chestBox.get(currentChestNumber)!;
-        newChestData.memberWallet = value.number;
-        await chestBox.put(currentChestNumber, newChestData);
-        memberAddress = value.address!;
-        return;
-      }
-    });
-    log.d(memberAddress);
-    return memberAddress;
-  }
-
-  Future<Map<String, int>> certState(String from, String to) async {
-    Map<String, int> result = {};
-    if (from != to && await isMemberGet(from)) {
-      final certData = await getCertData(from, to);
-      final certMeta = await getCertMeta(from);
-      final int removableOn = certData['removableOn'] ?? 0;
-      final int nextIssuableOn = certMeta['nextIssuableOn'] ?? 0;
-      final certRemovableDuration = (removableOn - blocNumber) * 6;
-      const int renewDelay = 2 * 30 * 24 * 3600; // 2 months
-
-      if (certRemovableDuration >= renewDelay) {
-        final certRenewDuration = certRemovableDuration - renewDelay;
-        result.putIfAbsent('certRenewable', () => certRenewDuration);
-      } else if (nextIssuableOn > blocNumber) {
-        final certDelayDuration = (nextIssuableOn - blocNumber) * 6;
-        result.putIfAbsent('certDelay', () => certDelayDuration);
-      } else {
-        result.putIfAbsent('canCert', () => 0);
-      }
-    }
-    return result;
-  }
-
-  Future<Map> getCertMeta(String address) async {
-    var idtyIndex = await sdk.webView!
-        .evalJavascript('api.query.identity.identityIndexOf("$address")');
-
-    final certMeta = await sdk.webView!
-            .evalJavascript('api.query.cert.storageIdtyCertMeta($idtyIndex)') ??
-        '';
-    // if (_certMeta['nextIssuableOn'] != 0) return {};
-
-    // log.d(_certMeta);
-    return certMeta;
-  }
-
-  Future revokeIdentity(String address, String password) async {
-    final idtyIndex = await sdk.webView!
-        .evalJavascript('api.query.identity.identityIndexOf("$address")');
-
-    final sender = TxSenderData(
-      keyring.current.address,
-      keyring.current.pubKey,
-    );
-
-    log.d(sender.address);
-    TxInfoData txInfo;
-
-    txInfo = TxInfoData(
-      'membership',
-      'revokeMembership',
-      sender,
-    );
-
-    try {
-      final hash = await sdk.api.tx
-          .signAndSend(
-            txInfo,
-            [idtyIndex],
-            password,
-          )
-          .timeout(
-            const Duration(seconds: 12),
-            onTimeout: () => {},
-          );
-      log.d(hash);
-      if (hash.isEmpty) {
-        transactionStatus = 'timeout';
-        notifyListeners();
-
-        return 'timeout';
-      } else {
-        transactionStatus = hash.toString();
-        notifyListeners();
-        return hash.toString();
-      }
-    } catch (e) {
-      transactionStatus = e.toString();
-      notifyListeners();
-      return e.toString();
-    }
-  }
-
-  Future getCurencyName() async {}
 
   Future<String> derive(
       BuildContext context, String address, int number, String password) async {
@@ -748,10 +602,178 @@ class SubstrateSdk with ChangeNotifier {
     return await sdk.api.keyring.checkMnemonicValid(mnemonic);
   }
 
-  String? getConnectedEndpoint() {
-    return sdk.api.connectedNode?.endpoint;
+  //////////////////////////////////////
+  ///////// 5: CALLS EXECUTION /////////
+  //////////////////////////////////////
+
+  Future<String> pay(
+      {required String fromAddress,
+      required String destAddress,
+      required double amount,
+      required String password}) async {
+    transactionStatus = '';
+    final fromPubkey = await sdk.api.account.decodeAddress([fromAddress]);
+    final int amountUnit = (amount * 100).toInt();
+
+    final sender = TxSenderData(
+      fromAddress,
+      fromPubkey!.keys.first,
+    );
+
+    final globalBalance = await getBalance(fromAddress);
+    TxInfoData txInfo;
+    List txOptions = [];
+    String? rawParams;
+
+    if (globalBalance['unclaimedUds'] == 0) {
+      txInfo = TxInfoData('balances',
+          amount == -1 ? 'transferAll' : 'transferKeepAlive', sender);
+      txOptions = [destAddress, amount == -1 ? false : amountUnit];
+    } else {
+      txInfo = TxInfoData(
+        'utility',
+        'batchAll',
+        sender,
+      );
+      const tx1 = 'api.tx.universalDividend.claimUds()';
+      final tx2 = amount == -1
+          ? 'api.tx.balances.transferAll(false)'
+          : 'api.tx.balances.transferKeepAlive("$destAddress", $amountUnit)';
+
+      rawParams = '[[$tx1, $tx2]]';
+    }
+
+    // log.d('pay args:  ${txInfo.module}, ${txInfo.call}, $txOptions, $rawParams');
+    return await executeCall(txInfo, txOptions, password, rawParams);
+  }
+
+  Future<String> certify(
+      String fromAddress, String password, String toAddress) async {
+    transactionStatus = '';
+
+    final myIdtyStatus = await idtyStatus(fromAddress);
+    final toIdtyStatus = await idtyStatus(toAddress);
+
+    final fromIndex = await getIdentityIndexOf(fromAddress);
+    final toIndex = await getIdentityIndexOf(toAddress);
+
+    if (myIdtyStatus != 'Validated') {
+      transactionStatus = 'notMember';
+      notifyListeners();
+      return 'notMember';
+    }
+
+    final sender = _setSender();
+    TxInfoData txInfo;
+    List txOptions = [];
+    String? rawParams;
+
+    final toCerts = await getCerts(toAddress);
+    final currencyParameters = await getParameters();
+
+    if (toIdtyStatus == 'noid') {
+      txInfo = TxInfoData(
+        'identity',
+        'createIdentity',
+        sender,
+      );
+      txOptions = [toAddress];
+    } else if (toIdtyStatus == 'Validated' ||
+        toIdtyStatus == 'ConfirmedByOwner') {
+      if (toCerts[0] >= currencyParameters['wotMinCertForMembership'] &&
+          toIdtyStatus != 'Validated') {
+        log.i('Batch cert and membership validation');
+        txInfo = TxInfoData(
+          'utility',
+          'batchAll',
+          sender,
+        );
+        final tx1 = 'cert.addCert($fromIndex, $toIndex)';
+        final tx2 = 'identity.validateIdentity($toIndex)';
+
+        rawParams = '[[$tx1, $tx2]]';
+      } else {
+        txInfo = TxInfoData(
+          'cert',
+          'addCert',
+          sender,
+        );
+        txOptions = [fromIndex, toIndex];
+      }
+    } else {
+      transactionStatus = 'cantBeCert';
+      notifyListeners();
+      return 'cantBeCert';
+    }
+
+    log.d('Cert action: ${txInfo.call!}');
+    return await executeCall(txInfo, txOptions, password, rawParams);
+  }
+
+  // Future claimUDs(String password) async {
+  //   final sender = TxSenderData(
+  //     keyring.current.address,
+  //     keyring.current.pubKey,
+  //   );
+
+  //   final txInfo = TxInfoData(
+  //     'universalDividend',
+  //     'claimUds',
+  //     sender,
+  //   );
+
+  //   return await executeCall(txInfo, [], password);
+  // }
+
+  Future<String> confirmIdentity(
+      String fromAddress, String name, String password) async {
+    log.d('me: ${keyring.current.address!}');
+
+    final sender = TxSenderData(
+      keyring.current.address,
+      keyring.current.pubKey,
+    );
+
+    final txInfo = TxInfoData(
+      'identity',
+      'confirmIdentity',
+      sender,
+    );
+    final txOptions = [name];
+
+    return await executeCall(txInfo, txOptions, password);
+  }
+
+  Future revokeIdentity(String address, String password) async {
+    final idtyIndex = await getIdentityIndexOf(address);
+
+    final sender = TxSenderData(
+      keyring.current.address,
+      keyring.current.pubKey,
+    );
+
+    log.d(sender.address);
+    TxInfoData txInfo;
+
+    txInfo = TxInfoData(
+      'membership',
+      'revokeMembership',
+      sender,
+    );
+
+    final txOptions = [idtyIndex];
+
+    return await executeCall(txInfo, txOptions, password);
+  }
+
+  void reload() {
+    notifyListeners();
   }
 }
+
+////////////////////////////////////////////
+/////// 6: UI ELEMENTS (off class) /////////
+////////////////////////////////////////////
 
 void snack(BuildContext context, String message, {int duration = 2}) {
   final snackBar =

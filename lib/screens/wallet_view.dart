@@ -129,6 +129,9 @@ class WalletViewScreen extends StatelessWidget {
                   builder: (context, AsyncSnapshot<Map<String, int>> snapshot) {
                     if (snapshot.data == null) return const SizedBox();
                     String duration = '';
+                    log.d('certDelay ${snapshot.data!['certDelay']}');
+                    log.d('certRenewable ${snapshot.data!['certRenewable']}');
+
                     if (snapshot.data!['certDelay'] != null ||
                         snapshot.data!['certRenewable'] != null) {
                       final Duration durationSeconds = Duration(
@@ -515,10 +518,11 @@ class WalletViewScreen extends StatelessWidget {
                                     future:
                                         sub.getBalance(defaultWallet.address!),
                                     builder: (BuildContext context,
-                                        AsyncSnapshot<double> balance) {
-                                      if (balance.connectionState !=
+                                        AsyncSnapshot<Map<String, double>>
+                                            globalBalance) {
+                                      if (globalBalance.connectionState !=
                                               ConnectionState.done ||
-                                          balance.hasError) {
+                                          globalBalance.hasError) {
                                         if (balanceCache[
                                                 defaultWallet.address!] !=
                                             null) {
@@ -539,7 +543,8 @@ class WalletViewScreen extends StatelessWidget {
                                         }
                                       }
                                       balanceCache[defaultWallet.address!] =
-                                          balance.data!;
+                                          globalBalance
+                                              .data!['transferableBalance']!;
                                       return Text(
                                         "${balanceCache[defaultWallet.address!]} $currencyName",
                                         style: const TextStyle(

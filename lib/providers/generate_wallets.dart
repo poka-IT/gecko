@@ -385,19 +385,20 @@ class GenerateWalletsProvider with ChangeNotifier {
     }
 
     for (var derivationNbr in [for (var i = 0; i < numberScan; i += 1) i]) {
-      final addressData = await sub.sdk.api.keyring.addressFromMnemonic(ss58,
+      final addressData = await sub.sdk.api.keyring.addressFromMnemonic(
+          sub.ss58,
           cryptoType: CryptoType.sr25519,
           mnemonic: generatedMnemonic!,
           derivePath: '//$derivationNbr');
 
       final balance = await sub.getBalance(addressData.address!).timeout(
             const Duration(seconds: 1),
-            onTimeout: () => 0,
+            onTimeout: () => {},
           );
       // const balance = 0;
 
       log.d(balance);
-      if (balance != 0) {
+      if (balance != {}) {
         isAlive = true;
         String walletName = scanedWalletNumber == 0
             ? 'currentWallet'.tr()
@@ -426,16 +427,16 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   Future<bool> scanRootBalance(SubstrateSdk sub, int currentChestNumber) async {
-    final addressData = await sub.sdk.api.keyring.addressFromMnemonic(ss58,
+    final addressData = await sub.sdk.api.keyring.addressFromMnemonic(sub.ss58,
         cryptoType: CryptoType.sr25519, mnemonic: generatedMnemonic!);
 
     final balance = await sub.getBalance(addressData.address!).timeout(
           const Duration(seconds: 1),
-          onTimeout: () => 0,
+          onTimeout: () => {},
         );
 
     log.d(balance);
-    if (balance != 0) {
+    if (balance != {}) {
       String walletName = 'myRootWallet'.tr();
       await sub.importAccount(
           mnemonic: '', fromMnemonic: true, password: pin.text);

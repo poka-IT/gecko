@@ -152,6 +152,15 @@ class SubstrateSdk with ChangeNotifier {
   // }
 
   Future<Map<String, double>> getBalance(String address) async {
+    if (!nodeConnected) {
+      return {
+        'transferableBalance': 0,
+        'free': 0,
+        'unclaimedUds': 0,
+        'reserved': 0,
+      };
+    }
+
     // Get onchain storage values
     final Map balanceGlobal = await getStorage('system.account("$address")');
     final int? idtyIndex =

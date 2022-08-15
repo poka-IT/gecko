@@ -109,7 +109,7 @@ class DuniterIndexer with ChangeNotifier {
     client.connectionTimeout = const Duration(milliseconds: 3000);
 
     do {
-      int listLenght = listIndexerEndpoints.length;
+      int listLenght = listIndexerEndpoints.length - 1;
       if (i >= listLenght) {
         log.e('NO VALID INDEXER ENDPOINT FOUND');
         indexerEndpoint = '';

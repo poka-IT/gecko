@@ -397,7 +397,7 @@ class GenerateWalletsProvider with ChangeNotifier {
 
       final Map balance = await sub.getBalance(addressData.address!).timeout(
             const Duration(seconds: 1),
-            onTimeout: () => {},
+            onTimeout: () => {'transferableBalance': 0},
           );
       // const balance = 0;
 

@@ -233,7 +233,7 @@ class SubstrateSdk with ChangeNotifier {
       } else {
         result.putIfAbsent('canCert', () => 0);
       }
-      log.d('tatatatata: ${nextIssuableOn - blocNumber}');
+      // log.d('tatatatata: ${nextIssuableOn - blocNumber}');
     }
 
     return result;
@@ -507,6 +507,9 @@ class SubstrateSdk with ChangeNotifier {
   Future<String> derive(
       BuildContext context, String address, int number, String password) async {
     final keypair = getKeypair(address);
+
+    //TODO: fix null keypair after used chest import
+    log.d('tatatata $address $number $password ${keypair.encoded}');
 
     final seedMap =
         await keyring.store.getDecryptedSeed(keypair.pubKey, password);

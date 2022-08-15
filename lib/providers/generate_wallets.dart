@@ -391,14 +391,15 @@ class GenerateWalletsProvider with ChangeNotifier {
           mnemonic: generatedMnemonic!,
           derivePath: '//$derivationNbr');
 
-      final balance = await sub.getBalance(addressData.address!).timeout(
+      final Map balance = await sub.getBalance(addressData.address!).timeout(
             const Duration(seconds: 1),
             onTimeout: () => {},
           );
       // const balance = 0;
 
-      log.d(balance);
-      if (balance != {}) {
+      log.d(
+          "${addressData.address!}: ${balance['transferableBalance']} $currencyName");
+      if (balance['transferableBalance'] != 0) {
         isAlive = true;
         String walletName = scanedWalletNumber == 0
             ? 'currentWallet'.tr()

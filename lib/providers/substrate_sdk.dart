@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -29,9 +28,6 @@ class SubstrateSdk with ChangeNotifier {
   String debugConnection = '';
   String transactionStatus = '';
   int ss58 = 42;
-
-  TextEditingController jsonKeystore = TextEditingController();
-  TextEditingController keystorePassword = TextEditingController();
 
   /////////////////////////////////////
   ////////// 1: API METHODS ///////////
@@ -374,40 +370,18 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<String> importAccount(
       {String mnemonic = '',
-      bool fromMnemonic = false,
       String derivePath = '',
-      String password = ''}) async {
-    // toy exercise immense month enter answer table prefer speed cycle gold phone
-    final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
-    if (mnemonic != '') {
-      fromMnemonic = true;
-      generatedMnemonic = mnemonic;
-    } else if (clipboardData!.text!.split(' ').length == 12) {
-      fromMnemonic = true;
-      generatedMnemonic = clipboardData.text!;
-    }
-
-    if (password == '') {
-      password = keystorePassword.text;
-    }
-
-    final KeyType keytype;
-    final String keyToImport;
-    if (fromMnemonic) {
-      keytype = KeyType.mnemonic;
-      keyToImport = generatedMnemonic;
-    } else {
-      keytype = KeyType.keystore;
-      keyToImport = jsonKeystore.text.replaceAll("'", "\\'");
-    }
+      required String password}) async {
+    const keytype = KeyType.mnemonic;
+    if (mnemonic != '') generatedMnemonic = mnemonic;
 
     importIsLoading = true;
     notifyListeners();
-    if (clipboardData?.text != null) jsonKeystore.text = clipboardData!.text!;
-    var json = await sdk.api.keyring
+
+    final json = await sdk.api.keyring
         .importAccount(keyring,
             keyType: keytype,
-            key: keyToImport,
+            key: generatedMnemonic,
             name: derivePath,
             password: password,
             derivePath: derivePath,
@@ -543,7 +517,6 @@ class SubstrateSdk with ChangeNotifier {
 
     return await importAccount(
         mnemonic: generatedMnemonic,
-        fromMnemonic: true,
         derivePath: '//$number',
         password: password);
   }
@@ -558,7 +531,7 @@ class SubstrateSdk with ChangeNotifier {
     final List seedList = seedMap!['seed'].split('//');
     generatedMnemonic = seedList[0];
 
-    return await importAccount(fromMnemonic: true, password: password);
+    return await importAccount(password: password);
   }
 
   Future<bool> isMnemonicValid(String mnemonic) async {

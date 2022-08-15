@@ -409,10 +409,7 @@ class GenerateWalletsProvider with ChangeNotifier {
             ? 'currentWallet'.tr()
             : '${'wallet'.tr()} ${scanedValidWalletNumber + 1}';
         await sub.importAccount(
-            mnemonic: '',
-            fromMnemonic: true,
-            derivePath: '//$derivationNbr',
-            password: pin.text);
+            derivePath: '//$derivationNbr', password: pin.text);
 
         WalletData myWallet = WalletData(
             version: dataVersion,
@@ -448,8 +445,7 @@ class GenerateWalletsProvider with ChangeNotifier {
         "${addressData.address!}: ${balance['transferableBalance']} $currencyName");
     if (balance['transferableBalance'] != 0) {
       String walletName = 'myRootWallet'.tr();
-      await sub.importAccount(
-          mnemonic: '', fromMnemonic: true, password: pin.text);
+      await sub.importAccount(password: pin.text);
 
       WalletData myWallet = WalletData(
           version: dataVersion,

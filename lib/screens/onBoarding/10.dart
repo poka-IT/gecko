@@ -203,7 +203,6 @@ class OnboardingStepTen extends StatelessWidget {
                 }
                 if (!isAlive) {
                   final address = await sub.importAccount(
-                      fromMnemonic: true,
                       mnemonic: generateWalletProvider.generatedMnemonic!,
                       derivePath: '//2',
                       password: generateWalletProvider.pin.text);

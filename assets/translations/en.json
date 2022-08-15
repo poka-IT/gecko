@@ -173,6 +173,6 @@
     "contactsManagement": "My contacts",
     "noContacts": "You don't have any contact",
     "addContact": "Add\nto contacts",
-    "removeContact": "Remove\nthis contact"
-
+    "removeContact": "Remove\nthis contact",
+    "derivationsScanProgress": "Scan address {}/{}"
 }

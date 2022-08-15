@@ -56,16 +56,26 @@ class OnboardingStepTen extends StatelessWidget {
             common.buildText("geckoWillCheckPassword".tr()),
             SizedBox(height: isTall ? 80 : 20),
             Visibility(
-              visible: generateWalletProvider.scanedWalletNumber != -1,
+              visible: generateWalletProvider.scanedValidWalletNumber != -1,
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 15),
-                child: SizedBox(
-                  height: 22,
-                  width: 22,
-                  child: CircularProgressIndicator(
-                    color: orangeC,
-                    strokeWidth: 3,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("derivationsScanProgress".tr(args: [
+                      '${generateWalletProvider.scanedWalletNumber}',
+                      '${generateWalletProvider.numberScan + 1}'
+                    ])),
+                    const SizedBox(width: 10),
+                    SizedBox(
+                      height: 22,
+                      width: 22,
+                      child: CircularProgressIndicator(
+                        color: orangeC,
+                        strokeWidth: 3,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -188,8 +198,8 @@ class OnboardingStepTen extends StatelessWidget {
                 await generateWalletProvider.storeHDWChest(context);
                 bool isAlive = false;
                 if (scanDerivation) {
-                  isAlive = await generateWalletProvider
-                      .scanDerivations(context, numberScan: 20);
+                  isAlive =
+                      await generateWalletProvider.scanDerivations(context);
                 }
                 if (!isAlive) {
                   final address = await sub.importAccount(

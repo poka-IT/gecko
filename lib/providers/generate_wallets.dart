@@ -23,7 +23,9 @@ class GenerateWalletsProvider with ChangeNotifier {
   FocusNode walletNameFocus = FocusNode();
   Color? askedWordColor = Colors.black;
   bool isAskedWordValid = false;
+  int scanedValidWalletNumber = -1;
   int scanedWalletNumber = -1;
+  int numberScan = 20;
 
   late int nbrWord;
   String? nbrWordAlpha;
@@ -366,11 +368,11 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> scanDerivations(BuildContext context,
-      {int numberScan = 20}) async {
+  Future<bool> scanDerivations(BuildContext context) async {
     SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
     final currentChestNumber = configBox.get('currentChest');
     bool isAlive = false;
+    scanedValidWalletNumber = 0;
     scanedWalletNumber = 0;
     notifyListeners();
 
@@ -379,8 +381,10 @@ class GenerateWalletsProvider with ChangeNotifier {
     }
 
     final hasRoot = await scanRootBalance(sub, currentChestNumber);
+    scanedWalletNumber = 1;
+    notifyListeners();
     if (hasRoot) {
-      scanedWalletNumber = 1;
+      scanedValidWalletNumber = 1;
       isAlive = true;
     }
 
@@ -401,9 +405,9 @@ class GenerateWalletsProvider with ChangeNotifier {
           "${addressData.address!}: ${balance['transferableBalance']} $currencyName");
       if (balance['transferableBalance'] != 0) {
         isAlive = true;
-        String walletName = scanedWalletNumber == 0
+        String walletName = scanedValidWalletNumber == 0
             ? 'currentWallet'.tr()
-            : '${'wallet'.tr()} ${scanedWalletNumber + 1}';
+            : '${'wallet'.tr()} ${scanedValidWalletNumber + 1}';
         await sub.importAccount(
             mnemonic: '',
             fromMnemonic: true,
@@ -414,15 +418,19 @@ class GenerateWalletsProvider with ChangeNotifier {
             version: dataVersion,
             chest: currentChestNumber,
             address: addressData.address!,
-            number: scanedWalletNumber,
+            number: scanedValidWalletNumber,
             name: walletName,
             derivation: derivationNbr,
-            imageDefaultPath: '${scanedWalletNumber % 4}.png');
+            imageDefaultPath: '${scanedValidWalletNumber % 4}.png');
         await walletBox.add(myWallet);
-        scanedWalletNumber = scanedWalletNumber + 1;
+        scanedValidWalletNumber = scanedValidWalletNumber + 1;
       }
+      scanedWalletNumber = scanedWalletNumber + 1;
+      notifyListeners();
     }
+    log.d(scanedWalletNumber);
     scanedWalletNumber = -1;
+    scanedValidWalletNumber = -1;
     notifyListeners();
     return isAlive;
   }
@@ -436,8 +444,9 @@ class GenerateWalletsProvider with ChangeNotifier {
           onTimeout: () => {},
         );
 
-    log.d(balance);
-    if (balance != {}) {
+    log.d(
+        "${addressData.address!}: ${balance['transferableBalance']} $currencyName");
+    if (balance['transferableBalance'] != 0) {
       String walletName = 'myRootWallet'.tr();
       await sub.importAccount(
           mnemonic: '', fromMnemonic: true, password: pin.text);

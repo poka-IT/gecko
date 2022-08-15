@@ -39,6 +39,8 @@ class HomeScreen extends StatelessWidget {
 
     final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
 
+    // sub.csToV2('test', 'test');
+
     isTall = false;
     ratio = 1;
     if (MediaQuery.of(context).size.height >= 930) {

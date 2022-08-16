@@ -510,7 +510,6 @@ class SubstrateSdk with ChangeNotifier {
       BuildContext context, String address, int number, String password) async {
     final keypair = getKeypair(address);
 
-    //TODO: fix null keypair after used chest import
     log.d('tatatata $address $number $password ${keypair.encoded}');
 
     final seedMap =

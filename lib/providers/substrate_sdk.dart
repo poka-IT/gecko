@@ -370,52 +370,6 @@ class SubstrateSdk with ChangeNotifier {
     return nodeParams;
   }
 
-  Future csToV2(String salt, String password) async {
-    final scrypt = pc.KeyDerivator('scrypt');
-
-    scrypt.init(
-      pc.ScryptParameters(
-        4096,
-        16,
-        1,
-        32,
-        Uint8List.fromList(salt.codeUnits),
-      ),
-    );
-    final rawSeed = scrypt.process(Uint8List.fromList(password.codeUnits));
-    final rawSeedHex = '0x${HEX.encode(rawSeed)}';
-
-    // final newAddress1 = await sdk.api.keyring.addressFromRawSeed(ss58,
-    //     cryptoType: CryptoType.ed25519, rawSeed: '0x$rawSeedString');
-
-    // log.d('csconvert address: ${newAddress1.address}');
-
-    final json = await sdk.api.keyring
-        .importAccount(keyring,
-            keyType: KeyType.rawSeed,
-            key: rawSeedHex,
-            name: 'test',
-            password: 'password',
-            derivePath: '',
-            cryptoType: CryptoType.ed25519)
-        .catchError((e) {
-      importIsLoading = false;
-      notifyListeners();
-    });
-
-    final keypair = await sdk.api.keyring.addAccount(
-      keyring,
-      keyType: KeyType.rawSeed,
-      acc: json!,
-      password: password,
-    );
-    await sdk.api.keyring.deleteAccount(keyring, keypair);
-
-    // final keypair2 = KeyPairData.fromJson(json as Map<String, dynamic>);
-
-    log.d(keypair.address);
-  }
-
   Future<String> importAccount(
       {String mnemonic = '',
       String derivePath = '',
@@ -591,6 +545,47 @@ class SubstrateSdk with ChangeNotifier {
     mnemonic = mnemonic.replaceAll('è', 'è');
 
     return await sdk.api.keyring.checkMnemonicValid(mnemonic);
+  }
+
+  Future csToV2(String salt, String password) async {
+    final scrypt = pc.KeyDerivator('scrypt');
+
+    scrypt.init(
+      pc.ScryptParameters(
+        4096,
+        16,
+        1,
+        32,
+        Uint8List.fromList(salt.codeUnits),
+      ),
+    );
+    final rawSeed = scrypt.process(Uint8List.fromList(password.codeUnits));
+    final rawSeedHex = '0x${HEX.encode(rawSeed)}';
+
+    // Just get the address without keystore
+    // final newAddress1 = await sdk.api.keyring.addressFromRawSeed(ss58,
+    //     cryptoType: CryptoType.ed25519, rawSeed: '0x$rawSeedString');
+    // log.d('csconvert address: ${newAddress1.address}');
+
+    final json = await sdk.api.keyring.importAccount(keyring,
+        keyType: KeyType.rawSeed,
+        key: rawSeedHex,
+        name: 'test',
+        password: 'password',
+        derivePath: '',
+        cryptoType: CryptoType.ed25519);
+
+    final keypair = await sdk.api.keyring.addAccount(
+      keyring,
+      keyType: KeyType.rawSeed,
+      acc: json!,
+      password: password,
+    );
+    await sdk.api.keyring.deleteAccount(keyring, keypair);
+
+    // final keypair2 = KeyPairData.fromJson(json as Map<String, dynamic>);
+
+    log.d(keypair.address);
   }
 
   //////////////////////////////////////

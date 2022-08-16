@@ -674,8 +674,8 @@ class SubstrateSdk with ChangeNotifier {
           'batchAll',
           sender,
         );
-        final tx1 = 'cert.addCert($fromIndex, $toIndex)';
-        final tx2 = 'identity.validateIdentity($toIndex)';
+        final tx1 = 'api.tx.cert.addCert($fromIndex, $toIndex)';
+        final tx2 = 'api.tx.identity.validateIdentity($toIndex)';
 
         rawParams = '[[$tx1, $tx2]]';
       } else {

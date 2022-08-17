@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:typed_data';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +33,10 @@ class SubstrateSdk with ChangeNotifier {
   String transactionStatus = '';
   final int initSs58 = 42;
   Map<String, int> currencyParameters = {};
+  TextEditingController csSalt = TextEditingController();
+  TextEditingController csPassword = TextEditingController();
+  String g1V1NewAddress = '';
+  bool isCesiumIDVisible = true;
 
   /////////////////////////////////////
   ////////// 1: API METHODS ///////////
@@ -570,7 +576,7 @@ class SubstrateSdk with ChangeNotifier {
     return await sdk.api.keyring.checkMnemonicValid(mnemonic);
   }
 
-  Future csToV2(String salt, String password) async {
+  Future csToV2Address(String salt, String password) async {
     final scrypt = pc.KeyDerivator('scrypt');
 
     scrypt.init(
@@ -586,29 +592,32 @@ class SubstrateSdk with ChangeNotifier {
     final rawSeedHex = '0x${HEX.encode(rawSeed)}';
 
     // Just get the address without keystore
-    // final newAddress1 = await sdk.api.keyring.addressFromRawSeed(ss58,
-    //     cryptoType: CryptoType.ed25519, rawSeed: '0x$rawSeedString');
-    // log.d('csconvert address: ${newAddress1.address}');
+    final newAddress = await sdk.api.keyring.addressFromRawSeed(
+        currencyParameters['ss58']!,
+        cryptoType: CryptoType.ed25519,
+        rawSeed: rawSeedHex);
 
-    final json = await sdk.api.keyring.importAccount(keyring,
-        keyType: KeyType.rawSeed,
-        key: rawSeedHex,
-        name: 'test',
-        password: 'password',
-        derivePath: '',
-        cryptoType: CryptoType.ed25519);
+    // final json = await sdk.api.keyring.importAccount(keyring,
+    //     keyType: KeyType.rawSeed,
+    //     key: rawSeedHex,
+    //     name: 'test',
+    //     password: 'password',
+    //     derivePath: '',
+    //     cryptoType: CryptoType.ed25519);
 
-    final keypair = await sdk.api.keyring.addAccount(
-      keyring,
-      keyType: KeyType.rawSeed,
-      acc: json!,
-      password: password,
-    );
-    await sdk.api.keyring.deleteAccount(keyring, keypair);
+    // final keypair = await sdk.api.keyring.addAccount(
+    //   keyring,
+    //   keyType: KeyType.rawSeed,
+    //   acc: json!,
+    //   password: password,
+    // );
+    // await sdk.api.keyring.deleteAccount(keyring, keypair);
 
     // final keypair2 = KeyPairData.fromJson(json as Map<String, dynamic>);
 
-    log.d(keypair.address);
+    // g1V1NewAddress = keypair.address!;
+    g1V1NewAddress = newAddress.address!;
+    notifyListeners();
   }
 
   //////////////////////////////////////
@@ -774,6 +783,11 @@ class SubstrateSdk with ChangeNotifier {
     final txOptions = [idtyIndex];
 
     return await executeCall(txInfo, txOptions, password);
+  }
+
+  void cesiumIDisVisible() {
+    isCesiumIDVisible = !isCesiumIDVisible;
+    notifyListeners();
   }
 
   void reload() {

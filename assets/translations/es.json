@@ -176,5 +176,7 @@
     "addContact": "Add\nto contacts",
     "removeContact": "Remove\nthis contact",
     "derivationsScanProgress": "Scan address {}/{}",
-    "youAreOffline": "You are offline..."
+    "youAreOffline": "You are offline...",
+    "importG1v1": "Import old G1v1 account",
+    "selectDestWallet": "Select a target wallet:"
 }

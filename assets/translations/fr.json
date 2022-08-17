@@ -177,5 +177,7 @@
     "addContact": "Ajouter\naux contacts",
     "removeContact": "Supprimer\nce contact",
     "derivationsScanProgress": "Scan de l'adresse {}/{}",
-    "youAreOffline": "Vous êtes hors ligne..."
+    "youAreOffline": "Vous êtes hors ligne...",
+    "importG1v1": "Importer son compte G1v1",
+    "selectDestWallet": "Sélectionner un portefeuille cible:"
 }

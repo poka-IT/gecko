@@ -191,6 +191,8 @@ class WalletViewScreen extends StatelessWidget {
                       }
                     }
 
+                    final toStatus = snapshot.data!['toStatus'] ?? 0;
+
                     return Visibility(
                       visible: (snapshot.data != {}),
                       child: Column(children: <Widget>[
@@ -269,66 +271,13 @@ class WalletViewScreen extends StatelessWidget {
                                   fontWeight: FontWeight.w500),
                             ),
                           ]),
-                        if (snapshot.data!['certDelay'] != null)
-                          Column(children: <Widget>[
-                            SizedBox(
-                              height: buttonSize,
-                              child: Padding(
-                                padding: const EdgeInsets.only(bottom: 0),
-                                child: Container(
-                                  foregroundDecoration: const BoxDecoration(
-                                    color: Colors.grey,
-                                    backgroundBlendMode: BlendMode.saturation,
-                                  ),
-                                  child: const Opacity(
-                                    opacity: 0.5,
-                                    child: Image(
-                                        image: AssetImage(
-                                            'assets/gecko_certify.png')),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Text(
-                              "mustWaitXBeforeCertify"
-                                  .tr(args: [duration.toString()]),
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontSize: buttonFontSize - 4,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.grey[600]),
-                            ),
-                          ]),
-                        if (snapshot.data!['certRenewable'] != null &&
+                        if (toStatus == 1)
+                          waitToCert('mustConfirmHisIdentity', duration)
+                        else if (snapshot.data!['certRenewable'] != null &&
                             duration != 'seconds'.tr(args: ['0']))
-                          Column(children: <Widget>[
-                            SizedBox(
-                              height: buttonSize,
-                              child: Padding(
-                                padding: const EdgeInsets.only(bottom: 0),
-                                child: Container(
-                                  foregroundDecoration: const BoxDecoration(
-                                    color: Colors.grey,
-                                    backgroundBlendMode: BlendMode.saturation,
-                                  ),
-                                  child: const Opacity(
-                                    opacity: 0.5,
-                                    child: Image(
-                                        image: AssetImage(
-                                            'assets/gecko_certify.png')),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Text(
-                              "canRenewCertInX".tr(args: [duration.toString()]),
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontSize: buttonFontSize - 4,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.grey[600]),
-                            ),
-                          ]),
+                          waitToCert('canRenewCertInX', duration)
+                        else if (snapshot.data!['certDelay'] != null)
+                          waitToCert('mustWaitXBeforeCertify', duration)
                       ]),
                     );
                   },
@@ -413,6 +362,35 @@ class WalletViewScreen extends StatelessWidget {
             SizedBox(height: isTall ? 50 : 20)
           ]),
         ));
+  }
+
+  Widget waitToCert(String status, String duration) {
+    return Column(children: <Widget>[
+      SizedBox(
+        height: buttonSize,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 0),
+          child: Container(
+            foregroundDecoration: const BoxDecoration(
+              color: Colors.grey,
+              backgroundBlendMode: BlendMode.saturation,
+            ),
+            child: const Opacity(
+              opacity: 0.5,
+              child: Image(image: AssetImage('assets/gecko_certify.png')),
+            ),
+          ),
+        ),
+      ),
+      Text(
+        status.tr(args: [duration]),
+        textAlign: TextAlign.center,
+        style: TextStyle(
+            fontSize: buttonFontSize - 4,
+            fontWeight: FontWeight.w400,
+            color: Colors.grey[600]),
+      ),
+    ]);
   }
 
   void paymentPopup(

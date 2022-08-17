@@ -227,8 +227,12 @@ class SubstrateSdk with ChangeNotifier {
       } else {
         result.putIfAbsent('canCert', () => 0);
       }
-      // log.d('tatatatata: ${nextIssuableOn - blocNumber}');
     }
+
+    final toStatus = await idtyStatus(to);
+    // log.d('certMeta: $toStatus');
+
+    if (toStatus == 'Created') result.putIfAbsent('toStatus', () => 1);
 
     return result;
   }
@@ -797,8 +801,7 @@ class AddressInfo {
 void snackNode(BuildContext context, bool isConnected) {
   String message;
   if (!isConnected) {
-    message =
-        "noDuniterNodeAvailableTryLater".tr();
+    message = "noDuniterNodeAvailableTryLater".tr();
   } else {
     SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
 

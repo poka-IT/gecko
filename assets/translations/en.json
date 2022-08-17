@@ -147,6 +147,7 @@
     "execTimeoutOver": "Execution timeout is over",
     "seeAWallet": "See a wallet",
     "mustWaitXBeforeCertify": "You have to wait\n{} before\ncertifying again",
+    "mustConfirmHisIdentity": "This person must confirm\nhis identity before can be\ncertified",
     "canRenewCertInX": "You can renew\nthis certification\nin {}",
     "executeATransfer": "Execute a transfer",
     "executeTheTransfer": "Execute the transfer",

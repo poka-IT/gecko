@@ -49,110 +49,114 @@ class RestoreChest extends StatelessWidget {
               child: Text('restoreAChest'.tr()),
             )),
         body: SafeArea(
-          child: Column(children: <Widget>[
-            SizedBox(height: isTall ? 30 : 15),
-            bubbleSpeak('toRestoreEnterMnemonic'.tr()),
-            SizedBox(height: isTall ? 30 : 15),
+          child: Stack(children: [
             Column(children: <Widget>[
-              Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    arrayCell(context, genW.cellController0),
-                    arrayCell(context, genW.cellController1),
-                    arrayCell(context, genW.cellController2),
-                    arrayCell(context, genW.cellController3),
-                  ]),
-              const SizedBox(height: 15),
-              Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    arrayCell(context, genW.cellController4),
-                    arrayCell(context, genW.cellController5),
-                    arrayCell(context, genW.cellController6),
-                    arrayCell(context, genW.cellController7),
-                  ]),
-              const SizedBox(height: 15),
-              Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    arrayCell(context, genW.cellController8),
-                    arrayCell(context, genW.cellController9),
-                    arrayCell(context, genW.cellController10),
-                    arrayCell(context, genW.cellController11),
-                  ]),
-            ]),
-            // const Spacer(),
-            if (genW.isSentenceComplete(context))
-              Expanded(
-                  child: Align(
-                alignment: Alignment.center,
-                child: SizedBox(
-                  width: 410,
-                  height: 70,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      elevation: 4,
-                      primary: orangeC, // background
-                      onPrimary: Colors.white, // foreground
-                    ),
-                    onPressed: () async {
-                      if (await sub.isMnemonicValid(genW.generatedMnemonic!)) {
-                        genW.resetImportView();
-                        await Navigator.push(
-                          context,
-                          FaderTransition(
-                              page: skipIntro
-                                  ? const OnboardingStepNine(
-                                      scanDerivation: true)
-                                  : const OnboardingStepSeven(
-                                      scanDerivation: true),
-                              isFast: true),
-                        );
-                      } else {
-                        await badMnemonicPopup(context);
-                      }
-                    },
-                    child: Text(
-                      'restoreThisChest'.tr(),
-                      style: const TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ),
-                // SizedBox(height: isTall ? 80 : 80),
-              ))
-            else
-              Column(children: [
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: 190,
-                  height: 60,
-                  child: ElevatedButton(
+              SizedBox(height: isTall ? 30 : 15),
+              bubbleSpeak('toRestoreEnterMnemonic'.tr()),
+              SizedBox(height: isTall ? 30 : 15),
+              Column(children: <Widget>[
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: <Widget>[
+                      arrayCell(context, genW.cellController0),
+                      arrayCell(context, genW.cellController1),
+                      arrayCell(context, genW.cellController2),
+                      arrayCell(context, genW.cellController3),
+                    ]),
+                const SizedBox(height: 15),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: <Widget>[
+                      arrayCell(context, genW.cellController4),
+                      arrayCell(context, genW.cellController5),
+                      arrayCell(context, genW.cellController6),
+                      arrayCell(context, genW.cellController7),
+                    ]),
+                const SizedBox(height: 15),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: <Widget>[
+                      arrayCell(context, genW.cellController8),
+                      arrayCell(context, genW.cellController9),
+                      arrayCell(context, genW.cellController10),
+                      arrayCell(context, genW.cellController11),
+                    ]),
+              ]),
+              // const Spacer(),
+              if (genW.isSentenceComplete(context))
+                Expanded(
+                    child: Align(
+                  alignment: Alignment.center,
+                  child: SizedBox(
+                    width: 410,
+                    height: 70,
+                    child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         elevation: 4,
-                        primary: yellowC, // background
-                        onPrimary: Colors.black, // foreground
+                        primary: orangeC, // background
+                        onPrimary: Colors.white, // foreground
                       ),
-                      onPressed: () {
-                        genW.pasteMnemonic(context);
+                      onPressed: () async {
+                        if (await sub
+                            .isMnemonicValid(genW.generatedMnemonic!)) {
+                          genW.resetImportView();
+                          await Navigator.push(
+                            context,
+                            FaderTransition(
+                                page: skipIntro
+                                    ? const OnboardingStepNine(
+                                        scanDerivation: true)
+                                    : const OnboardingStepSeven(
+                                        scanDerivation: true),
+                                isFast: true),
+                          );
+                        } else {
+                          await badMnemonicPopup(context);
+                        }
                       },
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.content_paste_go,
-                            size: 25,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            'pasteFromClipboard'.tr(),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                                fontSize: 17, fontWeight: FontWeight.w400),
-                          ),
-                        ],
-                      )),
-                )
-              ])
+                      child: Text(
+                        'restoreThisChest'.tr(),
+                        style: const TextStyle(
+                            fontSize: 24, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                  // SizedBox(height: isTall ? 80 : 80),
+                ))
+              else
+                Column(children: [
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: 190,
+                    height: 60,
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          elevation: 4,
+                          primary: yellowC, // background
+                          onPrimary: Colors.black, // foreground
+                        ),
+                        onPressed: () {
+                          genW.pasteMnemonic(context);
+                        },
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.content_paste_go,
+                              size: 25,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'pasteFromClipboard'.tr(),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  fontSize: 17, fontWeight: FontWeight.w400),
+                            ),
+                          ],
+                        )),
+                  )
+                ])
+            ]),
+            CommonElements().offlineInfo(context),
           ]),
         ),
       ),

@@ -69,7 +69,8 @@ class SubstrateSdk with ChangeNotifier {
 
   Future getStorageConst(String call) async {
     return (await sdk.webView!
-        .evalJavascript('api.consts.$call', wrapPromise: false))[0];
+            .evalJavascript('api.consts.$call', wrapPromise: false) ??
+        [null])[0];
   }
 
   TxSenderData _setSender() {
@@ -307,6 +308,8 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<void> connectNode(BuildContext ctx) async {
     HomeProvider homeProvider = Provider.of<HomeProvider>(ctx, listen: false);
+    MyWalletsProvider myWalletProvider =
+        Provider.of<MyWalletsProvider>(ctx, listen: false);
 
     homeProvider.changeMessage("connectionPending".tr(), 0);
 
@@ -347,7 +350,7 @@ class SubstrateSdk with ChangeNotifier {
         notifyListeners();
       });
 
-      // currencyName = await getCurencyName();
+      await initCurrencyParameters();
       notifyListeners();
       homeProvider.changeMessage(
           "wellConnectedToNode"
@@ -359,7 +362,7 @@ class SubstrateSdk with ChangeNotifier {
       debugConnection = res.toString();
       notifyListeners();
       homeProvider.changeMessage("noDuniterEndointAvailable".tr(), 0);
-      // snackNode(ctx, false);
+      if (!myWalletProvider.checkIfWalletExist()) snackNode(homeContext, false);
     }
 
     log.d(sdk.api.connectedNode?.endpoint);
@@ -795,7 +798,7 @@ void snackNode(BuildContext context, bool isConnected) {
   String message;
   if (!isConnected) {
     message =
-        "${"noDuniterNodeAvailableTryLater".tr()}:\n${configBox.get('endpoint').first}";
+        "noDuniterNodeAvailableTryLater".tr();
   } else {
     SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
 

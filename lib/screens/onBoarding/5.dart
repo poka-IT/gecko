@@ -48,57 +48,62 @@ class _ChooseChestState extends State<OnboardingStepFive> {
       ),
       extendBodyBehindAppBar: true,
       body: SafeArea(
-        child: Column(children: [
-          SizedBox(height: isTall ? 40 : 20),
-          common.buildProgressBar(4),
-          SizedBox(height: isTall ? 40 : 20),
-          common.buildText('geckoGeneratedYourMnemonicKeepItSecret'.tr()),
-          SizedBox(height: 35 * ratio),
-          sentanceArray(context),
-          SizedBox(height: 17 * ratio),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) {
-                  return PrintWallet(generateWalletProvider.generatedMnemonic);
-                }),
-              );
-            },
-            child: Image.asset(
-              'assets/printer.png',
-              height: 42 * ratio,
-            ),
-          ),
-          const SizedBox(height: 40),
-          Expanded(
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: SizedBox(
-                width: 380 * ratio,
-                height: 60 * ratio,
-                child: ElevatedButton(
-                    key: const Key('generateMnemonic'),
-                    style: ElevatedButton.styleFrom(
-                      elevation: 4,
-                      primary: const Color(0xffFFD58D),
-                      onPrimary: Colors.black, // foreground
-                    ),
-                    onPressed: () {
-                      // _generateWalletProvider.reloadBuild();
-                      setState(() {});
-                    },
-                    child: Text("chooseAnotherMnemonic".tr(),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 22 * ratio,
-                            fontWeight: FontWeight.w600))),
+        child: Stack(children: [
+          Column(children: [
+            SizedBox(height: isTall ? 40 : 20),
+            common.buildProgressBar(4),
+            SizedBox(height: isTall ? 40 : 20),
+            common.buildText('geckoGeneratedYourMnemonicKeepItSecret'.tr()),
+            SizedBox(height: 35 * ratio),
+            sentanceArray(context),
+            SizedBox(height: 17 * ratio),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return PrintWallet(
+                        generateWalletProvider.generatedMnemonic);
+                  }),
+                );
+              },
+              child: Image.asset(
+                'assets/printer.png',
+                height: 42 * ratio,
               ),
             ),
-          ),
-          SizedBox(height: 22 * ratio),
-          nextButton(context, "iNotedMyMnemonic".tr(), false, widget.skipIntro),
-          SizedBox(height: 35 * ratio),
+            const SizedBox(height: 40),
+            Expanded(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: SizedBox(
+                  width: 380 * ratio,
+                  height: 60 * ratio,
+                  child: ElevatedButton(
+                      key: const Key('generateMnemonic'),
+                      style: ElevatedButton.styleFrom(
+                        elevation: 4,
+                        primary: const Color(0xffFFD58D),
+                        onPrimary: Colors.black, // foreground
+                      ),
+                      onPressed: () {
+                        // _generateWalletProvider.reloadBuild();
+                        setState(() {});
+                      },
+                      child: Text("chooseAnotherMnemonic".tr(),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 22 * ratio,
+                              fontWeight: FontWeight.w600))),
+                ),
+              ),
+            ),
+            SizedBox(height: 22 * ratio),
+            nextButton(
+                context, "iNotedMyMnemonic".tr(), false, widget.skipIntro),
+            SizedBox(height: 35 * ratio),
+          ]),
+          CommonElements().offlineInfo(context),
         ]),
       ),
     );

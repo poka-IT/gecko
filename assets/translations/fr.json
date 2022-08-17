@@ -175,5 +175,6 @@
     "noContacts": "Vous n'avez aucun contact",
     "addContact": "Ajouter\naux contacts",
     "removeContact": "Supprimer\nce contact",
-    "derivationsScanProgress": "Scan de l'adresse {}/{}"
+    "derivationsScanProgress": "Scan de l'adresse {}/{}",
+    "youAreOffline": "Vous êtes hors ligne..."
 }

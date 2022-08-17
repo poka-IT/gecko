@@ -159,8 +159,7 @@ class CommonElements {
   }
 
   Widget offlineInfo(BuildContext context) {
-    // SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final double screenWidth = MediaQuery.of(context).size.width;
+    final double screenWidth = MediaQuery.of(homeContext).size.width;
     return Consumer<SubstrateSdk>(builder: (context, sub, _) {
       return Visibility(
         visible: !sub.nodeConnected,
@@ -174,7 +173,7 @@ class CommonElements {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Vous êtes hors ligne...",
+                    'youAreOffline'.tr(),
                     style: TextStyle(color: Colors.grey[50]),
                     textAlign: TextAlign.center,
                   ),

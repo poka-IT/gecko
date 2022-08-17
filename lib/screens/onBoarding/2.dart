@@ -29,13 +29,16 @@ class OnboardingStepTwo extends StatelessWidget {
       ),
       extendBodyBehindAppBar: true,
       body: SafeArea(
-        child: common.infoIntro(
-            context,
-            'keepThisMnemonicSecure'.tr(),
-            'fabrication-de-portefeuille-impossible-sans-phrase.png',
-            '>',
-            const OnboardingStepThree(),
-            1),
+        child: Stack(children: [
+          common.infoIntro(
+              context,
+              'keepThisMnemonicSecure'.tr(),
+              'fabrication-de-portefeuille-impossible-sans-phrase.png',
+              '>',
+              const OnboardingStepThree(),
+              1),
+          CommonElements().offlineInfo(context),
+        ]),
       ),
     );
   }

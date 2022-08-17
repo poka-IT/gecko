@@ -29,14 +29,17 @@ class OnboardingStepEight extends StatelessWidget {
       ),
       extendBodyBehindAppBar: true,
       body: SafeArea(
-        child: common.infoIntro(
-            context,
-            'thisPasswordProtectsYourWalletsInASecureChest'.tr(),
-            'coffre-fort-protege-les-portefeuilles.png',
-            '>',
-            OnboardingStepNine(scanDerivation: scanDerivation),
-            7,
-            isMd: true),
+        child: Stack(children: [
+          common.infoIntro(
+              context,
+              'thisPasswordProtectsYourWalletsInASecureChest'.tr(),
+              'coffre-fort-protege-les-portefeuilles.png',
+              '>',
+              OnboardingStepNine(scanDerivation: scanDerivation),
+              7,
+              isMd: true),
+          CommonElements().offlineInfo(context),
+        ]),
       ),
     );
   }

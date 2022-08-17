@@ -41,61 +41,65 @@ class OnboardingStepNine extends StatelessWidget {
         ),
         extendBodyBehindAppBar: true,
         body: SafeArea(
-          child: Column(children: <Widget>[
-            SizedBox(height: isTall ? 40 : 20),
-            common.buildProgressBar(8),
-            SizedBox(height: isTall ? 40 : 20),
-            common.buildText("hereIsThePasswordKeepIt".tr(), 20, true),
-            const SizedBox(height: 100),
-            Stack(
-              alignment: Alignment.centerRight,
-              children: <Widget>[
-                TextField(
-                    key: const Key('generatedPin'),
-                    enabled: false,
-                    controller: generateWalletProvider.pin,
-                    maxLines: 1,
-                    textAlign: TextAlign.center,
-                    decoration: const InputDecoration(),
-                    style: const TextStyle(
-                        letterSpacing: 5,
-                        fontSize: 35.0,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold)),
-                IconButton(
-                  icon: const Icon(Icons.replay),
-                  color: orangeC,
-                  onPressed: () {
-                    generateWalletProvider.changePinCode(reload: true);
-                  },
-                ),
-              ],
-            ),
-            Expanded(
-                child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: SizedBox(
-                      width: 380 * ratio,
-                      height: 60 * ratio,
-                      child: ElevatedButton(
-                          key: const Key('changeSecretCode'),
-                          style: ElevatedButton.styleFrom(
-                            elevation: 4,
-                            primary: const Color(0xffFFD58D),
-                            onPrimary: Colors.black, // foreground
-                          ),
-                          onPressed: () {
-                            generateWalletProvider.changePinCode(reload: true);
-                          },
-                          child: Text("chooseAnotherPassword".tr(),
-                              style: TextStyle(
-                                  fontSize: 22 * ratio,
-                                  fontWeight: FontWeight.w600))),
-                    ))),
-            SizedBox(height: 22 * ratio),
-            common.nextButton(context, "iNotedMyPassword".tr(),
-                OnboardingStepTen(scanDerivation: scanDerivation), false),
-            SizedBox(height: 35 * ratio),
+          child: Stack(children: [
+            Column(children: <Widget>[
+              SizedBox(height: isTall ? 40 : 20),
+              common.buildProgressBar(8),
+              SizedBox(height: isTall ? 40 : 20),
+              common.buildText("hereIsThePasswordKeepIt".tr(), 20, true),
+              const SizedBox(height: 100),
+              Stack(
+                alignment: Alignment.centerRight,
+                children: <Widget>[
+                  TextField(
+                      key: const Key('generatedPin'),
+                      enabled: false,
+                      controller: generateWalletProvider.pin,
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                      decoration: const InputDecoration(),
+                      style: const TextStyle(
+                          letterSpacing: 5,
+                          fontSize: 35.0,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold)),
+                  IconButton(
+                    icon: const Icon(Icons.replay),
+                    color: orangeC,
+                    onPressed: () {
+                      generateWalletProvider.changePinCode(reload: true);
+                    },
+                  ),
+                ],
+              ),
+              Expanded(
+                  child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: SizedBox(
+                        width: 380 * ratio,
+                        height: 60 * ratio,
+                        child: ElevatedButton(
+                            key: const Key('changeSecretCode'),
+                            style: ElevatedButton.styleFrom(
+                              elevation: 4,
+                              primary: const Color(0xffFFD58D),
+                              onPrimary: Colors.black, // foreground
+                            ),
+                            onPressed: () {
+                              generateWalletProvider.changePinCode(
+                                  reload: true);
+                            },
+                            child: Text("chooseAnotherPassword".tr(),
+                                style: TextStyle(
+                                    fontSize: 22 * ratio,
+                                    fontWeight: FontWeight.w600))),
+                      ))),
+              SizedBox(height: 22 * ratio),
+              common.nextButton(context, "iNotedMyPassword".tr(),
+                  OnboardingStepTen(scanDerivation: scanDerivation), false),
+              SizedBox(height: 35 * ratio),
+            ]),
+            CommonElements().offlineInfo(context),
           ]),
         ));
   }

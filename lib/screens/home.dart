@@ -167,7 +167,6 @@ class HomeScreen extends StatelessWidget {
                       sub.reload();
                     } else {
                       await sub.connectNode(ctx);
-                      await sub.initCurrencyParameters();
                     }
                   });
                 }

@@ -29,7 +29,8 @@ class SubstrateSdk with ChangeNotifier {
   bool isLoadingEndpoint = false;
   String debugConnection = '';
   String transactionStatus = '';
-  int ss58 = 42;
+  final int initSs58 = 42;
+  Map<String, int> currencyParameters = {};
 
   /////////////////////////////////////
   ////////// 1: API METHODS ///////////
@@ -64,6 +65,11 @@ class SubstrateSdk with ChangeNotifier {
 
   Future getStorage(String call) async {
     return await sdk.webView!.evalJavascript('api.query.$call');
+  }
+
+  Future getStorageConst(String call) async {
+    return (await sdk.webView!
+        .evalJavascript('api.consts.$call', wrapPromise: false))[0];
   }
 
   TxSenderData _setSender() {
@@ -108,12 +114,6 @@ class SubstrateSdk with ChangeNotifier {
     return 0;
   }
 
-  Future<Map<String, dynamic>> getParameters() async {
-    final currencyParameters =
-        await getStorage('parameters.parametersStorage()') ?? {};
-    return currencyParameters;
-  }
-
   Future<bool> hasAccountConsumers(String address) async {
     final accountInfo = await getStorage('system.account("$address")');
     final consumers = accountInfo['consumers'];
@@ -136,6 +136,8 @@ class SubstrateSdk with ChangeNotifier {
   // }
 
   Future<Map<String, double>> getBalance(String address) async {
+    // log.d('currencyParameters: $currencyParameters');
+
     if (!nodeConnected) {
       return {
         'transferableBalance': 0,
@@ -202,17 +204,6 @@ class SubstrateSdk with ChangeNotifier {
     return totalAmount;
   }
 
-  Future<int> getSs58Prefix() async {
-    final List res = await sdk.webView!.evalJavascript(
-            'api.consts.system.ss58Prefix.words',
-            wrapPromise: false) ??
-        [42];
-
-    ss58 = res[0];
-    log.d(ss58);
-    return ss58;
-  }
-
   Future<bool> isMemberGet(String address) async {
     return await idtyStatus(address) == 'Validated';
   }
@@ -268,7 +259,32 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
-  Future getCurencyName() async {}
+  // Future addressToPubkey(String address) async {
+  //   await sdk.api.account.decodeAddress([address]);
+  // }
+
+  // Future pubkeyToAddress(String pubkey) async {
+  //   await sdk.api.account.encodeAddress([pubkey]);
+  // }
+
+  Future initCurrencyParameters() async {
+    currencyParameters['ss58'] =
+        await getStorageConst('system.ss58Prefix.words');
+    currencyParameters['minCertForMembership'] =
+        await getStorageConst('wot.minCertForMembership.words');
+    currencyParameters['newAccountPrice'] =
+        await getStorageConst('account.newAccountPrice.words');
+    currencyParameters['existentialDeposit'] =
+        await getStorageConst('balances.existentialDeposit.words');
+    currencyParameters['certPeriod'] =
+        await getStorageConst('cert.certPeriod.words');
+    currencyParameters['certMaxByIssuer'] =
+        await getStorageConst('cert.maxByIssuer.words');
+    currencyParameters['certValidityPeriod'] =
+        await getStorageConst('cert.validityPeriod.words');
+
+    log.i('currencyParameters: $currencyParameters');
+  }
 
   /////////////////////////////////////
   ////// 3: SUBSTRATE CONNECTION //////
@@ -276,8 +292,8 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<void> initApi() async {
     sdkLoading = true;
-    await keyring.init([ss58]);
-    keyring.setSS58(ss58);
+    await keyring.init([initSs58]);
+    keyring.setSS58(initSs58);
 
     await sdk.init(keyring);
     sdkReady = true;
@@ -356,7 +372,7 @@ class SubstrateSdk with ChangeNotifier {
       final n = NetworkParams();
       n.name = currencyName;
       n.endpoint = endpoint;
-      n.ss58 = ss58;
+      n.ss58 = currencyParameters['ss58'] ?? initSs58;
       node.add(n);
     }
     return node;
@@ -366,7 +382,7 @@ class SubstrateSdk with ChangeNotifier {
     final nodeParams = NetworkParams();
     nodeParams.name = currencyName;
     nodeParams.endpoint = configBox.get('customEndpoint');
-    nodeParams.ss58 = ss58;
+    nodeParams.ss58 = currencyParameters['ss58'] ?? initSs58;
     return nodeParams;
   }
 
@@ -476,7 +492,8 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<String> generateMnemonic({String lang = appLang}) async {
-    final gen = await sdk.api.keyring.generateMnemonic(ss58);
+    final gen = await sdk.api.keyring
+        .generateMnemonic(currencyParameters['ss58'] ?? initSs58);
     generatedMnemonic = gen.mnemonic!;
 
     return gen.mnemonic!;
@@ -654,7 +671,8 @@ class SubstrateSdk with ChangeNotifier {
     String? rawParams;
 
     final toCerts = await getCerts(toAddress);
-    final currencyParameters = await getParameters();
+
+    // log.d('debug: ${currencyParameters['minCertForMembership']}');
 
     if (toIdtyStatus == 'noid') {
       txInfo = TxInfoData(
@@ -665,7 +683,7 @@ class SubstrateSdk with ChangeNotifier {
       txOptions = [toAddress];
     } else if (toIdtyStatus == 'Validated' ||
         toIdtyStatus == 'ConfirmedByOwner') {
-      if (toCerts[0] >= currencyParameters['wotMinCertForMembership'] &&
+      if (toCerts[0] >= currencyParameters['minCertForMembership']! - 1 &&
           toIdtyStatus != 'Validated') {
         log.i('Batch cert and membership validation');
         txInfo = TxInfoData(

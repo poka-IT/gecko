@@ -62,6 +62,8 @@ class ImportG1v1 extends StatelessWidget {
                   final myIdtyStatus = status.data?[2];
                   final hasConsumer = status.data?[3] ?? false;
 
+                  // log.d('hasconsumer: $hasConsumer');
+
                   if (balance != 0 && !hasConsumer) {
                     canValidate = true;
                     validationStatus = '';
@@ -216,7 +218,6 @@ class ImportG1v1 extends StatelessWidget {
                                     selectedWallet.address!,
                                     balance: balance,
                                     idtyStatus: idtyStatus);
-
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(builder: (context) {
@@ -227,7 +228,7 @@ class ImportG1v1 extends StatelessWidget {
                               }
                             : null,
                         child: Text(
-                          'validate'.tr(),
+                          'migrateAccount'.tr(),
                           style: TextStyle(
                               fontSize: 23 * ratio,
                               fontWeight: FontWeight.w600),

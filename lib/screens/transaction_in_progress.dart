@@ -88,6 +88,7 @@ class TransactionInProgress extends StatelessWidget {
           if (result.contains('blockHash: ')) {
             isValid = true;
             resultText = 'extrinsicValidated'.tr(args: [actionName]);
+            log.i('Bloc of last transaction: ${sub.blocNumber} --- $result');
           } else {
             isValid = false;
             resultText = "${"anErrorOccured".tr()}:\n";

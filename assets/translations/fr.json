@@ -185,5 +185,6 @@
     "youCannotMigrateIdentityToExistingIdentity": "Vous ne pouvez pas migrer une identité\nvers un compte disposant déjà d'une identité",
     "importOldAccount": "Importer son ancien compte",
     "enterCesiumId": "Entrez votre identifiant Cesium",
-    "enterCesiumPassword": "Entrez votre mot de passe Cesium"
+    "enterCesiumPassword": "Entrez votre mot de passe Cesium",
+    "migrateAccount": "Migrer le compte"
 }

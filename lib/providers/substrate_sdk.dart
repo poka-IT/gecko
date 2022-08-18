@@ -270,9 +270,19 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
-  // Future addressToPubkey(String address) async {
-  //   await sdk.api.account.decodeAddress([address]);
-  // }
+  Future<String> getGenesisHash() async {
+    final String genesisHash = await sdk.webView!.evalJavascript(
+          'api.genesisHash.toHex()',
+          wrapPromise: false,
+        ) ??
+        '';
+    // log.d('genesisHash: $genesisHash');
+    return genesisHash;
+  }
+
+  Future addressToPubkey(String address) async {
+    await sdk.api.account.decodeAddress([address]);
+  }
 
   // Future pubkeyToAddress(String pubkey) async {
   //   await sdk.api.account.encodeAddress([pubkey]);
@@ -784,6 +794,45 @@ class SubstrateSdk with ChangeNotifier {
     return await executeCall(txInfo, txOptions, password);
   }
 
+  Future<String> migrateIdentity(
+      {required String fromAddress,
+      required String destAddress,
+      required String password}) async {
+    transactionStatus = '';
+    final fromPubkey = await sdk.api.account.decodeAddress([fromAddress]);
+    final sender = TxSenderData(
+      fromAddress,
+      fromPubkey!.keys.first,
+    );
+
+    // final globalBalance = await getBalance(fromAddress);
+    TxInfoData txInfo;
+    List txOptions = [];
+    String? rawParams;
+    // final destKeyring = getKeypair(destAddress);
+
+    final genesisHash = await getGenesisHash();
+    final idtyIndex = await getIdentityIndexOf(destAddress);
+    // final oldPubkey = await addressToPubkey(fromAddress);
+    final messageToSign = 'icok$genesisHash$idtyIndex$fromAddress';
+    final newKeySig = messageToSign;
+
+    txInfo = TxInfoData(
+      'utility',
+      'batchAll',
+      sender,
+    );
+    const tx1 = 'api.tx.universalDividend.claimUds()';
+    final tx2 = 'api.tx.identity.changeOwnerKey("$destAddress", "$newKeySig")';
+    const tx3 = 'api.tx.balances.transferAll(false)';
+
+    rawParams = '[[$tx1, $tx2, $tx3]]';
+
+    log.d(
+        'g1migration args:  ${txInfo.module}, ${txInfo.call}, $txOptions, $rawParams');
+    return await executeCall(txInfo, txOptions, password, rawParams);
+  }
+
   Future revokeIdentity(String address, String password) async {
     final idtyIndex = await getIdentityIndexOf(address);
 
@@ -837,7 +886,13 @@ class SubstrateSdk with ChangeNotifier {
       password: password,
     );
 
-    if (balance != 0) {
+    log.d('g1migration idtyStatus: $idtyStatus');
+    if (idtyStatus != 'noid') {
+      await migrateIdentity(
+          fromAddress: keypair.address!,
+          destAddress: destAddress,
+          password: 'password');
+    } else if (balance != 0) {
       await pay(
           fromAddress: keypair.address!,
           destAddress: destAddress,

@@ -30,6 +30,7 @@ class WalletOptionsProvider with ChangeNotifier {
   TextEditingController nameController = TextEditingController();
   late bool isDefaultWallet;
   bool canValidateNameBool = false;
+  Map<String, String> idtyStatusCache = {};
 
   Future<NewWallet>? get badWallet => null;
 
@@ -157,6 +158,7 @@ class WalletOptionsProvider with ChangeNotifier {
           future: sub.idtyStatus(address),
           initialData: '',
           builder: (context, snapshot) {
+            idtyStatusCache[address] = snapshot.data.toString();
             switch (snapshot.data.toString()) {
               case 'noid':
                 {

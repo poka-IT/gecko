@@ -252,7 +252,7 @@ class SubstrateSdk with ChangeNotifier {
     return certMeta;
   }
 
-  Future<String> idtyStatus(String address, [bool smooth = true]) async {
+  Future<String> idtyStatus(String address) async {
     var idtyIndex = await getIdentityIndexOf(address);
 
     if (idtyIndex == 0) {
@@ -295,6 +295,11 @@ class SubstrateSdk with ChangeNotifier {
         await getStorageConst('cert.validityPeriod.words');
 
     log.i('currencyParameters: $currencyParameters');
+  }
+
+  void cesiumIDisVisible() {
+    isCesiumIDVisible = !isCesiumIDVisible;
+    notifyListeners();
   }
 
   /////////////////////////////////////
@@ -540,8 +545,6 @@ class SubstrateSdk with ChangeNotifier {
       BuildContext context, String address, int number, String password) async {
     final keypair = getKeypair(address);
 
-    log.d('tatatata $address $number $password ${keypair.encoded}');
-
     final seedMap =
         await keyring.store.getDecryptedSeed(keypair.pubKey, password);
 
@@ -618,6 +621,24 @@ class SubstrateSdk with ChangeNotifier {
     // g1V1NewAddress = keypair.address!;
     g1V1NewAddress = newAddress.address!;
     notifyListeners();
+  }
+
+  Future<List> getBalanceAndIdtyStatus(String address, String myAddress) async {
+    final balance =
+        address == '' ? {'transferableBalance': 0} : await getBalance(address);
+    final thisIdtyStatus = address == '' ? 'noid' : await idtyStatus(address);
+    final thisHasConsumer =
+        address == '' ? false : await hasAccountConsumers(address);
+    final myIdtyStatus = await idtyStatus(myAddress);
+
+    log.d('tatata: $myIdtyStatus');
+
+    return [
+      balance['transferableBalance'],
+      thisIdtyStatus,
+      myIdtyStatus,
+      thisHasConsumer
+    ];
   }
 
   //////////////////////////////////////
@@ -785,9 +806,46 @@ class SubstrateSdk with ChangeNotifier {
     return await executeCall(txInfo, txOptions, password);
   }
 
-  void cesiumIDisVisible() {
-    isCesiumIDVisible = !isCesiumIDVisible;
-    notifyListeners();
+  Future migrateCsToV2(String salt, String password, String destAddress,
+      {required double balance, String idtyStatus = 'noid'}) async {
+    final scrypt = pc.KeyDerivator('scrypt');
+
+    scrypt.init(
+      pc.ScryptParameters(
+        4096,
+        16,
+        1,
+        32,
+        Uint8List.fromList(salt.codeUnits),
+      ),
+    );
+    final rawSeed = scrypt.process(Uint8List.fromList(password.codeUnits));
+    final rawSeedHex = '0x${HEX.encode(rawSeed)}';
+
+    final json = await sdk.api.keyring.importAccount(keyring,
+        keyType: KeyType.rawSeed,
+        key: rawSeedHex,
+        name: 'test',
+        password: 'password',
+        derivePath: '',
+        cryptoType: CryptoType.ed25519);
+
+    final keypair = await sdk.api.keyring.addAccount(
+      keyring,
+      keyType: KeyType.rawSeed,
+      acc: json!,
+      password: password,
+    );
+
+    if (balance != 0) {
+      await pay(
+          fromAddress: keypair.address!,
+          destAddress: destAddress,
+          amount: -1,
+          password: 'password');
+    }
+
+    await sdk.api.keyring.deleteAccount(keyring, keypair);
   }
 
   void reload() {

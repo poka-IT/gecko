@@ -178,5 +178,11 @@
     "derivationsScanProgress": "Scan address {}/{}",
     "youAreOffline": "You are offline...",
     "importG1v1": "Import old G1v1 account",
-    "selectDestWallet": "Select a target wallet:"
+    "selectDestWallet": "Select a target wallet:",
+    "youMustWaitBeforeCashoutThisAccount": "You have to wait {} minutes\nbefore migrate this account",
+    "thisAccountIsEmpty": "This account is empty",
+    "youCannotMigrateIdentityToExistingIdentity": "You cannot migrate an identity\nto an account that already has an identity",
+    "importOldAccount": "Import your old account",
+    "enterCesiumId": "Enter your Cesium ID",
+    "enterCesiumPassword": "Enter your Cesium password"
 }

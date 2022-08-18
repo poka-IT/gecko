@@ -179,5 +179,11 @@
     "derivationsScanProgress": "Scan de l'adresse {}/{}",
     "youAreOffline": "Vous êtes hors ligne...",
     "importG1v1": "Importer son compte G1v1",
-    "selectDestWallet": "Sélectionner un portefeuille cible:"
+    "selectDestWallet": "Sélectionnez un portefeuille cible:",
+    "youMustWaitBeforeCashoutThisAccount": "Vous devez attendre {} minutes\navant de pouvoir migrer ce compte",
+    "thisAccountIsEmpty": "Ce compte est vide",
+    "youCannotMigrateIdentityToExistingIdentity": "Vous ne pouvez pas migrer une identité\nvers un compte disposant déjà d'une identité",
+    "importOldAccount": "Importer son ancien compte",
+    "enterCesiumId": "Entrez votre identifiant Cesium",
+    "enterCesiumPassword": "Entrez votre mot de passe Cesium"
 }

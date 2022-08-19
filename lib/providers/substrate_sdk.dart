@@ -2,7 +2,6 @@
 
 import 'dart:typed_data';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
@@ -282,14 +281,13 @@ class SubstrateSdk with ChangeNotifier {
     return genesisHash;
   }
 
-  Future<String> addressToPubkey(String address,
-      [bool toBase58 = false]) async {
+  Future<Uint8List> addressToPubkey(String address) async {
     final pubkey = await sdk.api.account.decodeAddress([address]);
     final String pubkeyHex = pubkey!.keys.first;
     final pubkeyByte = HEX.decode(pubkeyHex.substring(2)) as Uint8List;
-    final pubkey58 = Base58Encode(pubkeyByte);
+    // final pubkey58 = Base58Encode(pubkeyByte);
 
-    return toBase58 ? pubkey58 : pubkeyHex;
+    return pubkeyByte;
   }
 
   // Future pubkeyToAddress(String pubkey) async {
@@ -784,7 +782,7 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<String> signMessage(
-      String message, String address, String password) async {
+      Uint8List message, String address, String password) async {
     final params = SignAsExtensionParam();
     params.msgType = "pub(bytes.sign)";
     params.request = {
@@ -817,13 +815,26 @@ class SubstrateSdk with ChangeNotifier {
     // final destKeyring = getKeypair(destAddress);
     // await sdk.api.keyring.signatureVerify(message, signature, address)
 
-    final genesisHash = await getGenesisHash();
-    final idtyIndex = await getIdentityIndexOf(fromAddress);
-    final oldPubkey = await addressToPubkey(fromAddress, true);
-    final messageToSign = 'icok$genesisHash$idtyIndex$oldPubkey';
+    final prefix = 'icok'.codeUnits;
+    final genesisHash = (await getGenesisHash()).substring(2).codeUnits;
+    final idtyIndex = [await getIdentityIndexOf(fromAddress)];
+    final oldPubkey = await addressToPubkey(fromAddress);
+    // final messageToSign = 'icok$genesisHash$idtyIndex$oldPubkey';
+    final messageToSign =
+        Uint8List.fromList(prefix + genesisHash + idtyIndex + oldPubkey);
     final newKeySig =
         await signMessage(messageToSign, destAddress, destPassword);
 
+    log.d("""
+prefix: $prefix
+genesisHash: $genesisHash
+idtyIndex: $idtyIndex
+oldPubkey: $oldPubkey
+messageToSign: $messageToSign
+newKeySig: $newKeySig""");
+
+    // [105, 99, 111, 107, 48, 55, 99, 49, 49, 50, 102, 102, 54, 97, 98, 57, 100, 55, 100, 48, 100, 53, 51, 49, 101, 98, 101, 53, 57, 102, 57, 56, 98, 51, 53, 51, 49, 56, 98, 50, 56, 49, 51, 98, 49, 54, 53, 53, 53, 55, 55, 51, 56, 48, 56, 49, 57, 100, 51, 56, 100, 54, 49, 56, 50, 100, 57, 57, 21, 181, 82, 178, 99, 198, 4, 156, 190, 78, 35, 102, 137, 255, 7, 162, 31, 16, 79, 255, 132, 130, 237, 230, 222, 176, 88, 245, 217, 237, 78, 196, 239]
+    // [105, 99, 111, 107, 48, 55, 99, 49, 49, 50, 102, 102, 54, 97, 98, 57, 100, 55, 100, 48, 100, 53, 51, 49, 101, 98, 101, 53, 57, 102, 57, 56, 98, 51, 53, 51, 49, 56, 98, 50, 56, 49, 51, 98, 49, 54, 53, 53, 53, 55, 55, 51, 56, 48, 56, 49, 57, 100, 51, 56, 100, 54, 49, 56, 50, 100, 57, 57, 21, 181, 82, 178, 99, 198, 4, 156, 190, 78, 35, 102, 137, 255, 7, 162, 31, 16, 79, 255, 132, 130, 237, 230, 222, 176, 88, 245, 217, 237, 78, 196, 239]
     txInfo = TxInfoData(
       'identity',
       'changeOwnerKey',
@@ -838,11 +849,6 @@ class SubstrateSdk with ChangeNotifier {
 
     // rawParams = '[[$tx1, $tx2, $tx3]]';
 
-    log.d("""g1migration args:${txInfo.module}, ${txInfo.call},
-       txOptions: $txOptions
-       rawParams: $rawParams
-       messageToSign: $messageToSign
-       newKeySig: $newKeySig""");
     return await executeCall(txInfo, txOptions, formPassword, rawParams);
   }
 

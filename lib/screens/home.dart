@@ -39,8 +39,7 @@ class HomeScreen extends StatelessWidget {
 
     final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
 
-    // sub.csToV2('test', 'test');
-    // sub.getSs58Prefix();
+    // sub.addressToPubkey('5CQ8T4qpbYJq7uVsxGPQ5q2df7x3Wa4aRY6HUWMBYjfLZhnn');
 
     isTall = false;
     ratio = 1;

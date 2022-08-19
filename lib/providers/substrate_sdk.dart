@@ -2,6 +2,7 @@
 
 import 'dart:typed_data';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
@@ -14,6 +15,7 @@ import 'package:polkawallet_sdk/api/types/txInfoData.dart';
 import 'package:polkawallet_sdk/polkawallet_sdk.dart';
 import 'package:polkawallet_sdk/storage/keyring.dart';
 import 'package:polkawallet_sdk/storage/types/keyPairData.dart';
+import 'package:polkawallet_sdk/webviewWithExtension/types/signExtrinsicParam.dart';
 import 'package:provider/provider.dart';
 import 'package:truncate/truncate.dart';
 import 'package:pointycastle/pointycastle.dart' as pc;
@@ -280,8 +282,14 @@ class SubstrateSdk with ChangeNotifier {
     return genesisHash;
   }
 
-  Future addressToPubkey(String address) async {
-    await sdk.api.account.decodeAddress([address]);
+  Future<String> addressToPubkey(String address,
+      [bool toBase58 = false]) async {
+    final pubkey = await sdk.api.account.decodeAddress([address]);
+    final String pubkeyHex = pubkey!.keys.first;
+    final pubkeyByte = HEX.decode(pubkeyHex.substring(2)) as Uint8List;
+    final pubkey58 = Base58Encode(pubkeyByte);
+
+    return toBase58 ? pubkey58 : pubkeyHex;
   }
 
   // Future pubkeyToAddress(String pubkey) async {
@@ -610,25 +618,6 @@ class SubstrateSdk with ChangeNotifier {
         cryptoType: CryptoType.ed25519,
         rawSeed: rawSeedHex);
 
-    // final json = await sdk.api.keyring.importAccount(keyring,
-    //     keyType: KeyType.rawSeed,
-    //     key: rawSeedHex,
-    //     name: 'test',
-    //     password: 'password',
-    //     derivePath: '',
-    //     cryptoType: CryptoType.ed25519);
-
-    // final keypair = await sdk.api.keyring.addAccount(
-    //   keyring,
-    //   keyType: KeyType.rawSeed,
-    //   acc: json!,
-    //   password: password,
-    // );
-    // await sdk.api.keyring.deleteAccount(keyring, keypair);
-
-    // final keypair2 = KeyPairData.fromJson(json as Map<String, dynamic>);
-
-    // g1V1NewAddress = keypair.address!;
     g1V1NewAddress = newAddress.address!;
     notifyListeners();
   }
@@ -794,10 +783,26 @@ class SubstrateSdk with ChangeNotifier {
     return await executeCall(txInfo, txOptions, password);
   }
 
+  Future<String> signMessage(
+      String message, String address, String password) async {
+    final params = SignAsExtensionParam();
+    params.msgType = "pub(bytes.sign)";
+    params.request = {
+      "address": address,
+      "data": message,
+    };
+
+    final res = await sdk.api.keyring.signAsExtension(password, params);
+    // log.d('signaturee: ${res?.signature}');
+
+    return res?.signature ?? '';
+  }
+
   Future<String> migrateIdentity(
       {required String fromAddress,
       required String destAddress,
-      required String password}) async {
+      required String formPassword,
+      required String destPassword}) async {
     transactionStatus = '';
     final fromPubkey = await sdk.api.account.decodeAddress([fromAddress]);
     final sender = TxSenderData(
@@ -810,27 +815,35 @@ class SubstrateSdk with ChangeNotifier {
     List txOptions = [];
     String? rawParams;
     // final destKeyring = getKeypair(destAddress);
+    // await sdk.api.keyring.signatureVerify(message, signature, address)
 
     final genesisHash = await getGenesisHash();
-    final idtyIndex = await getIdentityIndexOf(destAddress);
-    // final oldPubkey = await addressToPubkey(fromAddress);
-    final messageToSign = 'icok$genesisHash$idtyIndex$fromAddress';
-    final newKeySig = messageToSign;
+    final idtyIndex = await getIdentityIndexOf(fromAddress);
+    final oldPubkey = await addressToPubkey(fromAddress, true);
+    final messageToSign = 'icok$genesisHash$idtyIndex$oldPubkey';
+    final newKeySig =
+        await signMessage(messageToSign, destAddress, destPassword);
 
     txInfo = TxInfoData(
-      'utility',
-      'batchAll',
+      'identity',
+      'changeOwnerKey',
       sender,
     );
-    const tx1 = 'api.tx.universalDividend.claimUds()';
-    final tx2 = 'api.tx.identity.changeOwnerKey("$destAddress", "$newKeySig")';
-    const tx3 = 'api.tx.balances.transferAll(false)';
 
-    rawParams = '[[$tx1, $tx2, $tx3]]';
+    txOptions = [destAddress, newKeySig];
 
-    log.d(
-        'g1migration args:  ${txInfo.module}, ${txInfo.call}, $txOptions, $rawParams');
-    return await executeCall(txInfo, txOptions, password, rawParams);
+    // const tx1 = 'api.tx.universalDividend.claimUds()';
+    // final tx2 = 'api.tx.identity.changeOwnerKey("$destAddress", "$newKeySig")';
+    // const tx3 = 'api.tx.balances.transferAll(false)';
+
+    // rawParams = '[[$tx1, $tx2, $tx3]]';
+
+    log.d("""g1migration args:${txInfo.module}, ${txInfo.call},
+       txOptions: $txOptions
+       rawParams: $rawParams
+       messageToSign: $messageToSign
+       newKeySig: $newKeySig""");
+    return await executeCall(txInfo, txOptions, formPassword, rawParams);
   }
 
   Future revokeIdentity(String address, String password) async {
@@ -856,7 +869,9 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future migrateCsToV2(String salt, String password, String destAddress,
-      {required double balance, String idtyStatus = 'noid'}) async {
+      {required destPassword,
+      required double balance,
+      String idtyStatus = 'noid'}) async {
     final scrypt = pc.KeyDerivator('scrypt');
 
     scrypt.init(
@@ -891,7 +906,8 @@ class SubstrateSdk with ChangeNotifier {
       await migrateIdentity(
           fromAddress: keypair.address!,
           destAddress: destAddress,
-          password: 'password');
+          formPassword: 'password',
+          destPassword: destPassword);
     } else if (balance != 0) {
       await pay(
           fromAddress: keypair.address!,

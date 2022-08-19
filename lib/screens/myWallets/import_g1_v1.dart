@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
@@ -8,6 +10,7 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
+import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:provider/provider.dart';
 
@@ -211,11 +214,27 @@ class ImportG1v1 extends StatelessWidget {
                         onPressed: canValidate
                             ? () async {
                                 log.d('GOOO');
+                                WalletData? defaultWallet =
+                                    myWalletProvider.getDefaultWallet();
+
+                                String? pin;
+                                if (myWalletProvider.pinCode == '') {
+                                  pin = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (homeContext) {
+                                        return UnlockingWallet(
+                                            wallet: defaultWallet);
+                                      },
+                                    ),
+                                  );
+                                }
 
                                 sub.migrateCsToV2(
                                     sub.csSalt.text,
                                     sub.csPassword.text,
                                     selectedWallet.address!,
+                                    destPassword: pin ?? myWalletProvider.pinCode,
                                     balance: balance,
                                     idtyStatus: idtyStatus);
                                 Navigator.push(

@@ -2,6 +2,7 @@
 
 import 'dart:typed_data';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
@@ -43,7 +44,7 @@ class SubstrateSdk with ChangeNotifier {
   ////////// 1: API METHODS ///////////
   /////////////////////////////////////
 
-  Future<String> executeCall(TxInfoData txInfo, txOptions, String password,
+  Future<String> _executeCall(TxInfoData txInfo, txOptions, String password,
       [String? rawParams]) async {
     try {
       final hash = await sdk.api.tx
@@ -70,11 +71,11 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
-  Future getStorage(String call) async {
+  Future _getStorage(String call) async {
     return await sdk.webView!.evalJavascript('api.query.$call');
   }
 
-  Future getStorageConst(String call) async {
+  Future _getStorageConst(String call) async {
     return (await sdk.webView!
             .evalJavascript('api.consts.$call', wrapPromise: false) ??
         [null])[0];
@@ -92,13 +93,13 @@ class SubstrateSdk with ChangeNotifier {
   ////////////////////////////////////////////
 
   Future<int> getIdentityIndexOf(String address) async {
-    return await getStorage('identity.identityIndexOf("$address")') ?? 0;
+    return await _getStorage('identity.identityIndexOf("$address")') ?? 0;
   }
 
   Future<List<int>> getCerts(String address) async {
     final idtyIndex = await getIdentityIndexOf(address);
     final certsReceiver =
-        await getStorage('cert.storageIdtyCertMeta($idtyIndex)') ?? [];
+        await _getStorage('cert.storageIdtyCertMeta($idtyIndex)') ?? [];
 
     return [certsReceiver['receivedCount'], certsReceiver['issuedCount']];
   }
@@ -110,7 +111,7 @@ class SubstrateSdk with ChangeNotifier {
     if (idtyIndexFrom == 0 || idtyIndexTo == 0) return 0;
 
     final List certData =
-        await getStorage('cert.certsByReceiver($idtyIndexTo)') ?? [];
+        await _getStorage('cert.certsByReceiver($idtyIndexTo)') ?? [];
 
     if (certData.isEmpty) return 0;
     for (List certInfo in certData) {
@@ -123,7 +124,7 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<bool> hasAccountConsumers(String address) async {
-    final accountInfo = await getStorage('system.account("$address")');
+    final accountInfo = await _getStorage('system.account("$address")');
     final consumers = accountInfo['consumers'];
     return consumers == 0 ? false : true;
   }
@@ -156,16 +157,16 @@ class SubstrateSdk with ChangeNotifier {
     }
 
     // Get onchain storage values
-    final Map balanceGlobal = await getStorage('system.account("$address")');
+    final Map balanceGlobal = await _getStorage('system.account("$address")');
     final int? idtyIndex =
-        await getStorage('identity.identityIndexOf("$address")');
+        await _getStorage('identity.identityIndexOf("$address")');
     final Map? idtyData = idtyIndex == null
         ? null
-        : await getStorage('identity.identities($idtyIndex)');
+        : await _getStorage('identity.identities($idtyIndex)');
     final int currentUdIndex =
-        int.parse(await getStorage('universalDividend.currentUdIndex()'));
+        int.parse(await _getStorage('universalDividend.currentUdIndex()'));
     final List pastReevals =
-        await getStorage('universalDividend.pastReevals()');
+        await _getStorage('universalDividend.pastReevals()');
 
     // Compute amount of claimable UDs
     final int unclaimedUds = _computeUnclaimUds(currentUdIndex,
@@ -248,7 +249,7 @@ class SubstrateSdk with ChangeNotifier {
     var idtyIndex = await getIdentityIndexOf(address);
 
     final certMeta =
-        await getStorage('cert.storageIdtyCertMeta($idtyIndex)') ?? '';
+        await _getStorage('cert.storageIdtyCertMeta($idtyIndex)') ?? '';
 
     return certMeta;
   }
@@ -260,7 +261,7 @@ class SubstrateSdk with ChangeNotifier {
       return 'noid';
     }
 
-    final idtyStatus = await getStorage('identity.identities($idtyIndex)');
+    final idtyStatus = await _getStorage('identity.identities($idtyIndex)');
 
     if (idtyStatus != null) {
       final String status = idtyStatus['status'];
@@ -276,8 +277,9 @@ class SubstrateSdk with ChangeNotifier {
           'api.genesisHash.toHex()',
           wrapPromise: false,
         ) ??
-        '';
+        [];
     // log.d('genesisHash: $genesisHash');
+    // log.d('genesisHash: ${HEX.decode(genesisHash.substring(2))}');
     return genesisHash;
   }
 
@@ -285,7 +287,8 @@ class SubstrateSdk with ChangeNotifier {
     final pubkey = await sdk.api.account.decodeAddress([address]);
     final String pubkeyHex = pubkey!.keys.first;
     final pubkeyByte = HEX.decode(pubkeyHex.substring(2)) as Uint8List;
-    // final pubkey58 = Base58Encode(pubkeyByte);
+    final pubkey58 = Base58Encode(pubkeyByte);
+    log.d('tatatatata: $pubkey58');
 
     return pubkeyByte;
   }
@@ -296,19 +299,19 @@ class SubstrateSdk with ChangeNotifier {
 
   Future initCurrencyParameters() async {
     currencyParameters['ss58'] =
-        await getStorageConst('system.ss58Prefix.words');
+        await _getStorageConst('system.ss58Prefix.words');
     currencyParameters['minCertForMembership'] =
-        await getStorageConst('wot.minCertForMembership.words');
+        await _getStorageConst('wot.minCertForMembership.words');
     currencyParameters['newAccountPrice'] =
-        await getStorageConst('account.newAccountPrice.words');
+        await _getStorageConst('account.newAccountPrice.words');
     currencyParameters['existentialDeposit'] =
-        await getStorageConst('balances.existentialDeposit.words');
+        await _getStorageConst('balances.existentialDeposit.words');
     currencyParameters['certPeriod'] =
-        await getStorageConst('cert.certPeriod.words');
+        await _getStorageConst('cert.certPeriod.words');
     currencyParameters['certMaxByIssuer'] =
-        await getStorageConst('cert.maxByIssuer.words');
+        await _getStorageConst('cert.maxByIssuer.words');
     currencyParameters['certValidityPeriod'] =
-        await getStorageConst('cert.validityPeriod.words');
+        await _getStorageConst('cert.validityPeriod.words');
 
     log.i('currencyParameters: $currencyParameters');
   }
@@ -680,7 +683,7 @@ class SubstrateSdk with ChangeNotifier {
     }
 
     // log.d('pay args:  ${txInfo.module}, ${txInfo.call}, $txOptions, $rawParams');
-    return await executeCall(txInfo, txOptions, password, rawParams);
+    return await _executeCall(txInfo, txOptions, password, rawParams);
   }
 
   Future<String> certify(
@@ -744,7 +747,7 @@ class SubstrateSdk with ChangeNotifier {
     }
 
     log.d('Cert action: ${txInfo.call!}');
-    return await executeCall(txInfo, txOptions, password, rawParams);
+    return await _executeCall(txInfo, txOptions, password, rawParams);
   }
 
   // Future claimUDs(String password) async {
@@ -778,7 +781,7 @@ class SubstrateSdk with ChangeNotifier {
     );
     final txOptions = [name];
 
-    return await executeCall(txInfo, txOptions, password);
+    return await _executeCall(txInfo, txOptions, password);
   }
 
   Future<String> signMessage(
@@ -791,8 +794,6 @@ class SubstrateSdk with ChangeNotifier {
     };
 
     final res = await sdk.api.keyring.signAsExtension(password, params);
-    // log.d('signaturee: ${res?.signature}');
-
     return res?.signature ?? '';
   }
 
@@ -808,33 +809,37 @@ class SubstrateSdk with ChangeNotifier {
       fromPubkey!.keys.first,
     );
 
-    // final globalBalance = await getBalance(fromAddress);
     TxInfoData txInfo;
     List txOptions = [];
     String? rawParams;
-    // final destKeyring = getKeypair(destAddress);
-    // await sdk.api.keyring.signatureVerify(message, signature, address)
 
     final prefix = 'icok'.codeUnits;
-    final genesisHash = (await getGenesisHash()).substring(2).codeUnits;
-    final idtyIndex = [await getIdentityIndexOf(fromAddress)];
+    final genesisHashString = await getGenesisHash();
+    final genesisHash = HEX.decode(genesisHashString.substring(2)) as Uint8List;
+    final idtyIndex = int32bytes(await getIdentityIndexOf(fromAddress));
     final oldPubkey = await addressToPubkey(fromAddress);
-    // final messageToSign = 'icok$genesisHash$idtyIndex$oldPubkey';
     final messageToSign =
         Uint8List.fromList(prefix + genesisHash + idtyIndex + oldPubkey);
+    final messageToSignHex = HEX.encode(messageToSign);
     final newKeySig =
         await signMessage(messageToSign, destAddress, destPassword);
 
+    // messageToSign: [105, 99, 111, 107, 7, 193, 18, 255, 106, 185, 215, 208, 213, 49, 235, 229, 159, 152, 179, 83, 24, 178, 129, 59, 22, 85, 87, 115, 128, 129, 157, 56, 214, 24, 45, 153, 21, 0, 0, 0, 181, 82, 178, 99, 198, 4, 156, 190, 78, 35, 102, 137, 255, 7, 162, 31, 16, 79, 255, 132, 130, 237, 230, 222, 176, 88, 245, 217, 237, 78, 196, 239]
+
     log.d("""
+fromAddress: $fromAddress
+destAddress: $destAddress
+genesisHashString: $genesisHashString
+
 prefix: $prefix
 genesisHash: $genesisHash
 idtyIndex: $idtyIndex
 oldPubkey: $oldPubkey
+
 messageToSign: $messageToSign
+messageToSignHex: $messageToSignHex
 newKeySig: $newKeySig""");
 
-    // [105, 99, 111, 107, 48, 55, 99, 49, 49, 50, 102, 102, 54, 97, 98, 57, 100, 55, 100, 48, 100, 53, 51, 49, 101, 98, 101, 53, 57, 102, 57, 56, 98, 51, 53, 51, 49, 56, 98, 50, 56, 49, 51, 98, 49, 54, 53, 53, 53, 55, 55, 51, 56, 48, 56, 49, 57, 100, 51, 56, 100, 54, 49, 56, 50, 100, 57, 57, 21, 181, 82, 178, 99, 198, 4, 156, 190, 78, 35, 102, 137, 255, 7, 162, 31, 16, 79, 255, 132, 130, 237, 230, 222, 176, 88, 245, 217, 237, 78, 196, 239]
-    // [105, 99, 111, 107, 48, 55, 99, 49, 49, 50, 102, 102, 54, 97, 98, 57, 100, 55, 100, 48, 100, 53, 51, 49, 101, 98, 101, 53, 57, 102, 57, 56, 98, 51, 53, 51, 49, 56, 98, 50, 56, 49, 51, 98, 49, 54, 53, 53, 53, 55, 55, 51, 56, 48, 56, 49, 57, 100, 51, 56, 100, 54, 49, 56, 50, 100, 57, 57, 21, 181, 82, 178, 99, 198, 4, 156, 190, 78, 35, 102, 137, 255, 7, 162, 31, 16, 79, 255, 132, 130, 237, 230, 222, 176, 88, 245, 217, 237, 78, 196, 239]
     txInfo = TxInfoData(
       'identity',
       'changeOwnerKey',
@@ -849,7 +854,7 @@ newKeySig: $newKeySig""");
 
     // rawParams = '[[$tx1, $tx2, $tx3]]';
 
-    return await executeCall(txInfo, txOptions, formPassword, rawParams);
+    return await _executeCall(txInfo, txOptions, formPassword, rawParams);
   }
 
   Future revokeIdentity(String address, String password) async {
@@ -871,7 +876,7 @@ newKeySig: $newKeySig""");
 
     final txOptions = [idtyIndex];
 
-    return await executeCall(txInfo, txOptions, password);
+    return await _executeCall(txInfo, txOptions, password);
   }
 
   Future migrateCsToV2(String salt, String password, String destAddress,
@@ -976,3 +981,6 @@ class PasswordException implements Exception {
   String cause;
   PasswordException(this.cause);
 }
+
+Uint8List int32bytes(int value) =>
+    Uint8List(4)..buffer.asInt32List()[0] = value;

@@ -181,6 +181,7 @@ class WalletOptions extends StatelessWidget {
                           Consumer<WalletOptionsProvider>(
                               builder: (context, walletProvider, _) {
                             return Column(children: [
+                              confirmIdentityButton(walletProvider),
                               pubkeyWidget(walletProvider, ctx),
                               SizedBox(height: 10 * ratio),
                               activityWidget(
@@ -277,6 +278,57 @@ class WalletOptions extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Widget confirmIdentityButton(WalletOptionsProvider walletProvider) {
+    return Consumer<SubstrateSdk>(builder: (context, sub, _) {
+      return FutureBuilder(
+          future: sub.idtyStatus(walletProvider.address.text),
+          initialData: '',
+          builder: (context, snapshot) {
+            if (snapshot.data == 'Created') {
+              return Column(children: [
+                SizedBox(
+                  width: 320,
+                  height: 60,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      elevation: 4,
+                      primary: orangeC, // background
+                      onPrimary: Colors.white, // foreground
+                    ),
+                    onPressed: () {
+                      walletProvider.validateIdentity(context);
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(builder: (context) {
+                      //     return const SearchResultScreen();
+                      //   }),
+                      // );
+                    },
+                    child: Text(
+                      'confirmMyIdentity'.tr(),
+                      style: const TextStyle(
+                          fontSize: 21, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 7),
+                Text(
+                  "someoneCreatedYourIdentity".tr(args: [currencyName]),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ]);
+            } else {
+              return const SizedBox();
+            }
+          });
+    });
   }
 
   Widget pubkeyWidget(WalletOptionsProvider walletProvider, BuildContext ctx) {

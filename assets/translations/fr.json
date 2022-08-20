@@ -51,7 +51,6 @@
     "validate": "Valider",
     "confirm": "Confirmer",
     "confirmPayment": "Confirmer le paiement",
-    "clickHereToConfirmIdentity": "Cliquez ici pour confirmer\nvotre nouvelle identité",
     "geckoGenerateYourWalletFromMnemonic": "Ğecko fabrique votre portefeuille à partir d’une **phrase de restauration**. Elle est un peu comme le plan qui permet de construire votre portefeuille.",
     "keepThisMnemonicSecure": "Conservez cette phrase précieusement, car sans elle Ğecko ne pourra pas reconstruire vos portefeuilles le jour où vous changez de téléphone.",
     "geckoGeneratedYourMnemonicKeepItSecret": "Gecko a généré votre phrase de restauration ! Tâchez de la garder bien secrète, car elle permet à quiconque la connaît d’accéder à tous vos portefeuilles.",
@@ -189,5 +188,7 @@
     "migrateAccount": "Migrer le compte",
     "migrateIdentity": "Migrer l'identité",
     "identityMigration": "Migration de l'identité",
-    "areYouSureMigrateIdentity": "Êtes-vous certain de vouloir migrer définitivement l'identité **{}** et son solde de **{}** ?"
+    "areYouSureMigrateIdentity": "Êtes-vous certain de vouloir migrer définitivement l'identité **{}** et son solde de **{}** ?",
+    "someoneCreatedYourIdentity": "Quelqu'un a créé votre identité {} !",
+    "confirmMyIdentity": "Confirmer mon identité"
 }

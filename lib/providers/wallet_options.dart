@@ -31,7 +31,6 @@ class WalletOptionsProvider with ChangeNotifier {
   late bool isDefaultWallet;
   bool canValidateNameBool = false;
   Map<String, String> idtyStatusCache = {};
-
   Future<NewWallet>? get badWallet => null;
 
   int getPinLenght(walletNbr) {
@@ -166,15 +165,7 @@ class WalletOptionsProvider with ChangeNotifier {
                 }
               case 'Created':
                 {
-                  return isOwner
-                      ? InkWell(
-                          child: _showText(
-                              'clickHereToConfirmIdentity'.tr(), 18, true),
-                          onTap: () async {
-                            await validateIdentity(context);
-                          },
-                        )
-                      : _showText('identityCreated'.tr());
+                  return _showText('identityCreated'.tr());
                 }
               case 'ConfirmedByOwner':
                 {
@@ -245,10 +236,6 @@ class WalletOptionsProvider with ChangeNotifier {
             height: 100,
             child: Column(children: [
               const SizedBox(height: 20),
-              const Text(
-                'Nom:',
-                style: TextStyle(fontSize: 19),
-              ),
               TextField(
                 onChanged: (_) => notifyListeners(),
                 textAlign: TextAlign.center,

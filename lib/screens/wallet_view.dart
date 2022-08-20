@@ -270,8 +270,8 @@ class WalletViewScreen extends StatelessWidget {
                                   fontSize: buttonFontSize,
                                   fontWeight: FontWeight.w500),
                             ),
-                          ]),
-                        if (toStatus == 1)
+                          ])
+                        else if (toStatus == 1)
                           waitToCert('mustConfirmHisIdentity', duration)
                         else if (snapshot.data!['certRenewable'] != null &&
                             duration != 'seconds'.tr(args: ['0']))

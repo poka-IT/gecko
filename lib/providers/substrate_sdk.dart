@@ -231,6 +231,8 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<Map<String, int>> certState(String from, String to) async {
     Map<String, int> result = {};
+    final toStatus = await idtyStatus(to);
+
     if (from != to && await isMemberGet(from)) {
       final removableOn = await getCertValidityPeriod(from, to);
       final certMeta = await getCertMeta(from);
@@ -244,15 +246,14 @@ class SubstrateSdk with ChangeNotifier {
       } else if (nextIssuableOn > blocNumber) {
         final certDelayDuration = (nextIssuableOn - blocNumber) * 6;
         result.putIfAbsent('certDelay', () => certDelayDuration);
+      } else if (toStatus == 'Created') {
+        result.putIfAbsent('toStatus', () => 1);
       } else {
         result.putIfAbsent('canCert', () => 0);
       }
     }
 
-    final toStatus = await idtyStatus(to);
-    // log.d('certMeta: $toStatus');
-
-    if (toStatus == 'Created') result.putIfAbsent('toStatus', () => 1);
+    // if (toStatus == 'Created') result.putIfAbsent('toStatus', () => 1);
 
     return result;
   }

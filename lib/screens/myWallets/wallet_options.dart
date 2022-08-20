@@ -298,7 +298,7 @@ class WalletOptions extends StatelessWidget {
                       onPrimary: Colors.white, // foreground
                     ),
                     onPressed: () {
-                      walletProvider.validateIdentity(context);
+                      walletProvider.confirmIdentityPopup(context);
                       // Navigator.push(
                       //   context,
                       //   MaterialPageRoute(builder: (context) {

@@ -3,6 +3,7 @@
 import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
@@ -214,7 +215,7 @@ class WalletOptionsProvider with ChangeNotifier {
     return await sub.idtyStatus(address) == 'Validated';
   }
 
-  Future<String?> validateIdentity(BuildContext context) async {
+  Future<String?> confirmIdentityPopup(BuildContext context) async {
     TextEditingController idtyName = TextEditingController();
     SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
     WalletOptionsProvider walletOptions =
@@ -238,6 +239,11 @@ class WalletOptionsProvider with ChangeNotifier {
               const SizedBox(height: 20),
               TextField(
                 onChanged: (_) => notifyListeners(),
+                inputFormatters: <TextInputFormatter>[
+                  // FilteringTextInputFormatter.allow(RegExp("[0-9a-zA-Z]")),
+                  FilteringTextInputFormatter.deny(RegExp(r'^ ')),
+                  // FilteringTextInputFormatter.deny(RegExp(r' $')),
+                ],
                 textAlign: TextAlign.center,
                 autofocus: true,
                 controller: idtyName,
@@ -257,13 +263,17 @@ class WalletOptionsProvider with ChangeNotifier {
                       "validate".tr(),
                       style: TextStyle(
                         fontSize: 21,
-                        color: idtyName.text.length >= 2
+                        color: idtyName.text.length.clamp(3, 64) ==
+                                idtyName.text.length
                             ? const Color(0xffD80000)
                             : Colors.grey,
                       ),
                     ),
                     onPressed: () async {
-                      if (idtyName.text.length >= 2) {
+                      idtyName.text = idtyName.text.trim().replaceAll('  ', '');
+
+                      if (idtyName.text.length.clamp(3, 64) ==
+                          idtyName.text.length) {
                         WalletData? defaultWallet =
                             myWalletProvider.getDefaultWallet();
 
@@ -291,8 +301,8 @@ class WalletOptionsProvider with ChangeNotifier {
                             MaterialPageRoute(builder: (context) {
                               return TransactionInProgress(
                                 transType: 'comfirmIdty',
-                                fromAddress: wallet.address,
-                                toAddress: wallet.address,
+                                fromAddress: getShortPubkey(wallet.address!),
+                                toAddress: getShortPubkey(wallet.address!),
                               );
                             }),
                           );

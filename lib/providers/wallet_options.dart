@@ -302,8 +302,11 @@ class WalletOptionsProvider with ChangeNotifier {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) {
-                              return const TransactionInProgress(
-                                  transType: 'comfirmIdty');
+                              return TransactionInProgress(
+                                transType: 'comfirmIdty',
+                                fromAddress: wallet.address,
+                                toAddress: wallet.address,
+                              );
                             }),
                           );
                         }

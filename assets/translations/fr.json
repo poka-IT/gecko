@@ -186,5 +186,8 @@
     "importOldAccount": "Importer son ancien compte",
     "enterCesiumId": "Entrez votre identifiant Cesium",
     "enterCesiumPassword": "Entrez votre mot de passe Cesium",
-    "migrateAccount": "Migrer le compte"
+    "migrateAccount": "Migrer le compte",
+    "migrateIdentity": "Migrer l'identité",
+    "identityMigration": "Migration de l'identité",
+    "areYouSureMigrateIdentity": "Êtes-vous certain de vouloir migrer définitivement l'identité **{}** et son solde de **{}** ?"
 }

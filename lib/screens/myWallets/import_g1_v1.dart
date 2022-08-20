@@ -60,14 +60,14 @@ class ImportG1v1 extends StatelessWidget {
                 builder: (BuildContext context, AsyncSnapshot<List> status) {
                   // log.d(_certs.data);
 
-                  final balance = status.data?[0] ?? 0;
-                  final idtyStatus = status.data?[1];
-                  final myIdtyStatus = status.data?[2];
-                  final hasConsumer = status.data?[3] ?? false;
+                  final Map balance = status.data?[0] ?? 0;
+                  final String idtyStatus = status.data?[1];
+                  final String myIdtyStatus = status.data?[2];
+                  final bool hasConsumer = status.data?[3] ?? false;
 
                   // log.d('hasconsumer: $hasConsumer');
 
-                  if (balance != 0 && !hasConsumer) {
+                  if (balance['transferableBalance'] != 0 && !hasConsumer) {
                     canValidate = true;
                     validationStatus = '';
                   } else {
@@ -86,9 +86,6 @@ class ImportG1v1 extends StatelessWidget {
                   if (sub.g1V1NewAddress == '') {
                     validationStatus = '';
                   }
-
-                  log.d(
-                      'tatatata: ${sub.g1V1NewAddress}, ${selectedWallet.address!}, $balance, $idtyStatus, $myIdtyStatus');
 
                   return Column(children: <Widget>[
                     const SizedBox(height: 20),
@@ -234,13 +231,17 @@ class ImportG1v1 extends StatelessWidget {
                                     sub.csSalt.text,
                                     sub.csPassword.text,
                                     selectedWallet.address!,
-                                    destPassword: pin ?? myWalletProvider.pinCode,
+                                    destPassword:
+                                        pin ?? myWalletProvider.pinCode,
                                     balance: balance,
                                     idtyStatus: idtyStatus);
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(builder: (context) {
-                                    return const TransactionInProgress();
+                                    return TransactionInProgress(
+                                        transType: 'identityMigration',
+                                        fromAddress: sub.g1V1NewAddress,
+                                        toAddress: selectedWallet.address);
                                   }),
                                 );
                                 resetScreen(context);

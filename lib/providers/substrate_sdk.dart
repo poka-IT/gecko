@@ -2,7 +2,6 @@
 
 import 'dart:typed_data';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
@@ -88,16 +87,29 @@ class SubstrateSdk with ChangeNotifier {
     );
   }
 
+  Future<String> _signMessage(
+      Uint8List message, String address, String password) async {
+    final params = SignAsExtensionParam();
+    params.msgType = "pub(bytes.sign)";
+    params.request = {
+      "address": address,
+      "data": message,
+    };
+
+    final res = await sdk.api.keyring.signAsExtension(password, params);
+    return res?.signature ?? '';
+  }
+
   ////////////////////////////////////////////
   ////////// 2: GET ONCHAIN STORAGE //////////
   ////////////////////////////////////////////
 
-  Future<int> getIdentityIndexOf(String address) async {
+  Future<int> _getIdentityIndexOf(String address) async {
     return await _getStorage('identity.identityIndexOf("$address")') ?? 0;
   }
 
   Future<List<int>> getCerts(String address) async {
-    final idtyIndex = await getIdentityIndexOf(address);
+    final idtyIndex = await _getIdentityIndexOf(address);
     final certsReceiver =
         await _getStorage('cert.storageIdtyCertMeta($idtyIndex)') ?? [];
 
@@ -105,8 +117,8 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<int> getCertValidityPeriod(String from, String to) async {
-    final idtyIndexFrom = await getIdentityIndexOf(from);
-    final idtyIndexTo = await getIdentityIndexOf(to);
+    final idtyIndexFrom = await _getIdentityIndexOf(from);
+    final idtyIndexTo = await _getIdentityIndexOf(to);
 
     if (idtyIndexFrom == 0 || idtyIndexTo == 0) return 0;
 
@@ -246,7 +258,7 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<Map> getCertMeta(String address) async {
-    var idtyIndex = await getIdentityIndexOf(address);
+    var idtyIndex = await _getIdentityIndexOf(address);
 
     final certMeta =
         await _getStorage('cert.storageIdtyCertMeta($idtyIndex)') ?? '';
@@ -255,7 +267,7 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<String> idtyStatus(String address) async {
-    var idtyIndex = await getIdentityIndexOf(address);
+    var idtyIndex = await _getIdentityIndexOf(address);
 
     if (idtyIndex == 0) {
       return 'noid';
@@ -287,8 +299,7 @@ class SubstrateSdk with ChangeNotifier {
     final pubkey = await sdk.api.account.decodeAddress([address]);
     final String pubkeyHex = pubkey!.keys.first;
     final pubkeyByte = HEX.decode(pubkeyHex.substring(2)) as Uint8List;
-    final pubkey58 = Base58Encode(pubkeyByte);
-    log.d('tatatatata: $pubkey58');
+    // final pubkey58 = Base58Encode(pubkeyByte);
 
     return pubkeyByte;
   }
@@ -624,22 +635,18 @@ class SubstrateSdk with ChangeNotifier {
     return g1V1NewAddress;
   }
 
-  Future<List> getBalanceAndIdtyStatus(String address, String myAddress) async {
-    final balance =
-        address == '' ? {'transferableBalance': 0} : await getBalance(address);
-    final thisIdtyStatus = address == '' ? 'noid' : await idtyStatus(address);
-    final thisHasConsumer =
-        address == '' ? false : await hasAccountConsumers(address);
-    final myIdtyStatus = await idtyStatus(myAddress);
+  Future<List> getBalanceAndIdtyStatus(
+      String fromAddress, String toAddress) async {
+    final fromBalance = fromAddress == ''
+        ? {'transferableBalance': 0}
+        : await getBalance(fromAddress);
+    final fromIdtyStatus =
+        fromAddress == '' ? 'noid' : await idtyStatus(fromAddress);
+    final fromHasConsumer =
+        fromAddress == '' ? false : await hasAccountConsumers(fromAddress);
+    final toIdtyStatus = await idtyStatus(toAddress);
 
-    log.d('tatata: $myIdtyStatus');
-
-    return [
-      balance['transferableBalance'],
-      thisIdtyStatus,
-      myIdtyStatus,
-      thisHasConsumer
-    ];
+    return [fromBalance, fromIdtyStatus, toIdtyStatus, fromHasConsumer];
   }
 
   //////////////////////////////////////
@@ -694,8 +701,8 @@ class SubstrateSdk with ChangeNotifier {
     final myIdtyStatus = await idtyStatus(fromAddress);
     final toIdtyStatus = await idtyStatus(toAddress);
 
-    final fromIndex = await getIdentityIndexOf(fromAddress);
-    final toIndex = await getIdentityIndexOf(toAddress);
+    final fromIndex = await _getIdentityIndexOf(fromAddress);
+    final toIndex = await _getIdentityIndexOf(toAddress);
 
     if (myIdtyStatus != 'Validated') {
       transactionStatus = 'notMember';
@@ -785,24 +792,12 @@ class SubstrateSdk with ChangeNotifier {
     return await _executeCall(txInfo, txOptions, password);
   }
 
-  Future<String> signMessage(
-      Uint8List message, String address, String password) async {
-    final params = SignAsExtensionParam();
-    params.msgType = "pub(bytes.sign)";
-    params.request = {
-      "address": address,
-      "data": message,
-    };
-
-    final res = await sdk.api.keyring.signAsExtension(password, params);
-    return res?.signature ?? '';
-  }
-
   Future<String> migrateIdentity(
       {required String fromAddress,
       required String destAddress,
-      required String formPassword,
+      required String fromPassword,
       required String destPassword,
+      required Map fromBalance,
       bool withBalance = false}) async {
     transactionStatus = '';
     final fromPubkey = await sdk.api.account.decodeAddress([fromAddress]);
@@ -818,13 +813,13 @@ class SubstrateSdk with ChangeNotifier {
     final prefix = 'icok'.codeUnits;
     final genesisHashString = await getGenesisHash();
     final genesisHash = HEX.decode(genesisHashString.substring(2)) as Uint8List;
-    final idtyIndex = int32bytes(await getIdentityIndexOf(fromAddress));
+    final idtyIndex = _int32bytes(await _getIdentityIndexOf(fromAddress));
     final oldPubkey = await addressToPubkey(fromAddress);
     final messageToSign =
         Uint8List.fromList(prefix + genesisHash + idtyIndex + oldPubkey);
     final messageToSignHex = HEX.encode(messageToSign);
     final newKeySig =
-        await signMessage(messageToSign, destAddress, destPassword);
+        await _signMessage(messageToSign, destAddress, destPassword);
 
     // messageToSign: [105, 99, 111, 107, 7, 193, 18, 255, 106, 185, 215, 208, 213, 49, 235, 229, 159, 152, 179, 83, 24, 178, 129, 59, 22, 85, 87, 115, 128, 129, 157, 56, 214, 24, 45, 153, 21, 0, 0, 0, 181, 82, 178, 99, 198, 4, 156, 190, 78, 35, 102, 137, 255, 7, 162, 31, 16, 79, 255, 132, 130, 237, 230, 222, 176, 88, 245, 217, 237, 78, 196, 239]
 
@@ -852,9 +847,10 @@ newKeySig: $newKeySig""");
       const tx1 = 'api.tx.universalDividend.claimUds()';
       final tx2 =
           'api.tx.identity.changeOwnerKey("$destAddress", "$newKeySig")';
-      const tx3 = 'api.tx.balances.transferAll(false)';
+      // const tx3 = 'api.tx.balances.transferAll(false)';
 
-      rawParams = '[[$tx1, $tx2, $tx3]]';
+      rawParams =
+          fromBalance['unclaimedUds'] == 0 ? '[[$tx2]]' : '[[$tx1, $tx2]]';
     } else {
       txInfo = TxInfoData(
         'identity',
@@ -865,11 +861,11 @@ newKeySig: $newKeySig""");
       txOptions = [destAddress, newKeySig];
     }
 
-    return await _executeCall(txInfo, txOptions, formPassword, rawParams);
+    return await _executeCall(txInfo, txOptions, fromPassword, rawParams);
   }
 
   Future revokeIdentity(String address, String password) async {
-    final idtyIndex = await getIdentityIndexOf(address);
+    final idtyIndex = await _getIdentityIndexOf(address);
 
     final sender = TxSenderData(
       keyring.current.address,
@@ -892,7 +888,7 @@ newKeySig: $newKeySig""");
 
   Future migrateCsToV2(String salt, String password, String destAddress,
       {required destPassword,
-      required double balance,
+      required Map balance,
       String idtyStatus = 'noid'}) async {
     final scrypt = pc.KeyDerivator('scrypt');
 
@@ -928,10 +924,11 @@ newKeySig: $newKeySig""");
       await migrateIdentity(
           fromAddress: keypair.address!,
           destAddress: destAddress,
-          formPassword: 'password',
+          fromPassword: 'password',
           destPassword: destPassword,
-          withBalance: true);
-    } else if (balance != 0) {
+          withBalance: true,
+          fromBalance: balance);
+    } else if (balance['transferableBalance'] != 0) {
       await pay(
           fromAddress: keypair.address!,
           destAddress: destAddress,
@@ -994,5 +991,5 @@ class PasswordException implements Exception {
   PasswordException(this.cause);
 }
 
-Uint8List int32bytes(int value) =>
+Uint8List _int32bytes(int value) =>
     Uint8List(4)..buffer.asInt32List()[0] = value;

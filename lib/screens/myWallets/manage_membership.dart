@@ -1,6 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/screens/myWallets/migrate_identity.dart';
 // import 'package:gecko/models/wallet_data.dart';
 // import 'package:gecko/providers/my_wallets.dart';
 // import 'package:gecko/providers/substrate_sdk.dart';
@@ -22,17 +24,42 @@ class ManageMembership extends StatelessWidget {
         backgroundColor: backgroundColor,
         appBar: AppBar(
             toolbarHeight: 60 * ratio,
-            title: const SizedBox(
+            title: SizedBox(
               height: 22,
-              child: Text('manageMembership'),
+              child: const Text('manageMembership').tr(),
             )),
         body: SafeArea(
           child: Column(children: <Widget>[
             const SizedBox(height: 20),
-            revokeMyIdentity(context),
+            migrateIdentity(context),
+            const SizedBox(height: 10),
+            revokeMyIdentity(context)
             // const SizedBox(height: 20),
           ]),
         ));
+  }
+
+  Widget migrateIdentity(BuildContext context) {
+    return InkWell(
+      key: const Key('migrateIdentity'),
+      onTap: () async {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) {
+            return const MigrateIdentityScreen();
+          }),
+        );
+      },
+      child: SizedBox(
+        height: 60,
+        child: Row(children: const <Widget>[
+          SizedBox(width: 16),
+          Icon(Icons.change_circle_outlined, size: 35),
+          SizedBox(width: 11.5),
+          Text('Migrer mon identité', style: TextStyle(fontSize: 20)),
+        ]),
+      ),
+    );
   }
 
   Widget revokeMyIdentity(BuildContext context) {
@@ -79,14 +106,15 @@ class ManageMembership extends StatelessWidget {
         // }
       },
       child: SizedBox(
-        height: 40,
-        child: Row(children: const <Widget>[
-          SizedBox(width: 32),
-          // Image.asset(
-          //   'assets/medal.png',
-          //   height: 45,
-          // ),
-          Text('Révoquer mon adhésion', style: TextStyle(fontSize: 20)),
+        height: 60,
+        child: Row(children: <Widget>[
+          const SizedBox(width: 20),
+          Image.asset(
+            'assets/skull_Icon.png',
+            height: 30,
+          ),
+          const SizedBox(width: 16),
+          const Text('Révoquer mon adhésion', style: TextStyle(fontSize: 20)),
         ]),
       ),
     );

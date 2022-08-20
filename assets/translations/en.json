@@ -147,6 +147,7 @@
     "execTimeoutOver": "Execution timeout is over",
     "seeAWallet": "See a wallet",
     "mustWaitXBeforeCertify": "You have to wait\n{} before\ncertifying again",
+    "mustConfirmHisIdentity": "This person must confirm\nhis identity before can be\ncertified",
     "canRenewCertInX": "You can renew\nthis certification\nin {}",
     "executeATransfer": "Execute a transfer",
     "executeTheTransfer": "Execute the transfer",
@@ -174,5 +175,18 @@
     "noContacts": "You don't have any contact",
     "addContact": "Add\nto contacts",
     "removeContact": "Remove\nthis contact",
-    "derivationsScanProgress": "Scan address {}/{}"
+    "derivationsScanProgress": "Scan address {}/{}",
+    "youAreOffline": "You are offline...",
+    "importG1v1": "Import old G1v1 account",
+    "selectDestWallet": "Select a target wallet:",
+    "youMustWaitBeforeCashoutThisAccount": "You have to wait {} minutes\nbefore migrate this account",
+    "thisAccountIsEmpty": "This account is empty",
+    "youCannotMigrateIdentityToExistingIdentity": "You cannot migrate an identity\nto an account that already has an identity",
+    "importOldAccount": "Import your old account",
+    "enterCesiumId": "Enter your Cesium ID",
+    "enterCesiumPassword": "Enter your Cesium password",
+    "migrateAccount": "Migrate account",
+    "migrateIdentity": "Migrate identity",
+    "identityMigration": "Identity migration",
+    "areYouSureMigrateIdentity": "Are you sure you want to permanently migrate identity **{}** with balance of **{}** ?"
 }

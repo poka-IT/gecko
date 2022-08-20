@@ -49,79 +49,82 @@ class OnboardingStepTen extends StatelessWidget {
         ),
         extendBodyBehindAppBar: true,
         body: SafeArea(
-          child: Column(children: <Widget>[
-            SizedBox(height: isTall ? 40 : 20),
-            common.buildProgressBar(9),
-            SizedBox(height: isTall ? 40 : 20),
-            common.buildText("geckoWillCheckPassword".tr()),
-            SizedBox(height: isTall ? 80 : 20),
-            Visibility(
-              visible: generateWalletProvider.scanedValidWalletNumber != -1,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 15),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("derivationsScanProgress".tr(args: [
-                      '${generateWalletProvider.scanedWalletNumber}',
-                      '${generateWalletProvider.numberScan + 1}'
-                    ])),
-                    const SizedBox(width: 10),
-                    SizedBox(
-                      height: 22,
-                      width: 22,
-                      child: CircularProgressIndicator(
-                        color: orangeC,
-                        strokeWidth: 3,
+          child: Stack(children: [
+            Column(children: <Widget>[
+              SizedBox(height: isTall ? 40 : 20),
+              common.buildProgressBar(9),
+              SizedBox(height: isTall ? 40 : 20),
+              common.buildText("geckoWillCheckPassword".tr()),
+              SizedBox(height: isTall ? 80 : 20),
+              Visibility(
+                visible: generateWalletProvider.scanedValidWalletNumber != -1,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 15),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("derivationsScanProgress".tr(args: [
+                        '${generateWalletProvider.scanedWalletNumber}',
+                        '${generateWalletProvider.numberScan + 1}'
+                      ])),
+                      const SizedBox(width: 10),
+                      SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(
+                          color: orangeC,
+                          strokeWidth: 3,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-            Consumer<SubstrateSdk>(builder: (context, sub, _) {
-              return sub.nodeConnected
-                  ? pinForm(context, walletOptions, pinLenght, 1, 2)
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                          Text(
-                            'Vous devez vous connecter à internet\npour valider votre coffre',
-                            style: TextStyle(
-                              fontSize: 20,
-                              color: Colors.redAccent,
-                              fontWeight: FontWeight.w500,
+              Consumer<SubstrateSdk>(builder: (context, sub, _) {
+                return sub.nodeConnected
+                    ? pinForm(context, walletOptions, pinLenght, 1, 2)
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                            Text(
+                              'Vous devez vous connecter à internet\npour valider votre coffre',
+                              style: TextStyle(
+                                fontSize: 20,
+                                color: Colors.redAccent,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                            textAlign: TextAlign.center,
+                          ]);
+              }),
+              Consumer<SubstrateSdk>(builder: (context, sub, _) {
+                return sub.nodeConnected
+                    ? InkWell(
+                        onTap: () {
+                          walletOptions.changePinCacheChoice();
+                        },
+                        child: Row(children: [
+                          const SizedBox(height: 30),
+                          const Spacer(),
+                          Icon(
+                            configBox.get('isCacheChecked') ?? false
+                                ? Icons.check_box
+                                : Icons.check_box_outline_blank,
+                            color: orangeC,
                           ),
-                        ]);
-            }),
-            Consumer<SubstrateSdk>(builder: (context, sub, _) {
-              return sub.nodeConnected
-                  ? InkWell(
-                      onTap: () {
-                        walletOptions.changePinCacheChoice();
-                      },
-                      child: Row(children: [
-                        const SizedBox(height: 30),
-                        const Spacer(),
-                        Icon(
-                          configBox.get('isCacheChecked') ?? false
-                              ? Icons.check_box
-                              : Icons.check_box_outline_blank,
-                          color: orangeC,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'rememberPassword'.tr(),
-                          style:
-                              TextStyle(fontSize: 16, color: Colors.grey[700]),
-                        ),
-                        const Spacer()
-                      ]))
-                  : const Text('');
-            }),
-            const SizedBox(height: 10),
+                          const SizedBox(width: 8),
+                          Text(
+                            'rememberPassword'.tr(),
+                            style: TextStyle(
+                                fontSize: 16, color: Colors.grey[700]),
+                          ),
+                          const Spacer()
+                        ]))
+                    : const Text('');
+              }),
+              const SizedBox(height: 10),
+            ]),
+            CommonElements().offlineInfo(context),
           ]),
         ));
   }

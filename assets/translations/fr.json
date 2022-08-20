@@ -148,6 +148,7 @@
     "execTimeoutOver": "Le délais d'éxecution est dépassé",
     "seeAWallet": "Voir un portefeuille",
     "mustWaitXBeforeCertify": "Vous devez attendre\n{} avant\nde pouvoir certifier",
+    "mustConfirmHisIdentity": "Cette personne doit confirmer\nson identité avant de pouvoir\nêtre certifié",
     "canRenewCertInX": "Vous pourrez renouveller\ncette certification\ndans {}",
     "executeATransfer": "Effectuer un virement",
     "executeTheTransfer": "Effectuer le virement",
@@ -175,5 +176,18 @@
     "noContacts": "Vous n'avez aucun contact",
     "addContact": "Ajouter\naux contacts",
     "removeContact": "Supprimer\nce contact",
-    "derivationsScanProgress": "Scan de l'adresse {}/{}"
+    "derivationsScanProgress": "Scan de l'adresse {}/{}",
+    "youAreOffline": "Vous êtes hors ligne...",
+    "importG1v1": "Importer un ancien compte G1v1",
+    "selectDestWallet": "Sélectionnez un portefeuille cible:",
+    "youMustWaitBeforeCashoutThisAccount": "Vous devez attendre {} minutes\navant de pouvoir migrer ce compte",
+    "thisAccountIsEmpty": "Ce compte est vide",
+    "youCannotMigrateIdentityToExistingIdentity": "Vous ne pouvez pas migrer une identité\nvers un compte disposant déjà d'une identité",
+    "importOldAccount": "Importer son ancien compte",
+    "enterCesiumId": "Entrez votre identifiant Cesium",
+    "enterCesiumPassword": "Entrez votre mot de passe Cesium",
+    "migrateAccount": "Migrer le compte",
+    "migrateIdentity": "Migrer l'identité",
+    "identityMigration": "Migration de l'identité",
+    "areYouSureMigrateIdentity": "Êtes-vous certain de vouloir migrer définitivement l'identité **{}** et son solde de **{}** ?"
 }

@@ -557,7 +557,7 @@ packages:
     source: hosted
     version: "2.1.0"
   hex:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: hex
       url: "https://pub.dartlang.org"
@@ -1052,7 +1052,7 @@ packages:
     source: hosted
     version: "2.1.2"
   pointycastle:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: pointycastle
       url: "https://pub.dartlang.org"
@@ -1062,8 +1062,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: gecko-old
-      resolved-ref: "87096351fb187614b6386343615db39a2f2b5b9b"
+      ref: gecko-unwrapbytes
+      resolved-ref: b019cc2a6e77b6989f94b1bef8259298410cd82a
       url: "https://github.com/poka-IT/sdk.git"
     source: git
     version: "0.4.8"

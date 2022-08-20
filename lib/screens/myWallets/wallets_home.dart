@@ -14,6 +14,7 @@ import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/chest_options.dart';
 import 'package:gecko/screens/myWallets/choose_chest.dart';
+import 'package:gecko/screens/myWallets/import_g1_v1.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:provider/provider.dart';
@@ -64,12 +65,10 @@ class WalletsHome extends StatelessWidget {
         ),
         bottomNavigationBar: homeProvider.bottomAppBar(context),
         body: SafeArea(
-          child: Stack(
-            children: [
-              myWalletsTiles(context, currentChestNumber),
-              CommonElements().offlineInfo(context),
-            ],
-          ),
+          child: Stack(children: [
+            myWalletsTiles(context, currentChestNumber),
+            CommonElements().offlineInfo(context),
+          ]),
         ),
       ),
     );
@@ -80,7 +79,7 @@ class WalletsHome extends StatelessWidget {
     return Column(children: [
       const SizedBox(height: 50),
       SizedBox(
-          height: 90,
+          height: 80,
           width: 420,
           child: ElevatedButton.icon(
             icon: Image.asset(
@@ -109,6 +108,28 @@ class WalletsHome extends StatelessWidget {
           )),
       const SizedBox(height: 30),
       InkWell(
+        key: const Key('importG1v1'),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) {
+              return const ImportG1v1();
+            }),
+          );
+        },
+        child: SizedBox(
+          width: 400,
+          height: 60,
+          child: Center(
+              child: Text('importG1v1'.tr(),
+                  style: TextStyle(
+                      fontSize: 22,
+                      color: Colors.blue[900],
+                      fontWeight: FontWeight.w500))),
+        ),
+      ),
+      const SizedBox(height: 5),
+      InkWell(
         key: const Key('changeChest'),
         onTap: () {
           Navigator.push(
@@ -120,7 +141,7 @@ class WalletsHome extends StatelessWidget {
         },
         child: SizedBox(
           width: 400,
-          height: 50,
+          height: 60,
           child: Center(
               child: Text('changeChest'.tr(),
                   style: TextStyle(
@@ -168,7 +189,6 @@ class WalletsHome extends StatelessWidget {
 
     return CustomScrollView(slivers: <Widget>[
       const SliverToBoxAdapter(child: SizedBox(height: 20)),
-
       SliverGrid.count(
           key: const Key('listWallets'),
           crossAxisCount: nTule,

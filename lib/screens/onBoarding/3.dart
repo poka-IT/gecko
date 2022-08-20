@@ -29,8 +29,11 @@ class OnboardingStepThree extends StatelessWidget {
       ),
       extendBodyBehindAppBar: true,
       body: SafeArea(
-        child: common.infoIntro(context, 'warningForgotPassword'.tr(),
-            'forgot_password.png'.tr(), '>', const OnboardingStepFor(), 2),
+        child: Stack(children: [
+          common.infoIntro(context, 'warningForgotPassword'.tr(),
+              'forgot_password.png'.tr(), '>', const OnboardingStepFor(), 2),
+          CommonElements().offlineInfo(context),
+        ]),
       ),
     );
   }

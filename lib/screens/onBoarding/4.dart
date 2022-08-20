@@ -29,14 +29,17 @@ class OnboardingStepFor extends StatelessWidget {
       ),
       extendBodyBehindAppBar: true,
       body: SafeArea(
-        child: common.infoIntro(
-            context,
-            'itsTimeToUseAPenAndPaper'.tr(),
-            'gecko_also_can_forget.png'.tr(),
-            '>',
-            const OnboardingStepFive(),
-            3,
-            isMd: true),
+        child: Stack(children: [
+          common.infoIntro(
+              context,
+              'itsTimeToUseAPenAndPaper'.tr(),
+              'gecko_also_can_forget.png'.tr(),
+              '>',
+              const OnboardingStepFive(),
+              3,
+              isMd: true),
+          CommonElements().offlineInfo(context),
+        ]),
       ),
     );
   }

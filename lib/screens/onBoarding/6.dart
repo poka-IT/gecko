@@ -51,88 +51,92 @@ class OnboardingStepSix extends StatelessWidget {
           ),
         ),
         body: SafeArea(
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: Column(children: [
-              SizedBox(height: isTall ? 40 : 20),
-              common.buildProgressBar(5),
-              SizedBox(height: isTall ? 40 : 20),
-              common.buildText(
-                  "didYouNoteMnemonicToBeSureTypeWord".tr(
-                      args: [(generateWalletProvider.nbrWord + 1).toString()]),
-                  20,
-                  true),
-              SizedBox(height: isTall ? 70 : 20),
-              Text('${generateWalletProvider.nbrWord + 1}',
-                  key: const Key('askedWord'),
-                  style: TextStyle(
-                      fontSize: isTall ? 17 : 15,
-                      color: orangeC,
-                      fontWeight: FontWeight.w400)),
-              const SizedBox(height: 10),
-              Container(
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(7),
-                      border: Border.all(
-                        color: Colors.grey[600]!,
-                        width: 3,
-                      )),
-                  width: 430,
-                  child: TextFormField(
-                      key: const Key('inputWord'),
-                      autofocus: true,
-                      enabled: !generateWalletProvider.isAskedWordValid,
-                      controller: wordController,
-                      textInputAction: TextInputAction.next,
-                      onChanged: (value) {
-                        generateWalletProvider.checkAskedWord(
-                            value, _mnemonicController.text);
-                      },
-                      maxLines: 1,
-                      textAlign: TextAlign.center,
-                      decoration: InputDecoration(
-                        labelStyle: TextStyle(
-                            fontSize: 22.0,
-                            color: Colors.grey[500],
-                            fontWeight: FontWeight.w500),
-                        labelText: generateWalletProvider.isAskedWordValid
-                            ? "itsTheGoodWord".tr()
-                            : "${generateWalletProvider.nbrWordAlpha} ${"nthMnemonicWord".tr()}",
-                        fillColor: const Color(0xffeeeedd),
-                        filled: true,
-                        contentPadding: const EdgeInsets.all(12),
-                      ),
-                      style: TextStyle(
-                          fontSize: 40.0,
-                          color: generateWalletProvider.askedWordColor,
-                          fontWeight: FontWeight.w500))),
-              Visibility(
-                visible: generateWalletProvider.isAskedWordValid,
-                child: Expanded(
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: nextButton(
-                        context,
-                        'continue'.tr(),
-                        skipIntro
-                            ? const OnboardingStepNine()
-                            : const OnboardingStepSeven(),
-                        false),
+          child: Stack(children: [
+            Align(
+              alignment: Alignment.topCenter,
+              child: Column(children: [
+                SizedBox(height: isTall ? 40 : 20),
+                common.buildProgressBar(5),
+                SizedBox(height: isTall ? 40 : 20),
+                common.buildText(
+                    "didYouNoteMnemonicToBeSureTypeWord".tr(args: [
+                      (generateWalletProvider.nbrWord + 1).toString()
+                    ]),
+                    20,
+                    true),
+                SizedBox(height: isTall ? 70 : 20),
+                Text('${generateWalletProvider.nbrWord + 1}',
+                    key: const Key('askedWord'),
+                    style: TextStyle(
+                        fontSize: isTall ? 17 : 15,
+                        color: orangeC,
+                        fontWeight: FontWeight.w400)),
+                const SizedBox(height: 10),
+                Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(7),
+                        border: Border.all(
+                          color: Colors.grey[600]!,
+                          width: 3,
+                        )),
+                    width: 430,
+                    child: TextFormField(
+                        key: const Key('inputWord'),
+                        autofocus: true,
+                        enabled: !generateWalletProvider.isAskedWordValid,
+                        controller: wordController,
+                        textInputAction: TextInputAction.next,
+                        onChanged: (value) {
+                          generateWalletProvider.checkAskedWord(
+                              value, _mnemonicController.text);
+                        },
+                        maxLines: 1,
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                          labelStyle: TextStyle(
+                              fontSize: 22.0,
+                              color: Colors.grey[500],
+                              fontWeight: FontWeight.w500),
+                          labelText: generateWalletProvider.isAskedWordValid
+                              ? "itsTheGoodWord".tr()
+                              : "${generateWalletProvider.nbrWordAlpha} ${"nthMnemonicWord".tr()}",
+                          fillColor: const Color(0xffeeeedd),
+                          filled: true,
+                          contentPadding: const EdgeInsets.all(12),
+                        ),
+                        style: TextStyle(
+                            fontSize: 40.0,
+                            color: generateWalletProvider.askedWordColor,
+                            fontWeight: FontWeight.w500))),
+                Visibility(
+                  visible: generateWalletProvider.isAskedWordValid,
+                  child: Expanded(
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: nextButton(
+                          context,
+                          'continue'.tr(),
+                          skipIntro
+                              ? const OnboardingStepNine()
+                              : const OnboardingStepSeven(),
+                          false),
+                    ),
                   ),
                 ),
-              ),
-              // Visibility(
-              //   visible: !_generateWalletProvider.isAskedWordValid,
-              //   child: const Expanded(
-              //     child: Align(
-              //       alignment: Alignment.bottomCenter,
-              //       child: Text(''),
-              //     ),
-              //   ),
-              // ),
-              SizedBox(height: 35 * ratio),
-            ]),
-          ),
+                // Visibility(
+                //   visible: !_generateWalletProvider.isAskedWordValid,
+                //   child: const Expanded(
+                //     child: Align(
+                //       alignment: Alignment.bottomCenter,
+                //       child: Text(''),
+                //     ),
+                //   ),
+                // ),
+                SizedBox(height: 35 * ratio),
+              ]),
+            ),
+            CommonElements().offlineInfo(context),
+          ]),
         ),
       ),
     );

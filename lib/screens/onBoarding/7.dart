@@ -29,14 +29,17 @@ class OnboardingStepSeven extends StatelessWidget {
       ),
       extendBodyBehindAppBar: true,
       body: SafeArea(
-        child: common.infoIntro(
-            context,
-            'geckoWillGenerateAPassword'.tr(),
-            'coffre-fort-code-secret-dans-telephone.png',
-            '>',
-            OnboardingStepEight(scanDerivation: scanDerivation),
-            6,
-            boxHeight: 400),
+        child: Stack(children: [
+          common.infoIntro(
+              context,
+              'geckoWillGenerateAPassword'.tr(),
+              'coffre-fort-code-secret-dans-telephone.png',
+              '>',
+              OnboardingStepEight(scanDerivation: scanDerivation),
+              6,
+              boxHeight: 400),
+          CommonElements().offlineInfo(context),
+        ]),
       ),
     );
   }

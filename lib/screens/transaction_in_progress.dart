@@ -11,9 +11,12 @@ import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class TransactionInProgress extends StatelessWidget {
-  const TransactionInProgress({Key? key, this.transType = 'pay'})
+  const TransactionInProgress(
+      {Key? key, this.transType = 'pay', this.fromAddress, this.toAddress})
       : super(key: key);
   final String transType;
+  final String? fromAddress;
+  final String? toAddress;
 
   @override
   Widget build(BuildContext context) {
@@ -32,8 +35,8 @@ class TransactionInProgress extends StatelessWidget {
 
     log.d(walletViewProvider.address!);
 
-    final from = myWalletProvider.getDefaultWallet().name!;
-    final to = getShortPubkey(walletViewProvider.address!);
+    final from = fromAddress ?? myWalletProvider.getDefaultWallet().name!;
+    final to = toAddress ?? getShortPubkey(walletViewProvider.address!);
     final amount = walletViewProvider.payAmount.text;
     String actionName = '';
 
@@ -56,6 +59,11 @@ class TransactionInProgress extends StatelessWidget {
       case 'revokeIdty':
         {
           actionName = "revokeAdhesion".tr();
+        }
+        break;
+      case 'identityMigration':
+        {
+          actionName = "identityMigration".tr();
         }
         break;
       default:
@@ -88,6 +96,8 @@ class TransactionInProgress extends StatelessWidget {
           if (result.contains('blockHash: ')) {
             isValid = true;
             resultText = 'extrinsicValidated'.tr(args: [actionName]);
+            log.i(
+                'g1migration Bloc of last transaction: ${sub.blocNumber} --- $result');
           } else {
             isValid = false;
             resultText = "${"anErrorOccured".tr()}:\n";
@@ -146,7 +156,9 @@ class TransactionInProgress extends StatelessWidget {
         onWillPop: () {
           sub.transactionStatus = '';
           Navigator.pop(context);
-          if (transType == 'pay') Navigator.pop(context);
+          if (transType == 'pay' || transType == 'identityMigration') {
+            Navigator.pop(context);
+          }
           return Future<bool>.value(true);
         },
         child: Scaffold(
@@ -259,7 +271,10 @@ class TransactionInProgress extends StatelessWidget {
                           onPressed: () {
                             Navigator.pop(context);
                             sub.transactionStatus = '';
-                            if (transType == 'pay') Navigator.pop(context);
+                            if (transType == 'pay' ||
+                                transType == 'identityMigration') {
+                              Navigator.pop(context);
+                            }
                           },
                           child: Text(
                             'close'.tr(),

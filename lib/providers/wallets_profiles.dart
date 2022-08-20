@@ -138,10 +138,9 @@ class WalletsProfilesProvider with ChangeNotifier {
         Provider.of<CesiumPlusProvider>(context, listen: false);
     // SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    bool isAccountExist = balanceCache[address] != 0;
-
     return Stack(children: <Widget>[
       Consumer<SubstrateSdk>(builder: (context, sub, _) {
+        bool isAccountExist = balanceCache[address] != 0;
         return Container(
             height: 180,
             decoration: BoxDecoration(

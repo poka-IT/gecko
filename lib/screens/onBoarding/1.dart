@@ -27,15 +27,18 @@ class OnboardingStepOne extends StatelessWidget {
       ),
       extendBodyBehindAppBar: true,
       body: SafeArea(
-        child: common.infoIntro(
-          context,
-          'geckoGenerateYourWalletFromMnemonic'.tr(),
-          'fabrication-de-portefeuille.png',
-          '>',
-          const OnboardingStepTwo(),
-          0,
-          isMd: true,
-        ),
+        child: Stack(children: [
+          common.infoIntro(
+            context,
+            'geckoGenerateYourWalletFromMnemonic'.tr(),
+            'fabrication-de-portefeuille.png',
+            '>',
+            const OnboardingStepTwo(),
+            0,
+            isMd: true,
+          ),
+          CommonElements().offlineInfo(context),
+        ]),
       ),
     );
   }

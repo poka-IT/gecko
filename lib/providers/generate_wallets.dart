@@ -435,8 +435,10 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   Future<bool> scanRootBalance(SubstrateSdk sub, int currentChestNumber) async {
-    final addressData = await sub.sdk.api.keyring.addressFromMnemonic(sub.currencyParameters['ss58']!,
-        cryptoType: CryptoType.sr25519, mnemonic: generatedMnemonic!);
+    final addressData = await sub.sdk.api.keyring.addressFromMnemonic(
+        sub.currencyParameters['ss58']!,
+        cryptoType: CryptoType.sr25519,
+        mnemonic: generatedMnemonic!);
 
     final balance = await sub.getBalance(addressData.address!).timeout(
           const Duration(seconds: 1),

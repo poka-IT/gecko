@@ -78,28 +78,6 @@ class WalletsHome extends StatelessWidget {
       BuildContext context, MyWalletsProvider myWalletProvider) {
     return Column(children: [
       const SizedBox(height: 50),
-      InkWell(
-        key: const Key('importG1v1'),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) {
-              return const ImportG1v1();
-            }),
-          );
-        },
-        child: SizedBox(
-          width: 400,
-          height: 50,
-          child: Center(
-              child: Text('importG1v1'.tr(),
-                  style: TextStyle(
-                      fontSize: 22,
-                      color: orangeC,
-                      fontWeight: FontWeight.w500))),
-        ),
-      ),
-      const SizedBox(height: 30),
       SizedBox(
           height: 80,
           width: 420,
@@ -130,6 +108,28 @@ class WalletsHome extends StatelessWidget {
           )),
       const SizedBox(height: 30),
       InkWell(
+        key: const Key('importG1v1'),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) {
+              return const ImportG1v1();
+            }),
+          );
+        },
+        child: SizedBox(
+          width: 400,
+          height: 60,
+          child: Center(
+              child: Text('importG1v1'.tr(),
+                  style: TextStyle(
+                      fontSize: 22,
+                      color: Colors.blue[900],
+                      fontWeight: FontWeight.w500))),
+        ),
+      ),
+      const SizedBox(height: 5),
+      InkWell(
         key: const Key('changeChest'),
         onTap: () {
           Navigator.push(
@@ -141,7 +141,7 @@ class WalletsHome extends StatelessWidget {
         },
         child: SizedBox(
           width: 400,
-          height: 50,
+          height: 60,
           child: Center(
               child: Text('changeChest'.tr(),
                   style: TextStyle(

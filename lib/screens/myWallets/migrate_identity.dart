@@ -223,8 +223,9 @@ class MigrateIdentityScreen extends StatelessWidget {
                                 MaterialPageRoute(builder: (context) {
                                   return TransactionInProgress(
                                       transType: 'identityMigration',
-                                      fromAddress: fromAddress,
-                                      toAddress: selectedWallet.address);
+                                      fromAddress: getShortPubkey(fromAddress),
+                                      toAddress: getShortPubkey(
+                                          selectedWallet.address!));
                                 }),
                               );
                             }

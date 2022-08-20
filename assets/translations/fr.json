@@ -178,7 +178,7 @@
     "removeContact": "Supprimer\nce contact",
     "derivationsScanProgress": "Scan de l'adresse {}/{}",
     "youAreOffline": "Vous êtes hors ligne...",
-    "importG1v1": "Importer son compte G1v1",
+    "importG1v1": "Importer un ancien compte G1v1",
     "selectDestWallet": "Sélectionnez un portefeuille cible:",
     "youMustWaitBeforeCashoutThisAccount": "Vous devez attendre {} minutes\navant de pouvoir migrer ce compte",
     "thisAccountIsEmpty": "Ce compte est vide",

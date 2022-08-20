@@ -60,7 +60,25 @@ class ImportG1v1 extends StatelessWidget {
                 builder: (BuildContext context, AsyncSnapshot<List> status) {
                   // log.d(_certs.data);
 
-                  final Map balance = status.data?[0] ?? 0;
+                  if (status.data == null) {
+                    return Column(children: [
+                      const SizedBox(height: 80),
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              height: 35,
+                              width: 35,
+                              child: CircularProgressIndicator(
+                                color: orangeC,
+                                strokeWidth: 4,
+                              ),
+                            ),
+                          ]),
+                    ]);
+                  }
+
+                  final Map balance = status.data?[0] ?? {};
                   final String idtyStatus = status.data?[1];
                   final String myIdtyStatus = status.data?[2];
                   final bool hasConsumer = status.data?[3] ?? false;
@@ -154,16 +172,16 @@ class ImportG1v1 extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      sub.g1V1NewAddress,
+                      getShortPubkey(sub.g1V1NewAddress),
                       style: const TextStyle(
-                          fontSize: 14.0,
+                          fontSize: 18,
                           color: Colors.black,
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Monospace'),
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      '$balance $currencyName',
+                      '${balance['transferableBalance']} $currencyName',
                       style: const TextStyle(fontSize: 17),
                     ),
                     Row(
@@ -240,8 +258,10 @@ class ImportG1v1 extends StatelessWidget {
                                   MaterialPageRoute(builder: (context) {
                                     return TransactionInProgress(
                                         transType: 'identityMigration',
-                                        fromAddress: sub.g1V1NewAddress,
-                                        toAddress: selectedWallet.address);
+                                        fromAddress:
+                                            getShortPubkey(sub.g1V1NewAddress),
+                                        toAddress: getShortPubkey(
+                                            selectedWallet.address!));
                                   }),
                                 );
                                 resetScreen(context);

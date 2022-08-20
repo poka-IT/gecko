@@ -598,7 +598,7 @@ class SubstrateSdk with ChangeNotifier {
     return await sdk.api.keyring.checkMnemonicValid(mnemonic);
   }
 
-  Future csToV2Address(String salt, String password) async {
+  Future<String> csToV2Address(String salt, String password) async {
     final scrypt = pc.KeyDerivator('scrypt');
 
     scrypt.init(
@@ -621,6 +621,7 @@ class SubstrateSdk with ChangeNotifier {
 
     g1V1NewAddress = newAddress.address!;
     notifyListeners();
+    return g1V1NewAddress;
   }
 
   Future<List> getBalanceAndIdtyStatus(String address, String myAddress) async {
@@ -801,7 +802,8 @@ class SubstrateSdk with ChangeNotifier {
       {required String fromAddress,
       required String destAddress,
       required String formPassword,
-      required String destPassword}) async {
+      required String destPassword,
+      bool withBalance = false}) async {
     transactionStatus = '';
     final fromPubkey = await sdk.api.account.decodeAddress([fromAddress]);
     final sender = TxSenderData(
@@ -840,19 +842,28 @@ messageToSign: $messageToSign
 messageToSignHex: $messageToSignHex
 newKeySig: $newKeySig""");
 
-    txInfo = TxInfoData(
-      'identity',
-      'changeOwnerKey',
-      sender,
-    );
+    if (withBalance) {
+      txInfo = TxInfoData(
+        'utility',
+        'batchAll',
+        sender,
+      );
 
-    txOptions = [destAddress, newKeySig];
+      const tx1 = 'api.tx.universalDividend.claimUds()';
+      final tx2 =
+          'api.tx.identity.changeOwnerKey("$destAddress", "$newKeySig")';
+      const tx3 = 'api.tx.balances.transferAll(false)';
 
-    // const tx1 = 'api.tx.universalDividend.claimUds()';
-    // final tx2 = 'api.tx.identity.changeOwnerKey("$destAddress", "$newKeySig")';
-    // const tx3 = 'api.tx.balances.transferAll(false)';
+      rawParams = '[[$tx1, $tx2, $tx3]]';
+    } else {
+      txInfo = TxInfoData(
+        'identity',
+        'changeOwnerKey',
+        sender,
+      );
 
-    // rawParams = '[[$tx1, $tx2, $tx3]]';
+      txOptions = [destAddress, newKeySig];
+    }
 
     return await _executeCall(txInfo, txOptions, formPassword, rawParams);
   }
@@ -918,7 +929,8 @@ newKeySig: $newKeySig""");
           fromAddress: keypair.address!,
           destAddress: destAddress,
           formPassword: 'password',
-          destPassword: destPassword);
+          destPassword: destPassword,
+          withBalance: true);
     } else if (balance != 0) {
       await pay(
           fromAddress: keypair.address!,

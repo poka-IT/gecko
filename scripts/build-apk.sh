@@ -3,6 +3,8 @@
 
 fVersion=$(grep "version: " pubspec.yaml | awk '{ print $2 }')
 
+withPush=$1
+
 APPNAME="gecko"
 VERSION=$(awk -F '+' '{ print $1 }' <<<$fVersion)
 BUILD=$(awk -F '+' '{ print $2 }' <<<$fVersion)
@@ -34,5 +36,7 @@ fi
 
 appPath="$DL/${APPNAME}-${VERSION}+${BUILD}.apk"
 mv build/app/outputs/flutter-apk/$ori_app "$appPath" && echo "$appPath" || exit 1
+
+[[ $withPush == "withPush" ]] && /home/poka/scripts/link/pushGecko $VERSION
 
 exit 0

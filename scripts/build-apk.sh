@@ -11,11 +11,12 @@ BUILD=$(awk -F '+' '{ print $2 }' <<<$fVersion)
 ori_app="app.apk"
 
 echo "Nom du build final: ${APPNAME}-${VERSION}+${BUILD}.apk"
+[[ $withPush == "withPush" ]] && echo "Publish after build"
 
 ## To build Rust dependancies
 # cargo br
 
-flutter clean
+#flutter clean
 if [[ $1 == "bundle" ]]; then
 	flutter build appbundle --release --target-platform android-arm,android-arm64 --build-name $VERSION --build-number $BUILD
 else
@@ -35,8 +36,8 @@ else
 fi
 
 appPath="$DL/${APPNAME}-${VERSION}+${BUILD}.apk"
-mv build/app/outputs/flutter-apk/$ori_app "$appPath" && echo "$appPath" || exit 1
+mv build/app/outputs/flutter-apk/$ori_app "$appPath" || exit 1
 
-[[ $withPush == "withPush" ]] && /home/poka/scripts/link/pushGecko $VERSION
+[[ $withPush == "withPush" ]] && /home/poka/scripts/link/pushGecko $VERSION+$BUILD
 
 exit 0

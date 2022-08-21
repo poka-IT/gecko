@@ -10,6 +10,7 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:provider/provider.dart';
@@ -171,14 +172,29 @@ class ImportG1v1 extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    Text(
-                      getShortPubkey(sub.g1V1NewAddress),
-                      style: const TextStyle(
-                          fontSize: 18,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Monospace'),
+                    GestureDetector(
+                      key: const Key('copyPubkey'),
+                      onTap: () {
+                        Clipboard.setData(
+                            ClipboardData(text: sub.g1V1NewAddress));
+                        snackCopyKey(context);
+                      },
+                      child: Text(
+                        getShortPubkey(sub.g1V1NewAddress),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
+                    // Text(
+                    //   getShortPubkey(sub.g1V1NewAddress),
+                    //   style: const TextStyle(
+                    //       fontSize: 18,
+                    //       color: Colors.black,
+                    //       fontWeight: FontWeight.bold,
+                    //       fontFamily: 'Monospace'),
+                    // ),
                     const SizedBox(height: 20),
                     Text(
                       '${balance['transferableBalance']} $currencyName',

@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/common_elements.dart';
@@ -80,7 +81,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
                   width: 380 * ratio,
                   height: 60 * ratio,
                   child: ElevatedButton(
-                      key: const Key('generateMnemonic'),
+                      key: keyGenerateMnemonic,
                       style: ElevatedButton.styleFrom(
                         elevation: 4,
                         primary: const Color(0xffFFD58D),
@@ -174,7 +175,7 @@ Widget arrayCell(dataWord) {
       ),
       Text(
         dataWord.split(':')[1],
-        key: Key('word${dataWord.split(':')[0]}'),
+        key: keyMnemonicWord(dataWord.split(':')[0]),
         style: TextStyle(fontSize: 17 * ratio, color: Colors.black),
       ),
     ]),

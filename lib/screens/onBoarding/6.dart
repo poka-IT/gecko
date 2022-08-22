@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/7.dart';
@@ -66,7 +67,7 @@ class OnboardingStepSix extends StatelessWidget {
                     true),
                 SizedBox(height: isTall ? 70 : 20),
                 Text('${generateWalletProvider.nbrWord + 1}',
-                    key: const Key('askedWord'),
+                    key: keyAskedWord,
                     style: TextStyle(
                         fontSize: isTall ? 17 : 15,
                         color: orangeC,
@@ -81,7 +82,7 @@ class OnboardingStepSix extends StatelessWidget {
                         )),
                     width: 430,
                     child: TextFormField(
-                        key: const Key('inputWord'),
+                        key: keyInputWord,
                         autofocus: true,
                         enabled: !generateWalletProvider.isAskedWordValid,
                         controller: wordController,
@@ -206,7 +207,7 @@ Widget arrayCell(dataWord) {
       ),
       Text(
         dataWord.split(':')[1],
-        key: Key('word${dataWord.split(':')[0]}'),
+        key: keyMnemonicWord(dataWord.split(':')[0]),
         style: const TextStyle(fontSize: 20, color: Colors.black),
       ),
     ]),

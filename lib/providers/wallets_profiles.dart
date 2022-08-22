@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
@@ -166,7 +167,7 @@ class WalletsProfilesProvider with ChangeNotifier {
                 ),
                 Row(children: [
                   GestureDetector(
-                    key: const Key('copyPubkey'),
+                    key: keyCopyAddress,
                     onTap: () {
                       Clipboard.setData(ClipboardData(text: address));
                       snackCopyKey(context);

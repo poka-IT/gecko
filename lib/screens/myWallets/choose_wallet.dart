@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
@@ -112,7 +113,7 @@ class ChooseWalletScreen extends StatelessWidget {
     return CustomScrollView(slivers: <Widget>[
       const SliverToBoxAdapter(child: SizedBox(height: 20)),
       SliverGrid.count(
-          key: const Key('listWallets'),
+          key: keyListWallets,
           crossAxisCount: nTule,
           childAspectRatio: 1,
           crossAxisSpacing: 0,

@@ -102,7 +102,7 @@ class OnboardingStepTen extends StatelessWidget {
               Consumer<SubstrateSdk>(builder: (context, sub, _) {
                 return sub.nodeConnected
                     ? InkWell(
-                        key: const Key('cachePassword'),
+                        key: keyCachePassword,
                         onTap: () {
                           walletOptions.changePinCacheChoice();
                         },

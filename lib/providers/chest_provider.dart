@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:provider/provider.dart';
@@ -59,13 +60,13 @@ class ChestProvider with ChangeNotifier {
           title: Text('areYouSureToDeleteWallet'.tr(args: [walletName!])),
           actions: <Widget>[
             TextButton(
-              child: Text("no".tr(), key: const Key('cancelDeleting')),
+              child: Text("no".tr(), key: keyCancel),
               onPressed: () {
                 Navigator.pop(context, false);
               },
             ),
             TextButton(
-              child: Text("yes".tr(), key: const Key('confirmDeleting')),
+              child: Text("yes".tr(), key: keyConfirm),
               onPressed: () {
                 Navigator.pop(context, true);
               },

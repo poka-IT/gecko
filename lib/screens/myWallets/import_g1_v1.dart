@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
@@ -173,7 +174,7 @@ class ImportG1v1 extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     GestureDetector(
-                      key: const Key('copyPubkey'),
+                      key: keyCopyAddress,
                       onTap: () {
                         Clipboard.setData(
                             ClipboardData(text: sub.g1V1NewAddress));

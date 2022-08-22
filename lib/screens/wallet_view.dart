@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -116,7 +117,7 @@ class WalletViewScreen extends StatelessWidget {
                     child: Material(
                       color: yellowC, //const Color(0xffFFD58D), // button color
                       child: InkWell(
-                          key: const Key('viewHistory'),
+                          key: keyViewActivity,
                           splashColor: orangeC, // inkwell color
                           child: const Padding(
                               padding: EdgeInsets.all(13),
@@ -206,7 +207,7 @@ class WalletViewScreen extends StatelessWidget {
                                   color:
                                       const Color(0xffFFD58D), // button color
                                   child: InkWell(
-                                      key: const Key('certify'),
+                                      key: keyCertify,
                                       splashColor: orangeC, // inkwell color
                                       child: const Padding(
                                         padding: EdgeInsets.only(bottom: 0),
@@ -290,7 +291,7 @@ class WalletViewScreen extends StatelessWidget {
                     child: Material(
                       color: const Color(0xffFFD58D), // button color
                       child: InkWell(
-                          key: const Key('copyKey'),
+                          key: keyCopyAddress,
                           splashColor: orangeC, // inkwell color
                           child: const Padding(
                               padding: EdgeInsets.all(20),
@@ -331,7 +332,7 @@ class WalletViewScreen extends StatelessWidget {
                     child: Material(
                       color: orangeC, // button color
                       child: InkWell(
-                          key: const Key('pay'),
+                          key: keyPay,
                           splashColor: yellowC,
                           onTap: sub.nodeConnected
                               ? () {

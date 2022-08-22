@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/common_elements.dart';
@@ -206,7 +207,7 @@ class ShowSeed extends StatelessWidget {
         ),
         Text(
           dataWord,
-          key: Key('word$dataWord'),
+          key: keyMnemonicWord(dataWord),
           style: TextStyle(fontSize: 17 * ratio, color: Colors.black),
         ),
       ]),

@@ -53,7 +53,7 @@ class UnlockingWallet extends StatelessWidget {
                     left: 15,
                     child: Builder(
                       builder: (context) => IconButton(
-                        key: const Key('popButton'),
+                        key: keyPopButton,
                         icon: const Icon(
                           Icons.arrow_back,
                           color: Colors.black,
@@ -104,6 +104,7 @@ class UnlockingWallet extends StatelessWidget {
                     SizedBox(height: 3 * ratio),
                     if (canUnlock)
                       InkWell(
+                        key: keyCachePassword,
                         onTap: () {
                           walletOptions.changePinCacheChoice();
                         },
@@ -128,7 +129,7 @@ class UnlockingWallet extends StatelessWidget {
                     const SizedBox(height: 10),
                     // if (canUnlock)
                     InkWell(
-                        key: const Key('chooseChest'),
+                        key: keyChangeChest,
                         onTap: () {
                           Navigator.push(
                             context,

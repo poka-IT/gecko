@@ -5,6 +5,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/stateful_wrapper.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
@@ -64,7 +65,7 @@ class HomeScreen extends StatelessWidget {
                 ]),
               ),
               ListTile(
-                key: const Key('parameters'),
+                key: keyParameters,
                 title: Text('parameters'.tr()),
                 onTap: () {
                   Navigator.pop(context);
@@ -77,7 +78,7 @@ class HomeScreen extends StatelessWidget {
                 },
               ),
               ListTile(
-                key: const Key('contacts'),
+                key: keyContacts,
                 title: Text('contactsManagement'.tr()),
                 onTap: () {
                   Navigator.pop(context);
@@ -89,26 +90,6 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
               ),
-
-              // ListTile(
-              //   key: const Key('substrateSandbox'),
-              //   title: const Text('Substrate debug'),
-              //   onTap: () {
-              //     Navigator.pop(context);
-              //     Navigator.push(
-              //       context,
-              //       MaterialPageRoute(builder: (context) {
-              //         return const SubstrateSandBox();
-              //       }),
-              //     );
-              //   },
-              // ),
-
-              // ListTile(
-              //   title: const Text('A propos'),
-              //   onTap: () {
-              //   },
-              // ),
             ])),
             Align(
                 alignment: FractionalOffset.bottomCenter,
@@ -220,7 +201,7 @@ Widget geckHome(context) {
           left: 15,
           child: Builder(
             builder: (context) => IconButton(
-              key: const Key('drawerMenu'),
+              key: keyDrawerMenu,
               icon: const Icon(
                 Icons.menu,
                 color: Colors.white,
@@ -343,7 +324,7 @@ Widget geckHome(context) {
                     ],
                   ),
                   child: ClipOval(
-                    key: const Key('manageWallets'),
+                    key: keyManageWallets,
                     child: Material(
                       color: orangeC, // button color
                       child: InkWell(
@@ -466,7 +447,7 @@ Widget welcomeHome(context) {
           left: 15,
           child: Builder(
             builder: (context) => IconButton(
-              key: const Key('drawerMenu'),
+              key: keyDrawerMenu,
               icon: const Icon(
                 Icons.menu,
                 color: Colors.white,
@@ -581,7 +562,7 @@ Widget welcomeHome(context) {
                   width: 410,
                   height: 70,
                   child: OutlinedButton(
-                    key: const Key('restoreChest'),
+                    key: keyRestoreChest,
                     style: OutlinedButton.styleFrom(
                         side: BorderSide(width: 4, color: orangeC)),
                     onPressed: () {

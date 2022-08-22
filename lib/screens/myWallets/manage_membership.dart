@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/screens/myWallets/migrate_identity.dart';
 // import 'package:gecko/models/wallet_data.dart';
 // import 'package:gecko/providers/my_wallets.dart';
@@ -41,7 +42,7 @@ class ManageMembership extends StatelessWidget {
 
   Widget migrateIdentity(BuildContext context) {
     return InkWell(
-      key: const Key('migrateIdentity'),
+      key: keyMigrateIdentity,
       onTap: () async {
         Navigator.push(
           context,
@@ -64,7 +65,7 @@ class ManageMembership extends StatelessWidget {
 
   Widget revokeMyIdentity(BuildContext context) {
     return InkWell(
-      key: const Key('revokeIdty'),
+      key: keyRevokeIdty,
       onTap: () async {
         // TODOO: Generate revoke document, and understand extrinsic identity.revokeIdentity options
         // final _answer = await confirmPopup(context,

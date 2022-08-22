@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/settings_provider.dart';
@@ -45,7 +46,7 @@ class SettingsScreen extends StatelessWidget {
           width: buttonWidth,
           child: Center(
             child: InkWell(
-              key: const Key('deleteAllWallets'),
+              key: keyDeleteAllWallets,
               onTap: () async {
                 log.i('Oublier tous mes coffres');
                 await _myWallets.deleteAllWallet(context);

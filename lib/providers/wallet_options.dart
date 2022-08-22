@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -258,7 +259,7 @@ class WalletOptionsProvider with ChangeNotifier {
                 Consumer<WalletOptionsProvider>(
                     builder: (context, wOptions, _) {
                   return TextButton(
-                    key: const Key('infoPopup'),
+                    key: keyInfoPopup,
                     child: Text(
                       "validate".tr(),
                       style: TextStyle(
@@ -354,7 +355,7 @@ class WalletOptionsProvider with ChangeNotifier {
                 Consumer<WalletOptionsProvider>(
                     builder: (context, wOptions, _) {
                   return TextButton(
-                    key: const Key('infoPopup'),
+                    key: keyInfoPopup,
                     child: Text(
                       "validate".tr(),
                       style: TextStyle(
@@ -381,7 +382,7 @@ class WalletOptionsProvider with ChangeNotifier {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 TextButton(
-                  key: const Key('cancel'),
+                  key: keyCancel,
                   child: Text(
                     "cancel".tr(),
                     style: TextStyle(
@@ -457,7 +458,7 @@ class WalletOptionsProvider with ChangeNotifier {
       width: 260,
       child: Stack(children: <Widget>[
         TextField(
-          key: const Key('walletName'),
+          key: keyWalletName,
           autofocus: false,
           focusNode: walletNameFocus,
           enabled: isEditing,
@@ -481,7 +482,7 @@ class WalletOptionsProvider with ChangeNotifier {
         Positioned(
           right: 0,
           child: InkWell(
-            key: const Key('renameWallet'),
+            key: keyRenameWallet,
             onTap: () async {
               // _isNewNameValid =
               // walletProvider.editWalletName(wallet.id(), isCesium: false);

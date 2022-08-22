@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
 
@@ -54,7 +55,7 @@ Widget finishButton(BuildContext context) {
     width: 380 * ratio,
     height: 60 * ratio,
     child: ElevatedButton(
-        key: const Key('goWalletHome'),
+        key: keyGoWalletsHome,
         style: ElevatedButton.styleFrom(
           elevation: 4,
           primary: orangeC,

@@ -91,6 +91,7 @@ class RestoreChest extends StatelessWidget {
                     width: 410,
                     height: 70,
                     child: ElevatedButton(
+                      key: const Key('goNext'),
                       style: ElevatedButton.styleFrom(
                         elevation: 4,
                         primary: orangeC, // background
@@ -130,6 +131,7 @@ class RestoreChest extends StatelessWidget {
                     width: 190,
                     height: 60,
                     child: ElevatedButton(
+                      key: const Key('pasteMnemonic'),
                         style: ElevatedButton.styleFrom(
                           elevation: 4,
                           primary: yellowC, // background

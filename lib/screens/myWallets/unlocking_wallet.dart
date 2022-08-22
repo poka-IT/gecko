@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/models/chest_data.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -23,7 +25,6 @@ class UnlockingWallet extends StatelessWidget {
 
   // ignore: close_sinks
   StreamController<ErrorAnimationType>? errorController;
-  final formKey = GlobalKey<FormState>();
   Color? pinColor = const Color(0xffF9F9F1);
   var walletPin = '';
 
@@ -182,10 +183,11 @@ class UnlockingWallet extends StatelessWidget {
     }
 
     return Form(
-      key: formKey,
+      // key: keyPinForm,
       child: Padding(
           padding: EdgeInsets.symmetric(vertical: 5 * ratio, horizontal: 30),
           child: PinCodeTextField(
+            key: keyPinForm,
             focusNode: pinFocus,
             autoFocus: true,
             appContext: context,
@@ -213,6 +215,7 @@ class UnlockingWallet extends StatelessWidget {
               fieldWidth: 50,
               activeFillColor: Colors.black,
             ),
+            showCursor: kDebugMode ? false : true,
             cursorColor: Colors.black,
             animationDuration: const Duration(milliseconds: 300),
             textStyle: const TextStyle(fontSize: 20, height: 1.6),

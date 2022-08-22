@@ -45,7 +45,7 @@ class SettingsScreen extends StatelessWidget {
           width: buttonWidth,
           child: Center(
             child: InkWell(
-              key: const Key('deleteChest'),
+              key: const Key('deleteAllWallets'),
               onTap: () async {
                 log.i('Oublier tous mes coffres');
                 await _myWallets.deleteAllWallet(context);

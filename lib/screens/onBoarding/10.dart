@@ -2,10 +2,12 @@
 
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -100,6 +102,7 @@ class OnboardingStepTen extends StatelessWidget {
               Consumer<SubstrateSdk>(builder: (context, sub, _) {
                 return sub.nodeConnected
                     ? InkWell(
+                        key: const Key('cachePassword'),
                         onTap: () {
                           walletOptions.changePinCacheChoice();
                         },
@@ -149,7 +152,7 @@ class OnboardingStepTen extends StatelessWidget {
       child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
           child: PinCodeTextField(
-            key: const Key('formKey2'),
+            key: keyPinForm,
             autoFocus: true,
             appContext: context,
             pastedTextStyle: TextStyle(
@@ -176,6 +179,7 @@ class OnboardingStepTen extends StatelessWidget {
               fieldWidth: 50,
               activeFillColor: hasError ? Colors.blueAccent : Colors.black,
             ),
+            showCursor: kDebugMode ? false : true,
             cursorColor: Colors.black,
             animationDuration: const Duration(milliseconds: 300),
             textStyle: const TextStyle(fontSize: 20, height: 1.6),

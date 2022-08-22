@@ -62,6 +62,7 @@ class CommonElements {
       width: 380 * ratio,
       height: 60 * ratio,
       child: ElevatedButton(
+        key: const Key('goNext'),
         style: ElevatedButton.styleFrom(
           elevation: 4,
           primary: orangeC, // background

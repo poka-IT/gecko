@@ -581,6 +581,7 @@ Widget welcomeHome(context) {
                   width: 410,
                   height: 70,
                   child: OutlinedButton(
+                    key: const Key('restoreChest'),
                     style: OutlinedButton.styleFrom(
                         side: BorderSide(width: 4, color: orangeC)),
                     onPressed: () {

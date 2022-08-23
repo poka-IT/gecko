@@ -32,7 +32,6 @@ class SearchResultScreen extends StatelessWidget {
     DuniterIndexer duniterIndexer =
         Provider.of<DuniterIndexer>(context, listen: false);
 
-    int keyID = 0;
     double avatarSize = 55;
 
     return Scaffold(
@@ -95,7 +94,7 @@ class SearchResultScreen extends StatelessWidget {
                                   padding:
                                       const EdgeInsets.symmetric(horizontal: 5),
                                   child: ListTile(
-                                      key: keySearchResult(keyID++),
+                                      key: keySearchResult(g1Wallet.pubkey!),
                                       horizontalTitleGap: 40,
                                       contentPadding: const EdgeInsets.all(5),
                                       leading: cesiumPlusProvider

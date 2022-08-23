@@ -10,7 +10,8 @@ const keyConfirm = Key('keyConfirm');
 const keyParameters = Key('keyParameters');
 const keyContacts = Key('keyContacts');
 const keyDrawerMenu = Key('keyDrawerMenu');
-const keyManageWallets = Key('keyManageWallets');
+const keyOpenWalletsHomme = Key('keyOpenWalletsHomme');
+const keyOpenSearch = Key('keyOpenSearch');
 const keyRestoreChest = Key('keyRestoreChest');
 
 // Wallets home
@@ -46,6 +47,9 @@ const keyImportChest = Key('keyImportChest');
 const keyViewActivity = Key('keyViewActivity');
 const keyCertify = Key('keyCertify');
 const keyPay = Key('keyPay');
+const keyAmountField = Key('keyAmountField');
+const keyConfirmPayment = Key('keyConfirmPayment');
+const keyCloseTransactionScreen = Key('keyCloseTransactionScreen');
 
 // Activity view
 const keyListTransactions = Key('keyListTransactions');
@@ -67,8 +71,12 @@ const keyInputWord = Key('keyInputWord');
 const keyGeneratedPin = Key('keyGeneratedPin');
 const keyGoWalletsHome = Key('keyGoWalletsHome');
 
+// Search
+const keySearchField = Key('keySearchField');
+const keyConfirmSearch = Key('keyConfirmSearch');
+
 // Unit keys
 Key keyMnemonicWord(String word) => Key('keyMnemonicWord$word');
-Key keyIndexerResult(int keyId) => Key('keyIndexerResult$keyId');
+Key keyIndexerResult(String keyId) => Key('keyIndexerResult$keyId');
 Key keyTransaction(int keyId) => Key('keyTransaction$keyId');
-Key keySearchResult(int keyId) => Key('keySearchResult$keyId');
+Key keySearchResult(String keyId) => Key('keySearchResult$keyId');

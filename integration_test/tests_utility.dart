@@ -46,6 +46,26 @@ Future<void> waitFor(
   } while (finder.evaluate().isEmpty);
 }
 
+// Test if text is visible on screen, return a boolean
+Future<bool> isPresent(WidgetTester tester, String text,
+    {Duration timeout = const Duration(seconds: 1)}) async {
+  try {
+    await waitFor(tester, text, timeout: timeout);
+    return true;
+  } catch (exception) {
+    return false;
+  }
+}
+
+// Test if widget exist on screen, return a boolean
+Future<bool> isIconPresent(WidgetTester tester, IconData icon,
+    {Duration timeout = const Duration(seconds: 1)}) async {
+  await tester.pumpAndSettle();
+  final finder = find.byIcon(icon);
+  log.d('tatatatatatata: ${finder.evaluate()}');
+  return finder.evaluate().isEmpty ? false : true;
+}
+
 extension Truncate on String {
   String truncate({required int max, String suffix = ''}) {
     return length < max

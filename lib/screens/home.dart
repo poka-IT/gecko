@@ -282,6 +282,7 @@ Widget geckHome(context) {
                     child: Material(
                       color: orangeC, // button color
                       child: InkWell(
+                          key: keyOpenSearch,
                           child: Padding(
                             padding: const EdgeInsets.all(18),
                             child: Image(
@@ -324,7 +325,7 @@ Widget geckHome(context) {
                     ],
                   ),
                   child: ClipOval(
-                    key: keyManageWallets,
+                    key: keyOpenWalletsHomme,
                     child: Material(
                       color: orangeC, // button color
                       child: InkWell(

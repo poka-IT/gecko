@@ -294,7 +294,6 @@ class DuniterIndexer with ChangeNotifier {
               return Text('noResult'.tr());
             }
 
-            int keyID = 0;
             double avatarSize = 55;
             return Expanded(
               child: ListView(children: <Widget>[
@@ -302,7 +301,7 @@ class DuniterIndexer with ChangeNotifier {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 5),
                     child: ListTile(
-                        key: keyIndexerResult(keyID++),
+                        key: keyIndexerResult(profile['id']),
                         horizontalTitleGap: 40,
                         contentPadding: const EdgeInsets.all(5),
                         leading: cesiumPlusProvider.defaultAvatar(avatarSize),

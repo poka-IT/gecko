@@ -573,6 +573,7 @@ class WalletViewScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 10),
                         TextField(
+                          key: keyAmountField,
                           controller: walletViewProvider.payAmount,
                           autofocus: true,
                           maxLines: 1,
@@ -618,6 +619,7 @@ class WalletViewScreen extends StatelessWidget {
                           width: double.infinity,
                           height: 60,
                           child: ElevatedButton(
+                            key: keyConfirmPayment,
                             style: ElevatedButton.styleFrom(
                               elevation: 4,
                               primary: orangeC, // background

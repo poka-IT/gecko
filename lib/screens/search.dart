@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/widgets_keys.dart';
 // import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/search.dart';
 import 'package:gecko/screens/common_elements.dart';
@@ -51,6 +52,7 @@ class SearchScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 17),
                 child: TextField(
+                  key: keySearchField,
                   controller: searchProvider.searchController,
                   autofocus: true,
                   maxLines: 1,
@@ -91,6 +93,7 @@ class SearchScreen extends StatelessWidget {
                 width: 410,
                 height: 70,
                 child: ElevatedButton(
+                  key: keyConfirmSearch,
                   style: ElevatedButton.styleFrom(
                     elevation: 4,
                     primary: orangeC, // background

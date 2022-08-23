@@ -29,7 +29,6 @@ class ContactsScreen extends StatelessWidget {
     DuniterIndexer duniterIndexer =
         Provider.of<DuniterIndexer>(context, listen: false);
 
-    int keyID = 0;
     double avatarSize = 55;
 
     final myContacts = contactsBox.toMap().values.toList();
@@ -72,7 +71,7 @@ class ContactsScreen extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 5),
                             child: ListTile(
-                                key: keySearchResult(keyID++),
+                                key: keySearchResult('keyID++'),
                                 horizontalTitleGap: 40,
                                 contentPadding: const EdgeInsets.all(5),
                                 leading: cesiumPlusProvider

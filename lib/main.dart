@@ -16,6 +16,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/models/chest_data.dart';
@@ -50,6 +51,10 @@ const bool enableSentry = true;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
+
+  if (kDebugMode) {
+    await dotenv.load();
+  }
 
   HomeProvider homeProvider = HomeProvider();
   // DuniterIndexer _duniterIndexer = DuniterIndexer();

@@ -56,3 +56,5 @@ AppDir/
 appimage-builder-cache/
 AppImageBuilder.yml
 android/app/build.gradle
+.env
+integration_test/duniter/data/chains/

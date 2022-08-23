@@ -38,6 +38,7 @@ Future<void> waitFor(
 
   do {
     if (DateTime.now().isAfter(end)) {
+      
       throw Exception('Timed out waiting for text $text');
     }
 

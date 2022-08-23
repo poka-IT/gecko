@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:gecko/main.dart' as app;
@@ -13,6 +15,9 @@ void main() {
     testWidgets('Import chests', (tester) async {
       app.main();
       await tester.pumpAndSettle(const Duration(seconds: 1));
+      final ipAddress = dotenv.env['ip_address'] ?? '127.0.0.1';
+
+      log.d('ip address: $ipAddress');
 
       // Delete all existing chests
       await deleteAllWallets(tester);

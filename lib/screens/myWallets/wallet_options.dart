@@ -292,7 +292,8 @@ class WalletOptions extends StatelessWidget {
                 SizedBox(
                   width: 320,
                   height: 60,
-                  child: ElevatedButton(key: keyConfirmIdentity,
+                  child: ElevatedButton(
+                    key: keyConfirmIdentity,
                     style: ElevatedButton.styleFrom(
                       elevation: 4,
                       primary: orangeC, // background

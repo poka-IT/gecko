@@ -167,7 +167,8 @@ class HomeProvider with ChangeNotifier {
           ),
           const SizedBox(width: 22),
           const Spacer(),
-          IconButton(key: keyAppBarQrcode,
+          IconButton(
+            key: keyAppBarQrcode,
             iconSize: 70,
             icon: const Image(image: AssetImage('assets/qrcode-scan.png')),
             onPressed: () async {
@@ -180,7 +181,8 @@ class HomeProvider with ChangeNotifier {
           ),
           const Spacer(),
           const SizedBox(width: 15),
-          IconButton(key: keyAppBarChest,
+          IconButton(
+            key: keyAppBarChest,
             iconSize: 60,
             icon: const Image(image: AssetImage('assets/wallet.png')),
             onPressed: () async {

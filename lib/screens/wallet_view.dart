@@ -481,7 +481,8 @@ class WalletViewScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 10),
                         Consumer<SubstrateSdk>(builder: (context, sub, _) {
-                          return InkWell(key: keyChangeChest,
+                          return InkWell(
+                            key: keyChangeChest,
                             onTap: () async {
                               String? pin;
                               if (myWalletProvider.pinCode == '') {

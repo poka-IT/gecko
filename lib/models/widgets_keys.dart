@@ -83,10 +83,11 @@ const keyGoWalletsHome = Key('keyGoWalletsHome');
 const keySearchField = Key('keySearchField');
 const keyConfirmSearch = Key('keyConfirmSearch');
 
-// Unit keys
+// Items keys
 Key keyTransaction(int keyId) => Key('keyTransaction$keyId');
 Key keyMnemonicWord(String word) => Key('keyMnemonicWord$word');
-Key keySearchResult(String keyId) => Key('keySearchResult$keyId');
-Key keySelectDuniterNode(String keyId) => Key('keySelectDuniterNode$keyId');
-Key keyOpenWallet(String keyId) => Key('keyOpenWallet$keyId');
-Key keySelectThisWallet(String keyId) => Key('keySelectThisWallet$keyId');
+Key keySearchResult(String address) => Key('keySearchResult$address');
+Key keySelectDuniterNode(String endpoint) =>
+    Key('keySelectDuniterNode$endpoint');
+Key keyOpenWallet(String address) => Key('keyOpenWallet$address');
+Key keySelectThisWallet(String address) => Key('keySelectThisWallet$address');

@@ -72,7 +72,6 @@ Future restoreChest(WidgetTester tester) async {
 
   // Tap on button to paste mnemonic
   await goKey(tester, keyPastMnemonic);
-  await tester.pumpAndSettle();
 
   // Tap on next button 4 times to skip 3 screen
   await goKey(tester, keyGoNext);
@@ -84,16 +83,16 @@ Future restoreChest(WidgetTester tester) async {
   final isCached = await isIconPresent(tester, Icons.check_box);
 
   // If not, tap on to cache password
-  if (!isCached) await goKey(tester, keyCachePassword);
+  if (!isCached) await goKey(tester, keyCachePassword, duration: 0);
 
   // Enter password
-  await enterText(tester, keyPinForm, 'AAAAA');
+  await enterText(tester, keyPinForm, 'AAAAA', 0);
 
   // Check if string "Accéder à mon coffre" is present in screen
   await waitFor(tester, 'Accéder à mon coffre');
 
   // Go to wallets home
-  await goKey(tester, keyGoWalletsHome);
+  await goKey(tester, keyGoWalletsHome, duration: 0);
 
   // Check if string "ĞD" is present in screen
   await waitFor(tester, 'ĞD');
@@ -138,7 +137,7 @@ Future payTest2(WidgetTester tester) async {
   await spawnBlock(tester, keyCloseTransactionScreen);
 
   await waitFor(tester, 'validé !', timeout: const Duration(seconds: 1));
-  await goKey(tester, keyCloseTransactionScreen);
+  await goKey(tester, keyCloseTransactionScreen, duration: 0);
   await waitFor(tester, '12.14');
   await spawnBlock(tester, keyViewActivity);
   await waitFor(tester, '9.14');
@@ -155,7 +154,7 @@ Future certifyTest5(WidgetTester tester) async {
   // await sleep(tester);
   await goKey(tester, keyCertify);
   await goKey(tester, keyConfirm);
-  await spawnBlock(tester, keyViewActivity);
+  await spawnBlock(tester, keyViewActivity, duration: 500);
   await waitFor(tester, 'validé !', timeout: const Duration(seconds: 1));
   await goKey(tester, keyCloseTransactionScreen);
   await waitFor(tester, 'Identité créée');
@@ -168,7 +167,7 @@ Future certifyTest5(WidgetTester tester) async {
   await goKey(tester, keyConfirmIdentity);
   await enterText(tester, keyEnterIdentityUsername, 'test5');
   await goKey(tester, keyConfirm);
-  await spawnBlock(tester, keyCloseTransactionScreen);
+  await spawnBlock(tester, keyCloseTransactionScreen, duration: 500);
   await waitFor(tester, 'validé !', timeout: const Duration(seconds: 1));
   await goKey(tester, keyCloseTransactionScreen);
   await waitFor(tester, 'Identité confirmée');
@@ -192,7 +191,7 @@ Future certifyTest5(WidgetTester tester) async {
   // Certify with test2 account
   await goKey(tester, keyCertify);
   await goKey(tester, keyConfirm);
-  await spawnBlock(tester, keyViewActivity);
+  await spawnBlock(tester, keyViewActivity, duration: 500);
   await waitFor(tester, 'validé !', timeout: const Duration(seconds: 1));
   await goKey(tester, keyCloseTransactionScreen);
   await waitFor(tester, '2');
@@ -208,7 +207,7 @@ Future certifyTest5(WidgetTester tester) async {
   // Certify with test3 account
   await goKey(tester, keyCertify);
   await goKey(tester, keyConfirm);
-  await spawnBlock(tester, keyViewActivity);
+  await spawnBlock(tester, keyViewActivity, duration: 500);
   await waitFor(tester, 'validé !', timeout: const Duration(seconds: 1));
   await goKey(tester, keyCloseTransactionScreen);
   await waitFor(tester, 'Vous devez attendre');

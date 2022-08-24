@@ -12,7 +12,9 @@ Future sleep(WidgetTester tester, [int time = 1000]) async {
 
 Future goKey(WidgetTester tester, Key buttonKey,
     {Finder? customFinder, int duration = 100, bool selectLast = false}) async {
-  await tester.pumpAndSettle(Duration(milliseconds: duration));
+  if (duration != 0) {
+    await tester.pumpAndSettle(Duration(milliseconds: duration));
+  }
   final Finder finder = customFinder ?? find.byKey(buttonKey);
   log.d('INTEGRATION TEST: Tap on ${finder.description}}');
   await tester.tap(selectLast ? finder.last : finder);
@@ -28,7 +30,9 @@ Future goBack(WidgetTester tester) async {
 
 Future enterText(WidgetTester tester, Key fieldKey, String textIn,
     [int duration = 200]) async {
-  await tester.pumpAndSettle(Duration(milliseconds: duration));
+  if (duration != 0) {
+    await tester.pumpAndSettle(Duration(milliseconds: duration));
+  }
   log.d('INTEGRATION TEST: Enter text: $textIn');
   await tester.enterText(find.byKey(fieldKey), textIn);
 }
@@ -73,8 +77,11 @@ Future<bool> isIconPresent(WidgetTester tester, IconData icon,
   return finder.evaluate().isEmpty ? false : true;
 }
 
-Future spawnBlock(WidgetTester tester, Key customKey, [int number = 1]) async {
-  await sleep(tester, 1000);
+Future spawnBlock(WidgetTester tester, Key customKey,
+    {int number = 1, int duration = 200}) async {
+  if (duration != 0) {
+    await sleep(tester, duration);
+  }
   final BuildContext context = tester.element(find.byKey(customKey));
   SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
   sub.spawnBlock(number);

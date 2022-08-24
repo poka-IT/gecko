@@ -873,7 +873,6 @@ newKeySig: $newKeySig""");
       keyring.current.pubKey,
     );
 
-    log.d(sender.address);
     TxInfoData txInfo;
 
     txInfo = TxInfoData(
@@ -938,6 +937,13 @@ newKeySig: $newKeySig""");
     }
 
     await sdk.api.keyring.deleteAccount(keyring, keypair);
+  }
+
+  Future spawnBlock([int number = 1]) async {
+    for (var i = 1; i <= number; i++) {
+      await sdk.webView!
+          .evalJavascript('api.rpc.engine.createBlock(true, true)');
+    }
   }
 
   void reload() {

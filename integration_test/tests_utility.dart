@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/globals.dart';
 
+Future sleep(WidgetTester tester, [int time = 1000]) async {
+  await Future.delayed(Duration(milliseconds: time));
+}
+
 Future goKey(WidgetTester tester, Key buttonKey,
-    {Finder? customFinder, int duration = 100}) async {
+    {Finder? customFinder, int duration = 100, bool selectLast = false}) async {
   await tester.pumpAndSettle(Duration(milliseconds: duration));
   final Finder finder = customFinder ?? find.byKey(buttonKey);
   log.d('INTEGRATION TEST: Tap on ${finder.description}}');
-  await tester.tap(finder);
+  await tester.tap(selectLast ? finder.last : finder);
   // await tester.pumpAndSettle(Duration(milliseconds: duration));
 }
 
@@ -38,7 +42,6 @@ Future<void> waitFor(
 
   do {
     if (DateTime.now().isAfter(end)) {
-      
       throw Exception('Timed out waiting for text $text');
     }
 

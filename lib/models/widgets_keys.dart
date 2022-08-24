@@ -61,6 +61,9 @@ const keyCachePassword = Key('keyCachePassword');
 
 // Settings
 const keyDeleteAllWallets = Key('keyDeleteAllWallets');
+const keySelectDuniterNodeDropDown = Key('keySelectDuniterNodeDropDown');
+const keyCustomDuniterEndpoint = Key('keyCustomDuniterEndpoint');
+const keyConnectToEndpoint = Key('keyConnectToEndpoint');
 
 // Onboarding
 const keyPastMnemonic = Key('keyPastMnemonic');
@@ -77,6 +80,6 @@ const keyConfirmSearch = Key('keyConfirmSearch');
 
 // Unit keys
 Key keyMnemonicWord(String word) => Key('keyMnemonicWord$word');
-Key keyIndexerResult(String keyId) => Key('keyIndexerResult$keyId');
 Key keyTransaction(int keyId) => Key('keyTransaction$keyId');
 Key keySearchResult(String keyId) => Key('keySearchResult$keyId');
+Key keySelectDuniterNode(String keyId) => Key('keySelectDuniterNode$keyId');

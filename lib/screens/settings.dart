@@ -116,11 +116,14 @@ class SettingsScreen extends StatelessWidget {
               Icon(sub.nodeConnected && !sub.isLoadingEndpoint
                   ? Icons.check
                   : Icons.close),
+              if (sub.nodeConnected && !sub.isLoadingEndpoint)
+                const Icon(Icons.add_card_sharp, size: 0.01),
               const Spacer(),
               SizedBox(
                 width: 265,
                 child: Consumer<SettingsProvider>(builder: (context, set, _) {
                   return DropdownButtonHideUnderline(
+                    key: keySelectDuniterNodeDropDown,
                     child: DropdownButton(
                       // alignment: AlignmentDirectional.topStart,
                       value: selectedDuniterEndpoint,
@@ -128,6 +131,7 @@ class SettingsScreen extends StatelessWidget {
                       items: duniterBootstrapNodes
                           .map((NetworkParams endpointParams) {
                         return DropdownMenuItem(
+                          key: keySelectDuniterNode(endpointParams.endpoint!),
                           value: endpointParams.endpoint,
                           child: Text(endpointParams.endpoint!),
                         );
@@ -146,6 +150,7 @@ class SettingsScreen extends StatelessWidget {
                   ? CircularProgressIndicator(color: orangeC)
                   : Consumer<SettingsProvider>(builder: (context, set, _) {
                       return IconButton(
+                          key: keyConnectToEndpoint,
                           icon: Icon(
                             Icons.send,
                             color: selectedDuniterEndpoint !=
@@ -186,6 +191,7 @@ class SettingsScreen extends StatelessWidget {
             width: 200,
             height: 50,
             child: TextField(
+              key: keyCustomDuniterEndpoint,
               controller: endpointController,
               autocorrect: false,
             ),

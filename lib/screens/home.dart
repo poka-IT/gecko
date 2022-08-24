@@ -40,6 +40,9 @@ class HomeScreen extends StatelessWidget {
 
     final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
 
+    // sub.spawnBlock();
+    // log.d('message');
+
     isTall = false;
     ratio = 1;
     if (MediaQuery.of(context).size.height >= 930) {
@@ -122,17 +125,18 @@ class HomeScreen extends StatelessWidget {
                     myWalletProvider.rebuildWidget();
                   }
 
-                  var connectivityResult =
-                      await (Connectivity().checkConnectivity());
+                  // var connectivityResult =
+                  //     await (Connectivity().checkConnectivity());
+
+                  // if (connectivityResult != ConnectivityResult.mobile &&
+                  //     connectivityResult != ConnectivityResult.wifi) {
+                  //   homeProvider.changeMessage(
+                  //       "notConnectedToInternet".tr(), 0);
+                  //   sub.nodeConnected = false;
+                  // }
+
                   HomeProvider homeProvider =
                       Provider.of<HomeProvider>(ctx, listen: false);
-                  if (connectivityResult != ConnectivityResult.mobile &&
-                      connectivityResult != ConnectivityResult.wifi) {
-                    homeProvider.changeMessage(
-                        "notConnectedToInternet".tr(), 0);
-                    sub.nodeConnected = false;
-                  }
-
                   Connectivity()
                       .onConnectivityChanged
                       .listen((ConnectivityResult result) async {

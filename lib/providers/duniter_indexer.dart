@@ -301,7 +301,7 @@ class DuniterIndexer with ChangeNotifier {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 5),
                     child: ListTile(
-                        key: keyIndexerResult(profile['id']),
+                        key: keySearchResult(profile['id']),
                         horizontalTitleGap: 40,
                         contentPadding: const EdgeInsets.all(5),
                         leading: cesiumPlusProvider.defaultAvatar(avatarSize),

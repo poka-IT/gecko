@@ -4,10 +4,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:gecko/main.dart' as app;
-import 'package:provider/provider.dart';
 import 'tests_utility.dart';
 
 void main() {
@@ -47,9 +45,6 @@ Future changeNode(WidgetTester tester) async {
   await isIconPresent(tester, Icons.add_card_sharp,
       timeout: const Duration(seconds: 8));
   await goBack(tester);
-  // final BuildContext context = tester.element(find.byKey(keyDrawerMenu));
-  // SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
-  // await sub.spawnBlock(3);
 
   // await waitFor(tester, 'Vous êtes bien connecté');
 }
@@ -102,10 +97,7 @@ Future payTest2(WidgetTester tester) async {
   await enterText(tester, keyAmountField, '2.14');
   await goKey(tester, keyConfirmPayment);
   await sleep(tester);
-  final BuildContext context =
-      tester.element(find.byKey(keyCloseTransactionScreen));
-  SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
-  await sub.spawnBlock();
+  await spawnBlock(tester, keyCloseTransactionScreen);
 
   await waitFor(tester, 'validé !', timeout: const Duration(seconds: 1));
   await goKey(tester, keyCloseTransactionScreen);

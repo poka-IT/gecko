@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:provider/provider.dart';
 
 Future sleep(WidgetTester tester, [int time = 1000]) async {
   await Future.delayed(Duration(milliseconds: time));
@@ -68,6 +70,13 @@ Future<bool> isIconPresent(WidgetTester tester, IconData icon,
   final finder = find.byIcon(icon);
   log.d('tatatatatatata: ${finder.evaluate()}');
   return finder.evaluate().isEmpty ? false : true;
+}
+
+Future spawnBlock(WidgetTester tester, Key customKey) async {
+  final BuildContext context =
+      tester.element(find.byKey(customKey));
+  SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+  await sub.spawnBlock();
 }
 
 extension Truncate on String {

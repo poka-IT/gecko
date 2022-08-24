@@ -40,9 +40,6 @@ class HomeScreen extends StatelessWidget {
 
     final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
 
-    // sub.spawnBlock();
-    // log.d('message');
-
     isTall = false;
     ratio = 1;
     if (MediaQuery.of(context).size.height >= 930) {

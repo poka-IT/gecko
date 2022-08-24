@@ -41,13 +41,10 @@ Future changeNode(WidgetTester tester) async {
   await goKey(tester, keySelectDuniterNodeDropDown, duration: 5);
   await goKey(tester, keySelectDuniterNode('Personnalisé'), selectLast: true);
   await enterText(tester, keyCustomDuniterEndpoint, 'ws://$ipAddress:9944');
-  // await sleep(tester, 10000);
   await goKey(tester, keyConnectToEndpoint);
   await isIconPresent(tester, Icons.add_card_sharp,
       timeout: const Duration(seconds: 8));
   await goBack(tester);
-
-  // await waitFor(tester, 'Vous êtes bien connecté');
 }
 
 // Customs actions
@@ -62,32 +59,63 @@ Future deleteAllWallets(WidgetTester tester) async {
 }
 
 Future restoreChest(WidgetTester tester) async {
-  await goKey(tester, keyRestoreChest);
+  // Copy test mnemonic in clipboard
   Clipboard.setData(const ClipboardData(
       text:
           'pipe paddle ketchup filter life ice feel embody glide quantum ride usage'));
+
+  // Open screen import chest
+  await goKey(tester, keyRestoreChest);
+
+  // Wait frame stop before continue
   await tester.pumpAndSettle();
+
+  // Tap on button to paste mnemonic
   await goKey(tester, keyPastMnemonic);
   await tester.pumpAndSettle();
+
+  // Tap on next button 4 times to skip 3 screen
   await goKey(tester, keyGoNext);
   await goKey(tester, keyGoNext);
   await goKey(tester, keyGoNext);
   await goKey(tester, keyGoNext);
+
+  // Check if cached password checkbox is checked
   final isCached = await isIconPresent(tester, Icons.check_box);
+
+  // If not, tap on to cache password
   if (!isCached) await goKey(tester, keyCachePassword);
+
+  // Enter password
   await enterText(tester, keyPinForm, 'AAAAA');
+
+  // Check if string "Accéder à mon coffre" is present in screen
   await waitFor(tester, 'Accéder à mon coffre');
+
+  // Go to wallets home
   await goKey(tester, keyGoWalletsHome);
+
+  // Check if string "ĞD" is present in screen
   await waitFor(tester, 'ĞD');
 
-  // Test add a new derivation
+  // Tap on add a new derivation button
   await addDerivation(tester);
+
+  // Tap on Wallet 5
   await goKey(tester,
       keyOpenWallet('5Dq3giahrBfykJogPetZJ2jjSmhw49Fa7i6qKkseUvRJ2T3R'));
+
+  // Copy address of Wallet 5
   await goKey(tester, keyCopyAddress);
+
+  // Check if string "Cette adresse a été copié" is present in screen
   await waitFor(tester, 'Cette adresse a été copié');
+
+  // Pop screen 2 time to go back home screen
   await goBack(tester);
   await goBack(tester);
+
+  // Check if string "y'a pas de lézard" is present in screen
   await waitFor(tester, "y'a pas de lézard");
 }
 

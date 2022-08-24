@@ -200,6 +200,7 @@ class WalletsHome extends StatelessWidget {
               Padding(
                   padding: const EdgeInsets.all(16),
                   child: GestureDetector(
+                    key: keyOpenWallet(repository.address!),
                     onTap: () {
                       walletOptions.getAddress(
                           currentChestNumber, repository.derivation!);

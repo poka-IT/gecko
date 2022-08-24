@@ -110,7 +110,7 @@ Future<void> main() async {
           supportedLocales: const [Locale('en'), Locale('fr'), Locale('es')],
           path: 'assets/translations',
           fallbackLocale: const Locale('en'),
-          child: Gecko(indexerEndpoint),
+          child: const Gecko(),
         ),
       ),
     );
@@ -122,15 +122,14 @@ Future<void> main() async {
         supportedLocales: const [Locale('en'), Locale('fr'), Locale('es')],
         path: 'assets/translations',
         fallbackLocale: const Locale('en'),
-        child: Gecko(indexerEndpoint),
+        child: const Gecko(),
       ),
     );
   }
 }
 
 class Gecko extends StatelessWidget {
-  const Gecko(this.indexerEndpoint, {Key? key}) : super(key: key);
-  final String? indexerEndpoint;
+  const Gecko({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

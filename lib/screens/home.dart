@@ -132,22 +132,24 @@ class HomeScreen extends StatelessWidget {
                   //   sub.nodeConnected = false;
                   // }
 
-                  HomeProvider homeProvider =
-                      Provider.of<HomeProvider>(ctx, listen: false);
-                  Connectivity()
-                      .onConnectivityChanged
-                      .listen((ConnectivityResult result) async {
-                    log.d('Network changed: $result');
-                    if (result == ConnectivityResult.none) {
-                      sub.nodeConnected = false;
-                      await sub.sdk.api.setting.unsubscribeBestNumber();
-                      homeProvider.changeMessage(
-                          "notConnectedToInternet".tr(), 0);
-                      sub.reload();
-                    } else {
-                      await sub.connectNode(ctx);
-                    }
-                  });
+                  // TODO: fix random bad network status on startup
+                  // HomeProvider homeProvider =
+                  //     Provider.of<HomeProvider>(ctx, listen: false);
+                  // Connectivity()
+                  //     .onConnectivityChanged
+                  //     .listen((ConnectivityResult result) async {
+                  //   log.d('Network changed: $result');
+                  //   if (result == ConnectivityResult.none) {
+                  //     sub.nodeConnected = false;
+                  //     await sub.sdk.api.setting.unsubscribeBestNumber();
+                  //     homeProvider.changeMessage(
+                  //         "notConnectedToInternet".tr(), 0);
+                  //     sub.reload();
+                  //   } else {
+                  //     await sub.connectNode(ctx);
+                  //   }
+                  // });
+                  await sub.connectNode(ctx);
                 }
                 // _duniterIndexer.checkIndexerEndpointBackground();
               });

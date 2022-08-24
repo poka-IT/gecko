@@ -47,6 +47,7 @@ class ChooseWalletScreen extends StatelessWidget {
                   width: 470,
                   height: 70,
                   child: ElevatedButton(
+                    key: keyConfirm,
                     style: ElevatedButton.styleFrom(
                       elevation: 4,
                       primary: orangeC, // background
@@ -123,6 +124,7 @@ class ChooseWalletScreen extends StatelessWidget {
               Padding(
                   padding: const EdgeInsets.all(16),
                   child: GestureDetector(
+                    key: keySelectThisWallet(repository.address!),
                     onTap: () {
                       selectedWallet = repository;
                       myWalletProvider.rebuildWidget();

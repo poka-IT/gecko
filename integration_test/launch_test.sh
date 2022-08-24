@@ -4,7 +4,8 @@
 # MP="`( cd \"$MP\" && pwd )`"
 # cd $MP
 
-args="$@"
+testName=$1
+[[ ! $testName ]] && testName='gecko_complete'
 
 # Get local IP and set .env
 ip_address=$(hostname -I | awk '{print $1}')
@@ -18,7 +19,7 @@ docker-compose up -d
 cd ../..
 
 # Start integration test
-flutter test integration_test/app_test.dart
+flutter test integration_test/$testName.dart
 
 # Stop Duniter
 cd integration_test/duniter

@@ -941,8 +941,7 @@ newKeySig: $newKeySig""");
 
   Future spawnBlock([int number = 1]) async {
     for (var i = 1; i <= number; i++) {
-      await sdk.webView!
-          .evalJavascript('api.rpc.engine.createBlock(true, true)');
+      sdk.webView!.evalJavascript('api.rpc.engine.createBlock(true, true)');
     }
   }
 

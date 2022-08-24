@@ -238,7 +238,7 @@ class WalletOptionsProvider with ChangeNotifier {
             height: 100,
             child: Column(children: [
               const SizedBox(height: 20),
-              TextField(
+              TextField(key: keyEnterIdentityUsername,
                 onChanged: (_) => notifyListeners(),
                 inputFormatters: <TextInputFormatter>[
                   // FilteringTextInputFormatter.allow(RegExp("[0-9a-zA-Z]")),
@@ -259,7 +259,7 @@ class WalletOptionsProvider with ChangeNotifier {
                 Consumer<WalletOptionsProvider>(
                     builder: (context, wOptions, _) {
                   return TextButton(
-                    key: keyInfoPopup,
+                    key: keyConfirm,
                     child: Text(
                       "validate".tr(),
                       style: TextStyle(

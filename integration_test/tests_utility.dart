@@ -1,9 +1,10 @@
-// CUSTOM METHODES
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:provider/provider.dart';
+
+// CUSTOM METHODS
 
 Future sleep(WidgetTester tester, [int time = 1000]) async {
   await Future.delayed(Duration(milliseconds: time));
@@ -72,17 +73,10 @@ Future<bool> isIconPresent(WidgetTester tester, IconData icon,
   return finder.evaluate().isEmpty ? false : true;
 }
 
-Future spawnBlock(WidgetTester tester, Key customKey) async {
-  final BuildContext context =
-      tester.element(find.byKey(customKey));
+Future spawnBlock(WidgetTester tester, Key customKey, [int number = 1]) async {
+  await sleep(tester, 1000);
+  final BuildContext context = tester.element(find.byKey(customKey));
   SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
-  await sub.spawnBlock();
-}
-
-extension Truncate on String {
-  String truncate({required int max, String suffix = ''}) {
-    return length < max
-        ? this
-        : '${substring(0, substring(0, max - suffix.length).lastIndexOf(" "))}$suffix';
-  }
+  sub.spawnBlock(number);
+  await sleep(tester, 500);
 }

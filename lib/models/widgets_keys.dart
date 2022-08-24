@@ -5,6 +5,9 @@ const keyInfoPopup = Key('keyInfoPopup');
 const keyGoNext = Key('keyGoNext');
 const keyCancel = Key('keyCancel');
 const keyConfirm = Key('keyConfirm');
+const keyAppBarSearch = Key('keyAppBarSearch');
+const keyAppBarQrcode = Key('keyAppBarQrcode');
+const keyAppBarChest = Key('keyAppBarChest');
 
 // Home
 const keyParameters = Key('keyParameters');
@@ -28,6 +31,8 @@ const keySetDefaultWallet = Key('keySetDefaultWallet');
 const keyDeleteWallet = Key('keyDeleteWallet');
 const keyWalletName = Key('keyWalletName');
 const keyRenameWallet = Key('keyRenameWallet');
+const keyConfirmIdentity = Key('keyConfirmIdentity');
+const keyEnterIdentityUsername = Key('keyEnterIdentityUsername');
 
 // Chest options
 const keyShowSeed = Key('keyShowSeed');
@@ -79,7 +84,9 @@ const keySearchField = Key('keySearchField');
 const keyConfirmSearch = Key('keyConfirmSearch');
 
 // Unit keys
-Key keyMnemonicWord(String word) => Key('keyMnemonicWord$word');
 Key keyTransaction(int keyId) => Key('keyTransaction$keyId');
+Key keyMnemonicWord(String word) => Key('keyMnemonicWord$word');
 Key keySearchResult(String keyId) => Key('keySearchResult$keyId');
 Key keySelectDuniterNode(String keyId) => Key('keySelectDuniterNode$keyId');
+Key keyOpenWallet(String keyId) => Key('keyOpenWallet$keyId');
+Key keySelectThisWallet(String keyId) => Key('keySelectThisWallet$keyId');

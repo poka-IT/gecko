@@ -4,7 +4,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:provider/provider.dart';
 
-// CUSTOM METHODS
+// CUSTOM FUNCTIONS
 
 Future sleep(WidgetTester tester, [int time = 1000]) async {
   await Future.delayed(Duration(milliseconds: time));

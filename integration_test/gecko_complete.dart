@@ -18,16 +18,16 @@ void main() {
     // Change Duniter endpoint to local
     await changeNode(tester);
 
-    // Delete all existing chests
+    // Delete all existing chests is exists
     await deleteAllWallets(tester);
 
-    // Restore a chest
+    // Restore the test chest
     await restoreChest(tester);
 
     // Execute a transaction to test2
     await payTest2(tester);
 
-    // Certify test5 account with 3 account to become member
+    // Certify test5 account with 3 accounts to become member
     await certifyTest5(tester);
   });
 }
@@ -47,7 +47,6 @@ Future changeNode(WidgetTester tester) async {
   await goBack(tester);
 }
 
-// Customs actions
 Future deleteAllWallets(WidgetTester tester) async {
   if (await isPresent(tester, 'Rechercher')) {
     await goKey(tester, keyDrawerMenu);
@@ -133,7 +132,6 @@ Future payTest2(WidgetTester tester) async {
   await goKey(tester, keyPay);
   await enterText(tester, keyAmountField, '12.14');
   await goKey(tester, keyConfirmPayment);
-  // await sleep(tester);
   await spawnBlock(tester, keyCloseTransactionScreen);
 
   await waitFor(tester, 'validé !', timeout: const Duration(seconds: 1));
@@ -150,8 +148,6 @@ Future addDerivation(WidgetTester tester) async {
 
 Future certifyTest5(WidgetTester tester) async {
   // Create identity with Test1 account
-  // await spawnBlock(tester, keyViewActivity, 5);
-  // await sleep(tester);
   await goKey(tester, keyCertify);
   await goKey(tester, keyConfirm);
   await spawnBlock(tester, keyViewActivity, duration: 500);
@@ -171,12 +167,15 @@ Future certifyTest5(WidgetTester tester) async {
   await waitFor(tester, 'validé !', timeout: const Duration(seconds: 1));
   await goKey(tester, keyCloseTransactionScreen);
   await waitFor(tester, 'Identité confirmée');
+
+  // Set wallet 2 as default wallet
   await goBack(tester);
   await goKey(tester,
       keyOpenWallet('5E4i8vcNjnrDp21Sbnp32WHm2gz8YP3GGFwmdpfg5bHd8Whb'));
   await goKey(tester, keySetDefaultWallet);
   await waitFor(tester, 'Ce portefeuille est celui par defaut');
 
+  // Search Wallet 5 again
   await goKey(tester, keyAppBarSearch);
   final addressToSearch = (await Clipboard.getData('text/plain'))!.text;
   final endAddress = addressToSearch!.substring(addressToSearch.length - 6);

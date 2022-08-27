@@ -148,7 +148,7 @@
     "seeAWallet": "Voir un portefeuille",
     "mustWaitXBeforeCertify": "Vous devez attendre\n{} avant\nde pouvoir certifier",
     "mustConfirmHisIdentity": "Cette personne doit confirmer\nson identité avant de pouvoir\nêtre certifié",
-    "canRenewCertInX": "Vous pourrez renouveller\ncette certification\ndans {}",
+    "canRenewCertInX": "Vous pourrez renouveler\ncette certification\ndans {}",
     "executeATransfer": "Effectuer un virement",
     "executeTheTransfer": "Effectuer le virement",
     "doATransfer": "Faire un\nvirement",

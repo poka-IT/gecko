@@ -246,8 +246,9 @@ class WalletViewScreen extends StatelessWidget {
                                             final acc = sub.getCurrentWallet();
                                             sub.certify(
                                                 acc.address!,
-                                                pin ?? myWalletProvider.pinCode,
-                                                walletViewProvider.address!);
+                                                walletViewProvider.address!,
+                                                pin ??
+                                                    myWalletProvider.pinCode);
 
                                             Navigator.push(
                                               context,

@@ -696,14 +696,14 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<String> certify(
-      String fromAddress, String password, String toAddress) async {
+      String fromAddress, String destAddress, String password) async {
     transactionStatus = '';
 
     final myIdtyStatus = await idtyStatus(fromAddress);
-    final toIdtyStatus = await idtyStatus(toAddress);
+    final toIdtyStatus = await idtyStatus(destAddress);
 
     final fromIndex = await _getIdentityIndexOf(fromAddress);
-    final toIndex = await _getIdentityIndexOf(toAddress);
+    final toIndex = await _getIdentityIndexOf(destAddress);
 
     if (myIdtyStatus != 'Validated') {
       transactionStatus = 'notMember';
@@ -716,7 +716,7 @@ class SubstrateSdk with ChangeNotifier {
     List txOptions = [];
     String? rawParams;
 
-    final toCerts = await getCerts(toAddress);
+    final toCerts = await getCerts(destAddress);
 
     // log.d('debug: ${currencyParameters['minCertForMembership']}');
 
@@ -726,7 +726,7 @@ class SubstrateSdk with ChangeNotifier {
         'createIdentity',
         sender,
       );
-      txOptions = [toAddress];
+      txOptions = [destAddress];
     } else if (toIdtyStatus == 'Validated' ||
         toIdtyStatus == 'ConfirmedByOwner') {
       if (toCerts[0] >= currencyParameters['minCertForMembership']! - 1 &&
@@ -776,11 +776,11 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<String> confirmIdentity(
       String fromAddress, String name, String password) async {
-    log.d('me: ${keyring.current.address!}');
+    final fromPubkey = await sdk.api.account.decodeAddress([fromAddress]);
 
     final sender = TxSenderData(
-      keyring.current.address,
-      keyring.current.pubKey,
+      fromAddress,
+      fromPubkey!.keys.first,
     );
 
     final txInfo = TxInfoData(

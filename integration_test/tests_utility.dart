@@ -4,6 +4,28 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:provider/provider.dart';
 
+final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
+
+// TEST WALLETS CONSTS
+const testMnemonic =
+    'pipe paddle ketchup filter life ice feel embody glide quantum ride usage';
+final test1 =
+    TestWallet('5FeggKqw2AbnGZF9Y9WPM2QTgzENS3Hit94Ewgmzdg5a3LNa', 'test1');
+final test2 =
+    TestWallet('5E4i8vcNjnrDp21Sbnp32WHm2gz8YP3GGFwmdpfg5bHd8Whb', 'test2');
+final test3 =
+    TestWallet('5FhTLzXLNBPmtXtDBFECmD7fvKmTtTQDtvBTfVr97tachA1p', 'test3');
+final test4 =
+    TestWallet('5DXJ4CusmCg8S1yF6JGVn4fxgk5oFx42WctXqHZ17mykgje5', 'test4');
+final test5 =
+    TestWallet('5Dq3giahrBfykJogPetZJ2jjSmhw49Fa7i6qKkseUvRJ2T3R', 'test5');
+// final test6 =
+//     TestWallet('5FeggKqw2AbnGZF9Y9WPM2QTgzENS3Hit94Ewgmzdg5a3LNa', 'test6');
+// final test7 =
+//     TestWallet('5FeggKqw2AbnGZF9Y9WPM2QTgzENS3Hit94Ewgmzdg5a3LNa', 'test7');
+// final test8 =
+//     TestWallet('5FeggKqw2AbnGZF9Y9WPM2QTgzENS3Hit94Ewgmzdg5a3LNa', 'test8');
+
 // CUSTOM FUNCTIONS
 
 Future sleep(WidgetTester tester, [int time = 1000]) async {
@@ -37,14 +59,13 @@ Future enterText(WidgetTester tester, Key fieldKey, String textIn,
   await tester.enterText(find.byKey(fieldKey), textIn);
 }
 
-Future<void> waitFor(
-  WidgetTester tester,
-  String text, {
-  Duration timeout = const Duration(seconds: 5),
-}) async {
+Future<void> waitFor(WidgetTester tester, String text,
+    {Duration timeout = const Duration(seconds: 5),
+    bool reverse = false,
+    bool exactMatch = false}) async {
   final end = DateTime.now().add(timeout);
 
-  Finder finder = find.textContaining(text);
+  Finder finder = exactMatch ? find.text(text) : find.textContaining(text);
   log.d('INTEGRATION TEST: Wait for: $text');
 
   do {
@@ -54,7 +75,7 @@ Future<void> waitFor(
 
     await tester.pumpAndSettle();
     await Future.delayed(const Duration(milliseconds: 100));
-  } while (finder.evaluate().isEmpty);
+  } while (reverse ? finder.evaluate().isNotEmpty : finder.evaluate().isEmpty);
 }
 
 // Test if text is visible on screen, return a boolean
@@ -77,13 +98,48 @@ Future<bool> isIconPresent(WidgetTester tester, IconData icon,
   return finder.evaluate().isEmpty ? false : true;
 }
 
-Future spawnBlock(WidgetTester tester, Key customKey,
+Future spawnBlock(WidgetTester tester,
     {int number = 1, int duration = 200}) async {
   if (duration != 0) {
     await sleep(tester, duration);
   }
-  final BuildContext context = tester.element(find.byKey(customKey));
-  SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
   sub.spawnBlock(number);
   await sleep(tester, 500);
+}
+
+Future pay(WidgetTester tester,
+    {required String fromAddress,
+    required String destAddress,
+    required double amount}) async {
+  sub.pay(
+      fromAddress: fromAddress,
+      destAddress: destAddress,
+      amount: amount,
+      password: 'AAAAA');
+  spawnBlock(tester, duration: 500);
+  await sleep(tester, 500);
+}
+
+Future certify(WidgetTester tester,
+    {required String fromAddress, required String destAddress}) async {
+  sub.certify(fromAddress, destAddress, 'AAAAA');
+  spawnBlock(tester, duration: 500);
+  await sleep(tester, 500);
+}
+
+Future confirmIdentity(WidgetTester tester,
+    {required String fromAddress, required String name}) async {
+  sub.confirmIdentity(fromAddress, name, 'AAAAA');
+  spawnBlock(tester, duration: 500);
+  await sleep(tester, 500);
+}
+
+class TestWallet {
+  String address;
+  String name;
+
+  TestWallet(this.address, this.name);
+
+  endAddress() => address.substring(address.length - 6);
+  shortAddress() => getShortPubkey(address);
 }

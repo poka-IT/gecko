@@ -80,10 +80,11 @@ class SubstrateSdk with ChangeNotifier {
         [null])[0];
   }
 
-  TxSenderData _setSender() {
+  Future<TxSenderData> _setSender(String address) async {
+    final fromPubkey = await sdk.api.account.decodeAddress([address]);
     return TxSenderData(
-      keyring.current.address,
-      keyring.current.pubKey,
+      address,
+      fromPubkey!.keys.first,
     );
   }
 
@@ -711,7 +712,7 @@ class SubstrateSdk with ChangeNotifier {
       return 'notMember';
     }
 
-    final sender = _setSender();
+    final sender = await _setSender(fromAddress);
     TxInfoData txInfo;
     List txOptions = [];
     String? rawParams;
@@ -941,7 +942,8 @@ newKeySig: $newKeySig""");
 
   Future spawnBlock([int number = 1]) async {
     for (var i = 1; i <= number; i++) {
-      sdk.webView!.evalJavascript('api.rpc.engine.createBlock(true, true)');
+      await sdk.webView!
+          .evalJavascript('api.rpc.engine.createBlock(true, true)');
     }
   }
 

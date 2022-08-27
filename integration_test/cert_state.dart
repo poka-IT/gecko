@@ -32,6 +32,7 @@ void main() {
     await waitFor(tester, 'Vous devez ', reverse: true);
     await waitFor(tester, 'Vous pourrez renouveler ', reverse: true);
 
+    // await spawnBlock(tester, number: 10);
     // Background pay 25
     await pay(tester,
         fromAddress: test1.address, destAddress: test5.address, amount: 25);
@@ -42,9 +43,24 @@ void main() {
         fromAddress: test1.address, destAddress: test5.address);
     await waitFor(tester, '1', exactMatch: true);
     await confirmIdentity(tester, fromAddress: test5.address, name: test5.name);
-    await spawnBlock(tester, number: 10);
     await certify(tester,
         fromAddress: test2.address, destAddress: test5.address);
+
+    // // Change default wallet to test3
+    // await goKey(tester, keyPay);
+    // await goKey(tester, keyChangeChest);
+    // await goKey(tester, keySelectThisWallet(test2.address));
+    // await goKey(tester, keyConfirm);
+    // await sleep(tester);
+
+    // // Certify with test3 account
+    // await goKey(tester, keyCertify);
+    // await goKey(tester, keyConfirm);
+    // await spawnBlock(tester, duration: 500);
+    // await waitFor(tester, 'validé !', timeout: const Duration(seconds: 1));
+    // await goKey(tester, keyCloseTransactionScreen);
+    // await waitFor(tester, 'Vous devez attendre');
+
     await waitFor(tester, '2', exactMatch: true);
     await certify(tester,
         fromAddress: test3.address, destAddress: test5.address);
@@ -54,6 +70,7 @@ void main() {
     await waitFor(tester, '4', exactMatch: true);
     await pay(tester,
         fromAddress: test2.address, destAddress: test5.address, amount: 40);
-    await waitFor(tester, '62.0 $currencyName');
+    await waitFor(tester, '61.99 $currencyName');
+    await spawnBlock(tester, until: 25);
   });
 }

@@ -99,12 +99,15 @@ Future<bool> isIconPresent(WidgetTester tester, IconData icon,
 }
 
 Future spawnBlock(WidgetTester tester,
-    {int number = 1, int duration = 200}) async {
+    {int number = 1, int duration = 200, int? until}) async {
   if (duration != 0) {
     await sleep(tester, duration);
   }
-  sub.spawnBlock(number);
-  await sleep(tester, 500);
+  if (until != null) {
+    number = until - sub.blocNumber;
+  }
+  await sub.spawnBlock(number);
+  await sleep(tester, 200);
 }
 
 Future pay(WidgetTester tester,
@@ -116,21 +119,21 @@ Future pay(WidgetTester tester,
       destAddress: destAddress,
       amount: amount,
       password: 'AAAAA');
-  spawnBlock(tester, duration: 500);
+  await spawnBlock(tester);
   await sleep(tester, 500);
 }
 
 Future certify(WidgetTester tester,
     {required String fromAddress, required String destAddress}) async {
   sub.certify(fromAddress, destAddress, 'AAAAA');
-  spawnBlock(tester, duration: 500);
+  await spawnBlock(tester);
   await sleep(tester, 500);
 }
 
 Future confirmIdentity(WidgetTester tester,
     {required String fromAddress, required String name}) async {
   sub.confirmIdentity(fromAddress, name, 'AAAAA');
-  spawnBlock(tester, duration: 500);
+  await spawnBlock(tester);
   await sleep(tester, 500);
 }
 

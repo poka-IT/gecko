@@ -8,89 +8,92 @@ import 'tests_utility.dart';
 
 // GENERAL ACTIONS
 
-Future changeNode(WidgetTester tester) async {
+Future changeNode() async {
   final ipAddress = dotenv.env['ip_address'] ?? '127.0.0.1';
   log.d('ip address: $ipAddress');
 
-  await goKey(tester, keyDrawerMenu);
-  await goKey(tester, keyParameters);
-  await goKey(tester, keySelectDuniterNodeDropDown, duration: 5);
-  await goKey(tester, keySelectDuniterNode('Personnalisé'), selectLast: true);
-  await enterText(tester, keyCustomDuniterEndpoint, 'ws://$ipAddress:9944');
-  await goKey(tester, keyConnectToEndpoint);
-  await isIconPresent(tester, Icons.add_card_sharp,
+  await goKey(keyDrawerMenu);
+  await goKey(keyParameters);
+  await goKey(keySelectDuniterNodeDropDown, duration: 5);
+  await goKey(keySelectDuniterNode('Personnalisé'), selectLast: true);
+  await enterText(keyCustomDuniterEndpoint, 'ws://$ipAddress:9944');
+  await goKey(keyConnectToEndpoint);
+  await isIconPresent(Icons.add_card_sharp,
       timeout: const Duration(seconds: 8));
-  await goBack(tester);
+  await goBack();
 }
 
-Future deleteAllWallets(WidgetTester tester) async {
-  if (await isPresent(tester, 'Rechercher')) {
-    await goKey(tester, keyDrawerMenu);
-    await goKey(tester, keyParameters);
-    await goKey(tester, keyDeleteAllWallets);
-    await goKey(tester, keyConfirm);
+Future deleteAllWallets() async {
+  if (await isPresent('Rechercher')) {
+    await goKey(keyDrawerMenu);
+    await goKey(keyParameters);
+    await goKey(keyDeleteAllWallets);
+    await goKey(keyConfirm);
     await tester.pumpAndSettle();
   }
 }
 
-Future restoreChest(WidgetTester tester) async {
+Future restoreChest() async {
   // Copy test mnemonic in clipboard
   Clipboard.setData(const ClipboardData(text: testMnemonic));
 
   // Open screen import chest
-  await goKey(tester, keyRestoreChest);
-
-  // Wait frame stop before continue
-  await tester.pumpAndSettle();
+  await goKey(keyRestoreChest, duration: 0);
 
   // Tap on button to paste mnemonic
-  await goKey(tester, keyPastMnemonic);
+  await goKey(keyPastMnemonic);
 
   // Tap on next button 4 times to skip 3 screen
-  await goKey(tester, keyGoNext);
-  await goKey(tester, keyGoNext);
-  await goKey(tester, keyGoNext);
-  await goKey(tester, keyGoNext);
+  await goKey(keyGoNext);
+  await goKey(keyGoNext);
+  await goKey(keyGoNext);
+  await goKey(keyGoNext);
 
   // Check if cached password checkbox is checked
-  final isCached = await isIconPresent(tester, Icons.check_box);
+  final isCached = await isIconPresent(Icons.check_box);
 
   // If not, tap on to cache password
-  if (!isCached) await goKey(tester, keyCachePassword, duration: 0);
+  if (!isCached) await goKey(keyCachePassword, duration: 0);
 
   // Enter password
-  await enterText(tester, keyPinForm, 'AAAAA', 0);
+  await enterText(keyPinForm, 'AAAAA', 0);
 
   // Check if string "Accéder à mon coffre" is present in screen
-  await waitFor(tester, 'Accéder à mon coffre');
+  await waitFor('Accéder à mon coffre');
 
   // Go to wallets home
-  await goKey(tester, keyGoWalletsHome, duration: 0);
+  await goKey(keyGoWalletsHome, duration: 0);
 
   // Check if string "ĞD" is present in screen
-  await waitFor(tester, 'ĞD');
+  await waitFor('ĞD');
 
   // Tap on add a new derivation button
-  await addDerivation(tester);
+  await addDerivation();
 
   // Tap on Wallet 5
-  await goKey(tester, keyOpenWallet(test5.address));
+  await goKey(keyOpenWallet(test5.address));
 
   // Copy address of Wallet 5
-  await goKey(tester, keyCopyAddress);
+  await goKey(keyCopyAddress);
 
   // Check if string "Cette adresse a été copié" is present in screen
-  await waitFor(tester, 'Cette adresse a été copié');
+  await waitFor('Cette adresse a été copié');
 
-  // Pop screen 2 time to go back home screen
-  await goBack(tester);
-  await goBack(tester);
-
-  // Check if string "y'a pas de lézard" is present in screen
-  await waitFor(tester, "y'a pas de lézard");
+  // Pop screen 2 time to go back home
+  await goBack();
+  await goBack();
 }
 
-Future addDerivation(WidgetTester tester) async {
-  await goKey(tester, keyAddDerivation);
-  await waitFor(tester, 'Portefeuille 5');
+Future addDerivation() async {
+  await goKey(keyAddDerivation);
+  await waitFor('Portefeuille 5');
+}
+
+Future firstOpenChest() async {
+  await goKey(keyOpenWalletsHomme);
+  sleep(300);
+  final isCached = await isIconPresent(Icons.check_box);
+  if (!isCached) await goKey(keyCachePassword, duration: 0);
+  await enterText(keyPinForm, 'AAAAA', 0);
+  await waitFor('100.0 $currencyName');
 }

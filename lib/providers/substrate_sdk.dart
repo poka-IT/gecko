@@ -2,6 +2,7 @@
 
 import 'dart:typed_data';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
@@ -940,7 +941,11 @@ newKeySig: $newKeySig""");
     await sdk.api.keyring.deleteAccount(keyring, keypair);
   }
 
-  Future spawnBlock([int number = 1]) async {
+  Future spawnBlock([int number = 1, int until = 0]) async {
+    if (!kDebugMode) return;
+    if (blocNumber < until) {
+      number = until - blocNumber;
+    }
     for (var i = 1; i <= number; i++) {
       await sdk.webView!
           .evalJavascript('api.rpc.engine.createBlock(true, true)');

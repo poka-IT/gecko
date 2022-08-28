@@ -1,15 +1,13 @@
 #!/bin/bash
 
-# MP="`dirname \"$0\"`"
-# MP="`( cd \"$MP\" && pwd )`"
-# cd $MP
-
 testName=$1
+option=$2
 [[ ! $testName ]] && testName='gecko_complete'
 
 # Get local IP and set .env
 ip_address=$(hostname -I | awk '{print $1}')
 echo "ip_address=$ip_address" > .env
+[[ $option == 'human' ]] && echo "isHumanReading=true" >> .env
 
 ## Start local Duniter node
 cd integration_test/duniter

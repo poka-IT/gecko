@@ -43,11 +43,14 @@ class WalletViewScreen extends StatelessWidget {
     SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
     HomeProvider homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
-
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
+
     sub.setCurrentWallet(defaultWallet);
+
+    // sub.spawnBlock();
+    // sub.spawnBlock(0, 25);
 
     return Scaffold(
         backgroundColor: backgroundColor,

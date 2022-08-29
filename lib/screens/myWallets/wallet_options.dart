@@ -40,7 +40,7 @@ class WalletOptions extends StatelessWidget {
 
     // SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
     // sub.spawnBlock();
-    // sub.spawnBlock(0, 25);
+    // sub.spawnBlock(0, 20);
 
     log.d(walletOptions.address.text);
 

@@ -36,6 +36,7 @@ class WalletsHome extends StatelessWidget {
     myWalletProvider.listWallets =
         myWalletProvider.readAllWallets(currentChestNumber);
 
+
     return WillPopScope(
       onWillPop: () {
         // myWalletProvider.pinCode = myWalletProvider.mnemonic = '';

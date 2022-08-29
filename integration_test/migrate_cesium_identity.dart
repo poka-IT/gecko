@@ -51,8 +51,7 @@ void main() async {
     await waitFor('3', exactMatch: true);
     await waitFor('Membre validé !');
 
-    // TODO: fix batch for transfertAll
-    // await waitFor('100.0 $currencyName');
+    await waitFor('99.98 $currencyName');
   }, timeout: testTimeout());
 }
 

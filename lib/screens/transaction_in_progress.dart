@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -33,6 +35,8 @@ class TransactionInProgress extends StatelessWidget {
     bool isLoading = true;
     // Map jsonResult;
     final result = sub.transactionStatus;
+
+    // sub.spawnBlock();
 
     log.d(walletViewProvider.address!);
 

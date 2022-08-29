@@ -688,7 +688,7 @@ class SubstrateSdk with ChangeNotifier {
       );
       const tx1 = 'api.tx.universalDividend.claimUds()';
       final tx2 = amount == -1
-          ? 'api.tx.balances.transferAll(false)'
+          ? 'api.tx.balances.transferAll("$destAddress", false)'
           : 'api.tx.balances.transferKeepAlive("$destAddress", $amountUnit)';
 
       rawParams = '[[$tx1, $tx2]]';
@@ -851,10 +851,11 @@ newKeySig: $newKeySig""");
       const tx1 = 'api.tx.universalDividend.claimUds()';
       final tx2 =
           'api.tx.identity.changeOwnerKey("$destAddress", "$newKeySig")';
-      // const tx3 = 'api.tx.balances.transferAll(false)';
+      final tx3 = 'api.tx.balances.transferAll("$destAddress", false)';
 
-      rawParams =
-          fromBalance['unclaimedUds'] == 0 ? '[[$tx2]]' : '[[$tx1, $tx2]]';
+      rawParams = fromBalance['unclaimedUds'] == 0
+          ? '[[$tx2, $tx3]]'
+          : '[[$tx1, $tx2, $tx3]]';
     } else {
       txInfo = TxInfoData(
         'identity',

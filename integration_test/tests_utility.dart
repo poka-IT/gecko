@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/globals.dart';
@@ -30,12 +31,20 @@ final test4 =
     TestWallet('5DXJ4CusmCg8S1yF6JGVn4fxgk5oFx42WctXqHZ17mykgje5', 'test4');
 final test5 =
     TestWallet('5Dq3giahrBfykJogPetZJ2jjSmhw49Fa7i6qKkseUvRJ2T3R', 'test5');
-// final test6 =
-//     TestWallet('5FeggKqw2AbnGZF9Y9WPM2QTgzENS3Hit94Ewgmzdg5a3LNa', 'test6');
-// final test7 =
-//     TestWallet('5FeggKqw2AbnGZF9Y9WPM2QTgzENS3Hit94Ewgmzdg5a3LNa', 'test7');
-// final test8 =
-//     TestWallet('5FeggKqw2AbnGZF9Y9WPM2QTgzENS3Hit94Ewgmzdg5a3LNa', 'test8');
+final test6 =
+    TestWallet('5GxEp3do81j97kNaH4JyZgDXuPoKWoTuxXXWGyyNXeKeVLHb', 'test6');
+final test7 =
+    TestWallet('5FZ1sSvREbQLCtSSCvMUx7KCAnpJkB7q5mfz2oixiZq2ChET', 'test7');
+final test8 =
+    TestWallet('5CoKV9EEgwb2NmWamTXUAa6ycfNb2k1iNfVGvJAkg7dLq9RH', 'test8');
+final cesiumTest1 = TestWallet(
+    '5GAT6CJW8yVKwUuQc7sM5Kk9GZVTpbZYk9PfjNXtvnNgAJZ1', 'cesiumTest1');
+final cesiumTest2 = TestWallet(
+    '5DTnny1tTkUs1SXHZTx98RUAj76Z88FfFhsQjd48dXnk8gHR', 'cesiumTest2');
+final cesiumTest3 = TestWallet(
+    '5EJct9jTDNKco4YiYfETAseq1gaduBtsJUcNnFicfvh3bTV6', 'cesiumTest3');
+final cesiumTest4 = TestWallet(
+    '5HD1oSv6A7VNxPYos6F86JFZ3bhz5LnEaWC4hkwLMj84v4ww', 'cesiumTest4');
 
 // CUSTOM FUNCTIONS
 
@@ -43,11 +52,17 @@ Future sleep([int time = 1000]) async {
   await Future.delayed(Duration(milliseconds: time));
 }
 
+Future<String> clipPaste() async =>
+    (await Clipboard.getData('text/plain'))?.text ?? '';
+
+clipCopy(String text) async =>
+    await Clipboard.setData(ClipboardData(text: text));
+
 Future humanRead([int time = 1, bool force = false]) async {
   if (isHumanReading || force) io.sleep(Duration(seconds: time));
 }
 
-Future goKey(Key buttonKey,
+Future tapKey(Key buttonKey,
     {Finder? customFinder, int duration = 100, bool selectLast = false}) async {
   if (duration != 0) {
     await tester.pumpAndSettle(Duration(milliseconds: duration));
@@ -55,6 +70,42 @@ Future goKey(Key buttonKey,
   final Finder finder = customFinder ?? find.byKey(buttonKey);
   log.d('INTEGRATION TEST: Tap on ${finder.description}}');
   await tester.tap(selectLast ? finder.last : finder);
+  humanRead();
+}
+
+Finder findByKey(Key key) {
+  return find.byKey(key);
+}
+
+bool isButtonEnabled(Key key) {
+  return tester.widget<ElevatedButton>(findByKey(key)).enabled;
+}
+
+Future scrollUntil(Key element) async {
+  final findList = find.byType(Scrollable);
+  final findElement = findByKey(element);
+  await tester.scrollUntilVisible(
+    findElement,
+    500.0,
+    scrollable: findList,
+  );
+}
+
+Future<void> waitForButtonEnabled(Key key,
+    {Duration timeout = const Duration(seconds: 5),
+    bool reverse = false}) async {
+  final end = DateTime.now().add(timeout);
+
+  log.d('INTEGRATION TEST: Wait for $key to be enabled');
+
+  do {
+    if (DateTime.now().isAfter(end)) {
+      throw Exception('Timed out waiting for button enabled: $key');
+    }
+
+    await tester.pumpAndSettle();
+    await Future.delayed(const Duration(milliseconds: 100));
+  } while (reverse ? isButtonEnabled(key) : !isButtonEnabled(key));
   humanRead();
 }
 
@@ -129,6 +180,7 @@ Future spawnBlock({int number = 1, int duration = 200, int? until}) async {
   await sleep(200);
 }
 
+// Pay in background
 Future bkPay(
     {required String fromAddress,
     required String destAddress,
@@ -142,6 +194,7 @@ Future bkPay(
   await sleep(500);
 }
 
+// Certify in background
 Future bkCertify(
     {required String fromAddress, required String destAddress}) async {
   sub.certify(fromAddress, destAddress, 'AAAAA');
@@ -149,6 +202,7 @@ Future bkCertify(
   await sleep(500);
 }
 
+// Confirm my identity in background
 Future bkConfirmIdentity(
     {required String fromAddress, required String name}) async {
   sub.confirmIdentity(fromAddress, name, 'AAAAA');
@@ -156,16 +210,7 @@ Future bkConfirmIdentity(
   await sleep(500);
 }
 
-class TestWallet {
-  String address;
-  String name;
-
-  TestWallet(this.address, this.name);
-
-  endAddress() => address.substring(address.length - 6);
-  shortAddress() => getShortPubkey(address);
-}
-
+// Change node in background
 Future bkSetNode([String? endpoint]) async {
   if (endpoint == null) {
     final ipAddress = dotenv.env['ip_address'] ?? '127.0.0.1';
@@ -175,6 +220,7 @@ Future bkSetNode([String? endpoint]) async {
   sub.connectNode(homeContext);
 }
 
+// Restore chest in background
 Future bkRestoreChest([String mnemonic = testMnemonic]) async {
   final myWalletProvider =
       Provider.of<MyWalletsProvider>(homeContext, listen: false);
@@ -215,6 +261,7 @@ Future<WalletData> _addImportAccount(
   return myWallet;
 }
 
+// Delete all wallets in background
 Future bkDeleteAllWallets() async {
   final myWalletProvider =
       Provider.of<MyWalletsProvider>(homeContext, listen: false);
@@ -224,11 +271,9 @@ Future bkDeleteAllWallets() async {
   }
 }
 
-Future fastStart() async {
-  app.main();
-  await waitFor('Test starting...', reverse: true);
-  await tester.pumpAndSettle(const Duration(milliseconds: 100));
-  await sleep(2000);
+Future bkFastStart() async {
+  // Start app and wait finish starting
+  await startWait();
 
   // Connect to local endpoint
   await bkSetNode();
@@ -240,4 +285,21 @@ Future fastStart() async {
   // Restore the test chest
   await bkRestoreChest();
   await waitFor("y'a pas de lézard");
+}
+
+Future startWait() async {
+  app.main();
+  await waitFor('Test starting...', reverse: true);
+  await tester.pumpAndSettle(const Duration(milliseconds: 300));
+  await sleep(2000);
+}
+
+class TestWallet {
+  String address;
+  String name;
+
+  TestWallet(this.address, this.name);
+
+  endAddress() => address.substring(address.length - 6);
+  shortAddress() => getShortPubkey(address);
 }

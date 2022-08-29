@@ -22,7 +22,6 @@ class ImportG1v1 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    // HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
     WalletOptionsProvider walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
     MyWalletsProvider myWalletProvider =
@@ -110,6 +109,7 @@ class ImportG1v1 extends StatelessWidget {
                   return Column(children: <Widget>[
                     const SizedBox(height: 20),
                     TextFormField(
+                      key: keyCesiumId,
                       autofocus: true,
                       onChanged: (text) {
                         if (debounce?.isActive ?? false) {
@@ -117,21 +117,23 @@ class ImportG1v1 extends StatelessWidget {
                         }
                         debounce = Timer(
                             const Duration(milliseconds: debouneTime), () {
+                          sub.reload();
                           sub.csToV2Address(
                               sub.csSalt.text, sub.csPassword.text);
                         });
                       },
                       keyboardType: TextInputType.text,
                       controller: sub.csSalt,
-                      obscureText: sub
+                      obscureText: !sub
                           .isCesiumIDVisible, //This will obscure text dynamically
                       decoration: InputDecoration(
                         hintText: 'enterCesiumId'.tr(),
                         suffixIcon: IconButton(
+                          key: keyCesiumIdVisible,
                           icon: Icon(
                             sub.isCesiumIDVisible
-                                ? Icons.visibility
-                                : Icons.visibility_off,
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                             color: Colors.black,
                           ),
                           onPressed: () {
@@ -142,6 +144,7 @@ class ImportG1v1 extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     TextFormField(
+                      key: keyCesiumPassword,
                       autofocus: true,
                       onChanged: (text) {
                         if (debounce?.isActive ?? false) {
@@ -149,21 +152,23 @@ class ImportG1v1 extends StatelessWidget {
                         }
                         debounce = Timer(
                             const Duration(milliseconds: debouneTime), () {
+                          sub.g1V1NewAddress = '';
+                          sub.reload();
                           sub.csToV2Address(
                               sub.csSalt.text, sub.csPassword.text);
                         });
                       },
                       keyboardType: TextInputType.text,
                       controller: sub.csPassword,
-                      obscureText: sub
+                      obscureText: !sub
                           .isCesiumIDVisible, //This will obscure text dynamically
                       decoration: InputDecoration(
                         hintText: 'enterCesiumPassword'.tr(),
                         suffixIcon: IconButton(
                           icon: Icon(
                             sub.isCesiumIDVisible
-                                ? Icons.visibility
-                                : Icons.visibility_off,
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                             color: Colors.black,
                           ),
                           onPressed: () {
@@ -188,14 +193,6 @@ class ImportG1v1 extends StatelessWidget {
                         ),
                       ),
                     ),
-                    // Text(
-                    //   getShortPubkey(sub.g1V1NewAddress),
-                    //   style: const TextStyle(
-                    //       fontSize: 18,
-                    //       color: Colors.black,
-                    //       fontWeight: FontWeight.bold,
-                    //       fontFamily: 'Monospace'),
-                    // ),
                     const SizedBox(height: 20),
                     Text(
                       '${balance['transferableBalance']} $currencyName',
@@ -214,12 +211,14 @@ class ImportG1v1 extends StatelessWidget {
                     Text('selectDestWallet'.tr()),
                     const SizedBox(height: 5),
                     DropdownButtonHideUnderline(
+                      key: keySelectWallet,
                       child: DropdownButton(
                         // alignment: AlignmentDirectional.topStart,
                         value: selectedWallet,
                         icon: const Icon(Icons.keyboard_arrow_down),
                         items: myWalletProvider.listWallets.map((wallet) {
                           return DropdownMenuItem(
+                            key: keySelectThisWallet(wallet.address!),
                             value: wallet,
                             child: Text(
                               wallet.name!,
@@ -238,6 +237,7 @@ class ImportG1v1 extends StatelessWidget {
                       width: 380 * ratio,
                       height: 60 * ratio,
                       child: ElevatedButton(
+                        key: keyConfirm,
                         style: ElevatedButton.styleFrom(
                           elevation: 4,
                           primary: orangeC, // background
@@ -245,7 +245,6 @@ class ImportG1v1 extends StatelessWidget {
                         ),
                         onPressed: canValidate
                             ? () async {
-                                log.d('GOOO');
                                 WalletData? defaultWallet =
                                     myWalletProvider.getDefaultWallet();
 

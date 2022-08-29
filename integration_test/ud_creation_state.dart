@@ -10,16 +10,16 @@ void main() async {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
 
-  testWidgets('Gecko complete', (testerLoc) async {
+  testWidgets('UDs creation state', (testerLoc) async {
     tester = testerLoc;
     // Connect local node and import test chest in background
-    await fastStart();
+    await bkFastStart();
 
     // Open chest
     await firstOpenChest();
 
     // Go to test1 options and check if balance growup with UDs creations
-    await goKey(keyOpenWallet(test1.address));
+    await tapKey(keyOpenWallet(test1.address));
     await waitFor('100.0 $currencyName');
     await spawnBlock(until: 10);
     await waitFor('200.0 $currencyName');

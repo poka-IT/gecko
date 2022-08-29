@@ -38,7 +38,8 @@ class SubstrateSdk with ChangeNotifier {
   TextEditingController csSalt = TextEditingController();
   TextEditingController csPassword = TextEditingController();
   String g1V1NewAddress = '';
-  bool isCesiumIDVisible = true;
+  bool isCesiumIDVisible = false;
+  bool isCesiumAddresLoading = false;
 
   /////////////////////////////////////
   ////////// 1: API METHODS ///////////

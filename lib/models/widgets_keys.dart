@@ -83,6 +83,12 @@ const keyGoWalletsHome = Key('keyGoWalletsHome');
 const keySearchField = Key('keySearchField');
 const keyConfirmSearch = Key('keyConfirmSearch');
 
+// Import Cesium wallet
+const keyCesiumId = Key('keyCesiumId');
+const keyCesiumPassword = Key('keyCesiumPassword');
+const keySelectWallet = Key('keySelectWallet');
+const keyCesiumIdVisible = Key('keyCesiumIdVisible');
+
 // Items keys
 Key keyTransaction(int keyId) => Key('keyTransaction$keyId');
 Key keyMnemonicWord(String word) => Key('keyMnemonicWord$word');

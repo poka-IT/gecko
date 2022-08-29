@@ -354,6 +354,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       cellController10,
       cellController11
     ];
+    if (sentence?.text == null) return;
     for (var word in sentence!.text!.split(' ')) {
       bool isValid = isBipWord(word, false);
 

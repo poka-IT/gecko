@@ -29,6 +29,11 @@
       "balance": 10000,
       "certs": ["test1", "test2", "test3"],
       "pubkey": "5DXJ4CusmCg8S1yF6JGVn4fxgk5oFx42WctXqHZ17mykgje5"
+    },
+    "testCesium1": {
+      "balance": 10000,
+      "certs": ["test1", "test2", "test3"],
+      "pubkey": "5GAT6CJW8yVKwUuQc7sM5Kk9GZVTpbZYk9PfjNXtvnNgAJZ1"
     }
   },
   "parameters": {

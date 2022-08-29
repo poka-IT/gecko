@@ -10,21 +10,21 @@ void main() async {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
 
-  testWidgets('Gecko complete', (testerLoc) async {
+  testWidgets('Certifications state', (testerLoc) async {
     tester = testerLoc;
     // Connect local node and import test chest in background
-    await fastStart();
+    await bkFastStart();
 
     // Open chest
     await firstOpenChest();
     await goBack();
 
     // Go wallet 5 view
-    await goKey(keyOpenSearch);
+    await tapKey(keyOpenSearch);
     await enterText(keySearchField, test5.address);
-    await goKey(keyConfirmSearch);
+    await tapKey(keyConfirmSearch);
     await waitFor(test5.shortAddress());
-    await goKey(keySearchResult(test5.address));
+    await tapKey(keySearchResult(test5.address));
     await waitFor('Certifier');
     await waitFor('Vous devez ', reverse: true);
     await waitFor('Vous pourrez renouveler ', reverse: true);

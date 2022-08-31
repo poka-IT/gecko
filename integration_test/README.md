@@ -1,4 +1,4 @@
-# Contexte des tests
+# Context des tests
 
 Chaque test est précédé par le lancement d'un noeud Duniter v2s en docker [dont voici le compose](https://git.duniter.org/clients/gecko/-/blob/end2EndTests/integration_test/duniter/docker-compose.yml).
 

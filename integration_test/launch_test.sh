@@ -11,9 +11,9 @@ echo "ip_address=$ip_address" > .env
 
 ## Start local Duniter node
 cd integration_test/duniter
-docker-compose down
+docker compose down
 rm -rf data/chains
-docker-compose up -d
+docker compose up -d
 cd ../..
 
 # Start integration test
@@ -24,6 +24,6 @@ echo "ip_address=127.0.0.1" > .env
 
 # Stop Duniter
 cd integration_test/duniter
-docker-compose down
+docker compose down
 
 

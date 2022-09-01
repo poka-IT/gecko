@@ -16,6 +16,7 @@ const keyDrawerMenu = Key('keyDrawerMenu');
 const keyOpenWalletsHomme = Key('keyOpenWalletsHomme');
 const keyOpenSearch = Key('keyOpenSearch');
 const keyRestoreChest = Key('keyRestoreChest');
+const keyOnboardingNewChest = Key('keyOnboardingNewChest');
 
 // Wallets home
 const keyImportG1v1 = Key('keyImportG1v1');

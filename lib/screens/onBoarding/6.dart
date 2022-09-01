@@ -225,6 +225,7 @@ Widget nextButton(BuildContext context, String text, nextScreen, bool isFast) {
     width: 380 * ratio,
     height: 60 * ratio,
     child: ElevatedButton(
+      key: keyGoNext,
       style: ElevatedButton.styleFrom(
         elevation: 4,
         primary: orangeC, // background

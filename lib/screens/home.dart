@@ -538,7 +538,7 @@ Widget welcomeHome(context) {
                 SizedBox(
                   width: 410,
                   height: 70,
-                  child: ElevatedButton(
+                  child: ElevatedButton(key: keyOnboardingNewChest,
                     style: ElevatedButton.styleFrom(
                       elevation: 4,
                       primary: orangeC, // background

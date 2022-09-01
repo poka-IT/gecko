@@ -1,5 +1,7 @@
 // ignore_for_file: file_names
 
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
@@ -62,13 +64,12 @@ Widget finishButton(BuildContext context) {
           onPrimary: Colors.white, // foreground
         ),
         onPressed: () {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) {
-              return const WalletsHome();
-            }),
-            ModalRoute.withName('/'),
-          );
+          // sleep(const Duration(milliseconds: 50));
+          Navigator.popUntil(homeContext, ModalRoute.withName('/'));
+          // sleep(const Duration(milliseconds: 500));
+          Navigator.pushNamed(homeContext, '/mywallets');
+          // Navigator.pushNamedAndRemoveUntil(
+          //     homeContext, '/mywallets', ModalRoute.withName('/'));
         },
         child: Text("accessMyChest".tr(),
             style:

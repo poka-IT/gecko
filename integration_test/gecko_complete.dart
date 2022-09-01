@@ -134,6 +134,6 @@ Future certifyTest5() async {
 
   // Check UD reval
   await spawnBlock(until: 50);
-  await waitFor('509.35');
+  await waitFor('509.36');
   humanRead(5);
 }

@@ -265,13 +265,19 @@ Future<WalletData> _addImportAccount(
 Future bkDeleteAllWallets() async {
   final myWalletProvider =
       Provider.of<MyWalletsProvider>(homeContext, listen: false);
-  if (myWalletProvider.listWallets.isNotEmpty) {
-    await myWalletProvider.deleteAllWallet(homeContext);
+  final isWalletsPresents =
+      await isPresent('Scanner un', timeout: const Duration(milliseconds: 300));
+  if (isWalletsPresents) {
+    await walletBox.clear();
+    await chestBox.clear();
+    await configBox.delete('defaultWallet');
+    await sub.deleteAllAccounts();
+    myWalletProvider.pinCode = '';
     myWalletProvider.rebuildWidget();
   }
 }
 
-Future bkFastStart() async {
+Future bkFastStart([bool restoreChest = true]) async {
   // Start app and wait finish starting
   await startWait();
 
@@ -282,16 +288,23 @@ Future bkFastStart() async {
   // Delete all existing chests is exists
   await bkDeleteAllWallets();
 
-  // Restore the test chest
-  await bkRestoreChest();
-  await waitFor("y'a pas de lézard");
+  if (restoreChest) {
+    // Restore the test chest
+    await bkRestoreChest();
+    await waitFor("y'a pas de lézard");
+  }
 }
 
 Future startWait() async {
   app.main();
   await waitFor('Test starting...', reverse: true);
   await tester.pumpAndSettle(const Duration(milliseconds: 300));
-  await sleep(2000);
+  await sleep(3000);
+}
+
+String getWidgetText(Key key) {
+  final word4Finder = find.byKey(key);
+  return (word4Finder.evaluate().single.widget as Text).data!;
 }
 
 class TestWallet {

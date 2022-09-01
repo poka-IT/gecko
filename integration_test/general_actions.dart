@@ -3,6 +3,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/generate_wallets.dart';
+import 'package:provider/provider.dart';
 import 'tests_utility.dart';
 
 // GENERAL ACTIONS
@@ -81,6 +83,68 @@ Future restoreChest() async {
   // Pop screen 2 time to go back home
   await goBack();
   await goBack();
+}
+
+Future onboardingNewChest() async {
+  final generateWalletProvider =
+      Provider.of<GenerateWalletsProvider>(homeContext, listen: false);
+  // Open screen create new wallet
+  await tapKey(keyOnboardingNewChest);
+
+  // Tap on next button 4 times to skip 3 screen
+  await tapKey(keyGoNext);
+  await tapKey(keyGoNext);
+  await tapKey(keyGoNext);
+  await tapKey(keyGoNext);
+  await waitFor('7', exactMatch: true);
+
+  final word41 = getWidgetText(keyMnemonicWord('4'));
+
+  // Change 2 times mnemonic
+  await tapKey(keyGenerateMnemonic);
+  await tester.pumpAndSettle();
+  final word42 = getWidgetText(keyMnemonicWord('4'));
+  expect(word41, isNot(word42));
+  await tapKey(keyGenerateMnemonic, duration: 500);
+  await tester.pumpAndSettle();
+  final word43 = getWidgetText(keyMnemonicWord('4'));
+  expect(word42, isNot(word43));
+
+  // Go next screen
+  await tapKey(keyGoNext);
+  await tester.pumpAndSettle();
+
+  // Enter asked word
+  final askedWordNumber = int.parse(getWidgetText(keyAskedWord));
+  List mnemonic = generateWalletProvider.generatedMnemonic!.split(' ');
+
+  final askedWord = mnemonic[askedWordNumber - 1];
+  await enterText(keyInputWord, askedWord);
+  await waitFor('Continuer', exactMatch: true);
+  await tapKey(keyGoNext);
+  await tapKey(keyGoNext);
+  await tapKey(keyGoNext);
+  await waitFor('AAAAA', exactMatch: true);
+  await tapKey(keyGoNext);
+
+  // Check if cached password checkbox is checked
+  final isCached = await isIconPresent(Icons.check_box);
+
+  // If not, tap on to cache password
+  if (!isCached) await tapKey(keyCachePassword, duration: 0);
+
+  // Enter password
+  await enterText(keyPinForm, 'AAAAA', 0);
+
+  // Check if string "Accéder à mon coffre" is present in screen
+  await waitFor('Accéder à mon coffre');
+
+  // Go to wallets home
+  await tapKey(keyGoWalletsHome, duration: 0);
+
+  // Check if string "ĞD" is present in screen
+  await waitFor('Mon portefeuille co');
+  await waitFor('0.0 $currencyName');
 }
 
 Future addDerivation() async {

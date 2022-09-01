@@ -1,6 +1,7 @@
 // ignore_for_file: file_names
 
 import 'dart:async';
+import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -228,6 +229,7 @@ class OnboardingStepTen extends StatelessWidget {
 
                 generateWalletProvider.generatedMnemonic = '';
                 myWalletProvider.resetPinCode();
+                // sleep(const Duration(milliseconds: 500));
                 Navigator.push(
                   context,
                   FaderTransition(

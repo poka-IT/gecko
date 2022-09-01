@@ -102,7 +102,8 @@ class _ChooseChestState extends State<OnboardingStepFive> {
             SizedBox(height: 22 * ratio),
             nextButton(
                 context, "iNotedMyMnemonic".tr(), false, widget.skipIntro),
-            SizedBox(height: 35 * ratio),
+            const Spacer(),
+            // SizedBox(height: 35 * ratio),
           ]),
           CommonElements().offlineInfo(context),
         ]),
@@ -231,6 +232,7 @@ Widget nextButton(
     width: 380 * ratio,
     height: 60 * ratio,
     child: ElevatedButton(
+      key: keyGoNext,
       style: ElevatedButton.styleFrom(
         elevation: 4,
         primary: orangeC, // background

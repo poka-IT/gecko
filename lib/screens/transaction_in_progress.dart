@@ -267,7 +267,8 @@ class TransactionInProgress extends StatelessWidget {
                         child: ElevatedButton(
                           key: keyCloseTransactionScreen,
                           style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white, elevation: 4, backgroundColor: orangeC, // foreground
+                            foregroundColor: Colors.white, elevation: 4,
+                            backgroundColor: orangeC, // foreground
                           ),
                           onPressed: () {
                             Navigator.pop(context);

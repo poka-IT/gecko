@@ -107,7 +107,8 @@ class _CustomDerivationState extends State<CustomDerivation> {
               height: 70,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, elevation: 4, backgroundColor: orangeC, // foreground
+                  foregroundColor: Colors.white, elevation: 4,
+                  backgroundColor: orangeC, // foreground
                 ),
                 onPressed: () async {
                   WalletData? defaultWallet =

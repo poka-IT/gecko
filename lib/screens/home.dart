@@ -538,9 +538,11 @@ Widget welcomeHome(context) {
                 SizedBox(
                   width: 410,
                   height: 70,
-                  child: ElevatedButton(key: keyOnboardingNewChest,
+                  child: ElevatedButton(
+                    key: keyOnboardingNewChest,
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white, elevation: 4, backgroundColor: orangeC, // foreground
+                      foregroundColor: Colors.white, elevation: 4,
+                      backgroundColor: orangeC, // foreground
                     ),
                     onPressed: () {
                       Navigator.push(

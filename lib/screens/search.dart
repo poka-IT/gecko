@@ -95,7 +95,8 @@ class SearchScreen extends StatelessWidget {
                 child: ElevatedButton(
                   key: keyConfirmSearch,
                   style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white, elevation: 4, backgroundColor: orangeC, // foreground
+                    foregroundColor: Colors.white, elevation: 4,
+                    backgroundColor: orangeC, // foreground
                   ),
                   onPressed: searchProvider.searchController.text.length >= 2
                       ? () {

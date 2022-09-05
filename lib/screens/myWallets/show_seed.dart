@@ -73,9 +73,11 @@ class ShowSeed extends StatelessWidget {
                             height: 40,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.black, shape: RoundedRectangleBorder(
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                ), backgroundColor: orangeC,
+                                ),
+                                backgroundColor: orangeC,
                                 elevation: 1, // foreground
                               ),
                               onPressed: () {
@@ -121,7 +123,8 @@ class ShowSeed extends StatelessWidget {
               height: 60 * ratio,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, elevation: 4, backgroundColor: orangeC, // foreground
+                  foregroundColor: Colors.white, elevation: 4,
+                  backgroundColor: orangeC, // foreground
                 ),
                 onPressed: () {
                   Navigator.pop(context);

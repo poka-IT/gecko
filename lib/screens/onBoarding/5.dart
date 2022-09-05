@@ -83,7 +83,8 @@ class _ChooseChestState extends State<OnboardingStepFive> {
                   child: ElevatedButton(
                       key: keyGenerateMnemonic,
                       style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.black, elevation: 4, backgroundColor: const Color(0xffFFD58D), // foreground
+                        foregroundColor: Colors.black, elevation: 4,
+                        backgroundColor: const Color(0xffFFD58D), // foreground
                       ),
                       onPressed: () {
                         // _generateWalletProvider.reloadBuild();
@@ -231,7 +232,8 @@ Widget nextButton(
     child: ElevatedButton(
       key: keyGoNext,
       style: ElevatedButton.styleFrom(
-        foregroundColor: Colors.white, elevation: 4, backgroundColor: orangeC, // foreground
+        foregroundColor: Colors.white, elevation: 4,
+        backgroundColor: orangeC, // foreground
       ),
       onPressed: () {
         generateWalletProvider.nbrWord = generateWalletProvider.getRandomInt();

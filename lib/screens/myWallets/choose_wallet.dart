@@ -48,7 +48,8 @@ class ChooseWalletScreen extends StatelessWidget {
                   child: ElevatedButton(
                     key: keyConfirm,
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white, elevation: 4, backgroundColor: orangeC, // foreground
+                      foregroundColor: Colors.white, elevation: 4,
+                      backgroundColor: orangeC, // foreground
                     ),
                     onPressed: () async {
                       await sub.setCurrentWallet(selectedWallet!);

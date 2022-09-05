@@ -299,7 +299,8 @@ class WalletOptions extends StatelessWidget {
                   child: ElevatedButton(
                     key: keyConfirmIdentity,
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white, elevation: 4, backgroundColor: orangeC, // foreground
+                      foregroundColor: Colors.white, elevation: 4,
+                      backgroundColor: orangeC, // foreground
                     ),
                     onPressed: () {
                       walletProvider.confirmIdentityPopup(context);
@@ -363,9 +364,11 @@ class WalletOptions extends StatelessWidget {
             height: 40,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.black, shape: RoundedRectangleBorder(
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
-                ), backgroundColor: orangeC,
+                ),
+                backgroundColor: orangeC,
                 elevation: 1, // foreground
               ),
               onPressed: () {

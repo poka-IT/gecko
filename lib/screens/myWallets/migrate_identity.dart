@@ -188,7 +188,8 @@ class MigrateIdentityScreen extends StatelessWidget {
                     height: 60 * ratio,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white, elevation: 4, backgroundColor: orangeC, // foreground
+                        foregroundColor: Colors.white, elevation: 4,
+                        backgroundColor: orangeC, // foreground
                       ),
                       onPressed: canValidate
                           ? () async {

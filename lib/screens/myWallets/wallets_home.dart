@@ -36,7 +36,6 @@ class WalletsHome extends StatelessWidget {
     myWalletProvider.listWallets =
         myWalletProvider.readAllWallets(currentChestNumber);
 
-
     return WillPopScope(
       onWillPop: () {
         // myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
@@ -88,7 +87,8 @@ class WalletsHome extends StatelessWidget {
               height: 60,
             ),
             style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.black, elevation: 2, backgroundColor: floattingYellow, // foreground
+              foregroundColor: Colors.black, elevation: 2,
+              backgroundColor: floattingYellow, // foreground
             ),
             onPressed: () => Navigator.push(
               context,

@@ -81,7 +81,10 @@ class OnboardingStepNine extends StatelessWidget {
                         child: ElevatedButton(
                             key: keyChangePin,
                             style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.black, elevation: 4, backgroundColor: const Color(0xffFFD58D), // foreground
+                              foregroundColor: Colors.black,
+                              elevation: 4,
+                              backgroundColor:
+                                  const Color(0xffFFD58D), // foreground
                             ),
                             onPressed: () {
                               generateWalletProvider.changePinCode(

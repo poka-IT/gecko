@@ -9,7 +9,6 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/globals.dart';
 import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:provider/provider.dart';
-// import 'package:dropdown_button2/dropdown_button2.dart';
 
 class SettingsScreen extends StatelessWidget {
   final MyWalletsProvider _myWallets = MyWalletsProvider();

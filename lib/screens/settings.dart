@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/settings_provider.dart';
@@ -8,9 +9,7 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/globals.dart';
 import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:provider/provider.dart';
-// import 'package:dropdown_button2/dropdown_button2.dart';
 
-// ignore: must_be_immutable
 class SettingsScreen extends StatelessWidget {
   final MyWalletsProvider _myWallets = MyWalletsProvider();
 
@@ -45,7 +44,7 @@ class SettingsScreen extends StatelessWidget {
           width: buttonWidth,
           child: Center(
             child: InkWell(
-              key: const Key('deleteChest'),
+              key: keyDeleteAllWallets,
               onTap: () async {
                 log.i('Oublier tous mes coffres');
                 await _myWallets.deleteAllWallet(context);
@@ -115,11 +114,14 @@ class SettingsScreen extends StatelessWidget {
               Icon(sub.nodeConnected && !sub.isLoadingEndpoint
                   ? Icons.check
                   : Icons.close),
+              if (sub.nodeConnected && !sub.isLoadingEndpoint)
+                const Icon(Icons.add_card_sharp, size: 0.01),
               const Spacer(),
               SizedBox(
                 width: 265,
                 child: Consumer<SettingsProvider>(builder: (context, set, _) {
                   return DropdownButtonHideUnderline(
+                    key: keySelectDuniterNodeDropDown,
                     child: DropdownButton(
                       // alignment: AlignmentDirectional.topStart,
                       value: selectedDuniterEndpoint,
@@ -127,6 +129,7 @@ class SettingsScreen extends StatelessWidget {
                       items: duniterBootstrapNodes
                           .map((NetworkParams endpointParams) {
                         return DropdownMenuItem(
+                          key: keySelectDuniterNode(endpointParams.endpoint!),
                           value: endpointParams.endpoint,
                           child: Text(endpointParams.endpoint!),
                         );
@@ -145,6 +148,7 @@ class SettingsScreen extends StatelessWidget {
                   ? CircularProgressIndicator(color: orangeC)
                   : Consumer<SettingsProvider>(builder: (context, set, _) {
                       return IconButton(
+                          key: keyConnectToEndpoint,
                           icon: Icon(
                             Icons.send,
                             color: selectedDuniterEndpoint !=
@@ -185,6 +189,7 @@ class SettingsScreen extends StatelessWidget {
             width: 200,
             height: 50,
             child: TextField(
+              key: keyCustomDuniterEndpoint,
               controller: endpointController,
               autocorrect: false,
             ),

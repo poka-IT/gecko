@@ -6,6 +6,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -58,7 +59,7 @@ class ChestOptions extends StatelessWidget {
             child: Column(children: <Widget>[
               SizedBox(height: 30 * ratio),
               InkWell(
-                key: const Key('showSeed'),
+                key: keyShowSeed,
                 onTap: () async {
                   MyWalletsProvider myWalletProvider =
                       Provider.of<MyWalletsProvider>(context, listen: false);
@@ -108,7 +109,7 @@ class ChestOptions extends StatelessWidget {
               SizedBox(height: 10 * ratio),
               Consumer<SubstrateSdk>(builder: (context, sub, _) {
                 return InkWell(
-                  key: const Key('changePin'),
+                  key: keyChangePin,
                   onTap: sub.nodeConnected
                       ? () async {
                           // await _chestProvider.changePin(context, cesiumWallet);
@@ -152,7 +153,7 @@ class ChestOptions extends StatelessWidget {
               SizedBox(height: 10 * ratio),
               Consumer<SubstrateSdk>(builder: (context, sub, _) {
                 return InkWell(
-                  key: const Key('createRootDerivation'),
+                  key: keycreateRootDerivation,
                   onTap: sub.nodeConnected
                       ? () async {
                           await Navigator.push(
@@ -188,7 +189,7 @@ class ChestOptions extends StatelessWidget {
               }),
               SizedBox(height: 10 * ratio),
               InkWell(
-                key: const Key('deleteChest'),
+                key: keyDeleteChest,
                 onTap: () async {
                   await chestProvider.deleteChest(context, currentChest);
                 },

@@ -5,6 +5,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/stateful_wrapper.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
@@ -64,7 +65,7 @@ class HomeScreen extends StatelessWidget {
                 ]),
               ),
               ListTile(
-                key: const Key('parameters'),
+                key: keyParameters,
                 title: Text('parameters'.tr()),
                 onTap: () {
                   Navigator.pop(context);
@@ -77,7 +78,7 @@ class HomeScreen extends StatelessWidget {
                 },
               ),
               ListTile(
-                key: const Key('contacts'),
+                key: keyContacts,
                 title: Text('contactsManagement'.tr()),
                 onTap: () {
                   Navigator.pop(context);
@@ -89,26 +90,6 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
               ),
-
-              // ListTile(
-              //   key: const Key('substrateSandbox'),
-              //   title: const Text('Substrate debug'),
-              //   onTap: () {
-              //     Navigator.pop(context);
-              //     Navigator.push(
-              //       context,
-              //       MaterialPageRoute(builder: (context) {
-              //         return const SubstrateSandBox();
-              //       }),
-              //     );
-              //   },
-              // ),
-
-              // ListTile(
-              //   title: const Text('A propos'),
-              //   onTap: () {
-              //   },
-              // ),
             ])),
             Align(
                 alignment: FractionalOffset.bottomCenter,
@@ -141,17 +122,19 @@ class HomeScreen extends StatelessWidget {
                     myWalletProvider.rebuildWidget();
                   }
 
-                  var connectivityResult =
-                      await (Connectivity().checkConnectivity());
+                  // var connectivityResult =
+                  //     await (Connectivity().checkConnectivity());
+
+                  // if (connectivityResult != ConnectivityResult.mobile &&
+                  //     connectivityResult != ConnectivityResult.wifi) {
+                  //   homeProvider.changeMessage(
+                  //       "notConnectedToInternet".tr(), 0);
+                  //   sub.nodeConnected = false;
+                  // }
+
+                  // TODO: fix random bad network status on startup
                   HomeProvider homeProvider =
                       Provider.of<HomeProvider>(ctx, listen: false);
-                  if (connectivityResult != ConnectivityResult.mobile &&
-                      connectivityResult != ConnectivityResult.wifi) {
-                    homeProvider.changeMessage(
-                        "notConnectedToInternet".tr(), 0);
-                    sub.nodeConnected = false;
-                  }
-
                   Connectivity()
                       .onConnectivityChanged
                       .listen((ConnectivityResult result) async {
@@ -166,6 +149,7 @@ class HomeScreen extends StatelessWidget {
                       await sub.connectNode(ctx);
                     }
                   });
+                  // await sub.connectNode(ctx);
                 }
                 // _duniterIndexer.checkIndexerEndpointBackground();
               });
@@ -220,7 +204,7 @@ Widget geckHome(context) {
           left: 15,
           child: Builder(
             builder: (context) => IconButton(
-              key: const Key('drawerMenu'),
+              key: keyDrawerMenu,
               icon: const Icon(
                 Icons.menu,
                 color: Colors.white,
@@ -301,6 +285,7 @@ Widget geckHome(context) {
                     child: Material(
                       color: orangeC, // button color
                       child: InkWell(
+                          key: keyOpenSearch,
                           child: Padding(
                             padding: const EdgeInsets.all(18),
                             child: Image(
@@ -343,7 +328,7 @@ Widget geckHome(context) {
                     ],
                   ),
                   child: ClipOval(
-                    key: const Key('manageWallets'),
+                    key: keyOpenWalletsHomme,
                     child: Material(
                       color: orangeC, // button color
                       child: InkWell(
@@ -466,7 +451,7 @@ Widget welcomeHome(context) {
           left: 15,
           child: Builder(
             builder: (context) => IconButton(
-              key: const Key('drawerMenu'),
+              key: keyDrawerMenu,
               icon: const Icon(
                 Icons.menu,
                 color: Colors.white,
@@ -554,10 +539,10 @@ Widget welcomeHome(context) {
                   width: 410,
                   height: 70,
                   child: ElevatedButton(
+                    key: keyOnboardingNewChest,
                     style: ElevatedButton.styleFrom(
-                      elevation: 4,
-                      primary: orangeC, // background
-                      onPrimary: Colors.white, // foreground
+                      foregroundColor: Colors.white, elevation: 4,
+                      backgroundColor: orangeC, // foreground
                     ),
                     onPressed: () {
                       Navigator.push(
@@ -581,6 +566,7 @@ Widget welcomeHome(context) {
                   width: 410,
                   height: 70,
                   child: OutlinedButton(
+                    key: keyRestoreChest,
                     style: OutlinedButton.styleFrom(
                         side: BorderSide(width: 4, color: orangeC)),
                     onPressed: () {

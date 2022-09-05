@@ -1,7 +1,11 @@
+// ignore_for_file: must_be_immutable
+
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/models/chest_data.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -12,7 +16,6 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/globals.dart';
 
-// ignore: must_be_immutable
 class UnlockingWallet extends StatelessWidget {
   UnlockingWallet({Key? keyUnlockWallet, required this.wallet})
       : super(key: keyUnlockWallet);
@@ -23,7 +26,6 @@ class UnlockingWallet extends StatelessWidget {
 
   // ignore: close_sinks
   StreamController<ErrorAnimationType>? errorController;
-  final formKey = GlobalKey<FormState>();
   Color? pinColor = const Color(0xffF9F9F1);
   var walletPin = '';
 
@@ -52,7 +54,7 @@ class UnlockingWallet extends StatelessWidget {
                     left: 15,
                     child: Builder(
                       builder: (context) => IconButton(
-                        key: const Key('popButton'),
+                        key: keyPopButton,
                         icon: const Icon(
                           Icons.arrow_back,
                           color: Colors.black,
@@ -103,6 +105,7 @@ class UnlockingWallet extends StatelessWidget {
                     SizedBox(height: 3 * ratio),
                     if (canUnlock)
                       InkWell(
+                        key: keyCachePassword,
                         onTap: () {
                           walletOptions.changePinCacheChoice();
                         },
@@ -127,7 +130,7 @@ class UnlockingWallet extends StatelessWidget {
                     const SizedBox(height: 10),
                     // if (canUnlock)
                     InkWell(
-                        key: const Key('chooseChest'),
+                        key: keyChangeChest,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -182,10 +185,11 @@ class UnlockingWallet extends StatelessWidget {
     }
 
     return Form(
-      key: formKey,
+      // key: keyPinForm,
       child: Padding(
           padding: EdgeInsets.symmetric(vertical: 5 * ratio, horizontal: 30),
           child: PinCodeTextField(
+            key: keyPinForm,
             focusNode: pinFocus,
             autoFocus: true,
             appContext: context,
@@ -213,6 +217,7 @@ class UnlockingWallet extends StatelessWidget {
               fieldWidth: 50,
               activeFillColor: Colors.black,
             ),
+            showCursor: kDebugMode ? false : true,
             cursorColor: Colors.black,
             animationDuration: const Duration(milliseconds: 300),
             textStyle: const TextStyle(fontSize: 20, height: 1.6),

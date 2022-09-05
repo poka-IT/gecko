@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:provider/provider.dart';
 
@@ -62,10 +63,10 @@ class CommonElements {
       width: 380 * ratio,
       height: 60 * ratio,
       child: ElevatedButton(
+        key: keyGoNext,
         style: ElevatedButton.styleFrom(
-          elevation: 4,
-          primary: orangeC, // background
-          onPrimary: Colors.white, // foreground
+          foregroundColor: Colors.white, backgroundColor: orangeC,
+          elevation: 4, // foreground
         ),
         onPressed: () {
           Navigator.push(
@@ -247,7 +248,7 @@ Future<bool?> confirmPopup(BuildContext context, String title) async {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               TextButton(
-                key: const Key('confirmPopop'),
+                key: keyConfirm,
                 child: Text(
                   "yes".tr(),
                   style: const TextStyle(
@@ -295,7 +296,7 @@ Future<void> infoPopup(BuildContext context, String title) async {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               TextButton(
-                key: const Key('infoPopup'),
+                key: keyInfoPopup,
                 child: const Text(
                   "D'accord",
                   style: TextStyle(

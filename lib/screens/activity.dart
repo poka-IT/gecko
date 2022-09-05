@@ -1,7 +1,10 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
@@ -12,7 +15,6 @@ import 'package:gecko/screens/wallet_view.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
-// ignore: must_be_immutable
 class ActivityScreen extends StatelessWidget with ChangeNotifier {
   ActivityScreen({required this.address, this.avatar, this.username, Key? key})
       : super(key: key);
@@ -132,7 +134,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
                   child: Builder(
                     builder: (context) => Expanded(
                       child: ListView(
-                        key: const Key('listTransactions'),
+                        key: keyListTransactions,
                         controller: scrollController,
                         children: <Widget>[historyView(context, result)],
                       ),
@@ -286,7 +288,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
           child:
               // Row(children: [Column(children: [],)],)
               ListTile(
-                  key: Key('transaction${keyID++}'),
+                  key: keyTransaction(keyID++),
                   contentPadding: const EdgeInsets.only(
                       left: 20, right: 30, top: 15, bottom: 15),
                   leading: ClipOval(

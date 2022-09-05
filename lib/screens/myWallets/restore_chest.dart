@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/common_elements.dart';
@@ -91,10 +92,10 @@ class RestoreChest extends StatelessWidget {
                     width: 410,
                     height: 70,
                     child: ElevatedButton(
+                      key: keyGoNext,
                       style: ElevatedButton.styleFrom(
-                        elevation: 4,
-                        primary: orangeC, // background
-                        onPrimary: Colors.white, // foreground
+                        foregroundColor: Colors.white, elevation: 4,
+                        backgroundColor: orangeC, // foreground
                       ),
                       onPressed: () async {
                         if (await sub
@@ -130,10 +131,10 @@ class RestoreChest extends StatelessWidget {
                     width: 190,
                     height: 60,
                     child: ElevatedButton(
+                        key: keyPastMnemonic,
                         style: ElevatedButton.styleFrom(
-                          elevation: 4,
-                          primary: yellowC, // background
-                          onPrimary: Colors.black, // foreground
+                          foregroundColor: Colors.black, elevation: 4,
+                          backgroundColor: yellowC, // foreground
                         ),
                         onPressed: () {
                           genW.pasteMnemonic(context);
@@ -173,7 +174,7 @@ class RestoreChest extends StatelessWidget {
       color: Colors.white,
       child: Text(
         text,
-        key: const Key('importText'),
+        key: keyBubbleSpeak,
         textAlign: TextAlign.justify,
         style: const TextStyle(
             color: Colors.black, fontSize: 19, fontWeight: FontWeight.w400),

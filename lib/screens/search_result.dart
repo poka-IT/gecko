@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
@@ -31,7 +32,6 @@ class SearchResultScreen extends StatelessWidget {
     DuniterIndexer duniterIndexer =
         Provider.of<DuniterIndexer>(context, listen: false);
 
-    int keyID = 0;
     double avatarSize = 55;
 
     return Scaffold(
@@ -94,7 +94,7 @@ class SearchResultScreen extends StatelessWidget {
                                   padding:
                                       const EdgeInsets.symmetric(horizontal: 5),
                                   child: ListTile(
-                                      key: Key('searchResult${keyID++}'),
+                                      key: keySearchResult(g1Wallet.pubkey!),
                                       horizontalTitleGap: 40,
                                       contentPadding: const EdgeInsets.all(5),
                                       leading: cesiumPlusProvider

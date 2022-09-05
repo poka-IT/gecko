@@ -1,14 +1,9 @@
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
-// import 'package:gecko/models/home.dart';
-// import 'package:provider/provider.dart';
 
-// ignore: must_be_immutable
 class AvatarFullscreen extends StatelessWidget {
-  TextEditingController tplController = TextEditingController();
-
-  AvatarFullscreen(this.avatar, {this.title, this.color, Key? key})
+  const AvatarFullscreen(this.avatar, {this.title, this.color, Key? key})
       : super(key: key);
   final Image? avatar;
   final String? title;

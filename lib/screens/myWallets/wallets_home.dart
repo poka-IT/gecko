@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -59,7 +60,6 @@ class WalletsHome extends StatelessWidget {
                 );
               }),
           title: Text(currentChest.name!,
-              key: const Key('myWallets'),
               style: TextStyle(color: Colors.grey[850])),
           backgroundColor: const Color(0xffFFD58D),
         ),
@@ -87,9 +87,8 @@ class WalletsHome extends StatelessWidget {
               height: 60,
             ),
             style: ElevatedButton.styleFrom(
-              elevation: 2,
-              primary: floattingYellow, // background
-              onPrimary: Colors.black, // foreground
+              foregroundColor: Colors.black, elevation: 2,
+              backgroundColor: floattingYellow, // foreground
             ),
             onPressed: () => Navigator.push(
               context,
@@ -108,7 +107,7 @@ class WalletsHome extends StatelessWidget {
           )),
       const SizedBox(height: 30),
       InkWell(
-        key: const Key('importG1v1'),
+        key: keyImportG1v1,
         onTap: () {
           Navigator.push(
             context,
@@ -130,7 +129,7 @@ class WalletsHome extends StatelessWidget {
       ),
       const SizedBox(height: 5),
       InkWell(
-        key: const Key('changeChest'),
+        key: keyChangeChest,
         onTap: () {
           Navigator.push(
             context,
@@ -190,7 +189,7 @@ class WalletsHome extends StatelessWidget {
     return CustomScrollView(slivers: <Widget>[
       const SliverToBoxAdapter(child: SizedBox(height: 20)),
       SliverGrid.count(
-          key: const Key('listWallets'),
+          key: keyListWallets,
           crossAxisCount: nTule,
           childAspectRatio: 1,
           crossAxisSpacing: 0,
@@ -200,6 +199,7 @@ class WalletsHome extends StatelessWidget {
               Padding(
                   padding: const EdgeInsets.all(16),
                   child: GestureDetector(
+                    key: keyOpenWallet(repository.address!),
                     onTap: () {
                       walletOptions.getAddress(
                           currentChestNumber, repository.derivation!);
@@ -366,7 +366,7 @@ class WalletsHome extends StatelessWidget {
             child: Column(children: <Widget>[
               Expanded(
                 child: InkWell(
-                    key: const Key('addDerivation'),
+                    key: keyAddDerivation,
                     onTap: () async {
                       if (!myWalletProvider.isNewDerivationLoading) {
                         WalletData? defaultWallet =

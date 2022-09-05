@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -36,6 +37,10 @@ class WalletOptions extends StatelessWidget {
         Provider.of<HomeProvider>(context, listen: false);
     DuniterIndexer duniterIndexer =
         Provider.of<DuniterIndexer>(context, listen: false);
+
+    // SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    // sub.spawnBlock();
+    // sub.spawnBlock(0, 20);
 
     log.d(walletOptions.address.text);
 
@@ -213,7 +218,7 @@ class WalletOptions extends StatelessWidget {
                                       else
                                         const SizedBox(),
                                       if (isMember.data!)
-                                        manageMemberStatus(context)
+                                        manageMembership(context)
                                     ]);
                                   }),
                             ]);
@@ -292,10 +297,10 @@ class WalletOptions extends StatelessWidget {
                   width: 320,
                   height: 60,
                   child: ElevatedButton(
+                    key: keyConfirmIdentity,
                     style: ElevatedButton.styleFrom(
-                      elevation: 4,
-                      primary: orangeC, // background
-                      onPrimary: Colors.white, // foreground
+                      foregroundColor: Colors.white, elevation: 4,
+                      backgroundColor: orangeC, // foreground
                     ),
                     onPressed: () {
                       walletProvider.confirmIdentityPopup(context);
@@ -334,7 +339,7 @@ class WalletOptions extends StatelessWidget {
   Widget pubkeyWidget(WalletOptionsProvider walletProvider, BuildContext ctx) {
     final String shortPubkey = getShortPubkey(walletProvider.address.text);
     return GestureDetector(
-      key: const Key('copyPubkey'),
+      key: keyCopyAddress,
       onTap: () {
         Clipboard.setData(ClipboardData(text: walletProvider.address.text));
         snackCopyKey(ctx);
@@ -359,12 +364,12 @@ class WalletOptions extends StatelessWidget {
             height: 40,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.black,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                elevation: 1,
-                primary: orangeC, // background
-                onPrimary: Colors.black, // foreground
+                backgroundColor: orangeC,
+                elevation: 1, // foreground
               ),
               onPressed: () {
                 Clipboard.setData(
@@ -394,7 +399,7 @@ class WalletOptions extends StatelessWidget {
       WalletsProfilesProvider historyProvider,
       WalletOptionsProvider walletProvider) {
     return InkWell(
-      key: const Key('displayActivity'),
+      key: keyOpenActivity,
       onTap: () {
         // _historyProvider.nPage = 1;
         Navigator.push(
@@ -431,11 +436,11 @@ class WalletOptions extends StatelessWidget {
     );
   }
 
-  Widget manageMemberStatus(BuildContext context) {
+  Widget manageMembership(BuildContext context) {
     WalletOptionsProvider walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
     return InkWell(
-      key: const Key('manageStatus'),
+      key: keyManageMembership,
       onTap: () {
         Navigator.push(
           context,
@@ -471,7 +476,7 @@ class WalletOptions extends StatelessWidget {
       WalletData defaultWallet = myWalletProvider.getDefaultWallet();
       walletOptions.isDefaultWallet = (defaultWallet.number == wallet.id()[1]);
       return InkWell(
-        key: const Key('setDefaultWallet'),
+        key: keySetDefaultWallet,
         onTap: !walletProvider.isDefaultWallet
             ? () async {
                 await setDefaultWallet(context, currentChest);
@@ -544,7 +549,7 @@ class WalletOptions extends StatelessWidget {
               !hasConsumers.data! &&
               (balance > 2 || balance == 0);
           return InkWell(
-            key: const Key('deleteWallet'),
+            key: keyDeleteWallet,
             onTap: canDelete
                 ? () async {
                     await walletProvider.deleteWallet(context, wallet);

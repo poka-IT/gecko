@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
@@ -9,7 +10,6 @@ import 'package:provider/provider.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:provider/provider.dart';
 
-// ignore: must_be_immutable
 class TransactionInProgress extends StatelessWidget {
   const TransactionInProgress(
       {Key? key, this.transType = 'pay', this.fromAddress, this.toAddress})
@@ -32,6 +32,8 @@ class TransactionInProgress extends StatelessWidget {
     bool isLoading = true;
     // Map jsonResult;
     final result = sub.transactionStatus;
+
+    // sub.spawnBlock();
 
     log.d(walletViewProvider.address!);
 
@@ -263,10 +265,10 @@ class TransactionInProgress extends StatelessWidget {
                         width: 380 * ratio,
                         height: 60 * ratio,
                         child: ElevatedButton(
+                          key: keyCloseTransactionScreen,
                           style: ElevatedButton.styleFrom(
-                            elevation: 4,
-                            primary: orangeC, // background
-                            onPrimary: Colors.white, // foreground
+                            foregroundColor: Colors.white, elevation: 4,
+                            backgroundColor: orangeC, // foreground
                           ),
                           onPressed: () {
                             Navigator.pop(context);

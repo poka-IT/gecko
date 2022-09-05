@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -42,11 +43,14 @@ class WalletViewScreen extends StatelessWidget {
     SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
     HomeProvider homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
-
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
+
     sub.setCurrentWallet(defaultWallet);
+
+    // sub.spawnBlock();
+    // sub.spawnBlock(0, 25);
 
     return Scaffold(
         backgroundColor: backgroundColor,
@@ -116,7 +120,7 @@ class WalletViewScreen extends StatelessWidget {
                     child: Material(
                       color: yellowC, //const Color(0xffFFD58D), // button color
                       child: InkWell(
-                          key: const Key('viewHistory'),
+                          key: keyViewActivity,
                           splashColor: orangeC, // inkwell color
                           child: const Padding(
                               padding: EdgeInsets.all(13),
@@ -206,7 +210,7 @@ class WalletViewScreen extends StatelessWidget {
                                   color:
                                       const Color(0xffFFD58D), // button color
                                   child: InkWell(
-                                      key: const Key('certify'),
+                                      key: keyCertify,
                                       splashColor: orangeC, // inkwell color
                                       child: const Padding(
                                         padding: EdgeInsets.only(bottom: 0),
@@ -245,8 +249,9 @@ class WalletViewScreen extends StatelessWidget {
                                             final acc = sub.getCurrentWallet();
                                             sub.certify(
                                                 acc.address!,
-                                                pin ?? myWalletProvider.pinCode,
-                                                walletViewProvider.address!);
+                                                walletViewProvider.address!,
+                                                pin ??
+                                                    myWalletProvider.pinCode);
 
                                             Navigator.push(
                                               context,
@@ -290,7 +295,7 @@ class WalletViewScreen extends StatelessWidget {
                     child: Material(
                       color: const Color(0xffFFD58D), // button color
                       child: InkWell(
-                          key: const Key('copyKey'),
+                          key: keyCopyAddress,
                           splashColor: orangeC, // inkwell color
                           child: const Padding(
                               padding: EdgeInsets.all(20),
@@ -331,7 +336,7 @@ class WalletViewScreen extends StatelessWidget {
                     child: Material(
                       color: orangeC, // button color
                       child: InkWell(
-                          key: const Key('pay'),
+                          key: keyPay,
                           splashColor: yellowC,
                           onTap: sub.nodeConnected
                               ? () {
@@ -481,6 +486,7 @@ class WalletViewScreen extends StatelessWidget {
                         const SizedBox(height: 10),
                         Consumer<SubstrateSdk>(builder: (context, sub, _) {
                           return InkWell(
+                            key: keyChangeChest,
                             onTap: () async {
                               String? pin;
                               if (myWalletProvider.pinCode == '') {
@@ -572,6 +578,7 @@ class WalletViewScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 10),
                         TextField(
+                          key: keyAmountField,
                           controller: walletViewProvider.payAmount,
                           autofocus: true,
                           maxLines: 1,
@@ -617,10 +624,10 @@ class WalletViewScreen extends StatelessWidget {
                           width: double.infinity,
                           height: 60,
                           child: ElevatedButton(
+                            key: keyConfirmPayment,
                             style: ElevatedButton.styleFrom(
-                              elevation: 4,
-                              primary: orangeC, // background
-                              onPrimary: Colors.white, // foreground
+                              foregroundColor: Colors.white, elevation: 4,
+                              backgroundColor: orangeC, // foreground
                             ),
                             onPressed: canValidate
                                 ? () async {

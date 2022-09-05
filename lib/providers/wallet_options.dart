@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -136,7 +137,7 @@ class WalletOptionsProvider with ChangeNotifier {
     DuniterIndexer duniterIndexer =
         Provider.of<DuniterIndexer>(context, listen: false);
 
-    _showText(String text,
+    showText(String text,
         [double size = 18, bool bold = false, bool smooth = true]) {
       log.d('$address $text');
       return AnimatedFadeOutIn<String>(
@@ -162,16 +163,16 @@ class WalletOptionsProvider with ChangeNotifier {
             switch (snapshot.data.toString()) {
               case 'noid':
                 {
-                  return _showText('noIdentity'.tr());
+                  return showText('noIdentity'.tr());
                 }
               case 'Created':
                 {
-                  return _showText('identityCreated'.tr());
+                  return showText('identityCreated'.tr());
                 }
               case 'ConfirmedByOwner':
                 {
                   return isOwner
-                      ? _showText('identityConfirmed'.tr())
+                      ? showText('identityConfirmed'.tr())
                       : duniterIndexer.getNameByAddress(
                           context,
                           address,
@@ -186,7 +187,7 @@ class WalletOptionsProvider with ChangeNotifier {
               case 'Validated':
                 {
                   return isOwner
-                      ? _showText('memberValidated'.tr(), 18, true)
+                      ? showText('memberValidated'.tr(), 18, true)
                       : duniterIndexer.getNameByAddress(
                           context,
                           address,
@@ -200,11 +201,11 @@ class WalletOptionsProvider with ChangeNotifier {
 
               case 'expired':
                 {
-                  return _showText('identityExpired'.tr());
+                  return showText('identityExpired'.tr());
                 }
             }
             return SizedBox(
-              child: _showText('', 18, false, false),
+              child: showText('', 18, false, false),
             );
           });
     });
@@ -238,6 +239,7 @@ class WalletOptionsProvider with ChangeNotifier {
             child: Column(children: [
               const SizedBox(height: 20),
               TextField(
+                key: keyEnterIdentityUsername,
                 onChanged: (_) => notifyListeners(),
                 inputFormatters: <TextInputFormatter>[
                   // FilteringTextInputFormatter.allow(RegExp("[0-9a-zA-Z]")),
@@ -258,7 +260,7 @@ class WalletOptionsProvider with ChangeNotifier {
                 Consumer<WalletOptionsProvider>(
                     builder: (context, wOptions, _) {
                   return TextButton(
-                    key: const Key('infoPopup'),
+                    key: keyConfirm,
                     child: Text(
                       "validate".tr(),
                       style: TextStyle(
@@ -354,7 +356,7 @@ class WalletOptionsProvider with ChangeNotifier {
                 Consumer<WalletOptionsProvider>(
                     builder: (context, wOptions, _) {
                   return TextButton(
-                    key: const Key('infoPopup'),
+                    key: keyInfoPopup,
                     child: Text(
                       "validate".tr(),
                       style: TextStyle(
@@ -381,7 +383,7 @@ class WalletOptionsProvider with ChangeNotifier {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 TextButton(
-                  key: const Key('cancel'),
+                  key: keyCancel,
                   child: Text(
                     "cancel".tr(),
                     style: TextStyle(
@@ -457,7 +459,7 @@ class WalletOptionsProvider with ChangeNotifier {
       width: 260,
       child: Stack(children: <Widget>[
         TextField(
-          key: const Key('walletName'),
+          key: keyWalletName,
           autofocus: false,
           focusNode: walletNameFocus,
           enabled: isEditing,
@@ -481,7 +483,7 @@ class WalletOptionsProvider with ChangeNotifier {
         Positioned(
           right: 0,
           child: InkWell(
-            key: const Key('renameWallet'),
+            key: keyRenameWallet,
             onTap: () async {
               // _isNewNameValid =
               // walletProvider.editWalletName(wallet.id(), isCesium: false);

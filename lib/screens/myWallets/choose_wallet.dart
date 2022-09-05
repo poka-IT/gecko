@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, must_be_immutable
 
 import 'dart:io';
 
@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
@@ -15,7 +16,6 @@ import 'package:provider/provider.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:provider/provider.dart';
 
-// ignore: must_be_immutable
 class ChooseWalletScreen extends StatelessWidget {
   ChooseWalletScreen({Key? key, required this.pin}) : super(key: key);
   final String pin;
@@ -46,10 +46,10 @@ class ChooseWalletScreen extends StatelessWidget {
                   width: 470,
                   height: 70,
                   child: ElevatedButton(
+                    key: keyConfirm,
                     style: ElevatedButton.styleFrom(
-                      elevation: 4,
-                      primary: orangeC, // background
-                      onPrimary: Colors.white, // foreground
+                      foregroundColor: Colors.white, elevation: 4,
+                      backgroundColor: orangeC, // foreground
                     ),
                     onPressed: () async {
                       await sub.setCurrentWallet(selectedWallet!);
@@ -112,7 +112,7 @@ class ChooseWalletScreen extends StatelessWidget {
     return CustomScrollView(slivers: <Widget>[
       const SliverToBoxAdapter(child: SizedBox(height: 20)),
       SliverGrid.count(
-          key: const Key('listWallets'),
+          key: keyListWallets,
           crossAxisCount: nTule,
           childAspectRatio: 1,
           crossAxisSpacing: 0,
@@ -122,6 +122,7 @@ class ChooseWalletScreen extends StatelessWidget {
               Padding(
                   padding: const EdgeInsets.all(16),
                   child: GestureDetector(
+                    key: keySelectThisWallet(repository.address!),
                     onTap: () {
                       selectedWallet = repository;
                       myWalletProvider.rebuildWidget();

@@ -4,10 +4,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/screens/common_elements.dart';
-import 'package:gecko/screens/myWallets/wallets_home.dart';
 
-// ignore: must_be_immutable
 class OnboardingStepEleven extends StatelessWidget {
   const OnboardingStepEleven({Key? key}) : super(key: key);
 
@@ -54,20 +53,28 @@ Widget finishButton(BuildContext context) {
     width: 380 * ratio,
     height: 60 * ratio,
     child: ElevatedButton(
-        key: const Key('goWalletHome'),
+        key: keyGoWalletsHome,
         style: ElevatedButton.styleFrom(
-          elevation: 4,
-          primary: orangeC,
-          onPrimary: Colors.white, // foreground
+          foregroundColor: Colors.white, elevation: 4,
+          backgroundColor: orangeC, // foreground
         ),
         onPressed: () {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) {
-              return const WalletsHome();
-            }),
-            ModalRoute.withName('/'),
-          );
+          //TODO: fix bad widget ancestor when pupUntil (multi_chest test failed)
+
+          // Navigator.popUntil(homeContext, ModalRoute.withName('/'));
+          // Navigator.of(homeContext, rootNavigator: true)
+          //     .popUntil(ModalRoute.withName('/'));
+          // while (Navigator.of(homeContext).canPop()) {
+          //   Navigator.of(homeContext).pop();
+          // }
+
+          // Navigator.pushNamed(homeContext, '/mywallets');
+
+          Navigator.pushNamedAndRemoveUntil(
+              context, '/mywallets', (route) => route.isFirst);
+
+          // Navigator.pushNamedAndRemoveUntil(
+          //     homeContext, '/mywallets', ModalRoute.withName('/'));
         },
         child: Text("accessMyChest".tr(),
             style:

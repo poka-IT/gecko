@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
@@ -148,6 +149,7 @@ class HomeProvider with ChangeNotifier {
           const Spacer(),
           const SizedBox(width: 11),
           IconButton(
+            key: keyAppBarSearch,
             iconSize: 40,
             icon: const Image(image: AssetImage('assets/loupe-noire.png')),
             onPressed: () {
@@ -166,6 +168,7 @@ class HomeProvider with ChangeNotifier {
           const SizedBox(width: 22),
           const Spacer(),
           IconButton(
+            key: keyAppBarQrcode,
             iconSize: 70,
             icon: const Image(image: AssetImage('assets/qrcode-scan.png')),
             onPressed: () async {
@@ -179,6 +182,7 @@ class HomeProvider with ChangeNotifier {
           const Spacer(),
           const SizedBox(width: 15),
           IconButton(
+            key: keyAppBarChest,
             iconSize: 60,
             icon: const Image(image: AssetImage('assets/wallet.png')),
             onPressed: () async {

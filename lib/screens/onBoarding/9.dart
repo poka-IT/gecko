@@ -3,12 +3,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/10.dart';
 import 'package:provider/provider.dart';
 
-// ignore: must_be_immutable
 class OnboardingStepNine extends StatelessWidget {
   const OnboardingStepNine({Key? key, this.scanDerivation = false})
       : super(key: key);
@@ -52,7 +52,7 @@ class OnboardingStepNine extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 children: <Widget>[
                   TextField(
-                      key: const Key('generatedPin'),
+                      key: keyGeneratedPin,
                       enabled: false,
                       controller: generateWalletProvider.pin,
                       maxLines: 1,
@@ -79,11 +79,12 @@ class OnboardingStepNine extends StatelessWidget {
                         width: 380 * ratio,
                         height: 60 * ratio,
                         child: ElevatedButton(
-                            key: const Key('changeSecretCode'),
+                            key: keyChangePin,
                             style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.black,
                               elevation: 4,
-                              primary: const Color(0xffFFD58D),
-                              onPrimary: Colors.black, // foreground
+                              backgroundColor:
+                                  const Color(0xffFFD58D), // foreground
                             ),
                             onPressed: () {
                               generateWalletProvider.changePinCode(

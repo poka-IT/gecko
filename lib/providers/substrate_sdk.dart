@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:typed_data';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
@@ -37,7 +37,8 @@ class SubstrateSdk with ChangeNotifier {
   TextEditingController csSalt = TextEditingController();
   TextEditingController csPassword = TextEditingController();
   String g1V1NewAddress = '';
-  bool isCesiumIDVisible = true;
+  bool isCesiumIDVisible = false;
+  bool isCesiumAddresLoading = false;
 
   /////////////////////////////////////
   ////////// 1: API METHODS ///////////
@@ -80,10 +81,11 @@ class SubstrateSdk with ChangeNotifier {
         [null])[0];
   }
 
-  TxSenderData _setSender() {
+  Future<TxSenderData> _setSender(String address) async {
+    final fromPubkey = await sdk.api.account.decodeAddress([address]);
     return TxSenderData(
-      keyring.current.address,
-      keyring.current.pubKey,
+      address,
+      fromPubkey!.keys.first,
     );
   }
 
@@ -685,7 +687,7 @@ class SubstrateSdk with ChangeNotifier {
       );
       const tx1 = 'api.tx.universalDividend.claimUds()';
       final tx2 = amount == -1
-          ? 'api.tx.balances.transferAll(false)'
+          ? 'api.tx.balances.transferAll("$destAddress", false)'
           : 'api.tx.balances.transferKeepAlive("$destAddress", $amountUnit)';
 
       rawParams = '[[$tx1, $tx2]]';
@@ -696,14 +698,14 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<String> certify(
-      String fromAddress, String password, String toAddress) async {
+      String fromAddress, String destAddress, String password) async {
     transactionStatus = '';
 
     final myIdtyStatus = await idtyStatus(fromAddress);
-    final toIdtyStatus = await idtyStatus(toAddress);
+    final toIdtyStatus = await idtyStatus(destAddress);
 
     final fromIndex = await _getIdentityIndexOf(fromAddress);
-    final toIndex = await _getIdentityIndexOf(toAddress);
+    final toIndex = await _getIdentityIndexOf(destAddress);
 
     if (myIdtyStatus != 'Validated') {
       transactionStatus = 'notMember';
@@ -711,12 +713,12 @@ class SubstrateSdk with ChangeNotifier {
       return 'notMember';
     }
 
-    final sender = _setSender();
+    final sender = await _setSender(fromAddress);
     TxInfoData txInfo;
     List txOptions = [];
     String? rawParams;
 
-    final toCerts = await getCerts(toAddress);
+    final toCerts = await getCerts(destAddress);
 
     // log.d('debug: ${currencyParameters['minCertForMembership']}');
 
@@ -726,7 +728,7 @@ class SubstrateSdk with ChangeNotifier {
         'createIdentity',
         sender,
       );
-      txOptions = [toAddress];
+      txOptions = [destAddress];
     } else if (toIdtyStatus == 'Validated' ||
         toIdtyStatus == 'ConfirmedByOwner') {
       if (toCerts[0] >= currencyParameters['minCertForMembership']! - 1 &&
@@ -776,11 +778,11 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<String> confirmIdentity(
       String fromAddress, String name, String password) async {
-    log.d('me: ${keyring.current.address!}');
+    final fromPubkey = await sdk.api.account.decodeAddress([fromAddress]);
 
     final sender = TxSenderData(
-      keyring.current.address,
-      keyring.current.pubKey,
+      fromAddress,
+      fromPubkey!.keys.first,
     );
 
     final txInfo = TxInfoData(
@@ -848,10 +850,11 @@ newKeySig: $newKeySig""");
       const tx1 = 'api.tx.universalDividend.claimUds()';
       final tx2 =
           'api.tx.identity.changeOwnerKey("$destAddress", "$newKeySig")';
-      // const tx3 = 'api.tx.balances.transferAll(false)';
+      final tx3 = 'api.tx.balances.transferAll("$destAddress", false)';
 
-      rawParams =
-          fromBalance['unclaimedUds'] == 0 ? '[[$tx2]]' : '[[$tx1, $tx2]]';
+      rawParams = fromBalance['unclaimedUds'] == 0
+          ? '[[$tx2, $tx3]]'
+          : '[[$tx1, $tx2, $tx3]]';
     } else {
       txInfo = TxInfoData(
         'identity',
@@ -873,7 +876,6 @@ newKeySig: $newKeySig""");
       keyring.current.pubKey,
     );
 
-    log.d(sender.address);
     TxInfoData txInfo;
 
     txInfo = TxInfoData(
@@ -938,6 +940,17 @@ newKeySig: $newKeySig""");
     }
 
     await sdk.api.keyring.deleteAccount(keyring, keypair);
+  }
+
+  Future spawnBlock([int number = 1, int until = 0]) async {
+    if (!kDebugMode) return;
+    if (blocNumber < until) {
+      number = until - blocNumber;
+    }
+    for (var i = 1; i <= number; i++) {
+      await sdk.webView!
+          .evalJavascript('api.rpc.engine.createBlock(true, true)');
+    }
   }
 
   void reload() {

@@ -626,9 +626,7 @@ class WalletViewScreen extends StatelessWidget {
                           child: ElevatedButton(
                             key: keyConfirmPayment,
                             style: ElevatedButton.styleFrom(
-                              elevation: 4,
-                              primary: orangeC, // background
-                              onPrimary: Colors.white, // foreground
+                              foregroundColor: Colors.white, elevation: 4, backgroundColor: orangeC, // foreground
                             ),
                             onPressed: canValidate
                                 ? () async {

@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, must_be_immutable
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -10,11 +10,9 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
-import 'dart:io';
 
 import 'package:provider/provider.dart';
 
-// ignore: must_be_immutable
 class ChangePinScreen extends StatelessWidget with ChangeNotifier {
   ChangePinScreen(
       {Key? keyMyWallets,
@@ -23,9 +21,8 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
       : super(key: keyMyWallets);
   final String? walletName;
   final MyWalletsProvider walletProvider;
-  Directory? appPath;
 
-  TextEditingController newPin = TextEditingController();
+  final TextEditingController newPin = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -102,9 +99,8 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                 height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    elevation: 12,
-                    primary: Colors.green[400], //smoothYellow, // background
-                    onPrimary: Colors.black, // foreground
+                    foregroundColor: Colors.black, elevation: 12,
+                    backgroundColor: Colors.green[400], // foreground
                   ),
                   onPressed: () async {
                     WalletData defaultWallet =

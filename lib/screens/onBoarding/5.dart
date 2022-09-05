@@ -83,9 +83,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
                   child: ElevatedButton(
                       key: keyGenerateMnemonic,
                       style: ElevatedButton.styleFrom(
-                        elevation: 4,
-                        primary: const Color(0xffFFD58D),
-                        onPrimary: Colors.black, // foreground
+                        foregroundColor: Colors.black, elevation: 4, backgroundColor: const Color(0xffFFD58D), // foreground
                       ),
                       onPressed: () {
                         // _generateWalletProvider.reloadBuild();
@@ -183,7 +181,6 @@ Widget arrayCell(dataWord) {
   );
 }
 
-// ignore: must_be_immutable
 class PrintWallet extends StatelessWidget {
   const PrintWallet(this.sentence, {Key? key}) : super(key: key);
 
@@ -234,9 +231,7 @@ Widget nextButton(
     child: ElevatedButton(
       key: keyGoNext,
       style: ElevatedButton.styleFrom(
-        elevation: 4,
-        primary: orangeC, // background
-        onPrimary: Colors.white, // foreground
+        foregroundColor: Colors.white, elevation: 4, backgroundColor: orangeC, // foreground
       ),
       onPressed: () {
         generateWalletProvider.nbrWord = generateWalletProvider.getRandomInt();

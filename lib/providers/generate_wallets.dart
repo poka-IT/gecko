@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'dart:typed_data';
 import 'package:durt/durt.dart' as durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';

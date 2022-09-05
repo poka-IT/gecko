@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -13,7 +15,6 @@ import 'package:gecko/screens/wallet_view.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
-// ignore: must_be_immutable
 class ActivityScreen extends StatelessWidget with ChangeNotifier {
   ActivityScreen({required this.address, this.avatar, this.username, Key? key})
       : super(key: key);

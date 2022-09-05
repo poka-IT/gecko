@@ -239,9 +239,7 @@ class ImportG1v1 extends StatelessWidget {
                       child: ElevatedButton(
                         key: keyConfirm,
                         style: ElevatedButton.styleFrom(
-                          elevation: 4,
-                          primary: orangeC, // background
-                          onPrimary: Colors.white, // foreground
+                          foregroundColor: Colors.white, elevation: 4, backgroundColor: orangeC, // foreground
                         ),
                         onPressed: canValidate
                             ? () async {

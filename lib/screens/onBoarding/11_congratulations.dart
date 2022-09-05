@@ -1,16 +1,12 @@
 // ignore_for_file: file_names
 
-import 'dart:io';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/screens/common_elements.dart';
-import 'package:gecko/screens/myWallets/wallets_home.dart';
 
-// ignore: must_be_immutable
 class OnboardingStepEleven extends StatelessWidget {
   const OnboardingStepEleven({Key? key}) : super(key: key);
 
@@ -59,9 +55,7 @@ Widget finishButton(BuildContext context) {
     child: ElevatedButton(
         key: keyGoWalletsHome,
         style: ElevatedButton.styleFrom(
-          elevation: 4,
-          primary: orangeC,
-          onPrimary: Colors.white, // foreground
+          foregroundColor: Colors.white, elevation: 4, backgroundColor: orangeC, // foreground
         ),
         onPressed: () {
           // sleep(const Duration(milliseconds: 50));

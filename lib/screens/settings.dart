@@ -11,7 +11,6 @@ import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:provider/provider.dart';
 // import 'package:dropdown_button2/dropdown_button2.dart';
 
-// ignore: must_be_immutable
 class SettingsScreen extends StatelessWidget {
   final MyWalletsProvider _myWallets = MyWalletsProvider();
 

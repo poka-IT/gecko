@@ -137,7 +137,7 @@ class WalletOptionsProvider with ChangeNotifier {
     DuniterIndexer duniterIndexer =
         Provider.of<DuniterIndexer>(context, listen: false);
 
-    _showText(String text,
+    showText(String text,
         [double size = 18, bool bold = false, bool smooth = true]) {
       log.d('$address $text');
       return AnimatedFadeOutIn<String>(
@@ -163,16 +163,16 @@ class WalletOptionsProvider with ChangeNotifier {
             switch (snapshot.data.toString()) {
               case 'noid':
                 {
-                  return _showText('noIdentity'.tr());
+                  return showText('noIdentity'.tr());
                 }
               case 'Created':
                 {
-                  return _showText('identityCreated'.tr());
+                  return showText('identityCreated'.tr());
                 }
               case 'ConfirmedByOwner':
                 {
                   return isOwner
-                      ? _showText('identityConfirmed'.tr())
+                      ? showText('identityConfirmed'.tr())
                       : duniterIndexer.getNameByAddress(
                           context,
                           address,
@@ -187,7 +187,7 @@ class WalletOptionsProvider with ChangeNotifier {
               case 'Validated':
                 {
                   return isOwner
-                      ? _showText('memberValidated'.tr(), 18, true)
+                      ? showText('memberValidated'.tr(), 18, true)
                       : duniterIndexer.getNameByAddress(
                           context,
                           address,
@@ -201,11 +201,11 @@ class WalletOptionsProvider with ChangeNotifier {
 
               case 'expired':
                 {
-                  return _showText('identityExpired'.tr());
+                  return showText('identityExpired'.tr());
                 }
             }
             return SizedBox(
-              child: _showText('', 18, false, false),
+              child: showText('', 18, false, false),
             );
           });
     });

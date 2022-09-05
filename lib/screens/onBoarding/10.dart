@@ -1,7 +1,7 @@
 // ignore_for_file: file_names
+// ignore_for_file: must_be_immutable
 
 import 'dart:async';
-import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -18,7 +18,6 @@ import 'package:gecko/screens/onBoarding/11_congratulations.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 
-// ignore: must_be_immutable
 class OnboardingStepTen extends StatelessWidget {
   OnboardingStepTen({Key? validationKey, this.scanDerivation = false})
       : super(key: validationKey);

@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, must_be_immutable
 
 import 'dart:io';
 
@@ -16,7 +16,6 @@ import 'package:provider/provider.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:provider/provider.dart';
 
-// ignore: must_be_immutable
 class ChooseWalletScreen extends StatelessWidget {
   ChooseWalletScreen({Key? key, required this.pin}) : super(key: key);
   final String pin;
@@ -49,9 +48,7 @@ class ChooseWalletScreen extends StatelessWidget {
                   child: ElevatedButton(
                     key: keyConfirm,
                     style: ElevatedButton.styleFrom(
-                      elevation: 4,
-                      primary: orangeC, // background
-                      onPrimary: Colors.white, // foreground
+                      foregroundColor: Colors.white, elevation: 4, backgroundColor: orangeC, // foreground
                     ),
                     onPressed: () async {
                       await sub.setCurrentWallet(selectedWallet!);

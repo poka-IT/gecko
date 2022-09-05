@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -74,12 +73,10 @@ class ShowSeed extends StatelessWidget {
                             height: 40,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                shape: RoundedRectangleBorder(
+                                foregroundColor: Colors.black, shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                ),
-                                elevation: 1,
-                                primary: orangeC, // background
-                                onPrimary: Colors.black, // foreground
+                                ), backgroundColor: orangeC,
+                                elevation: 1, // foreground
                               ),
                               onPressed: () {
                                 Clipboard.setData(
@@ -124,9 +121,7 @@ class ShowSeed extends StatelessWidget {
               height: 60 * ratio,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  elevation: 4,
-                  primary: orangeC, // background
-                  onPrimary: Colors.white, // foreground
+                  foregroundColor: Colors.white, elevation: 4, backgroundColor: orangeC, // foreground
                 ),
                 onPressed: () {
                   Navigator.pop(context);

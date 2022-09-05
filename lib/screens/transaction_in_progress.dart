@@ -10,7 +10,6 @@ import 'package:provider/provider.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:provider/provider.dart';
 
-// ignore: must_be_immutable
 class TransactionInProgress extends StatelessWidget {
   const TransactionInProgress(
       {Key? key, this.transType = 'pay', this.fromAddress, this.toAddress})
@@ -268,9 +267,7 @@ class TransactionInProgress extends StatelessWidget {
                         child: ElevatedButton(
                           key: keyCloseTransactionScreen,
                           style: ElevatedButton.styleFrom(
-                            elevation: 4,
-                            primary: orangeC, // background
-                            onPrimary: Colors.white, // foreground
+                            foregroundColor: Colors.white, elevation: 4, backgroundColor: orangeC, // foreground
                           ),
                           onPressed: () {
                             Navigator.pop(context);

@@ -88,9 +88,7 @@ class WalletsHome extends StatelessWidget {
               height: 60,
             ),
             style: ElevatedButton.styleFrom(
-              elevation: 2,
-              primary: floattingYellow, // background
-              onPrimary: Colors.black, // foreground
+              foregroundColor: Colors.black, elevation: 2, backgroundColor: floattingYellow, // foreground
             ),
             onPressed: () => Navigator.push(
               context,

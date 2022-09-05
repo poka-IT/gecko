@@ -23,7 +23,6 @@ class ChooseChest extends StatefulWidget {
   }
 }
 
-// ignore: must_be_immutable
 class _ChooseChestState extends State<ChooseChest> {
   TextEditingController tplController = TextEditingController();
   CarouselController buttonCarouselController = CarouselController();
@@ -112,8 +111,7 @@ class _ChooseChestState extends State<ChooseChest> {
               height: 70,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  primary: orangeC, // background
-                  onPrimary: Colors.black, // foreground
+                  foregroundColor: Colors.black, backgroundColor: orangeC, // foreground
                 ),
                 onPressed: () async {
                   await configBox.put('currentChest', currentChest);

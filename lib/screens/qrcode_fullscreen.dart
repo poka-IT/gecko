@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +8,6 @@ import 'package:qr_flutter/qr_flutter.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:provider/provider.dart';
 
-// ignore: must_be_immutable
 class QrCodeFullscreen extends StatelessWidget {
   TextEditingController tplController = TextEditingController();
 

@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
@@ -14,7 +16,6 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/globals.dart';
 
-// ignore: must_be_immutable
 class UnlockingWallet extends StatelessWidget {
   UnlockingWallet({Key? keyUnlockWallet, required this.wallet})
       : super(key: keyUnlockWallet);

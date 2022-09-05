@@ -9,7 +9,6 @@ import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/10.dart';
 import 'package:provider/provider.dart';
 
-// ignore: must_be_immutable
 class OnboardingStepNine extends StatelessWidget {
   const OnboardingStepNine({Key? key, this.scanDerivation = false})
       : super(key: key);
@@ -82,9 +81,7 @@ class OnboardingStepNine extends StatelessWidget {
                         child: ElevatedButton(
                             key: keyChangePin,
                             style: ElevatedButton.styleFrom(
-                              elevation: 4,
-                              primary: const Color(0xffFFD58D),
-                              onPrimary: Colors.black, // foreground
+                              foregroundColor: Colors.black, elevation: 4, backgroundColor: const Color(0xffFFD58D), // foreground
                             ),
                             onPressed: () {
                               generateWalletProvider.changePinCode(

@@ -1,4 +1,5 @@
 // ignore_for_file: file_names
+// ignore_for_file: must_be_immutable
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
@@ -11,7 +12,6 @@ import 'package:gecko/screens/onBoarding/7.dart';
 import 'package:gecko/screens/onBoarding/9.dart';
 import 'package:provider/provider.dart';
 
-// ignore: must_be_immutable
 class OnboardingStepSix extends StatelessWidget {
   OnboardingStepSix(
       {Key? key, required this.skipIntro, required this.generatedMnemonic})
@@ -227,9 +227,8 @@ Widget nextButton(BuildContext context, String text, nextScreen, bool isFast) {
     child: ElevatedButton(
       key: keyGoNext,
       style: ElevatedButton.styleFrom(
-        elevation: 4,
-        primary: orangeC, // background
-        onPrimary: Colors.white, // foreground
+        foregroundColor: Colors.white, elevation: 4,
+        backgroundColor: orangeC, // foreground
       ),
       onPressed: () {
         Navigator.push(

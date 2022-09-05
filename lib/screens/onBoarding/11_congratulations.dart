@@ -55,13 +55,24 @@ Widget finishButton(BuildContext context) {
     child: ElevatedButton(
         key: keyGoWalletsHome,
         style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white, elevation: 4, backgroundColor: orangeC, // foreground
+          foregroundColor: Colors.white, elevation: 4,
+          backgroundColor: orangeC, // foreground
         ),
         onPressed: () {
-          // sleep(const Duration(milliseconds: 50));
-          Navigator.popUntil(homeContext, ModalRoute.withName('/'));
-          // sleep(const Duration(milliseconds: 500));
-          Navigator.pushNamed(homeContext, '/mywallets');
+          //TODO: fix bad widget ancestor when pupUntil (multi_chest test failed)
+
+          // Navigator.popUntil(homeContext, ModalRoute.withName('/'));
+          // Navigator.of(homeContext, rootNavigator: true)
+          //     .popUntil(ModalRoute.withName('/'));
+          // while (Navigator.of(homeContext).canPop()) {
+          //   Navigator.of(homeContext).pop();
+          // }
+
+          // Navigator.pushNamed(homeContext, '/mywallets');
+
+          Navigator.pushNamedAndRemoveUntil(
+              context, '/mywallets', (route) => route.isFirst);
+
           // Navigator.pushNamedAndRemoveUntil(
           //     homeContext, '/mywallets', ModalRoute.withName('/'));
         },

@@ -145,6 +145,7 @@ Future onboardingNewChest() async {
   // Check if string "ĞD" is present in screen
   await waitFor('Mon portefeuille co');
   await waitFor('0.0 $currencyName');
+  // await waitFor('Scanner un');
 }
 
 Future addDerivation() async {

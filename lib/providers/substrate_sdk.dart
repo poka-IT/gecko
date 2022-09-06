@@ -662,13 +662,9 @@ class SubstrateSdk with ChangeNotifier {
       required double amount,
       required String password}) async {
     transactionStatus = '';
-    final fromPubkey = await sdk.api.account.decodeAddress([fromAddress]);
     final int amountUnit = (amount * 100).toInt();
 
-    final sender = TxSenderData(
-      fromAddress,
-      fromPubkey!.keys.first,
-    );
+    final sender = await _setSender(fromAddress);
 
     final globalBalance = await getBalance(fromAddress);
     TxInfoData txInfo;
@@ -761,29 +757,9 @@ class SubstrateSdk with ChangeNotifier {
     return await _executeCall(txInfo, txOptions, password, rawParams);
   }
 
-  // Future claimUDs(String password) async {
-  //   final sender = TxSenderData(
-  //     keyring.current.address,
-  //     keyring.current.pubKey,
-  //   );
-
-  //   final txInfo = TxInfoData(
-  //     'universalDividend',
-  //     'claimUds',
-  //     sender,
-  //   );
-
-  //   return await executeCall(txInfo, [], password);
-  // }
-
   Future<String> confirmIdentity(
       String fromAddress, String name, String password) async {
-    final fromPubkey = await sdk.api.account.decodeAddress([fromAddress]);
-
-    final sender = TxSenderData(
-      fromAddress,
-      fromPubkey!.keys.first,
-    );
+    final sender = await _setSender(fromAddress);
 
     final txInfo = TxInfoData(
       'identity',
@@ -803,11 +779,7 @@ class SubstrateSdk with ChangeNotifier {
       required Map fromBalance,
       bool withBalance = false}) async {
     transactionStatus = '';
-    final fromPubkey = await sdk.api.account.decodeAddress([fromAddress]);
-    final sender = TxSenderData(
-      fromAddress,
-      fromPubkey!.keys.first,
-    );
+    final sender = await _setSender(fromAddress);
 
     TxInfoData txInfo;
     List txOptions = [];
@@ -871,16 +843,13 @@ newKeySig: $newKeySig""");
   Future revokeIdentity(String address, String password) async {
     final idtyIndex = await _getIdentityIndexOf(address);
 
-    final sender = TxSenderData(
-      keyring.current.address,
-      keyring.current.pubKey,
-    );
+    final sender = await _setSender(address);
 
     TxInfoData txInfo;
 
     txInfo = TxInfoData(
-      'membership',
-      'revokeMembership',
+      'identity',
+      'revokeIdentity',
       sender,
     );
 

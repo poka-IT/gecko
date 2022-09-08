@@ -47,12 +47,14 @@ class SubstrateSdk with ChangeNotifier {
   Future<String> _executeCall(TxInfoData txInfo, txOptions, String password,
       [String? rawParams]) async {
     try {
-      final hash = await sdk.api.tx
-          .signAndSend(txInfo, txOptions, password, rawParam: rawParams)
-          .timeout(
-            const Duration(seconds: 12),
-            onTimeout: () => {},
-          );
+      final hash = await sdk.api.tx.signAndSend(txInfo, txOptions, password,
+          rawParam: rawParams, onStatusChange: (p0) {
+        transactionStatus = p0;
+        notifyListeners();
+      }).timeout(
+        const Duration(seconds: 12),
+        onTimeout: () => {},
+      );
       log.d(hash);
       if (hash.isEmpty) {
         transactionStatus = 'timeout';

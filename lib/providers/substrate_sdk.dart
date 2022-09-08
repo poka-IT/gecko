@@ -851,8 +851,9 @@ newKeySig: $newKeySig""");
     final genesisHash = HEX.decode(genesisHashString.substring(2)) as Uint8List;
     final idtyIndexBytes = _int32bytes(idtyIndex);
     // final pubkey = await addressToPubkey(address);
+    // final pubkeyHexa = '0x${HEX.encode(pubkey)}';
     final messageToSign =
-        Uint8List.fromList(prefix + idtyIndexBytes + genesisHash);
+        Uint8List.fromList(prefix + genesisHash + idtyIndexBytes);
     final revocationSig = await _signMessage(messageToSign, address, password);
 
     final txInfo = TxInfoData(
@@ -860,6 +861,9 @@ newKeySig: $newKeySig""");
       'revokeIdentity',
       sender,
     );
+
+    log.d('''DEBUGG: messageToSign: $messageToSign
+revocationSig: $revocationSig''');
 
     final txOptions = [idtyIndex, address, revocationSig];
     return await _executeCall(txInfo, txOptions, password);

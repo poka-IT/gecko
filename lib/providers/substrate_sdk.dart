@@ -854,7 +854,9 @@ newKeySig: $newKeySig""");
     // final pubkeyHexa = '0x${HEX.encode(pubkey)}';
     final messageToSign =
         Uint8List.fromList(prefix + genesisHash + idtyIndexBytes);
-    final revocationSig = await _signMessage(messageToSign, address, password);
+    final revocationSig =
+        (await _signMessage(messageToSign, address, password)).substring(2);
+    final revocationSigTyped = '0x01$revocationSig';
 
     final txInfo = TxInfoData(
       'identity',
@@ -863,9 +865,10 @@ newKeySig: $newKeySig""");
     );
 
     log.d('''DEBUGG: messageToSign: $messageToSign
-revocationSig: $revocationSig''');
+revocationSig: $revocationSig
+revocationSigTyped: $revocationSigTyped''');
 
-    final txOptions = [idtyIndex, address, revocationSig];
+    final txOptions = [idtyIndex, address, revocationSigTyped];
     return await _executeCall(txInfo, txOptions, password);
   }
 

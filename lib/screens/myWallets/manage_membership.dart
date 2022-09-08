@@ -86,9 +86,9 @@ class ManageMembership extends StatelessWidget {
               Provider.of<MyWalletsProvider>(context, listen: false);
           SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-          MyWalletsProvider mw = MyWalletsProvider();
-          final wallet = mw.getWalletDataByAddress(address);
-          await sub.setCurrentWallet(wallet!);
+          // MyWalletsProvider mw = MyWalletsProvider();
+          // final wallet = mw.getWalletDataByAddress(address);
+          // await sub.setCurrentWallet(wallet!);
 
           WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
           String? pin;
@@ -110,7 +110,10 @@ class ManageMembership extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) {
-              return const TransactionInProgress(transType: 'revokeIdty');
+              return TransactionInProgress(
+                  transType: 'revokeIdty',
+                  fromAddress: getShortPubkey(address),
+                  toAddress: getShortPubkey(address));
             }),
           );
         }

@@ -844,13 +844,13 @@ newKeySig: $newKeySig""");
     final idtyIndex = await _getIdentityIndexOf(address);
     final sender = await _setSender(address);
 
-    final prefix = '?'.codeUnits;
+    final prefix = 'revo'.codeUnits;
     final genesisHashString = await getGenesisHash();
     final genesisHash = HEX.decode(genesisHashString.substring(2)) as Uint8List;
     final idtyIndexBytes = _int32bytes(idtyIndex);
-    final oldPubkey = await addressToPubkey(address);
+    // final pubkey = await addressToPubkey(address);
     final messageToSign =
-        Uint8List.fromList(prefix + genesisHash + idtyIndexBytes + oldPubkey);
+        Uint8List.fromList(prefix + idtyIndexBytes + genesisHash);
     final revocationSig = await _signMessage(messageToSign, address, password);
 
     final txInfo = TxInfoData(

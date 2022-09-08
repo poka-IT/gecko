@@ -427,7 +427,7 @@ class WalletOptionsProvider with ChangeNotifier {
     return canValidateNameBool;
   }
 
-  void reloadBuild() {
+  void reload() {
     notifyListeners();
   }
 

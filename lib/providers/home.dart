@@ -219,7 +219,7 @@ class HomeProvider with ChangeNotifier {
     );
   }
 
-  void rebuildWidget() {
+  void reload() {
     notifyListeners();
   }
 }

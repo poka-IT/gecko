@@ -8,7 +8,7 @@ class SearchProvider with ChangeNotifier {
   final cacheDuring = 20 * 60 * 1000; //First number is minutes
   int cacheTime = 0;
 
-  void rebuildWidget() {
+  void reload() {
     notifyListeners();
   }
 

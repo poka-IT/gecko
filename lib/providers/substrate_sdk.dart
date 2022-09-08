@@ -8,6 +8,8 @@ import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/providers/wallet_options.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:polkawallet_sdk/api/types/txInfoData.dart';
@@ -46,6 +48,10 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<String> _executeCall(TxInfoData txInfo, txOptions, String password,
       [String? rawParams]) async {
+    final walletOptions =
+        Provider.of<WalletOptionsProvider>(homeContext, listen: false);
+    final walletProfiles =
+        Provider.of<WalletsProfilesProvider>(homeContext, listen: false);
     try {
       final hash = await sdk.api.tx.signAndSend(txInfo, txOptions, password,
           rawParam: rawParams, onStatusChange: (p0) {
@@ -62,8 +68,11 @@ class SubstrateSdk with ChangeNotifier {
 
         return 'timeout';
       } else {
+        // Success !
         transactionStatus = hash.toString();
         notifyListeners();
+        walletOptions.reload();
+        walletProfiles.reload();
         return hash.toString();
       }
     } catch (e) {
@@ -272,6 +281,9 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<String> idtyStatus(String address) async {
+    // WalletOptionsProvider walletOptions =
+    //     Provider.of<WalletOptionsProvider>(homeContext, listen: false);
+
     var idtyIndex = await _getIdentityIndexOf(address);
 
     if (idtyIndex == 0) {
@@ -282,6 +294,10 @@ class SubstrateSdk with ChangeNotifier {
 
     if (idtyStatus != null) {
       final String status = idtyStatus['status'];
+
+      // if (address == walletOptions.address.text && status == 'Validated') {
+      //   walletOptions.reloadBuild();
+      // }
 
       return (status);
     } else {

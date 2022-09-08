@@ -594,7 +594,7 @@ class WalletViewScreen extends StatelessWidget {
                             FilteringTextInputFormatter.allow(
                                 RegExp(r'(^\d+\.?\d{0,2})')),
                           ],
-                          // onChanged: (v) => _searchProvider.rebuildWidget(),
+                          // onChanged: (v) => _searchProvider.reload(),
                           decoration: InputDecoration(
                             hintText: '0.00',
                             suffix: Text(currencyName),

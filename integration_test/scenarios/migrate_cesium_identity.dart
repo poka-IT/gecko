@@ -4,8 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:integration_test/integration_test.dart';
-import 'general_actions.dart';
-import 'tests_utility.dart';
+import '../utility/general_actions.dart';
+import '../utility/tests_utility.dart';
 
 void main() async {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

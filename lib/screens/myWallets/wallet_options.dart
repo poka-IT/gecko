@@ -54,7 +54,7 @@ class WalletOptions extends StatelessWidget {
       onWillPop: () {
         walletOptions.isEditing = false;
         walletOptions.isBalanceBlur = false;
-        myWalletProvider.rebuildWidget();
+        myWalletProvider.reload();
         Navigator.pop(context);
         return Future<bool>.value(true);
       },
@@ -69,7 +69,7 @@ class WalletOptions extends StatelessWidget {
               onPressed: () {
                 walletOptions.isEditing = false;
                 walletOptions.isBalanceBlur = false;
-                myWalletProvider.rebuildWidget();
+                myWalletProvider.reload();
                 Navigator.pop(context);
               }),
           title: SizedBox(
@@ -245,7 +245,7 @@ class WalletOptions extends StatelessWidget {
               wallet.imageCustomPath = newPath;
               walletBox.put(wallet.key, wallet);
             }
-            walletProvider.reloadBuild();
+            walletProvider.reload();
           },
           child: wallet.imageCustomPath == null || wallet.imageCustomPath == ''
               ? Image.asset(
@@ -273,7 +273,7 @@ class WalletOptions extends StatelessWidget {
           child: InkWell(
             onTap: () async {
               wallet.imageCustomPath = await (walletProvider.changeAvatar());
-              walletProvider.reloadBuild();
+              walletProvider.reload();
             },
             child: Image.asset(
               'assets/walletOptions/camera.png',
@@ -521,8 +521,8 @@ class WalletOptions extends StatelessWidget {
     // defaultWallet = wallet;
     await sub.setCurrentWallet(wallet);
     myWalletProvider.readAllWallets(currentChest);
-    myWalletProvider.rebuildWidget();
-    walletOptions.reloadBuild();
+    myWalletProvider.reload();
+    walletOptions.reload();
   }
 
   Widget deleteWallet(BuildContext context,
@@ -556,7 +556,7 @@ class WalletOptions extends StatelessWidget {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       myWalletProvider.listWallets =
                           myWalletProvider.readAllWallets(currentChest);
-                      myWalletProvider.rebuildWidget();
+                      myWalletProvider.reload();
                     });
                   }
                 : null,

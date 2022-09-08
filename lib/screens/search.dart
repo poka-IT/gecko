@@ -57,7 +57,7 @@ class SearchScreen extends StatelessWidget {
                   autofocus: true,
                   maxLines: 1,
                   textAlign: TextAlign.left,
-                  onChanged: (v) => searchProvider.rebuildWidget(),
+                  onChanged: (v) => searchProvider.reload(),
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Colors.white,

@@ -58,7 +58,7 @@ class SubstrateSdk with ChangeNotifier {
         transactionStatus = p0;
         notifyListeners();
       }).timeout(
-        const Duration(seconds: 12),
+        const Duration(seconds: 18),
         onTimeout: () => {},
       );
       log.d(hash);

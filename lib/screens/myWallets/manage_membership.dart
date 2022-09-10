@@ -28,7 +28,7 @@ class ManageMembership extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    // HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
+    final sub = Provider.of<SubstrateSdk>(context);
 
     return Scaffold(
         backgroundColor: backgroundColor,
@@ -43,7 +43,41 @@ class ManageMembership extends StatelessWidget {
             const SizedBox(height: 20),
             migrateIdentity(context),
             const SizedBox(height: 10),
-            revokeMyIdentity(context)
+            FutureBuilder(
+                future: sub.isSmithGet(address),
+                builder: (BuildContext context, AsyncSnapshot<bool> isSmith) {
+                  if (isSmith.data ?? false) {
+                    return SizedBox(
+                        height: 70,
+                        child: Row(
+                          children: <Widget>[
+                            const SizedBox(width: 20),
+                            Image.asset(
+                              'assets/skull_Icon.png',
+                              color: Colors.grey[500],
+                              height: 30,
+                            ),
+                            const SizedBox(width: 16),
+                            Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('revokeMyIdentity'.tr(),
+                                      style: TextStyle(
+                                          fontSize: 20,
+                                          color: Colors.grey[500])),
+                                  const SizedBox(height: 5),
+                                  Text("youCannotRevokeThisIdentity".tr(),
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey[500])),
+                                ]),
+                          ],
+                        ));
+                  } else {
+                    return revokeMyIdentity(context);
+                  }
+                })
             // const SizedBox(height: 20),
           ]),
         ));

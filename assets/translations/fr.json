@@ -190,5 +190,7 @@
     "identityMigration": "Migration de l'identité",
     "areYouSureMigrateIdentity": "Êtes-vous certain de vouloir migrer définitivement l'identité **{}** et son solde de **{}** ?",
     "someoneCreatedYourIdentity": "Quelqu'un a créé votre identité {} !",
-    "confirmMyIdentity": "Confirmer mon identité"
+    "confirmMyIdentity": "Confirmer mon identité",
+    "revokeMyIdentity": "Révoquer mon identité",
+    "youCannotRevokeThisIdentity": "Vous ne pouvez pas révoquer cette identité tant\nqu'elle fait partie de la toile forgerons"
 }

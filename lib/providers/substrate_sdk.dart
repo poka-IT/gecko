@@ -242,6 +242,19 @@ class SubstrateSdk with ChangeNotifier {
     return await idtyStatus(address) == 'Validated';
   }
 
+  Future<bool> isSmithGet(String address) async {
+    var idtyIndex = await _getIdentityIndexOf(address);
+
+    final Map smithExpireOn =
+        (await _getStorage('smithsMembership.membership($idtyIndex)')) ?? {};
+
+    if (smithExpireOn.isEmpty) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
   Future<Map<String, int>> certState(String from, String to) async {
     Map<String, int> result = {};
     final toStatus = await idtyStatus(to);

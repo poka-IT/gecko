@@ -125,7 +125,7 @@ class ChooseWalletScreen extends StatelessWidget {
                     key: keySelectThisWallet(repository.address!),
                     onTap: () {
                       selectedWallet = repository;
-                      myWalletProvider.rebuildWidget();
+                      myWalletProvider.reload();
                     },
                     child: ClipOvalShadow(
                       shadow: const Shadow(
@@ -202,7 +202,7 @@ class ChooseWalletScreen extends StatelessWidget {
                             ),
                             onTap: () async {
                               selectedWallet = repository;
-                              myWalletProvider.rebuildWidget();
+                              myWalletProvider.reload();
                             },
                           )
                         ]),

@@ -10,7 +10,7 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:provider/provider.dart';
 
 class ChestProvider with ChangeNotifier {
-  void rebuildWidget() {
+  void reload() {
     notifyListeners();
   }
 

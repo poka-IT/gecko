@@ -189,5 +189,7 @@
     "identityMigration": "Identity migration",
     "areYouSureMigrateIdentity": "Are you sure you want to permanently migrate identity **{}** with balance of **{}** ?",
     "someoneCreatedYourIdentity": "Someone created your {} identity !",
-    "confirmMyIdentity": "Confirm my identity"
+    "confirmMyIdentity": "Confirm my identity",
+    "revokeMyIdentity": "Revoke my identity",
+    "youCannotRevokeThisIdentity": "You cannot revoke this identity while\nit is member of the blacksmiths web"
 }

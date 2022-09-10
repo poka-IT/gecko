@@ -244,7 +244,7 @@ class UnlockingWallet extends StatelessWidget {
                     .shake); // Triggering error shake animation
                 pinColor = Colors.red[600];
                 myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
-                walletOptions.reloadBuild();
+                walletOptions.reload();
                 pinFocus.requestFocus();
               } else {
                 pinColor = Colors.green[400];

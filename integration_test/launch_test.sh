@@ -17,7 +17,7 @@ docker compose up -d
 cd ../..
 
 # Start integration test
-flutter test integration_test/$testName.dart && echo '0' > /tmp/geckoTestResult || echo '1' > /tmp/geckoTestResult
+flutter test integration_test/scenarios/$testName.dart && echo '0' > /tmp/geckoTestResult || echo '1' > /tmp/geckoTestResult
 
 # Reset .env
 echo "ip_address=127.0.0.1" > .env

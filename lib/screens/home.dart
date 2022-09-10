@@ -119,7 +119,7 @@ class HomeScreen extends StatelessWidget {
                     await chestBox.clear();
                     await configBox.delete('defaultWallet');
                     await sub.deleteAllAccounts();
-                    myWalletProvider.rebuildWidget();
+                    myWalletProvider.reload();
                   }
 
                   // var connectivityResult =

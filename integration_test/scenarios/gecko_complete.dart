@@ -2,8 +2,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:integration_test/integration_test.dart';
-import 'general_actions.dart';
-import 'tests_utility.dart';
+import '../utility/general_actions.dart';
+import '../utility/tests_utility.dart';
 
 void main() async {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +34,7 @@ void main() async {
 }
 
 Future payTest2() async {
+  spawnBlock(until: 13);
   await waitFor('Rechercher');
   await tapKey(keyOpenSearch);
   final addressToSearch = await clipPaste();
@@ -127,13 +128,13 @@ Future certifyTest5() async {
   await waitFor('Membre validé !');
 
   // spawn 20 blocs and check if ud is creating
-  await spawnBlock(until: 10);
-  await waitFor('109.13');
   await spawnBlock(until: 20);
+  await waitFor('109.13');
+  await spawnBlock(until: 30);
   await waitFor('209.13');
 
   // Check UD reval
-  await spawnBlock(until: 50);
-  await waitFor('509.36');
+  await spawnBlock(until: 60);
+  await waitFor('509.57');
   humanRead(5);
 }

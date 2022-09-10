@@ -224,7 +224,7 @@ class OnboardingStepTen extends StatelessWidget {
                   await walletBox.add(myWallet);
                 }
                 myWalletProvider.readAllWallets(currentChest);
-                myWalletProvider.rebuildWidget();
+                myWalletProvider.reload();
 
                 generateWalletProvider.generatedMnemonic = '';
                 myWalletProvider.resetPinCode();
@@ -239,7 +239,7 @@ class OnboardingStepTen extends StatelessWidget {
                     .shake); // Triggering error shake animation
                 hasError = true;
                 pinColor = Colors.red[600];
-                walletOptions.reloadBuild();
+                walletOptions.reload();
               }
             },
             onChanged: (value) {

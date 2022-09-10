@@ -219,7 +219,7 @@ class MyWalletsProvider with ChangeNotifier {
     if (actualLock == lockPin) pinCode = '';
   }
 
-  void rebuildWidget() {
+  void reload() {
     notifyListeners();
   }
 }

@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:integration_test/integration_test.dart';
-import 'general_actions.dart';
-import 'tests_utility.dart';
+import '../utility/general_actions.dart';
+import '../utility/tests_utility.dart';
 
 void main() async {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +17,7 @@ void main() async {
 
     // Open chest
     await firstOpenChest();
+    spawnBlock(until: 15);
     await goBack();
 
     // Go wallet 5 view
@@ -35,21 +36,27 @@ void main() async {
     await waitFor('25.0 $currencyName');
     await spawnBlock();
     await waitFor('22.0 $currencyName');
-    await bkCertify(fromAddress: test1.address, destAddress: test5.address);
-    await waitFor('1', exactMatch: true);
+    await bkCertify(
+        fromAddress: test1.address,
+        destAddress: test5.address,
+        spawnBloc: false);
     await bkConfirmIdentity(fromAddress: test5.address, name: test5.name);
-    await bkCertify(fromAddress: test2.address, destAddress: test5.address);
-    await waitFor('2', exactMatch: true);
+    await waitFor('1', exactMatch: true);
+    await bkCertify(
+        fromAddress: test2.address,
+        destAddress: test5.address,
+        spawnBloc: false);
+    // await waitFor('2', exactMatch: true);
     await bkCertify(fromAddress: test3.address, destAddress: test5.address);
     await waitFor('3', exactMatch: true);
     await bkCertify(fromAddress: test4.address, destAddress: test5.address);
     await waitFor('4', exactMatch: true);
-    await bkPay(
-        fromAddress: test2.address, destAddress: test5.address, amount: 40);
-    await waitFor('61.99 $currencyName');
-    await spawnBlock(until: 10);
-    await waitFor('161.99 $currencyName');
-    await spawnBlock(until: 20);
-    await waitFor('261.99 $currencyName');
+    // await bkPay(
+    //     fromAddress: test2.address, destAddress: test5.address, amount: 40);
+    await waitFor('21.99 $currencyName');
+    await spawnBlock(until: 30);
+    await waitFor('121.99 $currencyName');
+    await spawnBlock(until: 40);
+    await waitFor('221.99 $currencyName');
   }, timeout: testTimeout());
 }

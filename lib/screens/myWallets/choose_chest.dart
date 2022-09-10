@@ -119,7 +119,7 @@ class _ChooseChestState extends State<ChooseChest> {
                   myWalletProvider.pinCode = '';
                   WalletData? defaultWallet =
                       myWalletProvider.getDefaultWallet();
-                  myWalletProvider.rebuildWidget();
+                  myWalletProvider.reload();
 
                   await Navigator.push(
                     context,

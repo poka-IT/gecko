@@ -190,15 +190,21 @@ Future bkPay(
       destAddress: destAddress,
       amount: amount,
       password: 'AAAAA');
+  await sleep(500);
   await spawnBlock();
   await sleep(500);
 }
 
 // Certify in background
 Future bkCertify(
-    {required String fromAddress, required String destAddress}) async {
+    {required String fromAddress,
+    required String destAddress,
+    bool spawnBloc = true}) async {
   sub.certify(fromAddress, destAddress, 'AAAAA');
-  await spawnBlock();
+  if (spawnBloc) {
+    await sleep(500);
+    await spawnBlock();
+  }
   await sleep(500);
 }
 
@@ -206,6 +212,7 @@ Future bkCertify(
 Future bkConfirmIdentity(
     {required String fromAddress, required String name}) async {
   sub.confirmIdentity(fromAddress, name, 'AAAAA');
+  await sleep(500);
   await spawnBlock();
   await sleep(500);
 }
@@ -237,7 +244,7 @@ Future bkRestoreChest([String mnemonic = testMnemonic]) async {
         name: 'test${number + 1}',
         derivation: (number + 1) * 2);
   }
-  myWalletProvider.rebuildWidget();
+  myWalletProvider.reload();
 }
 
 Future<WalletData> _addImportAccount(
@@ -273,7 +280,7 @@ Future bkDeleteAllWallets() async {
     await configBox.delete('defaultWallet');
     await sub.deleteAllAccounts();
     myWalletProvider.pinCode = '';
-    myWalletProvider.rebuildWidget();
+    myWalletProvider.reload();
   }
 }
 

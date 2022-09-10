@@ -8,6 +8,8 @@ import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/providers/wallet_options.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:polkawallet_sdk/api/types/txInfoData.dart';
@@ -46,13 +48,19 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<String> _executeCall(TxInfoData txInfo, txOptions, String password,
       [String? rawParams]) async {
+    final walletOptions =
+        Provider.of<WalletOptionsProvider>(homeContext, listen: false);
+    final walletProfiles =
+        Provider.of<WalletsProfilesProvider>(homeContext, listen: false);
     try {
-      final hash = await sdk.api.tx
-          .signAndSend(txInfo, txOptions, password, rawParam: rawParams)
-          .timeout(
-            const Duration(seconds: 12),
-            onTimeout: () => {},
-          );
+      final hash = await sdk.api.tx.signAndSend(txInfo, txOptions, password,
+          rawParam: rawParams, onStatusChange: (p0) {
+        transactionStatus = p0;
+        notifyListeners();
+      }).timeout(
+        const Duration(seconds: 18),
+        onTimeout: () => {},
+      );
       log.d(hash);
       if (hash.isEmpty) {
         transactionStatus = 'timeout';
@@ -60,8 +68,11 @@ class SubstrateSdk with ChangeNotifier {
 
         return 'timeout';
       } else {
+        // Success !
         transactionStatus = hash.toString();
         notifyListeners();
+        walletOptions.reload();
+        walletProfiles.reload();
         return hash.toString();
       }
     } catch (e) {
@@ -231,6 +242,19 @@ class SubstrateSdk with ChangeNotifier {
     return await idtyStatus(address) == 'Validated';
   }
 
+  Future<bool> isSmithGet(String address) async {
+    var idtyIndex = await _getIdentityIndexOf(address);
+
+    final Map smithExpireOn =
+        (await _getStorage('smithsMembership.membership($idtyIndex)')) ?? {};
+
+    if (smithExpireOn.isEmpty) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
   Future<Map<String, int>> certState(String from, String to) async {
     Map<String, int> result = {};
     final toStatus = await idtyStatus(to);
@@ -270,6 +294,9 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<String> idtyStatus(String address) async {
+    // WalletOptionsProvider walletOptions =
+    //     Provider.of<WalletOptionsProvider>(homeContext, listen: false);
+
     var idtyIndex = await _getIdentityIndexOf(address);
 
     if (idtyIndex == 0) {
@@ -280,6 +307,10 @@ class SubstrateSdk with ChangeNotifier {
 
     if (idtyStatus != null) {
       final String status = idtyStatus['status'];
+
+      // if (address == walletOptions.address.text && status == 'Validated') {
+      //   walletOptions.reloadBuild();
+      // }
 
       return (status);
     } else {
@@ -662,13 +693,9 @@ class SubstrateSdk with ChangeNotifier {
       required double amount,
       required String password}) async {
     transactionStatus = '';
-    final fromPubkey = await sdk.api.account.decodeAddress([fromAddress]);
     final int amountUnit = (amount * 100).toInt();
 
-    final sender = TxSenderData(
-      fromAddress,
-      fromPubkey!.keys.first,
-    );
+    final sender = await _setSender(fromAddress);
 
     final globalBalance = await getBalance(fromAddress);
     TxInfoData txInfo;
@@ -761,29 +788,9 @@ class SubstrateSdk with ChangeNotifier {
     return await _executeCall(txInfo, txOptions, password, rawParams);
   }
 
-  // Future claimUDs(String password) async {
-  //   final sender = TxSenderData(
-  //     keyring.current.address,
-  //     keyring.current.pubKey,
-  //   );
-
-  //   final txInfo = TxInfoData(
-  //     'universalDividend',
-  //     'claimUds',
-  //     sender,
-  //   );
-
-  //   return await executeCall(txInfo, [], password);
-  // }
-
   Future<String> confirmIdentity(
       String fromAddress, String name, String password) async {
-    final fromPubkey = await sdk.api.account.decodeAddress([fromAddress]);
-
-    final sender = TxSenderData(
-      fromAddress,
-      fromPubkey!.keys.first,
-    );
+    final sender = await _setSender(fromAddress);
 
     final txInfo = TxInfoData(
       'identity',
@@ -803,11 +810,7 @@ class SubstrateSdk with ChangeNotifier {
       required Map fromBalance,
       bool withBalance = false}) async {
     transactionStatus = '';
-    final fromPubkey = await sdk.api.account.decodeAddress([fromAddress]);
-    final sender = TxSenderData(
-      fromAddress,
-      fromPubkey!.keys.first,
-    );
+    final sender = await _setSender(fromAddress);
 
     TxInfoData txInfo;
     List txOptions = [];
@@ -870,22 +873,31 @@ newKeySig: $newKeySig""");
 
   Future revokeIdentity(String address, String password) async {
     final idtyIndex = await _getIdentityIndexOf(address);
+    final sender = await _setSender(address);
 
-    final sender = TxSenderData(
-      keyring.current.address,
-      keyring.current.pubKey,
-    );
+    final prefix = 'revo'.codeUnits;
+    final genesisHashString = await getGenesisHash();
+    final genesisHash = HEX.decode(genesisHashString.substring(2)) as Uint8List;
+    final idtyIndexBytes = _int32bytes(idtyIndex);
+    // final pubkey = await addressToPubkey(address);
+    // final pubkeyHexa = '0x${HEX.encode(pubkey)}';
+    final messageToSign =
+        Uint8List.fromList(prefix + genesisHash + idtyIndexBytes);
+    final revocationSig =
+        (await _signMessage(messageToSign, address, password)).substring(2);
+    final revocationSigTyped = '0x01$revocationSig';
 
-    TxInfoData txInfo;
-
-    txInfo = TxInfoData(
-      'membership',
-      'revokeMembership',
+    final txInfo = TxInfoData(
+      'identity',
+      'revokeIdentity',
       sender,
     );
 
-    final txOptions = [idtyIndex];
+    log.d('''DEBUGG: messageToSign: $messageToSign
+revocationSig: $revocationSig
+revocationSigTyped: $revocationSigTyped''');
 
+    final txOptions = [idtyIndex, address, revocationSigTyped];
     return await _executeCall(txInfo, txOptions, password);
   }
 

@@ -43,5 +43,11 @@ void main() async {
     await tapKey(keyCloseTransactionScreen, duration: 0);
     await waitFor('Aucune identité', exactMatch: true);
     await sleep();
+
+    // Check test1 cannot be revoked
+    await goBack();
+    await tapKey(keyOpenWallet(test1.address));
+    await tapKey(keyManageMembership, duration: 1000);
+    await waitFor('Vous ne pouvez pas révoquer cette identité');
   }, timeout: testTimeout());
 }

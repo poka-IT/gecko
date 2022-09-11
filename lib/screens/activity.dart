@@ -195,6 +195,8 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
       BuildContext context, DuniterIndexer duniterIndexer) {
     CesiumPlusProvider cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+
     int keyID = 0;
     String? dateDelimiter;
     String? lastDateDelimiter;
@@ -273,6 +275,18 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
         dateDelimiter = null;
       }
 
+      final bool isUdUnit = configBox.get('isUdUnit') ?? false;
+      late double amount;
+      late String finalAmount;
+      amount = repository[4] == 'RECEIVED' ? repository[3] : repository[3] * -1;
+
+      if (isUdUnit) {
+        amount = round(amount / (sub.udValue / 100));
+        finalAmount = "$amount DU";
+      } else {
+        finalAmount = '$amount $currencyName';
+      }
+
       return Column(children: <Widget>[
         if (dateDelimiter != null)
           Padding(
@@ -328,7 +342,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
                       ],
                     ),
                   ),
-                  trailing: Text("${repository[3]} $currencyName",
+                  trailing: Text(finalAmount,
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.w500),
                       textAlign: TextAlign.justify),

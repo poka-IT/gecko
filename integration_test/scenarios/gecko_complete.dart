@@ -45,7 +45,7 @@ Future payTest2() async {
   await waitFor(endAddress);
   await tapKey(keySearchResult(addressToSearch));
   await waitFor(endAddress);
-  await waitFor('0.0 ĞD');
+  await waitFor('0.0', exactMatch: true);
   await tapKey(keyPay);
   await enterText(keyAmountField, '12.14');
   await tapKey(keyConfirmPayment);

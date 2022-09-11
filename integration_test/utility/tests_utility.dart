@@ -280,6 +280,7 @@ Future bkDeleteAllWallets() async {
     await walletBox.clear();
     await chestBox.clear();
     await configBox.delete('defaultWallet');
+    await configBox.delete('isUdUnit');
     await sub.deleteAllAccounts();
     myWalletProvider.pinCode = '';
     myWalletProvider.reload();

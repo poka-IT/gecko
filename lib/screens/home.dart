@@ -31,8 +31,8 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     homeContext = context;
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
     Provider.of<ChestProvider>(context);

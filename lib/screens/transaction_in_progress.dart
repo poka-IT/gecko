@@ -41,6 +41,7 @@ class TransactionInProgress extends StatelessWidget {
     final to = toAddress ?? getShortPubkey(walletViewProvider.address!);
     final amount = walletViewProvider.payAmount.text;
     String actionName = '';
+    final bool isUdUnit = configBox.get('isUdUnit') ?? false;
 
     switch (transType) {
       case 'pay':
@@ -196,7 +197,7 @@ class TransactionInProgress extends StatelessWidget {
                       const SizedBox(height: 10),
                       if (transType == 'pay')
                         Text(
-                          '$amount $currencyName',
+                          isUdUnit ? '$amount DU' : '$amount $currencyName',
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.w600),

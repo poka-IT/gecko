@@ -192,5 +192,6 @@
     "someoneCreatedYourIdentity": "Quelqu'un a créé votre identité {} !",
     "confirmMyIdentity": "Confirmer mon identité",
     "revokeMyIdentity": "Révoquer mon identité",
-    "youCannotRevokeThisIdentity": "Vous ne pouvez pas révoquer cette identité tant\nqu'elle fait partie de la toile forgerons"
+    "youCannotRevokeThisIdentity": "Vous ne pouvez pas révoquer cette identité tant\nqu'elle fait partie de la toile forgerons",
+    "showUdAmounts": "Afficher les montants en DU"
 }

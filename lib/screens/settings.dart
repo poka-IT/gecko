@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -33,9 +34,21 @@ class SettingsScreen extends StatelessWidget {
           )),
       body: Column(children: <Widget>[
         const SizedBox(height: 30),
+        Text(
+          'Connectivité réseau',
+          style: TextStyle(color: Colors.grey[500], fontSize: 22),
+        ),
+        const SizedBox(height: 20),
         duniterEndpointSelection(context),
-        const SizedBox(height: 50),
+        const SizedBox(height: 30),
         indexerEndpointSelection(context),
+        const SizedBox(height: 40),
+        Text(
+          'Affichage',
+          style: TextStyle(color: Colors.grey[500], fontSize: 22),
+        ),
+        const SizedBox(height: 20),
+        chooseCurrencyUnit(context),
 
         // SizedBox(height: isTall ? 80 : 120),
         const Spacer(),
@@ -63,6 +76,36 @@ class SettingsScreen extends StatelessWidget {
         // const Spacer(),
         SizedBox(height: isTall ? 90 : 60),
       ]),
+    );
+  }
+
+  Widget chooseCurrencyUnit(BuildContext context) {
+    HomeProvider homeProvider =
+        Provider.of<HomeProvider>(context, listen: false);
+    return InkWell(
+      key: keyUdUnit,
+      onTap: () async {
+        await homeProvider.changeCurrencyUnit();
+      },
+      child: SizedBox(
+        height: 50,
+        child: Row(
+          children: [
+            const SizedBox(width: 12),
+            Text('showUdAmounts'.tr()),
+            const Spacer(),
+            Consumer<HomeProvider>(builder: (context, homeProvider, _) {
+              final bool isUdUnit = configBox.get('isUdUnit') ?? false;
+              return Icon(
+                isUdUnit ? Icons.check_box : Icons.check_box_outline_blank,
+                color: orangeC,
+                size: 32,
+              );
+            }),
+            const SizedBox(width: 30),
+          ],
+        ),
+      ),
     );
   }
 

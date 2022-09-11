@@ -48,7 +48,7 @@ class SearchResultScreen extends StatelessWidget {
       body: SafeArea(
         child: Stack(children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.only(left: 15, right: 10),
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
@@ -111,8 +111,24 @@ class SearchResultScreen extends StatelessWidget {
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
-                                            balance(
-                                                context, g1Wallet.pubkey!, 16)
+                                            SizedBox(
+                                              width: 110,
+                                              child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: [
+                                                    Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          balance(
+                                                              context,
+                                                              g1Wallet.pubkey!,
+                                                              16),
+                                                        ]),
+                                                  ]),
+                                            ),
                                           ]),
                                       subtitle: Row(children: <Widget>[
                                         duniterIndexer.getNameByAddress(

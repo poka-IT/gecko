@@ -6,6 +6,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -163,12 +164,14 @@ class MigrateIdentityScreen extends StatelessWidget {
                   Text('selectDestWallet'.tr()),
                   const SizedBox(height: 5),
                   DropdownButtonHideUnderline(
+                    key: keySelectWallet,
                     child: DropdownButton(
                       // alignment: AlignmentDirectional.topStart,
                       value: selectedWallet,
                       icon: const Icon(Icons.keyboard_arrow_down),
                       items: walletsList.map((wallet) {
                         return DropdownMenuItem(
+                          key: keySelectThisWallet(wallet.address!),
                           value: wallet,
                           child: Text(
                             wallet.name!,
@@ -187,6 +190,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                     width: 380 * ratio,
                     height: 60 * ratio,
                     child: ElevatedButton(
+                      key: keyConfirm,
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white, elevation: 4,
                         backgroundColor: orangeC, // foreground

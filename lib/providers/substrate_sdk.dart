@@ -879,8 +879,6 @@ newKeySig: $newKeySig""");
     final genesisHashString = await getGenesisHash();
     final genesisHash = HEX.decode(genesisHashString.substring(2)) as Uint8List;
     final idtyIndexBytes = _int32bytes(idtyIndex);
-    // final pubkey = await addressToPubkey(address);
-    // final pubkeyHexa = '0x${HEX.encode(pubkey)}';
     final messageToSign =
         Uint8List.fromList(prefix + genesisHash + idtyIndexBytes);
     final revocationSig =
@@ -892,10 +890,6 @@ newKeySig: $newKeySig""");
       'revokeIdentity',
       sender,
     );
-
-    log.d('''DEBUGG: messageToSign: $messageToSign
-revocationSig: $revocationSig
-revocationSigTyped: $revocationSigTyped''');
 
     final txOptions = [idtyIndex, address, revocationSigTyped];
     return await _executeCall(txInfo, txOptions, password);

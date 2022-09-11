@@ -135,9 +135,11 @@ Future<void> waitFor(String text,
   Finder finder = exactMatch ? find.text(text) : find.textContaining(text);
   log.d('INTEGRATION TEST: Wait for: $text');
 
+  final String searchType = reverse ? 'reversed text' : 'text';
+
   do {
     if (DateTime.now().isAfter(end)) {
-      throw Exception('Timed out waiting for text $text');
+      throw Exception('Timed out waiting for $searchType : "$text"');
     }
 
     await tester.pumpAndSettle();

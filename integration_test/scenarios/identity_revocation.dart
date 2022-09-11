@@ -46,8 +46,22 @@ void main() async {
 
     // Check test1 cannot be revoked
     await goBack();
-    await tapKey(keyOpenWallet(test1.address));
+    await tapKey(keyAddDerivation);
+    await tapKey(keyOpenWallet(test1.address), duration: 500);
     await tapKey(keyManageMembership, duration: 1000);
     await waitFor('Vous ne pouvez pas révoquer cette identité');
+
+    // // Try migrate test1 identity to test6 address
+    // await tapKey(keyMigrateIdentity);
+    // await tapKey(keySelectWallet);
+    // await tapKey(keySelectThisWallet(test6.address), selectLast: true);
+    // await spawnBlock(number: 100);
+    // await waitFor('Vous devez attendre', reverse: true);
+    // await waitForButtonEnabled(keyConfirm);
+    // await tapKey(keyConfirm, duration: 500);
+    // await spawnBlock(duration: 2000);
+    // await waitFor('validé !');
+    // await tapKey(keyCloseTransactionScreen, duration: 0);
+    // await sleep(5000);
   }, timeout: testTimeout());
 }

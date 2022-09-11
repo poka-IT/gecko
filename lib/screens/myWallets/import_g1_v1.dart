@@ -106,6 +106,9 @@ class ImportG1v1 extends StatelessWidget {
                     validationStatus = '';
                   }
 
+                  final bool isUdUnit = configBox.get('isUdUnit') ?? false;
+                  final unit = isUdUnit ? 'ud'.tr(args: ['']) : currencyName;
+
                   return Column(children: <Widget>[
                     const SizedBox(height: 20),
                     TextFormField(
@@ -195,7 +198,7 @@ class ImportG1v1 extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      '${balance['transferableBalance']} $currencyName',
+                      '${balance['transferableBalance']} $unit',
                       style: const TextStyle(fontSize: 17),
                     ),
                     Row(

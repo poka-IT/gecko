@@ -27,7 +27,7 @@ void main() async {
     await enterText(keyCesiumId, 'test');
     await enterText(keyCesiumPassword, 'test');
     await waitFor(cesiumTest1.shortAddress());
-    await waitFor('100.0', exactMatch: true);
+    await waitFor('100.0');
     await waitFor('3', exactMatch: true);
 
     isObscureText();

@@ -405,13 +405,17 @@ class WalletViewScreen extends StatelessWidget {
 
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
-    // final _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     const double shapeSize = 20;
     WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
     log.d(defaultWallet.address);
 
     bool canValidate = false;
+
+    final bool isUdUnit = configBox.get('isUdUnit') ?? false;
+    final udValue = sub.udValue;
+    final double balanceRatio = isUdUnit ? round(udValue / 100, 6) : 1;
 
     showModalBottomSheet<void>(
         shape: const RoundedRectangleBorder(
@@ -426,11 +430,13 @@ class WalletViewScreen extends StatelessWidget {
           return StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
             if (walletViewProvider.payAmount.text != '' &&
-                (double.parse(walletViewProvider.payAmount.text) + 2) <=
+                (double.parse(walletViewProvider.payAmount.text) +
+                        2 / balanceRatio) <=
                     (balanceCache[defaultWallet.address] ?? 0) &&
                 walletViewProvider.address != defaultWallet.address) {
               if ((balanceCache[pubkey] == 0 || balanceCache[pubkey] == null) &&
-                  double.parse(walletViewProvider.payAmount.text) < 5) {
+                  double.parse(walletViewProvider.payAmount.text) <
+                      5 / balanceRatio) {
                 canValidate = false;
               } else {
                 canValidate = true;
@@ -562,7 +568,7 @@ class WalletViewScreen extends StatelessWidget {
                           decoration: InputDecoration(
                             hintText: '0.00',
                             suffix: Text(isUdUnit
-                                ? 'DU'
+                                ? 'ud'.tr(args: [''])
                                 : currencyName), // udUnitDisplay(40),
                             filled: true,
                             fillColor: Colors.transparent,

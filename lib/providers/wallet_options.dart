@@ -616,7 +616,7 @@ Widget udUnitDisplay(double size, [Color color = Colors.black]) {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Text(
-              'DU',
+              'ud'.tr(args: ['']),
               style:
                   TextStyle(fontSize: isTall ? size : size * 0.9, color: color),
             ),

@@ -197,7 +197,9 @@ class TransactionInProgress extends StatelessWidget {
                       const SizedBox(height: 10),
                       if (transType == 'pay')
                         Text(
-                          isUdUnit ? '$amount DU' : '$amount $currencyName',
+                          isUdUnit
+                              ? 'ud'.tr(args: ['$amount '])
+                              : '$amount $currencyName',
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.w600),

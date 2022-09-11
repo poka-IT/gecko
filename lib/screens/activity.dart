@@ -282,7 +282,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
 
       if (isUdUnit) {
         amount = round(amount / (sub.udValue / 100));
-        finalAmount = "$amount DU";
+        finalAmount = 'ud'.tr(args: ['$amount ']);
       } else {
         finalAmount = '$amount $currencyName';
       }

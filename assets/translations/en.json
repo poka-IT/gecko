@@ -192,5 +192,6 @@
     "confirmMyIdentity": "Confirm my identity",
     "revokeMyIdentity": "Revoke my identity",
     "youCannotRevokeThisIdentity": "You cannot revoke this identity while\nit is member of the blacksmiths web",
-    "showUdAmounts": "Show amounts in UD"
+    "showUdAmounts": "Show amounts in UD",
+    "ud": "{}UD"
 }

@@ -41,6 +41,7 @@ class SubstrateSdk with ChangeNotifier {
   String g1V1NewAddress = '';
   bool isCesiumIDVisible = false;
   bool isCesiumAddresLoading = false;
+  late int udValue;
 
   /////////////////////////////////////
   ////////// 1: API METHODS ///////////
@@ -154,20 +155,10 @@ class SubstrateSdk with ChangeNotifier {
     return consumers == 0 ? false : true;
   }
 
-  // Future<double> getBalance(String address) async {
-  //   double balance = 0.0;
-
-  //   if (nodeConnected) {
-  //     final brutBalance = await sdk.api.account.queryBalance(address);
-  //     // log.d(brutBalance?.toJson());
-  //     balance = int.parse(brutBalance!.freeBalance) / 100;
-  //   } else {
-  //     balance = -1;
-  //   }
-
-  //   await getUnclaimedUd(address);
-  //   return balance;
-  // }
+  Future<int> getUdValue() async {
+    udValue = int.parse(await _getStorage('universalDividend.currentUd()'));
+    return udValue;
+  }
 
   Future<Map<String, double>> getBalance(String address) async {
     // log.d('currencyParameters: $currencyParameters');
@@ -201,11 +192,18 @@ class SubstrateSdk with ChangeNotifier {
     final int transferableBalance =
         (balanceGlobal['data']['free'] + unclaimedUds);
 
+    final bool isUdUnit = configBox.get('isUdUnit') ?? false;
+    final udValue = await getUdValue();
+    final double balanceRatio = isUdUnit ? round(udValue / 100, 6) : 1;
+
+    // log.d('udValue: $udValue');
+
     Map<String, double> finalBalances = {
-      'transferableBalance': transferableBalance / 100,
-      'free': balanceGlobal['data']['free'] / 100,
-      'unclaimedUds': unclaimedUds / 100,
-      'reserved': balanceGlobal['data']['reserved'] / 100,
+      'transferableBalance': round((transferableBalance / balanceRatio) / 100),
+      'free': round((balanceGlobal['data']['free'] / balanceRatio) / 100),
+      'unclaimedUds': round((unclaimedUds / balanceRatio) / 100),
+      'reserved':
+          round((balanceGlobal['data']['reserved'] / balanceRatio) / 100),
     };
 
     // log.i(finalBalances);
@@ -701,11 +699,30 @@ class SubstrateSdk with ChangeNotifier {
     TxInfoData txInfo;
     List txOptions = [];
     String? rawParams;
+    final bool isUdUnit = configBox.get('isUdUnit') ?? false;
+    late String palette;
+    late String call;
+    late String tx2;
+
+    if (amount == -1) {
+      palette = 'balances';
+      call = 'transferAll';
+      txOptions = [destAddress, false];
+      tx2 = 'api.tx.balances.transferAll("$destAddress", false)';
+    } else {
+      if (isUdUnit) {
+        palette = 'universalDividend';
+        call = 'transferUd';
+      } else {
+        palette = 'balances';
+        call = 'transferKeepAlive';
+      }
+      txOptions = [destAddress, amountUnit];
+      tx2 = 'api.tx.$palette.$call("$destAddress", $amountUnit)';
+    }
 
     if (globalBalance['unclaimedUds'] == 0) {
-      txInfo = TxInfoData('balances',
-          amount == -1 ? 'transferAll' : 'transferKeepAlive', sender);
-      txOptions = [destAddress, amount == -1 ? false : amountUnit];
+      txInfo = TxInfoData(palette, call, sender);
     } else {
       txInfo = TxInfoData(
         'utility',
@@ -713,14 +730,9 @@ class SubstrateSdk with ChangeNotifier {
         sender,
       );
       const tx1 = 'api.tx.universalDividend.claimUds()';
-      final tx2 = amount == -1
-          ? 'api.tx.balances.transferAll("$destAddress", false)'
-          : 'api.tx.balances.transferKeepAlive("$destAddress", $amountUnit)';
-
       rawParams = '[[$tx1, $tx2]]';
     }
 
-    // log.d('pay args:  ${txInfo.module}, ${txInfo.call}, $txOptions, $rawParams');
     return await _executeCall(txInfo, txOptions, password, rawParams);
   }
 
@@ -1013,3 +1025,7 @@ class PasswordException implements Exception {
 
 Uint8List _int32bytes(int value) =>
     Uint8List(4)..buffer.asInt32List()[0] = value;
+
+double round(double number, [int decimal = 2]) {
+  return double.parse((number.toStringAsFixed(decimal)));
+}

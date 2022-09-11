@@ -87,7 +87,21 @@ class ContactsScreen extends StatelessWidget {
                                 trailing: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      balance(context, g1Wallet.pubkey!, 16)
+                                      SizedBox(
+                                        width: 110,
+                                        child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.end,
+                                            children: [
+                                              Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    balance(context,
+                                                        g1Wallet.pubkey!, 16),
+                                                  ]),
+                                            ]),
+                                      ),
                                     ]),
                                 subtitle: Row(children: <Widget>[
                                   duniterIndexer.getNameByAddress(

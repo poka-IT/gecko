@@ -541,10 +541,13 @@ Widget balance(BuildContext context, String address, double size,
                 globalBalance.hasError) {
               if (balanceCache[address] != null &&
                   balanceCache[address] != -1) {
-                return Text(
-                    "${balanceCache[address]!.toString()} $currencyName",
-                    style: TextStyle(
-                        fontSize: isTall ? size : size * 0.9, color: color));
+                return Row(children: [
+                  Text(balanceCache[address]!.toString(),
+                      style: TextStyle(
+                          fontSize: isTall ? size : size * 0.9, color: color)),
+                  const SizedBox(width: 5),
+                  udUnitDisplay(size, color),
+                ]);
               } else {
                 return SizedBox(
                   height: 15,
@@ -558,13 +561,17 @@ Widget balance(BuildContext context, String address, double size,
             }
             balanceCache[address] = globalBalance.data!['transferableBalance']!;
             if (balanceCache[address] != -1) {
-              return Text(
-                "${balanceCache[address]!.toString()} $currencyName",
-                style: TextStyle(
-                  fontSize: isTall ? size : size * 0.9,
-                  color: color,
+              return Row(children: [
+                Text(
+                  balanceCache[address]!.toString(),
+                  style: TextStyle(
+                    fontSize: isTall ? size : size * 0.9,
+                    color: color,
+                  ),
                 ),
-              );
+                const SizedBox(width: 5),
+                udUnitDisplay(size, color),
+              ]);
             } else {
               return const Text('');
             }
@@ -600,4 +607,33 @@ Widget getCerts(BuildContext context, String address, double size,
           });
     }),
   ]);
+}
+
+Widget udUnitDisplay(double size, [Color color = Colors.black]) {
+  final bool isUdUnit = configBox.get('isUdUnit') ?? false;
+  return isUdUnit
+      ? Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              'ud'.tr(args: ['']),
+              style:
+                  TextStyle(fontSize: isTall ? size : size * 0.9, color: color),
+            ),
+            Column(
+              children: [
+                Text(
+                  currencyName,
+                  style: TextStyle(
+                      fontSize: (isTall ? size : size * 0.9) * 0.7,
+                      fontWeight: FontWeight.w500,
+                      color: color),
+                ),
+                const SizedBox(height: 15)
+              ],
+            )
+          ],
+        )
+      : Text(currencyName,
+          style: TextStyle(fontSize: isTall ? size : size * 0.9, color: color));
 }

@@ -313,9 +313,18 @@ class DuniterIndexer with ChangeNotifier {
                                   fontWeight: FontWeight.w500),
                               textAlign: TextAlign.center),
                         ]),
-                        trailing: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [balance(context, profile['id'], 16)]),
+                        trailing: SizedBox(
+                          width: 110,
+                          child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      balance(context, profile['id'], 16),
+                                    ]),
+                              ]),
+                        ),
                         subtitle: Row(children: <Widget>[
                           Text(profile['name'] ?? '',
                               style: const TextStyle(
@@ -360,16 +369,16 @@ class DuniterIndexer with ChangeNotifier {
       transBC[i] = [];
       transBC[i].add(DateTime.parse(transaction['created_at']));
       final int amountBrut = transaction['amount'];
-      final num amount = removeDecimalZero(amountBrut / 100);
+      final double amount = removeDecimalZero(amountBrut / 100);
       if (direction == "RECEIVED") {
         transBC[i].add(transaction['issuer_id']);
         transBC[i].add(transaction['issuer']['identity']?['name'] ?? '');
-        transBC[i].add(amount.toString());
       } else if (direction == "SENT") {
         transBC[i].add(transaction['receiver_id']);
         transBC[i].add(transaction['receiver']['identity']?['name'] ?? '');
-        transBC[i].add('- $amount');
       }
+      transBC[i].add(amount);
+      transBC[i].add(direction);
       // transBC[i].add(''); //transaction comment
 
       i++;
@@ -429,9 +438,9 @@ class DuniterIndexer with ChangeNotifier {
     return opts;
   }
 
-  num removeDecimalZero(double n) {
+  double removeDecimalZero(double n) {
     String result = n.toStringAsFixed(n.truncateToDouble() == n ? 0 : 2);
-    return num.parse(result);
+    return double.parse(result);
   }
 
   // checkHistoryResult(

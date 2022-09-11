@@ -70,6 +70,7 @@ const keyDeleteAllWallets = Key('keyDeleteAllWallets');
 const keySelectDuniterNodeDropDown = Key('keySelectDuniterNodeDropDown');
 const keyCustomDuniterEndpoint = Key('keyCustomDuniterEndpoint');
 const keyConnectToEndpoint = Key('keyConnectToEndpoint');
+const keyUdUnit = Key('keyUdUnit');
 
 // Onboarding
 const keyPastMnemonic = Key('keyPastMnemonic');

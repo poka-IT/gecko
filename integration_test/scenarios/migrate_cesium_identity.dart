@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:integration_test/integration_test.dart';
 import '../utility/general_actions.dart';
@@ -28,7 +27,7 @@ void main() async {
     await enterText(keyCesiumId, 'test');
     await enterText(keyCesiumPassword, 'test');
     await waitFor(cesiumTest1.shortAddress());
-    await waitFor('100.0 $currencyName');
+    await waitFor('100.0');
     await waitFor('3', exactMatch: true);
 
     isObscureText();
@@ -51,7 +50,7 @@ void main() async {
     await waitFor('3', exactMatch: true);
     await waitFor('Membre validé !');
 
-    await waitFor('99.98 $currencyName');
+    await waitFor('99.98', exactMatch: true);
   }, timeout: testTimeout());
 }
 

@@ -218,7 +218,7 @@ class ChooseWalletScreen extends StatelessWidget {
       width: double.infinity,
       color: isDefault ? orangeC : yellowC,
       child: SizedBox(
-        height: 25,
+        height: 30,
         child: Column(children: [
           const Spacer(),
           // Text(
@@ -226,7 +226,10 @@ class ChooseWalletScreen extends StatelessWidget {
           //   textAlign: TextAlign.center,
           //   style: TextStyle(color: isDefault ? Colors.white : Colors.black),
           // ),
-          balance(context, address, 15, isDefault ? Colors.white : Colors.black)
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            balance(
+                context, address, 16, isDefault ? Colors.white : Colors.black),
+          ])
         ]),
       ),
     );

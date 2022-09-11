@@ -293,12 +293,17 @@ class WalletsHome extends StatelessWidget {
       color: isDefault ? orangeC : yellowC,
       child: Padding(
           padding: const EdgeInsets.only(left: 5, right: 5, top: 38),
-          child: balance(
-              context,
-              address,
-              15,
-              isDefault ? Colors.white : Colors.black,
-              isDefault ? yellowC : orangeC)),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              balance(
+                  context,
+                  address,
+                  15,
+                  isDefault ? Colors.white : Colors.black,
+                  isDefault ? yellowC : orangeC)
+            ],
+          )),
     );
   }
 

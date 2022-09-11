@@ -1,6 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:integration_test/integration_test.dart';
 import '../utility/general_actions.dart';
@@ -33,9 +32,9 @@ void main() async {
     // Background pay 25
     await bkPay(
         fromAddress: test1.address, destAddress: test5.address, amount: 25);
-    await waitFor('25.0 $currencyName');
+    await waitFor('25.0', exactMatch: true);
     await spawnBlock();
-    await waitFor('22.0 $currencyName');
+    await waitFor('22.0', exactMatch: true);
     await bkCertify(
         fromAddress: test1.address,
         destAddress: test5.address,
@@ -53,10 +52,10 @@ void main() async {
     await waitFor('4', exactMatch: true);
     // await bkPay(
     //     fromAddress: test2.address, destAddress: test5.address, amount: 40);
-    await waitFor('21.99 $currencyName');
+    await waitFor('21.99', exactMatch: true);
     await spawnBlock(until: 30);
-    await waitFor('121.99 $currencyName');
+    await waitFor('121.99', exactMatch: true);
     await spawnBlock(until: 40);
-    await waitFor('221.99 $currencyName');
+    await waitFor('221.99', exactMatch: true);
   }, timeout: testTimeout());
 }

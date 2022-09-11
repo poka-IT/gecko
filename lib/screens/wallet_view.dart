@@ -403,15 +403,19 @@ class WalletViewScreen extends StatelessWidget {
     // WalletsProfilesProvider _walletViewProvider =
     //     Provider.of<WalletsProfilesProvider>(context, listen: false);
 
-    MyWalletsProvider myWalletProvider =
+    final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
-    // SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     const double shapeSize = 20;
     WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
     log.d(defaultWallet.address);
 
     bool canValidate = false;
+
+    final bool isUdUnit = configBox.get('isUdUnit') ?? false;
+    final udValue = sub.udValue;
+    final double balanceRatio = isUdUnit ? round(udValue / 100, 6) : 1;
 
     showModalBottomSheet<void>(
         shape: const RoundedRectangleBorder(
@@ -426,11 +430,13 @@ class WalletViewScreen extends StatelessWidget {
           return StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
             if (walletViewProvider.payAmount.text != '' &&
-                (double.parse(walletViewProvider.payAmount.text) + 2) <=
+                (double.parse(walletViewProvider.payAmount.text) +
+                        2 / balanceRatio) <=
                     (balanceCache[defaultWallet.address] ?? 0) &&
                 walletViewProvider.address != defaultWallet.address) {
               if ((balanceCache[pubkey] == 0 || balanceCache[pubkey] == null) &&
-                  double.parse(walletViewProvider.payAmount.text) < 5) {
+                  double.parse(walletViewProvider.payAmount.text) <
+                      5 / balanceRatio) {
                 canValidate = false;
               } else {
                 canValidate = true;
@@ -438,6 +444,7 @@ class WalletViewScreen extends StatelessWidget {
             } else {
               canValidate = false;
             }
+            final bool isUdUnit = configBox.get('isUdUnit') ?? false;
             return Padding(
               padding: EdgeInsets.only(
                   bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -524,44 +531,7 @@ class WalletViewScreen extends StatelessWidget {
                               child: Row(children: [
                                 Text(defaultWallet.name!),
                                 const Spacer(),
-                                FutureBuilder(
-                                    future:
-                                        sub.getBalance(defaultWallet.address!),
-                                    builder: (BuildContext context,
-                                        AsyncSnapshot<Map<String, double>>
-                                            globalBalance) {
-                                      if (globalBalance.connectionState !=
-                                              ConnectionState.done ||
-                                          globalBalance.hasError) {
-                                        if (balanceCache[
-                                                defaultWallet.address!] !=
-                                            null) {
-                                          return Text(
-                                              "${balanceCache[defaultWallet.address!]} $currencyName",
-                                              style: const TextStyle(
-                                                fontSize: 20,
-                                              ));
-                                        } else {
-                                          return SizedBox(
-                                            height: 15,
-                                            width: 15,
-                                            child: CircularProgressIndicator(
-                                              color: orangeC,
-                                              strokeWidth: 2,
-                                            ),
-                                          );
-                                        }
-                                      }
-                                      balanceCache[defaultWallet.address!] =
-                                          globalBalance
-                                              .data!['transferableBalance']!;
-                                      return Text(
-                                        "${balanceCache[defaultWallet.address!]} $currencyName",
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                        ),
-                                      );
-                                    }),
+                                balance(context, defaultWallet.address!, 20)
                               ]),
                             ),
                           );
@@ -597,7 +567,9 @@ class WalletViewScreen extends StatelessWidget {
                           // onChanged: (v) => _searchProvider.reload(),
                           decoration: InputDecoration(
                             hintText: '0.00',
-                            suffix: Text(currencyName),
+                            suffix: Text(isUdUnit
+                                ? 'ud'.tr(args: [''])
+                                : currencyName), // udUnitDisplay(40),
                             filled: true,
                             fillColor: Colors.transparent,
                             // border: OutlineInputBorder(

@@ -129,6 +129,9 @@ class MigrateIdentityScreen extends StatelessWidget {
                     .removeWhere((element) => element.address == fromAddress);
                 // walletsList.add(WalletData(address: 'custom', name: 'custom'));
 
+                final bool isUdUnit = configBox.get('isUdUnit') ?? false;
+                final unit = isUdUnit ? 'ud'.tr(args: ['']) : currencyName;
+
                 return Column(children: <Widget>[
                   Row(children: const []),
                   const SizedBox(height: 20),
@@ -139,7 +142,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                         data: 'areYouSureMigrateIdentity'.tr(args: [
                           duniterIndexer.walletNameIndexer[fromAddress] ??
                               '???',
-                          '${balance['transferableBalance']} $currencyName'
+                          '${balance['transferableBalance']} $unit'
                         ]),
                         styleSheet: mdStyle),
                   ),

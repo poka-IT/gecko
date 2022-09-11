@@ -28,6 +28,12 @@ Future deleteAllWallets() async {
   if (await isPresent('Rechercher')) {
     await tapKey(keyDrawerMenu);
     await tapKey(keyParameters);
+
+    // Check if ud unit checkbox is checked
+    final isUdUnit = await isIconPresent(Icons.check_box);
+    // If yes, tap on to use currency value
+    if (isUdUnit) await tapKey(keyUdUnit, duration: 0);
+
     await tapKey(keyDeleteAllWallets);
     await tapKey(keyConfirm);
     await tester.pumpAndSettle();
@@ -142,9 +148,9 @@ Future onboardingNewChest() async {
   // Go to wallets home
   await tapKey(keyGoWalletsHome, duration: 0);
 
-  // Check if string "ĞD" is present in screen
+  // Check if string "Mon portefeuille co" is present in screen
   await waitFor('Mon portefeuille co');
-  await waitFor('0.0 $currencyName');
+  await waitFor('0.0', exactMatch: true);
   // await waitFor('Scanner un');
 }
 
@@ -159,5 +165,5 @@ Future firstOpenChest() async {
   final isCached = await isIconPresent(Icons.check_box);
   if (!isCached) await tapKey(keyCachePassword, duration: 0);
   await enterText(keyPinForm, 'AAAAA', 0);
-  await waitFor('100.0 $currencyName');
+  await waitFor('100.0', exactMatch: true);
 }

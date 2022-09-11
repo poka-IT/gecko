@@ -1,6 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:integration_test/integration_test.dart';
 import '../utility/general_actions.dart';
@@ -20,10 +19,10 @@ void main() async {
 
     // Go to test1 options and check if balance growup with UDs creations
     await tapKey(keyOpenWallet(test1.address));
-    await waitFor('100.0 $currencyName');
+    await waitFor('100.0', exactMatch: true);
     await spawnBlock(until: 10);
-    await waitFor('200.0 $currencyName');
+    await waitFor('200.0', exactMatch: true);
     await spawnBlock(until: 20);
-    await waitFor('300.0 $currencyName');
+    await waitFor('300.0', exactMatch: true);
   }, timeout: testTimeout());
 }

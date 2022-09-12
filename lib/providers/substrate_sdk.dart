@@ -194,7 +194,7 @@ class SubstrateSdk with ChangeNotifier {
 
     final bool isUdUnit = configBox.get('isUdUnit') ?? false;
     final udValue = await getUdValue();
-    final double balanceRatio = isUdUnit ? round(udValue / 100, 6) : 1;
+    final double balanceRatio = isUdUnit ? round(udValue / 1000, 6) : 1;
 
     // log.d('udValue: $udValue');
 

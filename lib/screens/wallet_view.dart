@@ -409,7 +409,7 @@ void paymentPopup(BuildContext context, String toAddress) {
 
   final bool isUdUnit = configBox.get('isUdUnit') ?? false;
   final udValue = sub.udValue;
-  final double balanceRatio = isUdUnit ? round(udValue / 100, 6) : 1;
+  final double balanceRatio = isUdUnit ? round(udValue / 1000, 6) : 1;
 
   final toWalletData = myWalletProvider.getWalletDataByAddress(toAddress);
 

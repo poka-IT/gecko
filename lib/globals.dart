@@ -5,16 +5,11 @@ import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:logger/logger.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 // Version of box data
 const int dataVersion = 4;
 
-// Files paths
-Directory? appPath;
-
 late String appVersion;
-late SharedPreferences prefs;
 const int pinLength = 5;
 const String appLang = 'english';
 

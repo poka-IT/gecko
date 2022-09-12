@@ -89,7 +89,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
         children: <Widget>[
           Query(
             options: QueryOptions(
-              document: gql(getHistoryByAddressQ3),
+              document: gql(getHistoryByAddressQ),
               variables: <String, dynamic>{
                 'address': address,
                 'number': 20,

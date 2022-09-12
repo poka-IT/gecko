@@ -41,7 +41,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:responsive_framework/responsive_framework.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -61,7 +60,6 @@ Future<void> main() async {
   await initHiveForFlutter();
   await homeProvider.initHive();
   appVersion = await homeProvider.getAppVersion();
-  prefs = await SharedPreferences.getInstance();
 
   // Reset GraphQL cache
   // final cache = HiveStore();

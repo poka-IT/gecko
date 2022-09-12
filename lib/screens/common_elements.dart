@@ -187,8 +187,8 @@ class CommonElements {
 }
 
 class SmoothTransition extends PageRouteBuilder {
-  final Widget? page;
-  SmoothTransition({this.page})
+  final Widget page;
+  SmoothTransition({required this.page})
       : super(
           pageBuilder: (
             BuildContext context,
@@ -199,7 +199,7 @@ class SmoothTransition extends PageRouteBuilder {
             duration: const Duration(seconds: 5),
             tween: Tween(begin: 200, end: 200),
             builder: (BuildContext context, dynamic value, Widget? child) {
-              return page!;
+              return page;
             },
           ),
         );

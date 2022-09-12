@@ -77,7 +77,7 @@ class ContactsScreen extends StatelessWidget {
                                 leading: cesiumPlusProvider
                                     .defaultAvatar(avatarSize),
                                 title: Row(children: <Widget>[
-                                  Text(getShortPubkey(g1Wallet.pubkey!),
+                                  Text(getShortPubkey(g1Wallet.address),
                                       style: const TextStyle(
                                           fontSize: 18,
                                           fontFamily: 'Monospace',
@@ -98,14 +98,14 @@ class ContactsScreen extends StatelessWidget {
                                                       MainAxisAlignment.center,
                                                   children: [
                                                     balance(context,
-                                                        g1Wallet.pubkey!, 16),
+                                                        g1Wallet.address, 16),
                                                   ]),
                                             ]),
                                       ),
                                     ]),
                                 subtitle: Row(children: <Widget>[
                                   duniterIndexer.getNameByAddress(
-                                      context, g1Wallet.pubkey!)
+                                      context, g1Wallet.address)
                                 ]),
                                 dense: false,
                                 isThreeLine: false,
@@ -114,15 +114,15 @@ class ContactsScreen extends StatelessWidget {
                                     context,
                                     MaterialPageRoute(builder: (context) {
                                       walletsProfilesClass.address =
-                                          g1Wallet.pubkey;
+                                          g1Wallet.address;
                                       return WalletViewScreen(
-                                        address: g1Wallet.pubkey,
+                                        address: g1Wallet.address,
                                         username: g1WalletsBox
-                                            .get(g1Wallet.pubkey)
+                                            .get(g1Wallet.address)
                                             ?.id
                                             ?.username,
                                         avatar: g1WalletsBox
-                                            .get(g1Wallet.pubkey)
+                                            .get(g1Wallet.address)
                                             ?.avatar,
                                       );
                                     }),

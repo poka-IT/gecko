@@ -19,7 +19,7 @@ import 'package:provider/provider.dart';
 class WalletsProfilesProvider with ChangeNotifier {
   WalletsProfilesProvider(this.address);
 
-  String? address = '';
+  String address = '';
   String pubkeyShort = '';
 
   bool isHistoryScreen = false;
@@ -231,10 +231,10 @@ class WalletsProfilesProvider with ChangeNotifier {
 
   Future addContact(G1WalletsList profile) async {
     // log.d(profile.username);
-    if (isContact(profile.pubkey!)) {
-      await contactsBox.delete(profile.pubkey);
+    if (isContact(profile.address)) {
+      await contactsBox.delete(profile.address);
     } else {
-      await contactsBox.put(profile.pubkey, profile);
+      await contactsBox.put(profile.address, profile);
     }
     notifyListeners();
   }

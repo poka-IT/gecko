@@ -72,7 +72,7 @@ class ChooseWalletScreen extends StatelessWidget {
         ));
   }
 
-  Widget myWalletsTiles(BuildContext context, int? currentChest) {
+  Widget myWalletsTiles(BuildContext context, int currentChest) {
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
     // SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);

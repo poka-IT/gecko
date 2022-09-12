@@ -94,13 +94,13 @@ class SearchResultScreen extends StatelessWidget {
                                   padding:
                                       const EdgeInsets.symmetric(horizontal: 5),
                                   child: ListTile(
-                                      key: keySearchResult(g1Wallet.pubkey!),
+                                      key: keySearchResult(g1Wallet.address),
                                       horizontalTitleGap: 40,
                                       contentPadding: const EdgeInsets.all(5),
                                       leading: cesiumPlusProvider
                                           .defaultAvatar(avatarSize),
                                       title: Row(children: <Widget>[
-                                        Text(getShortPubkey(g1Wallet.pubkey!),
+                                        Text(getShortPubkey(g1Wallet.address),
                                             style: const TextStyle(
                                                 fontSize: 18,
                                                 fontFamily: 'Monospace',
@@ -124,7 +124,7 @@ class SearchResultScreen extends StatelessWidget {
                                                         children: [
                                                           balance(
                                                               context,
-                                                              g1Wallet.pubkey!,
+                                                              g1Wallet.address,
                                                               16),
                                                         ]),
                                                   ]),
@@ -132,7 +132,7 @@ class SearchResultScreen extends StatelessWidget {
                                           ]),
                                       subtitle: Row(children: <Widget>[
                                         duniterIndexer.getNameByAddress(
-                                            context, g1Wallet.pubkey!)
+                                            context, g1Wallet.address)
                                       ]),
                                       dense: false,
                                       isThreeLine: false,
@@ -141,15 +141,15 @@ class SearchResultScreen extends StatelessWidget {
                                           context,
                                           MaterialPageRoute(builder: (context) {
                                             walletsProfilesClass.address =
-                                                g1Wallet.pubkey;
+                                                g1Wallet.address;
                                             return WalletViewScreen(
-                                              address: g1Wallet.pubkey,
+                                              address: g1Wallet.address,
                                               username: g1WalletsBox
-                                                  .get(g1Wallet.pubkey)
+                                                  .get(g1Wallet.address)
                                                   ?.id
                                                   ?.username,
                                               avatar: g1WalletsBox
-                                                  .get(g1Wallet.pubkey)
+                                                  .get(g1Wallet.address)
                                                   ?.avatar,
                                             );
                                           }),

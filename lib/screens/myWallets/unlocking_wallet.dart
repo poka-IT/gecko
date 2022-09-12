@@ -17,9 +17,8 @@ import 'package:provider/provider.dart';
 import 'package:gecko/globals.dart';
 
 class UnlockingWallet extends StatelessWidget {
-  UnlockingWallet({Key? keyUnlockWallet, required this.wallet})
-      : super(key: keyUnlockWallet);
-  WalletData? wallet;
+  UnlockingWallet({required this.wallet}) : super(key: keyUnlockWallet);
+  WalletData wallet;
   late int currentChestNumber;
   late ChestData currentChest;
   bool canUnlock = true;
@@ -39,7 +38,7 @@ class UnlockingWallet extends StatelessWidget {
     currentChestNumber = configBox.get('currentChest');
     currentChest = chestBox.get(currentChestNumber)!;
 
-    int pinLenght = walletOptions.getPinLenght(wallet!.number);
+    int pinLenght = walletOptions.getPinLenght(wallet.number);
     errorController = StreamController<ErrorAnimationType>();
 
     return Scaffold(

@@ -548,7 +548,7 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<KeyPairData?> changePassword(BuildContext context, String address,
-      String passOld, String? passNew) async {
+      String passOld, String passNew) async {
     final account = getKeypair(address);
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
@@ -980,19 +980,6 @@ newKeySig: $newKeySig""");
 /////// 6: UI ELEMENTS (off class) /////////
 ////////////////////////////////////////////
 
-void snack(BuildContext context, String message, {int duration = 2}) {
-  final snackBar =
-      SnackBar(content: Text(message), duration: Duration(seconds: duration));
-  ScaffoldMessenger.of(context).showSnackBar(snackBar);
-}
-
-class AddressInfo {
-  final String? address;
-  double balance;
-
-  AddressInfo({@required this.address, this.balance = 0});
-}
-
 void snackNode(BuildContext context, bool isConnected) {
   String message;
   if (!isConnected) {
@@ -1016,11 +1003,6 @@ String getShortPubkey(String pubkey) {
           position: TruncatePosition.end) +
       truncate(pubkey, 6, omission: "", position: TruncatePosition.start);
   return pubkeyShort;
-}
-
-class PasswordException implements Exception {
-  String cause;
-  PasswordException(this.cause);
 }
 
 Uint8List _int32bytes(int value) =>

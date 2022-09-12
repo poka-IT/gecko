@@ -82,7 +82,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                 if (status.data == null) {
                   return Column(children: [
                     const SizedBox(height: 80),
-                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: const  [
                       SizedBox(
                         height: 35,
                         width: 35,

@@ -160,7 +160,7 @@ class SearchResultScreen extends StatelessWidget {
                           );
                         }
                       }
-                      return Center(
+                      return const Center(
                         heightFactor: 5,
                         child: CircularProgressIndicator(
                           strokeWidth: 3,

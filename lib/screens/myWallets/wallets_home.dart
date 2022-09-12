@@ -178,7 +178,7 @@ class WalletsHome extends StatelessWidget {
           height: 60,
           child: Center(
               child: Text('changeChest'.tr(),
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontSize: 22,
                       color: orangeC,
                       fontWeight: FontWeight.w500))),
@@ -468,10 +468,10 @@ class WalletsHome extends StatelessWidget {
                     child: Container(
                       width: double.infinity,
                       height: double.infinity,
-                      decoration: BoxDecoration(color: floattingYellow),
+                      decoration: const BoxDecoration(color: floattingYellow),
                       child: Center(
                           child: myWalletProvider.isNewDerivationLoading
-                              ? SizedBox(
+                              ? const SizedBox(
                                   height: 60,
                                   width: 60,
                                   child: CircularProgressIndicator(

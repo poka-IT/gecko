@@ -188,7 +188,7 @@ class SettingsScreen extends StatelessWidget {
               ),
               const Spacer(flex: 5),
               sub.isLoadingEndpoint
-                  ? CircularProgressIndicator(color: orangeC)
+                  ? const CircularProgressIndicator(color: orangeC)
                   : Consumer<SettingsProvider>(builder: (context, set, _) {
                       return IconButton(
                           key: keyConnectToEndpoint,
@@ -331,7 +331,7 @@ class SettingsScreen extends StatelessWidget {
               ),
               const Spacer(flex: 5),
               indexer.isLoadingIndexer
-                  ? CircularProgressIndicator(color: orangeC)
+                  ? const CircularProgressIndicator(color: orangeC)
                   : Consumer<SettingsProvider>(builder: (context, set, _) {
                       return IconButton(
                           icon: Icon(

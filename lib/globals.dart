@@ -33,16 +33,16 @@ late double ratio;
 late BuildContext homeContext;
 
 // Logger
-var log = Logger();
+final log = Logger();
 
 // Colors
-Color orangeC = const Color(0xffd07316);
-Color yellowC = const Color(0xffFFD68E);
-Color floattingYellow = const Color(0xffEFEFBF);
-Color backgroundColor = const Color(0xFFF5F5F5);
+const Color orangeC = Color(0xffd07316);
+const Color yellowC = Color(0xffFFD68E);
+const Color floattingYellow = Color(0xffEFEFBF);
+const Color backgroundColor = Color(0xFFF5F5F5);
 
 // Substrate settings
-String currencyName = 'ĞD';
+const String currencyName = 'ĞD';
 
 // Debug
 const debugPin = true;

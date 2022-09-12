@@ -70,7 +70,7 @@ class OnboardingStepTen extends StatelessWidget {
                         '${generateWalletProvider.numberScan + 1}'
                       ])),
                       const SizedBox(width: 10),
-                      SizedBox(
+                      const SizedBox(
                         height: 22,
                         width: 22,
                         child: CircularProgressIndicator(

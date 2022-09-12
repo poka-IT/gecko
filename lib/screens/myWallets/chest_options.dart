@@ -98,7 +98,7 @@ class ChestOptions extends StatelessWidget {
                     const SizedBox(width: 15),
                     Text(
                       'displayMnemonic'.tr(),
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 20,
                         color: orangeC,
                       ),

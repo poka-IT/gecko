@@ -111,7 +111,7 @@ class WalletOptions extends StatelessWidget {
                 Consumer<WalletOptionsProvider>(
                     builder: (context, walletProvider, _) {
                   return Container(
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                         gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,

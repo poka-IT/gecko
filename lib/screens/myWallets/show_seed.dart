@@ -49,7 +49,7 @@ class ShowSeed extends StatelessWidget {
                 builder: (BuildContext context, AsyncSnapshot<String?> seed) {
                   if (seed.connectionState != ConnectionState.done ||
                       seed.hasError) {
-                    return SizedBox(
+                    return const SizedBox(
                       height: 15,
                       width: 15,
                       child: CircularProgressIndicator(

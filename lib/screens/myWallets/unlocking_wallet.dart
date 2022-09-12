@@ -144,7 +144,7 @@ class UnlockingWallet extends StatelessWidget {
                           child: Center(
                             child: Text(
                               'changeChest'.tr(),
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontSize: 22,
                                   color: orangeC,
                                   fontWeight: FontWeight.w600),

@@ -718,10 +718,12 @@ class SubstrateSdk with ChangeNotifier {
       if (isUdUnit) {
         palette = 'universalDividend';
         call = 'transferUd';
+        // amount is milliUds
         amountUnit = (amount * 1000).toInt();
       } else {
         palette = 'balances';
         call = 'transferKeepAlive';
+        // amount is double at 2 decimals
         amountUnit = (amount * 100).toInt();
       }
       txOptions = [destAddress, amountUnit];

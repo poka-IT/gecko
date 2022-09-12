@@ -144,7 +144,7 @@ class _ChooseChestState extends State<ChooseChest> {
                 },
                 child: Text(
                   'openThisChest'.tr(),
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontSize: 22,
                       color: backgroundColor,
                       fontWeight: FontWeight.w600),
@@ -170,7 +170,7 @@ class _ChooseChestState extends State<ChooseChest> {
                     height: 50,
                     child: Center(
                         child: Text('createChest'.tr(),
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 22,
                                 color: orangeC,
                                 fontWeight: FontWeight.w600))),
@@ -193,7 +193,7 @@ class _ChooseChestState extends State<ChooseChest> {
                   height: 50,
                   child: Center(
                       child: Text('importChest'.tr(),
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 22,
                               color: orangeC,
                               fontWeight: FontWeight.w600))),

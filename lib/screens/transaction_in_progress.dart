@@ -184,7 +184,7 @@ class TransactionInProgress extends StatelessWidget {
                 child: Column(children: <Widget>[
                   Container(
                     width: double.infinity,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                         gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
@@ -236,7 +236,7 @@ class TransactionInProgress extends StatelessWidget {
                   Column(children: [
                     Visibility(
                       visible: isLoading,
-                      child: SizedBox(
+                      child: const SizedBox(
                         height: 18,
                         width: 18,
                         child: CircularProgressIndicator(

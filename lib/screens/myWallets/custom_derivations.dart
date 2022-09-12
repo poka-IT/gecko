@@ -72,7 +72,7 @@ class _CustomDerivationState extends State<CustomDerivation> {
                 menuMaxHeight: 300,
                 icon: const Icon(Icons.arrow_downward),
                 elevation: 16,
-                style: TextStyle(color: orangeC),
+                style: const TextStyle(color: orangeC),
                 underline: Container(
                   height: 2,
                   color: orangeC,

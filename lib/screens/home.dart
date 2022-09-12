@@ -54,7 +54,7 @@ class HomeScreen extends StatelessWidget {
             Expanded(
                 child: ListView(padding: EdgeInsets.zero, children: <Widget>[
               DrawerHeader(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: orangeC,
                 ),
                 child: Column(children: const <Widget>[
@@ -568,7 +568,7 @@ Widget welcomeHome(context) {
                   child: OutlinedButton(
                     key: keyRestoreChest,
                     style: OutlinedButton.styleFrom(
-                        side: BorderSide(width: 4, color: orangeC)),
+                        side: const BorderSide(width: 4, color: orangeC)),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -581,7 +581,7 @@ Widget welcomeHome(context) {
                     },
                     child: Text(
                       "restoreWallet".tr(),
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontSize: 24,
                           color: orangeC,
                           fontWeight: FontWeight.w600),

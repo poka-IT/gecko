@@ -195,7 +195,6 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
       BuildContext context, DuniterIndexer duniterIndexer) {
     CesiumPlusProvider cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     int keyID = 0;
     String? dateDelimiter;
@@ -293,7 +292,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
             padding: const EdgeInsets.symmetric(vertical: 30),
             child: Text(
               dateDelimiter!,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 23, color: orangeC, fontWeight: FontWeight.w300),
             ),
           ),

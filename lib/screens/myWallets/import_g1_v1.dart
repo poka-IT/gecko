@@ -66,7 +66,7 @@ class ImportG1v1 extends StatelessWidget {
                       const SizedBox(height: 80),
                       Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
+                          children: const [
                             SizedBox(
                               height: 35,
                               width: 35,

@@ -18,6 +18,7 @@ import 'package:gecko/screens/myWallets/choose_chest.dart';
 import 'package:gecko/screens/myWallets/import_g1_v1.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
+import 'package:gecko/screens/wallet_view.dart';
 import 'package:provider/provider.dart';
 
 class WalletsHome extends StatelessWidget {
@@ -159,6 +160,7 @@ class WalletsHome extends StatelessWidget {
     WalletOptionsProvider walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
     final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     if (!isWalletsExists) {
       return const Text('');
@@ -196,78 +198,114 @@ class WalletsHome extends StatelessWidget {
           mainAxisSpacing: 0,
           children: <Widget>[
             for (WalletData repository in listWallets as Iterable<WalletData>)
-              Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: GestureDetector(
-                    key: keyOpenWallet(repository.address!),
-                    onTap: () {
-                      walletOptions.getAddress(
-                          currentChestNumber, repository.derivation!);
-                      Navigator.push(
-                        context,
-                        SmoothTransition(
-                          page: WalletOptions(
-                            wallet: repository,
+              LongPressDraggable<String>(
+                data: repository.address!,
+                dragAnchorStrategy:
+                    (Draggable<Object> _, BuildContext __, Offset ___) =>
+                        const Offset(0, 0),
+                feedback: ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: orangeC,
+                    shape: const CircleBorder(),
+                    padding: const EdgeInsets.all(15),
+                  ),
+                  child: const SizedBox(
+                    height: 35,
+                    child: Image(image: AssetImage('assets/vector_white.png')),
+                  ),
+                ),
+                child: DragTarget<String>(onAccept: (senderAddress) async {
+                  log.d(
+                      'INTERPAY: sender: $senderAddress --- receiver: ${repository.address!}');
+                  final walletData =
+                      myWalletProvider.getWalletDataByAddress(senderAddress);
+                  await sub.setCurrentWallet(walletData!);
+                  sub.reload();
+                  paymentPopup(context, repository.address!);
+                }, builder: (
+                  BuildContext context,
+                  List<dynamic> accepted,
+                  List<dynamic> rejected,
+                ) {
+                  return Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: GestureDetector(
+                        key: keyOpenWallet(repository.address!),
+                        onTap: () {
+                          walletOptions.getAddress(
+                              currentChestNumber, repository.derivation!);
+                          Navigator.push(
+                            context,
+                            SmoothTransition(
+                              page: WalletOptions(
+                                wallet: repository,
+                              ),
+                            ),
+                          );
+                        },
+                        child: ClipOvalShadow(
+                          shadow: const Shadow(
+                            color: Colors.transparent,
+                            offset: Offset(0, 0),
+                            blurRadius: 5,
                           ),
-                        ),
-                      );
-                    },
-                    child: ClipOvalShadow(
-                      shadow: const Shadow(
-                        color: Colors.transparent,
-                        offset: Offset(0, 0),
-                        blurRadius: 5,
-                      ),
-                      clipper: CustomClipperOval(),
-                      child: ClipRRect(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(12)),
-                        child: Column(children: <Widget>[
-                          Expanded(
-                              child: Container(
-                            width: double.infinity,
-                            height: double.infinity,
-                            decoration: BoxDecoration(
-                                gradient: RadialGradient(
-                              radius: 0.6,
-                              colors: [
-                                Colors.green[400]!,
-                                const Color(0xFFE7E7A6),
-                              ],
-                            )),
-                            child:
-                                // SvgPicture.asset('assets/chopp-gecko2.png',
-                                //         semanticsLabel: 'Gecko', height: 48),
-                                repository.imageCustomPath == null ||
-                                        repository.imageCustomPath == ''
-                                    ? Image.asset(
-                                        'assets/avatars/${repository.imageDefaultPath}',
-                                        alignment: Alignment.bottomCenter,
-                                        scale: 0.5,
-                                      )
-                                    : Container(
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.transparent,
-                                          image: DecorationImage(
-                                            fit: BoxFit.fitHeight,
-                                            image: FileImage(
-                                              File(repository.imageCustomPath!),
+                          clipper: CustomClipperOval(),
+                          child: ClipRRect(
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(12)),
+                            child: Column(children: <Widget>[
+                              Expanded(
+                                  child: Container(
+                                width: double.infinity,
+                                height: double.infinity,
+                                decoration: BoxDecoration(
+                                    gradient: RadialGradient(
+                                  radius: 0.6,
+                                  colors: [
+                                    Colors.green[400]!,
+                                    const Color(0xFFE7E7A6),
+                                  ],
+                                )),
+                                child:
+                                    // SvgPicture.asset('assets/chopp-gecko2.png',
+                                    //         semanticsLabel: 'Gecko', height: 48),
+                                    repository.imageCustomPath == null ||
+                                            repository.imageCustomPath == ''
+                                        ? Image.asset(
+                                            'assets/avatars/${repository.imageDefaultPath}',
+                                            alignment: Alignment.bottomCenter,
+                                            scale: 0.5,
+                                          )
+                                        : Container(
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.transparent,
+                                              image: DecorationImage(
+                                                fit: BoxFit.fitHeight,
+                                                image: FileImage(
+                                                  File(repository
+                                                      .imageCustomPath!),
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      ),
-                          )),
-                          Stack(children: <Widget>[
-                            balanceBuilder(context, repository.address!,
-                                repository.address == defaultWallet.address),
-                            nameBuilder(context, repository, defaultWallet,
-                                currentChestNumber),
-                          ]),
-                        ]),
-                      ),
-                    ),
-                  )),
+                              )),
+                              Stack(children: <Widget>[
+                                balanceBuilder(
+                                    context,
+                                    repository.address!,
+                                    repository.address ==
+                                        defaultWallet.address),
+                                nameBuilder(context, repository, defaultWallet,
+                                    currentChestNumber),
+                              ]),
+                            ]),
+                          ),
+                        ),
+                      ));
+                }),
+              ),
             Consumer<SubstrateSdk>(builder: (context, sub, _) {
               return sub.nodeConnected
                   ? addNewDerivation(context)

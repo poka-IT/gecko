@@ -143,7 +143,7 @@ class SearchResultScreen extends StatelessWidget {
                                             walletsProfilesClass.address =
                                                 g1Wallet.pubkey;
                                             return WalletViewScreen(
-                                              pubkey: g1Wallet.pubkey,
+                                              address: g1Wallet.pubkey,
                                               username: g1WalletsBox
                                                   .get(g1Wallet.pubkey)
                                                   ?.id

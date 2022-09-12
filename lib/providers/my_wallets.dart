@@ -13,6 +13,8 @@ class MyWalletsProvider with ChangeNotifier {
   late String mnemonic;
   int? pinLenght;
   bool isNewDerivationLoading = false;
+  String lastFlyBy = '';
+  String dragAddress = '';
 
   int getCurrentChest() {
     if (configBox.get('currentChest') == null) {

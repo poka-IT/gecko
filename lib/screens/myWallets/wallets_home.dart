@@ -1,7 +1,10 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -64,7 +67,9 @@ class WalletsHome extends StatelessWidget {
               style: TextStyle(color: Colors.grey[850])),
           backgroundColor: const Color(0xffFFD58D),
         ),
-        bottomNavigationBar: homeProvider.bottomAppBar(context),
+        bottomNavigationBar: myWalletProvider.lastFlyBy == ''
+            ? homeProvider.bottomAppBar(context)
+            : dragInfo(context),
         body: SafeArea(
           child: Stack(children: [
             myWalletsTiles(context, currentChestNumber),
@@ -72,6 +77,37 @@ class WalletsHome extends StatelessWidget {
           ]),
         ),
       ),
+    );
+  }
+
+  Widget dragInfo(BuildContext context) {
+    final myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
+
+    final walletDataFrom =
+        myWalletProvider.getWalletDataByAddress(myWalletProvider.dragAddress);
+    final walletDataTo =
+        myWalletProvider.getWalletDataByAddress(myWalletProvider.lastFlyBy);
+
+    final bool isSameAddress =
+        myWalletProvider.dragAddress == myWalletProvider.lastFlyBy;
+
+    final double screenWidth = MediaQuery.of(homeContext).size.width;
+    return Container(
+      color: yellowC,
+      width: screenWidth,
+      height: 80,
+      child: Center(
+          child: Column(
+        children: [
+          const SizedBox(height: 5),
+          Text('${'executeATransfer'.tr()}:'),
+          MarkdownBody(data: '${'from'.tr()} **${walletDataFrom!.name}**'),
+          if (isSameAddress) Text('chooseATargetWallet'.tr()),
+          if (!isSameAddress)
+            MarkdownBody(data: 'Vers: **${walletDataTo!.name}**'),
+        ],
+      )),
     );
   }
 
@@ -187,6 +223,7 @@ class WalletsHome extends StatelessWidget {
     } else if (screenWidth >= 650) {
       nTule = 3;
     }
+    // final dragAnchorStrategy = pointerDragAnchorStrategy;
 
     return CustomScrollView(slivers: <Widget>[
       const SliverToBoxAdapter(child: SizedBox(height: 20)),
@@ -199,10 +236,19 @@ class WalletsHome extends StatelessWidget {
           children: <Widget>[
             for (WalletData repository in listWallets as Iterable<WalletData>)
               LongPressDraggable<String>(
+                delay: const Duration(milliseconds: 200),
                 data: repository.address!,
-                dragAnchorStrategy:
-                    (Draggable<Object> _, BuildContext __, Offset ___) =>
-                        const Offset(0, 0),
+                // dragAnchorStrategy:
+                //     (Draggable<Object> _, BuildContext __, Offset ___) =>
+                //         const Offset(40, 40),
+                dragAnchorStrategy: pointerDragAnchorStrategy,
+                onDragStarted: () =>
+                    myWalletProvider.dragAddress = repository.address!,
+                onDragEnd: (_) {
+                  myWalletProvider.lastFlyBy = '';
+                  myWalletProvider.dragAddress = '';
+                  myWalletProvider.reload();
+                },
                 feedback: ElevatedButton(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
@@ -215,96 +261,109 @@ class WalletsHome extends StatelessWidget {
                     child: Image(image: AssetImage('assets/vector_white.png')),
                   ),
                 ),
-                child: DragTarget<String>(onAccept: (senderAddress) async {
-                  log.d(
-                      'INTERPAY: sender: $senderAddress --- receiver: ${repository.address!}');
-                  final walletData =
-                      myWalletProvider.getWalletDataByAddress(senderAddress);
-                  await sub.setCurrentWallet(walletData!);
-                  sub.reload();
-                  paymentPopup(context, repository.address!);
-                }, builder: (
-                  BuildContext context,
-                  List<dynamic> accepted,
-                  List<dynamic> rejected,
-                ) {
-                  return Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: GestureDetector(
-                        key: keyOpenWallet(repository.address!),
-                        onTap: () {
-                          walletOptions.getAddress(
-                              currentChestNumber, repository.derivation!);
-                          Navigator.push(
-                            context,
-                            SmoothTransition(
-                              page: WalletOptions(
-                                wallet: repository,
+                child: DragTarget<String>(
+                    onAccept: (senderAddress) async {
+                      log.d(
+                          'INTERPAY: sender: $senderAddress --- receiver: ${repository.address!}');
+                      final walletData = myWalletProvider
+                          .getWalletDataByAddress(senderAddress);
+                      await sub.setCurrentWallet(walletData!);
+                      sub.reload();
+                      paymentPopup(context, repository.address!);
+                    },
+                    // onMove: ((details) => log.d('oooookkkkkkkk')),
+                    onMove: (details) {
+                      if (repository.address! != myWalletProvider.lastFlyBy) {
+                        log.d('oooookkkkkkkk: ${repository.address!}');
+                        myWalletProvider.lastFlyBy = repository.address!;
+                        myWalletProvider.reload();
+                      }
+                    },
+                    onWillAccept: (senderAddress) =>
+                        senderAddress != repository.address!,
+                    builder: (
+                      BuildContext context,
+                      List<dynamic> accepted,
+                      List<dynamic> rejected,
+                    ) {
+                      return Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: GestureDetector(
+                          key: keyOpenWallet(repository.address!),
+                          onTap: () {
+                            walletOptions.getAddress(
+                                currentChestNumber, repository.derivation!);
+                            Navigator.push(
+                              context,
+                              SmoothTransition(
+                                page: WalletOptions(
+                                  wallet: repository,
+                                ),
                               ),
+                            );
+                          },
+                          child: ClipOvalShadow(
+                            shadow: const Shadow(
+                              color: Colors.transparent,
+                              offset: Offset(0, 0),
+                              blurRadius: 5,
                             ),
-                          );
-                        },
-                        child: ClipOvalShadow(
-                          shadow: const Shadow(
-                            color: Colors.transparent,
-                            offset: Offset(0, 0),
-                            blurRadius: 5,
-                          ),
-                          clipper: CustomClipperOval(),
-                          child: ClipRRect(
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(12)),
-                            child: Column(children: <Widget>[
-                              Expanded(
-                                  child: Container(
-                                width: double.infinity,
-                                height: double.infinity,
-                                decoration: BoxDecoration(
-                                    gradient: RadialGradient(
-                                  radius: 0.6,
-                                  colors: [
-                                    Colors.green[400]!,
-                                    const Color(0xFFE7E7A6),
-                                  ],
-                                )),
-                                child:
-                                    // SvgPicture.asset('assets/chopp-gecko2.png',
-                                    //         semanticsLabel: 'Gecko', height: 48),
-                                    repository.imageCustomPath == null ||
-                                            repository.imageCustomPath == ''
-                                        ? Image.asset(
-                                            'assets/avatars/${repository.imageDefaultPath}',
-                                            alignment: Alignment.bottomCenter,
-                                            scale: 0.5,
-                                          )
-                                        : Container(
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Colors.transparent,
-                                              image: DecorationImage(
-                                                fit: BoxFit.fitHeight,
-                                                image: FileImage(
-                                                  File(repository
-                                                      .imageCustomPath!),
+                            clipper: CustomClipperOval(),
+                            child: ClipRRect(
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(12)),
+                              child: Column(children: <Widget>[
+                                Expanded(
+                                    child: Container(
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  decoration: BoxDecoration(
+                                      gradient: RadialGradient(
+                                    radius: 0.6,
+                                    colors: [
+                                      Colors.green[400]!,
+                                      const Color(0xFFE7E7A6),
+                                    ],
+                                  )),
+                                  child:
+                                      // SvgPicture.asset('assets/chopp-gecko2.png',
+                                      //         semanticsLabel: 'Gecko', height: 48),
+                                      repository.imageCustomPath == null ||
+                                              repository.imageCustomPath == ''
+                                          ? Image.asset(
+                                              'assets/avatars/${repository.imageDefaultPath}',
+                                              alignment: Alignment.bottomCenter,
+                                              scale: 0.5,
+                                            )
+                                          : Container(
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: Colors.transparent,
+                                                image: DecorationImage(
+                                                  fit: BoxFit.fitHeight,
+                                                  image: FileImage(
+                                                    File(repository
+                                                        .imageCustomPath!),
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                              )),
-                              Stack(children: <Widget>[
-                                balanceBuilder(
-                                    context,
-                                    repository.address!,
-                                    repository.address ==
-                                        defaultWallet.address),
-                                nameBuilder(context, repository, defaultWallet,
-                                    currentChestNumber),
+                                )),
+                                Stack(children: <Widget>[
+                                  balanceBuilder(
+                                      context,
+                                      repository.address!,
+                                      repository.address ==
+                                          defaultWallet.address),
+                                  nameBuilder(context, repository,
+                                      defaultWallet, currentChestNumber),
+                                ]),
                               ]),
-                            ]),
+                            ),
                           ),
                         ),
-                      ));
-                }),
+                      );
+                    }),
               ),
             Consumer<SubstrateSdk>(builder: (context, sub, _) {
               return sub.nodeConnected

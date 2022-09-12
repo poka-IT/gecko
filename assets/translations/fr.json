@@ -159,6 +159,7 @@
     "months": "{} mois",
     "certify": "Certifier",
     "from": "Depuis:",
+    "to": "Vers:",
     "amount": "Montant:",
     "choiceOfSourceWallet": "Choix du portefeuille source",
     "extrinsicInProgress": "{} en cours",
@@ -194,5 +195,6 @@
     "revokeMyIdentity": "Révoquer mon identité",
     "youCannotRevokeThisIdentity": "Vous ne pouvez pas révoquer cette identité tant\nqu'elle fait partie de la toile forgerons",
     "showUdAmounts": "Afficher les montants en DU",
-    "ud": "{}DU"
+    "ud": "{}DU",
+    "chooseATargetWallet": "Choisissez un portefeuille cible"
 }

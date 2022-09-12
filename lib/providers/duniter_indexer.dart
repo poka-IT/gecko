@@ -339,7 +339,7 @@ class DuniterIndexer with ChangeNotifier {
                             MaterialPageRoute(builder: (context) {
                               walletsProfiles.address = profile['id'];
                               return WalletViewScreen(
-                                pubkey: profile['id'],
+                                address: profile['id'],
                                 username: g1WalletsBox
                                     .get(profile['id'])
                                     ?.id

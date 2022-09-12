@@ -1,7 +1,10 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -18,6 +21,7 @@ import 'package:gecko/screens/myWallets/choose_chest.dart';
 import 'package:gecko/screens/myWallets/import_g1_v1.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
+import 'package:gecko/screens/wallet_view.dart';
 import 'package:provider/provider.dart';
 
 class WalletsHome extends StatelessWidget {
@@ -38,7 +42,6 @@ class WalletsHome extends StatelessWidget {
 
     return WillPopScope(
       onWillPop: () {
-        // myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
         Navigator.popUntil(
           context,
           ModalRoute.withName('/'),
@@ -53,7 +56,6 @@ class WalletsHome extends StatelessWidget {
           leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.black),
               onPressed: () {
-                // myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
                 Navigator.popUntil(
                   context,
                   ModalRoute.withName('/'),
@@ -63,7 +65,9 @@ class WalletsHome extends StatelessWidget {
               style: TextStyle(color: Colors.grey[850])),
           backgroundColor: const Color(0xffFFD58D),
         ),
-        bottomNavigationBar: homeProvider.bottomAppBar(context),
+        bottomNavigationBar: myWalletProvider.lastFlyBy == ''
+            ? homeProvider.bottomAppBar(context)
+            : dragInfo(context),
         body: SafeArea(
           child: Stack(children: [
             myWalletsTiles(context, currentChestNumber),
@@ -71,6 +75,37 @@ class WalletsHome extends StatelessWidget {
           ]),
         ),
       ),
+    );
+  }
+
+  Widget dragInfo(BuildContext context) {
+    final myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
+
+    final walletDataFrom =
+        myWalletProvider.getWalletDataByAddress(myWalletProvider.dragAddress);
+    final walletDataTo =
+        myWalletProvider.getWalletDataByAddress(myWalletProvider.lastFlyBy);
+
+    final bool isSameAddress =
+        myWalletProvider.dragAddress == myWalletProvider.lastFlyBy;
+
+    final double screenWidth = MediaQuery.of(homeContext).size.width;
+    return Container(
+      color: yellowC,
+      width: screenWidth,
+      height: 80,
+      child: Center(
+          child: Column(
+        children: [
+          const SizedBox(height: 5),
+          Text('${'executeATransfer'.tr()}:'),
+          MarkdownBody(data: '${'from'.tr()} **${walletDataFrom!.name}**'),
+          if (isSameAddress) Text('chooseATargetWallet'.tr()),
+          if (!isSameAddress)
+            MarkdownBody(data: 'Vers: **${walletDataTo!.name}**'),
+        ],
+      )),
     );
   }
 
@@ -159,6 +194,7 @@ class WalletsHome extends StatelessWidget {
     WalletOptionsProvider walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
     final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
+    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     if (!isWalletsExists) {
       return const Text('');
@@ -196,93 +232,140 @@ class WalletsHome extends StatelessWidget {
           mainAxisSpacing: 0,
           children: <Widget>[
             for (WalletData repository in listWallets as Iterable<WalletData>)
-              Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: GestureDetector(
-                    key: keyOpenWallet(repository.address!),
-                    onTap: () {
-                      walletOptions.getAddress(
-                          currentChestNumber, repository.derivation!);
-                      Navigator.push(
-                        context,
-                        SmoothTransition(
-                          page: WalletOptions(
-                            wallet: repository,
+              LongPressDraggable<String>(
+                delay: const Duration(milliseconds: 200),
+                data: repository.address!,
+                // dragAnchorStrategy:
+                //     (Draggable<Object> _, BuildContext __, Offset ___) =>
+                //         const Offset(40, 40),
+                dragAnchorStrategy: pointerDragAnchorStrategy,
+                onDragStarted: () =>
+                    myWalletProvider.dragAddress = repository.address!,
+                onDragEnd: (_) {
+                  myWalletProvider.lastFlyBy = '';
+                  myWalletProvider.dragAddress = '';
+                  myWalletProvider.reload();
+                },
+                feedback: ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: orangeC,
+                    shape: const CircleBorder(),
+                    padding: const EdgeInsets.all(15),
+                  ),
+                  child: const SizedBox(
+                    height: 35,
+                    child: Image(image: AssetImage('assets/vector_white.png')),
+                  ),
+                ),
+                child: DragTarget<String>(
+                    onAccept: (senderAddress) async {
+                      log.d(
+                          'INTERPAY: sender: $senderAddress --- receiver: ${repository.address!}');
+                      final walletData = myWalletProvider
+                          .getWalletDataByAddress(senderAddress);
+                      await sub.setCurrentWallet(walletData!);
+                      sub.reload();
+                      paymentPopup(context, repository.address!);
+                    },
+                    onMove: (details) {
+                      if (repository.address! != myWalletProvider.lastFlyBy) {
+                        myWalletProvider.lastFlyBy = repository.address!;
+                        myWalletProvider.reload();
+                      }
+                    },
+                    onWillAccept: (senderAddress) =>
+                        senderAddress != repository.address!,
+                    builder: (
+                      BuildContext context,
+                      List<dynamic> accepted,
+                      List<dynamic> rejected,
+                    ) {
+                      return Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: GestureDetector(
+                          key: keyOpenWallet(repository.address!),
+                          onTap: () {
+                            walletOptions.getAddress(
+                                currentChestNumber, repository.derivation!);
+                            Navigator.push(
+                              context,
+                              SmoothTransition(
+                                page: WalletOptions(
+                                  wallet: repository,
+                                ),
+                              ),
+                            );
+                          },
+                          child: ClipOvalShadow(
+                            shadow: const Shadow(
+                              color: Colors.transparent,
+                              offset: Offset(0, 0),
+                              blurRadius: 5,
+                            ),
+                            clipper: CustomClipperOval(),
+                            child: ClipRRect(
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(12)),
+                              child: Column(children: <Widget>[
+                                Expanded(
+                                    child: Container(
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  decoration: BoxDecoration(
+                                      gradient: RadialGradient(
+                                    radius: 0.6,
+                                    colors: [
+                                      Colors.green[400]!,
+                                      const Color(0xFFE7E7A6),
+                                    ],
+                                  )),
+                                  child:
+                                      // SvgPicture.asset('assets/chopp-gecko2.png',
+                                      //         semanticsLabel: 'Gecko', height: 48),
+                                      repository.imageCustomPath == null ||
+                                              repository.imageCustomPath == ''
+                                          ? Image.asset(
+                                              'assets/avatars/${repository.imageDefaultPath}',
+                                              alignment: Alignment.bottomCenter,
+                                              scale: 0.5,
+                                            )
+                                          : Container(
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: Colors.transparent,
+                                                image: DecorationImage(
+                                                  fit: BoxFit.fitHeight,
+                                                  image: FileImage(
+                                                    File(repository
+                                                        .imageCustomPath!),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                )),
+                                Stack(children: <Widget>[
+                                  balanceBuilder(
+                                      context,
+                                      repository.address!,
+                                      repository.address ==
+                                          defaultWallet.address),
+                                  nameBuilder(context, repository,
+                                      defaultWallet, currentChestNumber),
+                                ]),
+                              ]),
+                            ),
                           ),
                         ),
                       );
-                    },
-                    child: ClipOvalShadow(
-                      shadow: const Shadow(
-                        color: Colors.transparent,
-                        offset: Offset(0, 0),
-                        blurRadius: 5,
-                      ),
-                      clipper: CustomClipperOval(),
-                      child: ClipRRect(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(12)),
-                        child: Column(children: <Widget>[
-                          Expanded(
-                              child: Container(
-                            width: double.infinity,
-                            height: double.infinity,
-                            decoration: BoxDecoration(
-                                gradient: RadialGradient(
-                              radius: 0.6,
-                              colors: [
-                                Colors.green[400]!,
-                                const Color(0xFFE7E7A6),
-                              ],
-                            )),
-                            child:
-                                // SvgPicture.asset('assets/chopp-gecko2.png',
-                                //         semanticsLabel: 'Gecko', height: 48),
-                                repository.imageCustomPath == null ||
-                                        repository.imageCustomPath == ''
-                                    ? Image.asset(
-                                        'assets/avatars/${repository.imageDefaultPath}',
-                                        alignment: Alignment.bottomCenter,
-                                        scale: 0.5,
-                                      )
-                                    : Container(
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.transparent,
-                                          image: DecorationImage(
-                                            fit: BoxFit.fitHeight,
-                                            image: FileImage(
-                                              File(repository.imageCustomPath!),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                          )),
-                          Stack(children: <Widget>[
-                            balanceBuilder(context, repository.address!,
-                                repository.address == defaultWallet.address),
-                            nameBuilder(context, repository, defaultWallet,
-                                currentChestNumber),
-                          ]),
-                        ]),
-                      ),
-                    ),
-                  )),
+                    }),
+              ),
             Consumer<SubstrateSdk>(builder: (context, sub, _) {
               return sub.nodeConnected
                   ? addNewDerivation(context)
                   : const Text('');
             }),
-            // SizedBox(height: 1),
-            // Padding(
-            //     padding: EdgeInsets.symmetric(horizontal: 35),
-            //     child: Text(
-            //       'Ajouter un portefeuille',
-            //       textAlign: TextAlign.center,
-            //       style: TextStyle(fontSize: 18),
-            //     ))
           ]),
-      // SliverToBoxAdapter(child: Spacer()),
       SliverToBoxAdapter(child: chestOptions(context, myWalletProvider)),
     ]);
   }
@@ -316,14 +399,9 @@ class WalletsHome extends StatelessWidget {
     return ListTile(
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(12))),
-      // contentPadding: const EdgeInsets.only(left: 7.0),
       tileColor: repository.address == defaultWallet.address
           ? orangeC
           : const Color(0xffFFD58D),
-      // leading: Text('IMAGE'),
-
-      // subtitle: Text(_repository.split(':')[3],
-      //     style: TextStyle(fontSize: 12.0, fontFamily: 'Monospace')),
       title: Center(
         child: Padding(
           padding: const EdgeInsets.only(left: 5, right: 5, bottom: 35, top: 5),
@@ -338,13 +416,7 @@ class WalletsHome extends StatelessWidget {
                   : Colors.black),
         ),
       ),
-      // dense: true,
       onTap: () {
-        // _walletOptions.readLocalWallet(
-        //     context,
-        //     _repository,
-        //     _myWalletProvider.pinCode,
-        //     pinLength);
         walletOptions.getAddress(currentChestNumber, repository.derivation!);
         Navigator.push(
           context,
@@ -419,12 +491,6 @@ class WalletsHome extends StatelessWidget {
             ])));
   }
 }
-
-// extension Range on num {
-//   bool isBetween(num from, num to) {
-//     return from < this && this < to;
-//   }
-// }
 
 class CustomClipperOval extends CustomClipper<Rect> {
   @override

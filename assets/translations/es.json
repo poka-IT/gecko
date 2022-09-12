@@ -158,6 +158,7 @@
     "months": "{} months",
     "certify": "Certify",
     "from": "From:",
+    "to": "To:",
     "amount": "Amount:",
     "choiceOfSourceWallet": "Choose a source wallet",
     "extrinsicInProgress": "{} in progress",
@@ -193,5 +194,6 @@
     "revokeMyIdentity": "Revoke my identity",
     "youCannotRevokeThisIdentity": "You cannot revoke this identity while\nit is member of the blacksmiths web",
     "showUdAmounts": "Show amounts in UD",
-    "ud": "{}UD"
+    "ud": "{}UD",
+    "chooseATargetWallet": "Choose a target wallet"
 }

@@ -53,8 +53,6 @@ class ChooseWalletScreen extends StatelessWidget {
                     ),
                     onPressed: () async {
                       await sub.setCurrentWallet(selectedWallet!);
-
-                      // _walletViewProvider.reload();
                       sub.reload();
 
                       // Navigator.pop(context);

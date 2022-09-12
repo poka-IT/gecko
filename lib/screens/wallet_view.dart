@@ -49,9 +49,6 @@ class WalletViewScreen extends StatelessWidget {
 
     sub.setCurrentWallet(defaultWallet);
 
-    // sub.spawnBlock();
-    // sub.spawnBlock(0, 25);
-
     return Scaffold(
         backgroundColor: backgroundColor,
         resizeToAvoidBottomInset: true,
@@ -118,7 +115,7 @@ class WalletViewScreen extends StatelessWidget {
                   height: buttonSize,
                   child: ClipOval(
                     child: Material(
-                      color: yellowC, //const Color(0xffFFD58D), // button color
+                      color: yellowC,
                       child: InkWell(
                           key: keyViewActivity,
                           splashColor: orangeC, // inkwell color
@@ -129,7 +126,6 @@ class WalletViewScreen extends StatelessWidget {
                                       'assets/walletOptions/clock.png'),
                                   height: 90)),
                           onTap: () {
-                            // _historyProvider.nPage = 1;
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) {
@@ -154,8 +150,7 @@ class WalletViewScreen extends StatelessWidget {
               Consumer<SubstrateSdk>(builder: (context, sub, _) {
                 WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
                 return FutureBuilder(
-                  future: sub.certState(defaultWallet.address!,
-                      address!), // .canCertify(_defaultWallet.address!, pubkey!),
+                  future: sub.certState(defaultWallet.address!, address!),
                   builder: (context, AsyncSnapshot<Map<String, int>> snapshot) {
                     if (snapshot.data == null) return const SizedBox();
                     String duration = '';
@@ -207,11 +202,10 @@ class WalletViewScreen extends StatelessWidget {
                               height: buttonSize,
                               child: ClipOval(
                                 child: Material(
-                                  color:
-                                      const Color(0xffFFD58D), // button color
+                                  color: const Color(0xffFFD58D),
                                   child: InkWell(
                                       key: keyCertify,
-                                      splashColor: orangeC, // inkwell color
+                                      splashColor: orangeC,
                                       child: const Padding(
                                         padding: EdgeInsets.only(bottom: 0),
                                         child: Image(
@@ -293,10 +287,10 @@ class WalletViewScreen extends StatelessWidget {
                   height: buttonSize,
                   child: ClipOval(
                     child: Material(
-                      color: const Color(0xffFFD58D), // button color
+                      color: const Color(0xffFFD58D),
                       child: InkWell(
                           key: keyCopyAddress,
-                          splashColor: orangeC, // inkwell color
+                          splashColor: orangeC,
                           child: const Padding(
                               padding: EdgeInsets.all(20),
                               child: Image(
@@ -334,7 +328,7 @@ class WalletViewScreen extends StatelessWidget {
                   ),
                   child: ClipOval(
                     child: Material(
-                      color: orangeC, // button color
+                      color: orangeC,
                       child: InkWell(
                           key: keyPay,
                           splashColor: yellowC,
@@ -342,7 +336,7 @@ class WalletViewScreen extends StatelessWidget {
                               ? () {
                                   paymentPopup(context, address!);
                                 }
-                              : null, // inkwell color
+                              : null,
                           child: const Padding(
                             padding: EdgeInsets.all(14),
                             child: Image(
@@ -400,8 +394,6 @@ class WalletViewScreen extends StatelessWidget {
 }
 
 void paymentPopup(BuildContext context, String toAddress) {
-  // WalletsProfilesProvider _walletViewProvider =
-  //     Provider.of<WalletsProfilesProvider>(context, listen: false);
   final walletViewProvider =
       Provider.of<WalletsProfilesProvider>(context, listen: false);
 
@@ -585,7 +577,6 @@ void paymentPopup(BuildContext context, String toAddress) {
                                 color: Colors.grey[600]),
                           ),
                           const SizedBox(width: 10),
-                          // const Spacer(flex: 1),
                           Column(
                             children: [
                               const SizedBox(height: 2),
@@ -598,7 +589,6 @@ void paymentPopup(BuildContext context, String toAddress) {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              // const Spacer(flex: 2),
                             ],
                           ),
                         ],
@@ -622,17 +612,13 @@ void paymentPopup(BuildContext context, String toAddress) {
                         maxLines: 1,
                         textAlign: TextAlign.center,
                         keyboardType: TextInputType.number,
-                        onChanged: (_) => setState(() {
-                          // _walletViewProvider.reload();
-                        }),
+                        onChanged: (_) => setState(() {}),
                         inputFormatters: <TextInputFormatter>[
-                          // FilteringTextInputFormatter.digitsOnly,
                           FilteringTextInputFormatter.deny(',',
                               replacementString: '.'),
                           FilteringTextInputFormatter.allow(
                               RegExp(r'(^\d+\.?\d{0,2})')),
                         ],
-                        // onChanged: (v) => _searchProvider.reload(),
                         decoration: InputDecoration(
                           hintText: '0.00',
                           suffix: Text(isUdUnit
@@ -640,10 +626,6 @@ void paymentPopup(BuildContext context, String toAddress) {
                               : currencyName), // udUnitDisplay(40),
                           filled: true,
                           fillColor: Colors.transparent,
-                          // border: OutlineInputBorder(
-                          //     borderSide:
-                          //         BorderSide(color: Colors.grey[500], width: 2),
-                          //     borderRadius: BorderRadius.circular(8)),
                           focusedBorder: OutlineInputBorder(
                             borderSide:
                                 BorderSide(color: Colors.grey[500]!, width: 2),
@@ -657,7 +639,6 @@ void paymentPopup(BuildContext context, String toAddress) {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      // const SizedBox(height: 40),
                       const Spacer(),
                       SizedBox(
                         width: double.infinity,

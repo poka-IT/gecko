@@ -42,7 +42,6 @@ class WalletsHome extends StatelessWidget {
 
     return WillPopScope(
       onWillPop: () {
-        // myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
         Navigator.popUntil(
           context,
           ModalRoute.withName('/'),
@@ -57,7 +56,6 @@ class WalletsHome extends StatelessWidget {
           leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.black),
               onPressed: () {
-                // myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
                 Navigator.popUntil(
                   context,
                   ModalRoute.withName('/'),
@@ -223,7 +221,6 @@ class WalletsHome extends StatelessWidget {
     } else if (screenWidth >= 650) {
       nTule = 3;
     }
-    // final dragAnchorStrategy = pointerDragAnchorStrategy;
 
     return CustomScrollView(slivers: <Widget>[
       const SliverToBoxAdapter(child: SizedBox(height: 20)),
@@ -271,10 +268,8 @@ class WalletsHome extends StatelessWidget {
                       sub.reload();
                       paymentPopup(context, repository.address!);
                     },
-                    // onMove: ((details) => log.d('oooookkkkkkkk')),
                     onMove: (details) {
                       if (repository.address! != myWalletProvider.lastFlyBy) {
-                        log.d('oooookkkkkkkk: ${repository.address!}');
                         myWalletProvider.lastFlyBy = repository.address!;
                         myWalletProvider.reload();
                       }
@@ -370,16 +365,7 @@ class WalletsHome extends StatelessWidget {
                   ? addNewDerivation(context)
                   : const Text('');
             }),
-            // SizedBox(height: 1),
-            // Padding(
-            //     padding: EdgeInsets.symmetric(horizontal: 35),
-            //     child: Text(
-            //       'Ajouter un portefeuille',
-            //       textAlign: TextAlign.center,
-            //       style: TextStyle(fontSize: 18),
-            //     ))
           ]),
-      // SliverToBoxAdapter(child: Spacer()),
       SliverToBoxAdapter(child: chestOptions(context, myWalletProvider)),
     ]);
   }
@@ -413,14 +399,9 @@ class WalletsHome extends StatelessWidget {
     return ListTile(
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(12))),
-      // contentPadding: const EdgeInsets.only(left: 7.0),
       tileColor: repository.address == defaultWallet.address
           ? orangeC
           : const Color(0xffFFD58D),
-      // leading: Text('IMAGE'),
-
-      // subtitle: Text(_repository.split(':')[3],
-      //     style: TextStyle(fontSize: 12.0, fontFamily: 'Monospace')),
       title: Center(
         child: Padding(
           padding: const EdgeInsets.only(left: 5, right: 5, bottom: 35, top: 5),
@@ -435,13 +416,7 @@ class WalletsHome extends StatelessWidget {
                   : Colors.black),
         ),
       ),
-      // dense: true,
       onTap: () {
-        // _walletOptions.readLocalWallet(
-        //     context,
-        //     _repository,
-        //     _myWalletProvider.pinCode,
-        //     pinLength);
         walletOptions.getAddress(currentChestNumber, repository.derivation!);
         Navigator.push(
           context,
@@ -516,12 +491,6 @@ class WalletsHome extends StatelessWidget {
             ])));
   }
 }
-
-// extension Range on num {
-//   bool isBetween(num from, num to) {
-//     return from < this && this < to;
-//   }
-// }
 
 class CustomClipperOval extends CustomClipper<Rect> {
   @override

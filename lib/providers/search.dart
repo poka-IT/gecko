@@ -72,7 +72,7 @@ class SearchProvider with ChangeNotifier {
         WalletsProfilesProvider('pubkey');
 
     if (walletProfiles.isAddress(searchController.text)) {
-      G1WalletsList wallet = G1WalletsList(pubkey: searchController.text);
+      G1WalletsList wallet = G1WalletsList(address: searchController.text);
       return [wallet];
     } else {
       return [];

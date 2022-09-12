@@ -6,7 +6,7 @@ part 'g1_wallets_list.g.dart';
 @HiveType(typeId: 2)
 class G1WalletsList {
   @HiveField(0)
-  String? pubkey;
+  late String address;
 
   @HiveField(1)
   double? balance;
@@ -27,7 +27,7 @@ class G1WalletsList {
   bool? isMembre;
 
   G1WalletsList({
-    this.pubkey,
+    required this.address,
     this.balance,
     this.id,
     this.avatar,
@@ -37,14 +37,14 @@ class G1WalletsList {
   });
 
   G1WalletsList.fromJson(Map<String, dynamic> json) {
-    pubkey = json['pubkey'];
+    address = json['pubkey'];
     balance = json['balance'];
     id = json['id'] != null ? Id.fromJson(json['id']) : null;
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['pubkey'] = pubkey;
+    data['pubkey'] = address;
     data['balance'] = balance;
     if (id != null) {
       data['id'] = id!.toJson();

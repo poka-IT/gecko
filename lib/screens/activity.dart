@@ -16,13 +16,13 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
 class ActivityScreen extends StatelessWidget with ChangeNotifier {
-  ActivityScreen({required this.address, this.avatar, this.username, Key? key})
-      : super(key: key);
+  ActivityScreen({required this.address, required this.avatar, this.username})
+      : super(key: keyActivityScreen);
   final ScrollController scrollController = ScrollController();
   final double avatarsSize = 80;
-  final String? address;
+  final String address;
   final String? username;
-  final Image? avatar;
+  final Image avatar;
 
   FetchMore? fetchMore;
   FetchMoreOptions? opts;
@@ -49,7 +49,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
         ),
         bottomNavigationBar: homeProvider.bottomAppBar(context),
         body: Column(children: <Widget>[
-          walletProfile.headerProfileView(context, address!, username),
+          walletProfile.headerProfileView(context, address, username),
           historyQuery(context),
         ]));
   }
@@ -126,7 +126,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
 
               if (result.isNotLoading) {
                 // log.d(result.data);
-                opts = duniterIndexer.checkQueryResult(result, opts, address!);
+                opts = duniterIndexer.checkQueryResult(result, opts, address);
               }
 
               // Build history list

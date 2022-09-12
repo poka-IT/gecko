@@ -59,8 +59,10 @@ const keyCloseTransactionScreen = Key('keyCloseTransactionScreen');
 
 // Activity view
 const keyListTransactions = Key('keyListTransactions');
+const keyActivityScreen = Key('keyActivityScreen');
 
 // Unlock wallet
+const keyUnlockWallet = Key('keyUnlockWallet');
 const keyPinForm = Key('keyPinForm');
 const keyPopButton = Key('keyPopButton');
 const keyCachePassword = Key('keyCachePassword');

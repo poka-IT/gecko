@@ -35,10 +35,10 @@ class TransactionInProgress extends StatelessWidget {
 
     // sub.spawnBlock();
 
-    log.d(walletViewProvider.address!);
+    log.d(walletViewProvider.address);
 
     final from = fromAddress ?? myWalletProvider.getDefaultWallet().name!;
-    final to = toAddress ?? getShortPubkey(walletViewProvider.address!);
+    final to = toAddress ?? getShortPubkey(walletViewProvider.address);
     final amount = walletViewProvider.payAmount.text;
     String actionName = '';
     final bool isUdUnit = configBox.get('isUdUnit') ?? false;

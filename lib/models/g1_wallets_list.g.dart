@@ -17,7 +17,7 @@ class G1WalletsListAdapter extends TypeAdapter<G1WalletsList> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return G1WalletsList(
-      pubkey: fields[0] as String?,
+      address: fields[0] as String,
       balance: fields[1] as double?,
       id: fields[2] as Id?,
       avatar: fields[3] as Image?,
@@ -32,7 +32,7 @@ class G1WalletsListAdapter extends TypeAdapter<G1WalletsList> {
     writer
       ..writeByte(7)
       ..writeByte(0)
-      ..write(obj.pubkey)
+      ..write(obj.address)
       ..writeByte(1)
       ..write(obj.balance)
       ..writeByte(2)

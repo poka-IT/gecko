@@ -548,7 +548,7 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<KeyPairData?> changePassword(BuildContext context, String address,
-      String passOld, String? passNew) async {
+      String passOld, String passNew) async {
     final account = getKeypair(address);
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);

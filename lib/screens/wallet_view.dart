@@ -26,7 +26,7 @@ class WalletViewScreen extends StatelessWidget {
   const WalletViewScreen(
       {required this.address, this.username, this.avatar, Key? key})
       : super(key: key);
-  final String? address;
+  final String address;
   final String? username;
   final Image? avatar;
   final double buttonSize = 100;
@@ -39,7 +39,7 @@ class WalletViewScreen extends StatelessWidget {
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     CesiumPlusProvider cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
-    walletProfile.address = address!;
+    walletProfile.address = address;
     SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
     HomeProvider homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
@@ -68,10 +68,10 @@ class WalletViewScreen extends StatelessWidget {
                       });
                       // G1WalletsList(pubkey: pubkey!, username: username);
                       await walletProfile.addContact(
-                          newContact ?? G1WalletsList(pubkey: address!));
+                          newContact ?? G1WalletsList(address: address));
                     },
                     icon: Icon(
-                      walletProfile.isContact(address!)
+                      walletProfile.isContact(address)
                           ? Icons.add_reaction_rounded
                           : Icons.add_reaction_outlined,
                       size: 35,
@@ -85,13 +85,13 @@ class WalletViewScreen extends StatelessWidget {
                       context,
                       MaterialPageRoute(builder: (context) {
                         return QrCodeFullscreen(
-                          walletProfile.address!,
+                          walletProfile.address,
                         );
                       }),
                     );
                   },
                   child: QrImageWidget(
-                    data: walletProfile.address!,
+                    data: walletProfile.address,
                     version: QrVersions.auto,
                     size: 80,
                   ),
@@ -107,7 +107,7 @@ class WalletViewScreen extends StatelessWidget {
         bottomNavigationBar: homeProvider.bottomAppBar(context),
         body: SafeArea(
           child: Column(children: <Widget>[
-            walletProfile.headerProfileView(context, address!, username),
+            walletProfile.headerProfileView(context, address, username),
             SizedBox(height: isTall ? 10 : 0),
             Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
               Column(children: <Widget>[
@@ -150,7 +150,7 @@ class WalletViewScreen extends StatelessWidget {
               Consumer<SubstrateSdk>(builder: (context, sub, _) {
                 WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
                 return FutureBuilder(
-                  future: sub.certState(defaultWallet.address!, address!),
+                  future: sub.certState(defaultWallet.address!, address),
                   builder: (context, AsyncSnapshot<Map<String, int>> snapshot) {
                     if (snapshot.data == null) return const SizedBox();
                     String duration = '';
@@ -217,7 +217,7 @@ class WalletViewScreen extends StatelessWidget {
                                             context,
                                             "areYouSureYouWantToCertify".tr(
                                                 args: [
-                                                  getShortPubkey(address!)
+                                                  getShortPubkey(address)
                                                 ]));
 
                                         if (result ?? false) {
@@ -243,10 +243,9 @@ class WalletViewScreen extends StatelessWidget {
                                             final acc = sub.getCurrentWallet();
                                             sub.certify(
                                                 acc.address!,
-                                                walletViewProvider.address!,
+                                                walletViewProvider.address,
                                                 pin ??
                                                     myWalletProvider.pinCode);
-
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
@@ -334,7 +333,7 @@ class WalletViewScreen extends StatelessWidget {
                           splashColor: yellowC,
                           onTap: sub.nodeConnected
                               ? () {
-                                  paymentPopup(context, address!);
+                                  paymentPopup(context, address);
                                 }
                               : null,
                           child: const Padding(

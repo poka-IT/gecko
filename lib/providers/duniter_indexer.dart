@@ -212,7 +212,7 @@ class DuniterIndexer with ChangeNotifier {
             g1WalletsBox.put(
                 address,
                 G1WalletsList(
-                    pubkey: address, username: walletNameIndexer[address]));
+                    address: address, username: walletNameIndexer[address]));
 
             // log.d(g1WalletsBox.toMap().values.first.username);
 

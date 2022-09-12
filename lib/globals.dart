@@ -48,3 +48,5 @@ String currencyName = 'ĞD';
 const debugPin = true;
 
 String indexerEndpoint = '';
+late double balanceRatio;
+late int udValue;

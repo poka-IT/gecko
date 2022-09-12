@@ -160,6 +160,13 @@ class SubstrateSdk with ChangeNotifier {
     return udValue;
   }
 
+  Future<double> getBalanceRatio() async {
+    udValue = await getUdValue();
+    balanceRatio =
+        (configBox.get('isUdUnit') ?? false) ? round(udValue / 100, 6) : 1;
+    return balanceRatio;
+  }
+
   Future<Map<String, double>> getBalance(String address) async {
     // log.d('currencyParameters: $currencyParameters');
 
@@ -191,10 +198,6 @@ class SubstrateSdk with ChangeNotifier {
     // Calculate transferable and potential balance
     final int transferableBalance =
         (balanceGlobal['data']['free'] + unclaimedUds);
-
-    final bool isUdUnit = configBox.get('isUdUnit') ?? false;
-    final udValue = await getUdValue();
-    final double balanceRatio = isUdUnit ? round(udValue / 1000, 6) : 1;
 
     // log.d('udValue: $udValue');
 
@@ -428,6 +431,8 @@ class SubstrateSdk with ChangeNotifier {
       });
 
       await initCurrencyParameters();
+      await getBalanceRatio();
+
       notifyListeners();
       homeProvider.changeMessage(
           "wellConnectedToNode"
@@ -691,7 +696,6 @@ class SubstrateSdk with ChangeNotifier {
       required double amount,
       required String password}) async {
     transactionStatus = '';
-    final int amountUnit = (amount * 100).toInt();
 
     final sender = await _setSender(fromAddress);
 
@@ -710,12 +714,15 @@ class SubstrateSdk with ChangeNotifier {
       txOptions = [destAddress, false];
       tx2 = 'api.tx.balances.transferAll("$destAddress", false)';
     } else {
+      int amountUnit;
       if (isUdUnit) {
         palette = 'universalDividend';
         call = 'transferUd';
+        amountUnit = (amount * 1000).toInt();
       } else {
         palette = 'balances';
         call = 'transferKeepAlive';
+        amountUnit = (amount * 100).toInt();
       }
       txOptions = [destAddress, amountUnit];
       tx2 = 'api.tx.$palette.$call("$destAddress", $amountUnit)';

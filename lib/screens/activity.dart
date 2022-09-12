@@ -281,7 +281,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
       amount = repository[4] == 'RECEIVED' ? repository[3] : repository[3] * -1;
 
       if (isUdUnit) {
-        amount = round(amount / (sub.udValue / 1000));
+        amount = round(amount / balanceRatio);
         finalAmount = 'ud'.tr(args: ['$amount ']);
       } else {
         finalAmount = '$amount $currencyName';

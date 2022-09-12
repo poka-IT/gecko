@@ -398,17 +398,12 @@ void paymentPopup(BuildContext context, String toAddress) {
 
   final myWalletProvider =
       Provider.of<MyWalletsProvider>(context, listen: false);
-  final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
   const double shapeSize = 20;
   WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
   log.d(defaultWallet.address);
 
   bool canValidate = false;
-
-  final bool isUdUnit = configBox.get('isUdUnit') ?? false;
-  final udValue = sub.udValue;
-  final double balanceRatio = isUdUnit ? round(udValue / 1000, 6) : 1;
 
   final toWalletData = myWalletProvider.getWalletDataByAddress(toAddress);
 

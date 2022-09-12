@@ -85,7 +85,7 @@ class SettingsScreen extends StatelessWidget {
     return InkWell(
       key: keyUdUnit,
       onTap: () async {
-        await homeProvider.changeCurrencyUnit();
+        await homeProvider.changeCurrencyUnit(context);
       },
       child: SizedBox(
         height: 50,

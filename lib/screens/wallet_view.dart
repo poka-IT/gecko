@@ -419,6 +419,43 @@ void paymentPopup(BuildContext context, String toAddress) {
   final udValue = sub.udValue;
   final double balanceRatio = isUdUnit ? round(udValue / 100, 6) : 1;
 
+  final toWalletData = myWalletProvider.getWalletDataByAddress(toAddress);
+
+  Future executeTransfert() async {
+    String? pin;
+    if (myWalletProvider.pinCode == '') {
+      pin = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (homeContext) {
+            return UnlockingWallet(wallet: defaultWallet);
+          },
+        ),
+      );
+    }
+    log.d(pin);
+    if (pin != null || myWalletProvider.pinCode != '') {
+      // Payment workflow !
+      WalletsProfilesProvider walletViewProvider =
+          Provider.of<WalletsProfilesProvider>(context, listen: false);
+      SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+      final acc = sub.getCurrentWallet();
+      log.d(
+          "fromAddress: ${acc.address!},destAddress: $toAddress, amount: ${double.parse(walletViewProvider.payAmount.text)},  password: $pin");
+      sub.pay(
+          fromAddress: acc.address!,
+          destAddress: toAddress,
+          amount: double.parse(walletViewProvider.payAmount.text),
+          password: pin ?? myWalletProvider.pinCode);
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) {
+          return const TransactionInProgress();
+        }),
+      );
+    }
+  }
+
   showModalBottomSheet<void>(
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
@@ -452,7 +489,7 @@ void paymentPopup(BuildContext context, String toAddress) {
             padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom),
             child: Container(
-              height: 400,
+              height: 420,
               decoration: const ShapeDecoration(
                 color: Color(0xffffeed1),
                 shape: RoundedRectangleBorder(
@@ -537,9 +574,36 @@ void paymentPopup(BuildContext context, String toAddress) {
                           ),
                         );
                       }),
-                      const Spacer(),
-
-                      // const SizedBox(height: 10),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Text(
+                            'to'.tr(),
+                            style: TextStyle(
+                                fontSize: 19,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey[600]),
+                          ),
+                          const SizedBox(width: 10),
+                          // const Spacer(flex: 1),
+                          Column(
+                            children: [
+                              const SizedBox(height: 2),
+                              Text(
+                                toWalletData == null
+                                    ? getShortPubkey(toAddress)
+                                    : toWalletData.name!,
+                                style: const TextStyle(
+                                  fontSize: 21,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              // const Spacer(flex: 2),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
                       Text(
                         'amount'.tr(),
                         style: TextStyle(
@@ -549,6 +613,9 @@ void paymentPopup(BuildContext context, String toAddress) {
                       ),
                       const SizedBox(height: 10),
                       TextField(
+                        textInputAction: TextInputAction.done,
+                        onEditingComplete: () async =>
+                            canValidate ? await executeTransfert() : null,
                         key: keyAmountField,
                         controller: walletViewProvider.payAmount,
                         autofocus: true,
@@ -577,7 +644,6 @@ void paymentPopup(BuildContext context, String toAddress) {
                           //     borderSide:
                           //         BorderSide(color: Colors.grey[500], width: 2),
                           //     borderRadius: BorderRadius.circular(8)),
-
                           focusedBorder: OutlineInputBorder(
                             borderSide:
                                 BorderSide(color: Colors.grey[500]!, width: 2),
@@ -586,7 +652,7 @@ void paymentPopup(BuildContext context, String toAddress) {
                           contentPadding: const EdgeInsets.all(20),
                         ),
                         style: const TextStyle(
-                          fontSize: 40,
+                          fontSize: 35,
                           color: Colors.black,
                           fontWeight: FontWeight.w600,
                         ),
@@ -603,48 +669,7 @@ void paymentPopup(BuildContext context, String toAddress) {
                             backgroundColor: orangeC, // foreground
                           ),
                           onPressed: canValidate
-                              ? () async {
-                                  String? pin;
-                                  if (myWalletProvider.pinCode == '') {
-                                    pin = await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (homeContext) {
-                                          return UnlockingWallet(
-                                              wallet: defaultWallet);
-                                        },
-                                      ),
-                                    );
-                                  }
-                                  log.d(pin);
-                                  if (pin != null ||
-                                      myWalletProvider.pinCode != '') {
-                                    // Payment workflow !
-                                    WalletsProfilesProvider walletViewProvider =
-                                        Provider.of<WalletsProfilesProvider>(
-                                            context,
-                                            listen: false);
-                                    SubstrateSdk sub =
-                                        Provider.of<SubstrateSdk>(context,
-                                            listen: false);
-                                    final acc = sub.getCurrentWallet();
-                                    log.d(
-                                        "fromAddress: ${acc.address!},destAddress: $toAddress, amount: ${double.parse(walletViewProvider.payAmount.text)},  password: $pin");
-                                    sub.pay(
-                                        fromAddress: acc.address!,
-                                        destAddress: toAddress,
-                                        amount: double.parse(
-                                            walletViewProvider.payAmount.text),
-                                        password:
-                                            pin ?? myWalletProvider.pinCode);
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) {
-                                        return const TransactionInProgress();
-                                      }),
-                                    );
-                                  }
-                                }
+                              ? () async => await executeTransfert()
                               : null,
                           child: Text(
                             'executeTheTransfer'.tr(),

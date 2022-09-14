@@ -367,6 +367,19 @@ class SubstrateSdk with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<double> txFees(
+      String fromAddress, String destAddress, double amount) async {
+    if (amount == 0) return 0;
+    final sender = await _setSender(fromAddress);
+    final txInfo = TxInfoData('balances', 'transferKeepAlive', sender);
+    final amountUnit = (amount * 100).toInt();
+
+    final estimateFees =
+        await sdk.api.tx.estimateFees(txInfo, [destAddress, amountUnit]);
+
+    return estimateFees.partialFee / 100;
+  }
+
   /////////////////////////////////////
   ////// 3: SUBSTRATE CONNECTION //////
   /////////////////////////////////////
@@ -714,7 +727,7 @@ class SubstrateSdk with ChangeNotifier {
       txOptions = [destAddress, false];
       tx2 = 'api.tx.balances.transferAll("$destAddress", false)';
     } else {
-      int amountUnit;
+      late int amountUnit;
       if (isUdUnit) {
         palette = 'universalDividend';
         call = 'transferUd';

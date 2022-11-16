@@ -221,10 +221,10 @@ class WalletsHome extends StatelessWidget {
     } else if (screenWidth >= 650) {
       nTule = 3;
     }
-    Offset followDragAnchorStrategy(
-        Draggable<Object> d, BuildContext context, Offset point) {
-      return Offset(d.feedbackOffset.dx - 30, d.feedbackOffset.dy - 0);
-    }
+    // Offset followDragAnchorStrategy(
+    //     Draggable<Object> d, BuildContext context, Offset point) {
+    //   return Offset(d.feedbackOffset.dx - 30, d.feedbackOffset.dy - 0);
+    // }
 
     return CustomScrollView(slivers: <Widget>[
       const SliverToBoxAdapter(child: SizedBox(height: 20)),

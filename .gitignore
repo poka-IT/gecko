@@ -58,7 +58,6 @@ AppImageBuilder.yml
 android/app/build.gradle
 integration_test/duniter/data/chains/
 
-# Ignore Mac deps
-ios/
+# Ignore PC deps
 macos/
 windows/

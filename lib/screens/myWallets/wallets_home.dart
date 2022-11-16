@@ -239,11 +239,11 @@ class WalletsHome extends StatelessWidget {
               LongPressDraggable<String>(
                 delay: const Duration(milliseconds: 200),
                 data: repository.address!,
-                // dragAnchorStrategy:
-                //     (Draggable<Object> _, BuildContext __, Offset ___) =>
-                //         const Offset(40, 40),
-                feedbackOffset: const Offset(-500, -500),
-                dragAnchorStrategy: childDragAnchorStrategy,
+                dragAnchorStrategy:
+                    (Draggable<Object> _, BuildContext __, Offset ___) =>
+                        const Offset(0, 0),
+                // feedbackOffset: const Offset(-500, -500),
+                // dragAnchorStrategy: childDragAnchorStrategy,
                 onDragStarted: () =>
                     myWalletProvider.dragAddress = repository.address!,
                 onDragEnd: (_) {

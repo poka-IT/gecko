@@ -24,7 +24,7 @@ class QrCodeFullscreen extends StatelessWidget {
           backgroundColor: color ?? Colors.black,
           toolbarHeight: 60 * ratio,
           leading: IconButton(
-              icon:const  Icon(Icons.arrow_back, color: orangeC),
+              icon: const Icon(Icons.arrow_back, color: orangeC),
               onPressed: () {
                 Navigator.pop(context);
               }),

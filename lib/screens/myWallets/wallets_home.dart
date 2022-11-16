@@ -221,6 +221,10 @@ class WalletsHome extends StatelessWidget {
     } else if (screenWidth >= 650) {
       nTule = 3;
     }
+    // Offset followDragAnchorStrategy(
+    //     Draggable<Object> d, BuildContext context, Offset point) {
+    //   return Offset(d.feedbackOffset.dx - 30, d.feedbackOffset.dy - 0);
+    // }
 
     return CustomScrollView(slivers: <Widget>[
       const SliverToBoxAdapter(child: SizedBox(height: 20)),
@@ -235,10 +239,11 @@ class WalletsHome extends StatelessWidget {
               LongPressDraggable<String>(
                 delay: const Duration(milliseconds: 200),
                 data: repository.address!,
-                // dragAnchorStrategy:
-                //     (Draggable<Object> _, BuildContext __, Offset ___) =>
-                //         const Offset(40, 40),
-                dragAnchorStrategy: pointerDragAnchorStrategy,
+                dragAnchorStrategy:
+                    (Draggable<Object> _, BuildContext __, Offset ___) =>
+                        const Offset(0, 0),
+                // feedbackOffset: const Offset(-500, -500),
+                // dragAnchorStrategy: childDragAnchorStrategy,
                 onDragStarted: () =>
                     myWalletProvider.dragAddress = repository.address!,
                 onDragEnd: (_) {

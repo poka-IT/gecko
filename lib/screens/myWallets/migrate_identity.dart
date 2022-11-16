@@ -82,16 +82,18 @@ class MigrateIdentityScreen extends StatelessWidget {
                 if (status.data == null) {
                   return Column(children: [
                     const SizedBox(height: 80),
-                    Row(mainAxisAlignment: MainAxisAlignment.center, children: const  [
-                      SizedBox(
-                        height: 35,
-                        width: 35,
-                        child: CircularProgressIndicator(
-                          color: orangeC,
-                          strokeWidth: 4,
-                        ),
-                      ),
-                    ]),
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          SizedBox(
+                            height: 35,
+                            width: 35,
+                            child: CircularProgressIndicator(
+                              color: orangeC,
+                              strokeWidth: 4,
+                            ),
+                          ),
+                        ]),
                   ]);
                 }
 

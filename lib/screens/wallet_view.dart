@@ -452,6 +452,8 @@ void paymentPopup(BuildContext context, String toAddress) {
       isScrollControlled: true,
       context: context,
       builder: (BuildContext context) {
+        final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
+        double fees = 0;
         return StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
           if (walletViewProvider.payAmount.text != '' &&
@@ -588,12 +590,26 @@ void paymentPopup(BuildContext context, String toAddress) {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      Text(
-                        'amount'.tr(),
-                        style: TextStyle(
-                            fontSize: 19,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey[600]),
+                      Row(
+                        children: [
+                          Text(
+                            'amount'.tr(),
+                            style: TextStyle(
+                                fontSize: 19,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey[600]),
+                          ),
+                          const Spacer(),
+                          Text(
+                            'frais: $fees $currencyName',
+                            style: const TextStyle(
+                              color: orangeC,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                        ],
                       ),
                       const SizedBox(height: 10),
                       TextField(
@@ -606,7 +622,17 @@ void paymentPopup(BuildContext context, String toAddress) {
                         maxLines: 1,
                         textAlign: TextAlign.center,
                         keyboardType: TextInputType.number,
-                        onChanged: (_) => setState(() {}),
+                        onChanged: (_) async {
+                          fees = await sub.txFees(
+                              defaultWallet.address!,
+                              toAddress,
+                              double.parse(
+                                  walletViewProvider.payAmount.text == ''
+                                      ? '0'
+                                      : walletViewProvider.payAmount.text));
+                          log.d(fees);
+                          setState(() {});
+                        },
                         inputFormatters: <TextInputFormatter>[
                           FilteringTextInputFormatter.deny(',',
                               replacementString: '.'),

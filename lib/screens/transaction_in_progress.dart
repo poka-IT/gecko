@@ -103,7 +103,7 @@ class TransactionInProgress extends StatelessWidget {
                 'g1migration Bloc of last transaction: ${sub.blocNumber} --- $result');
           } else {
             isValid = false;
-            resultText = "${"anErrorOccured".tr()}:\n";
+            resultText = "${"anErrorOccurred".tr()}:\n";
             final List exceptionSplit = result.split('Exception: ');
             String exception;
             if (exceptionSplit.length > 1) {

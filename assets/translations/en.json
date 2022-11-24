@@ -137,7 +137,7 @@
     "sending": "Sending...",
     "propagating": "Propagating...",
     "validating": "Validating...",
-    "anErrorOccured": "An error occurred",
+    "anErrorOccurred": "An error occurred",
     "24hbetweenCerts": "You have to wait 24h between certs",
     "canNotCertifySelf": "You can not certify yourself",
     "nameAlreadyExist": "This name is already taken",

@@ -138,7 +138,7 @@
     "sending": "Envoi en cours...",
     "propagating": "En cours de propagation...",
     "validating": "En cours de validation...",
-    "anErrorOccured": "Une erreur s'est produite",
+    "anErrorOccurred": "Une erreur s'est produite",
     "24hbetweenCerts": "Vous devez attendre 24h entre chaque certification",
     "canNotCertifySelf": "Vous ne pouvez pas vous certifier\nvous même ...",
     "nameAlreadyExist": "Ce nom est déjà pris",

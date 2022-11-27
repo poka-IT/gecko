@@ -301,12 +301,12 @@ class DuniterIndexer with ChangeNotifier {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 5),
                     child: ListTile(
-                        key: keySearchResult(profile['id']),
+                        key: keySearchResult(profile['pubkey']),
                         horizontalTitleGap: 40,
                         contentPadding: const EdgeInsets.all(5),
                         leading: cesiumPlusProvider.defaultAvatar(avatarSize),
                         title: Row(children: <Widget>[
-                          Text(getShortPubkey(profile['id']),
+                          Text(getShortPubkey(profile['pubkey']),
                               style: const TextStyle(
                                   fontSize: 18,
                                   fontFamily: 'Monospace',
@@ -321,7 +321,7 @@ class DuniterIndexer with ChangeNotifier {
                                 Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      balance(context, profile['id'], 16),
+                                      balance(context, profile['pubkey'], 16),
                                     ]),
                               ]),
                         ),
@@ -337,14 +337,15 @@ class DuniterIndexer with ChangeNotifier {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) {
-                              walletsProfiles.address = profile['id'];
+                              walletsProfiles.address = profile['pubkey'];
                               return WalletViewScreen(
-                                address: profile['id'],
+                                address: profile['pubkey'],
                                 username: g1WalletsBox
-                                    .get(profile['id'])
+                                    .get(profile['pubkey'])
                                     ?.id
                                     ?.username,
-                                avatar: g1WalletsBox.get(profile['id'])?.avatar,
+                                avatar:
+                                    g1WalletsBox.get(profile['pubkey'])?.avatar,
                               );
                             }),
                           );
@@ -363,7 +364,7 @@ class DuniterIndexer with ChangeNotifier {
     for (final trans in blockchainTX) {
       final transaction = trans['node'];
       final direction =
-          transaction['issuer_id'] != pubkey ? 'RECEIVED' : 'SENT';
+          transaction['issuer_pubkey'] != pubkey ? 'RECEIVED' : 'SENT';
 
       transBC.add(i);
       transBC[i] = [];
@@ -371,10 +372,10 @@ class DuniterIndexer with ChangeNotifier {
       final int amountBrut = transaction['amount'];
       final double amount = removeDecimalZero(amountBrut / 100);
       if (direction == "RECEIVED") {
-        transBC[i].add(transaction['issuer_id']);
+        transBC[i].add(transaction['issuer_pubkey']);
         transBC[i].add(transaction['issuer']['identity']?['name'] ?? '');
       } else if (direction == "SENT") {
-        transBC[i].add(transaction['receiver_id']);
+        transBC[i].add(transaction['receiver_pubkey']);
         transBC[i].add(transaction['receiver']['identity']?['name'] ?? '');
       }
       transBC[i].add(amount);

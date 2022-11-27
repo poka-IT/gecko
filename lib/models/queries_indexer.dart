@@ -1,9 +1,10 @@
 const String getNameByAddressQ = r'''
 query ($address: String!) {
-  account_by_pk(id: $address) {
+  account_by_pk(pubkey: $address) {
     identity {
       name
     }
+    pubkey
   }
 }
 ''';
@@ -11,7 +12,7 @@ query ($address: String!) {
 const String searchAddressByNameQ = r'''
 query ($name: String!) {
   search_identity(args: {name: $name}) {
-    id
+    pubkey
     name
   }
 }
@@ -21,8 +22,8 @@ const String getHistoryByAddressQ = r'''
 query ($address: String!, $number: Int!, $cursor: String) {
   transaction_connection(where: 
   {_or: [
-    {issuer_id: {_eq: $address}}, 
-    {receiver_id: {_eq: $address}}
+    {issuer_pubkey: {_eq: $address}}, 
+    {receiver_pubkey: {_eq: $address}}
   ]}, 
   order_by: {created_at: desc},
   first: $number,
@@ -31,8 +32,8 @@ query ($address: String!, $number: Int!, $cursor: String) {
       node {
         amount
         created_at
-        issuer_id
-        receiver_id
+        issuer_pubkey
+        receiver_pubkey
         issuer {
           identity {
             name

@@ -1,5 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/services.dart';
+
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -20,7 +20,6 @@ class SearchResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     SearchProvider searchProvider =
         Provider.of<SearchProvider>(context, listen: false);
     CesiumPlusProvider cesiumPlusProvider =

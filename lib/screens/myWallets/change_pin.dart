@@ -3,7 +3,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:durt/durt.dart';
-import 'package:flutter/services.dart';
+
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/stateful_wrapper.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -26,7 +26,6 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);

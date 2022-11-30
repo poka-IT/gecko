@@ -15,6 +15,7 @@
 
 import 'dart:async';
 import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:gecko/globals.dart';
@@ -98,31 +99,35 @@ Future<void> main() async {
     // // ]);
     // Catcher(rootWidget: Gecko(endPointGVA, _store), debugConfig: debugOptions);
 
-    await SentryFlutter.init(
-      (options) {
-        options.dsn =
-            'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
-      },
-      appRunner: () => runApp(
-        EasyLocalization(
-          supportedLocales: const [Locale('en'), Locale('fr'), Locale('es')],
-          path: 'assets/translations',
-          fallbackLocale: const Locale('en'),
-          child: const Gecko(),
-        ),
-      ),
-    );
+    await SentryFlutter.init((options) {
+      options.dsn =
+          'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
+    },
+        appRunner: () => SystemChrome.setPreferredOrientations(
+                [DeviceOrientation.portraitUp]).then((_) {
+              runApp(EasyLocalization(
+                supportedLocales: const [
+                  Locale('en'),
+                  Locale('fr'),
+                  Locale('es')
+                ],
+                path: 'assets/translations',
+                fallbackLocale: const Locale('en'),
+                child: const Gecko(),
+              ));
+            }));
   } else {
     log.i('Debug mode enabled: No sentry alerte');
 
-    runApp(
-      EasyLocalization(
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
+        .then((_) {
+      runApp(EasyLocalization(
         supportedLocales: const [Locale('en'), Locale('fr'), Locale('es')],
         path: 'assets/translations',
         fallbackLocale: const Locale('en'),
         child: const Gecko(),
-      ),
-    );
+      ));
+    });
   }
 }
 
@@ -131,8 +136,6 @@ class Gecko extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-
     // To configure multi_endpoints GraphQLProvider: https://stackoverflow.com/q/70656513/8301867
 
     return MultiProvider(

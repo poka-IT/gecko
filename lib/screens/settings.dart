@@ -269,8 +269,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget indexerEndpointSelection(BuildContext context) {
-    final duniterIndexer =
-        Provider.of<DuniterIndexer>(context, listen: false);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     String? selectedIndexerEndpoint;
     if (configBox.containsKey('customIndexer')) {

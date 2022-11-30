@@ -19,14 +19,13 @@ class ContactsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    CesiumPlusProvider cesiumPlusProvider =
+    final cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
     WalletsProfilesProvider walletsProfilesClass =
         Provider.of<WalletsProfilesProvider>(context, listen: true);
     HomeProvider homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
-    DuniterIndexer duniterIndexer =
-        Provider.of<DuniterIndexer>(context, listen: false);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     double avatarSize = 55;
 

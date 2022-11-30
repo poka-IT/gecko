@@ -16,9 +16,9 @@ class OnboardingStepNine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    GenerateWalletsProvider generateWalletProvider =
+    final generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
-    // MyWalletsProvider myWalletProvider =
+    // final myWalletProvider =
     //     Provider.of<MyWalletsProvider>(context);
     CommonElements common = CommonElements();
 

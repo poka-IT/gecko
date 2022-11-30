@@ -30,8 +30,7 @@ class _ChooseChestState extends State<ChooseChest> {
 
   @override
   Widget build(BuildContext context) {
-    MyWalletsProvider myWalletProvider =
-        Provider.of<MyWalletsProvider>(context);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
 
     return Scaffold(
         backgroundColor: backgroundColor,

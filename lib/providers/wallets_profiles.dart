@@ -134,11 +134,10 @@ class WalletsProfilesProvider with ChangeNotifier {
       BuildContext context, String address, String? username) {
     const double avatarSize = 140;
 
-    WalletOptionsProvider walletOptions =
+    final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
-    CesiumPlusProvider cesiumPlusProvider =
+    final cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
-    // SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     return Stack(children: <Widget>[
       Consumer<SubstrateSdk>(builder: (context, sub, _) {

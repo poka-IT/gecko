@@ -26,8 +26,8 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
 
   @override
   Widget build(BuildContext context) {
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
-    MyWalletsProvider myWalletProvider =
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
     return WillPopScope(

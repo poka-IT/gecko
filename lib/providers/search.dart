@@ -68,8 +68,7 @@ class SearchProvider with ChangeNotifier {
   // }
 
   Future<List<G1WalletsList>> searchAddress() async {
-    final WalletsProfilesProvider walletProfiles =
-        WalletsProfilesProvider('pubkey');
+    final walletProfiles = WalletsProfilesProvider('pubkey');
 
     if (walletProfiles.isAddress(searchController.text)) {
       G1WalletsList wallet = G1WalletsList(address: searchController.text);

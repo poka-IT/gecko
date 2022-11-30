@@ -134,7 +134,7 @@ class HomeProvider with ChangeNotifier {
   // }
 
   Widget bottomAppBar(BuildContext context) {
-    MyWalletsProvider myWalletProvider =
+    final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     WalletsProfilesProvider historyProvider =
         Provider.of<WalletsProfilesProvider>(context, listen: false);

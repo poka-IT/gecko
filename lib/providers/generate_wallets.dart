@@ -3,7 +3,6 @@ import 'package:durt/durt.dart' as durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/bip39_words.dart';
 import 'package:gecko/models/chest_data.dart';
@@ -250,7 +249,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   Future<List<String>> generateWordList(BuildContext context) async {
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     generatedMnemonic = await sub.generateMnemonic(lang: appLang);
     List<String> wordsList = [];
@@ -370,7 +369,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   Future<bool> scanDerivations(BuildContext context) async {
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final currentChestNumber = configBox.get('currentChest');
     bool isAlive = false;
     scanedValidWalletNumber = 0;
@@ -445,6 +444,8 @@ class GenerateWalletsProvider with ChangeNotifier {
           const Duration(seconds: 1),
           onTimeout: () => {},
         );
+
+    log.d(balance);
 
     log.d(
         "${addressData.address!}: ${balance['transferableBalance']} $currencyName");

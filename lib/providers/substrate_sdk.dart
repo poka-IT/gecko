@@ -295,7 +295,7 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<String> idtyStatus(String address) async {
-    // WalletOptionsProvider walletOptions =
+    // final walletOptions =
     //     Provider.of<WalletOptionsProvider>(homeContext, listen: false);
 
     var idtyIndex = await _getIdentityIndexOf(address);
@@ -401,8 +401,7 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<void> connectNode(BuildContext ctx) async {
     HomeProvider homeProvider = Provider.of<HomeProvider>(ctx, listen: false);
-    MyWalletsProvider myWalletProvider =
-        Provider.of<MyWalletsProvider>(ctx, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(ctx, listen: false);
 
     homeProvider.changeMessage("connectionPending".tr(), 0);
 
@@ -568,7 +567,7 @@ class SubstrateSdk with ChangeNotifier {
   Future<KeyPairData?> changePassword(BuildContext context, String address,
       String passOld, String passNew) async {
     final account = getKeypair(address);
-    MyWalletsProvider myWalletProvider =
+    final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     keyring.setCurrent(account);
     myWalletProvider.resetPinCode();
@@ -1007,7 +1006,7 @@ void snackNode(BuildContext context, bool isConnected) {
   if (!isConnected) {
     message = "noDuniterNodeAvailableTryLater".tr();
   } else {
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     message =
         "${"youAreConnectedToNode".tr()}\n${sub.getConnectedEndpoint()!.split('//')[1]}";

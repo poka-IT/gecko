@@ -29,7 +29,7 @@ class OnboardingStepFive extends StatefulWidget {
 class _ChooseChestState extends State<OnboardingStepFive> {
   @override
   Widget build(BuildContext context) {
-    GenerateWalletsProvider generateWalletProvider =
+    final generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context, listen: false);
 
     final CommonElements common = CommonElements();
@@ -111,7 +111,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
 }
 
 Widget sentanceArray(BuildContext context) {
-  GenerateWalletsProvider generateWalletProvider =
+  final generateWalletProvider =
       Provider.of<GenerateWalletsProvider>(context, listen: false);
 
   return Padding(
@@ -188,7 +188,7 @@ class PrintWallet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    GenerateWalletsProvider generateWalletProvider =
+    final generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context, listen: false);
     return MaterialApp(
       home: Scaffold(
@@ -221,9 +221,9 @@ class PrintWallet extends StatelessWidget {
 
 Widget nextButton(
     BuildContext context, String text, bool isFast, bool skipIntro) {
-  GenerateWalletsProvider generateWalletProvider =
+  final generateWalletProvider =
       Provider.of<GenerateWalletsProvider>(context, listen: false);
-  MyWalletsProvider myWalletProvider =
+  final myWalletProvider =
       Provider.of<MyWalletsProvider>(context, listen: false);
   return SizedBox(
     width: 380 * ratio,

@@ -33,10 +33,9 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     homeContext = context;
 
-    MyWalletsProvider myWalletProvider =
-        Provider.of<MyWalletsProvider>(context);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
     Provider.of<ChestProvider>(context);
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
 
@@ -104,7 +103,7 @@ class HomeScreen extends StatelessWidget {
         builder: (ctx) => StatefulWrapper(
             onInit: () {
               WidgetsBinding.instance.addPostFrameCallback((_) async {
-                DuniterIndexer duniterIndexer =
+                final duniterIndexer =
                     Provider.of<DuniterIndexer>(ctx, listen: false);
                 duniterIndexer.getValidIndexerEndpoint();
 
@@ -183,7 +182,7 @@ class HomeScreen extends StatelessWidget {
 }
 
 Widget geckHome(context) {
-  MyWalletsProvider myWalletProvider = Provider.of<MyWalletsProvider>(context);
+  final myWalletProvider = Provider.of<MyWalletsProvider>(context);
   Provider.of<ChestProvider>(context);
 
   WalletsProfilesProvider historyProvider =

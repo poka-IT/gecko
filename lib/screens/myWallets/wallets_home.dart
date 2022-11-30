@@ -29,8 +29,7 @@ class WalletsHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    MyWalletsProvider myWalletProvider =
-        Provider.of<MyWalletsProvider>(context);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
     HomeProvider homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
 
@@ -108,8 +107,7 @@ class WalletsHome extends StatelessWidget {
     );
   }
 
-  Widget chestOptions(
-      BuildContext context, MyWalletsProvider myWalletProvider) {
+  Widget chestOptions(BuildContext context, final myWalletProvider) {
     return Column(children: [
       const SizedBox(height: 50),
       SizedBox(
@@ -188,12 +186,11 @@ class WalletsHome extends StatelessWidget {
   }
 
   Widget myWalletsTiles(BuildContext context, int currentChestNumber) {
-    MyWalletsProvider myWalletProvider =
-        Provider.of<MyWalletsProvider>(context);
-    WalletOptionsProvider walletOptions =
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
+    final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
     final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     if (!isWalletsExists) {
       return const Text('');
@@ -396,10 +393,9 @@ class WalletsHome extends StatelessWidget {
 
   Widget nameBuilder(BuildContext context, WalletData repository,
       WalletData defaultWallet, int currentChestNumber) {
-    WalletOptionsProvider walletOptions =
+    final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
-    DuniterIndexer duniterIndexer =
-        Provider.of<DuniterIndexer>(context, listen: false);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     return ListTile(
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(12))),
@@ -435,8 +431,7 @@ class WalletsHome extends StatelessWidget {
   }
 
   Widget addNewDerivation(context) {
-    MyWalletsProvider myWalletProvider =
-        Provider.of<MyWalletsProvider>(context);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
 
     String newDerivationName =
         '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number! + 2}';

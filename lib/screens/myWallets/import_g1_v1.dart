@@ -22,9 +22,9 @@ class ImportG1v1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    WalletOptionsProvider walletOptions =
+    final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
-    MyWalletsProvider myWalletProvider =
+    final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
     Timer? debounce;
@@ -308,7 +308,7 @@ class ImportG1v1 extends StatelessWidget {
   }
 
   void resetScreen(BuildContext context) {
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     sub.csSalt.text = '';
     sub.csPassword.text = '';

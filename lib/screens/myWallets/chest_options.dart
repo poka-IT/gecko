@@ -25,8 +25,7 @@ class ChestOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ChestProvider chestProvider =
-        Provider.of<ChestProvider>(context, listen: false);
+    final chestProvider = Provider.of<ChestProvider>(context, listen: false);
     HomeProvider homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
 
@@ -60,7 +59,7 @@ class ChestOptions extends StatelessWidget {
               InkWell(
                 key: keyShowSeed,
                 onTap: () async {
-                  MyWalletsProvider myWalletProvider =
+                  final myWalletProvider =
                       Provider.of<MyWalletsProvider>(context, listen: false);
                   WalletData? defaultWallet =
                       myWalletProvider.getDefaultWallet();

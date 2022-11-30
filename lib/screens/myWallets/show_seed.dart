@@ -24,11 +24,11 @@ class ShowSeed extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    MyWalletsProvider myWalletProvider =
+    final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     CommonElements common = CommonElements();
 
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     WalletData defaultWallet = myWalletProvider.getDefaultWallet();
 

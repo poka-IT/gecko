@@ -27,7 +27,7 @@ class _CustomDerivationState extends State<CustomDerivation> {
 
   @override
   Widget build(BuildContext context) {
-    MyWalletsProvider myWalletProvider =
+    final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
     final derivationList = <String>[

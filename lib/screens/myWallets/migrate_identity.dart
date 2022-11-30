@@ -20,13 +20,12 @@ class MigrateIdentityScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
-    WalletOptionsProvider walletOptions =
+    // final _homeProvider = Provider.of<HomeProvider>(context);
+    final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
-    MyWalletsProvider myWalletProvider =
+    final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
-    DuniterIndexer duniterIndexer =
-        Provider.of<DuniterIndexer>(context, listen: false);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     final fromAddress = walletOptions.address.text;
     final defaultWallet = myWalletProvider.getDefaultWallet();

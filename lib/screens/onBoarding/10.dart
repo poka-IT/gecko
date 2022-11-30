@@ -29,10 +29,9 @@ class OnboardingStepTen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    GenerateWalletsProvider generateWalletProvider =
+    final generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
-    WalletOptionsProvider walletOptions =
-        Provider.of<WalletOptionsProvider>(context);
+    final walletOptions = Provider.of<WalletOptionsProvider>(context);
     CommonElements common = CommonElements();
     final int pinLenght = generateWalletProvider.pin.text.length;
 
@@ -131,18 +130,17 @@ class OnboardingStepTen extends StatelessWidget {
         ));
   }
 
-  Widget pinForm(context, WalletOptionsProvider walletOptions, pinLenght,
-      int walletNbr, int derivation) {
+  Widget pinForm(
+      context, final walletOptions, pinLenght, int walletNbr, int derivation) {
     // var _walletPin = '';
 // ignore: close_sinks
     StreamController<ErrorAnimationType> errorController =
         StreamController<ErrorAnimationType>();
     TextEditingController enterPin = TextEditingController();
-    MyWalletsProvider myWalletProvider =
-        Provider.of<MyWalletsProvider>(context);
-    GenerateWalletsProvider generateWalletProvider =
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
+    final generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     final int currentChest = myWalletProvider.getCurrentChest();
 

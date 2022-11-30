@@ -1,7 +1,5 @@
 import 'dart:io';
-
 import 'package:hive_flutter/hive_flutter.dart';
-
 part 'chest_data.g.dart';
 
 @HiveType(typeId: 1)

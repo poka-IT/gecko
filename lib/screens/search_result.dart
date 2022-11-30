@@ -20,16 +20,14 @@ class SearchResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SearchProvider searchProvider =
-        Provider.of<SearchProvider>(context, listen: false);
-    CesiumPlusProvider cesiumPlusProvider =
+    final searchProvider = Provider.of<SearchProvider>(context, listen: false);
+    final cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
     WalletsProfilesProvider walletsProfilesClass =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     HomeProvider homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
-    DuniterIndexer duniterIndexer =
-        Provider.of<DuniterIndexer>(context, listen: false);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     double avatarSize = 55;
 

@@ -54,8 +54,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
   }
 
   Widget historyQuery(context) {
-    DuniterIndexer duniterIndexer =
-        Provider.of<DuniterIndexer>(context, listen: false);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     if (indexerEndpoint == '') {
       Column(children: <Widget>[
@@ -157,8 +156,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
   }
 
   Widget historyView(context, result) {
-    DuniterIndexer duniterIndexer =
-        Provider.of<DuniterIndexer>(context, listen: false);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     return duniterIndexer.transBC == null
         ? Column(children: <Widget>[
@@ -190,9 +188,8 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
           ]);
   }
 
-  Widget getTransactionTile(
-      BuildContext context, DuniterIndexer duniterIndexer) {
-    CesiumPlusProvider cesiumPlusProvider =
+  Widget getTransactionTile(BuildContext context, final duniterIndexer) {
+    final cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
 
     int keyID = 0;

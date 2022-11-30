@@ -115,9 +115,9 @@ class ManageMembership extends StatelessWidget {
             false;
 
         if (answer) {
-          MyWalletsProvider myWalletProvider =
+          final myWalletProvider =
               Provider.of<MyWalletsProvider>(context, listen: false);
-          SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+          final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
           // MyWalletsProvider mw = MyWalletsProvider();
           // final wallet = mw.getWalletDataByAddress(address);

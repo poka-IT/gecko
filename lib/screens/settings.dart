@@ -108,7 +108,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget duniterEndpointSelection(BuildContext context) {
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     String? selectedDuniterEndpoint;
 
     // List of items in our dropdown menu
@@ -269,7 +269,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget indexerEndpointSelection(BuildContext context) {
-    DuniterIndexer indexer =
+    final duniterIndexer =
         Provider.of<DuniterIndexer>(context, listen: false);
 
     String? selectedIndexerEndpoint;
@@ -280,7 +280,7 @@ class SettingsScreen extends StatelessWidget {
     }
 
     if (selectedIndexerEndpoint == '') {
-      selectedIndexerEndpoint = indexer.listIndexerEndpoints[0];
+      selectedIndexerEndpoint = duniterIndexer.listIndexerEndpoints[0];
     }
 
     TextEditingController indexerEndpointController = TextEditingController(

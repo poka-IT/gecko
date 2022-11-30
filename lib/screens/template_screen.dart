@@ -6,7 +6,7 @@ class TemplateScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
+    // final _homeProvider = Provider.of<HomeProvider>(context);
 
     return Scaffold(
         backgroundColor: backgroundColor,

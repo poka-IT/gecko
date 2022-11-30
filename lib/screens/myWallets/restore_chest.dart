@@ -19,9 +19,8 @@ class RestoreChest extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    GenerateWalletsProvider genW =
-        Provider.of<GenerateWalletsProvider>(context, listen: false);
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final genW = Provider.of<GenerateWalletsProvider>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     genW.actualWallet = null;
     if (genW.isSentenceComplete(context)) {
@@ -182,7 +181,7 @@ class RestoreChest extends StatelessWidget {
   }
 
   Widget arrayCell(BuildContext context, TextEditingController cellCtl) {
-    GenerateWalletsProvider generateWalletProvider =
+    final generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
 
     return Container(

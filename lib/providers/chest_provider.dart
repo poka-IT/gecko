@@ -16,11 +16,11 @@ class ChestProvider with ChangeNotifier {
 
   Future deleteChest(context, ChestData chest) async {
     final bool? answer = await (_confirmDeletingChest(context, chest.name));
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     if (answer ?? false) {
       await sub.deleteAccounts(getChestWallets(chest));
       await chestBox.delete(chest.key);
-      MyWalletsProvider myWalletProvider =
+      final myWalletProvider =
           Provider.of<MyWalletsProvider>(context, listen: false);
 
       myWalletProvider.pinCode = '';

@@ -37,13 +37,13 @@ class WalletViewScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     WalletsProfilesProvider walletProfile =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
-    CesiumPlusProvider cesiumPlusProvider =
+    final cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
     walletProfile.address = address;
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     HomeProvider homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
-    MyWalletsProvider myWalletProvider =
+    final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
 
@@ -422,9 +422,7 @@ void paymentPopup(BuildContext context, String toAddress) {
     log.d(pin);
     if (pin != null || myWalletProvider.pinCode != '') {
       // Payment workflow !
-      WalletsProfilesProvider walletViewProvider =
-          Provider.of<WalletsProfilesProvider>(context, listen: false);
-      SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+      final sub = Provider.of<SubstrateSdk>(context, listen: false);
       final acc = sub.getCurrentWallet();
       log.d(
           "fromAddress: ${acc.address!},destAddress: $toAddress, amount: ${double.parse(walletViewProvider.payAmount.text)},  password: $pin");

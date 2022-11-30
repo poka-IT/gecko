@@ -24,7 +24,7 @@ class OnboardingStepSix extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    GenerateWalletsProvider generateWalletProvider =
+    final generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context, listen: true);
 
     CommonElements common = CommonElements();
@@ -144,7 +144,7 @@ class OnboardingStepSix extends StatelessWidget {
 }
 
 Widget nextButton(BuildContext context, String text, nextScreen, bool isFast) {
-  GenerateWalletsProvider generateWalletProvider =
+  final generateWalletProvider =
       Provider.of<GenerateWalletsProvider>(context, listen: false);
 
   generateWalletProvider.isAskedWordValid = false;

@@ -23,7 +23,7 @@ class ChooseWalletScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final int chest = configBox.get('currentChest');
 
     return Scaffold(
@@ -72,9 +72,7 @@ class ChooseWalletScreen extends StatelessWidget {
   }
 
   Widget myWalletsTiles(BuildContext context, int currentChest) {
-    MyWalletsProvider myWalletProvider =
-        Provider.of<MyWalletsProvider>(context);
-    // SubstrateSdk _sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
 
     final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
     WalletData? defaultWallet = myWalletProvider.getDefaultWallet();

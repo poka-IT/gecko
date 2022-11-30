@@ -163,7 +163,7 @@ class DuniterIndexer with ChangeNotifier {
       Color color = Colors.black,
       FontWeight fontWeight = FontWeight.w400,
       FontStyle fontStyle = FontStyle.italic]) {
-    WalletOptionsProvider walletOptions =
+    final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
     if (indexerEndpoint == '') {
       if (wallet == null) {
@@ -248,7 +248,7 @@ class DuniterIndexer with ChangeNotifier {
   Widget searchIdentity(BuildContext context, String name) {
     // WalletOptionsProvider _walletOptions =
     //     Provider.of<WalletOptionsProvider>(context, listen: false);
-    CesiumPlusProvider cesiumPlusProvider =
+    final cesiumPlusProvider =
         Provider.of<CesiumPlusProvider>(context, listen: false);
     WalletsProfilesProvider walletsProfiles =
         Provider.of<WalletsProfilesProvider>(context, listen: false);

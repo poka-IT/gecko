@@ -12,6 +12,7 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
+import 'package:polkawallet_sdk/api/types/addressIconData.dart';
 import 'package:provider/provider.dart';
 import "package:unorm_dart/unorm_dart.dart" as unorm;
 
@@ -250,7 +251,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   Future<List<String>> generateWordList(BuildContext context) async {
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     generatedMnemonic = await sub.generateMnemonic(lang: appLang);
     List<String> wordsList = [];
@@ -370,7 +371,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   Future<bool> scanDerivations(BuildContext context) async {
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final currentChestNumber = configBox.get('currentChest');
     bool isAlive = false;
     scanedValidWalletNumber = 0;
@@ -445,6 +446,8 @@ class GenerateWalletsProvider with ChangeNotifier {
           const Duration(seconds: 1),
           onTimeout: () => {},
         );
+
+    log.d(balance);
 
     log.d(
         "${addressData.address!}: ${balance['transferableBalance']} $currencyName");

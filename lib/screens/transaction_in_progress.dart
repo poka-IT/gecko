@@ -20,10 +20,10 @@ class TransactionInProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: true);
-    WalletsProfilesProvider walletViewProvider =
+    final sub = Provider.of<SubstrateSdk>(context, listen: true);
+    final walletProfiles =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
-    MyWalletsProvider myWalletProvider =
+    final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     bool isValid = false;
 
@@ -34,11 +34,11 @@ class TransactionInProgress extends StatelessWidget {
 
     // sub.spawnBlock();
 
-    log.d(walletViewProvider.address);
+    log.d(walletProfiles.address);
 
     final from = fromAddress ?? myWalletProvider.getDefaultWallet().name!;
-    final to = toAddress ?? getShortPubkey(walletViewProvider.address);
-    final amount = walletViewProvider.payAmount.text;
+    final to = toAddress ?? getShortPubkey(walletProfiles.address);
+    final amount = walletProfiles.payAmount.text;
     String actionName = '';
     final bool isUdUnit = configBox.get('isUdUnit') ?? false;
 

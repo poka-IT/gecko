@@ -52,7 +52,7 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Future<int> deleteWallet(context, WalletData wallet) async {
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final bool? answer = await (confirmPopup(
         context, 'areYouSureToForgetWallet'.tr(args: [wallet.name!])));
 
@@ -60,7 +60,7 @@ class WalletOptionsProvider with ChangeNotifier {
       //Check if balance is null
       final balance = await sub.getBalance(wallet.address!);
       if (balance != {}) {
-        MyWalletsProvider myWalletProvider =
+        final myWalletProvider =
             Provider.of<MyWalletsProvider>(context, listen: false);
         final defaultWallet = myWalletProvider.getDefaultWallet();
         log.d(defaultWallet.address);
@@ -135,8 +135,7 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Widget idtyStatus(BuildContext context, String address,
       {bool isOwner = false, Color color = Colors.black}) {
-    DuniterIndexer duniterIndexer =
-        Provider.of<DuniterIndexer>(context, listen: false);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     showText(String text,
         [double size = 18, bool bold = false, bool smooth = true]) {
@@ -213,16 +212,16 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Future<bool> isMember(BuildContext context, String address) async {
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     return await sub.idtyStatus(address) == 'Validated';
   }
 
   Future<String?> confirmIdentityPopup(BuildContext context) async {
     TextEditingController idtyName = TextEditingController();
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
-    WalletOptionsProvider walletOptions =
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
-    MyWalletsProvider myWalletProvider =
+    final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
     return showDialog<String>(
@@ -406,7 +405,7 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   bool canValidateName(BuildContext context, TextEditingController walletName) {
-    MyWalletsProvider myWalletProvider =
+    final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
     bool isNameValid = walletName.text.length >= 2 &&

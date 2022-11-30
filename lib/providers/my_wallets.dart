@@ -86,8 +86,8 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   Future<int> deleteAllWallet(context) async {
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
-    MyWalletsProvider myWalletProvider =
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     try {
       log.w('DELETE ALL WALLETS ?');
@@ -124,7 +124,7 @@ class MyWalletsProvider with ChangeNotifier {
 
     int? chest = getCurrentChest();
 
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     WalletData defaultWallet = getDefaultWallet();
 
@@ -147,7 +147,7 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   Future<void> generateRootWallet(context, String name) async {
-    MyWalletsProvider myWalletProvider =
+    final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
     isNewDerivationLoading = true;
@@ -162,7 +162,7 @@ class MyWalletsProvider with ChangeNotifier {
     } else {
       newWalletNbr = walletConfig.last.number! + 1;
     }
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     WalletData defaultWallet = myWalletProvider.getDefaultWallet();
 

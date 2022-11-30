@@ -30,8 +30,7 @@ class UnlockingWallet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    WalletOptionsProvider walletOptions =
-        Provider.of<WalletOptionsProvider>(context);
+    final walletOptions = Provider.of<WalletOptionsProvider>(context);
     // final double statusBarHeight = MediaQuery.of(context).padding.top;
 
     currentChestNumber = configBox.get('currentChest');
@@ -162,11 +161,9 @@ class UnlockingWallet extends StatelessWidget {
     StreamController<ErrorAnimationType> errorController =
         StreamController<ErrorAnimationType>();
     TextEditingController enterPin = TextEditingController();
-    WalletOptionsProvider walletOptions =
-        Provider.of<WalletOptionsProvider>(context);
-    MyWalletsProvider myWalletProvider =
-        Provider.of<MyWalletsProvider>(context);
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final walletOptions = Provider.of<WalletOptionsProvider>(context);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     FocusNode pinFocus = FocusNode();
 
     WalletData defaultWallet = myWalletProvider.getDefaultWallet();

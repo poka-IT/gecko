@@ -27,18 +27,17 @@ class WalletOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    WalletOptionsProvider walletOptions =
+    final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
     WalletsProfilesProvider historyProvider =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
-    MyWalletsProvider myWalletProvider =
+    final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     HomeProvider homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
-    DuniterIndexer duniterIndexer =
-        Provider.of<DuniterIndexer>(context, listen: false);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
-    // SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
+    // final sub = Provider.of<SubstrateSdk>(context, listen: false);
     // sub.spawnBlock();
     // sub.spawnBlock(0, 20);
 
@@ -437,7 +436,7 @@ class WalletOptions extends StatelessWidget {
   }
 
   Widget manageMembership(BuildContext context) {
-    WalletOptionsProvider walletOptions =
+    final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
     return InkWell(
       key: keyManageMembership,
@@ -469,8 +468,8 @@ class WalletOptions extends StatelessWidget {
   Widget setDefaultWalletWidget(
       BuildContext context,
       WalletOptionsProvider walletProvider,
-      MyWalletsProvider myWalletProvider,
-      WalletOptionsProvider walletOptions,
+      final myWalletProvider,
+      final walletOptions,
       int currentChest) {
     return Consumer<MyWalletsProvider>(builder: (context, myWalletProvider, _) {
       WalletData defaultWallet = myWalletProvider.getDefaultWallet();
@@ -511,10 +510,10 @@ class WalletOptions extends StatelessWidget {
   }
 
   Future setDefaultWallet(BuildContext context, int currentChest) async {
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
-    MyWalletsProvider myWalletProvider =
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
-    WalletOptionsProvider walletOptions =
+    final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
 
     // WalletData defaultWallet = _myWalletProvider.getDefaultWallet()!;
@@ -527,8 +526,8 @@ class WalletOptions extends StatelessWidget {
 
   Widget deleteWallet(BuildContext context,
       WalletOptionsProvider walletProvider, int currentChest) {
-    SubstrateSdk sub = Provider.of<SubstrateSdk>(context, listen: false);
-    MyWalletsProvider myWalletProvider =
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
     final defaultWallet = myWalletProvider.getDefaultWallet();

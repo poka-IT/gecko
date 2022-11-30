@@ -1,4 +1,3 @@
-import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 
@@ -7,7 +6,6 @@ class TemplateScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     // HomeProvider _homeProvider = Provider.of<HomeProvider>(context);
 
     return Scaffold(

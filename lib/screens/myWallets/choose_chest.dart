@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/services.dart';
+
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -30,7 +30,6 @@ class _ChooseChestState extends State<ChooseChest> {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
 

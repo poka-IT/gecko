@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
+
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -21,7 +22,6 @@ class ImportG1v1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     WalletOptionsProvider walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
     MyWalletsProvider myWalletProvider =

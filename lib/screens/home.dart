@@ -22,7 +22,7 @@ import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/settings.dart';
-import 'package:flutter/services.dart';
+
 import 'package:provider/provider.dart';
 import 'package:gecko/screens/my_contacts.dart';
 
@@ -32,7 +32,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     homeContext = context;
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
     Provider.of<ChestProvider>(context);

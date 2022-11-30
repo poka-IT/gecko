@@ -3,7 +3,7 @@
 import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/services.dart';
+
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
@@ -29,7 +29,6 @@ class WalletsHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     MyWalletsProvider myWalletProvider =
         Provider.of<MyWalletsProvider>(context);
     HomeProvider homeProvider =

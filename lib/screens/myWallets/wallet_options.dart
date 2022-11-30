@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
@@ -16,7 +17,7 @@ import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/myWallets/manage_membership.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/services.dart';
+
 import 'package:qr_flutter/qr_flutter.dart';
 
 class WalletOptions extends StatelessWidget {
@@ -26,7 +27,6 @@ class WalletOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     WalletOptionsProvider walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
     WalletsProfilesProvider historyProvider =

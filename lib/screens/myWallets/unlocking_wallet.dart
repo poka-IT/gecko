@@ -3,7 +3,7 @@
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -30,7 +30,6 @@ class UnlockingWallet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     WalletOptionsProvider walletOptions =
         Provider.of<WalletOptionsProvider>(context);
     // final double statusBarHeight = MediaQuery.of(context).padding.top;

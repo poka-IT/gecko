@@ -2,7 +2,7 @@
 // ignore_for_file: must_be_immutable
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/services.dart';
+
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -24,7 +24,6 @@ class OnboardingStepSix extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     GenerateWalletsProvider generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context, listen: true);
 

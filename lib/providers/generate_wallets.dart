@@ -3,7 +3,6 @@ import 'package:durt/durt.dart' as durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/bip39_words.dart';
 import 'package:gecko/models/chest_data.dart';
@@ -12,7 +11,6 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
-import 'package:polkawallet_sdk/api/types/addressIconData.dart';
 import 'package:provider/provider.dart';
 import "package:unorm_dart/unorm_dart.dart" as unorm;
 

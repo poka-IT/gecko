@@ -19,8 +19,6 @@ class ContactsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cesiumPlusProvider =
-        Provider.of<CesiumPlusProvider>(context, listen: false);
     WalletsProfilesProvider walletsProfilesClass =
         Provider.of<WalletsProfilesProvider>(context, listen: true);
     HomeProvider homeProvider =
@@ -72,8 +70,7 @@ class ContactsScreen extends StatelessWidget {
                                 key: keySearchResult('keyID++'),
                                 horizontalTitleGap: 40,
                                 contentPadding: const EdgeInsets.all(5),
-                                leading: cesiumPlusProvider
-                                    .defaultAvatar(avatarSize),
+                                leading: defaultAvatar(avatarSize),
                                 title: Row(children: <Widget>[
                                   Text(getShortPubkey(g1Wallet.address),
                                       style: const TextStyle(

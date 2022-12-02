@@ -13,8 +13,6 @@ class CertificationsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final _homeProvider = Provider.of<HomeProvider>(context);
-
     return Scaffold(
         backgroundColor: backgroundColor,
         appBar: AppBar(
@@ -27,7 +25,10 @@ class CertificationsScreen extends StatelessWidget {
         body: SafeArea(
           child: Column(children: <Widget>[
             HeaderProfile(address: address, username: username),
+            const Text('Certifications reçus'),
             CertsReceived(address: address),
+            const SizedBox(height: 15),
+            const Text('Certifications émises'),
             CertsSent(address: address),
             const SizedBox(height: 20),
           ]),

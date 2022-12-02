@@ -248,8 +248,6 @@ class DuniterIndexer with ChangeNotifier {
   Widget searchIdentity(BuildContext context, String name) {
     // WalletOptionsProvider _walletOptions =
     //     Provider.of<WalletOptionsProvider>(context, listen: false);
-    final cesiumPlusProvider =
-        Provider.of<CesiumPlusProvider>(context, listen: false);
     WalletsProfilesProvider walletsProfiles =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     if (indexerEndpoint == '') {
@@ -305,7 +303,7 @@ class DuniterIndexer with ChangeNotifier {
                         key: keySearchResult(profile['pubkey']),
                         horizontalTitleGap: 40,
                         contentPadding: const EdgeInsets.all(5),
-                        leading: cesiumPlusProvider.defaultAvatar(avatarSize),
+                        leading: defaultAvatar(avatarSize),
                         title: Row(children: <Widget>[
                           Text(getShortPubkey(profile['pubkey']),
                               style: const TextStyle(

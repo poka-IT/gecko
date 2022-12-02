@@ -38,8 +38,6 @@ class WalletViewScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     WalletsProfilesProvider walletProfile =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
-    final cesiumPlusProvider =
-        Provider.of<CesiumPlusProvider>(context, listen: false);
     walletProfile.address = address;
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     HomeProvider homeProvider =
@@ -132,8 +130,7 @@ class WalletViewScreen extends StatelessWidget {
                               MaterialPageRoute(builder: (context) {
                                 return ActivityScreen(
                                     address: address,
-                                    avatar:
-                                        cesiumPlusProvider.defaultAvatar(50));
+                                    avatar: defaultAvatar(50));
                               }),
                             );
                           }),

@@ -25,8 +25,6 @@ class HeaderProfile extends StatelessWidget {
 
     final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
-    final cesiumPlusProvider =
-        Provider.of<CesiumPlusProvider>(context, listen: false);
 
     return Stack(children: <Widget>[
       Consumer<SubstrateSdk>(builder: (context, sub, _) {
@@ -104,7 +102,7 @@ class HeaderProfile extends StatelessWidget {
           const Spacer(),
           Column(children: <Widget>[
             ClipOval(
-              child: cesiumPlusProvider.defaultAvatar(avatarSize),
+              child: defaultAvatar(avatarSize),
             ),
             const SizedBox(height: 25),
           ]),

@@ -8,8 +8,6 @@ import 'package:path_provider/path_provider.dart';
 
 class CesiumPlusProvider with ChangeNotifier {
   TextEditingController cesiumName = TextEditingController();
-  Image defaultAvatar(double size) =>
-      Image.asset(('assets/icon_user.png'), height: size);
 
   CancelToken avatarCancelToken = CancelToken();
 
@@ -156,3 +154,6 @@ class CesiumPlusProvider with ChangeNotifier {
     return finalAvatar;
   }
 }
+
+Image defaultAvatar(double size) =>
+    Image.asset(('assets/icon_user.png'), height: size);

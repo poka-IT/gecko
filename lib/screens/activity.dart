@@ -187,9 +187,6 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
   }
 
   Widget getTransactionTile(BuildContext context, final duniterIndexer) {
-    final cesiumPlusProvider =
-        Provider.of<CesiumPlusProvider>(context, listen: false);
-
     int keyID = 0;
     String? dateDelimiter;
     String? lastDateDelimiter;
@@ -299,7 +296,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
                   contentPadding: const EdgeInsets.only(
                       left: 20, right: 30, top: 15, bottom: 15),
                   leading: ClipOval(
-                    child: cesiumPlusProvider.defaultAvatar(avatarSize),
+                    child: defaultAvatar(avatarSize),
                   ),
                   title: Padding(
                     padding: const EdgeInsets.only(bottom: 5),

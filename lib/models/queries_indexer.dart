@@ -56,5 +56,14 @@ query ($address: String!, $number: Int!, $cursor: String) {
 }
 ''';
 
-// To parse indexer date format
-// log.d(DateTime.parse("2022-06-13T16:51:24.001+00:00").toString());
+const String getCertsReceived = r'''
+query ($address: String!) {
+  certification(where: {receiver: {pubkey: {_eq: $address}}}) {
+    issuer {
+      pubkey
+      name
+    }
+    created_at
+  }
+}
+''';

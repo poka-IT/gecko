@@ -21,8 +21,6 @@ class SearchResultScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final searchProvider = Provider.of<SearchProvider>(context, listen: false);
-    final cesiumPlusProvider =
-        Provider.of<CesiumPlusProvider>(context, listen: false);
     WalletsProfilesProvider walletsProfilesClass =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     HomeProvider homeProvider =
@@ -94,8 +92,7 @@ class SearchResultScreen extends StatelessWidget {
                                       key: keySearchResult(g1Wallet.address),
                                       horizontalTitleGap: 40,
                                       contentPadding: const EdgeInsets.all(5),
-                                      leading: cesiumPlusProvider
-                                          .defaultAvatar(avatarSize),
+                                      leading: defaultAvatar(avatarSize),
                                       title: Row(children: <Widget>[
                                         Text(getShortPubkey(g1Wallet.address),
                                             style: const TextStyle(

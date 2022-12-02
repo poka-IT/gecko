@@ -9,9 +9,9 @@ import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/widgets/header_profile.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -31,8 +31,6 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
 
   @override
   Widget build(BuildContext context) {
-    WalletsProfilesProvider walletProfile =
-        Provider.of<WalletsProfilesProvider>(context, listen: false);
     HomeProvider homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
 
@@ -48,7 +46,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
         ),
         bottomNavigationBar: homeProvider.bottomAppBar(context),
         body: Column(children: <Widget>[
-          walletProfile.headerProfileView(context, address, username),
+          HeaderProfile(address: address, username: username),
           historyQuery(context),
         ]));
   }
@@ -188,10 +186,8 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
           ]);
   }
 
-  Widget getTransactionTile(BuildContext context, final duniterIndexer) {
-    final cesiumPlusProvider =
-        Provider.of<CesiumPlusProvider>(context, listen: false);
-
+  Widget getTransactionTile(
+      BuildContext context, DuniterIndexer duniterIndexer) {
     int keyID = 0;
     String? dateDelimiter;
     String? lastDateDelimiter;
@@ -301,7 +297,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
                   contentPadding: const EdgeInsets.only(
                       left: 20, right: 30, top: 15, bottom: 15),
                   leading: ClipOval(
-                    child: cesiumPlusProvider.defaultAvatar(avatarSize),
+                    child: defaultAvatar(avatarSize),
                   ),
                   title: Padding(
                     padding: const EdgeInsets.only(bottom: 5),

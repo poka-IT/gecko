@@ -20,6 +20,8 @@ import 'package:gecko/screens/myWallets/choose_wallet.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/widgets/header_profile.dart';
+import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -37,8 +39,6 @@ class WalletViewScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     WalletsProfilesProvider walletProfile =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
-    final cesiumPlusProvider =
-        Provider.of<CesiumPlusProvider>(context, listen: false);
     walletProfile.address = address;
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     HomeProvider homeProvider =
@@ -107,7 +107,7 @@ class WalletViewScreen extends StatelessWidget {
         bottomNavigationBar: homeProvider.bottomAppBar(context),
         body: SafeArea(
           child: Column(children: <Widget>[
-            walletProfile.headerProfileView(context, address, username),
+            HeaderProfile(address: address, username: username),
             SizedBox(height: isTall ? 10 : 0),
             Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
               Column(children: <Widget>[
@@ -128,11 +128,10 @@ class WalletViewScreen extends StatelessWidget {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) {
+                              PageNoTransit(builder: (context) {
                                 return ActivityScreen(
                                     address: address,
-                                    avatar:
-                                        cesiumPlusProvider.defaultAvatar(50));
+                                    avatar: defaultAvatar(50));
                               }),
                             );
                           }),

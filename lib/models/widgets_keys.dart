@@ -61,6 +61,9 @@ const keyCloseTransactionScreen = Key('keyCloseTransactionScreen');
 const keyListTransactions = Key('keyListTransactions');
 const keyActivityScreen = Key('keyActivityScreen');
 
+// Certification view
+const keyCertsReceived = Key('keyCertsReceived');
+
 // Unlock wallet
 const keyUnlockWallet = Key('keyUnlockWallet');
 const keyPinForm = Key('keyPinForm');

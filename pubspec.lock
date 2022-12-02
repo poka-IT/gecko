@@ -8,6 +8,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "50.0.0"
+  accordion:
+    dependency: "direct main"
+    description:
+      name: accordion
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.5.1"
   analyzer:
     dependency: transitive
     description:
@@ -273,7 +280,7 @@ packages:
       name: dart_code_metrics
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "5.0.1"
+    version: "5.1.0"
   dart_style:
     dependency: transitive
     description:
@@ -777,7 +784,7 @@ packages:
       name: mime
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.2"
+    version: "1.0.3"
   mobx:
     dependency: transitive
     description:
@@ -1076,20 +1083,27 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.27.7"
+  scroll_to_index:
+    dependency: transitive
+    description:
+      name: scroll_to_index
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.1"
   sentry:
     dependency: transitive
     description:
       name: sentry
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "6.16.1"
+    version: "6.17.0"
   sentry_flutter:
     dependency: "direct main"
     description:
       name: sentry_flutter
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "6.16.1"
+    version: "6.17.0"
   shared_preferences:
     dependency: "direct main"
     description:

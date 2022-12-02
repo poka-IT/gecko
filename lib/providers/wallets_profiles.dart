@@ -1,21 +1,13 @@
 import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
-import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/cesium_plus.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/wallet_options.dart';
-import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
 // import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:barcode_scan2/barcode_scan2.dart';
-import 'package:provider/provider.dart';
 
 class WalletsProfilesProvider with ChangeNotifier {
   WalletsProfilesProvider(this.address);
@@ -128,101 +120,6 @@ class WalletsProfilesProvider with ChangeNotifier {
     }
 
     return _balance;
-  }
-
-  Widget headerProfileView(
-      BuildContext context, String address, String? username) {
-    const double avatarSize = 140;
-
-    final walletOptions =
-        Provider.of<WalletOptionsProvider>(context, listen: false);
-    final cesiumPlusProvider =
-        Provider.of<CesiumPlusProvider>(context, listen: false);
-
-    return Stack(children: <Widget>[
-      Consumer<SubstrateSdk>(builder: (context, sub, _) {
-        bool isAccountExist = balanceCache[address] != 0;
-        return Container(
-            height: 180,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  isAccountExist ? yellowC : Colors.grey[400]!,
-                  isAccountExist ? const Color(0xFFE7811A) : Colors.grey[600]!,
-                ],
-              ),
-            ));
-      }),
-      Padding(
-        padding: const EdgeInsets.only(left: 30, right: 40),
-        child: Row(children: <Widget>[
-          Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Container(
-                  height: 10,
-                  color: yellowC, // Colors.grey[400],
-                ),
-                Row(children: [
-                  GestureDetector(
-                    key: keyCopyAddress,
-                    onTap: () {
-                      Clipboard.setData(ClipboardData(text: address));
-                      snackCopyKey(context);
-                    },
-                    child: Text(
-                      getShortPubkey(address),
-                      style: const TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                ]),
-                const SizedBox(height: 25),
-                balance(context, address, 22),
-                const SizedBox(height: 10),
-                walletOptions.idtyStatus(context, address,
-                    isOwner: false, color: Colors.black),
-                getCerts(context, address, 14),
-                // if (username == null &&
-                //     g1WalletsBox.get(address)?.username != null)
-                //   SizedBox(
-                //     width: 230,
-                //     child: Text(
-                //       g1WalletsBox.get(address)?.username ?? '',
-                //       style: const TextStyle(
-                //         fontSize: 27,
-                //         color: Color(0xff814C00),
-                //       ),
-                //     ),
-                //   ),
-                // if (username != null)
-                //   SizedBox(
-                //     width: 230,
-                //     child: Text(
-                //       username,
-                //       style: const TextStyle(
-                //         fontSize: 27,
-                //         color: Color(0xff814C00),
-                //       ),
-                //     ),
-                //   ),
-                const SizedBox(height: 55),
-              ]),
-          const Spacer(),
-          Column(children: <Widget>[
-            ClipOval(
-              child: cesiumPlusProvider.defaultAvatar(avatarSize),
-            ),
-            const SizedBox(height: 25),
-          ]),
-        ]),
-      ),
-      CommonElements().offlineInfo(context),
-    ]);
   }
 
   bool isContact(String address) {

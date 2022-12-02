@@ -65,11 +65,9 @@ class CertsSent extends StatelessWidget {
           // Build history list
           return SizedBox(
             height: windowHeight,
-            child: Expanded(
-              child: ListView(
-                key: keyListTransactions,
-                children: <Widget>[certsView(result)],
-              ),
+            child: ListView(
+              key: keyListTransactions,
+              children: <Widget>[certsView(result)],
             ),
           );
         },

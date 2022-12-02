@@ -185,13 +185,13 @@ class ImportG1v1 extends StatelessWidget {
                       key: keyCopyAddress,
                       onTap: () {
                         Clipboard.setData(
-                            ClipboardData(text: sub.g1V1NewAddress));
+                            ClipboardData(text: sub.g1V1OldPubkey));
                         snackCopyKey(context);
                       },
                       child: Text(
-                        getShortPubkey(sub.g1V1NewAddress),
+                        sub.g1V1OldPubkey,
                         style: const TextStyle(
-                          fontSize: 20,
+                          fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

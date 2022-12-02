@@ -17,7 +17,7 @@ class SearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final searchProvider = Provider.of<SearchProvider>(context);
-    final double screenHeight = MediaQuery.of(context).size.height;
+    final screenHeight = MediaQuery.of(context).size.height;
     // final _homeProvider =
     //     Provider.of<HomeProvider>(context, listen: false);
 

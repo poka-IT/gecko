@@ -160,7 +160,7 @@ class CommonElements {
   }
 
   Widget offlineInfo(BuildContext context) {
-    final double screenWidth = MediaQuery.of(homeContext).size.width;
+    final screenWidth = MediaQuery.of(homeContext).size.width;
     return Consumer<SubstrateSdk>(builder: (context, sub, _) {
       return Visibility(
         visible: !sub.nodeConnected,

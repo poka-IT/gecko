@@ -187,7 +187,7 @@ Widget geckHome(context) {
 
   WalletsProfilesProvider historyProvider =
       Provider.of<WalletsProfilesProvider>(context);
-  final double statusBarHeight = MediaQuery.of(context).padding.top;
+  final statusBarHeight = MediaQuery.of(context).padding.top;
   return Container(
     decoration: const BoxDecoration(
       image: DecorationImage(
@@ -433,7 +433,7 @@ Widget geckHome(context) {
 }
 
 Widget welcomeHome(context) {
-  final double statusBarHeight = MediaQuery.of(context).padding.top;
+  final statusBarHeight = MediaQuery.of(context).padding.top;
 
   return Container(
     decoration: const BoxDecoration(

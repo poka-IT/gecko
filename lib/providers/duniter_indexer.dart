@@ -368,8 +368,8 @@ class DuniterIndexer with ChangeNotifier {
       transBC.add(i);
       transBC[i] = [];
       transBC[i].add(DateTime.parse(transaction['created_at']));
-      final int amountBrut = transaction['amount'];
-      final double amount = removeDecimalZero(amountBrut / 100);
+      final amountBrut = transaction['amount'];
+      final amount = removeDecimalZero(amountBrut / 100);
       if (direction == "RECEIVED") {
         transBC[i].add(transaction['issuer_pubkey']);
         transBC[i].add(transaction['issuer']['identity']?['name'] ?? '');

@@ -69,13 +69,13 @@ Widget finishButton(BuildContext context) {
 
           // Navigator.pushNamed(homeContext, '/mywallets');
 
-          final tmpConext = homeContext;
-          Navigator.pushNamedAndRemoveUntil(
-                  context, '/mywallets', (route) => route.isFirst)
-              .then((value) => homeContext = tmpConext);
-
+          // final tmpConext = homeContext;
           // Navigator.pushNamedAndRemoveUntil(
-          //     homeContext, '/mywallets', ModalRoute.withName('/'));
+          //     context, '/mywallets', (route) => route.isFirst);
+          // .then((value) => homeContext = tmpConext);
+
+          Navigator.pushNamedAndRemoveUntil(
+              homeContext, '/mywallets', ModalRoute.withName('/'));
         },
         child: Text("accessMyChest".tr(),
             style:

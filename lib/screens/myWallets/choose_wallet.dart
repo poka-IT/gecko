@@ -95,7 +95,7 @@ class ChooseWalletScreen extends StatelessWidget {
     }
 
     List listWallets = myWalletProvider.listWallets;
-    final double screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.of(context).size.width;
     int nTule = 2;
 
     if (screenWidth >= 900) {

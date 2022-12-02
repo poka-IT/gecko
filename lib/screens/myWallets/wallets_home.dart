@@ -23,6 +23,7 @@ import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class WalletsHome extends StatelessWidget {
   const WalletsHome({Key? key}) : super(key: key);
@@ -33,7 +34,7 @@ class WalletsHome extends StatelessWidget {
     HomeProvider homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
 
-    final int currentChestNumber = myWalletProvider.getCurrentChest();
+    final currentChestNumber = myWalletProvider.getCurrentChest();
     final ChestData currentChest = chestBox.get(currentChestNumber)!;
     myWalletProvider.listWallets =
         myWalletProvider.readAllWallets(currentChestNumber);
@@ -88,7 +89,7 @@ class WalletsHome extends StatelessWidget {
     final bool isSameAddress =
         myWalletProvider.dragAddress == myWalletProvider.lastFlyBy;
 
-    final double screenWidth = MediaQuery.of(homeContext).size.width;
+    final screenWidth = MediaQuery.of(homeContext).size.width;
     return Container(
       color: yellowC,
       width: screenWidth,
@@ -138,28 +139,39 @@ class WalletsHome extends StatelessWidget {
             ),
           )),
       const SizedBox(height: 30),
-      InkWell(
-        key: keyImportG1v1,
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) {
-              return const ImportG1v1();
-            }),
-          );
-        },
-        child: SizedBox(
-          width: 400,
-          height: 60,
-          child: Center(
-              child: Text('importG1v1'.tr(),
-                  style: TextStyle(
-                      fontSize: 22,
-                      color: Colors.blue[900],
-                      fontWeight: FontWeight.w500))),
-        ),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SvgPicture.asset(
+            'assets/cesium_bw2.svg',
+            semanticsLabel: 'CS',
+            height: 50,
+          ),
+          const SizedBox(width: 5),
+          InkWell(
+            key: keyImportG1v1,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) {
+                  return const ImportG1v1();
+                }),
+              );
+            },
+            child: SizedBox(
+              width: 350,
+              height: 60,
+              child: Center(
+                  child: Text('importG1v1'.tr(),
+                      style: TextStyle(
+                          fontSize: 22,
+                          color: Colors.blue[900],
+                          fontWeight: FontWeight.w500))),
+            ),
+          ),
+        ],
       ),
-      const SizedBox(height: 5),
+      const SizedBox(height: 20),
       InkWell(
         key: keyChangeChest,
         onTap: () {
@@ -209,7 +221,7 @@ class WalletsHome extends StatelessWidget {
 
     List listWallets = myWalletProvider.listWallets;
     WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
-    final double screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.of(context).size.width;
     int nTule = 2;
 
     if (screenWidth >= 900) {

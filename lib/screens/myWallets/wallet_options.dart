@@ -45,7 +45,7 @@ class WalletOptions extends StatelessWidget {
 
     log.d(walletOptions.address.text);
 
-    final int currentChest = myWalletProvider.getCurrentChest();
+    final currentChest = myWalletProvider.getCurrentChest();
 
     // final currentWallet = _myWalletProvider.getDefaultWallet();
     // log.d(_walletOptions.getAddress(_currentChest, 3));
@@ -325,7 +325,7 @@ class WalletOptions extends StatelessWidget {
                       foregroundColor: Colors.white, elevation: 4,
                       backgroundColor: orangeC, // foreground
                     ),
-                    onPressed: () {
+                    onPressed: () async {
                       walletProvider.confirmIdentityPopup(context);
                       // Navigator.push(
                       //   context,
@@ -360,7 +360,7 @@ class WalletOptions extends StatelessWidget {
   }
 
   Widget pubkeyWidget(WalletOptionsProvider walletProvider, BuildContext ctx) {
-    final String shortPubkey = getShortPubkey(walletProvider.address.text);
+    final shortPubkey = getShortPubkey(walletProvider.address.text);
     return GestureDetector(
       key: keyCopyAddress,
       onTap: () {

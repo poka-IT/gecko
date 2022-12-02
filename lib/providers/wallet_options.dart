@@ -139,7 +139,7 @@ class WalletOptionsProvider with ChangeNotifier {
 
     showText(String text,
         [double size = 18, bool bold = false, bool smooth = true]) {
-      log.d('$address $text');
+      // log.d('$address $text');
       return AnimatedFadeOutIn<String>(
         data: text,
         duration: Duration(milliseconds: smooth ? 200 : 0),
@@ -224,6 +224,9 @@ class WalletOptionsProvider with ChangeNotifier {
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
+    bool canValidate = false;
+    bool idtyExist = false;
+
     return showDialog<String>(
       context: context,
       barrierDismissible: true, // user must tap button!
@@ -240,7 +243,16 @@ class WalletOptionsProvider with ChangeNotifier {
               const SizedBox(height: 20),
               TextField(
                 key: keyEnterIdentityUsername,
-                onChanged: (_) => notifyListeners(),
+                onChanged: (_) async {
+                  idtyExist = await isIdtyExist(idtyName.text);
+                  canValidate = !idtyExist &&
+                      !await isIdtyExist(idtyName.text) &&
+                      idtyName.text.length >= 2 &&
+                      idtyName.text.length <= 32;
+                  log.d('aaaaaaaaaa: $canValidate');
+
+                  notifyListeners();
+                },
                 inputFormatters: <TextInputFormatter>[
                   // FilteringTextInputFormatter.allow(RegExp("[0-9a-zA-Z]")),
                   FilteringTextInputFormatter.deny(RegExp(r'^ ')),
@@ -250,7 +262,12 @@ class WalletOptionsProvider with ChangeNotifier {
                 autofocus: true,
                 controller: idtyName,
                 style: const TextStyle(fontSize: 19),
-              )
+              ),
+              const SizedBox(height: 10),
+              Consumer<WalletOptionsProvider>(builder: (context, wOptions, _) {
+                return Text(idtyExist ? 'Cette identité existe déjà' : '',
+                    style: TextStyle(color: Colors.red[500]));
+              })
             ]),
           ),
           actions: <Widget>[
@@ -261,61 +278,66 @@ class WalletOptionsProvider with ChangeNotifier {
                     builder: (context, wOptions, _) {
                   return TextButton(
                     key: keyConfirm,
+                    onPressed: canValidate
+                        ? () async {
+                            idtyName.text =
+                                idtyName.text.trim().replaceAll('  ', '');
+
+                            if (idtyName.text.length.clamp(3, 32) ==
+                                idtyName.text.length) {
+                              WalletData? defaultWallet =
+                                  myWalletProvider.getDefaultWallet();
+
+                              String? pin;
+                              if (myWalletProvider.pinCode == '') {
+                                pin = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (homeContext) {
+                                      return UnlockingWallet(
+                                          wallet: defaultWallet);
+                                    },
+                                  ),
+                                );
+                              }
+                              if (pin != null ||
+                                  myWalletProvider.pinCode != '') {
+                                final wallet = myWalletProvider
+                                    .getWalletDataByAddress(address.text);
+                                await sub.setCurrentWallet(wallet!);
+                                sub.confirmIdentity(walletOptions.address.text,
+                                    idtyName.text, myWalletProvider.pinCode);
+                                Navigator.pop(context);
+
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) {
+                                    return TransactionInProgress(
+                                      transType: 'comfirmIdty',
+                                      fromAddress:
+                                          getShortPubkey(wallet.address!),
+                                      toAddress:
+                                          getShortPubkey(wallet.address!),
+                                    );
+                                  }),
+                                );
+                              }
+                            }
+                          }
+                        : null,
                     child: Text(
                       "validate".tr(),
                       style: TextStyle(
-                        fontSize: 21,
-                        color: idtyName.text.length.clamp(3, 64) ==
-                                idtyName.text.length
-                            ? const Color(0xffD80000)
-                            : Colors.grey,
-                      ),
+                          fontSize: 21,
+                          color: canValidate
+                              ? const Color(0xffD80000)
+                              : Colors.grey[500]),
                     ),
-                    onPressed: () async {
-                      idtyName.text = idtyName.text.trim().replaceAll('  ', '');
-
-                      if (idtyName.text.length.clamp(3, 64) ==
-                          idtyName.text.length) {
-                        WalletData? defaultWallet =
-                            myWalletProvider.getDefaultWallet();
-
-                        String? pin;
-                        if (myWalletProvider.pinCode == '') {
-                          pin = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (homeContext) {
-                                return UnlockingWallet(wallet: defaultWallet);
-                              },
-                            ),
-                          );
-                        }
-                        if (pin != null || myWalletProvider.pinCode != '') {
-                          final wallet = myWalletProvider
-                              .getWalletDataByAddress(address.text);
-                          await sub.setCurrentWallet(wallet!);
-                          sub.confirmIdentity(walletOptions.address.text,
-                              idtyName.text, myWalletProvider.pinCode);
-                          Navigator.pop(context);
-
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) {
-                              return TransactionInProgress(
-                                transType: 'comfirmIdty',
-                                fromAddress: getShortPubkey(wallet.address!),
-                                toAddress: getShortPubkey(wallet.address!),
-                              );
-                            }),
-                          );
-                        }
-                      }
-                    },
                   );
                 })
               ],
             ),
-            const SizedBox(height: 20)
+            const SizedBox(height: 5)
           ],
         );
       },

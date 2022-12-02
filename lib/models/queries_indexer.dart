@@ -79,3 +79,11 @@ query ($address: String!) {
   }
 }
 ''';
+
+const String isIdtyExistQ = r'''
+query ($name: String!) {
+  identity(where: {name: {_eq: $name}}) {
+    name
+  }
+}
+''';

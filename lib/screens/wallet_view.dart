@@ -161,8 +161,8 @@ class WalletViewScreen extends StatelessWidget {
                       final Duration durationSeconds = Duration(
                           seconds: snapshot.data!['certDelay'] ??
                               snapshot.data!['certRenewable']!);
-                      final int seconds = durationSeconds.inSeconds;
-                      final int minutes = durationSeconds.inMinutes;
+                      final seconds = durationSeconds.inSeconds;
+                      final minutes = durationSeconds.inMinutes;
 
                       if (seconds <= 0) {
                         duration = 'seconds'.tr(args: ['0']);
@@ -171,8 +171,8 @@ class WalletViewScreen extends StatelessWidget {
                       } else if (seconds <= 3600) {
                         duration = 'minutes'.tr(args: [minutes.toString()]);
                       } else if (seconds <= 86400) {
-                        final int hours = durationSeconds.inHours;
-                        final int minutesLeft = minutes - hours * 60;
+                        final hours = durationSeconds.inHours;
+                        final minutesLeft = minutes - hours * 60;
                         String showMinutes = '';
                         if (minutesLeft < 60) {}
                         showMinutes =
@@ -180,11 +180,10 @@ class WalletViewScreen extends StatelessWidget {
                         duration =
                             'hours'.tr(args: [hours.toString(), showMinutes]);
                       } else if (seconds <= 2592000) {
-                        final int days = durationSeconds.inDays;
+                        final days = durationSeconds.inDays;
                         duration = 'days'.tr(args: [days.toString()]);
                       } else {
-                        final int months =
-                            (durationSeconds.inDays / 30).round();
+                        final months = (durationSeconds.inDays / 30).round();
                         duration = 'months'.tr(args: [months.toString()]);
                       }
                     }

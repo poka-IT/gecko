@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:easy_localization/easy_localization.dart';
+import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -10,6 +11,7 @@ import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:pinenacl/ed25519.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:polkawallet_sdk/api/types/txInfoData.dart';
@@ -39,6 +41,7 @@ class SubstrateSdk with ChangeNotifier {
   TextEditingController csSalt = TextEditingController();
   TextEditingController csPassword = TextEditingController();
   String g1V1NewAddress = '';
+  String g1V1OldPubkey = '';
   bool isCesiumIDVisible = false;
   bool isCesiumAddresLoading = false;
   late int udValue;
@@ -678,6 +681,9 @@ class SubstrateSdk with ChangeNotifier {
         currencyParameters['ss58']!,
         cryptoType: CryptoType.ed25519,
         rawSeed: rawSeedHex);
+
+    SigningKey rootKey = SigningKey(seed: rawSeed);
+    g1V1OldPubkey = Base58Encode(rootKey.publicKey);
 
     g1V1NewAddress = newAddress.address!;
     notifyListeners();

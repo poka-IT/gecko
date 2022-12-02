@@ -33,7 +33,7 @@ class OnboardingStepTen extends StatelessWidget {
         Provider.of<GenerateWalletsProvider>(context);
     final walletOptions = Provider.of<WalletOptionsProvider>(context);
     CommonElements common = CommonElements();
-    final int pinLenght = generateWalletProvider.pin.text.length;
+    final pinLenght = generateWalletProvider.pin.text.length;
 
     return Scaffold(
         backgroundColor: backgroundColor,
@@ -142,7 +142,7 @@ class OnboardingStepTen extends StatelessWidget {
         Provider.of<GenerateWalletsProvider>(context);
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    final int currentChest = myWalletProvider.getCurrentChest();
+    final currentChest = myWalletProvider.getCurrentChest();
 
     return Form(
       key: formKey,

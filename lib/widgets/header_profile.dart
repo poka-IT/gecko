@@ -6,7 +6,9 @@ import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/screens/certifications.dart';
 import 'package:gecko/screens/common_elements.dart';
+import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart';
 
 class HeaderProfile extends StatelessWidget {
@@ -71,9 +73,26 @@ class HeaderProfile extends StatelessWidget {
                 const SizedBox(height: 25),
                 balance(context, address, 22),
                 const SizedBox(height: 10),
-                walletOptions.idtyStatus(context, address,
-                    isOwner: false, color: Colors.black),
-                getCerts(context, address, 14),
+
+                InkWell(
+                  onTap: () => {
+                    Navigator.push(
+                      context,
+                      PageNoTransit(builder: (context) {
+                        return CertificationsScreen(
+                            address: address, username: '');
+                      }),
+                    ),
+                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      walletOptions.idtyStatus(context, address,
+                          isOwner: false, color: Colors.black),
+                      getCerts(context, address, 14)
+                    ],
+                  ),
+                ),
                 // if (username == null &&
                 //     g1WalletsBox.get(address)?.username != null)
                 //   SizedBox(

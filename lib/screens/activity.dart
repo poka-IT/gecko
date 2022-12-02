@@ -186,7 +186,8 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
           ]);
   }
 
-  Widget getTransactionTile(BuildContext context, final duniterIndexer) {
+  Widget getTransactionTile(
+      BuildContext context, DuniterIndexer duniterIndexer) {
     int keyID = 0;
     String? dateDelimiter;
     String? lastDateDelimiter;

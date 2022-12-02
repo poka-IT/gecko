@@ -21,6 +21,7 @@ import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/header_profile.dart';
+import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -127,7 +128,7 @@ class WalletViewScreen extends StatelessWidget {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) {
+                              PageNoTransit(builder: (context) {
                                 return ActivityScreen(
                                     address: address,
                                     avatar: defaultAvatar(50));

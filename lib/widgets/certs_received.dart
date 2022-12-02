@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/cesium_plus.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/widgets/cert_tile.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 class CertsReceived extends StatelessWidget {
@@ -14,6 +12,11 @@ class CertsReceived extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final appBarHeight = AppBar().preferredSize.height;
+    log.d(appBarHeight);
+    final windowHeight = screenHeight - appBarHeight - 200;
+
     final httpLink = HttpLink(
       '$indexerEndpoint/v1/graphql',
     );
@@ -59,20 +62,16 @@ class CertsReceived extends StatelessWidget {
               )
             ]);
           }
-
           // Build history list
-          return Expanded(
-            child: ListView(
-              key: keyListTransactions,
-              children: <Widget>[certsView(result)],
+          return SizedBox(
+            height: windowHeight,
+            child: Expanded(
+              child: ListView(
+                key: keyListTransactions,
+                children: <Widget>[certsView(result)],
+              ),
             ),
           );
-          //   ListView(
-          //     key: keyCertsReceived,
-          //     children: <Widget>[
-          //       certsView(result),
-          //     ],
-          //   );
         },
       ),
     );
@@ -83,13 +82,13 @@ class CertsReceived extends StatelessWidget {
     final List certsData = result.data!['certification'];
 
     for (final cert in certsData) {
-      log.d(cert);
       final String issuerAddress = cert['issuer']['pubkey'];
       final String issuerName = cert['issuer']['name'];
-      final date = cert['created_at'];
-
-      listCerts
-          .add({'address': issuerAddress, 'name': issuerName, 'date': date});
+      final date = DateTime.parse(cert['created_at']);
+      final dp = DateTime(date.year, date.month, date.day);
+      final dateForm = '${dp.day}-${dp.month}-${dp.year}';
+      listCerts.add(
+          {'address': issuerAddress, 'name': issuerName, 'date': dateForm});
     }
 
     return result.data == null
@@ -101,76 +100,7 @@ class CertsReceived extends StatelessWidget {
             )
           ])
         : Column(children: <Widget>[
-            getCertsTile(listCerts),
+            CertTile(listCerts: listCerts),
           ]);
-  }
-
-  Widget getCertsTile(List listCerts) {
-    int keyID = 0;
-    const double avatarSize = 200;
-
-    return Column(
-        children: listCerts.map((repository) {
-      // log.d('bbbbbbbbbbbbbbbbbbbbbb: ' + repository.toString());
-
-      return Column(children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.only(right: 0),
-          child:
-              // Row(children: [Column(children: [],)],)
-              ListTile(
-                  key: keyTransaction(keyID++),
-                  contentPadding: const EdgeInsets.only(
-                      left: 20, right: 30, top: 15, bottom: 15),
-                  leading: ClipOval(
-                    child: defaultAvatar(avatarSize),
-                  ),
-                  title: Padding(
-                    padding: const EdgeInsets.only(bottom: 5),
-                    child: Text(getShortPubkey(repository['address']),
-                        style: const TextStyle(
-                            fontSize: 18, fontFamily: 'Monospace')),
-                  ),
-                  subtitle: RichText(
-                    text: TextSpan(
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[700],
-                      ),
-                      children: <TextSpan>[
-                        TextSpan(
-                          text: 'dateForm',
-                        ),
-                        if (repository[2] != '')
-                          TextSpan(
-                            text: '  ·  ',
-                            style: TextStyle(
-                              fontSize: 20,
-                              color: Colors.grey[550],
-                            ),
-                          ),
-                        TextSpan(
-                          text: repository['name'],
-                          style: TextStyle(
-                            fontStyle: FontStyle.italic,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  dense: false,
-                  isThreeLine: false,
-                  onTap: () {
-                    Navigator.push(
-                      homeContext,
-                      MaterialPageRoute(builder: (context) {
-                        return WalletViewScreen(address: repository['address']);
-                      }),
-                    );
-                  }),
-        ),
-      ]);
-    }).toList());
   }
 }

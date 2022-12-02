@@ -67,3 +67,15 @@ query ($address: String!) {
   }
 }
 ''';
+
+const String getCertsSent = r'''
+query ($address: String!) {
+  certification(where: {issuer: {pubkey: {_eq: $address}}}) {
+    receiver {
+      pubkey
+      name
+    }
+    created_at
+  }
+}
+''';

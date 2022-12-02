@@ -325,7 +325,7 @@ class WalletOptions extends StatelessWidget {
                       foregroundColor: Colors.white, elevation: 4,
                       backgroundColor: orangeC, // foreground
                     ),
-                    onPressed: () {
+                    onPressed: () async {
                       walletProvider.confirmIdentityPopup(context);
                       // Navigator.push(
                       //   context,

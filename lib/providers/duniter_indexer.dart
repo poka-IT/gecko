@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/queries_indexer.dart';
@@ -445,4 +444,26 @@ class DuniterIndexer with ChangeNotifier {
 
   // checkHistoryResult(
   //     QueryResult<Object?> result, FetchMoreOptions options, String address) {}
+}
+
+Future<bool> isIdtyExist(String name) async {
+  final httpLink = HttpLink(
+    '$indexerEndpoint/v1/graphql',
+  );
+
+  final GraphQLClient client = GraphQLClient(
+    cache: GraphQLCache(),
+    link: httpLink,
+  );
+
+  final QueryOptions options = QueryOptions(
+    document: gql(isIdtyExistQ),
+    variables: <String, dynamic>{
+      'name': name,
+    },
+  );
+
+  final QueryResult result = await client.query(options);
+
+  return result.data!['identity']?.isEmpty ?? false ? false : true;
 }

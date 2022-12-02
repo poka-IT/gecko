@@ -12,10 +12,12 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/screens/certifications.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/myWallets/manage_membership.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
+import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart';
 
 import 'package:qr_flutter/qr_flutter.dart';
@@ -143,16 +145,38 @@ class WalletOptions extends StatelessWidget {
                                 balance(
                                     context, walletProvider.address.text, 21),
                                 const SizedBox(width: 30),
-                                Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      walletOptions.idtyStatus(
-                                          context, walletOptions.address.text,
-                                          isOwner: true, color: orangeC),
-                                      getCerts(context,
-                                          walletProvider.address.text, 15),
-                                    ]),
+
+                                InkWell(
+                                  onTap: () => duniterIndexer.walletNameIndexer[
+                                              walletProvider.address.text] !=
+                                          null
+                                      ? {
+                                          Navigator.push(
+                                            context,
+                                            PageNoTransit(builder: (context) {
+                                              return CertificationsScreen(
+                                                  address: walletProvider
+                                                      .address.text,
+                                                  username: duniterIndexer
+                                                          .walletNameIndexer[
+                                                      walletProvider
+                                                          .address.text]!);
+                                            }),
+                                          ),
+                                        }
+                                      : null,
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        walletOptions.idtyStatus(
+                                            context, walletOptions.address.text,
+                                            isOwner: true, color: orangeC),
+                                        getCerts(context,
+                                            walletProvider.address.text, 15),
+                                      ]),
+                                ),
+
                                 SizedBox(height: 10 * ratio),
                               ]),
                           const Spacer(flex: 2),

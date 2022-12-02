@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/cesium_plus.dart';
+import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
@@ -27,6 +28,7 @@ class HeaderProfile extends StatelessWidget {
 
     final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     return Stack(children: <Widget>[
       Consumer<SubstrateSdk>(builder: (context, sub, _) {
@@ -75,15 +77,19 @@ class HeaderProfile extends StatelessWidget {
                 const SizedBox(height: 10),
 
                 InkWell(
-                  onTap: () => {
-                    Navigator.push(
-                      context,
-                      PageNoTransit(builder: (context) {
-                        return CertificationsScreen(
-                            address: address, username: '');
-                      }),
-                    ),
-                  },
+                  onTap: () => duniterIndexer.walletNameIndexer[address] != null
+                      ? {
+                          Navigator.push(
+                            context,
+                            PageNoTransit(builder: (context) {
+                              return CertificationsScreen(
+                                  address: address,
+                                  username: duniterIndexer
+                                      .walletNameIndexer[address]!);
+                            }),
+                          ),
+                        }
+                      : null,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

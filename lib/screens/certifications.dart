@@ -19,9 +19,9 @@ class CertificationsScreen extends StatelessWidget {
         appBar: AppBar(
             elevation: 0,
             toolbarHeight: 60 * ratio,
-            title: const SizedBox(
+            title: SizedBox(
               height: 22,
-              child: Text('Certifications'),
+              child: Text('Certifications de $username'),
             )),
         body: SafeArea(
           child: Accordion(

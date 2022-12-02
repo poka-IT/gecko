@@ -20,6 +20,7 @@ import 'package:gecko/screens/myWallets/choose_wallet.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/widgets/header_profile.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -107,7 +108,7 @@ class WalletViewScreen extends StatelessWidget {
         bottomNavigationBar: homeProvider.bottomAppBar(context),
         body: SafeArea(
           child: Column(children: <Widget>[
-            walletProfile.headerProfileView(context, address, username),
+            HeaderProfile(address: address, username: username),
             SizedBox(height: isTall ? 10 : 0),
             Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
               Column(children: <Widget>[

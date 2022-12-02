@@ -6,6 +6,6 @@ class CertsReceived extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Text('tatataaaaaaaaaa');
+    return const Text('received');
   }
 }

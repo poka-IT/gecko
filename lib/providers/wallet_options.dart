@@ -13,6 +13,7 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/animated_text.dart';
+import 'package:gecko/screens/certifications.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
@@ -590,18 +591,29 @@ Widget getCerts(BuildContext context, String address, double size,
             // log.d(_certs.data);
 
             return certs.data?[0] != 0 && certs.data != null
-                ? Row(
-                    children: [
-                      Image.asset('assets/medal.png', height: 20),
-                      const SizedBox(width: 1),
-                      Text(certs.data?[0].toString() ?? '0',
-                          style: const TextStyle(fontSize: 20)),
-                      const SizedBox(width: 5),
-                      Text(
-                        "(${certs.data?[1].toString() ?? '0'})",
-                        style: const TextStyle(fontSize: 14),
-                      )
-                    ],
+                ? InkWell(
+                    onTap: () => {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) {
+                          return CertificationsScreen(
+                              address: address, username: '');
+                        }),
+                      ),
+                    },
+                    child: Row(
+                      children: [
+                        Image.asset('assets/medal.png', height: 20),
+                        const SizedBox(width: 1),
+                        Text(certs.data?[0].toString() ?? '0',
+                            style: const TextStyle(fontSize: 20)),
+                        const SizedBox(width: 5),
+                        Text(
+                          "(${certs.data?[1].toString() ?? '0'})",
+                          style: const TextStyle(fontSize: 14),
+                        )
+                      ],
+                    ),
                   )
                 : const Text('');
           });

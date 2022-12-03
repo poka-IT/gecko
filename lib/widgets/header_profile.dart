@@ -32,6 +32,7 @@ class HeaderProfile extends StatelessWidget {
 
     return Stack(children: <Widget>[
       Consumer<SubstrateSdk>(builder: (context, sub, _) {
+        // sub.getBlockchainStart();
         bool isAccountExist = balanceCache[address] != 0;
         return Container(
             height: 180,

@@ -87,3 +87,12 @@ query ($name: String!) {
   }
 }
 ''';
+
+const String getBlockchainStartQ = r'''
+query {
+  block(limit: 1) {
+    created_at
+    number
+  }
+}
+''';

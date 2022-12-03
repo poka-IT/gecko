@@ -446,7 +446,24 @@ class DuniterIndexer with ChangeNotifier {
   //     QueryResult<Object?> result, FetchMoreOptions options, String address) {}
 }
 
+//// Manuals queries
+
 Future<bool> isIdtyExist(String name) async {
+  final variables = <String, dynamic>{
+    'name': name,
+  };
+  final result = await _execQuery(isIdtyExistQ, variables);
+  return result.data!['identity']?.isEmpty ?? false ? false : true;
+}
+
+Future<DateTime> getBlockStart() async {
+  final result = await _execQuery(getBlockchainStartQ, {});
+  startBlockchainTime = DateTime.parse(result.data!['block'][0]['created_at']);
+  return startBlockchainTime;
+}
+
+Future<QueryResult> _execQuery(
+    String query, Map<String, dynamic> variables) async {
   final httpLink = HttpLink(
     '$indexerEndpoint/v1/graphql',
   );
@@ -456,14 +473,8 @@ Future<bool> isIdtyExist(String name) async {
     link: httpLink,
   );
 
-  final QueryOptions options = QueryOptions(
-    document: gql(isIdtyExistQ),
-    variables: <String, dynamic>{
-      'name': name,
-    },
-  );
+  final QueryOptions options =
+      QueryOptions(document: gql(query), variables: variables);
 
-  final QueryResult result = await client.query(options);
-
-  return result.data!['identity']?.isEmpty ?? false ? false : true;
+  return await client.query(options);
 }

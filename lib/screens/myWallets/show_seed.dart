@@ -7,6 +7,7 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
@@ -83,7 +84,7 @@ class ShowSeed extends StatelessWidget {
                               onPressed: () {
                                 Clipboard.setData(
                                     ClipboardData(text: seed.data));
-                                snackCopyKey(context);
+                                snackCopySeed(context);
                               },
                               child: Row(children: <Widget>[
                                 Image.asset(
@@ -139,16 +140,6 @@ class ShowSeed extends StatelessWidget {
             const Spacer(flex: 2),
           ]),
         ));
-  }
-
-  snackCopyKey(context) {
-    const snackBar = SnackBar(
-        padding: EdgeInsets.all(20),
-        content: Text(
-            "Votre phrase de restauration a été copié dans votre presse-papier.",
-            style: TextStyle(fontSize: 16)),
-        duration: Duration(seconds: 2));
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   Widget sentanceArray(BuildContext context, List mnemonic) {

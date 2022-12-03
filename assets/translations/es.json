@@ -195,5 +195,6 @@
     "youCannotRevokeThisIdentity": "No puedes revocar esta identidad mientras\nseas miembro de la red de forjadores",
     "showUdAmounts": "Mostrar importes en DU",
     "ud": "{}DU",
-    "chooseATargetWallet": "Elige un monedero de destino"
+    "chooseATargetWallet": "Elige un monedero de destino",
+    "thisMnemonicHasBeenCopiedToClipboard": "This mnemonic has been copied to clipboard"
 }

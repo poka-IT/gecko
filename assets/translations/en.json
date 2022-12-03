@@ -195,5 +195,6 @@
     "youCannotRevokeThisIdentity": "You cannot revoke this identity while\nit is member of the blacksmiths web",
     "showUdAmounts": "Show amounts in UD",
     "ud": "{}UD",
-    "chooseATargetWallet": "Choose a target wallet"
+    "chooseATargetWallet": "Choose a target wallet",
+    "thisMnemonicHasBeenCopiedToClipboard": "This mnemonic has been copied to clipboard"
 }

@@ -149,3 +149,12 @@ snackCopyKey(context) {
       duration: const Duration(seconds: 2));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
+
+snackCopySeed(context) {
+  final snackBar = SnackBar(
+      padding: const EdgeInsets.all(20),
+      content: Text("thisMnemonicHasBeenCopiedToClipboard".tr(),
+          style: const TextStyle(fontSize: 17)),
+      duration: const Duration(seconds: 4));
+  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+}

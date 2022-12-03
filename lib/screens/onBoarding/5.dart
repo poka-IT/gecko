@@ -3,10 +3,12 @@
 import 'package:easy_localization/easy_localization.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/6.dart';
 import 'package:printing/printing.dart';
@@ -57,20 +59,57 @@ class _ChooseChestState extends State<OnboardingStepFive> {
             SizedBox(height: 35 * ratio),
             sentanceArray(context),
             SizedBox(height: 17 * ratio),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) {
-                    return PrintWallet(
-                        generateWalletProvider.generatedMnemonic);
-                  }),
-                );
-              },
-              child: Image.asset(
-                'assets/printer.png',
-                height: 42 * ratio,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                // const SizedBox(height: 10),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return PrintWallet(
+                            generateWalletProvider.generatedMnemonic);
+                      }),
+                    );
+                  },
+                  child: Image.asset(
+                    'assets/printer.png',
+                    height: 42 * ratio,
+                  ),
+                ),
+
+                SizedBox(
+                  height: 40,
+                  width: 120,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      backgroundColor: orangeC,
+                      elevation: 1, // foreground
+                    ),
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(
+                          text: generateWalletProvider.generatedMnemonic));
+                      snackCopySeed(context);
+                    },
+                    child: Row(children: <Widget>[
+                      Image.asset(
+                        'assets/walletOptions/copy-white.png',
+                        height: 25,
+                      ),
+                      const SizedBox(width: 7),
+                      Text(
+                        'copy'.tr(),
+                        style: TextStyle(fontSize: 15, color: Colors.grey[50]),
+                      )
+                    ]),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 40),
             Expanded(

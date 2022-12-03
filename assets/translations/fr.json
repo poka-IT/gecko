@@ -196,5 +196,6 @@
     "youCannotRevokeThisIdentity": "Vous ne pouvez pas révoquer cette identité tant\nqu'elle fait partie de la toile forgerons",
     "showUdAmounts": "Afficher les montants en DU",
     "ud": "{}DU",
-    "chooseATargetWallet": "Choisissez un portefeuille cible"
+    "chooseATargetWallet": "Choisissez un portefeuille cible",
+    "thisMnemonicHasBeenCopiedToClipboard": "Cette phrase secrète viens d'être copié dans votre presse-papier."
 }

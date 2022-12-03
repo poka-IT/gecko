@@ -34,6 +34,8 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
     HomeProvider homeProvider =
         Provider.of<HomeProvider>(context, listen: false);
 
+    // log.d('aaaaaaaaaaaaaaaaaaaaa $startBlockchainTime');
+
     return Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
@@ -196,6 +198,8 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
     bool isTody = false;
     bool isYesterday = false;
     bool isThisWeek = false;
+    bool isMigrationTime = false;
+    bool isMigrationTimePassed = false;
 
     final Map<int, String> monthsInYear = {
       1: "month1".tr(),
@@ -278,7 +282,25 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
         finalAmount = '$amount $currencyName';
       }
 
+      if (!isMigrationTimePassed && date.compareTo(startBlockchainTime) < 0) {
+        isMigrationTimePassed = true;
+        isMigrationTime = true;
+      } else {
+        isMigrationTime = false;
+      }
+
       return Column(children: <Widget>[
+        if (isMigrationTime)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 30),
+            child: Text(
+              'Début de la ĞDev',
+              style: TextStyle(
+                  fontSize: 25,
+                  color: Colors.blueAccent,
+                  fontWeight: FontWeight.w500),
+            ),
+          ),
         if (dateDelimiter != null)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 30),

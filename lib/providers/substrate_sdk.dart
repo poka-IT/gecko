@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
@@ -383,6 +384,77 @@ class SubstrateSdk with ChangeNotifier {
     return estimateFees.partialFee / 100;
   }
 
+  int hexStringToUint16(String input) {
+    // Slice the string in 2-char substrings and parse it from hex to decimal
+    final bytes = sliceString(input, 2).map((s) => int.parse(s, radix: 16));
+
+    // Create a Uint8 from the 2-bytes list
+    final u8list = Uint8List.fromList(bytes.toList());
+
+    // Return a Uint16 little endian representation
+    return ByteData.view(u8list.buffer).getUint16(0, Endian.little);
+  }
+
+  List<String> sliceString(String input, int count) {
+    if (input.isEmpty) return [];
+
+    if (input.length % count != 0) {
+      throw ArgumentError("Cannot slice $input in $count slices.");
+    }
+    // final slices = List<String>(count);
+    var slices = List<String>.filled(count, '');
+
+    int len = input.length;
+    int sliceSize = len ~/ count;
+
+    for (var i = 0; i < count; i++) {
+      var start = i * sliceSize;
+      slices[i] = input.substring(start, start + sliceSize);
+    }
+
+    return List.unmodifiable(slices);
+  }
+
+  Future<DateFormat> getBlockchainStart() async {
+    ////// Manu indexer
+    //// Extract block date. Ugly, I can't find a better way to get the date of the block ?
+    //// The only polkadot issue for that : https://github.com/polkadot-js/api/issues/2603
+    // const created_at = new Date(
+    //   signedBlock.block.extrinsics
+    //     .filter(
+    //       ({ method: { section, method } }) =>
+    //         section === 'timestamp' && method === 'set'
+    //     )[0]
+    //     .args[0].toNumber()
+    // )
+    //// manu rpc
+    // genesis: api.genesisHash.toHex(),
+    // chain: await api.rpc.chain.getHeader(),
+    // chainInfo: await api.registry.getChainProperties(),
+    // test: await api.rpc.state.getPairs('0x')
+    // query block finalisé qui ne change jamais.
+    // api.rpc.chain.subscribeFinalizedHeads
+    // events: await api.rpc.state.getStorage('0x26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7'),
+    // lastFinalizedBlock: await api.rpc.chain.getFinalizedHead()
+    // get block
+    // api.rpc.chain.getFinalizedHead
+
+    // shit
+    // final blockHash =
+    //     await sdk.webView!.evalJavascript('api.rpc.chain.getBlockHash(1)');
+    // final Map blockContent = await sdk.webView!
+    //     .evalJavascript('api.rpc.chain.getBlock("$blockHash")');
+    // final String dateBrut = blockContent['block']['extrinsics'][0];
+
+    // final dateTextByte = hex.decode(dateBrut.substring(2));
+
+    // final dateText = await sdk.webView!
+    //     .evalJavascript('api.tx($dateTextByte)', wrapPromise: false);
+
+    // log.d('aaaaaaaaaaaaaaaaaaaaa: $dateText');
+    return DateFormat();
+  }
+
   /////////////////////////////////////
   ////// 3: SUBSTRATE CONNECTION //////
   /////////////////////////////////////
@@ -403,7 +475,7 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<void> connectNode(BuildContext ctx) async {
-    HomeProvider homeProvider = Provider.of<HomeProvider>(ctx, listen: false);
+    final homeProvider = Provider.of<HomeProvider>(ctx, listen: false);
     final myWalletProvider = Provider.of<MyWalletsProvider>(ctx, listen: false);
 
     homeProvider.changeMessage("connectionPending".tr(), 0);
@@ -447,6 +519,9 @@ class SubstrateSdk with ChangeNotifier {
 
       await initCurrencyParameters();
       await getBalanceRatio();
+
+      // Indexer
+      getBlockStart();
 
       notifyListeners();
       homeProvider.changeMessage(

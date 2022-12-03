@@ -50,3 +50,6 @@ const debugPin = true;
 String indexerEndpoint = '';
 late double balanceRatio;
 late int udValue;
+
+// Indexer
+late DateTime startBlockchainTime;

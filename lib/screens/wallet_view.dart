@@ -108,7 +108,7 @@ class WalletViewScreen extends StatelessWidget {
         body: SafeArea(
           child: Column(children: <Widget>[
             HeaderProfile(address: address, username: username),
-            SizedBox(height: isTall ? 10 : 0),
+            SizedBox(height: isTall ? 30 : 15),
             Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
               Column(children: <Widget>[
                 SizedBox(

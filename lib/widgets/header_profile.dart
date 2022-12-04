@@ -123,14 +123,14 @@ class HeaderProfile extends StatelessWidget {
                 //       ),
                 //     ),
                 //   ),
-                const SizedBox(height: 55),
+                // const SizedBox(height: 55),
               ]),
           const Spacer(),
           Column(children: <Widget>[
             ClipOval(
               child: defaultAvatar(avatarSize),
             ),
-            const SizedBox(height: 25),
+            // const SizedBox(height: 25),
           ]),
         ]),
       ),

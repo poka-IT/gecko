@@ -27,6 +27,8 @@ class CertificationsScreen extends StatelessWidget {
             )),
         body: SafeArea(
           child: Accordion(
+              paddingListTop: 10,
+              paddingListBottom: 10,
               maxOpenSections: 1,
               headerBackgroundColorOpened: orangeC,
               scaleWhenAnimating: true,

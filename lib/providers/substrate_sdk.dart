@@ -288,6 +288,9 @@ class SubstrateSdk with ChangeNotifier {
         result.putIfAbsent('certDelay', () => certDelayDuration);
       } else if (toStatus == 'Created') {
         result.putIfAbsent('toStatus', () => 1);
+      } else if (toStatus == 'noid') {
+        result.putIfAbsent('toStatus', () => 2);
+        result.putIfAbsent('canCert', () => 0);
       } else {
         result.putIfAbsent('canCert', () => 0);
       }

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/cesium_plus.dart';
+import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
@@ -108,7 +109,7 @@ class WalletViewScreen extends StatelessWidget {
         body: SafeArea(
           child: Column(children: <Widget>[
             HeaderProfile(address: address, username: username),
-            SizedBox(height: isTall ? 10 : 0),
+            SizedBox(height: isTall ? 30 : 15),
             Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
               Column(children: <Widget>[
                 SizedBox(
@@ -148,6 +149,8 @@ class WalletViewScreen extends StatelessWidget {
               ]),
               Consumer<SubstrateSdk>(builder: (context, sub, _) {
                 WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
+                final duniterIndexer =
+                    Provider.of<DuniterIndexer>(context, listen: false);
                 return FutureBuilder(
                   future: sub.certState(defaultWallet.address!, address),
                   builder: (context, AsyncSnapshot<Map<String, int>> snapshot) {
@@ -211,12 +214,18 @@ class WalletViewScreen extends StatelessWidget {
                                                 'assets/gecko_certify.png')),
                                       ),
                                       onTap: () async {
-                                        final bool? result = await confirmPopup(
-                                            context,
-                                            "areYouSureYouWantToCertify".tr(
-                                                args: [
-                                                  getShortPubkey(address)
-                                                ]));
+                                        final bool? result =
+                                            await confirmPopupCertification(
+                                                context,
+                                                'areYouSureYouWantToCertify1'
+                                                    .tr(),
+                                                duniterIndexer
+                                                            .walletNameIndexer[
+                                                        address] ??
+                                                    "noIdentity".tr(),
+                                                'areYouSureYouWantToCertify2'
+                                                    .tr(),
+                                                getShortPubkey(address));
 
                                         if (result ?? false) {
                                           String? pin;
@@ -260,7 +269,9 @@ class WalletViewScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 9),
                             Text(
-                              "certify".tr(),
+                              toStatus == 0
+                                  ? "certify".tr()
+                                  : "createIdentity".tr(),
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   fontSize: buttonFontSize,

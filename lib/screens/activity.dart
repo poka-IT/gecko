@@ -57,7 +57,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     if (indexerEndpoint == '') {
-      Column(children: <Widget>[
+      return Column(children: <Widget>[
         const SizedBox(height: 50),
         Text(
           "noNetworkNoHistory".tr(),

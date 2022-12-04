@@ -279,6 +279,92 @@ Future<bool?> confirmPopup(BuildContext context, String title) async {
   );
 }
 
+Future<bool?> confirmPopupCertification(BuildContext context, String question1,
+    String username, String question2, String address) async {
+  return showDialog<bool>(
+    context: context,
+    barrierDismissible: true,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        // actionsPadding: const EdgeInsets.all(0.0),
+        backgroundColor: backgroundColor,
+        content: SizedBox(
+          height: 240,
+          child: Column(
+            children: [
+              const SizedBox(height: 15),
+              Text(
+                question1,
+                textAlign: TextAlign.center,
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w400),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                username,
+                textAlign: TextAlign.center,
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                question2,
+                textAlign: TextAlign.center,
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w400),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                address,
+                textAlign: TextAlign.center,
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                '?',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400),
+              ),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                key: keyConfirm,
+                child: Text(
+                  "yes".tr(),
+                  style: const TextStyle(
+                    fontSize: 25,
+                    color: Color(0xffD80000),
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.pop(context, true);
+                },
+              ),
+              const SizedBox(width: 35),
+              TextButton(
+                child: Text(
+                  "no".tr(),
+                  style: const TextStyle(fontSize: 25),
+                ),
+                onPressed: () {
+                  Navigator.pop(context, false);
+                },
+              ),
+              const SizedBox(height: 120)
+            ],
+          )
+        ],
+      );
+    },
+  );
+}
+
 Future<void> infoPopup(BuildContext context, String title) async {
   return showDialog<void>(
     context: context,

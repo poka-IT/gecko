@@ -71,7 +71,8 @@
     "areYouSureToDeleteWallet": "Are you sure you want to delete the chest \"{}\"?",
     "areYouSureForgetAllChests": "Are you sure you want to forget all your chests?",
     "areYouSureToForgetWallet": "Are you sure you wan to forget the wallet \"{}\"?",
-    "areYouSureYouWantToCertify": "Are you sure you want to certify the address:\n\n{}",
+    "areYouSureYouWantToCertify1": "Are you sure you want to certify the identity :",
+    "areYouSureYouWantToCertify2": "having the address :",
     "yes": "Yes",
     "no": "No",
     "keepYourMnemonicSecret": "Try to keep this phrase a secret, as it allows anyone who knows it to access all your wallets.",
@@ -156,7 +157,7 @@
     "hours": "{} hours {}",
     "days": "{} days",
     "months": "{} months",
-    "certify": "Certify",
+    "certify": "Certify this\nidentity",
     "from": "From:",
     "to": "To:",
     "amount": "Amount:",
@@ -199,5 +200,6 @@
     "thisMnemonicHasBeenCopiedToClipboard": "This mnemonic has been copied to clipboard",
     "smithCantMigrateIdentity":"You can't migrate this identity while you're member of smith web",
     "received": "Received",
-    "sent": "Sent"
+    "sent": "Sent",
+    "createIdentity": "Create a new \nidentity"
 }

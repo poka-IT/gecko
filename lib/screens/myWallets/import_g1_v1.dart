@@ -83,6 +83,7 @@ class ImportG1v1 extends StatelessWidget {
                   final String idtyStatus = status.data?[1];
                   final String myIdtyStatus = status.data?[2];
                   final bool hasConsumer = status.data?[3] ?? false;
+                  final bool isSmith = status.data?[4] ?? false;
 
                   // log.d('hasconsumer: $hasConsumer');
 
@@ -92,7 +93,7 @@ class ImportG1v1 extends StatelessWidget {
                   } else {
                     canValidate = false;
                     validationStatus = hasConsumer
-                        ? 'youMustWaitBeforeCashoutThisAccount'.tr(args: ['X'])
+                        ? 'youMustWaitBeforeCashoutThisAccount'.tr()
                         : 'thisAccountIsEmpty'.tr();
                   }
 
@@ -100,6 +101,11 @@ class ImportG1v1 extends StatelessWidget {
                     canValidate = false;
                     validationStatus =
                         'youCannotMigrateIdentityToExistingIdentity'.tr();
+                  }
+
+                  if (isSmith) {
+                    canValidate = false;
+                    validationStatus = 'smithCantMigrateIdentity'.tr();
                   }
 
                   if (sub.g1V1NewAddress == '') {

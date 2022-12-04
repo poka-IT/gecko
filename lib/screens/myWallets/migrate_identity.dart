@@ -101,23 +101,26 @@ class MigrateIdentityScreen extends StatelessWidget {
                 final String idtyStatus = status.data?[1];
                 final String myIdtyStatus = status.data?[2];
                 final bool hasConsumer = status.data?[3] ?? false;
+                final bool isSmith = status.data?[4] ?? false;
 
                 // log.d('hasconsumer: $hasConsumer');
 
-                if (balance['transferableBalance'] != 0 && !hasConsumer) {
+                if (isSmith) {
+                  canValidate = false;
+                  validationStatus = 'smithCantMigrateIdentity'.tr();
+                } else if (balance['transferableBalance'] != 0 &&
+                    !hasConsumer) {
                   canValidate = true;
                   validationStatus = '';
+                } else if (idtyStatus != 'noid' && myIdtyStatus != 'noid') {
+                  canValidate = false;
+                  validationStatus =
+                      'youCannotMigrateIdentityToExistingIdentity'.tr();
                 } else {
                   canValidate = false;
                   validationStatus = hasConsumer
                       ? 'youMustWaitBeforeCashoutThisAccount'.tr(args: ['X'])
                       : 'thisAccountIsEmpty'.tr();
-                }
-
-                if (idtyStatus != 'noid' && myIdtyStatus != 'noid') {
-                  canValidate = false;
-                  validationStatus =
-                      'youCannotMigrateIdentityToExistingIdentity'.tr();
                 }
 
                 log.d(

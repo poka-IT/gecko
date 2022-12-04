@@ -180,7 +180,7 @@
     "youAreOffline": "Vous êtes hors ligne...",
     "importG1v1": "Importer un ancien compte G1v1",
     "selectDestWallet": "Sélectionnez un portefeuille cible:",
-    "youMustWaitBeforeCashoutThisAccount": "Vous devez attendre quelques minutes avant de pouvoir migrer ce compte",
+    "youMustWaitBeforeCashoutThisAccount": "Vous devez attendre quelques minutes\navant de pouvoir migrer ce compte",
     "thisAccountIsEmpty": "Ce compte est vide",
     "youCannotMigrateIdentityToExistingIdentity": "Vous ne pouvez pas migrer une identité\nvers un compte disposant déjà d'une identité",
     "importOldAccount": "Importer son ancien compte",
@@ -197,5 +197,8 @@
     "showUdAmounts": "Afficher les montants en DU",
     "ud": "{}DU",
     "chooseATargetWallet": "Choisissez un portefeuille cible",
-    "thisMnemonicHasBeenCopiedToClipboard": "Cette phrase secrète viens d'être copié dans votre presse-papier."
+    "thisMnemonicHasBeenCopiedToClipboard": "Cette phrase secrète viens d'être copié dans votre presse-papier.",
+    "smithCantMigrateIdentity":"Vous ne pouvez pas migrer cette identité\ntant que vous êtes dans la toile forgerons",
+    "received": "Reçus",
+    "sent": "Envoyés"
 }

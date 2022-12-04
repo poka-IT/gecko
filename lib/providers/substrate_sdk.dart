@@ -46,6 +46,7 @@ class SubstrateSdk with ChangeNotifier {
   bool isCesiumIDVisible = false;
   bool isCesiumAddresLoading = false;
   late int udValue;
+  Map<String, List<int>> certsCounterCache = {};
 
   /////////////////////////////////////
   ////////// 1: API METHODS ///////////
@@ -126,12 +127,20 @@ class SubstrateSdk with ChangeNotifier {
     return await _getStorage('identity.identityIndexOf("$address")') ?? 0;
   }
 
-  Future<List<int>> getCerts(String address) async {
+  Future<List<int>> getCertsCounter(String address) async {
     final idtyIndex = await _getIdentityIndexOf(address);
     final certsReceiver =
         await _getStorage('cert.storageIdtyCertMeta($idtyIndex)') ?? [];
 
-    return [certsReceiver['receivedCount'], certsReceiver['issuedCount']];
+    if (certsCounterCache[address] == null) {
+      certsCounterCache.putIfAbsent(address, () => []);
+    }
+    certsCounterCache.update(
+        address,
+        (value) =>
+            [certsReceiver['receivedCount'], certsReceiver['issuedCount']]);
+
+    return certsCounterCache[address]!;
   }
 
   Future<int> getCertValidityPeriod(String from, String to) async {
@@ -321,6 +330,15 @@ class SubstrateSdk with ChangeNotifier {
     } else {
       return 'expired';
     }
+  }
+
+  Future<bool> isSmith(String address) async {
+    var idtyIndex = await _getIdentityIndexOf(address);
+    if (idtyIndex == 0) return false;
+
+    final isSmith =
+        await _getStorage('smithsMembership.membership($idtyIndex)');
+    return isSmith == null ? false : true;
   }
 
   Future<String> getGenesisHash() async {
@@ -775,8 +793,15 @@ class SubstrateSdk with ChangeNotifier {
     final fromHasConsumer =
         fromAddress == '' ? false : await hasAccountConsumers(fromAddress);
     final toIdtyStatus = await idtyStatus(toAddress);
+    final isSmithData = await isSmith(fromAddress);
 
-    return [fromBalance, fromIdtyStatus, toIdtyStatus, fromHasConsumer];
+    return [
+      fromBalance,
+      fromIdtyStatus,
+      toIdtyStatus,
+      fromHasConsumer,
+      isSmithData
+    ];
   }
 
   //////////////////////////////////////
@@ -859,7 +884,7 @@ class SubstrateSdk with ChangeNotifier {
     List txOptions = [];
     String? rawParams;
 
-    final toCerts = await getCerts(destAddress);
+    final toCerts = await getCertsCounter(destAddress);
 
     // log.d('debug: ${currencyParameters['minCertForMembership']}');
 

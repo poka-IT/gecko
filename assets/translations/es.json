@@ -196,5 +196,8 @@
     "showUdAmounts": "Mostrar importes en DU",
     "ud": "{}DU",
     "chooseATargetWallet": "Elige un monedero de destino",
-    "thisMnemonicHasBeenCopiedToClipboard": "This mnemonic has been copied to clipboard"
+    "thisMnemonicHasBeenCopiedToClipboard": "This mnemonic has been copied to clipboard",
+    "smithCantMigrateIdentity":"You can't migrate this identity while you're member of smith web",
+    "received": "Received",
+    "sent": "Sent"
 }

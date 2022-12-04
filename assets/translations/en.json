@@ -196,5 +196,8 @@
     "showUdAmounts": "Show amounts in UD",
     "ud": "{}UD",
     "chooseATargetWallet": "Choose a target wallet",
-    "thisMnemonicHasBeenCopiedToClipboard": "This mnemonic has been copied to clipboard"
+    "thisMnemonicHasBeenCopiedToClipboard": "This mnemonic has been copied to clipboard",
+    "smithCantMigrateIdentity":"You can't migrate this identity while you're member of smith web",
+    "received": "Received",
+    "sent": "Sent"
 }

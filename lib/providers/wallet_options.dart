@@ -607,7 +607,7 @@ Widget getCerts(BuildContext context, String address, double size,
   return Column(children: <Widget>[
     Consumer<SubstrateSdk>(builder: (context, sdk, _) {
       return FutureBuilder(
-          future: sdk.getCerts(address),
+          future: sdk.getCertsCounter(address),
           builder: (BuildContext context, AsyncSnapshot<List<int>> certs) {
             // log.d(_certs.data);
 

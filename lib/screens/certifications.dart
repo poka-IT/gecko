@@ -1,9 +1,13 @@
 import 'package:accordion/controllers.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/certs_received.dart';
+import 'package:gecko/widgets/certs_counter.dart';
 import 'package:gecko/widgets/certs_sent.dart';
 import 'package:accordion/accordion.dart';
+import 'package:provider/provider.dart';
 
 class CertificationsScreen extends StatelessWidget {
   const CertificationsScreen(
@@ -40,7 +44,11 @@ class CertificationsScreen extends StatelessWidget {
                       const Icon(Icons.insights_rounded, color: Colors.black),
                   headerBackgroundColor: yellowC,
                   headerBackgroundColorOpened: orangeC,
-                  header: const Text('Reçus'),
+                  header: Row(children: [
+                    Text('received'.tr()),
+                    const SizedBox(width: 5),
+                    CertsCounter(address: address)
+                  ]),
                   content: CertsReceived(address: address),
                   contentHorizontalPadding: 0,
                   contentBorderWidth: 1,
@@ -51,7 +59,11 @@ class CertificationsScreen extends StatelessWidget {
                       const Icon(Icons.insights_rounded, color: Colors.black),
                   headerBackgroundColor: yellowC,
                   headerBackgroundColorOpened: orangeC,
-                  header: const Text('Envoyés'),
+                  header: Row(children: [
+                    Text('sent'.tr()),
+                    const SizedBox(width: 5),
+                    CertsCounter(address: address, isSent: true)
+                  ]),
                   content: CertsSent(address: address),
                   contentHorizontalPadding: 20,
                   contentBorderWidth: 1,

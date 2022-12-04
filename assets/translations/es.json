@@ -72,6 +72,8 @@
     "areYouSureForgetAllChests": "¿Seguro de que quieres olvidar todos tus cofres?",
     "areYouSureToForgetWallet": "¿Seguro de que quieres olvidar el monedero \"{}\"?",
     "areYouSureYouWantToCertify": "¿Seguro de que quiere certificar a la dirección\n\n{}?",
+    "areYouSureYouWantToCertify1": "¿Seguro de que quiere certificar a la identidad :",
+    "areYouSureYouWantToCertify2": " a la dirección :",
     "yes": "Sí",
     "no": "No",
     "keepYourMnemonicSecret": "Intenta mantener esta frase de restauración en secreto, ya que permite a cualquiera que la conozca acceder a todas tus monederos.",
@@ -156,7 +158,7 @@
     "hours": "{} horas {}",
     "days": "{} dias",
     "months": "{} meses",
-    "certify": "Certificar",
+    "certify": "Certificar esta\nidentidad",
     "from": "De:",
     "to": "A:",
     "amount": "Importe:",
@@ -199,5 +201,6 @@
     "thisMnemonicHasBeenCopiedToClipboard": "This mnemonic has been copied to clipboard",
     "smithCantMigrateIdentity":"You can't migrate this identity while you're member of smith web",
     "received": "Received",
-    "sent": "Sent"
+    "sent": "Sent",
+    "createIdentity": "Create a new \nidentity"
 }

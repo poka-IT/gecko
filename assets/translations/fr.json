@@ -71,7 +71,8 @@
     "areYouSureToDeleteWallet": "Êtes-vous sûr de vouloir supprimer le coffre \"{}\" ?",
     "areYouSureForgetAllChests": "Êtes-vous sûr de vouloir oublier tous vos coffres ?",
     "areYouSureToForgetWallet": "Êtes-vous sûr de vouloir oublier le portefeuille \"{}\" ?",
-    "areYouSureYouWantToCertify": "Êtes-vous certain de vouloir certifier l'adresse:\n\n{}",
+    "areYouSureYouWantToCertify1": "Êtes-vous certain de vouloir certifier l'identité :",
+    "areYouSureYouWantToCertify2": "ayant pour adresse :",
     "yes": "Oui",
     "no": "Non",
     "keepYourMnemonicSecret": "Tâchez de garder cette phrase bien secrète, car elle permet à quiconque la connaît d’accéder à tous vos portefeuilles.",
@@ -157,7 +158,7 @@
     "hours": "{} heures {}",
     "days": "{} jours",
     "months": "{} mois",
-    "certify": "Certifier",
+    "certify": "Certifier cette\nidentité",
     "from": "Depuis:",
     "to": "Vers:",
     "amount": "Montant:",
@@ -200,5 +201,6 @@
     "thisMnemonicHasBeenCopiedToClipboard": "Cette phrase secrète viens d'être copié dans votre presse-papier.",
     "smithCantMigrateIdentity":"Vous ne pouvez pas migrer cette identité\ntant que vous êtes dans la toile forgerons",
     "received": "Reçus",
-    "sent": "Envoyés"
+    "sent": "Envoyés",
+    "createIdentity": "Créer sa nouvelle\nidentité"
 }

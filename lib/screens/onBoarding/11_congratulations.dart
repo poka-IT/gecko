@@ -58,24 +58,8 @@ Widget finishButton(BuildContext context) {
           backgroundColor: orangeC, // foreground
         ),
         onPressed: () {
-          //TODO: fix bad widget ancestor when pupUntil (multi_chest test failed)
-
-          // Navigator.popUntil(homeContext, ModalRoute.withName('/'));
-          // Navigator.of(homeContext, rootNavigator: true)
-          //     .popUntil(ModalRoute.withName('/'));
-          // while (Navigator.of(homeContext).canPop()) {
-          //   Navigator.of(homeContext).pop();
-          // }
-
-          // Navigator.pushNamed(homeContext, '/mywallets');
-
-          // final tmpConext = homeContext;
-          // Navigator.pushNamedAndRemoveUntil(
-          //     context, '/mywallets', (route) => route.isFirst);
-          // .then((value) => homeContext = tmpConext);
-
           Navigator.pushNamedAndRemoveUntil(
-              homeContext, '/mywallets', ModalRoute.withName('/'));
+              context, '/mywallets', ModalRoute.withName('/'));
         },
         child: Text("accessMyChest".tr(),
             style:

@@ -2,12 +2,10 @@ import 'package:accordion/controllers.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/certs_received.dart';
 import 'package:gecko/widgets/certs_counter.dart';
 import 'package:gecko/widgets/certs_sent.dart';
 import 'package:accordion/accordion.dart';
-import 'package:provider/provider.dart';
 
 class CertificationsScreen extends StatelessWidget {
   const CertificationsScreen(

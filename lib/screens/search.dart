@@ -18,9 +18,6 @@ class SearchScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final searchProvider = Provider.of<SearchProvider>(context);
     final screenHeight = MediaQuery.of(context).size.height;
-    String callback() => 'tata';
-    // final _homeProvider =
-    //     Provider.of<HomeProvider>(context, listen: false);
 
     return WillPopScope(
       onWillPop: () {

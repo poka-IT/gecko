@@ -61,3 +61,4 @@ integration_test/duniter/data/chains/
 # Ignore PC deps
 macos/
 windows/
+scripts/pushGecko

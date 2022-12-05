@@ -78,7 +78,6 @@ class SearchResultScreen extends StatelessWidget {
                         if (snapshot.data?.isEmpty ?? true) {
                           return duniterIndexer.searchIdentity(
                               context, searchProvider.searchController.text);
-
                           // const Text('Aucun résultat');
                         } else {
                           return Expanded(
@@ -138,10 +137,9 @@ class SearchResultScreen extends StatelessWidget {
                                                 g1Wallet.address;
                                             return WalletViewScreen(
                                               address: g1Wallet.address,
-                                              username: g1WalletsBox
-                                                  .get(g1Wallet.address)
-                                                  ?.id
-                                                  ?.username,
+                                              username: duniterIndexer
+                                                      .walletNameIndexer[
+                                                  g1Wallet.address]!,
                                               avatar: g1WalletsBox
                                                   .get(g1Wallet.address)
                                                   ?.avatar,

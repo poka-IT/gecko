@@ -37,7 +37,10 @@ class WalletsProfilesProvider with ChangeNotifier {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) {
-          return WalletViewScreen(address: barcode!.rawContent);
+          return WalletViewScreen(
+            address: barcode!.rawContent,
+            username: '',
+          );
         }),
       );
     } else {

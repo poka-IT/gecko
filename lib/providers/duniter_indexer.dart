@@ -249,6 +249,7 @@ class DuniterIndexer with ChangeNotifier {
     //     Provider.of<WalletOptionsProvider>(context, listen: false);
     WalletsProfilesProvider walletsProfiles =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     if (indexerEndpoint == '') {
       return const Text('Aucun résultat');
     }
@@ -290,6 +291,11 @@ class DuniterIndexer with ChangeNotifier {
 
             if (identities.isEmpty) {
               return Text('noResult'.tr());
+            }
+
+            for (Map profile in identities) {
+              duniterIndexer.walletNameIndexer
+                  .putIfAbsent(profile['pubkey'], () => profile['name']);
             }
 
             double avatarSize = 55;
@@ -338,10 +344,7 @@ class DuniterIndexer with ChangeNotifier {
                               walletsProfiles.address = profile['pubkey'];
                               return WalletViewScreen(
                                 address: profile['pubkey'],
-                                username: g1WalletsBox
-                                    .get(profile['pubkey'])
-                                    ?.id
-                                    ?.username,
+                                username: name,
                                 avatar:
                                     g1WalletsBox.get(profile['pubkey'])?.avatar,
                               );

@@ -367,7 +367,10 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) {
-                        return WalletViewScreen(address: repository[1]);
+                        return WalletViewScreen(
+                          address: repository[1],
+                          username: username ?? '',
+                        );
                       }),
                     );
                     // Navigator.pop(context);

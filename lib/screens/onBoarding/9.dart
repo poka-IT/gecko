@@ -52,6 +52,7 @@ class OnboardingStepNine extends StatelessWidget {
                 children: <Widget>[
                   TextField(
                       key: keyGeneratedPin,
+                      textCapitalization: TextCapitalization.characters,
                       enabled: false,
                       controller: generateWalletProvider.pin,
                       maxLines: 1,

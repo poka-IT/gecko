@@ -47,9 +47,6 @@ android/key.properties
 # Rust things
 /target
 
-# Linux builds
-linux/
-
 # Custom
 scripts/private/
 AppDir/
@@ -59,6 +56,4 @@ android/app/build.gradle
 integration_test/duniter/data/chains/
 
 # Ignore PC deps
-macos/
-windows/
 scripts/pushGecko

@@ -26,7 +26,7 @@ dependencies:
   path_provider: ^2.0.9
   pdf: ^3.7.1
   permission_handler: ^10.0.0
-  pin_code_fields: ^7.3.0
+  pin_code_fields: ^7.4.0
   printing: ^5.9.1
   provider: ^6.0.1
   barcode_scan2: ^4.2.1
@@ -51,7 +51,7 @@ dependencies:
       # ref: ec61ebab45287315fa1d7e84830a01d6e23891ae
       ref: d45eb8d787d625331e6425df5cec9c5d33b30d35
   dots_indicator: ^2.1.0
-  connectivity_plus: ^2.3.3
+  connectivity_plus: ^3.0.2
   image_cropper: ^3.0.0
   easy_localization: ^3.0.1
   flutter_markdown: ^0.6.10+2

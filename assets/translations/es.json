@@ -170,7 +170,7 @@
     "deleteThisWallet": "Borrar este monedero",
     "cancel": "Cancelar",
     "inBlockchainResult": "En la blockchain {}",
-    "search": "Buscar",
+    "search": "Buscar una identidad\no una dirección",
     "currencyNode": "Nodo {} :",
     "contactsManagementWithNbr": "Mis contactos ({})",
     "contactsManagement": "Mis contactos",

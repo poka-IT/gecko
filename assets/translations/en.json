@@ -169,7 +169,7 @@
     "deleteThisWallet": "Delete this wallet",
     "cancel": "Cancel",
     "inBlockchainResult": "In {} blockchain",
-    "search": "Search",
+    "search": "Search an identity\nor an address",
     "currencyNode": "{} node :",
     "contactsManagementWithNbr": "My contacts ({})",
     "contactsManagement": "My contacts",

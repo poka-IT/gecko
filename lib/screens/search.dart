@@ -18,8 +18,6 @@ class SearchScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final searchProvider = Provider.of<SearchProvider>(context);
     final screenHeight = MediaQuery.of(context).size.height;
-    // final _homeProvider =
-    //     Provider.of<HomeProvider>(context, listen: false);
 
     return WillPopScope(
       onWillPop: () {
@@ -51,6 +49,17 @@ class SearchScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 17),
                 child: TextField(
+                  onSubmitted: searchProvider.searchController.text.length >= 2
+                      ? (_) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) {
+                              return const SearchResultScreen();
+                            }),
+                          );
+                        }
+                      : (value) {},
+                  textInputAction: TextInputAction.search,
                   key: keySearchField,
                   controller: searchProvider.searchController,
                   autofocus: true,
@@ -89,8 +98,8 @@ class SearchScreen extends StatelessWidget {
               ),
               const Spacer(flex: 1),
               SizedBox(
-                width: 410,
-                height: 70,
+                width: 320,
+                height: 90,
                 child: ElevatedButton(
                   key: keyConfirmSearch,
                   style: ElevatedButton.styleFrom(
@@ -109,8 +118,9 @@ class SearchScreen extends StatelessWidget {
                       : null,
                   child: Text(
                     'search'.tr(),
+                    textAlign: TextAlign.center,
                     style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.w600),
+                        fontSize: 21, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),

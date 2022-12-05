@@ -170,7 +170,7 @@
     "deleteThisWallet": "Supprimer ce portefeuille",
     "cancel": "Annuler",
     "inBlockchainResult": "Dans la blockchain {}",
-    "search": "Rechercher",
+    "search": "Rechercher une identité\nou une adresse",
     "currencyNode": "Noeud {} :",
     "contactsManagementWithNbr": "Mes contacts ({})",
     "contactsManagement": "Mes contacts",

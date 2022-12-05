@@ -105,14 +105,14 @@ class WalletViewScreen extends StatelessWidget {
           ],
           title: SizedBox(
               height: 22,
-              child: Text(
-                  duniterIndexer.walletNameIndexer[walletProfile.address] == ''
-                      ? 'seeAWallet'.tr()
-                      : 'memberAccountOf'.tr(args: [
-                          duniterIndexer
-                                  .walletNameIndexer[walletProfile.address] ??
-                              '?'
-                        ]))),
+              child: Text(duniterIndexer
+                          .walletNameIndexer[walletProfile.address] ==
+                      null
+                  ? 'seeAWallet'.tr()
+                  : 'memberAccountOf'.tr(args: [
+                      duniterIndexer.walletNameIndexer[walletProfile.address] ??
+                          '?'
+                    ]))),
         ),
         bottomNavigationBar: homeProvider.bottomAppBar(context),
         body: SafeArea(

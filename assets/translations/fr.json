@@ -202,5 +202,6 @@
     "smithCantMigrateIdentity":"Vous ne pouvez pas migrer cette identité\ntant que vous êtes dans la toile forgerons",
     "received": "Reçus",
     "sent": "Envoyés",
-    "createIdentity": "Créer sa nouvelle\nidentité"
+    "createIdentity": "Créer sa nouvelle\nidentité",
+    "memberAccountOf": "Compte de {}"
 }

@@ -73,7 +73,10 @@ class CertTile extends StatelessWidget {
                     Navigator.push(
                       homeContext,
                       MaterialPageRoute(builder: (context) {
-                        return WalletViewScreen(address: repository['address']);
+                        return WalletViewScreen(
+                          address: repository['address'],
+                          username: repository['name'],
+                        );
                       }),
                     );
                   }),

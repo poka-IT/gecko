@@ -201,5 +201,6 @@
     "smithCantMigrateIdentity":"You can't migrate this identity while you're member of smith web",
     "received": "Received",
     "sent": "Sent",
-    "createIdentity": "Create a new \nidentity"
+    "createIdentity": "Create a new \nidentity",
+    "memberAccountOf": "Account of {}"
 }

@@ -28,10 +28,10 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 class WalletViewScreen extends StatelessWidget {
   const WalletViewScreen(
-      {required this.address, this.username, this.avatar, Key? key})
+      {required this.address, required this.username, this.avatar, Key? key})
       : super(key: key);
   final String address;
-  final String? username;
+  final String username;
   final Image? avatar;
   final double buttonSize = 100;
   final double buttonFontSize = 18;
@@ -46,9 +46,12 @@ class WalletViewScreen extends StatelessWidget {
         Provider.of<HomeProvider>(context, listen: false);
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
 
     sub.setCurrentWallet(defaultWallet);
+
+    log.d('aaaaaaaaaaaaaaaaaaa:  $username');
 
     return Scaffold(
         backgroundColor: backgroundColor,
@@ -101,9 +104,15 @@ class WalletViewScreen extends StatelessWidget {
             )
           ],
           title: SizedBox(
-            height: 22,
-            child: Text('seeAWallet'.tr()),
-          ),
+              height: 22,
+              child: Text(
+                  duniterIndexer.walletNameIndexer[walletProfile.address] == ''
+                      ? 'seeAWallet'.tr()
+                      : 'memberAccountOf'.tr(args: [
+                          duniterIndexer
+                                  .walletNameIndexer[walletProfile.address] ??
+                              '?'
+                        ]))),
         ),
         bottomNavigationBar: homeProvider.bottomAppBar(context),
         body: SafeArea(

@@ -114,7 +114,8 @@ class ContactsScreen extends StatelessWidget {
                                         address: g1Wallet.address,
                                         username:
                                             duniterIndexer.walletNameIndexer[
-                                                g1Wallet.address]!,
+                                                    g1Wallet.address] ??
+                                                '',
                                         avatar: g1WalletsBox
                                             .get(g1Wallet.address)
                                             ?.avatar,

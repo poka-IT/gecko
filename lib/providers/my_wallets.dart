@@ -15,6 +15,8 @@ class MyWalletsProvider with ChangeNotifier {
   bool isNewDerivationLoading = false;
   String lastFlyBy = '';
   String dragAddress = '';
+  bool isPinValid = false;
+  bool isPinLoading = true;
 
   int getCurrentChest() {
     if (configBox.get('currentChest') == null) {
@@ -26,7 +28,7 @@ class MyWalletsProvider with ChangeNotifier {
 
   bool checkIfWalletExist() {
     if (chestBox.isEmpty) {
-      log.i('No wallets detected');
+      // log.i('No wallets detected');
       return false;
     } else {
       return true;

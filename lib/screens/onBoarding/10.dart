@@ -26,117 +26,142 @@ class OnboardingStepTen extends StatelessWidget {
   final formKey = GlobalKey<FormState>();
   Color? pinColor = const Color(0xFFA4B600);
   bool hasError = false;
+  TextEditingController enterPin = TextEditingController();
+  FocusNode pinFocus = FocusNode(debugLabel: 'pinFocusNode');
 
   @override
   Widget build(BuildContext context) {
     final generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
     final walletOptions = Provider.of<WalletOptionsProvider>(context);
+    final myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
     CommonElements common = CommonElements();
     final pinLenght = generateWalletProvider.pin.text.length;
 
-    return Scaffold(
-        backgroundColor: backgroundColor,
-        appBar: AppBar(
-          toolbarHeight: 60 * ratio,
-          title: SizedBox(
-            height: 22,
-            child: Text(
-              'myPassword'.tr(),
-              style: const TextStyle(fontWeight: FontWeight.w600),
+    return WillPopScope(
+      onWillPop: () {
+        myWalletProvider.isPinValid = false;
+        myWalletProvider.isPinLoading = true;
+        return Future<bool>.value(true);
+      },
+      child: Scaffold(
+          backgroundColor: backgroundColor,
+          appBar: AppBar(
+            toolbarHeight: 60 * ratio,
+            title: SizedBox(
+              height: 22,
+              child: Text(
+                'myPassword'.tr(),
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
             ),
+            leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () {
+                  myWalletProvider.isPinValid = false;
+                  myWalletProvider.isPinLoading = true;
+                  Navigator.of(context).pop();
+                }),
           ),
-        ),
-        extendBodyBehindAppBar: true,
-        body: SafeArea(
-          child: Stack(children: [
-            Column(children: <Widget>[
-              SizedBox(height: isTall ? 40 : 20),
-              common.buildProgressBar(9),
-              SizedBox(height: isTall ? 40 : 20),
-              common.buildText("geckoWillCheckPassword".tr()),
-              SizedBox(height: isTall ? 80 : 20),
-              Visibility(
-                visible: generateWalletProvider.scanedValidWalletNumber != -1,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 15),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text("derivationsScanProgress".tr(args: [
-                        '${generateWalletProvider.scanedWalletNumber}',
-                        '${generateWalletProvider.numberScan + 1}'
-                      ])),
-                      const SizedBox(width: 10),
-                      const SizedBox(
-                        height: 22,
-                        width: 22,
-                        child: CircularProgressIndicator(
-                          color: orangeC,
-                          strokeWidth: 3,
+          extendBodyBehindAppBar: true,
+          body: SafeArea(
+            child: Stack(children: [
+              Column(children: <Widget>[
+                SizedBox(height: isTall ? 40 : 20),
+                common.buildProgressBar(9),
+                SizedBox(height: isTall ? 40 : 20),
+                common.buildText("geckoWillCheckPassword".tr()),
+                SizedBox(height: isTall ? 60 : 10),
+                Visibility(
+                  visible: generateWalletProvider.scanedValidWalletNumber != -1,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 15),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text("derivationsScanProgress".tr(args: [
+                          '${generateWalletProvider.scanedWalletNumber}',
+                          '${generateWalletProvider.numberScan + 1}'
+                        ])),
+                        const SizedBox(width: 10),
+                        const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                            color: orangeC,
+                            strokeWidth: 3,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              Consumer<SubstrateSdk>(builder: (context, sub, _) {
-                return sub.nodeConnected
-                    ? pinForm(context, walletOptions, pinLenght, 1, 2)
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                            Text(
-                              'Vous devez vous connecter à internet\npour valider votre coffre',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.redAccent,
-                                fontWeight: FontWeight.w500,
+                Consumer<MyWalletsProvider>(builder: (context, mw, _) {
+                  return Visibility(
+                    visible: !myWalletProvider.isPinValid &&
+                        !myWalletProvider.isPinLoading,
+                    child: Text(
+                      "Ce n'est pas le bon code".tr(),
+                      style: const TextStyle(
+                          color: Colors.red, fontWeight: FontWeight.w500),
+                    ),
+                  );
+                }),
+                SizedBox(height: isTall ? 20 : 10),
+                Consumer<SubstrateSdk>(builder: (context, sub, _) {
+                  return sub.nodeConnected
+                      ? pinForm(context, walletOptions, pinLenght, 1, 2)
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                              Text(
+                                'Vous devez vous connecter à internet\npour valider votre coffre',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.redAccent,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                              textAlign: TextAlign.center,
+                            ]);
+                }),
+                Consumer<SubstrateSdk>(builder: (context, sub, _) {
+                  return sub.nodeConnected
+                      ? InkWell(
+                          key: keyCachePassword,
+                          onTap: () {
+                            walletOptions.changePinCacheChoice();
+                          },
+                          child: Row(children: [
+                            const SizedBox(height: 30),
+                            const Spacer(),
+                            Icon(
+                              configBox.get('isCacheChecked') ?? false
+                                  ? Icons.check_box
+                                  : Icons.check_box_outline_blank,
+                              color: orangeC,
                             ),
-                          ]);
-              }),
-              Consumer<SubstrateSdk>(builder: (context, sub, _) {
-                return sub.nodeConnected
-                    ? InkWell(
-                        key: keyCachePassword,
-                        onTap: () {
-                          walletOptions.changePinCacheChoice();
-                        },
-                        child: Row(children: [
-                          const SizedBox(height: 30),
-                          const Spacer(),
-                          Icon(
-                            configBox.get('isCacheChecked') ?? false
-                                ? Icons.check_box
-                                : Icons.check_box_outline_blank,
-                            color: orangeC,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'rememberPassword'.tr(),
-                            style: TextStyle(
-                                fontSize: 16, color: Colors.grey[700]),
-                          ),
-                          const Spacer()
-                        ]))
-                    : const Text('');
-              }),
-              const SizedBox(height: 10),
+                            const SizedBox(width: 8),
+                            Text(
+                              'rememberPassword'.tr(),
+                              style: TextStyle(
+                                  fontSize: 16, color: Colors.grey[700]),
+                            ),
+                            const Spacer()
+                          ]))
+                      : const Text('');
+                }),
+                const SizedBox(height: 10),
+              ]),
+              CommonElements().offlineInfo(context),
             ]),
-            CommonElements().offlineInfo(context),
-          ]),
-        ));
+          )),
+    );
   }
 
   Widget pinForm(
       context, final walletOptions, pinLenght, int walletNbr, int derivation) {
-    // var _walletPin = '';
-// ignore: close_sinks
-    StreamController<ErrorAnimationType> errorController =
-        StreamController<ErrorAnimationType>();
-    TextEditingController enterPin = TextEditingController();
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
     final generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
@@ -150,6 +175,9 @@ class OnboardingStepTen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
           child: PinCodeTextField(
             key: keyPinForm,
+            textCapitalization: TextCapitalization.characters,
+            // autoDisposeControllers: false,
+            focusNode: pinFocus,
             autoFocus: true,
             appContext: context,
             pastedTextStyle: TextStyle(
@@ -159,7 +187,8 @@ class OnboardingStepTen extends StatelessWidget {
             length: pinLenght,
             obscureText: true,
             obscuringCharacter: '*',
-            animationType: AnimationType.fade,
+            animationType: AnimationType.slide,
+            animationDuration: const Duration(milliseconds: 80),
             validator: (v) {
               if (v!.length < pinLenght) {
                 return "yourPasswordLengthIsX".tr(args: [pinLenght.toString()]);
@@ -172,17 +201,15 @@ class OnboardingStepTen extends StatelessWidget {
               borderWidth: 4,
               shape: PinCodeFieldShape.box,
               borderRadius: BorderRadius.circular(5),
-              fieldHeight: 60,
+              fieldHeight: 50 * ratio,
               fieldWidth: 50,
-              activeFillColor: hasError ? Colors.blueAccent : Colors.black,
+              activeFillColor: Colors.black,
             ),
             showCursor: kDebugMode ? false : true,
             cursorColor: Colors.black,
-            animationDuration: const Duration(milliseconds: 300),
-            textStyle: const TextStyle(fontSize: 20, height: 1.6),
+            textStyle: const TextStyle(fontSize: 27, height: 1.6),
             backgroundColor: const Color(0xffF9F9F1),
             enableActiveFill: false,
-            errorAnimationController: errorController,
             controller: enterPin,
             keyboardType: TextInputType.visiblePassword,
             boxShadows: const [
@@ -198,6 +225,8 @@ class OnboardingStepTen extends StatelessWidget {
               log.d('$pin || ${generateWalletProvider.pin.text}');
               if (pin.toUpperCase() == generateWalletProvider.pin.text) {
                 pinColor = Colors.green[500];
+                myWalletProvider.isPinLoading = false;
+                myWalletProvider.isPinValid = true;
 
                 await generateWalletProvider.storeHDWChest(context);
                 bool isAlive = false;
@@ -232,17 +261,21 @@ class OnboardingStepTen extends StatelessWidget {
                       page: const OnboardingStepEleven(), isFast: false),
                 );
               } else {
-                errorController.add(ErrorAnimationType
-                    .shake); // Triggering error shake animation
                 hasError = true;
+                myWalletProvider.isPinLoading = false;
+                myWalletProvider.isPinValid = false;
                 pinColor = Colors.red[600];
-                walletOptions.reload();
+                enterPin.text = '';
+                // myWalletProvider.reload();
+                pinFocus.requestFocus();
               }
             },
             onChanged: (value) {
+              if (enterPin.text != '') myWalletProvider.isPinLoading = true;
               if (pinColor != const Color(0xFFA4B600)) {
                 pinColor = const Color(0xFFA4B600);
               }
+              myWalletProvider.reload();
             },
           )),
     );

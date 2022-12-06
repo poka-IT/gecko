@@ -48,7 +48,7 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   WalletData? getWalletDataById(List<int?> id) {
-    if (id.isEmpty) return WalletData();
+    if (id.isEmpty) return WalletData(address: '');
     int? chest = id[0];
     int? nbr = id[1];
     WalletData? targetedWallet;
@@ -78,12 +78,12 @@ class MyWalletsProvider with ChangeNotifier {
 
   WalletData getDefaultWallet([int? chest]) {
     if (chestBox.isEmpty) {
-      return WalletData(chest: 0, number: 0);
+      return WalletData(address: '', chest: 0, number: 0);
     } else {
       chest ??= getCurrentChest();
       int? defaultWalletNumber = chestBox.get(chest)!.defaultWallet;
       return getWalletDataById([chest, defaultWalletNumber]) ??
-          WalletData(chest: chest, number: 0);
+          WalletData(address: '', chest: chest, number: 0);
     }
   }
 
@@ -131,7 +131,7 @@ class MyWalletsProvider with ChangeNotifier {
     WalletData defaultWallet = getDefaultWallet();
 
     final address = await sub.derive(
-        context, defaultWallet.address!, newDerivationNbr, pinCode);
+        context, defaultWallet.address, newDerivationNbr, pinCode);
 
     WalletData newWallet = WalletData(
         version: dataVersion,
@@ -169,7 +169,7 @@ class MyWalletsProvider with ChangeNotifier {
     WalletData defaultWallet = myWalletProvider.getDefaultWallet();
 
     final address =
-        await sub.generateRootKeypair(defaultWallet.address!, pinCode);
+        await sub.generateRootKeypair(defaultWallet.address, pinCode);
 
     WalletData newWallet = WalletData(
         version: dataVersion,

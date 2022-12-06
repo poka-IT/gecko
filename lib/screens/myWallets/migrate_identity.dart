@@ -75,7 +75,7 @@ class MigrateIdentityScreen extends StatelessWidget {
         child: Consumer<SubstrateSdk>(builder: (context, sub, _) {
           return FutureBuilder(
               future: sub.getBalanceAndIdtyStatus(
-                  fromAddress, selectedWallet.address!),
+                  fromAddress, selectedWallet.address),
               builder: (BuildContext context, AsyncSnapshot<List> status) {
                 if (status.data == null) {
                   return Column(children: [
@@ -124,7 +124,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                 }
 
                 log.d(
-                    'tatatata: ${sub.g1V1NewAddress}, ${selectedWallet.address!}, $balance, $idtyStatus, $myIdtyStatus');
+                    'tatatata: ${sub.g1V1NewAddress}, ${selectedWallet.address}, $balance, $idtyStatus, $myIdtyStatus');
 
                 final walletsList = myWalletProvider.listWallets.toList();
 
@@ -177,7 +177,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                       icon: const Icon(Icons.keyboard_arrow_down),
                       items: walletsList.map((wallet) {
                         return DropdownMenuItem(
-                          key: keySelectThisWallet(wallet.address!),
+                          key: keySelectThisWallet(wallet.address),
                           value: wallet,
                           child: Text(
                             wallet.name!,
@@ -222,7 +222,7 @@ class MigrateIdentityScreen extends StatelessWidget {
 
                               sub.migrateIdentity(
                                   fromAddress: fromAddress,
-                                  destAddress: selectedWallet.address!,
+                                  destAddress: selectedWallet.address,
                                   fromPassword: pin ?? myWalletProvider.pinCode,
                                   destPassword: pin ?? myWalletProvider.pinCode,
                                   withBalance: true,
@@ -234,7 +234,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                                       transType: 'identityMigration',
                                       fromAddress: getShortPubkey(fromAddress),
                                       toAddress: getShortPubkey(
-                                          selectedWallet.address!));
+                                          selectedWallet.address));
                                 }),
                               );
                             }

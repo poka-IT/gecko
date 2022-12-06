@@ -117,7 +117,7 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                       );
                     }
                     if (pin != null || myWalletProvider.pinCode != '') {
-                      await sub.changePassword(context, defaultWallet.address!,
+                      await sub.changePassword(context, defaultWallet.address,
                           walletProvider.pinCode, newPin.text);
                       walletProvider.pinCode = newPin.text;
                       newPin.text = '';

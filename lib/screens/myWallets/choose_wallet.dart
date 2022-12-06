@@ -117,7 +117,7 @@ class ChooseWalletScreen extends StatelessWidget {
               Padding(
                   padding: const EdgeInsets.all(16),
                   child: GestureDetector(
-                    key: keySelectThisWallet(repository.address!),
+                    key: keySelectThisWallet(repository.address),
                     onTap: () {
                       selectedWallet = repository;
                       myWalletProvider.reload();
@@ -166,8 +166,8 @@ class ChooseWalletScreen extends StatelessWidget {
                                     ),
                                   ),
                           )),
-                          balanceBuilder(context, repository.address!,
-                              selectedWallet!.address == repository.address!),
+                          balanceBuilder(context, repository.address,
+                              selectedWallet!.address == repository.address),
                           ListTile(
                             shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.vertical(

@@ -15,7 +15,7 @@ class WalletNameController extends StatelessWidget {
   Widget build(BuildContext context) {
     final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
-    walletOptions.nameController.text = wallet.name!;
+    walletOptions.nameController.text = wallet.name ?? '';
     final walletNameFocus = FocusNode();
 
     return SizedBox(

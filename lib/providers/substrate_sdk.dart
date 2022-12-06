@@ -697,7 +697,7 @@ class SubstrateSdk with ChangeNotifier {
     await chestBox.put(currentChestNumber, newChestData);
 
     try {
-      final acc = getKeypair(wallet.address!);
+      final acc = getKeypair(wallet.address);
       keyring.setCurrent(acc);
       return acc.address!;
     } catch (e) {

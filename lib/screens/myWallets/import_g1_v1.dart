@@ -56,7 +56,7 @@ class ImportG1v1 extends StatelessWidget {
           child: Consumer<SubstrateSdk>(builder: (context, sub, _) {
             return FutureBuilder(
                 future: sub.getBalanceAndIdtyStatus(
-                    sub.g1V1NewAddress, selectedWallet.address!),
+                    sub.g1V1NewAddress, selectedWallet.address),
                 builder: (BuildContext context, AsyncSnapshot<List> status) {
                   // log.d(_certs.data);
 
@@ -228,7 +228,7 @@ class ImportG1v1 extends StatelessWidget {
                         icon: const Icon(Icons.keyboard_arrow_down),
                         items: myWalletProvider.listWallets.map((wallet) {
                           return DropdownMenuItem(
-                            key: keySelectThisWallet(wallet.address!),
+                            key: keySelectThisWallet(wallet.address),
                             value: wallet,
                             child: Text(
                               wallet.name!,
@@ -273,7 +273,7 @@ class ImportG1v1 extends StatelessWidget {
                                 sub.migrateCsToV2(
                                     sub.csSalt.text,
                                     sub.csPassword.text,
-                                    selectedWallet.address!,
+                                    selectedWallet.address,
                                     destPassword:
                                         pin ?? myWalletProvider.pinCode,
                                     balance: balance,
@@ -286,7 +286,7 @@ class ImportG1v1 extends StatelessWidget {
                                         fromAddress:
                                             getShortPubkey(sub.g1V1NewAddress),
                                         toAddress: getShortPubkey(
-                                            selectedWallet.address!));
+                                            selectedWallet.address));
                                   }),
                                 );
                                 resetScreen(context);

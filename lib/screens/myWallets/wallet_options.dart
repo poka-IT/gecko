@@ -20,6 +20,7 @@ import 'package:gecko/screens/qrcode_fullscreen.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/idty_status.dart';
+import 'package:gecko/widgets/name_by_address.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart';
 
@@ -133,23 +134,19 @@ class WalletOptions extends StatelessWidget {
                           Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: <Widget>[
-                                duniterIndexer.getNameByAddress(
-                                    context,
-                                    walletProvider.address.text,
-                                    wallet,
-                                    27,
-                                    false,
-                                    Colors.black,
-                                    FontWeight.w400,
-                                    FontStyle.normal),
-                                // SizedBox(height: isTall ? 5 : 0),
-
+                                NameByAddress(
+                                    address: walletProvider.address.text,
+                                    wallet: wallet,
+                                    size: 27,
+                                    canEdit: false,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w400,
+                                    fontStyle: FontStyle.normal),
                                 SizedBox(height: isTall ? 5 : 0),
                                 Balance(
                                     address: walletProvider.address.text,
                                     size: 21),
                                 const SizedBox(width: 30),
-
                                 InkWell(
                                   onTap: () => duniterIndexer.walletNameIndexer[
                                               walletProvider.address.text] !=
@@ -183,7 +180,6 @@ class WalletOptions extends StatelessWidget {
                                             size: 15)
                                       ]),
                                 ),
-
                                 SizedBox(height: 10 * ratio),
                               ]),
                           const Spacer(flex: 2),
@@ -567,7 +563,7 @@ class WalletOptions extends StatelessWidget {
     // return Consumer<MyWalletsProvider>(
     //     builder: (context, _myWalletProvider, _) {
     return FutureBuilder(
-        future: sub.hasAccountConsumers(wallet.address!),
+        future: sub.hasAccountConsumers(wallet.address),
         builder: (BuildContext context, AsyncSnapshot<bool> hasConsumers) {
           if (hasConsumers.connectionState != ConnectionState.done ||
               hasConsumers.hasError) {

@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
@@ -13,6 +14,7 @@ import 'package:gecko/providers/search.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/balance.dart';
+import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 
 class SearchResultScreen extends StatelessWidget {
@@ -124,8 +126,11 @@ class SearchResultScreen extends StatelessWidget {
                                             ),
                                           ]),
                                       subtitle: Row(children: <Widget>[
-                                        duniterIndexer.getNameByAddress(
-                                            context, g1Wallet.address)
+                                        NameByAddress(
+                                            address: g1Wallet.address,
+                                            wallet: WalletData(
+                                                address: g1Wallet.address),
+                                            canEdit: false)
                                       ]),
                                       dense: false,
                                       isThreeLine: false,

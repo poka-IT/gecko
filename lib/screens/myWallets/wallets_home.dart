@@ -8,7 +8,6 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -23,6 +22,7 @@ import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/balance.dart';
+import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -247,14 +247,14 @@ class WalletsHome extends StatelessWidget {
             for (WalletData repository in listWallets as Iterable<WalletData>)
               LongPressDraggable<String>(
                 delay: const Duration(milliseconds: 200),
-                data: repository.address!,
+                data: repository.address,
                 dragAnchorStrategy:
                     (Draggable<Object> _, BuildContext __, Offset ___) =>
                         const Offset(0, 0),
                 // feedbackOffset: const Offset(-500, -500),
                 // dragAnchorStrategy: childDragAnchorStrategy,
                 onDragStarted: () =>
-                    myWalletProvider.dragAddress = repository.address!,
+                    myWalletProvider.dragAddress = repository.address,
                 onDragEnd: (_) {
                   myWalletProvider.lastFlyBy = '';
                   myWalletProvider.dragAddress = '';
@@ -275,21 +275,21 @@ class WalletsHome extends StatelessWidget {
                 child: DragTarget<String>(
                     onAccept: (senderAddress) async {
                       log.d(
-                          'INTERPAY: sender: $senderAddress --- receiver: ${repository.address!}');
+                          'INTERPAY: sender: $senderAddress --- receiver: ${repository.address}');
                       final walletData = myWalletProvider
                           .getWalletDataByAddress(senderAddress);
                       await sub.setCurrentWallet(walletData!);
                       sub.reload();
-                      paymentPopup(context, repository.address!);
+                      paymentPopup(context, repository.address);
                     },
                     onMove: (details) {
-                      if (repository.address! != myWalletProvider.lastFlyBy) {
-                        myWalletProvider.lastFlyBy = repository.address!;
+                      if (repository.address != myWalletProvider.lastFlyBy) {
+                        myWalletProvider.lastFlyBy = repository.address;
                         myWalletProvider.reload();
                       }
                     },
                     onWillAccept: (senderAddress) =>
-                        senderAddress != repository.address!,
+                        senderAddress != repository.address,
                     builder: (
                       BuildContext context,
                       List<dynamic> accepted,
@@ -298,7 +298,7 @@ class WalletsHome extends StatelessWidget {
                       return Padding(
                         padding: const EdgeInsets.all(16),
                         child: GestureDetector(
-                          key: keyOpenWallet(repository.address!),
+                          key: keyOpenWallet(repository.address),
                           onTap: () {
                             walletOptions.getAddress(
                                 currentChestNumber, repository.derivation!);
@@ -361,7 +361,7 @@ class WalletsHome extends StatelessWidget {
                                 Stack(children: <Widget>[
                                   balanceBuilder(
                                       context,
-                                      repository.address!,
+                                      repository.address,
                                       repository.address ==
                                           defaultWallet.address),
                                   nameBuilder(context, repository,
@@ -407,7 +407,7 @@ class WalletsHome extends StatelessWidget {
       WalletData defaultWallet, int currentChestNumber) {
     final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+
     return ListTile(
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(12))),
@@ -417,13 +417,12 @@ class WalletsHome extends StatelessWidget {
       title: Center(
         child: Padding(
           padding: const EdgeInsets.only(left: 5, right: 5, bottom: 35, top: 5),
-          child: duniterIndexer.getNameByAddress(
-              context,
-              repository.address!,
-              repository,
-              20,
-              true,
-              repository.id()[1] == defaultWallet.id()[1]
+          child: NameByAddress(
+              address: repository.address,
+              wallet: repository,
+              size: 20,
+              canEdit: false,
+              color: repository.id()[1] == defaultWallet.id()[1]
                   ? const Color(0xffF9F9F1)
                   : Colors.black),
         ),

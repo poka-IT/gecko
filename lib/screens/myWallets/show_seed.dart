@@ -46,7 +46,7 @@ class ShowSeed extends StatelessWidget {
             const Spacer(flex: 1),
             FutureBuilder(
                 future:
-                    sub.getSeed(defaultWallet.address!, walletProvider.pinCode),
+                    sub.getSeed(defaultWallet.address, walletProvider.pinCode),
                 builder: (BuildContext context, AsyncSnapshot<String?> seed) {
                   if (seed.connectionState != ConnectionState.done ||
                       seed.hasError) {

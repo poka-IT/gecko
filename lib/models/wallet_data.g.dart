@@ -17,9 +17,9 @@ class WalletDataAdapter extends TypeAdapter<WalletData> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return WalletData(
-      version: fields[0] as int?,
-      chest: fields[1] as int?,
-      address: fields[2] as String?,
+      address: fields[0] as String,
+      version: fields[1] as int?,
+      chest: fields[2] as int?,
       number: fields[3] as int?,
       name: fields[4] as String?,
       derivation: fields[5] as int?,
@@ -33,11 +33,11 @@ class WalletDataAdapter extends TypeAdapter<WalletData> {
     writer
       ..writeByte(8)
       ..writeByte(0)
-      ..write(obj.version)
-      ..writeByte(1)
-      ..write(obj.chest)
-      ..writeByte(2)
       ..write(obj.address)
+      ..writeByte(1)
+      ..write(obj.version)
+      ..writeByte(2)
+      ..write(obj.chest)
       ..writeByte(3)
       ..write(obj.number)
       ..writeByte(4)

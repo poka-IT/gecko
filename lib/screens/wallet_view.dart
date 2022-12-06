@@ -162,7 +162,7 @@ class WalletViewScreen extends StatelessWidget {
                 final duniterIndexer =
                     Provider.of<DuniterIndexer>(context, listen: false);
                 return FutureBuilder(
-                  future: sub.certState(defaultWallet.address!, address),
+                  future: sub.certState(defaultWallet.address, address),
                   builder: (context, AsyncSnapshot<Map<String, int>> snapshot) {
                     if (snapshot.data == null) return const SizedBox();
                     String duration = '';
@@ -577,8 +577,7 @@ void paymentPopup(BuildContext context, String toAddress) {
                             child: Row(children: [
                               Text(defaultWallet.name!),
                               const Spacer(),
-                              Balance(
-                                  address: defaultWallet.address!, size: 20),
+                              Balance(address: defaultWallet.address, size: 20),
                             ]),
                           ),
                         );
@@ -645,7 +644,7 @@ void paymentPopup(BuildContext context, String toAddress) {
                         keyboardType: TextInputType.number,
                         onChanged: (_) async {
                           fees = await sub.txFees(
-                              defaultWallet.address!,
+                              defaultWallet.address,
                               toAddress,
                               double.parse(
                                   walletViewProvider.payAmount.text == ''

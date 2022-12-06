@@ -4,13 +4,13 @@ part 'wallet_data.g.dart';
 @HiveType(typeId: 0)
 class WalletData extends HiveObject {
   @HiveField(0)
-  int? version;
+  String address;
 
   @HiveField(1)
-  int? chest;
+  int? version;
 
   @HiveField(2)
-  String? address;
+  int? chest;
 
   @HiveField(3)
   int? number;
@@ -28,9 +28,9 @@ class WalletData extends HiveObject {
   String? imageCustomPath;
 
   WalletData(
-      {this.version,
+      {required this.address,
+      this.version,
       this.chest,
-      this.address,
       this.number,
       this.name,
       this.derivation,

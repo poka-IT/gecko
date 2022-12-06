@@ -1,8 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/animated_text.dart';
+import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 
 class IdentityStatus extends StatelessWidget {
@@ -56,32 +58,28 @@ class IdentityStatus extends StatelessWidget {
                 {
                   return isOwner
                       ? showText('identityConfirmed'.tr())
-                      : duniterIndexer.getNameByAddress(
-                          context,
-                          address,
-                          null,
-                          20,
-                          true,
-                          Colors.grey[700]!,
-                          FontWeight.w500,
-                          FontStyle.italic);
+                      : NameByAddress(
+                          address: address,
+                          wallet: WalletData(address: address),
+                          size: 20,
+                          canEdit: true,
+                          color: Colors.grey[700]!,
+                          fontWeight: FontWeight.w500,
+                          fontStyle: FontStyle.italic);
                 }
-
               case 'Validated':
                 {
                   return isOwner
                       ? showText('memberValidated'.tr(), 18, true)
-                      : duniterIndexer.getNameByAddress(
-                          context,
-                          address,
-                          null,
-                          20,
-                          true,
-                          Colors.black,
-                          FontWeight.w600,
-                          FontStyle.normal);
+                      : NameByAddress(
+                          address: address,
+                          wallet: WalletData(address: address),
+                          size: 20,
+                          canEdit: true,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w600,
+                          fontStyle: FontStyle.normal);
                 }
-
               case 'expired':
                 {
                   return showText('identityExpired'.tr());

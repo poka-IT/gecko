@@ -127,10 +127,10 @@ class SearchResultScreen extends StatelessWidget {
                                           ]),
                                       subtitle: Row(children: <Widget>[
                                         NameByAddress(
-                                            address: g1Wallet.address,
-                                            wallet: WalletData(
-                                                address: g1Wallet.address),
-                                            canEdit: false)
+                                          address: g1Wallet.address,
+                                          wallet: WalletData(
+                                              address: g1Wallet.address),
+                                        ),
                                       ]),
                                       dense: false,
                                       isThreeLine: false,

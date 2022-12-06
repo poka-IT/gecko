@@ -48,8 +48,6 @@ class WalletNameController extends StatelessWidget {
           child: InkWell(
             key: keyRenameWallet,
             onTap: () async {
-              // _isNewNameValid =
-              // walletProvider.editWalletName(wallet.id(), isCesium: false);
               await walletOptions.editWalletName(context, wallet.id());
               await Future.delayed(const Duration(milliseconds: 30));
               walletNameFocus.requestFocus();

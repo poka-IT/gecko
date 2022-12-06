@@ -537,7 +537,6 @@ class SubstrateSdk with ChangeNotifier {
         notifyListeners();
       });
 
-      await initCurrencyParameters();
       await getBalanceRatio();
 
       notifyListeners();

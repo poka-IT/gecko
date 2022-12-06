@@ -146,8 +146,11 @@ class HomeScreen extends StatelessWidget {
                       sub.reload();
                     } else {
                       await sub.connectNode(ctx);
+                      // Currency parameters
+                      sub.initCurrencyParameters();
                     }
-                    // Indexer
+
+                    // Indexer Blockchain start
                     getBlockStart();
                   });
                   // await sub.connectNode(ctx);

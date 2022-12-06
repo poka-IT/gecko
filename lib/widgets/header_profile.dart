@@ -9,6 +9,7 @@ import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/certifications.dart';
 import 'package:gecko/screens/common_elements.dart';
+import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart';
 
@@ -25,9 +26,6 @@ class HeaderProfile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const double avatarSize = 140;
-
-    final walletOptions =
-        Provider.of<WalletOptionsProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     return Stack(children: <Widget>[
@@ -94,8 +92,10 @@ class HeaderProfile extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      walletOptions.idtyStatus(context, address,
-                          isOwner: false, color: Colors.black),
+                      IdentityStatus(
+                          address: address,
+                          isOwner: false,
+                          color: Colors.black),
                       getCerts(context, address, 14)
                     ],
                   ),

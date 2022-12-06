@@ -27,6 +27,7 @@ class DuniterIndexer with ChangeNotifier {
   List? transBC;
   List listIndexerEndpoints = [];
   bool isLoadingIndexer = false;
+  Map<String, String> idtyStatusCache = {};
 
   void reload() {
     notifyListeners();

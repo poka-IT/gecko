@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -12,7 +11,6 @@ import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/screens/animated_text.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
@@ -33,7 +31,6 @@ class WalletOptionsProvider with ChangeNotifier {
   TextEditingController nameController = TextEditingController();
   late bool isDefaultWallet;
   bool canValidateNameBool = false;
-  Map<String, String> idtyStatusCache = {};
   Future<NewWallet>? get badWallet => null;
 
   int getPinLenght(walletNbr) {
@@ -131,84 +128,6 @@ class WalletOptionsProvider with ChangeNotifier {
       log.w('No image selected.');
       return '';
     }
-  }
-
-  Widget idtyStatus(BuildContext context, String address,
-      {bool isOwner = false, Color color = Colors.black}) {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-
-    showText(String text,
-        [double size = 18, bool bold = false, bool smooth = true]) {
-      // log.d('$address $text');
-      return AnimatedFadeOutIn<String>(
-        data: text,
-        duration: Duration(milliseconds: smooth ? 200 : 0),
-        builder: (value) => Text(
-          value,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              fontSize: size,
-              color: bold ? color : Colors.black,
-              fontWeight: bold ? FontWeight.w500 : FontWeight.w400),
-        ),
-      );
-    }
-
-    return Consumer<SubstrateSdk>(builder: (context, sub, _) {
-      return FutureBuilder(
-          future: sub.idtyStatus(address),
-          initialData: '',
-          builder: (context, snapshot) {
-            idtyStatusCache[address] = snapshot.data.toString();
-            switch (snapshot.data.toString()) {
-              case 'noid':
-                {
-                  return showText('noIdentity'.tr());
-                }
-              case 'Created':
-                {
-                  return showText('identityCreated'.tr());
-                }
-              case 'ConfirmedByOwner':
-                {
-                  return isOwner
-                      ? showText('identityConfirmed'.tr())
-                      : duniterIndexer.getNameByAddress(
-                          context,
-                          address,
-                          null,
-                          20,
-                          true,
-                          Colors.grey[700]!,
-                          FontWeight.w500,
-                          FontStyle.italic);
-                }
-
-              case 'Validated':
-                {
-                  return isOwner
-                      ? showText('memberValidated'.tr(), 18, true)
-                      : duniterIndexer.getNameByAddress(
-                          context,
-                          address,
-                          null,
-                          20,
-                          true,
-                          Colors.black,
-                          FontWeight.w600,
-                          FontStyle.normal);
-                }
-
-              case 'expired':
-                {
-                  return showText('identityExpired'.tr());
-                }
-            }
-            return SizedBox(
-              child: showText('', 18, false, false),
-            );
-          });
-    });
   }
 
   Future<bool> isMember(BuildContext context, String address) async {

@@ -15,6 +15,7 @@ import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/widgets/idty_status.dart';
 import 'package:provider/provider.dart';
 
 class ImportG1v1 extends StatelessWidget {
@@ -22,8 +23,6 @@ class ImportG1v1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final walletOptions =
-        Provider.of<WalletOptionsProvider>(context, listen: false);
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
@@ -210,8 +209,10 @@ class ImportG1v1 extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        walletOptions.idtyStatus(context, sub.g1V1NewAddress,
-                            isOwner: false, color: Colors.black),
+                        IdentityStatus(
+                            address: sub.g1V1NewAddress,
+                            isOwner: false,
+                            color: Colors.black),
                         const SizedBox(width: 10),
                         getCerts(context, sub.g1V1NewAddress, 14)
                       ],

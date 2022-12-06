@@ -17,6 +17,7 @@ import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/myWallets/manage_membership.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
+import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart';
 
@@ -169,9 +170,10 @@ class WalletOptions extends StatelessWidget {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
                                       children: [
-                                        walletOptions.idtyStatus(
-                                            context, walletOptions.address.text,
-                                            isOwner: true, color: orangeC),
+                                        IdentityStatus(
+                                            address: walletOptions.address.text,
+                                            isOwner: true,
+                                            color: orangeC),
                                         getCerts(context,
                                             walletProvider.address.text, 15),
                                       ]),

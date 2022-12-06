@@ -14,7 +14,7 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/screens/animated_text.dart';
+import 'package:gecko/widgets/animated_text.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';

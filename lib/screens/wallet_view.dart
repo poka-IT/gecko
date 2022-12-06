@@ -11,9 +11,9 @@ import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/common_elements.dart';
@@ -21,6 +21,7 @@ import 'package:gecko/screens/myWallets/choose_wallet.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/header_profile.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart';
@@ -469,16 +470,19 @@ void paymentPopup(BuildContext context, String toAddress) {
       context: context,
       builder: (BuildContext context) {
         final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
+        final walletOptions =
+            Provider.of<WalletOptionsProvider>(context, listen: false);
+
         double fees = 0;
         return StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
           if (walletViewProvider.payAmount.text != '' &&
               (double.parse(walletViewProvider.payAmount.text) +
                       2 / balanceRatio) <=
-                  (balanceCache[defaultWallet.address] ?? 0) &&
+                  (walletOptions.balanceCache[defaultWallet.address] ?? 0) &&
               toAddress != defaultWallet.address) {
-            if ((balanceCache[toAddress] == 0 ||
-                    balanceCache[toAddress] == null) &&
+            if ((walletOptions.balanceCache[toAddress] == 0 ||
+                    walletOptions.balanceCache[toAddress] == null) &&
                 double.parse(walletViewProvider.payAmount.text) <
                     5 / balanceRatio) {
               canValidate = false;
@@ -573,7 +577,8 @@ void paymentPopup(BuildContext context, String toAddress) {
                             child: Row(children: [
                               Text(defaultWallet.name!),
                               const Spacer(),
-                              balance(context, defaultWallet.address!, 20)
+                              Balance(
+                                  address: defaultWallet.address!, size: 20),
                             ]),
                           ),
                         );

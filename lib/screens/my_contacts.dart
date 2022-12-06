@@ -8,10 +8,10 @@ import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/widgets/balance.dart';
 import 'package:provider/provider.dart';
 
 class ContactsScreen extends StatelessWidget {
@@ -92,8 +92,10 @@ class ContactsScreen extends StatelessWidget {
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.center,
                                                   children: [
-                                                    balance(context,
-                                                        g1Wallet.address, 16),
+                                                    Balance(
+                                                        address:
+                                                            g1Wallet.address,
+                                                        size: 16),
                                                   ]),
                                             ]),
                                       ),

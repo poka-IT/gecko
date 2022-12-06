@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/screens/animated_text.dart';
+import 'package:gecko/widgets/animated_text.dart';
 import 'package:provider/provider.dart';
 
 class IdentityStatus extends StatelessWidget {

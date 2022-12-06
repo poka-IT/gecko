@@ -22,6 +22,7 @@ import 'package:gecko/screens/myWallets/import_g1_v1.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/widgets/balance.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -392,12 +393,11 @@ class WalletsHome extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              balance(
-                  context,
-                  address,
-                  15,
-                  isDefault ? Colors.white : Colors.black,
-                  isDefault ? yellowC : orangeC)
+              Balance(
+                  address: address,
+                  size: 15,
+                  color: isDefault ? Colors.white : Colors.black,
+                  loadingColor: isDefault ? yellowC : orangeC),
             ],
           )),
     );

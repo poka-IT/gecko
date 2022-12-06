@@ -17,6 +17,8 @@ import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/myWallets/manage_membership.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
+import 'package:gecko/widgets/balance.dart';
+import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart';
@@ -143,8 +145,9 @@ class WalletOptions extends StatelessWidget {
                                 // SizedBox(height: isTall ? 5 : 0),
 
                                 SizedBox(height: isTall ? 5 : 0),
-                                balance(
-                                    context, walletProvider.address.text, 21),
+                                Balance(
+                                    address: walletProvider.address.text,
+                                    size: 21),
                                 const SizedBox(width: 30),
 
                                 InkWell(
@@ -174,8 +177,10 @@ class WalletOptions extends StatelessWidget {
                                             address: walletOptions.address.text,
                                             isOwner: true,
                                             color: orangeC),
-                                        getCerts(context,
-                                            walletProvider.address.text, 15),
+                                        Certifications(
+                                            address:
+                                                walletProvider.address.text,
+                                            size: 15)
                                       ]),
                                 ),
 
@@ -550,15 +555,15 @@ class WalletOptions extends StatelessWidget {
     walletOptions.reload();
   }
 
-  Widget deleteWallet(BuildContext context,
-      WalletOptionsProvider walletProvider, int currentChest) {
+  Widget deleteWallet(BuildContext context, WalletOptionsProvider walletOptions,
+      int currentChest) {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
     final defaultWallet = myWalletProvider.getDefaultWallet();
     final bool isDefaultWallet =
-        walletProvider.address.text == defaultWallet.address;
+        walletOptions.address.text == defaultWallet.address;
     // return Consumer<MyWalletsProvider>(
     //     builder: (context, _myWalletProvider, _) {
     return FutureBuilder(
@@ -569,7 +574,7 @@ class WalletOptions extends StatelessWidget {
             return const Text('');
           }
           final double balance =
-              balanceCache[walletProvider.address.text] ?? -1;
+              walletOptions.balanceCache[walletOptions.address.text] ?? -1;
           final bool canDelete = !isDefaultWallet &&
               !hasConsumers.data! &&
               (balance > 2 || balance == 0);
@@ -577,7 +582,7 @@ class WalletOptions extends StatelessWidget {
             key: keyDeleteWallet,
             onTap: canDelete
                 ? () async {
-                    await walletProvider.deleteWallet(context, wallet);
+                    await walletOptions.deleteWallet(context, wallet);
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       myWalletProvider.listWallets =
                           myWalletProvider.readAllWallets(currentChest);

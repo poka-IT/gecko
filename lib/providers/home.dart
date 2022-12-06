@@ -68,9 +68,11 @@ class HomeProvider with ChangeNotifier {
 
   Future changeCurrencyUnit(BuildContext context) async {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final walletOptions =
+        Provider.of<WalletOptionsProvider>(context, listen: false);
     final bool isUdUnit = configBox.get('isUdUnit') ?? false;
     await configBox.put('isUdUnit', !isUdUnit);
-    balanceCache = {};
+    walletOptions.balanceCache = {};
     sub.getBalanceRatio();
     notifyListeners();
   }

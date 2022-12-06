@@ -11,9 +11,10 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/widgets/balance.dart';
+import 'package:gecko/widgets/wallet_name.dart';
 import 'package:gecko/widgets/wallet_name_controller.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
@@ -164,14 +165,12 @@ class DuniterIndexer with ChangeNotifier {
       Color color = Colors.black,
       FontWeight fontWeight = FontWeight.w400,
       FontStyle fontStyle = FontStyle.italic]) {
-    final walletOptions =
-        Provider.of<WalletOptionsProvider>(context, listen: false);
     if (indexerEndpoint == '') {
       if (wallet == null) {
         return const SizedBox();
       } else {
         if (canEdit) {
-          return walletOptions.walletName(context, wallet, size, color);
+          return WalletName(wallet: wallet, size: size, color: color);
         } else {
           return WalletNameController(wallet: wallet, size: size);
         }
@@ -223,7 +222,7 @@ class DuniterIndexer with ChangeNotifier {
                 return const SizedBox();
               } else {
                 if (canEdit) {
-                  return walletOptions.walletName(context, wallet, size, color);
+                  return WalletName(wallet: wallet, size: size, color: color);
                 } else {
                   return WalletNameController(wallet: wallet, size: size);
                 }
@@ -326,7 +325,8 @@ class DuniterIndexer with ChangeNotifier {
                                 Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      balance(context, profile['pubkey'], 16),
+                                      Balance(
+                                          address: profile['pubkey'], size: 16),
                                     ]),
                               ]),
                         ),

@@ -390,34 +390,5 @@ class WalletOptionsProvider with ChangeNotifier {
 
     return addressGet;
   }
-
-  Widget udUnitDisplay(double size, [Color color = Colors.black]) {
-    final bool isUdUnit = configBox.get('isUdUnit') ?? false;
-    return isUdUnit
-        ? Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text(
-                'ud'.tr(args: ['']),
-                style: TextStyle(
-                    fontSize: isTall ? size : size * 0.9, color: color),
-              ),
-              Column(
-                children: [
-                  Text(
-                    currencyName,
-                    style: TextStyle(
-                        fontSize: (isTall ? size : size * 0.9) * 0.7,
-                        fontWeight: FontWeight.w500,
-                        color: color),
-                  ),
-                  const SizedBox(height: 15)
-                ],
-              )
-            ],
-          )
-        : Text(currencyName,
-            style:
-                TextStyle(fontSize: isTall ? size : size * 0.9, color: color));
-  }
 }
+

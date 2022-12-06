@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
+import 'package:gecko/widgets/ud_unit_display.dart';
 import 'package:provider/provider.dart';
 
 class Balance extends StatelessWidget {
@@ -37,7 +38,7 @@ class Balance extends StatelessWidget {
                             fontSize: isTall ? size : size * 0.9,
                             color: color)),
                     const SizedBox(width: 5),
-                    walletOptions.udUnitDisplay(size, color),
+                    UdUnitDisplay(size: size, color: color),
                   ]);
                 } else {
                   return SizedBox(
@@ -62,7 +63,7 @@ class Balance extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 5),
-                  walletOptions.udUnitDisplay(size, color),
+                  UdUnitDisplay(size: size, color: color),
                 ]);
               } else {
                 return const Text('');

@@ -14,6 +14,7 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/widgets/wallet_name_controller.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:truncate/truncate.dart';
@@ -172,7 +173,7 @@ class DuniterIndexer with ChangeNotifier {
         if (canEdit) {
           return walletOptions.walletName(context, wallet, size, color);
         } else {
-          return walletOptions.walletNameController(context, wallet, size);
+          return WalletNameController(wallet: wallet, size: size);
         }
       }
     }
@@ -224,8 +225,7 @@ class DuniterIndexer with ChangeNotifier {
                 if (canEdit) {
                   return walletOptions.walletName(context, wallet, size, color);
                 } else {
-                  return walletOptions.walletNameController(
-                      context, wallet, size);
+                  return WalletNameController(wallet: wallet, size: size);
                 }
               }
             }

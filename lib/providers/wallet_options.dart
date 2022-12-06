@@ -27,7 +27,6 @@ class WalletOptionsProvider with ChangeNotifier {
   TextEditingController newPin = TextEditingController();
   bool isEditing = false;
   bool isBalanceBlur = false;
-  FocusNode walletNameFocus = FocusNode();
   TextEditingController nameController = TextEditingController();
   late bool isDefaultWallet;
   bool canValidateNameBool = false;
@@ -390,60 +389,6 @@ class WalletOptionsProvider with ChangeNotifier {
     address.text = addressGet ?? '';
 
     return addressGet;
-  }
-
-  Widget walletNameController(BuildContext context, WalletData wallet,
-      [double size = 20]) {
-    nameController.text = wallet.name!;
-
-    return SizedBox(
-      width: 260,
-      child: Stack(children: <Widget>[
-        TextField(
-          key: keyWalletName,
-          autofocus: false,
-          focusNode: walletNameFocus,
-          enabled: isEditing,
-          controller: nameController,
-          minLines: 1,
-          maxLines: 3,
-          textAlign: TextAlign.center,
-          decoration: const InputDecoration(
-            border: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            disabledBorder: InputBorder.none,
-            contentPadding: EdgeInsets.all(15.0),
-          ),
-          style: TextStyle(
-            fontSize: isTall ? size : size * 0.9,
-            color: Colors.black,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-        Positioned(
-          right: 0,
-          child: InkWell(
-            key: keyRenameWallet,
-            onTap: () async {
-              // _isNewNameValid =
-              // walletProvider.editWalletName(wallet.id(), isCesium: false);
-              await editWalletName(context, wallet.id());
-              await Future.delayed(const Duration(milliseconds: 30));
-              walletNameFocus.requestFocus();
-            },
-            child: ClipRRect(
-              child: Image.asset(
-                  isEditing
-                      ? 'assets/walletOptions/android-checkmark.png'
-                      : 'assets/walletOptions/edit.png',
-                  width: 25,
-                  height: 25),
-            ),
-          ),
-        ),
-      ]),
-    );
   }
 
   Widget walletName(BuildContext context, WalletData wallet,

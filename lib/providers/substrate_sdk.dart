@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
@@ -540,9 +539,6 @@ class SubstrateSdk with ChangeNotifier {
 
       await initCurrencyParameters();
       await getBalanceRatio();
-
-      // Indexer
-      getBlockStart();
 
       notifyListeners();
       homeProvider.changeMessage(

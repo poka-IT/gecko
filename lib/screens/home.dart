@@ -147,6 +147,8 @@ class HomeScreen extends StatelessWidget {
                     } else {
                       await sub.connectNode(ctx);
                     }
+                    // Indexer
+                    getBlockStart();
                   });
                   // await sub.connectNode(ctx);
                 }

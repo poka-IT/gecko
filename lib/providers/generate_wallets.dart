@@ -414,14 +414,14 @@ class GenerateWalletsProvider with ChangeNotifier {
             password: pin.text);
 
         WalletData myWallet = WalletData(
-            version: dataVersion,
             chest: currentChestNumber,
             address: addressData.address!,
             number: scanedValidWalletNumber,
             name: walletName,
             derivation: derivationNbr,
-            imageDefaultPath: '${scanedValidWalletNumber % 4}.png');
-        await walletBox.add(myWallet);
+            imageDefaultPath: '${scanedValidWalletNumber % 4}.png',
+            isOwned: true);
+        await walletBox.put(myWallet.address, myWallet);
         scanedValidWalletNumber = scanedValidWalletNumber + 1;
       }
       scanedWalletNumber = scanedWalletNumber + 1;
@@ -454,14 +454,14 @@ class GenerateWalletsProvider with ChangeNotifier {
       await sub.importAccount(mnemonic: generatedMnemonic!, password: pin.text);
 
       WalletData myWallet = WalletData(
-          version: dataVersion,
           chest: currentChestNumber,
           address: addressData.address!,
           number: 0,
           name: walletName,
           derivation: -1,
-          imageDefaultPath: '0.png');
-      await walletBox.add(myWallet);
+          imageDefaultPath: '0.png',
+          isOwned: true);
+      await walletBox.put(myWallet.address, myWallet);
       return true;
     } else {
       return false;

@@ -22,23 +22,6 @@ class IdentityStatus extends StatelessWidget {
   Widget build(BuildContext context) {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
-    showText(String text,
-        [double size = 18, bool bold = false, bool smooth = true]) {
-      // log.d('$address $text');
-      return AnimatedFadeOutIn<String>(
-        data: text,
-        duration: Duration(milliseconds: smooth ? 200 : 0),
-        builder: (value) => Text(
-          value,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              fontSize: size,
-              color: bold ? color : Colors.black,
-              fontWeight: bold ? FontWeight.w500 : FontWeight.w400),
-        ),
-      );
-    }
-
     return Consumer<SubstrateSdk>(builder: (context, sub, _) {
       return FutureBuilder(
           future: sub.idtyStatus(address),
@@ -59,10 +42,8 @@ class IdentityStatus extends StatelessWidget {
                   return isOwner
                       ? showText('identityConfirmed'.tr())
                       : NameByAddress(
-                          address: address,
                           wallet: WalletData(address: address),
                           size: 20,
-                          canEdit: true,
                           color: Colors.grey[700]!,
                           fontWeight: FontWeight.w500,
                           fontStyle: FontStyle.italic);
@@ -72,10 +53,8 @@ class IdentityStatus extends StatelessWidget {
                   return isOwner
                       ? showText('memberValidated'.tr(), 18, true)
                       : NameByAddress(
-                          address: address,
                           wallet: WalletData(address: address),
                           size: 20,
-                          canEdit: true,
                           color: Colors.black,
                           fontWeight: FontWeight.w600,
                           fontStyle: FontStyle.normal);
@@ -90,5 +69,22 @@ class IdentityStatus extends StatelessWidget {
             );
           });
     });
+  }
+
+  AnimatedFadeOutIn showText(String text,
+      [double size = 18, bool bold = false, bool smooth = true]) {
+    // log.d('$address $text');
+    return AnimatedFadeOutIn<String>(
+      data: text,
+      duration: Duration(milliseconds: smooth ? 200 : 0),
+      builder: (value) => Text(
+        value,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+            fontSize: size,
+            color: bold ? color : Colors.black,
+            fontWeight: bold ? FontWeight.w500 : FontWeight.w400),
+      ),
+    );
   }
 }

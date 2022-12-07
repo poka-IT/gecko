@@ -48,7 +48,7 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   WalletData? getWalletDataById(List<int?> id) {
-    if (id.isEmpty) return WalletData(address: '');
+    if (id.isEmpty) return WalletData(address: '', isOwned: true);
     int? chest = id[0];
     int? nbr = id[1];
     WalletData? targetedWallet;
@@ -78,12 +78,12 @@ class MyWalletsProvider with ChangeNotifier {
 
   WalletData getDefaultWallet([int? chest]) {
     if (chestBox.isEmpty) {
-      return WalletData(address: '', chest: 0, number: 0);
+      return WalletData(address: '', chest: 0, number: 0, isOwned: true);
     } else {
       chest ??= getCurrentChest();
       int? defaultWalletNumber = chestBox.get(chest)!.defaultWallet;
       return getWalletDataById([chest, defaultWalletNumber]) ??
-          WalletData(address: '', chest: chest, number: 0);
+          WalletData(address: '', chest: chest, number: 0, isOwned: true);
     }
   }
 
@@ -134,15 +134,15 @@ class MyWalletsProvider with ChangeNotifier {
         context, defaultWallet.address, newDerivationNbr, pinCode);
 
     WalletData newWallet = WalletData(
-        version: dataVersion,
         chest: chest,
         address: address,
         number: newWalletNbr,
         name: name,
         derivation: newDerivationNbr,
-        imageDefaultPath: '${newWalletNbr % 4}.png');
+        imageDefaultPath: '${newWalletNbr % 4}.png',
+        isOwned: true);
 
-    await walletBox.add(newWallet);
+    await walletBox.put(newWallet.address, newWallet);
 
     isNewDerivationLoading = false;
     notifyListeners();
@@ -158,6 +158,9 @@ class MyWalletsProvider with ChangeNotifier {
     int? chest = getCurrentChest();
 
     List<WalletData> walletConfig = readAllWallets(chest);
+    walletConfig.sort((p1, p2) {
+      return Comparable.compare(p1.number!, p2.number!);
+    });
 
     if (walletConfig.isEmpty) {
       newWalletNbr = 0;
@@ -172,15 +175,15 @@ class MyWalletsProvider with ChangeNotifier {
         await sub.generateRootKeypair(defaultWallet.address, pinCode);
 
     WalletData newWallet = WalletData(
-        version: dataVersion,
         chest: chest,
         address: address,
         number: newWalletNbr,
         name: name,
         derivation: -1,
-        imageDefaultPath: '${newWalletNbr % 4}.png');
+        imageDefaultPath: '${newWalletNbr % 4}.png',
+        isOwned: true);
 
-    await walletBox.add(newWallet);
+    await walletBox.put(newWallet.address, newWallet);
 
     isNewDerivationLoading = false;
     notifyListeners();
@@ -194,6 +197,9 @@ class MyWalletsProvider with ChangeNotifier {
     chestNumber ??= getCurrentChest();
 
     List<WalletData> walletConfig = readAllWallets(chestNumber);
+    walletConfig.sort((p1, p2) {
+      return Comparable.compare(p1.number!, p2.number!);
+    });
 
     if (walletConfig.isEmpty) {
       newDerivationNbr = 2;

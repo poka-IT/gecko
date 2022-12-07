@@ -129,11 +129,6 @@ class WalletOptionsProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> isMember(BuildContext context, String address) async {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    return await sub.idtyStatus(address) == 'Validated';
-  }
-
   Future<String?> confirmIdentityPopup(BuildContext context) async {
     TextEditingController idtyName = TextEditingController();
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
@@ -234,8 +229,7 @@ class WalletOptionsProvider with ChangeNotifier {
                                       transType: 'comfirmIdty',
                                       fromAddress:
                                           getShortPubkey(wallet.address),
-                                      toAddress:
-                                          getShortPubkey(wallet.address),
+                                      toAddress: getShortPubkey(wallet.address),
                                     );
                                   }),
                                 );
@@ -311,7 +305,7 @@ class WalletOptionsProvider with ChangeNotifier {
                       if (canValidateNameBool) {
                         nameController.text = walletName.text;
                         _renameWallet(wID, walletName.text, isCesium: false);
-                        // notifyListeners();
+                        notifyListeners();
                         Navigator.pop(context);
                       }
                     },

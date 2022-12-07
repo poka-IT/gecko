@@ -7,10 +7,10 @@ import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
-import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/header_profile.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
@@ -31,11 +31,6 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
 
   @override
   Widget build(BuildContext context) {
-    HomeProvider homeProvider =
-        Provider.of<HomeProvider>(context, listen: false);
-
-    // log.d('aaaaaaaaaaaaaaaaaaaaa $startBlockchainTime');
-
     return Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
@@ -46,7 +41,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
             child: Text('accountActivity'.tr()),
           ),
         ),
-        bottomNavigationBar: homeProvider.bottomAppBar(context),
+        bottomNavigationBar: const GeckoBottomAppBar(),
         body: Column(children: <Widget>[
           HeaderProfile(address: address, username: username),
           historyQuery(context),

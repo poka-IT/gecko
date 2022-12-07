@@ -41,7 +41,6 @@ class SearchScreen extends StatelessWidget {
                 Navigator.of(context).pop();
               }),
         ),
-        // bottomNavigationBar: _homeProvider.bottomAppBar(context),
         body: SafeArea(
           child: Stack(children: [
             Column(children: <Widget>[

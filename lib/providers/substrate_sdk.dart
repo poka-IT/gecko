@@ -251,8 +251,13 @@ class SubstrateSdk with ChangeNotifier {
     return totalAmount;
   }
 
-  Future<bool> isMemberGet(String address) async {
-    return await idtyStatus(address) == 'Validated';
+  Future<bool> isMember(String address) async {
+    final isMember = await idtyStatus(address) == 'Validated';
+    final walletData = walletBox.get(address) ?? WalletData(address: address);
+    walletData.isMember = isMember;
+    walletBox.put(address, walletData);
+    notifyListeners();
+    return isMember;
   }
 
   Future<bool> isSmithGet(String address) async {
@@ -272,7 +277,7 @@ class SubstrateSdk with ChangeNotifier {
     Map<String, int> result = {};
     final toStatus = await idtyStatus(to);
 
-    if (from != to && await isMemberGet(from)) {
+    if (from != to && await isMember(from)) {
       final removableOn = await getCertValidityPeriod(from, to);
       final certMeta = await getCertMeta(from);
       final int nextIssuableOn = certMeta['nextIssuableOn'] ?? 0;

@@ -125,29 +125,32 @@ class UnlockingWallet extends StatelessWidget {
                       pinForm(context, pinLenght),
                       SizedBox(height: 3 * ratio),
                       if (canUnlock)
-                        InkWell(
-                          key: keyCachePassword,
-                          onTap: () {
-                            walletOptions.changePinCacheChoice();
-                          },
-                          child: Row(children: [
-                            const SizedBox(height: 30),
-                            const Spacer(),
-                            Icon(
-                              configBox.get('isCacheChecked')
-                                  ? Icons.check_box
-                                  : Icons.check_box_outline_blank,
-                              color: orangeC,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'rememberPassword'.tr(),
-                              style: TextStyle(
-                                  fontSize: 16, color: Colors.grey[700]),
-                            ),
-                            const Spacer()
-                          ]),
-                        ),
+                        Consumer<WalletOptionsProvider>(
+                            builder: (context, sub, _) {
+                          return InkWell(
+                            key: keyCachePassword,
+                            onTap: () {
+                              walletOptions.changePinCacheChoice();
+                            },
+                            child: Row(children: [
+                              const SizedBox(height: 30),
+                              const Spacer(),
+                              Icon(
+                                configBox.get('isCacheChecked')
+                                    ? Icons.check_box
+                                    : Icons.check_box_outline_blank,
+                                color: orangeC,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'rememberPassword'.tr(),
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.grey[700]),
+                              ),
+                              const Spacer()
+                            ]),
+                          );
+                        }),
                       const SizedBox(height: 10),
                       // if (canUnlock)
                       InkWell(
@@ -213,7 +216,7 @@ class UnlockingWallet extends StatelessWidget {
             obscureText: true,
             obscuringCharacter: '*',
             animationType: AnimationType.slide,
-            animationDuration: const Duration(milliseconds: 80),
+            animationDuration: const Duration(milliseconds: 40),
             validator: (v) {
               if (v!.length < pinLenght) {
                 return "yourPasswordLengthIsX".tr(args: [pinLenght.toString()]);
@@ -250,7 +253,7 @@ class UnlockingWallet extends StatelessWidget {
               final isValid = await sub.checkPassword(
                   defaultWallet.address, pin.toUpperCase());
               if (!isValid) {
-                await Future.delayed(const Duration(milliseconds: 50));
+                await Future.delayed(const Duration(milliseconds: 20));
                 pinColor = Colors.red[600];
                 myWalletProvider.isPinLoading = false;
                 myWalletProvider.isPinValid = false;

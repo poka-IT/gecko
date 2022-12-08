@@ -58,8 +58,17 @@ class WalletsHome extends StatelessWidget {
                   ModalRoute.withName('/'),
                 );
               }),
-          title: Text(currentChest.name!,
-              style: TextStyle(color: Colors.grey[850])),
+          title: Row(
+            children: [
+              Image.asset(
+                'assets/chests/${currentChest.imageName}',
+                height: 40,
+              ),
+              const SizedBox(width: 17),
+              Text(currentChest.name!,
+                  style: TextStyle(color: Colors.grey[850])),
+            ],
+          ),
           backgroundColor: const Color(0xffFFD58D),
         ),
         bottomNavigationBar: myWalletProvider.lastFlyBy == ''

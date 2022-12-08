@@ -4,7 +4,8 @@ import 'package:bubble/bubble.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/stateful_wrapper.dart';
+import 'package:gecko/models/chest_data.dart';
+import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
@@ -22,12 +23,102 @@ import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/settings.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:provider/provider.dart';
 import 'package:gecko/screens/my_contacts.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final homeProviderInit =
+          Provider.of<HomeProvider>(context, listen: false);
+      final sub = Provider.of<SubstrateSdk>(context, listen: false);
+      final duniterIndexer =
+          Provider.of<DuniterIndexer>(context, listen: false);
+      final myWalletProvider =
+          Provider.of<MyWalletsProvider>(context, listen: false);
+
+      configBox = await Hive.openBox("configBox");
+      final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
+
+      if (!sub.sdkReady && !sub.sdkLoading) await sub.initApi();
+      if (sub.sdkReady && !sub.nodeConnected) {
+        // Check if versionData non compatible, drop everything
+        if (isWalletsExists &&
+            (configBox.get('dataVersion') ?? 0) < dataVersion) {
+          await infoPopup(context, "chestNotCompatibleMustReinstallGecko".tr());
+          await Hive.deleteBoxFromDisk('walletBox');
+          await Hive.deleteBoxFromDisk('chestBox');
+          chestBox = await Hive.openBox<ChestData>("chestBox");
+          await configBox.delete('defaultWallet');
+          await sub.deleteAllAccounts();
+          configBox.put('dataVersion', dataVersion);
+          myWalletProvider.reload();
+        }
+
+        walletBox = await Hive.openBox<WalletData>("walletBox");
+        await Hive.deleteBoxFromDisk('g1WalletsBox');
+        g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
+        contactsBox = await Hive.openBox<G1WalletsList>("contactsBox");
+
+        homeProviderInit.isWalletBoxInit = true;
+        myWalletProvider.reload();
+
+        duniterIndexer.getValidIndexerEndpoint();
+
+        await homeProviderInit.getValidEndpoints();
+        // await configBox.delete('isCacheChecked');
+        if (configBox.get('isCacheChecked') == null) {
+          configBox.put('isCacheChecked', false);
+        }
+        // log.d(await configBox.get('endpoint'));
+
+        // var connectivityResult =
+        //     await (Connectivity().checkConnectivity());
+
+        // if (connectivityResult != ConnectivityResult.mobile &&
+        //     connectivityResult != ConnectivityResult.wifi) {
+        //   homeProvider.changeMessage(
+        //       "notConnectedToInternet".tr(), 0);
+        //   sub.nodeConnected = false;
+        // }
+
+        // TODO: fix random bad network status on startup
+        HomeProvider homeProvider =
+            Provider.of<HomeProvider>(context, listen: false);
+        Connectivity()
+            .onConnectivityChanged
+            .listen((ConnectivityResult result) async {
+          log.d('Network changed: $result');
+          if (result == ConnectivityResult.none) {
+            sub.nodeConnected = false;
+            await sub.sdk.api.setting.unsubscribeBestNumber();
+            homeProvider.changeMessage("notConnectedToInternet".tr(), 0);
+            sub.reload();
+          } else {
+            await sub.connectNode(context);
+            // Currency parameters
+            sub.initCurrencyParameters();
+          }
+
+          // Indexer Blockchain start
+          getBlockStart();
+        });
+        // await sub.connectNode(ctx);
+      }
+      // _duniterIndexer.checkIndexerEndpointBackground();
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,8 +126,6 @@ class HomeScreen extends StatelessWidget {
 
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
     Provider.of<ChestProvider>(context);
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-
     final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
 
     isTall = false;
@@ -46,148 +135,65 @@ class HomeScreen extends StatelessWidget {
       ratio = 1.125;
     }
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      drawer: Drawer(
-        child: Column(
-          children: <Widget>[
-            Expanded(
-                child: ListView(padding: EdgeInsets.zero, children: <Widget>[
-              DrawerHeader(
-                decoration: const BoxDecoration(
-                  color: orangeC,
+        resizeToAvoidBottomInset: false,
+        drawer: Drawer(
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                  child: ListView(padding: EdgeInsets.zero, children: <Widget>[
+                DrawerHeader(
+                  decoration: const BoxDecoration(
+                    color: orangeC,
+                  ),
+                  child: Column(children: const <Widget>[
+                    SizedBox(height: 0),
+                    Image(
+                        image: AssetImage('assets/icon/gecko_final.png'),
+                        height: 130),
+                  ]),
                 ),
-                child: Column(children: const <Widget>[
-                  SizedBox(height: 0),
-                  Image(
-                      image: AssetImage('assets/icon/gecko_final.png'),
-                      height: 130),
-                ]),
-              ),
-              ListTile(
-                key: keyParameters,
-                title: Text('parameters'.tr()),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) {
-                      return SettingsScreen();
-                    }),
-                  );
-                },
-              ),
-              ListTile(
-                key: keyContacts,
-                title: Text('contactsManagement'.tr()),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) {
-                      return const ContactsScreen();
-                    }),
-                  );
-                },
-              ),
-            ])),
-            Align(
-                alignment: FractionalOffset.bottomCenter,
-                child: Text('Ğecko v$appVersion')),
-            const SizedBox(height: 20)
-          ],
+                ListTile(
+                  key: keyParameters,
+                  title: Text('parameters'.tr()),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return SettingsScreen();
+                      }),
+                    );
+                  },
+                ),
+                ListTile(
+                  key: keyContacts,
+                  title: Text('contactsManagement'.tr()),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return const ContactsScreen();
+                      }),
+                    );
+                  },
+                ),
+              ])),
+              Align(
+                  alignment: FractionalOffset.bottomCenter,
+                  child: Text('Ğecko v$appVersion')),
+              const SizedBox(height: 20)
+            ],
+          ),
         ),
-      ),
-      // bottomNavigationBar: _homeProvider.bottomBar(context, 1),
-      backgroundColor: const Color(0xffF9F9F1),
-      body: Builder(
-        builder: (ctx) => StatefulWrapper(
-            onInit: () {
-              WidgetsBinding.instance.addPostFrameCallback((_) async {
-                final duniterIndexer =
-                    Provider.of<DuniterIndexer>(ctx, listen: false);
-                duniterIndexer.getValidIndexerEndpoint();
-
-                if (!sub.sdkReady && !sub.sdkLoading) await sub.initApi();
-                if (sub.sdkReady && !sub.nodeConnected) {
-                  // Check if versionData non compatible, drop everything
-                  if (walletBox.isNotEmpty &&
-                      walletBox.getAt(0)!.version! < dataVersion) {
-                    await infoPopup(
-                        context, "chestNotCompatibleMustReinstallGecko".tr());
-                    await walletBox.clear();
-                    await chestBox.clear();
-                    await configBox.delete('defaultWallet');
-                    await sub.deleteAllAccounts();
-                    myWalletProvider.reload();
-                  }
-
-                  // var connectivityResult =
-                  //     await (Connectivity().checkConnectivity());
-
-                  // if (connectivityResult != ConnectivityResult.mobile &&
-                  //     connectivityResult != ConnectivityResult.wifi) {
-                  //   homeProvider.changeMessage(
-                  //       "notConnectedToInternet".tr(), 0);
-                  //   sub.nodeConnected = false;
-                  // }
-
-                  // TODO: fix random bad network status on startup
-                  HomeProvider homeProvider =
-                      Provider.of<HomeProvider>(ctx, listen: false);
-                  Connectivity()
-                      .onConnectivityChanged
-                      .listen((ConnectivityResult result) async {
-                    log.d('Network changed: $result');
-                    if (result == ConnectivityResult.none) {
-                      sub.nodeConnected = false;
-                      await sub.sdk.api.setting.unsubscribeBestNumber();
-                      homeProvider.changeMessage(
-                          "notConnectedToInternet".tr(), 0);
-                      sub.reload();
-                    } else {
-                      await sub.connectNode(ctx);
-                      // Currency parameters
-                      sub.initCurrencyParameters();
-                    }
-
-                    // Indexer Blockchain start
-                    getBlockStart();
-                  });
-                  // await sub.connectNode(ctx);
-                }
-                // _duniterIndexer.checkIndexerEndpointBackground();
-              });
-            },
-            child: isWalletsExists ? geckHome(context) : welcomeHome(context)
-            // bottomNavigationBar: BottomNavigationBar(
-            //   backgroundColor: backgroundColor,
-            //   fixedColor: Colors.grey[850],
-            //   unselectedItemColor: const Color(0xffBD935C),
-            //   type: BottomNavigationBarType.fixed,
-            //   onTap: (index) {
-            //     _homeProvider.currentIndex = index;
-            //   },
-            //   currentIndex: _homeProvider.currentIndex,
-            //   items: [
-            //     BottomNavigationBarItem(
-            //       icon: Image.asset('assets/block-space-disabled.png', height: 26),
-            //       activeIcon: Image.asset('assets/blockchain.png', height: 26),
-            //       label: 'Explorateur',
-            //     ),
-            //     const BottomNavigationBarItem(
-            //       icon: Icon(Icons.lock),
-            //       label: 'Mes portefeuilles',
-            //     ),
-            //   ],
-            // ),
-            ),
-      ),
-    );
+        backgroundColor: const Color(0xffF9F9F1),
+        body: isWalletsExists ? geckHome(context) : welcomeHome(context));
   }
 }
 
 Widget geckHome(context) {
   final myWalletProvider = Provider.of<MyWalletsProvider>(context);
+  final homeProvider = Provider.of<HomeProvider>(context, listen: false);
   Provider.of<ChestProvider>(context);
 
   WalletsProfilesProvider historyProvider =
@@ -334,42 +340,47 @@ Widget geckHome(context) {
                   child: ClipOval(
                     key: keyOpenWalletsHomme,
                     child: Material(
-                      color: orangeC, // button color
+                      color: homeProvider.isWalletBoxInit
+                          ? orangeC
+                          : Colors.grey[500], // button color
                       child: InkWell(
+                          onTap: !homeProvider.isWalletBoxInit
+                              ? null
+                              : () async {
+                                  WalletData? defaultWallet =
+                                      myWalletProvider.getDefaultWallet();
+                                  String? pin;
+                                  if (myWalletProvider.pinCode == '') {
+                                    pin = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (homeContext) {
+                                          return UnlockingWallet(
+                                              wallet: defaultWallet);
+                                        },
+                                      ),
+                                    );
+                                  }
+                                  if (pin != null ||
+                                      myWalletProvider.pinCode != '') {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) {
+                                        return const WalletsHome();
+                                      }),
+                                    );
+                                  }
+                                  // log.d(_myWalletProvider.pinCode);
+
+                                  // Navigator.pushNamed(
+                                  //     context, '/mywallets')));
+                                },
                           child: Padding(
                               padding: const EdgeInsets.all(18),
                               child: Image(
                                   image: const AssetImage(
                                       'assets/home/wallet.png'),
-                                  height: 68 * ratio)),
-                          onTap: () async {
-                            WalletData? defaultWallet =
-                                myWalletProvider.getDefaultWallet();
-                            String? pin;
-                            if (myWalletProvider.pinCode == '') {
-                              pin = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (homeContext) {
-                                    return UnlockingWallet(
-                                        wallet: defaultWallet);
-                                  },
-                                ),
-                              );
-                            }
-                            if (pin != null || myWalletProvider.pinCode != '') {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) {
-                                  return const WalletsHome();
-                                }),
-                              );
-                            }
-                            // log.d(_myWalletProvider.pinCode);
-
-                            // Navigator.pushNamed(
-                            //     context, '/mywallets')));
-                          }),
+                                  height: 68 * ratio))),
                     ),
                   ),
                 ),

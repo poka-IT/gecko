@@ -2,17 +2,19 @@ import 'package:easy_localization/easy_localization.dart';
 
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
-import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/providers/search.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/balance.dart';
+import 'package:gecko/widgets/bottom_app_bar.dart';
+import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 
 class SearchResultScreen extends StatelessWidget {
@@ -23,8 +25,6 @@ class SearchResultScreen extends StatelessWidget {
     final searchProvider = Provider.of<SearchProvider>(context, listen: false);
     WalletsProfilesProvider walletsProfilesClass =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
-    HomeProvider homeProvider =
-        Provider.of<HomeProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     double avatarSize = 55;
@@ -39,7 +39,7 @@ class SearchResultScreen extends StatelessWidget {
           child: Text('researchResults'.tr()),
         ),
       ),
-      bottomNavigationBar: homeProvider.bottomAppBar(context),
+      bottomNavigationBar: const GeckoBottomAppBar(),
       body: SafeArea(
         child: Stack(children: [
           Padding(
@@ -124,8 +124,10 @@ class SearchResultScreen extends StatelessWidget {
                                             ),
                                           ]),
                                       subtitle: Row(children: <Widget>[
-                                        duniterIndexer.getNameByAddress(
-                                            context, g1Wallet.address)
+                                        NameByAddress(
+                                          wallet: WalletData(
+                                              address: g1Wallet.address),
+                                        ),
                                       ]),
                                       dense: false,
                                       isThreeLine: false,

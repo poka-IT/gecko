@@ -54,21 +54,21 @@ class WalletOptionsProvider with ChangeNotifier {
 
     if (answer ?? false) {
       //Check if balance is null
-      final balance = await sub.getBalance(wallet.address!);
+      final balance = await sub.getBalance(wallet.address);
       if (balance != {}) {
         final myWalletProvider =
             Provider.of<MyWalletsProvider>(context, listen: false);
         final defaultWallet = myWalletProvider.getDefaultWallet();
         log.d(defaultWallet.address);
         sub.pay(
-            fromAddress: wallet.address!,
-            destAddress: defaultWallet.address!,
+            fromAddress: wallet.address,
+            destAddress: defaultWallet.address,
             amount: -1,
             password: myWalletProvider.pinCode);
       }
 
       await walletBox.delete(wallet.key);
-      await sub.deleteAccounts([wallet.address!]);
+      await sub.deleteAccounts([wallet.address]);
 
       Navigator.pop(context);
     }
@@ -127,11 +127,6 @@ class WalletOptionsProvider with ChangeNotifier {
       log.w('No image selected.');
       return '';
     }
-  }
-
-  Future<bool> isMember(BuildContext context, String address) async {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    return await sub.idtyStatus(address) == 'Validated';
   }
 
   Future<String?> confirmIdentityPopup(BuildContext context) async {
@@ -233,9 +228,8 @@ class WalletOptionsProvider with ChangeNotifier {
                                     return TransactionInProgress(
                                       transType: 'comfirmIdty',
                                       fromAddress:
-                                          getShortPubkey(wallet.address!),
-                                      toAddress:
-                                          getShortPubkey(wallet.address!),
+                                          getShortPubkey(wallet.address),
+                                      toAddress: getShortPubkey(wallet.address),
                                     );
                                   }),
                                 );
@@ -311,7 +305,7 @@ class WalletOptionsProvider with ChangeNotifier {
                       if (canValidateNameBool) {
                         nameController.text = walletName.text;
                         _renameWallet(wID, walletName.text, isCesium: false);
-                        // notifyListeners();
+                        notifyListeners();
                         Navigator.pop(context);
                       }
                     },
@@ -381,7 +375,7 @@ class WalletOptionsProvider with ChangeNotifier {
     String? addressGet;
     walletBox.toMap().forEach((key, value) {
       if (value.chest == chest && value.derivation == derivation) {
-        addressGet = value.address!;
+        addressGet = value.address;
         return;
       }
     });
@@ -391,4 +385,3 @@ class WalletOptionsProvider with ChangeNotifier {
     return addressGet;
   }
 }
-

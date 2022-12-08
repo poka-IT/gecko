@@ -16,11 +16,11 @@ class WalletName extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-   double newSize = wallet.name!.length <= 15 ? size : size - 2;
+    double newSize = (wallet.name?.length ?? 0) <= 15 ? size : size - 2;
 
     return Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
       Text(
-        truncate(wallet.name!, 20),
+        truncate(wallet.name ?? '', 20),
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: isTall ? newSize : newSize * 0.9,

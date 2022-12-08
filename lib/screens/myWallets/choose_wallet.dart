@@ -94,7 +94,10 @@ class ChooseWalletScreen extends StatelessWidget {
       ]);
     }
 
-    List listWallets = myWalletProvider.listWallets;
+    List<WalletData> listWallets = myWalletProvider.listWallets;
+    listWallets.sort((p1, p2) {
+      return Comparable.compare(p1.number!, p2.number!);
+    });
     final screenWidth = MediaQuery.of(context).size.width;
     int nTule = 2;
 
@@ -113,11 +116,11 @@ class ChooseWalletScreen extends StatelessWidget {
           crossAxisSpacing: 0,
           mainAxisSpacing: 0,
           children: <Widget>[
-            for (WalletData repository in listWallets as Iterable<WalletData>)
+            for (WalletData repository in listWallets)
               Padding(
                   padding: const EdgeInsets.all(16),
                   child: GestureDetector(
-                    key: keySelectThisWallet(repository.address!),
+                    key: keySelectThisWallet(repository.address),
                     onTap: () {
                       selectedWallet = repository;
                       myWalletProvider.reload();
@@ -166,8 +169,8 @@ class ChooseWalletScreen extends StatelessWidget {
                                     ),
                                   ),
                           )),
-                          balanceBuilder(context, repository.address!,
-                              selectedWallet!.address == repository.address!),
+                          balanceBuilder(context, repository.address,
+                              selectedWallet!.address == repository.address),
                           ListTile(
                             shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.vertical(

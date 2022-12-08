@@ -180,7 +180,7 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<Map<String, double>> getBalance(String address) async {
-    // log.d('currencyParameters: $currencyParameters');
+    log.d('BALANCE: $address');
 
     if (!nodeConnected) {
       return {
@@ -198,13 +198,11 @@ class SubstrateSdk with ChangeNotifier {
     final Map? idtyData = idtyIndex == null
         ? null
         : await _getStorage('identity.identities($idtyIndex)');
-    final int currentUdIndex =
-        int.parse(await _getStorage('universalDividend.currentUdIndex()'));
     final List pastReevals =
         await _getStorage('universalDividend.pastReevals()');
 
     // Compute amount of claimable UDs
-    final int unclaimedUds = _computeUnclaimUds(currentUdIndex,
+    final int unclaimedUds = _computeUnclaimUds(
         idtyData?['data']?['firstEligibleUd'] ?? 0, pastReevals);
 
     // Calculate transferable and potential balance
@@ -226,8 +224,7 @@ class SubstrateSdk with ChangeNotifier {
     return finalBalances;
   }
 
-  int _computeUnclaimUds(
-      int currentUdIndex, int firstEligibleUd, List pastReevals) {
+  int _computeUnclaimUds(int firstEligibleUd, List pastReevals) {
     int totalAmount = 0;
 
     if (firstEligibleUd == 0) return 0;
@@ -251,8 +248,13 @@ class SubstrateSdk with ChangeNotifier {
     return totalAmount;
   }
 
-  Future<bool> isMemberGet(String address) async {
-    return await idtyStatus(address) == 'Validated';
+  Future<bool> isMember(String address) async {
+    final isMember = await idtyStatus(address) == 'Validated';
+    final walletData = walletBox.get(address) ?? WalletData(address: address);
+    walletData.isMember = isMember;
+    walletBox.put(address, walletData);
+    // notifyListeners();
+    return isMember;
   }
 
   Future<bool> isSmithGet(String address) async {
@@ -272,7 +274,7 @@ class SubstrateSdk with ChangeNotifier {
     Map<String, int> result = {};
     final toStatus = await idtyStatus(to);
 
-    if (from != to && await isMemberGet(from)) {
+    if (from != to && await isMember(from)) {
       final removableOn = await getCertValidityPeriod(from, to);
       final certMeta = await getCertMeta(from);
       final int nextIssuableOn = certMeta['nextIssuableOn'] ?? 0;
@@ -536,7 +538,8 @@ class SubstrateSdk with ChangeNotifier {
         }
         notifyListeners();
       });
-
+      currentUdIndex =
+          int.parse(await _getStorage('universalDividend.currentUdIndex()'));
       await getBalanceRatio();
 
       notifyListeners();
@@ -697,7 +700,7 @@ class SubstrateSdk with ChangeNotifier {
     await chestBox.put(currentChestNumber, newChestData);
 
     try {
-      final acc = getKeypair(wallet.address!);
+      final acc = getKeypair(wallet.address);
       keyring.setCurrent(acc);
       return acc.address!;
     } catch (e) {

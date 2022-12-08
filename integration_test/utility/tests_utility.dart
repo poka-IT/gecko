@@ -259,14 +259,14 @@ Future<WalletData> _addImportAccount(
   final address = await sub.importAccount(
       mnemonic: mnemonic, derivePath: '//$derivation', password: 'AAAAA');
   final myWallet = WalletData(
-      version: dataVersion,
       chest: chest,
       address: address,
       number: number,
       name: name,
       derivation: derivation,
-      imageDefaultPath: '${number % 4}.png');
-  await walletBox.add(myWallet);
+      imageDefaultPath: '${number % 4}.png',
+      isOwned: true);
+  await walletBox.put(myWallet.address, myWallet);
 
   return myWallet;
 }

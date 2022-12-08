@@ -17,37 +17,40 @@ class WalletDataAdapter extends TypeAdapter<WalletData> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return WalletData(
-      version: fields[0] as int?,
+      address: fields[0] as String,
       chest: fields[1] as int?,
-      address: fields[2] as String?,
-      number: fields[3] as int?,
-      name: fields[4] as String?,
-      derivation: fields[5] as int?,
-      imageDefaultPath: fields[6] as String?,
-      imageCustomPath: fields[7] as String?,
+      number: fields[2] as int?,
+      name: fields[3] as String?,
+      derivation: fields[4] as int?,
+      imageDefaultPath: fields[5] as String?,
+      imageCustomPath: fields[6] as String?,
+      isOwned: fields[7] as bool,
+      isMember: fields[8] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, WalletData obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(9)
       ..writeByte(0)
-      ..write(obj.version)
+      ..write(obj.address)
       ..writeByte(1)
       ..write(obj.chest)
       ..writeByte(2)
-      ..write(obj.address)
-      ..writeByte(3)
       ..write(obj.number)
-      ..writeByte(4)
+      ..writeByte(3)
       ..write(obj.name)
-      ..writeByte(5)
+      ..writeByte(4)
       ..write(obj.derivation)
-      ..writeByte(6)
+      ..writeByte(5)
       ..write(obj.imageDefaultPath)
+      ..writeByte(6)
+      ..write(obj.imageCustomPath)
       ..writeByte(7)
-      ..write(obj.imageCustomPath);
+      ..write(obj.isOwned)
+      ..writeByte(8)
+      ..write(obj.isMember);
   }
 
   @override

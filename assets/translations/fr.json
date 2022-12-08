@@ -203,5 +203,6 @@
     "received": "Reçus",
     "sent": "Envoyés",
     "createIdentity": "Créer sa nouvelle\nidentité",
-    "memberAccountOf": "Compte de {}"
+    "memberAccountOf": "Compte de {}",
+    "pasteAddress": "Coller l'adresse depuis\nle presse-papier"
 }

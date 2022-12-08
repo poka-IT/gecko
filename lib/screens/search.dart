@@ -1,23 +1,48 @@
-import 'package:easy_localization/easy_localization.dart';
+// ignore_for_file: use_build_context_synchronously
 
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/widgets_keys.dart';
-// import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/search.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/search_result.dart';
+import 'package:gecko/screens/wallet_view.dart';
 import 'package:provider/provider.dart';
-// import 'package:gecko/models/home.dart';
-// import 'package:provider/provider.dart';
 
-class SearchScreen extends StatelessWidget {
+class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
+
+  @override
+  State<SearchScreen> createState() => _SearchScreenState();
+}
+
+class _SearchScreenState extends State<SearchScreen> {
+  bool canPasteAddress = false;
+  String pastedAddress = '';
+
+  Future getClipBoard() async {
+    final clipboard = await Clipboard.getData('text/plain');
+    pastedAddress = clipboard?.text ?? '';
+    canPasteAddress = isAddress(pastedAddress);
+  }
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await getClipBoard();
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     final searchProvider = Provider.of<SearchProvider>(context);
     final screenHeight = MediaQuery.of(context).size.height;
+
+    final canValidate = searchProvider.searchController.text.length >= 2;
+    // final canPasteAddress = false;
 
     return WillPopScope(
       onWillPop: () {
@@ -63,7 +88,11 @@ class SearchScreen extends StatelessWidget {
                   autofocus: true,
                   maxLines: 1,
                   textAlign: TextAlign.left,
-                  onChanged: (v) => searchProvider.reload(),
+                  onChanged: (v) async => {
+                    await getClipBoard(),
+                    setState(() {}),
+                    searchProvider.reload()
+                  },
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Colors.white,
@@ -104,7 +133,7 @@ class SearchScreen extends StatelessWidget {
                     foregroundColor: Colors.white, elevation: 4,
                     backgroundColor: orangeC, // foreground
                   ),
-                  onPressed: searchProvider.searchController.text.length >= 2
+                  onPressed: canValidate
                       ? () {
                           Navigator.push(
                             context,
@@ -113,9 +142,23 @@ class SearchScreen extends StatelessWidget {
                             }),
                           );
                         }
-                      : null,
+                      : canPasteAddress
+                          ? () async {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) {
+                                  return WalletViewScreen(
+                                      address: pastedAddress, username: '');
+                                }),
+                              );
+                            }
+                          : null,
                   child: Text(
-                    'search'.tr(),
+                    canValidate
+                        ? 'search'.tr()
+                        : canPasteAddress
+                            ? 'pasteAddress'.tr()
+                            : 'search'.tr(),
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                         fontSize: 21, fontWeight: FontWeight.w600),

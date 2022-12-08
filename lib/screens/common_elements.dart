@@ -402,6 +402,24 @@ Future<void> infoPopup(BuildContext context, String title) async {
   );
 }
 
+bool isAddress(address) {
+  final RegExp regExp = RegExp(
+    r'^[a-zA-Z0-9]+$',
+    caseSensitive: false,
+    multiLine: false,
+  );
+
+  if (regExp.hasMatch(address) == true &&
+      address.length > 45 &&
+      address.length < 52) {
+    log.d("C'est une adresse !");
+
+    return true;
+  } else {
+    return false;
+  }
+}
+
 // Widget geckoAppBar() {
 //   return AppBar(
 //     toolbarHeight: 60 * ratio,

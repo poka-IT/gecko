@@ -202,5 +202,6 @@
     "received": "Received",
     "sent": "Sent",
     "createIdentity": "Create a new \nidentity",
-    "memberAccountOf": "Account of {}"
+    "memberAccountOf": "Account of {}",
+    "pasteAddress": "Paste address from\nclipboard"
 }

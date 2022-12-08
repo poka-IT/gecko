@@ -5,6 +5,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/providers/search.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
@@ -19,8 +20,9 @@ class GeckoBottomAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
-    WalletsProfilesProvider historyProvider =
+    final historyProvider =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
+    final searchProvider = Provider.of<SearchProvider>(context, listen: false);
 
     final size = MediaQuery.of(context).size;
     const bool showBottomBar = true;
@@ -40,6 +42,7 @@ class GeckoBottomAppBar extends StatelessWidget {
             iconSize: 40,
             icon: const Image(image: AssetImage('assets/loupe-noire.png')),
             onPressed: () {
+              searchProvider.reload();
               Navigator.popUntil(
                 context,
                 ModalRoute.withName('/'),

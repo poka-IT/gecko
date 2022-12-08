@@ -270,10 +270,8 @@ class ImportG1v1 extends StatelessWidget {
                                   );
                                 }
 
-                                sub.migrateCsToV2(
-                                    sub.csSalt.text,
-                                    sub.csPassword.text,
-                                    selectedWallet.address,
+                                sub.migrateCsToV2(sub.csSalt.text,
+                                    sub.csPassword.text, selectedWallet.address,
                                     destPassword:
                                         pin ?? myWalletProvider.pinCode,
                                     balance: balance,

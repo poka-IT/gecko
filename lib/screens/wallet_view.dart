@@ -41,13 +41,13 @@ class WalletViewScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     WalletsProfilesProvider walletProfile =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
-    walletProfile.address = address;
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
 
+    walletProfile.address = address;
     sub.setCurrentWallet(defaultWallet);
 
     log.d('aaaaaaaaaaaaaaaaaaa:  $username');
@@ -157,8 +157,6 @@ class WalletViewScreen extends StatelessWidget {
               ]),
               Consumer<SubstrateSdk>(builder: (context, sub, _) {
                 WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
-                final duniterIndexer =
-                    Provider.of<DuniterIndexer>(context, listen: false);
                 return FutureBuilder(
                   future: sub.certState(defaultWallet.address, address),
                   builder: (context, AsyncSnapshot<Map<String, int>> snapshot) {

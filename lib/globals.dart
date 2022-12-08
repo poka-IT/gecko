@@ -53,3 +53,5 @@ late int udValue;
 
 // Indexer
 late DateTime startBlockchainTime;
+
+late int currentUdIndex;

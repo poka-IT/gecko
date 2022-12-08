@@ -306,16 +306,18 @@ class DuniterIndexer with ChangeNotifier {
 
     pageInfo = result.data['transaction_connection']['pageInfo'];
     fetchMoreCursor = pageInfo!['endCursor'];
+    final hasNextPage = pageInfo!['hasNextPage'];
+    final hasPreviousPage = pageInfo!['hasPreviousPage'];
     if (fetchMoreCursor == null) nPage = 1;
 
-    log.d(fetchMoreCursor);
+    log.d('endCursor: $fetchMoreCursor $hasNextPage $hasPreviousPage');
 
-    if (nPage == 1) {
-      nRepositories = 40;
-    } else if (nPage == 2) {
-      nRepositories = 100;
-    }
-    // nRepositories = 10;
+    // if (nPage == 1) {
+    //   nRepositories = 20;
+    // } else if (nPage == 4) {
+    //   nRepositories = 40;
+    // }
+    // // nRepositories = 10;
     nPage++;
 
     if (fetchMoreCursor != null) {

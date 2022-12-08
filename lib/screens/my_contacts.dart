@@ -2,16 +2,18 @@ import 'package:easy_localization/easy_localization.dart';
 
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
-import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/widgets/balance.dart';
+import 'package:gecko/widgets/bottom_app_bar.dart';
+import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 
 class ContactsScreen extends StatelessWidget {
@@ -21,8 +23,6 @@ class ContactsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     WalletsProfilesProvider walletsProfilesClass =
         Provider.of<WalletsProfilesProvider>(context, listen: true);
-    HomeProvider homeProvider =
-        Provider.of<HomeProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     double avatarSize = 55;
@@ -49,7 +49,7 @@ class ContactsScreen extends StatelessWidget {
               'contactsManagementWithNbr'.tr(args: ['${myContacts.length}'])),
         ),
       ),
-      bottomNavigationBar: homeProvider.bottomAppBar(context),
+      bottomNavigationBar: const GeckoBottomAppBar(),
       body: SafeArea(
         child: Stack(children: [
           Padding(
@@ -92,15 +92,18 @@ class ContactsScreen extends StatelessWidget {
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.center,
                                                   children: [
-                                                    balance(context,
-                                                        g1Wallet.address, 16),
+                                                    Balance(
+                                                        address:
+                                                            g1Wallet.address,
+                                                        size: 16),
                                                   ]),
                                             ]),
                                       ),
                                     ]),
                                 subtitle: Row(children: <Widget>[
-                                  duniterIndexer.getNameByAddress(
-                                      context, g1Wallet.address)
+                                  NameByAddress(
+                                      wallet:
+                                          WalletData(address: g1Wallet.address))
                                 ]),
                                 dense: false,
                                 isThreeLine: false,

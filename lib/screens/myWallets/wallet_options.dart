@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
-import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -17,6 +16,11 @@ import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/myWallets/manage_membership.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
+import 'package:gecko/widgets/balance.dart';
+import 'package:gecko/widgets/bottom_app_bar.dart';
+import 'package:gecko/widgets/certifications.dart';
+import 'package:gecko/widgets/idty_status.dart';
+import 'package:gecko/widgets/name_by_address.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart';
 
@@ -35,9 +39,8 @@ class WalletOptions extends StatelessWidget {
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
-    HomeProvider homeProvider =
-        Provider.of<HomeProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     // final sub = Provider.of<SubstrateSdk>(context, listen: false);
     // sub.spawnBlock();
@@ -46,6 +49,8 @@ class WalletOptions extends StatelessWidget {
     log.d(walletOptions.address.text);
 
     final currentChest = myWalletProvider.getCurrentChest();
+    bool isWalletNameIndexed =
+        duniterIndexer.walletNameIndexer[walletOptions.address.text] != null;
 
     // final currentWallet = _myWalletProvider.getDefaultWallet();
     // log.d(_walletOptions.getAddress(_currentChest, 3));
@@ -77,7 +82,10 @@ class WalletOptions extends StatelessWidget {
             height: 22,
             child: Consumer<WalletOptionsProvider>(
                 builder: (context, walletProvider, _) {
-              return Text(wallet.name!);
+              return Text(isWalletNameIndexed
+                  ? duniterIndexer
+                      .walletNameIndexer[walletOptions.address.text]!
+                  : wallet.name!);
             }),
           ),
           actions: [
@@ -100,7 +108,7 @@ class WalletOptions extends StatelessWidget {
             ),
           ],
         ),
-        bottomNavigationBar: homeProvider.bottomAppBar(context),
+        bottomNavigationBar: const GeckoBottomAppBar(),
         body: Stack(children: [
           Builder(
             builder: (ctx) => SafeArea(
@@ -121,66 +129,95 @@ class WalletOptions extends StatelessWidget {
                         backgroundColor,
                       ],
                     )),
-                    child: Row(
-                        // mainAxisAlignment: MainAxisAlignment.end,
-                        children: <Widget>[
-                          const Spacer(flex: 1),
-                          avatar(walletProvider),
-                          const Spacer(flex: 1),
-                          Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[
-                                duniterIndexer.getNameByAddress(
-                                    context,
-                                    walletProvider.address.text,
-                                    wallet,
-                                    27,
-                                    false,
-                                    Colors.black,
-                                    FontWeight.w400,
-                                    FontStyle.normal),
-                                // SizedBox(height: isTall ? 5 : 0),
-
-                                SizedBox(height: isTall ? 5 : 0),
-                                balance(
-                                    context, walletProvider.address.text, 21),
-                                const SizedBox(width: 30),
-
-                                InkWell(
-                                  onTap: () => duniterIndexer.walletNameIndexer[
-                                              walletProvider.address.text] !=
-                                          null
-                                      ? {
-                                          Navigator.push(
-                                            context,
-                                            PageNoTransit(builder: (context) {
-                                              return CertificationsScreen(
-                                                  address: walletProvider
-                                                      .address.text,
-                                                  username: duniterIndexer
-                                                          .walletNameIndexer[
-                                                      walletProvider
-                                                          .address.text]!);
-                                            }),
-                                          ),
-                                        }
-                                      : null,
-                                  child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        walletOptions.idtyStatus(
-                                            context, walletOptions.address.text,
-                                            isOwner: true, color: orangeC),
-                                        getCerts(context,
-                                            walletProvider.address.text, 15),
-                                      ]),
+                    child: Row(children: <Widget>[
+                      const Spacer(flex: 1),
+                      avatar(walletProvider),
+                      const Spacer(flex: 1),
+                      Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Stack(children: [
+                              SizedBox(
+                                width: 250,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Consumer<WalletOptionsProvider>(
+                                        builder: (context, walletProvider, _) {
+                                      return NameByAddress(
+                                          wallet: wallet,
+                                          size: 27,
+                                          color: Colors.black,
+                                          fontWeight: wallet.isMember
+                                              ? FontWeight.w500
+                                              : FontWeight.w400,
+                                          fontStyle: FontStyle.normal);
+                                    })
+                                  ],
                                 ),
-
-                                SizedBox(height: 10 * ratio),
-                              ]),
-                          const Spacer(flex: 2),
-                        ]),
+                              ),
+                              const SizedBox(width: 10),
+                              if (duniterIndexer
+                                      .walletNameIndexer[wallet.address] ==
+                                  null)
+                                Positioned(
+                                  right: 0,
+                                  child: InkWell(
+                                    key: keyRenameWallet,
+                                    onTap: () async {
+                                      await walletOptions.editWalletName(
+                                          context, wallet.id());
+                                      await Future.delayed(
+                                          const Duration(milliseconds: 30));
+                                    },
+                                    child: ClipRRect(
+                                      child: Image.asset(
+                                          walletOptions.isEditing
+                                              ? 'assets/walletOptions/android-checkmark.png'
+                                              : 'assets/walletOptions/edit.png',
+                                          width: 25,
+                                          height: 25),
+                                    ),
+                                  ),
+                                ),
+                            ]),
+                            SizedBox(height: isTall ? 5 : 0),
+                            Balance(
+                                address: walletProvider.address.text, size: 21),
+                            const SizedBox(width: 30),
+                            InkWell(
+                              onTap: () => isWalletNameIndexed
+                                  ? {
+                                      Navigator.push(
+                                        context,
+                                        PageNoTransit(builder: (context) {
+                                          return CertificationsScreen(
+                                              address:
+                                                  walletProvider.address.text,
+                                              username: duniterIndexer
+                                                      .walletNameIndexer[
+                                                  walletProvider
+                                                      .address.text]!);
+                                        }),
+                                      ),
+                                    }
+                                  : null,
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    IdentityStatus(
+                                        address: walletOptions.address.text,
+                                        isOwner: true,
+                                        color: orangeC),
+                                    Certifications(
+                                        address: walletProvider.address.text,
+                                        size: 15)
+                                  ]),
+                            ),
+                            SizedBox(height: 10 * ratio),
+                          ]),
+                      const Spacer(flex: 2),
+                    ]),
                   );
                 }),
                 Expanded(
@@ -224,8 +261,8 @@ class WalletOptions extends StatelessWidget {
                               SizedBox(height: 17 * ratio),
                               // walletProvider.isMember(context, _walletOptions.address.text)
                               FutureBuilder(
-                                  future: walletProvider.isMember(
-                                      context, walletOptions.address.text),
+                                  future:
+                                      sub.isMember(walletOptions.address.text),
                                   builder: (BuildContext context,
                                       AsyncSnapshot<bool> isMember) {
                                     if (isMember.connectionState !=
@@ -427,7 +464,7 @@ class WalletOptions extends StatelessWidget {
         // _historyProvider.nPage = 1;
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) {
+          PageNoTransit(builder: (context) {
             return ActivityScreen(
                 address: walletProvider.address.text,
                 avatar: wallet.imageCustomPath == null
@@ -548,26 +585,26 @@ class WalletOptions extends StatelessWidget {
     walletOptions.reload();
   }
 
-  Widget deleteWallet(BuildContext context,
-      WalletOptionsProvider walletProvider, int currentChest) {
+  Widget deleteWallet(BuildContext context, WalletOptionsProvider walletOptions,
+      int currentChest) {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
     final defaultWallet = myWalletProvider.getDefaultWallet();
     final bool isDefaultWallet =
-        walletProvider.address.text == defaultWallet.address;
+        walletOptions.address.text == defaultWallet.address;
     // return Consumer<MyWalletsProvider>(
     //     builder: (context, _myWalletProvider, _) {
     return FutureBuilder(
-        future: sub.hasAccountConsumers(wallet.address!),
+        future: sub.hasAccountConsumers(wallet.address),
         builder: (BuildContext context, AsyncSnapshot<bool> hasConsumers) {
           if (hasConsumers.connectionState != ConnectionState.done ||
               hasConsumers.hasError) {
             return const Text('');
           }
           final double balance =
-              balanceCache[walletProvider.address.text] ?? -1;
+              walletOptions.balanceCache[walletOptions.address.text] ?? -1;
           final bool canDelete = !isDefaultWallet &&
               !hasConsumers.data! &&
               (balance > 2 || balance == 0);
@@ -575,7 +612,7 @@ class WalletOptions extends StatelessWidget {
             key: keyDeleteWallet,
             onTap: canDelete
                 ? () async {
-                    await walletProvider.deleteWallet(context, wallet);
+                    await walletOptions.deleteWallet(context, wallet);
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       myWalletProvider.listWallets =
                           myWalletProvider.readAllWallets(currentChest);

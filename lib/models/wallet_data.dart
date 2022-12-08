@@ -4,38 +4,42 @@ part 'wallet_data.g.dart';
 @HiveType(typeId: 0)
 class WalletData extends HiveObject {
   @HiveField(0)
-  int? version;
+  String address;
 
   @HiveField(1)
   int? chest;
 
   @HiveField(2)
-  String? address;
-
-  @HiveField(3)
   int? number;
 
-  @HiveField(4)
+  @HiveField(3)
   String? name;
 
-  @HiveField(5)
+  @HiveField(4)
   int? derivation;
 
-  @HiveField(6)
+  @HiveField(5)
   String? imageDefaultPath;
 
-  @HiveField(7)
+  @HiveField(6)
   String? imageCustomPath;
 
+  @HiveField(7)
+  bool isOwned;
+
+  @HiveField(8)
+  bool isMember;
+
   WalletData(
-      {this.version,
+      {required this.address,
       this.chest,
-      this.address,
       this.number,
       this.name,
       this.derivation,
       this.imageDefaultPath,
-      this.imageCustomPath});
+      this.imageCustomPath,
+      this.isOwned = false,
+      this.isMember = false});
 
   // representation of WalletData when debugging
   @override

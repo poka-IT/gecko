@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -12,14 +11,12 @@ import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/screens/animated_text.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:image_cropper/image_cropper.dart';
-import 'package:truncate/truncate.dart';
 
 class WalletOptionsProvider with ChangeNotifier {
   TextEditingController address = TextEditingController();
@@ -29,12 +26,11 @@ class WalletOptionsProvider with ChangeNotifier {
   TextEditingController newPin = TextEditingController();
   bool isEditing = false;
   bool isBalanceBlur = false;
-  FocusNode walletNameFocus = FocusNode();
   TextEditingController nameController = TextEditingController();
   late bool isDefaultWallet;
   bool canValidateNameBool = false;
-  Map<String, String> idtyStatusCache = {};
   Future<NewWallet>? get badWallet => null;
+  Map<String, double> balanceCache = {};
 
   int getPinLenght(walletNbr) {
     return pinLength;
@@ -58,21 +54,21 @@ class WalletOptionsProvider with ChangeNotifier {
 
     if (answer ?? false) {
       //Check if balance is null
-      final balance = await sub.getBalance(wallet.address!);
+      final balance = await sub.getBalance(wallet.address);
       if (balance != {}) {
         final myWalletProvider =
             Provider.of<MyWalletsProvider>(context, listen: false);
         final defaultWallet = myWalletProvider.getDefaultWallet();
         log.d(defaultWallet.address);
         sub.pay(
-            fromAddress: wallet.address!,
-            destAddress: defaultWallet.address!,
+            fromAddress: wallet.address,
+            destAddress: defaultWallet.address,
             amount: -1,
             password: myWalletProvider.pinCode);
       }
 
       await walletBox.delete(wallet.key);
-      await sub.deleteAccounts([wallet.address!]);
+      await sub.deleteAccounts([wallet.address]);
 
       Navigator.pop(context);
     }
@@ -131,89 +127,6 @@ class WalletOptionsProvider with ChangeNotifier {
       log.w('No image selected.');
       return '';
     }
-  }
-
-  Widget idtyStatus(BuildContext context, String address,
-      {bool isOwner = false, Color color = Colors.black}) {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-
-    showText(String text,
-        [double size = 18, bool bold = false, bool smooth = true]) {
-      // log.d('$address $text');
-      return AnimatedFadeOutIn<String>(
-        data: text,
-        duration: Duration(milliseconds: smooth ? 200 : 0),
-        builder: (value) => Text(
-          value,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              fontSize: size,
-              color: bold ? color : Colors.black,
-              fontWeight: bold ? FontWeight.w500 : FontWeight.w400),
-        ),
-      );
-    }
-
-    return Consumer<SubstrateSdk>(builder: (context, sub, _) {
-      return FutureBuilder(
-          future: sub.idtyStatus(address),
-          initialData: '',
-          builder: (context, snapshot) {
-            idtyStatusCache[address] = snapshot.data.toString();
-            switch (snapshot.data.toString()) {
-              case 'noid':
-                {
-                  return showText('noIdentity'.tr());
-                }
-              case 'Created':
-                {
-                  return showText('identityCreated'.tr());
-                }
-              case 'ConfirmedByOwner':
-                {
-                  return isOwner
-                      ? showText('identityConfirmed'.tr())
-                      : duniterIndexer.getNameByAddress(
-                          context,
-                          address,
-                          null,
-                          20,
-                          true,
-                          Colors.grey[700]!,
-                          FontWeight.w500,
-                          FontStyle.italic);
-                }
-
-              case 'Validated':
-                {
-                  return isOwner
-                      ? showText('memberValidated'.tr(), 18, true)
-                      : duniterIndexer.getNameByAddress(
-                          context,
-                          address,
-                          null,
-                          20,
-                          true,
-                          Colors.black,
-                          FontWeight.w600,
-                          FontStyle.normal);
-                }
-
-              case 'expired':
-                {
-                  return showText('identityExpired'.tr());
-                }
-            }
-            return SizedBox(
-              child: showText('', 18, false, false),
-            );
-          });
-    });
-  }
-
-  Future<bool> isMember(BuildContext context, String address) async {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    return await sub.idtyStatus(address) == 'Validated';
   }
 
   Future<String?> confirmIdentityPopup(BuildContext context) async {
@@ -315,9 +228,8 @@ class WalletOptionsProvider with ChangeNotifier {
                                     return TransactionInProgress(
                                       transType: 'comfirmIdty',
                                       fromAddress:
-                                          getShortPubkey(wallet.address!),
-                                      toAddress:
-                                          getShortPubkey(wallet.address!),
+                                          getShortPubkey(wallet.address),
+                                      toAddress: getShortPubkey(wallet.address),
                                     );
                                   }),
                                 );
@@ -393,7 +305,7 @@ class WalletOptionsProvider with ChangeNotifier {
                       if (canValidateNameBool) {
                         nameController.text = walletName.text;
                         _renameWallet(wID, walletName.text, isCesium: false);
-                        // notifyListeners();
+                        notifyListeners();
                         Navigator.pop(context);
                       }
                     },
@@ -463,7 +375,7 @@ class WalletOptionsProvider with ChangeNotifier {
     String? addressGet;
     walletBox.toMap().forEach((key, value) {
       if (value.chest == chest && value.derivation == derivation) {
-        addressGet = value.address!;
+        addressGet = value.address;
         return;
       }
     });
@@ -472,190 +384,4 @@ class WalletOptionsProvider with ChangeNotifier {
 
     return addressGet;
   }
-
-  Widget walletNameController(BuildContext context, WalletData wallet,
-      [double size = 20]) {
-    nameController.text = wallet.name!;
-
-    return SizedBox(
-      width: 260,
-      child: Stack(children: <Widget>[
-        TextField(
-          key: keyWalletName,
-          autofocus: false,
-          focusNode: walletNameFocus,
-          enabled: isEditing,
-          controller: nameController,
-          minLines: 1,
-          maxLines: 3,
-          textAlign: TextAlign.center,
-          decoration: const InputDecoration(
-            border: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            disabledBorder: InputBorder.none,
-            contentPadding: EdgeInsets.all(15.0),
-          ),
-          style: TextStyle(
-            fontSize: isTall ? size : size * 0.9,
-            color: Colors.black,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-        Positioned(
-          right: 0,
-          child: InkWell(
-            key: keyRenameWallet,
-            onTap: () async {
-              // _isNewNameValid =
-              // walletProvider.editWalletName(wallet.id(), isCesium: false);
-              await editWalletName(context, wallet.id());
-              await Future.delayed(const Duration(milliseconds: 30));
-              walletNameFocus.requestFocus();
-            },
-            child: ClipRRect(
-              child: Image.asset(
-                  isEditing
-                      ? 'assets/walletOptions/android-checkmark.png'
-                      : 'assets/walletOptions/edit.png',
-                  width: 25,
-                  height: 25),
-            ),
-          ),
-        ),
-      ]),
-    );
-  }
-
-  Widget walletName(BuildContext context, WalletData wallet,
-      [double size = 20, Color color = Colors.black]) {
-    double newSize = wallet.name!.length <= 15 ? size : size - 2;
-
-    return Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-      Text(
-        truncate(wallet.name!, 20),
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: isTall ? newSize : newSize * 0.9,
-          color: color,
-          fontWeight: FontWeight.w400,
-          fontStyle: FontStyle.italic,
-        ),
-        softWrap: false,
-        overflow: TextOverflow.ellipsis,
-      ),
-    ]);
-  }
-}
-
-Map<String, double> balanceCache = {};
-
-Widget balance(BuildContext context, String address, double size,
-    [Color color = Colors.black,
-    Color loadingColor = const Color(0xffd07316)]) {
-  return Column(children: <Widget>[
-    Consumer<SubstrateSdk>(builder: (context, sdk, _) {
-      return FutureBuilder(
-          future: sdk.getBalance(address),
-          builder: (BuildContext context,
-              AsyncSnapshot<Map<String, double>> globalBalance) {
-            if (globalBalance.connectionState != ConnectionState.done ||
-                globalBalance.hasError) {
-              if (balanceCache[address] != null &&
-                  balanceCache[address] != -1) {
-                return Row(children: [
-                  Text(balanceCache[address]!.toString(),
-                      style: TextStyle(
-                          fontSize: isTall ? size : size * 0.9, color: color)),
-                  const SizedBox(width: 5),
-                  udUnitDisplay(size, color),
-                ]);
-              } else {
-                return SizedBox(
-                  height: 15,
-                  width: 15,
-                  child: CircularProgressIndicator(
-                    color: loadingColor,
-                    strokeWidth: 2,
-                  ),
-                );
-              }
-            }
-            balanceCache[address] = globalBalance.data!['transferableBalance']!;
-            if (balanceCache[address] != -1) {
-              return Row(children: [
-                Text(
-                  balanceCache[address]!.toString(),
-                  style: TextStyle(
-                    fontSize: isTall ? size : size * 0.9,
-                    color: color,
-                  ),
-                ),
-                const SizedBox(width: 5),
-                udUnitDisplay(size, color),
-              ]);
-            } else {
-              return const Text('');
-            }
-          });
-    }),
-  ]);
-}
-
-Widget getCerts(BuildContext context, String address, double size,
-    [Color color = Colors.black]) {
-  return Column(children: <Widget>[
-    Consumer<SubstrateSdk>(builder: (context, sdk, _) {
-      return FutureBuilder(
-          future: sdk.getCertsCounter(address),
-          builder: (BuildContext context, AsyncSnapshot<List<int>> certs) {
-            // log.d(_certs.data);
-
-            return certs.data?[0] != 0 && certs.data != null
-                ? Row(
-                    children: [
-                      Image.asset('assets/medal.png', height: 20),
-                      const SizedBox(width: 1),
-                      Text(certs.data?[0].toString() ?? '0',
-                          style: const TextStyle(fontSize: 20)),
-                      const SizedBox(width: 5),
-                      Text(
-                        "(${certs.data?[1].toString() ?? '0'})",
-                        style: const TextStyle(fontSize: 14),
-                      )
-                    ],
-                  )
-                : const Text('');
-          });
-    }),
-  ]);
-}
-
-Widget udUnitDisplay(double size, [Color color = Colors.black]) {
-  final bool isUdUnit = configBox.get('isUdUnit') ?? false;
-  return isUdUnit
-      ? Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Text(
-              'ud'.tr(args: ['']),
-              style:
-                  TextStyle(fontSize: isTall ? size : size * 0.9, color: color),
-            ),
-            Column(
-              children: [
-                Text(
-                  currencyName,
-                  style: TextStyle(
-                      fontSize: (isTall ? size : size * 0.9) * 0.7,
-                      fontWeight: FontWeight.w500,
-                      color: color),
-                ),
-                const SizedBox(height: 15)
-              ],
-            )
-          ],
-        )
-      : Text(currencyName,
-          style: TextStyle(fontSize: isTall ? size : size * 0.9, color: color));
 }

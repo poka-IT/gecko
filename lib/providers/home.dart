@@ -11,15 +11,8 @@ import 'package:flutter/services.dart';
 
 import 'dart:async';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
-import 'package:gecko/screens/myWallets/wallets_home.dart';
-import 'package:gecko/screens/search.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 import 'package:path_provider/path_provider.dart' as pp;
@@ -34,6 +27,7 @@ class HomeProvider with ChangeNotifier {
   Widget appBarTitle = Text('Ğecko', style: TextStyle(color: Colors.grey[850]));
   String homeMessage = "loading".tr();
   String defaultMessage = "noLizard".tr();
+  bool isWalletBoxInit = false;
 
   Future<void> initHive() async {
     late Directory hivePath;
@@ -68,9 +62,11 @@ class HomeProvider with ChangeNotifier {
 
   Future changeCurrencyUnit(BuildContext context) async {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final walletOptions =
+        Provider.of<WalletOptionsProvider>(context, listen: false);
     final bool isUdUnit = configBox.get('isUdUnit') ?? false;
     await configBox.put('isUdUnit', !isUdUnit);
-    balanceCache = {};
+    walletOptions.balanceCache = {};
     sub.getBalanceRatio();
     notifyListeners();
   }
@@ -132,104 +128,6 @@ class HomeProvider with ChangeNotifier {
   //   await player.play('$customSound.wav',
   //       volume: volume, mode: PlayerMode.LOW_LATENCY, stayAwake: false);
   // }
-
-  Widget bottomAppBar(BuildContext context) {
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
-    WalletsProfilesProvider historyProvider =
-        Provider.of<WalletsProfilesProvider>(context, listen: false);
-
-    final size = MediaQuery.of(context).size;
-
-    const bool showBottomBar = true;
-
-    return Visibility(
-      visible: showBottomBar,
-      child: Container(
-        color: yellowC,
-        width: size.width,
-        height: 80,
-        child:
-            // Stack(
-            //   children: [
-            //     // CustomPaint(
-            //     //   size: Size(size.width, 110),
-            //     //   painter: CustomRoundedButton(),
-            //     // ),
-            Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-          // SizedBox(width: 0),
-          const Spacer(),
-          const SizedBox(width: 11),
-          IconButton(
-            key: keyAppBarSearch,
-            iconSize: 40,
-            icon: const Image(image: AssetImage('assets/loupe-noire.png')),
-            onPressed: () {
-              Navigator.popUntil(
-                context,
-                ModalRoute.withName('/'),
-              );
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (homeContext) {
-                  return const SearchScreen();
-                }),
-              );
-            },
-          ),
-          const SizedBox(width: 22),
-          const Spacer(),
-          IconButton(
-            key: keyAppBarQrcode,
-            iconSize: 70,
-            icon: const Image(image: AssetImage('assets/qrcode-scan.png')),
-            onPressed: () async {
-              Navigator.popUntil(
-                context,
-                ModalRoute.withName('/'),
-              );
-              historyProvider.scan(homeContext);
-            },
-          ),
-          const Spacer(),
-          const SizedBox(width: 15),
-          IconButton(
-            key: keyAppBarChest,
-            iconSize: 60,
-            icon: const Image(image: AssetImage('assets/wallet.png')),
-            onPressed: () async {
-              WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
-              String? pin;
-              if (myWalletProvider.pinCode == '') {
-                pin = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (homeContext) {
-                      return UnlockingWallet(wallet: defaultWallet);
-                    },
-                  ),
-                );
-              }
-
-              if (pin != null || myWalletProvider.pinCode != '') {
-                Navigator.popUntil(
-                  context,
-                  ModalRoute.withName('/'),
-                );
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) {
-                    return const WalletsHome();
-                  }),
-                );
-              }
-            },
-          ),
-          const Spacer(),
-        ]),
-      ),
-    );
-  }
 
   void reload() {
     notifyListeners();

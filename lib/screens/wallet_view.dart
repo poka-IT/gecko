@@ -9,11 +9,10 @@ import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
-import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/common_elements.dart';
@@ -21,6 +20,8 @@ import 'package:gecko/screens/myWallets/choose_wallet.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/widgets/balance.dart';
+import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/header_profile.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart';
@@ -40,15 +41,13 @@ class WalletViewScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     WalletsProfilesProvider walletProfile =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
-    walletProfile.address = address;
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    HomeProvider homeProvider =
-        Provider.of<HomeProvider>(context, listen: false);
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
 
+    walletProfile.address = address;
     sub.setCurrentWallet(defaultWallet);
 
     log.d('aaaaaaaaaaaaaaaaaaa:  $username');
@@ -114,7 +113,7 @@ class WalletViewScreen extends StatelessWidget {
                           '?'
                     ]))),
         ),
-        bottomNavigationBar: homeProvider.bottomAppBar(context),
+        bottomNavigationBar: const GeckoBottomAppBar(),
         body: SafeArea(
           child: Column(children: <Widget>[
             HeaderProfile(address: address, username: username),
@@ -158,10 +157,8 @@ class WalletViewScreen extends StatelessWidget {
               ]),
               Consumer<SubstrateSdk>(builder: (context, sub, _) {
                 WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
-                final duniterIndexer =
-                    Provider.of<DuniterIndexer>(context, listen: false);
                 return FutureBuilder(
-                  future: sub.certState(defaultWallet.address!, address),
+                  future: sub.certState(defaultWallet.address, address),
                   builder: (context, AsyncSnapshot<Map<String, int>> snapshot) {
                     if (snapshot.data == null) return const SizedBox();
                     String duration = '';
@@ -469,16 +466,19 @@ void paymentPopup(BuildContext context, String toAddress) {
       context: context,
       builder: (BuildContext context) {
         final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
+        final walletOptions =
+            Provider.of<WalletOptionsProvider>(context, listen: false);
+
         double fees = 0;
         return StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
           if (walletViewProvider.payAmount.text != '' &&
               (double.parse(walletViewProvider.payAmount.text) +
                       2 / balanceRatio) <=
-                  (balanceCache[defaultWallet.address] ?? 0) &&
+                  (walletOptions.balanceCache[defaultWallet.address] ?? 0) &&
               toAddress != defaultWallet.address) {
-            if ((balanceCache[toAddress] == 0 ||
-                    balanceCache[toAddress] == null) &&
+            if ((walletOptions.balanceCache[toAddress] == 0 ||
+                    walletOptions.balanceCache[toAddress] == null) &&
                 double.parse(walletViewProvider.payAmount.text) <
                     5 / balanceRatio) {
               canValidate = false;
@@ -573,7 +573,7 @@ void paymentPopup(BuildContext context, String toAddress) {
                             child: Row(children: [
                               Text(defaultWallet.name!),
                               const Spacer(),
-                              balance(context, defaultWallet.address!, 20)
+                              Balance(address: defaultWallet.address, size: 20),
                             ]),
                           ),
                         );
@@ -640,7 +640,7 @@ void paymentPopup(BuildContext context, String toAddress) {
                         keyboardType: TextInputType.number,
                         onChanged: (_) async {
                           fees = await sub.txFees(
-                              defaultWallet.address!,
+                              defaultWallet.address,
                               toAddress,
                               double.parse(
                                   walletViewProvider.payAmount.text == ''

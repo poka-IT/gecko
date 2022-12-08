@@ -11,10 +11,11 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/widgets/certifications.dart';
+import 'package:gecko/widgets/idty_status.dart';
 import 'package:provider/provider.dart';
 
 class ImportG1v1 extends StatelessWidget {
@@ -22,8 +23,6 @@ class ImportG1v1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final walletOptions =
-        Provider.of<WalletOptionsProvider>(context, listen: false);
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
@@ -57,7 +56,7 @@ class ImportG1v1 extends StatelessWidget {
           child: Consumer<SubstrateSdk>(builder: (context, sub, _) {
             return FutureBuilder(
                 future: sub.getBalanceAndIdtyStatus(
-                    sub.g1V1NewAddress, selectedWallet.address!),
+                    sub.g1V1NewAddress, selectedWallet.address),
                 builder: (BuildContext context, AsyncSnapshot<List> status) {
                   // log.d(_certs.data);
 
@@ -210,10 +209,12 @@ class ImportG1v1 extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        walletOptions.idtyStatus(context, sub.g1V1NewAddress,
-                            isOwner: false, color: Colors.black),
+                        IdentityStatus(
+                            address: sub.g1V1NewAddress,
+                            isOwner: false,
+                            color: Colors.black),
                         const SizedBox(width: 10),
-                        getCerts(context, sub.g1V1NewAddress, 14)
+                        Certifications(address: sub.g1V1NewAddress, size: 14)
                       ],
                     ),
                     const SizedBox(height: 30),
@@ -227,7 +228,7 @@ class ImportG1v1 extends StatelessWidget {
                         icon: const Icon(Icons.keyboard_arrow_down),
                         items: myWalletProvider.listWallets.map((wallet) {
                           return DropdownMenuItem(
-                            key: keySelectThisWallet(wallet.address!),
+                            key: keySelectThisWallet(wallet.address),
                             value: wallet,
                             child: Text(
                               wallet.name!,
@@ -269,10 +270,8 @@ class ImportG1v1 extends StatelessWidget {
                                   );
                                 }
 
-                                sub.migrateCsToV2(
-                                    sub.csSalt.text,
-                                    sub.csPassword.text,
-                                    selectedWallet.address!,
+                                sub.migrateCsToV2(sub.csSalt.text,
+                                    sub.csPassword.text, selectedWallet.address,
                                     destPassword:
                                         pin ?? myWalletProvider.pinCode,
                                     balance: balance,
@@ -285,7 +284,7 @@ class ImportG1v1 extends StatelessWidget {
                                         fromAddress:
                                             getShortPubkey(sub.g1V1NewAddress),
                                         toAddress: getShortPubkey(
-                                            selectedWallet.address!));
+                                            selectedWallet.address));
                                   }),
                                 );
                                 resetScreen(context);

@@ -9,6 +9,9 @@ import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/certifications.dart';
 import 'package:gecko/screens/common_elements.dart';
+import 'package:gecko/widgets/balance.dart';
+import 'package:gecko/widgets/certifications.dart';
+import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart';
 
@@ -25,15 +28,13 @@ class HeaderProfile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const double avatarSize = 140;
-
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     return Stack(children: <Widget>[
       Consumer<SubstrateSdk>(builder: (context, sub, _) {
-        // sub.getBlockchainStart();
-        bool isAccountExist = balanceCache[address] != 0;
+        bool isAccountExist = walletOptions.balanceCache[address] != 0;
         return Container(
             height: 180,
             decoration: BoxDecoration(
@@ -55,7 +56,7 @@ class HeaderProfile extends StatelessWidget {
               children: <Widget>[
                 Container(
                   height: 10,
-                  color: yellowC, // Colors.grey[400],
+                  color: yellowC,
                 ),
                 Row(children: [
                   GestureDetector(
@@ -74,9 +75,8 @@ class HeaderProfile extends StatelessWidget {
                   ),
                 ]),
                 const SizedBox(height: 25),
-                balance(context, address, 22),
+                Balance(address: address, size: 22),
                 const SizedBox(height: 10),
-
                 InkWell(
                   onTap: () => duniterIndexer.walletNameIndexer[address] != null
                       ? {
@@ -94,43 +94,20 @@ class HeaderProfile extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      walletOptions.idtyStatus(context, address,
-                          isOwner: false, color: Colors.black),
-                      getCerts(context, address, 14)
+                      IdentityStatus(
+                          address: address,
+                          isOwner: false,
+                          color: Colors.black),
+                      Certifications(address: address, size: 14)
                     ],
                   ),
                 ),
-                // if (username == null &&
-                //     g1WalletsBox.get(address)?.username != null)
-                //   SizedBox(
-                //     width: 230,
-                //     child: Text(
-                //       g1WalletsBox.get(address)?.username ?? '',
-                //       style: const TextStyle(
-                //         fontSize: 27,
-                //         color: Color(0xff814C00),
-                //       ),
-                //     ),
-                //   ),
-                // if (username != null)
-                //   SizedBox(
-                //     width: 230,
-                //     child: Text(
-                //       username,
-                //       style: const TextStyle(
-                //         fontSize: 27,
-                //         color: Color(0xff814C00),
-                //       ),
-                //     ),
-                //   ),
-                // const SizedBox(height: 55),
               ]),
           const Spacer(),
           Column(children: <Widget>[
             ClipOval(
               child: defaultAvatar(avatarSize),
             ),
-            // const SizedBox(height: 25),
           ]),
         ]),
       ),

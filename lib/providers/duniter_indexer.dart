@@ -5,18 +5,15 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/queries_indexer.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/widgets/balance.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:truncate/truncate.dart';
 
 class DuniterIndexer with ChangeNotifier {
   Map<String, String?> walletNameIndexer = {};
@@ -27,6 +24,7 @@ class DuniterIndexer with ChangeNotifier {
   List? transBC;
   List listIndexerEndpoints = [];
   bool isLoadingIndexer = false;
+  Map<String, String> idtyStatusCache = {};
 
   void reload() {
     notifyListeners();
@@ -155,95 +153,6 @@ class DuniterIndexer with ChangeNotifier {
     return indexerEndpoint;
   }
 
-  Widget getNameByAddress(BuildContext context, String address,
-      [WalletData? wallet,
-      double size = 20,
-      bool canEdit = false,
-      Color color = Colors.black,
-      FontWeight fontWeight = FontWeight.w400,
-      FontStyle fontStyle = FontStyle.italic]) {
-    final walletOptions =
-        Provider.of<WalletOptionsProvider>(context, listen: false);
-    if (indexerEndpoint == '') {
-      if (wallet == null) {
-        return const SizedBox();
-      } else {
-        if (canEdit) {
-          return walletOptions.walletName(context, wallet, size, color);
-        } else {
-          return walletOptions.walletNameController(context, wallet, size);
-        }
-      }
-    }
-    final httpLink = HttpLink(
-      '$indexerEndpoint/v1/graphql',
-    );
-
-    final client = ValueNotifier(
-      GraphQLClient(
-        cache: GraphQLCache(store: HiveStore()),
-        link: httpLink,
-      ),
-    );
-    return GraphQLProvider(
-      client: client,
-      child: Query(
-          options: QueryOptions(
-            document: gql(
-                getNameByAddressQ), // this is the query string you just created
-            variables: {
-              'address': address,
-            },
-            // pollInterval: const Duration(seconds: 10),
-          ),
-          builder: (QueryResult result,
-              {VoidCallback? refetch, FetchMore? fetchMore}) {
-            if (result.hasException) {
-              return Text(result.exception.toString());
-            }
-
-            if (result.isLoading) {
-              return const Text('Loading');
-            }
-
-            walletNameIndexer[address] =
-                result.data?['account_by_pk']?['identity']?['name'];
-
-            g1WalletsBox.put(
-                address,
-                G1WalletsList(
-                    address: address, username: walletNameIndexer[address]));
-
-            // log.d(g1WalletsBox.toMap().values.first.username);
-
-            if (walletNameIndexer[address] == null) {
-              if (wallet == null) {
-                return const SizedBox();
-              } else {
-                if (canEdit) {
-                  return walletOptions.walletName(context, wallet, size, color);
-                } else {
-                  return walletOptions.walletNameController(
-                      context, wallet, size);
-                }
-              }
-            }
-
-            return Text(
-              color == Colors.grey[700]!
-                  ? '(${walletNameIndexer[address]!})'
-                  : truncate(walletNameIndexer[address]!, 20),
-              style: TextStyle(
-                fontSize: size,
-                color: color,
-                fontWeight: fontWeight,
-                fontStyle: fontStyle,
-              ),
-            );
-          }),
-    );
-  }
-
   Widget searchIdentity(BuildContext context, String name) {
     // WalletOptionsProvider _walletOptions =
     //     Provider.of<WalletOptionsProvider>(context, listen: false);
@@ -325,7 +234,8 @@ class DuniterIndexer with ChangeNotifier {
                                 Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      balance(context, profile['pubkey'], 16),
+                                      Balance(
+                                          address: profile['pubkey'], size: 16),
                                     ]),
                               ]),
                         ),
@@ -444,9 +354,6 @@ class DuniterIndexer with ChangeNotifier {
     String result = n.toStringAsFixed(n.truncateToDouble() == n ? 0 : 2);
     return double.parse(result);
   }
-
-  // checkHistoryResult(
-  //     QueryResult<Object?> result, FetchMoreOptions options, String address) {}
 }
 
 //// Manuals queries

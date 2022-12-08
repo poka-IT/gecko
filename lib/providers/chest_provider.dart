@@ -45,7 +45,7 @@ class ChestProvider with ChangeNotifier {
     log.d(chest.key);
     walletBox.toMap().forEach((key, WalletData value) {
       if (value.chest == chest.key) {
-        toDelete.add(value.address!);
+        toDelete.add(value.address);
       }
     });
     return toDelete;

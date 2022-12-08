@@ -8,7 +8,6 @@ import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/chest_provider.dart';
-import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/common_elements.dart';
@@ -16,6 +15,7 @@ import 'package:gecko/screens/myWallets/change_pin.dart';
 import 'package:gecko/screens/myWallets/custom_derivations.dart';
 import 'package:gecko/screens/myWallets/show_seed.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
+import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:provider/provider.dart';
 
 class ChestOptions extends StatelessWidget {
@@ -26,8 +26,6 @@ class ChestOptions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chestProvider = Provider.of<ChestProvider>(context, listen: false);
-    HomeProvider homeProvider =
-        Provider.of<HomeProvider>(context, listen: false);
 
     ChestData currentChest = chestBox.get(configBox.get('currentChest'))!;
 
@@ -50,7 +48,7 @@ class ChestOptions extends StatelessWidget {
             height: 22,
             child: Text(currentChest.name!),
           )),
-      bottomNavigationBar: homeProvider.bottomAppBar(context),
+      bottomNavigationBar: const GeckoBottomAppBar(),
       body: Stack(children: [
         Builder(
           builder: (ctx) => SafeArea(

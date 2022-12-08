@@ -34,6 +34,7 @@ class OnboardingStepTen extends StatelessWidget {
     final generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
     final walletOptions = Provider.of<WalletOptionsProvider>(context);
+    final sub = Provider.of<SubstrateSdk>(context);
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     CommonElements common = CommonElements();
@@ -126,7 +127,8 @@ class OnboardingStepTen extends StatelessWidget {
                               ),
                             ]);
                 }),
-                Consumer<SubstrateSdk>(builder: (context, sub, _) {
+                Consumer<WalletOptionsProvider>(
+                    builder: (context, walletOptions, _) {
                   return sub.nodeConnected
                       ? InkWell(
                           key: keyCachePassword,
@@ -188,7 +190,7 @@ class OnboardingStepTen extends StatelessWidget {
             obscureText: true,
             obscuringCharacter: '*',
             animationType: AnimationType.slide,
-            animationDuration: const Duration(milliseconds: 80),
+            animationDuration: const Duration(milliseconds: 40),
             validator: (v) {
               if (v!.length < pinLenght) {
                 return "yourPasswordLengthIsX".tr(args: [pinLenght.toString()]);
@@ -240,14 +242,14 @@ class OnboardingStepTen extends StatelessWidget {
                       derivePath: '//2',
                       password: generateWalletProvider.pin.text);
                   WalletData myWallet = WalletData(
-                      version: dataVersion,
                       chest: configBox.get('currentChest'),
                       address: address,
                       number: 0,
                       name: 'currentWallet'.tr(),
                       derivation: 2,
-                      imageDefaultPath: '0.png');
-                  await walletBox.add(myWallet);
+                      imageDefaultPath: '0.png',
+                      isOwned: true);
+                  await walletBox.put(myWallet.address, myWallet);
                 }
                 myWalletProvider.readAllWallets(currentChest);
                 myWalletProvider.reload();

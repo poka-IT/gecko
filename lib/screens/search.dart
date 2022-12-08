@@ -26,7 +26,6 @@ class SearchScreen extends StatelessWidget {
       },
       child: Scaffold(
         backgroundColor: backgroundColor,
-
         appBar: AppBar(
           elevation: 1,
           toolbarHeight: 60 * ratio,
@@ -41,7 +40,6 @@ class SearchScreen extends StatelessWidget {
                 Navigator.of(context).pop();
               }),
         ),
-        // bottomNavigationBar: _homeProvider.bottomAppBar(context),
         body: SafeArea(
           child: Stack(children: [
             Column(children: <Widget>[

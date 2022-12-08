@@ -10,8 +10,8 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
+import 'package:gecko/widgets/balance.dart';
 import 'package:provider/provider.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:provider/provider.dart';
@@ -94,7 +94,10 @@ class ChooseWalletScreen extends StatelessWidget {
       ]);
     }
 
-    List listWallets = myWalletProvider.listWallets;
+    List<WalletData> listWallets = myWalletProvider.listWallets;
+    listWallets.sort((p1, p2) {
+      return Comparable.compare(p1.number!, p2.number!);
+    });
     final screenWidth = MediaQuery.of(context).size.width;
     int nTule = 2;
 
@@ -113,11 +116,11 @@ class ChooseWalletScreen extends StatelessWidget {
           crossAxisSpacing: 0,
           mainAxisSpacing: 0,
           children: <Widget>[
-            for (WalletData repository in listWallets as Iterable<WalletData>)
+            for (WalletData repository in listWallets)
               Padding(
                   padding: const EdgeInsets.all(16),
                   child: GestureDetector(
-                    key: keySelectThisWallet(repository.address!),
+                    key: keySelectThisWallet(repository.address),
                     onTap: () {
                       selectedWallet = repository;
                       myWalletProvider.reload();
@@ -166,8 +169,8 @@ class ChooseWalletScreen extends StatelessWidget {
                                     ),
                                   ),
                           )),
-                          balanceBuilder(context, repository.address!,
-                              selectedWallet!.address == repository.address!),
+                          balanceBuilder(context, repository.address,
+                              selectedWallet!.address == repository.address),
                           ListTile(
                             shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.vertical(
@@ -222,8 +225,10 @@ class ChooseWalletScreen extends StatelessWidget {
           //   style: TextStyle(color: isDefault ? Colors.white : Colors.black),
           // ),
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            balance(
-                context, address, 16, isDefault ? Colors.white : Colors.black),
+            Balance(
+                address: address,
+                size: 16,
+                color: isDefault ? Colors.white : Colors.black),
           ])
         ]),
       ),

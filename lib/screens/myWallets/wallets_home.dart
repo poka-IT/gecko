@@ -63,7 +63,9 @@ class WalletsHome extends StatelessWidget {
           backgroundColor: const Color(0xffFFD58D),
         ),
         bottomNavigationBar: myWalletProvider.lastFlyBy == ''
-            ? const GeckoBottomAppBar()
+            ? const GeckoBottomAppBar(
+                actualRoute: 'safeHome',
+              )
             : dragInfo(context),
         body: SafeArea(
           child: Stack(children: [
@@ -330,13 +332,14 @@ class WalletsHome extends StatelessWidget {
                                   width: double.infinity,
                                   height: double.infinity,
                                   decoration: const BoxDecoration(
-                                      gradient: RadialGradient(
-                                    radius: 0.8,
-                                    colors: [
-                                      Color.fromARGB(255, 255, 255, 211),
-                                      yellowC,
-                                    ],
-                                  )),
+                                    gradient: RadialGradient(
+                                      radius: 0.8,
+                                      colors: [
+                                        Color.fromARGB(255, 255, 255, 211),
+                                        yellowC,
+                                      ],
+                                    ),
+                                  ),
                                   child:
                                       // SvgPicture.asset('assets/chopp-gecko2.png',
                                       //         semanticsLabel: 'Gecko', height: 48),

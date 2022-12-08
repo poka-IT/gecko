@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/header_profile.dart';
+import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -361,7 +362,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
                     // _cesiumPlusProvider.avatarCancelToken.cancel('cancelled');
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) {
+                      PageNoTransit(builder: (context) {
                         return WalletViewScreen(
                           address: repository[1],
                           username: username ?? '',

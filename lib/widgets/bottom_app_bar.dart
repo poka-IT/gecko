@@ -12,9 +12,8 @@ import 'package:gecko/screens/search.dart';
 import 'package:provider/provider.dart';
 
 class GeckoBottomAppBar extends StatelessWidget {
-  const GeckoBottomAppBar({
-    Key? key,
-  }) : super(key: key);
+  const GeckoBottomAppBar({Key? key, this.actualRoute = ''}) : super(key: key);
+  final String actualRoute;
 
   @override
   Widget build(BuildContext context) {
@@ -24,8 +23,8 @@ class GeckoBottomAppBar extends StatelessWidget {
         Provider.of<WalletsProfilesProvider>(context, listen: false);
 
     final size = MediaQuery.of(context).size;
-
     const bool showBottomBar = true;
+    final lockAction = actualRoute == 'safeHome';
 
     return Visibility(
       visible: showBottomBar,
@@ -33,15 +32,7 @@ class GeckoBottomAppBar extends StatelessWidget {
         color: yellowC,
         width: size.width,
         height: 80,
-        child:
-            // Stack(
-            //   children: [
-            //     // CustomPaint(
-            //     //   size: Size(size.width, 110),
-            //     //   painter: CustomRoundedButton(),
-            //     // ),
-            Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-          // SizedBox(width: 0),
+        child: Row(mainAxisAlignment: MainAxisAlignment.start, children: [
           const Spacer(),
           const SizedBox(width: 11),
           IconButton(
@@ -77,37 +68,66 @@ class GeckoBottomAppBar extends StatelessWidget {
           ),
           const Spacer(),
           const SizedBox(width: 15),
-          IconButton(
-            key: keyAppBarChest,
-            iconSize: 60,
-            icon: const Image(image: AssetImage('assets/wallet.png')),
-            onPressed: () async {
-              WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
-              String? pin;
-              if (myWalletProvider.pinCode == '') {
-                pin = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (homeContext) {
-                      return UnlockingWallet(wallet: defaultWallet);
-                    },
+          Stack(
+            children: [
+              if (lockAction)
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 0),
+                    child: Container(
+                      width: 75,
+                      height: 75,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border:
+                            Border.all(color: orangeC.withOpacity(0), width: 3),
+                        gradient: RadialGradient(
+                          radius: 0.5,
+                          colors: [
+                            yellowC,
+                            orangeC.withOpacity(0.1),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                );
-              }
+                ),
+              IconButton(
+                key: keyAppBarChest,
+                iconSize: 60,
+                icon: const Image(image: AssetImage('assets/wallet.png')),
+                onPressed: lockAction
+                    ? null
+                    : () async {
+                        WalletData? defaultWallet =
+                            myWalletProvider.getDefaultWallet();
+                        String? pin;
+                        if (myWalletProvider.pinCode == '') {
+                          pin = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (homeContext) {
+                                return UnlockingWallet(wallet: defaultWallet);
+                              },
+                            ),
+                          );
+                        }
 
-              if (pin != null || myWalletProvider.pinCode != '') {
-                Navigator.popUntil(
-                  context,
-                  ModalRoute.withName('/'),
-                );
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) {
-                    return const WalletsHome();
-                  }),
-                );
-              }
-            },
+                        if (pin != null || myWalletProvider.pinCode != '') {
+                          Navigator.popUntil(
+                            context,
+                            ModalRoute.withName('/'),
+                          );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) {
+                              return const WalletsHome();
+                            }),
+                          );
+                        }
+                      },
+              ),
+            ],
           ),
           const Spacer(),
         ]),

@@ -464,7 +464,7 @@ class WalletOptions extends StatelessWidget {
         // _historyProvider.nPage = 1;
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) {
+          PageNoTransit(builder: (context) {
             return ActivityScreen(
                 address: walletProvider.address.text,
                 avatar: wallet.imageCustomPath == null

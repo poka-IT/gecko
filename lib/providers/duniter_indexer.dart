@@ -8,6 +8,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/cesium_plus.dart';
+import 'package:gecko/providers/search.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/wallet_view.dart';
@@ -159,6 +160,7 @@ class DuniterIndexer with ChangeNotifier {
     WalletsProfilesProvider walletsProfiles =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final searchProvider = Provider.of<SearchProvider>(context, listen: false);
     if (indexerEndpoint == '') {
       return const Text('Aucun résultat');
     }
@@ -206,6 +208,9 @@ class DuniterIndexer with ChangeNotifier {
               duniterIndexer.walletNameIndexer
                   .putIfAbsent(profile['pubkey'], () => profile['name']);
             }
+
+            searchProvider.resultLenght = identities.length;
+            // TODO: Find a way to reload a provider here, in Widget build...
 
             double avatarSize = 55;
             return Expanded(
@@ -306,16 +311,18 @@ class DuniterIndexer with ChangeNotifier {
 
     pageInfo = result.data['transaction_connection']['pageInfo'];
     fetchMoreCursor = pageInfo!['endCursor'];
+    final hasNextPage = pageInfo!['hasNextPage'];
+    final hasPreviousPage = pageInfo!['hasPreviousPage'];
     if (fetchMoreCursor == null) nPage = 1;
 
-    log.d(fetchMoreCursor);
+    log.d('endCursor: $fetchMoreCursor $hasNextPage $hasPreviousPage');
 
-    if (nPage == 1) {
-      nRepositories = 40;
-    } else if (nPage == 2) {
-      nRepositories = 100;
-    }
-    // nRepositories = 10;
+    // if (nPage == 1) {
+    //   nRepositories = 20;
+    // } else if (nPage == 4) {
+    //   nRepositories = 40;
+    // }
+    // // nRepositories = 10;
     nPage++;
 
     if (fetchMoreCursor != null) {

@@ -16,18 +16,31 @@ import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
-class ActivityScreen extends StatelessWidget with ChangeNotifier {
+class ActivityScreen extends StatefulWidget with ChangeNotifier {
   ActivityScreen({required this.address, required this.avatar, this.username})
       : super(key: keyActivityScreen);
-  final ScrollController scrollController = ScrollController();
-  final double avatarsSize = 80;
   final String address;
   final String? username;
   final Image avatar;
 
+  @override
+  State<ActivityScreen> createState() => _ActivityScreenState();
+}
+
+class _ActivityScreenState extends State<ActivityScreen> {
+  @override
+  void initState() {
+    final duniterIndexerInit =
+        Provider.of<DuniterIndexer>(context, listen: false);
+    duniterIndexerInit.nPage = 1;
+
+    super.initState();
+  }
+
+  final ScrollController scrollController = ScrollController();
+  final double avatarsSize = 80;
   FetchMore? fetchMore;
   FetchMoreOptions? opts;
-
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -44,7 +57,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
         ),
         bottomNavigationBar: const GeckoBottomAppBar(),
         body: Column(children: <Widget>[
-          HeaderProfile(address: address, username: username),
+          HeaderProfile(address: widget.address, username: widget.username),
           historyQuery(context),
         ]));
   }
@@ -85,7 +98,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
             options: QueryOptions(
               document: gql(getHistoryByAddressQ),
               variables: <String, dynamic>{
-                'address': address,
+                'address': widget.address,
                 'number': 20,
                 'cursor': null
               },
@@ -93,7 +106,9 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
             builder: (QueryResult result, {fetchMore, refetch}) {
               if (result.isLoading && result.data == null) {
                 return const Center(
-                  child: CircularProgressIndicator(),
+                  child: CircularProgressIndicator(
+                    color: orangeC,
+                  ),
                 );
               }
 
@@ -120,7 +135,8 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
 
               if (result.isNotLoading) {
                 // log.d(result.data);
-                opts = duniterIndexer.checkQueryResult(result, opts, address);
+                opts = duniterIndexer.checkQueryResult(
+                    result, opts, widget.address);
               }
 
               // Build history list
@@ -365,7 +381,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
                       PageNoTransit(builder: (context) {
                         return WalletViewScreen(
                           address: repository[1],
-                          username: username ?? '',
+                          username: widget.username ?? '',
                         );
                       }),
                     );

@@ -92,7 +92,6 @@ class _HomeScreenState extends State<HomeScreen> {
         //   sub.nodeConnected = false;
         // }
 
-        // TODO: fix random bad network status on startup
         HomeProvider homeProvider =
             Provider.of<HomeProvider>(context, listen: false);
         Connectivity()

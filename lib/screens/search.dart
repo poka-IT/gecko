@@ -90,7 +90,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   textAlign: TextAlign.left,
                   onChanged: (v) async => {
                     await getClipBoard(),
-                    setState(() {}),
+                    // setState(() {}),
                     searchProvider.reload()
                   },
                   decoration: InputDecoration(
@@ -99,6 +99,23 @@ class _SearchScreenState extends State<SearchScreen> {
                     prefixIconConstraints: const BoxConstraints(
                       minHeight: 32,
                     ),
+                    suffixIcon: searchProvider.searchController.text == ''
+                        ? null
+                        : Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 17),
+                            child: IconButton(
+                              onPressed: (() async => {
+                                    searchProvider.searchController.text = '',
+                                    await getClipBoard(),
+                                    searchProvider.reload(),
+                                  }),
+                              icon: Icon(
+                                Icons.close,
+                                color: Colors.grey[600],
+                                size: 30,
+                              ),
+                            ),
+                          ),
                     prefixIcon: const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 17),
                       child: Image(

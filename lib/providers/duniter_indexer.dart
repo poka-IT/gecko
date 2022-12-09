@@ -274,7 +274,7 @@ class DuniterIndexer with ChangeNotifier {
   }
 
   List parseHistory(blockchainTX, pubkey) {
-    var transBC = [];
+    List transBC = [];
     int i = 0;
 
     for (final trans in blockchainTX) {

@@ -5,14 +5,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/header_profile.dart';
-import 'package:gecko/widgets/page_route_no_transition.dart';
+import 'package:gecko/widgets/transaction_tile.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -179,7 +177,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
             )
           ])
         : Column(children: <Widget>[
-            getTransactionTile(context, duniterIndexer),
+            getHistory(context, duniterIndexer),
             if (result.isLoading && duniterIndexer.pageInfo!['hasPreviousPage'])
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -200,8 +198,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
           ]);
   }
 
-  Widget getTransactionTile(
-      BuildContext context, DuniterIndexer duniterIndexer) {
+  Widget getHistory(BuildContext context, DuniterIndexer duniterIndexer) {
     int keyID = 0;
     String? dateDelimiter;
     String? lastDateDelimiter;
@@ -322,72 +319,15 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   fontSize: 23, color: orangeC, fontWeight: FontWeight.w300),
             ),
           ),
-        Padding(
-          padding: const EdgeInsets.only(right: 0),
-          child:
-              // Row(children: [Column(children: [],)],)
-              ListTile(
-                  key: keyTransaction(keyID++),
-                  contentPadding: const EdgeInsets.only(
-                      left: 20, right: 30, top: 15, bottom: 15),
-                  leading: ClipOval(
-                    child: defaultAvatar(avatarSize),
-                  ),
-                  title: Padding(
-                    padding: const EdgeInsets.only(bottom: 5),
-                    child: Text(getShortPubkey(repository[1]),
-                        style: const TextStyle(
-                            fontSize: 18, fontFamily: 'Monospace')),
-                  ),
-                  subtitle: RichText(
-                    text: TextSpan(
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[700],
-                      ),
-                      children: <TextSpan>[
-                        TextSpan(
-                          text: dateForm,
-                        ),
-                        if (repository[2] != '')
-                          TextSpan(
-                            text: '  ·  ',
-                            style: TextStyle(
-                              fontSize: 20,
-                              color: Colors.grey[550],
-                            ),
-                          ),
-                        TextSpan(
-                          text: repository[2],
-                          style: TextStyle(
-                            fontStyle: FontStyle.italic,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  trailing: Text(finalAmount,
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.w500),
-                      textAlign: TextAlign.justify),
-                  dense: false,
-                  isThreeLine: false,
-                  onTap: () {
-                    duniterIndexer.nPage = 1;
-                    // _cesiumPlusProvider.avatarCancelToken.cancel('cancelled');
-                    Navigator.push(
-                      context,
-                      PageNoTransit(builder: (context) {
-                        return WalletViewScreen(
-                          address: repository[1],
-                          username: widget.username ?? '',
-                        );
-                      }),
-                    );
-                    // Navigator.pop(context);
-                  }),
-        ),
+        TransactionTile(
+            widget: widget,
+            keyID: keyID,
+            avatarSize: avatarSize,
+            repository: repository,
+            dateForm: dateForm,
+            finalAmount: finalAmount,
+            duniterIndexer: duniterIndexer,
+            context: context),
       ]);
     }).toList());
   }

@@ -11,6 +11,7 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/name_by_address.dart';
+import 'package:gecko/widgets/search_identity_query.dart';
 
 class SearchResult extends StatelessWidget {
   const SearchResult({
@@ -33,8 +34,8 @@ class SearchResult extends StatelessWidget {
       builder: (context, AsyncSnapshot<List?> snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.data?.isEmpty ?? true) {
-            return duniterIndexer.searchIdentity(
-                context, searchProvider.searchController.text);
+            return SearchIdentityQuery(
+                name: searchProvider.searchController.text);
             // const Text('Aucun résultat');
           } else {
             return Expanded(

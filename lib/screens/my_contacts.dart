@@ -9,7 +9,7 @@ import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/contacts_list.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ContactsScreen extends StatelessWidget {
+class ContactsScreen extends ConsumerWidget {
   const ContactsScreen({Key? key}) : super(key: key);
 
   @override

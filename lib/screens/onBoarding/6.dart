@@ -12,7 +12,7 @@ import 'package:gecko/screens/onBoarding/7.dart';
 import 'package:gecko/screens/onBoarding/9.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class OnboardingStepSix extends StatelessWidget {
+class OnboardingStepSix extends ConsumerWidget {
   OnboardingStepSix(
       {Key? key, required this.skipIntro, required this.generatedMnemonic})
       : super(key: key);

@@ -1,5 +1,6 @@
 // ignore_for_file: must_be_immutable
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -7,7 +8,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class QrCodeFullscreen extends StatelessWidget {
+class QrCodeFullscreen extends ConsumerWidget {
   TextEditingController tplController = TextEditingController();
 
   QrCodeFullscreen(this.address, {this.color, Key? key}) : super(key: key);

@@ -9,7 +9,7 @@ import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/10.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class OnboardingStepNine extends StatelessWidget {
+class OnboardingStepNine extends ConsumerWidget {
   const OnboardingStepNine({Key? key, this.scanDerivation = false})
       : super(key: key);
   final bool scanDerivation;

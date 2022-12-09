@@ -92,8 +92,9 @@ Future restoreChest() async {
 }
 
 Future onboardingNewChest() async {
-  final generateWalletProvider =
-      Provider.of<GenerateWalletsProvider>(homeContext, listen: false);
+  late GenerateWalletsProvider generateWalletsProviderR;
+  // StateProvider((ref) => generateWalletsProviderR = ref.read(generateWalletsProvider));
+
   // Open screen create new wallet
   await tapKey(keyOnboardingNewChest);
 
@@ -122,7 +123,7 @@ Future onboardingNewChest() async {
 
   // Enter asked word
   final askedWordNumber = int.parse(getWidgetText(keyAskedWord));
-  List mnemonic = generateWalletProvider.generatedMnemonic!.split(' ');
+  List mnemonic = generateWalletsProviderR.generatedMnemonic!.split(' ');
 
   final askedWord = mnemonic[askedWordNumber - 1];
   await enterText(keyInputWord, askedWord);

@@ -18,7 +18,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_cropper/image_cropper.dart';
 
-class WalletOptionsProvider with ChangeNotifier {
+class WalletOptionsProvider extends ChangeNotifier {
   TextEditingController address = TextEditingController();
   final TextEditingController _newWalletName = TextEditingController();
   bool isWalletUnlock = false;
@@ -385,3 +385,8 @@ class WalletOptionsProvider with ChangeNotifier {
     return addressGet;
   }
 }
+
+final walletOptionsProvider =
+    ChangeNotifierProvider<WalletOptionsProvider>((ref) {
+  return WalletOptionsProvider();
+});

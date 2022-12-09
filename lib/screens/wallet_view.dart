@@ -27,7 +27,7 @@ import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-class WalletViewScreen extends StatelessWidget {
+class WalletViewScreen extends ConsumerWidget {
   const WalletViewScreen(
       {required this.address, required this.username, this.avatar, Key? key})
       : super(key: key);

@@ -7,7 +7,7 @@ import 'package:gecko/widgets/animated_text.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class IdentityStatus extends StatelessWidget {
+class IdentityStatus extends ConsumerWidget {
   const IdentityStatus(
       {Key? key,
       required this.address,

@@ -4,12 +4,13 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
-class DuniterIndexer with ChangeNotifier {
+class DuniterIndexer extends ChangeNotifier {
   Map<String, String?> walletNameIndexer = {};
   String? fetchMoreCursor;
   Map? pageInfo;
@@ -330,3 +331,7 @@ int weekNumber(DateTime date) {
   int dayOfYear = int.parse(DateFormat("D").format(date));
   return ((dayOfYear - date.weekday + 10) / 7).floor();
 }
+
+final duniterIndexer = ChangeNotifierProvider<DuniterIndexer>((ref) {
+  return DuniterIndexer();
+});

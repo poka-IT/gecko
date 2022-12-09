@@ -1,5 +1,6 @@
 import 'package:accordion/controllers.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/widgets/certs_received.dart';
@@ -7,7 +8,7 @@ import 'package:gecko/widgets/certs_counter.dart';
 import 'package:gecko/widgets/certs_sent.dart';
 import 'package:accordion/accordion.dart';
 
-class CertificationsScreen extends StatelessWidget {
+class CertificationsScreen extends ConsumerWidget {
   const CertificationsScreen(
       {Key? key, required this.address, required this.username})
       : super(key: key);
@@ -15,7 +16,7 @@ class CertificationsScreen extends StatelessWidget {
   final String username;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
         backgroundColor: backgroundColor,
         appBar: AppBar(

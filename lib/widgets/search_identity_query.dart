@@ -13,7 +13,7 @@ import 'package:gecko/widgets/balance.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SearchIdentityQuery extends StatelessWidget {
+class SearchIdentityQuery extends ConsumerWidget {
   const SearchIdentityQuery({Key? key, required this.name}) : super(key: key);
   final String name;
 

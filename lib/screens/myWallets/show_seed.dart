@@ -14,7 +14,7 @@ import 'package:printing/printing.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdf/widgets.dart' as pw;
 
-class ShowSeed extends StatelessWidget {
+class ShowSeed extends ConsumerWidget {
   const ShowSeed(
       {Key? keyMyWallets,
       required this.walletName,
@@ -204,7 +204,7 @@ class ShowSeed extends StatelessWidget {
   }
 }
 
-class PrintWallet extends StatelessWidget {
+class PrintWallet extends ConsumerWidget {
   const PrintWallet(this.sentence, {Key? key}) : super(key: key);
 
   final String? sentence;

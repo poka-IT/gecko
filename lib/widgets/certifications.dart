@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class Certifications extends StatelessWidget {
+class Certifications extends ConsumerWidget {
   const Certifications(
       {Key? key,
       required this.address,

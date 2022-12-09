@@ -5,7 +5,7 @@ import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/widgets/ud_unit_display.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class Balance extends StatelessWidget {
+class Balance extends ConsumerWidget {
   const Balance(
       {Key? key,
       required this.address,
@@ -20,8 +20,9 @@ class Balance extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final walletOptions =
+    final walletOptionsR =
         Provider.of<WalletOptionsProvider>(context, listen: false);
+    final homeProviderR = ref.read(myWalletsProvider);
     return Column(children: <Widget>[
       Consumer<SubstrateSdk>(builder: (context, sdk, _) {
         return FutureBuilder(
@@ -30,10 +31,10 @@ class Balance extends StatelessWidget {
                 AsyncSnapshot<Map<String, double>> globalBalance) {
               if (globalBalance.connectionState != ConnectionState.done ||
                   globalBalance.hasError) {
-                if (walletOptions.balanceCache[address] != null &&
-                    walletOptions.balanceCache[address] != -1) {
+                if (walletOptionsR.balanceCache[address] != null &&
+                    walletOptionsR.balanceCache[address] != -1) {
                   return Row(children: [
-                    Text(walletOptions.balanceCache[address]!.toString(),
+                    Text(walletOptionsR.balanceCache[address]!.toString(),
                         style: TextStyle(
                             fontSize: isTall ? size : size * 0.9,
                             color: color)),
@@ -51,12 +52,12 @@ class Balance extends StatelessWidget {
                   );
                 }
               }
-              walletOptions.balanceCache[address] =
+              walletOptionsR.balanceCache[address] =
                   globalBalance.data!['transferableBalance']!;
-              if (walletOptions.balanceCache[address] != -1) {
+              if (walletOptionsR.balanceCache[address] != -1) {
                 return Row(children: [
                   Text(
-                    walletOptions.balanceCache[address]!.toString(),
+                    walletOptionsR.balanceCache[address]!.toString(),
                     style: TextStyle(
                       fontSize: isTall ? size : size * 0.9,
                       color: color,

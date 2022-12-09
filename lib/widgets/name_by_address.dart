@@ -9,7 +9,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:truncate/truncate.dart';
 
-class NameByAddress extends StatelessWidget {
+class NameByAddress extends ConsumerWidget {
   const NameByAddress(
       {Key? key,
       required this.wallet,

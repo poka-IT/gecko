@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CertsCounter extends StatelessWidget {
+class CertsCounter extends ConsumerWidget {
   const CertsCounter({Key? key, required this.address, this.isSent = false})
       : super(key: key);
   final String address;

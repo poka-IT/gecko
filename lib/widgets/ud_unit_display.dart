@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 
-class UdUnitDisplay extends StatelessWidget {
+class UdUnitDisplay extends ConsumerWidget {
   const UdUnitDisplay({
     Key? key,
     required this.size,

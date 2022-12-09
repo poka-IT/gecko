@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 
-class SearchProvider with ChangeNotifier {
+class SearchProvider extends ChangeNotifier {
   TextEditingController searchController = TextEditingController();
   List searchResult = [];
   final cacheDuring = 20 * 60 * 1000; //First number is minutes
@@ -80,10 +81,6 @@ class SearchProvider with ChangeNotifier {
   }
 }
 
-// List<G1WalletsList>? _parseG1Wallets(var responseBody) {
-//   final parsed = responseBody.cast<Map<String, dynamic>>();
-
-//   return parsed
-//       .map<G1WalletsList>((json) => G1WalletsList.fromJson(json))
-//       .toList();
-// }
+final searchProvider = ChangeNotifierProvider<SearchProvider>((ref) {
+  return SearchProvider();
+});

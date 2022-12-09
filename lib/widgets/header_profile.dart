@@ -15,7 +15,7 @@ import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class HeaderProfile extends StatelessWidget {
+class HeaderProfile extends ConsumerWidget {
   const HeaderProfile({
     Key? key,
     required this.address,

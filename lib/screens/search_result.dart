@@ -10,7 +10,7 @@ import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/search_result_list.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SearchResultScreen extends StatelessWidget {
+class SearchResultScreen extends ConsumerWidget {
   const SearchResultScreen({Key? key}) : super(key: key);
 
   @override

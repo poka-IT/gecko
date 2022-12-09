@@ -12,7 +12,7 @@ import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 
-class ContactsList extends StatelessWidget {
+class ContactsList extends ConsumerWidget {
   const ContactsList({
     Key? key,
     required this.myContacts,

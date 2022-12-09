@@ -18,7 +18,7 @@ import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/idty_status.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ImportG1v1 extends StatelessWidget {
+class ImportG1v1 extends ConsumerWidget {
   const ImportG1v1({Key? key}) : super(key: key);
 
   @override

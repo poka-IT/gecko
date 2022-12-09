@@ -13,7 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class RestoreChest extends StatelessWidget {
+class RestoreChest extends ConsumerWidget {
   const RestoreChest({Key? key, this.skipIntro = false}) : super(key: key);
   final bool skipIntro;
 

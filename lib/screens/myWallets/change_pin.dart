@@ -13,7 +13,7 @@ import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ChangePinScreen extends StatelessWidget with ChangeNotifier {
+class ChangePinScreen extends ConsumerWidget extends ChangeNotifier {
   ChangePinScreen(
       {Key? keyMyWallets,
       required this.walletName,

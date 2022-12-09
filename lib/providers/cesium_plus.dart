@@ -2,11 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:path_provider/path_provider.dart';
 // import 'package:http/http.dart' as http;
 
-class CesiumPlusProvider with ChangeNotifier {
+class CesiumPlusProvider extends ChangeNotifier {
   TextEditingController cesiumName = TextEditingController();
 
   CancelToken avatarCancelToken = CancelToken();
@@ -157,3 +158,8 @@ class CesiumPlusProvider with ChangeNotifier {
 
 Image defaultAvatar(double size) =>
     Image.asset(('assets/icon_user.png'), height: size);
+
+
+final cesiumPlusProvider = ChangeNotifierProvider<CesiumPlusProvider>((ref) {
+  return CesiumPlusProvider();
+});

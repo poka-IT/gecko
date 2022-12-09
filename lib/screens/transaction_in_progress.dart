@@ -10,7 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class TransactionInProgress extends StatelessWidget {
+class TransactionInProgress extends ConsumerWidget {
   const TransactionInProgress(
       {Key? key, this.transType = 'pay', this.fromAddress, this.toAddress})
       : super(key: key);

@@ -15,7 +15,7 @@ import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class MigrateIdentityScreen extends StatelessWidget {
+class MigrateIdentityScreen extends ConsumerWidget {
   const MigrateIdentityScreen({Key? key}) : super(key: key);
 
   @override

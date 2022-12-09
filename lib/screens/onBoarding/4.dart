@@ -7,7 +7,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/5.dart';
 
-class OnboardingStepFor extends StatelessWidget {
+class OnboardingStepFor extends ConsumerWidget {
   const OnboardingStepFor({Key? key}) : super(key: key);
 
   @override

@@ -14,7 +14,7 @@ import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import "package:unorm_dart/unorm_dart.dart" as unorm;
 
-class GenerateWalletsProvider with ChangeNotifier {
+class GenerateWalletsProvider extends ChangeNotifier {
   GenerateWalletsProvider();
   // NewWallet generatedWallet;
   durt.NewWallet? actualWallet;
@@ -468,3 +468,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     }
   }
 }
+
+final generateWalletsProvider = ChangeNotifierProvider<GenerateWalletsProvider>((ref) {
+  return GenerateWalletsProvider();
+});

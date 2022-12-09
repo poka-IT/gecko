@@ -1,12 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/widgets/cert_tile.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
-class CertsReceived extends StatelessWidget {
+class CertsReceived extends ConsumerWidget {
   const CertsReceived({Key? key, required this.address}) : super(key: key);
   final String address;
 

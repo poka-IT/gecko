@@ -3,7 +3,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:truncate/truncate.dart';
 
-class WalletName extends StatelessWidget {
+class WalletName extends ConsumerWidget {
   const WalletName(
       {Key? key,
       required this.wallet,

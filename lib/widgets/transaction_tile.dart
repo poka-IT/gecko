@@ -1,36 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 
-class TransactionTile extends StatelessWidget {
+class TransactionTile extends ConsumerWidget {
   const TransactionTile({
     Key? key,
-    required this.widget,
+    required this.username,
     required this.keyID,
     required this.avatarSize,
     required this.repository,
     required this.dateForm,
     required this.finalAmount,
     required this.duniterIndexer,
-    required this.context,
   }) : super(key: key);
 
-  final ActivityScreen widget;
+  final String username;
   final int keyID;
   final double avatarSize;
   final List repository;
   final String dateForm;
   final String finalAmount;
   final DuniterIndexer duniterIndexer;
-  final BuildContext context;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final newKey = keyID + 1;
     return Padding(
       padding: const EdgeInsets.only(right: 0),
@@ -85,7 +83,7 @@ class TransactionTile extends StatelessWidget {
               PageNoTransit(builder: (context) {
                 return WalletViewScreen(
                   address: repository[1],
-                  username: widget.username ?? '',
+                  username: username,
                 );
               }),
             );

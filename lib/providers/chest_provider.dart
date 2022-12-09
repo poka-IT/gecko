@@ -9,16 +9,16 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ChestProvider with ChangeNotifier {
+class ChestProvider extends ChangeNotifier {
   void reload() {
     notifyListeners();
   }
 
   Future deleteChest(context, ChestData chest) async {
     final bool? answer = await (_confirmDeletingChest(context, chest.name));
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final subR = Provider.of<SubstrateSdk>(context, listen: false);
     if (answer ?? false) {
-      await sub.deleteAccounts(getChestWallets(chest));
+      await subR.deleteAccounts(getChestWallets(chest));
       await chestBox.delete(chest.key);
       final myWalletProvider =
           Provider.of<MyWalletsProvider>(context, listen: false);
@@ -77,3 +77,7 @@ class ChestProvider with ChangeNotifier {
     );
   }
 }
+
+final chestProvider = ChangeNotifierProvider<ChestProvider>((ref) {
+  return ChestProvider();
+});

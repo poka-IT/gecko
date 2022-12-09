@@ -16,7 +16,7 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 
-class UnlockingWallet extends StatelessWidget {
+class UnlockingWallet extends ConsumerWidget {
   UnlockingWallet({required this.wallet}) : super(key: keyUnlockWallet);
   WalletData wallet;
   late int currentChestNumber;

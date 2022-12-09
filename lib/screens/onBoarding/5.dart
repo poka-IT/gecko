@@ -220,7 +220,7 @@ Widget arrayCell(dataWord) {
   );
 }
 
-class PrintWallet extends StatelessWidget {
+class PrintWallet extends ConsumerWidget {
   const PrintWallet(this.sentence, {Key? key}) : super(key: key);
 
   final String? sentence;

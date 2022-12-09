@@ -12,7 +12,7 @@ import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class GeckoBottomAppBar extends StatelessWidget {
+class GeckoBottomAppBar extends ConsumerWidget {
   const GeckoBottomAppBar({Key? key, this.actualRoute = ''}) : super(key: key);
   final String actualRoute;
 

@@ -16,7 +16,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ChooseWalletScreen extends StatelessWidget {
+class ChooseWalletScreen extends ConsumerWidget {
   ChooseWalletScreen({Key? key, required this.pin}) : super(key: key);
   final String pin;
   WalletData? selectedWallet;

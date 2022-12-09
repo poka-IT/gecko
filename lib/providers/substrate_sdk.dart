@@ -24,7 +24,7 @@ import 'package:truncate/truncate.dart';
 import 'package:pointycastle/pointycastle.dart' as pc;
 import "package:hex/hex.dart";
 
-class SubstrateSdk with ChangeNotifier {
+class SubstrateSdk extends ChangeNotifier {
   final WalletSDK sdk = WalletSDK();
   final Keyring keyring = Keyring();
   String generatedMnemonic = '';
@@ -1139,3 +1139,7 @@ Uint8List _int32bytes(int value) =>
 double round(double number, [int decimal = 2]) {
   return double.parse((number.toStringAsFixed(decimal)));
 }
+
+final sub = ChangeNotifierProvider<SubstrateSdk>((ref) {
+  return SubstrateSdk();
+});

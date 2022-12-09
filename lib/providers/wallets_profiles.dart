@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/screens/wallet_view.dart';
@@ -9,7 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 // import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:barcode_scan2/barcode_scan2.dart';
 
-class WalletsProfilesProvider with ChangeNotifier {
+class WalletsProfilesProvider extends ChangeNotifier {
   WalletsProfilesProvider(this.address);
 
   String address = '';
@@ -161,3 +162,8 @@ snackCopySeed(context) {
       duration: const Duration(seconds: 4));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
+
+final walletsProfilesProvider =
+    ChangeNotifierProvider<WalletsProfilesProvider>((ref) {
+  return WalletsProfilesProvider('');
+});

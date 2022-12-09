@@ -21,7 +21,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:gecko/screens/transaction_in_progress.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ManageMembership extends StatelessWidget {
+class ManageMembership extends ConsumerWidget {
   const ManageMembership({Key? key, required this.address}) : super(key: key);
   final String address;
 

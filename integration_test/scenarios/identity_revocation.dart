@@ -22,9 +22,9 @@ void main() async {
     // Create test5 identity
     await bkPay(
         fromAddress: test1.address, destAddress: test5.address, amount: 30);
-    sub.reload();
+    subR.reload();
     await bkCertify(fromAddress: test1.address, destAddress: test5.address);
-    sub.reload();
+    subR.reload();
     await sleep();
 
     // Certify test5 to become member

@@ -13,7 +13,7 @@ import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:gecko/widgets/search_identity_query.dart';
 
-class SearchResult extends StatelessWidget {
+class SearchResult extends ConsumerWidget {
   const SearchResult({
     Key? key,
     required this.searchProvider,

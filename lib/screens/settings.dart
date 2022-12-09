@@ -11,13 +11,13 @@ import 'package:gecko/globals.dart';
 import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   final MyWalletsProvider _myWallets = MyWalletsProvider();
 
   SettingsScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     const double buttonHigh = 50;
     const double buttonWidth = 240;
     const double fontSize = 16;
@@ -77,9 +77,10 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget chooseCurrencyUnit(BuildContext context) {
-    HomeProvider homeProvider =
-        Provider.of<HomeProvider>(context, listen: false);
+  Widget chooseCurrencyUnit(BuildContext context, WidgetRef ref) {
+    // HomeProvider homeProvider =
+    //     Provider.of<HomeProvider>(context, listen: false);
+    final homeProviderR = ref.read(myWalletsProvider);
     return InkWell(
       key: keyUdUnit,
       onTap: () async {

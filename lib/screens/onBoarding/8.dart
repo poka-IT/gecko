@@ -6,7 +6,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/9.dart';
 
-class OnboardingStepEight extends StatelessWidget {
+class OnboardingStepEight extends ConsumerWidget {
   const OnboardingStepEight({Key? key, this.scanDerivation = false})
       : super(key: key);
   final bool scanDerivation;

@@ -18,7 +18,7 @@ import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ChestOptions extends StatelessWidget {
+class ChestOptions extends ConsumerWidget {
   const ChestOptions({Key? keyMyWallets, required this.walletProvider})
       : super(key: keyMyWallets);
   final MyWalletsProvider walletProvider;

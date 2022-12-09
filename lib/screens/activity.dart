@@ -13,31 +13,26 @@ import 'package:gecko/widgets/transaction_tile.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ActivityScreen extends StatefulWidget with ChangeNotifier {
+class ActivityScreen extends ConsumerWidget {
   ActivityScreen({required this.address, required this.avatar, this.username})
       : super(key: keyActivityScreen);
   final String address;
   final String? username;
   final Image avatar;
 
-  @override
-  State<ActivityScreen> createState() => _ActivityScreenState();
-}
-
-class _ActivityScreenState extends State<ActivityScreen> {
   // @override
-  // void initState() {
-  //   super.initState();
-  // }
-
   final ScrollController scrollController = ScrollController();
+
   final double avatarsSize = 80;
+
   FetchMore? fetchMore;
+
   FetchMoreOptions? opts;
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
@@ -50,13 +45,14 @@ class _ActivityScreenState extends State<ActivityScreen> {
         ),
         bottomNavigationBar: const GeckoBottomAppBar(),
         body: Column(children: <Widget>[
-          HeaderProfile(address: widget.address, username: widget.username),
-          historyQuery(context),
+          HeaderProfile(address: address, username: username),
+          historyQuery(ref),
         ]));
   }
 
-  Widget historyQuery(context) {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+  Widget historyQuery(WidgetRef ref) {
+    final duniterIndexerW = ref.read(duniterIndexer);
+
     int nPage = 1;
     int nRepositories = 20;
 
@@ -93,7 +89,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
             options: QueryOptions(
               document: gql(getHistoryByAddressQ),
               variables: <String, dynamic>{
-                'address': widget.address,
+                'address': address,
                 'number': 20,
                 'cursor': null
               },
@@ -129,7 +125,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
               }
 
               if (result.isNotLoading) {
-                if (duniterIndexer.fetchMoreCursor == null) nPage = 1;
+                if (duniterIndexerW.fetchMoreCursor == null) nPage = 1;
 
                 // log.d('nPage: $nPage');
 
@@ -143,8 +139,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   nRepositories = 120;
                 }
                 nPage++;
-                opts = duniterIndexer.mergeQueryResult(
-                    result, opts, widget.address, nRepositories);
+                opts = duniterIndexerW.mergeQueryResult(
+                    result, opts, address, nRepositories);
               }
 
               // Build history list
@@ -154,7 +150,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                       child: ListView(
                         key: keyListTransactions,
                         controller: scrollController,
-                        children: <Widget>[historyView(context, result)],
+                        children: <Widget>[historyView(ref, result)],
                       ),
                     ),
                   ),
@@ -162,7 +158,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                     if (t is ScrollEndNotification &&
                         scrollController.position.pixels >=
                             scrollController.position.maxScrollExtent * 0.7 &&
-                        duniterIndexer.pageInfo!['hasNextPage'] &&
+                        duniterIndexerW.pageInfo!['hasNextPage'] &&
                         result.isNotLoading) {
                       fetchMore!(opts!);
                     }
@@ -175,15 +171,15 @@ class _ActivityScreenState extends State<ActivityScreen> {
     );
   }
 
-  Widget historyView(context, result) {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+  Widget historyView(WidgetRef ref, result) {
+    final duniterIndexerW = ref.read(duniterIndexer);
     int keyID = 0;
     const double avatarSize = 200;
     String? lastDateDelimiter;
     bool? isDouble;
     bool isMigrationPassed = false;
 
-    return duniterIndexer.transBC == null
+    return duniterIndexerW.transBC == null
         ? Column(children: <Widget>[
             const SizedBox(height: 50),
             Text(
@@ -193,7 +189,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
           ])
         : Column(children: <Widget>[
             Column(
-                children: duniterIndexer.transBC!.map((repository) {
+                children: duniterIndexerW.transBC!.map((repository) {
               final answer =
                   computeHistoryView(repository, lastDateDelimiter, isDouble);
               isDouble = lastDateDelimiter == answer['dateDelimiter'] ||
@@ -229,24 +225,24 @@ class _ActivityScreenState extends State<ActivityScreen> {
                     ),
                   ),
                 TransactionTile(
-                    widget: widget,
+                    username: username ?? '',
                     keyID: keyID,
                     avatarSize: avatarSize,
                     repository: repository,
                     dateForm: answer['dateForm'],
                     finalAmount: answer['finalAmount'],
-                    duniterIndexer: duniterIndexer,
-                    context: context),
+                    duniterIndexer: duniterIndexerW),
               ]);
             }).toList()),
-            if (result.isLoading && duniterIndexer.pageInfo!['hasPreviousPage'])
+            if (result.isLoading &&
+                duniterIndexerW.pageInfo!['hasPreviousPage'])
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: const <Widget>[
                   CircularProgressIndicator(),
                 ],
               ),
-            if (!duniterIndexer.pageInfo!['hasNextPage'])
+            if (!duniterIndexerW.pageInfo!['hasNextPage'])
               Column(
                 children: const <Widget>[
                   SizedBox(height: 15),

@@ -5,7 +5,7 @@ import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/wallet_view.dart';
 
-class CertTile extends StatelessWidget {
+class CertTile extends ConsumerWidget {
   const CertTile({
     Key? key,
     required this.listCerts,

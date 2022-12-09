@@ -234,8 +234,8 @@ class MyWalletsProvider extends ChangeNotifier {
   }
 }
 
-  // Finally, we are using StateNotifierProvider to allow the UI to interact with
-// our TodosNotifier class.
+// Finally, we are using StateNotifierProvider to allow the UI to interact with
+// our MyWalletsProvider class.
 final myWalletsProvider = ChangeNotifierProvider<MyWalletsProvider>((ref) {
   return MyWalletsProvider();
 });

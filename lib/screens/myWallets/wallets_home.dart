@@ -30,13 +30,13 @@ class WalletsHome extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final myWalletProvider = Provider.of<MyWalletsProvider>(context);
-    final listWallets = ref.watch(myWalletsProvider).listWallets;
+    // final myWalletsProviderR = Provider.of<MyWalletsProvider>(context);
+    final myWalletsProviderR = ref.read(myWalletsProvider);
 
-    final currentChestNumber = myWalletProvider.getCurrentChest();
+    final currentChestNumber = myWalletsProviderR.getCurrentChest();
     final ChestData currentChest = chestBox.get(currentChestNumber)!;
-    myWalletProvider.listWallets =
-        myWalletProvider.readAllWallets(currentChestNumber);
+    myWalletsProviderR.listWallets =
+        myWalletsProviderR.readAllWallets(currentChestNumber);
 
     return WillPopScope(
       onWillPop: () {
@@ -72,7 +72,7 @@ class WalletsHome extends ConsumerWidget {
           ),
           backgroundColor: const Color(0xffFFD58D),
         ),
-        bottomNavigationBar: myWalletProvider.lastFlyBy == ''
+        bottomNavigationBar: myWalletsProviderR.lastFlyBy == ''
             ? const GeckoBottomAppBar(
                 actualRoute: 'safeHome',
               )
@@ -88,16 +88,16 @@ class WalletsHome extends ConsumerWidget {
   }
 
   Widget dragInfo(BuildContext context) {
-    final myWalletProvider =
+    final myWalletsProviderR =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
-    final walletDataFrom =
-        myWalletProvider.getWalletDataByAddress(myWalletProvider.dragAddress);
+    final walletDataFrom = myWalletsProviderR
+        .getWalletDataByAddress(myWalletsProviderR.dragAddress);
     final walletDataTo =
-        myWalletProvider.getWalletDataByAddress(myWalletProvider.lastFlyBy);
+        myWalletsProviderR.getWalletDataByAddress(myWalletsProviderR.lastFlyBy);
 
     final bool isSameAddress =
-        myWalletProvider.dragAddress == myWalletProvider.lastFlyBy;
+        myWalletsProviderR.dragAddress == myWalletsProviderR.lastFlyBy;
 
     final screenWidth = MediaQuery.of(homeContext).size.width;
     return Container(
@@ -118,7 +118,7 @@ class WalletsHome extends ConsumerWidget {
     );
   }
 
-  Widget chestOptions(BuildContext context, final myWalletProvider) {
+  Widget chestOptions(BuildContext context, final myWalletsProviderR) {
     return Column(children: [
       const SizedBox(height: 50),
       SizedBox(
@@ -136,7 +136,7 @@ class WalletsHome extends ConsumerWidget {
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (context) {
-                return ChestOptions(walletProvider: myWalletProvider);
+                return ChestOptions(walletProvider: myWalletsProviderR);
               }),
             ),
             label: Text(
@@ -208,10 +208,10 @@ class WalletsHome extends ConsumerWidget {
   }
 
   Widget myWalletsTiles(BuildContext context, int currentChestNumber) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
+    final myWalletsProviderR = Provider.of<MyWalletsProvider>(context);
     final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
-    final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
+    final bool isWalletsExists = myWalletsProviderR.checkIfWalletExist();
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
@@ -219,7 +219,7 @@ class WalletsHome extends ConsumerWidget {
       return const Text('');
     }
 
-    if (myWalletProvider.listWallets.isEmpty) {
+    if (myWalletsProviderR.listWallets.isEmpty) {
       return Expanded(
           child: Column(children: const <Widget>[
         Center(
@@ -231,12 +231,12 @@ class WalletsHome extends ConsumerWidget {
     }
 
     // Get wallet list and sort by derivation number
-    List<WalletData> listWallets = myWalletProvider.listWallets;
+    List<WalletData> listWallets = myWalletsProviderR.listWallets;
     listWallets.sort((p1, p2) {
       return Comparable.compare(p1.number!, p2.number!);
     });
 
-    WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
+    WalletData? defaultWallet = myWalletsProviderR.getDefaultWallet();
     final screenWidth = MediaQuery.of(context).size.width;
     int nTule = 2;
 
@@ -269,11 +269,11 @@ class WalletsHome extends ConsumerWidget {
                 // feedbackOffset: const Offset(-500, -500),
                 // dragAnchorStrategy: childDragAnchorStrategy,
                 onDragStarted: () =>
-                    myWalletProvider.dragAddress = repository.address,
+                    myWalletsProviderR.dragAddress = repository.address,
                 onDragEnd: (_) {
-                  myWalletProvider.lastFlyBy = '';
-                  myWalletProvider.dragAddress = '';
-                  myWalletProvider.reload();
+                  myWalletsProviderR.lastFlyBy = '';
+                  myWalletsProviderR.dragAddress = '';
+                  myWalletsProviderR.reload();
                 },
                 feedback: ElevatedButton(
                   onPressed: () {},
@@ -291,16 +291,16 @@ class WalletsHome extends ConsumerWidget {
                     onAccept: (senderAddress) async {
                       log.d(
                           'INTERPAY: sender: $senderAddress --- receiver: ${repository.address}');
-                      final walletData = myWalletProvider
+                      final walletData = myWalletsProviderR
                           .getWalletDataByAddress(senderAddress);
                       await sub.setCurrentWallet(walletData!);
                       sub.reload();
                       paymentPopup(context, repository.address);
                     },
                     onMove: (details) {
-                      if (repository.address != myWalletProvider.lastFlyBy) {
-                        myWalletProvider.lastFlyBy = repository.address;
-                        myWalletProvider.reload();
+                      if (repository.address != myWalletsProviderR.lastFlyBy) {
+                        myWalletsProviderR.lastFlyBy = repository.address;
+                        myWalletsProviderR.reload();
                       }
                     },
                     onWillAccept: (senderAddress) =>
@@ -430,7 +430,7 @@ class WalletsHome extends ConsumerWidget {
                   : const Text('');
             }),
           ]),
-      SliverToBoxAdapter(child: chestOptions(context, myWalletProvider)),
+      SliverToBoxAdapter(child: chestOptions(context, myWalletsProviderR)),
     ]);
   }
 
@@ -458,10 +458,10 @@ class WalletsHome extends ConsumerWidget {
   }
 
   Widget addNewDerivation(context) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
+    final myWalletsProviderR = Provider.of<MyWalletsProvider>(context);
 
     String newDerivationName =
-        '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number! + 2}';
+        '${'wallet'.tr()} ${myWalletsProviderR.listWallets.last.number! + 2}';
     return Padding(
         padding: const EdgeInsets.all(16),
         child: ClipRRect(
@@ -471,11 +471,11 @@ class WalletsHome extends ConsumerWidget {
                 child: InkWell(
                     key: keyAddDerivation,
                     onTap: () async {
-                      if (!myWalletProvider.isNewDerivationLoading) {
+                      if (!myWalletsProviderR.isNewDerivationLoading) {
                         WalletData? defaultWallet =
-                            myWalletProvider.getDefaultWallet();
+                            myWalletsProviderR.getDefaultWallet();
                         String? pin;
-                        if (myWalletProvider.pinCode == '') {
+                        if (myWalletsProviderR.pinCode == '') {
                           pin = await Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -485,8 +485,8 @@ class WalletsHome extends ConsumerWidget {
                             ),
                           );
                         }
-                        if (pin != null || myWalletProvider.pinCode != '') {
-                          await myWalletProvider.generateNewDerivation(
+                        if (pin != null || myWalletsProviderR.pinCode != '') {
+                          await myWalletsProviderR.generateNewDerivation(
                               context, newDerivationName);
                         }
                       }
@@ -496,7 +496,7 @@ class WalletsHome extends ConsumerWidget {
                       height: double.infinity,
                       decoration: const BoxDecoration(color: floattingYellow),
                       child: Center(
-                          child: myWalletProvider.isNewDerivationLoading
+                          child: myWalletsProviderR.isNewDerivationLoading
                               ? const SizedBox(
                                   height: 60,
                                   width: 60,
@@ -532,7 +532,7 @@ class CustomClipperOval extends CustomClipper<Rect> {
   }
 }
 
-class ClipOvalShadow extends StatelessWidget {
+class ClipOvalShadow extends ConsumerWidget {
   final Shadow shadow;
   final CustomClipper<Rect> clipper;
   final Widget child;

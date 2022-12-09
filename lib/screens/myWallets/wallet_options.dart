@@ -26,7 +26,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:qr_flutter/qr_flutter.dart';
 
-class WalletOptions extends StatelessWidget {
+class WalletOptions extends ConsumerWidget {
   const WalletOptions({Key? keyMyWallets, required this.wallet})
       : super(key: keyMyWallets);
   final WalletData wallet;

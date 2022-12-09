@@ -16,7 +16,10 @@ final bool isHumanReading =
     dotenv.env['isHumanReading'] == 'true' ? true : false;
 Timeout testTimeout([int seconds = 120]) =>
     Timeout(Duration(seconds: isHumanReading ? 600 : seconds));
-final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
+// final subR = Provider.of<SubstrateSdk>(homeContext, listen: false);
+ late SubstrateSdk subR;
+  StateProvider(
+      (ref) => subR = ref.read(sub));
 late WidgetTester tester;
 
 // TEST WALLETS CONSTS
@@ -177,9 +180,9 @@ Future spawnBlock({int number = 1, int duration = 200, int? until}) async {
     await sleep(duration);
   }
   if (until != null) {
-    number = until - sub.blocNumber;
+    number = until - subR.blocNumber;
   }
-  await sub.spawnBlock(number);
+  await subR.spawnBlock(number);
   await sleep(200);
 }
 
@@ -188,7 +191,7 @@ Future bkPay(
     {required String fromAddress,
     required String destAddress,
     required double amount}) async {
-  sub.pay(
+  subR.pay(
       fromAddress: fromAddress,
       destAddress: destAddress,
       amount: amount,
@@ -203,7 +206,7 @@ Future bkCertify(
     {required String fromAddress,
     required String destAddress,
     bool spawnBloc = true}) async {
-  sub.certify(fromAddress, destAddress, 'AAAAA');
+  subR.certify(fromAddress, destAddress, 'AAAAA');
   if (spawnBloc) {
     await sleep(500);
     await spawnBlock();
@@ -214,7 +217,7 @@ Future bkCertify(
 // Confirm my identity in background
 Future bkConfirmIdentity(
     {required String fromAddress, required String name}) async {
-  sub.confirmIdentity(fromAddress, name, 'AAAAA');
+  subR.confirmIdentity(fromAddress, name, 'AAAAA');
   await sleep(500);
   await spawnBlock();
   await sleep(500);
@@ -227,7 +230,7 @@ Future bkSetNode([String? endpoint]) async {
     endpoint = 'ws://$ipAddress:9944';
   }
   configBox.put('customEndpoint', endpoint);
-  sub.connectNode(homeContext);
+  subR.connectNode(homeContext);
 }
 
 // Restore chest in background
@@ -256,7 +259,7 @@ Future<WalletData> _addImportAccount(
     required int number,
     required String name,
     required int derivation}) async {
-  final address = await sub.importAccount(
+  final address = await subR.importAccount(
       mnemonic: mnemonic, derivePath: '//$derivation', password: 'AAAAA');
   final myWallet = WalletData(
       chest: chest,
@@ -282,7 +285,7 @@ Future bkDeleteAllWallets() async {
     await chestBox.clear();
     await configBox.delete('defaultWallet');
     await configBox.delete('isUdUnit');
-    await sub.deleteAllAccounts();
+    await subR.deleteAllAccounts();
     myWalletProvider.pinCode = '';
     myWalletProvider.reload();
   }

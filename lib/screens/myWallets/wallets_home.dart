@@ -62,7 +62,7 @@ class WalletsHome extends StatelessWidget {
             children: [
               Image.asset(
                 'assets/chests/${currentChest.imageName}',
-                height: 40,
+                height: 32,
               ),
               const SizedBox(width: 17),
               Text(currentChest.name!,

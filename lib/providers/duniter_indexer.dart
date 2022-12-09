@@ -8,6 +8,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/cesium_plus.dart';
+import 'package:gecko/providers/search.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/wallet_view.dart';
@@ -159,6 +160,7 @@ class DuniterIndexer with ChangeNotifier {
     WalletsProfilesProvider walletsProfiles =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final searchProvider = Provider.of<SearchProvider>(context, listen: false);
     if (indexerEndpoint == '') {
       return const Text('Aucun résultat');
     }
@@ -206,6 +208,9 @@ class DuniterIndexer with ChangeNotifier {
               duniterIndexer.walletNameIndexer
                   .putIfAbsent(profile['pubkey'], () => profile['name']);
             }
+
+            searchProvider.resultLenght = identities.length;
+            // TODO: Find a way to reload a provider here, in Widget build...
 
             double avatarSize = 55;
             return Expanded(

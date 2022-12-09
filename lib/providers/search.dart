@@ -7,6 +7,7 @@ class SearchProvider with ChangeNotifier {
   List searchResult = [];
   final cacheDuring = 20 * 60 * 1000; //First number is minutes
   int cacheTime = 0;
+  int resultLenght = 0;
 
   void reload() {
     notifyListeners();

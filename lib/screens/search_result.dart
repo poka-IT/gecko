@@ -2,19 +2,12 @@ import 'package:easy_localization/easy_localization.dart';
 
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/cesium_plus.dart';
-import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/providers/search.dart';
 import 'package:gecko/screens/common_elements.dart';
-import 'package:gecko/screens/wallet_view.dart';
-import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
-import 'package:gecko/widgets/name_by_address.dart';
+import 'package:gecko/widgets/search_result_list.dart';
 import 'package:provider/provider.dart';
 
 class SearchResultScreen extends StatelessWidget {
@@ -28,6 +21,13 @@ class SearchResultScreen extends StatelessWidget {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     double avatarSize = 55;
+    // List<G1WalletsList> myContacts = contactsBox.toMap().values.toList();
+    // myContacts = myContacts
+    //     .where((map) =>
+    //         (map.username ?? '').contains(searchProvider.searchController.text))
+    //     .toList();
+
+    // final  searchProvider.resultLenght.toString();
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -48,126 +48,42 @@ class SearchResultScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   const SizedBox(height: 30),
-                  RichText(
-                    text: TextSpan(
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.grey[700],
-                      ),
-                      children: <TextSpan>[
-                        TextSpan(
-                          text: "resultsFor".tr(),
+                  Center(
+                    child: Column(
+                      children: <Widget>[
+                        Text(
+                          "resultsFor".tr(),
+                          style: TextStyle(color: Colors.grey[600]),
                         ),
-                        TextSpan(
-                          text: '"${searchProvider.searchController.text}"',
-                          style: const TextStyle(fontStyle: FontStyle.italic),
-                        ),
+                        Text(
+                          '"${searchProvider.searchController.text}"',
+                          style: const TextStyle(
+                              fontStyle: FontStyle.italic, fontSize: 21),
+                        )
                       ],
                     ),
                   ),
+                  // const SizedBox(height: 40),
+                  // Text(
+                  //   'Dans mes contacts'.tr(args: [currencyName]),
+                  //   style: const TextStyle(fontSize: 20),
+                  // ),
+                  // ContactsList(
+                  //     myContacts: myContacts,
+                  //     avatarSize: avatarSize,
+                  //     walletsProfilesClass: walletsProfilesClass,
+                  //     duniterIndexer: duniterIndexer),
                   const SizedBox(height: 40),
                   Text(
                     'inBlockchainResult'.tr(args: [currencyName]),
                     style: const TextStyle(fontSize: 20),
                   ),
                   const SizedBox(height: 20),
-                  FutureBuilder(
-                    future: searchProvider.searchAddress(),
-                    builder: (context, AsyncSnapshot<List?> snapshot) {
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        if (snapshot.data?.isEmpty ?? true) {
-                          return duniterIndexer.searchIdentity(
-                              context, searchProvider.searchController.text);
-                          // const Text('Aucun résultat');
-                        } else {
-                          return Expanded(
-                            child: ListView(children: <Widget>[
-                              for (G1WalletsList g1Wallet
-                                  in snapshot.data ?? [])
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 5),
-                                  child: ListTile(
-                                      key: keySearchResult(g1Wallet.address),
-                                      horizontalTitleGap: 40,
-                                      contentPadding: const EdgeInsets.all(5),
-                                      leading: defaultAvatar(avatarSize),
-                                      title: Row(children: <Widget>[
-                                        Text(getShortPubkey(g1Wallet.address),
-                                            style: const TextStyle(
-                                                fontSize: 18,
-                                                fontFamily: 'Monospace',
-                                                fontWeight: FontWeight.w500),
-                                            textAlign: TextAlign.center),
-                                      ]),
-                                      trailing: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            SizedBox(
-                                              width: 110,
-                                              child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.end,
-                                                  children: [
-                                                    Column(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Balance(
-                                                              address: g1Wallet
-                                                                  .address,
-                                                              size: 16),
-                                                        ]),
-                                                  ]),
-                                            ),
-                                          ]),
-                                      subtitle: Row(children: <Widget>[
-                                        NameByAddress(
-                                          wallet: WalletData(
-                                              address: g1Wallet.address),
-                                        ),
-                                      ]),
-                                      dense: false,
-                                      isThreeLine: false,
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(builder: (context) {
-                                            walletsProfilesClass.address =
-                                                g1Wallet.address;
-                                            return WalletViewScreen(
-                                              address: g1Wallet.address,
-                                              username: duniterIndexer
-                                                          .walletNameIndexer[
-                                                      g1Wallet.address] ??
-                                                  '',
-                                              avatar: g1WalletsBox
-                                                  .get(g1Wallet.address)
-                                                  ?.avatar,
-                                            );
-                                          }),
-                                        );
-                                      }),
-                                ),
-                            ]),
-                          );
-                        }
-                      }
-                      return const Center(
-                        heightFactor: 5,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3,
-                          backgroundColor: yellowC,
-                          color: orangeC,
-                        ),
-                      );
-                    },
-                  ),
-                  // Text(
-                  //   _searchProvider.searchResult.toString(),
-                  // )
+                  SearchResult(
+                      searchProvider: searchProvider,
+                      duniterIndexer: duniterIndexer,
+                      avatarSize: avatarSize,
+                      walletsProfilesClass: walletsProfilesClass),
                 ]),
           ),
           CommonElements().offlineInfo(context),

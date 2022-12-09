@@ -200,15 +200,58 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
   Widget getHistory(BuildContext context, DuniterIndexer duniterIndexer) {
     int keyID = 0;
-    String? dateDelimiter;
-    String? lastDateDelimiter;
     const double avatarSize = 200;
+    String? lastDateDelimiter;
+    bool? isDouble;
 
+    return Column(
+        children: duniterIndexer.transBC!.map((repository) {
+      final answer =
+          _computeHistoryView(repository, lastDateDelimiter, isDouble);
+      isDouble = lastDateDelimiter == answer['dateDelimiter'];
+      lastDateDelimiter = answer['dateDelimiter'];
+
+      return Column(children: <Widget>[
+        if (answer['isMigrationTime'])
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 30),
+            child: Text(
+              'Début de la ĞDev',
+              style: TextStyle(
+                  fontSize: 25,
+                  color: Colors.blueAccent,
+                  fontWeight: FontWeight.w500),
+            ),
+          ),
+        if (!isDouble! && answer['dateDelimiter'] != '')
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 30),
+            child: Text(
+              answer['dateDelimiter'],
+              style: const TextStyle(
+                  fontSize: 23, color: orangeC, fontWeight: FontWeight.w300),
+            ),
+          ),
+        TransactionTile(
+            widget: widget,
+            keyID: keyID,
+            avatarSize: avatarSize,
+            repository: repository,
+            dateForm: answer['dateForm'],
+            finalAmount: answer['finalAmount'],
+            duniterIndexer: duniterIndexer,
+            context: context),
+      ]);
+    }).toList());
+  }
+
+  Map _computeHistoryView(repository, lastDateDelimiter, isDouble) {
     bool isTody = false;
     bool isYesterday = false;
     bool isThisWeek = false;
     bool isMigrationTime = false;
     bool isMigrationTimePassed = false;
+    String? dateDelimiter;
 
     final Map<int, String> monthsInYear = {
       1: "month1".tr(),
@@ -224,111 +267,85 @@ class _ActivityScreenState extends State<ActivityScreen> {
       11: "month11".tr(),
       12: "month12".tr()
     };
+    final bool isUdUnit = configBox.get('isUdUnit') ?? false;
+    late double amount;
+    late String finalAmount;
+    DateTime now = DateTime.now();
+    DateTime date = repository[0];
+    String dateForm;
+    bool isDelimiter = true;
 
-    return Column(
-        children: duniterIndexer.transBC!.map((repository) {
-      // log.d('bbbbbbbbbbbbbbbbbbbbbb: ' + repository.toString());
+    if ({4, 10, 11, 12}.contains(date.month)) {
+      dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, 3)}.";
+    } else if ({1, 2, 7, 9}.contains(date.month)) {
+      dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, 4)}.";
+    } else {
+      dateForm = "${date.day} ${monthsInYear[date.month]}";
+    }
 
-      DateTime now = DateTime.now();
-      DateTime date = repository[0];
+    int weekNumber(DateTime date) {
+      int dayOfYear = int.parse(DateFormat("D").format(date));
+      return ((dayOfYear - date.weekday + 10) / 7).floor();
+    }
 
-      String dateForm;
-      if ({4, 10, 11, 12}.contains(date.month)) {
-        dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, 3)}.";
-      } else if ({1, 2, 7, 9}.contains(date.month)) {
-        dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, 4)}.";
+    final transactionDate = DateTime(date.year, date.month, date.day);
+    final todayDate = DateTime(now.year, now.month, now.day);
+    final yesterdayDate = DateTime(now.year, now.month, now.day - 1);
+
+    if (transactionDate == todayDate && !isTody) {
+      dateDelimiter = lastDateDelimiter = "today".tr();
+      isTody = true;
+    } else if (transactionDate == yesterdayDate && !isYesterday) {
+      dateDelimiter = lastDateDelimiter = "yesterday".tr();
+      isYesterday = true;
+    } else if (weekNumber(date) == weekNumber(now) &&
+        date.year == now.year &&
+        lastDateDelimiter != "thisWeek".tr() &&
+        transactionDate != yesterdayDate &&
+        transactionDate != todayDate &&
+        !isThisWeek) {
+      dateDelimiter = lastDateDelimiter = "thisWeek".tr();
+      isThisWeek = true;
+    } else if (lastDateDelimiter != monthsInYear[date.month] &&
+        lastDateDelimiter != "${monthsInYear[date.month]} ${date.year}" &&
+        transactionDate != todayDate &&
+        transactionDate != yesterdayDate &&
+        !(weekNumber(date) == weekNumber(now) && date.year == now.year)) {
+      if (date.year == now.year) {
+        dateDelimiter = lastDateDelimiter = monthsInYear[date.month];
       } else {
-        dateForm = "${date.day} ${monthsInYear[date.month]}";
+        dateDelimiter =
+            lastDateDelimiter = "${monthsInYear[date.month]} ${date.year}";
       }
+    } else {
+      isDelimiter = false;
+    }
 
-      int weekNumber(DateTime date) {
-        int dayOfYear = int.parse(DateFormat("D").format(date));
-        return ((dayOfYear - date.weekday + 10) / 7).floor();
-      }
+    amount = repository[4] == 'RECEIVED' ? repository[3] : repository[3] * -1;
 
-      final transactionDate = DateTime(date.year, date.month, date.day);
-      final todayDate = DateTime(now.year, now.month, now.day);
-      final yesterdayDate = DateTime(now.year, now.month, now.day - 1);
+    if (isUdUnit) {
+      amount = round(amount / balanceRatio);
+      finalAmount = 'ud'.tr(args: ['$amount ']);
+    } else {
+      finalAmount = '$amount $currencyName';
+    }
 
-      if (transactionDate == todayDate && !isTody) {
-        dateDelimiter = lastDateDelimiter = "today".tr();
-        isTody = true;
-      } else if (transactionDate == yesterdayDate && !isYesterday) {
-        dateDelimiter = lastDateDelimiter = "yesterday".tr();
-        isYesterday = true;
-      } else if (weekNumber(date) == weekNumber(now) &&
-          date.year == now.year &&
-          lastDateDelimiter != "thisWeek".tr() &&
-          transactionDate != yesterdayDate &&
-          transactionDate != todayDate &&
-          !isThisWeek) {
-        dateDelimiter = lastDateDelimiter = "thisWeek".tr();
-        isThisWeek = true;
-      } else if (lastDateDelimiter != monthsInYear[date.month] &&
-          lastDateDelimiter != "${monthsInYear[date.month]} ${date.year}" &&
-          transactionDate != todayDate &&
-          transactionDate != yesterdayDate &&
-          !(weekNumber(date) == weekNumber(now) && date.year == now.year)) {
-        if (date.year == now.year) {
-          dateDelimiter = lastDateDelimiter = monthsInYear[date.month];
-        } else {
-          dateDelimiter =
-              lastDateDelimiter = "${monthsInYear[date.month]} ${date.year}";
-        }
-      } else {
-        dateDelimiter = null;
-      }
+    if (!isMigrationTimePassed && date.compareTo(startBlockchainTime) < 0) {
+      isMigrationTimePassed = true;
+      isMigrationTime = true;
+    } else {
+      isMigrationTime = false;
+    }
 
-      final bool isUdUnit = configBox.get('isUdUnit') ?? false;
-      late double amount;
-      late String finalAmount;
-      amount = repository[4] == 'RECEIVED' ? repository[3] : repository[3] * -1;
+    log.d('dateDelimiter: $dateDelimiter');
+    log.d('lastDateDelimiter: $lastDateDelimiter');
 
-      if (isUdUnit) {
-        amount = round(amount / balanceRatio);
-        finalAmount = 'ud'.tr(args: ['$amount ']);
-      } else {
-        finalAmount = '$amount $currencyName';
-      }
-
-      if (!isMigrationTimePassed && date.compareTo(startBlockchainTime) < 0) {
-        isMigrationTimePassed = true;
-        isMigrationTime = true;
-      } else {
-        isMigrationTime = false;
-      }
-
-      return Column(children: <Widget>[
-        if (isMigrationTime)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 30),
-            child: Text(
-              'Début de la ĞDev',
-              style: TextStyle(
-                  fontSize: 25,
-                  color: Colors.blueAccent,
-                  fontWeight: FontWeight.w500),
-            ),
-          ),
-        if (dateDelimiter != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 30),
-            child: Text(
-              dateDelimiter!,
-              style: const TextStyle(
-                  fontSize: 23, color: orangeC, fontWeight: FontWeight.w300),
-            ),
-          ),
-        TransactionTile(
-            widget: widget,
-            keyID: keyID,
-            avatarSize: avatarSize,
-            repository: repository,
-            dateForm: dateForm,
-            finalAmount: finalAmount,
-            duniterIndexer: duniterIndexer,
-            context: context),
-      ]);
-    }).toList());
+    return {
+      'finalAmount': finalAmount,
+      'isMigrationTime': isMigrationTime,
+      'dateDelimiter': dateDelimiter ?? '',
+      'isDelimiter': isDelimiter,
+      'dateForm': dateForm,
+    };
   }
 }

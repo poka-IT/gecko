@@ -21,16 +21,17 @@ import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:truncate/truncate.dart';
 
-class WalletsHome extends StatelessWidget {
+class WalletsHome extends ConsumerWidget {
   const WalletsHome({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    // final myWalletProvider = Provider.of<MyWalletsProvider>(context);
+    final listWallets = ref.watch(myWalletsProvider).listWallets;
 
     final currentChestNumber = myWalletProvider.getCurrentChest();
     final ChestData currentChest = chestBox.get(currentChestNumber)!;

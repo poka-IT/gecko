@@ -8,7 +8,7 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:io' as io;
 import 'package:gecko/main.dart' as app;
 
@@ -309,7 +309,7 @@ Future bkFastStart([bool restoreChest = true]) async {
 Future startWait() async {
   app.main();
   await waitFor('Test starting...', reverse: true);
-  await tester.pumpAndSettle(const Duration(milliseconds: 300));
+  await tester.pumpAndSettle(const Duration(milliseconds: 700));
   await sleep(3000);
 }
 

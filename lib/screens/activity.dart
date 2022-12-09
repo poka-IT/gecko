@@ -11,7 +11,7 @@ import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/header_profile.dart';
 import 'package:gecko/widgets/transaction_tile.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ActivityScreen extends StatefulWidget with ChangeNotifier {
   ActivityScreen({required this.address, required this.avatar, this.username})

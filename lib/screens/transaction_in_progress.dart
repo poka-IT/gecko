@@ -6,9 +6,9 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:gecko/models/home.dart';
-// import 'package:provider/provider.dart';
+// import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class TransactionInProgress extends StatelessWidget {
   const TransactionInProgress(
@@ -31,8 +31,6 @@ class TransactionInProgress extends StatelessWidget {
     bool isLoading = true;
     // Map jsonResult;
     final result = sub.transactionStatus;
-
-    // sub.spawnBlock();
 
     log.d(walletProfiles.address);
 
@@ -98,8 +96,7 @@ class TransactionInProgress extends StatelessWidget {
           if (result.contains('blockHash: ')) {
             isValid = true;
             resultText = 'extrinsicValidated'.tr(args: [actionName]);
-            log.i(
-                'g1migration Bloc of last transaction: ${sub.blocNumber} --- $result');
+            log.i('Bloc of last transaction: ${sub.blocNumber} --- $result');
           } else {
             isValid = false;
             resultText = "${"anErrorOccurred".tr()}:\n";

@@ -12,14 +12,14 @@ import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/migrate_identity.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:gecko/models/wallet_data.dart';
 // import 'package:gecko/providers/my_wallets.dart';
 // import 'package:gecko/providers/substrate_sdk.dart';
 // import 'package:gecko/screens/common_elements.dart';
 // import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 // import 'package:gecko/screens/transaction_in_progress.dart';
-// import 'package:provider/provider.dart';
+// import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ManageMembership extends StatelessWidget {
   const ManageMembership({Key? key, required this.address}) : super(key: key);

@@ -12,7 +12,7 @@ import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:gecko/screens/onBoarding/5.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ChooseChest extends StatefulWidget {
   const ChooseChest({Key? key}) : super(key: key);

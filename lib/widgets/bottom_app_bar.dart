@@ -10,7 +10,7 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:gecko/screens/search.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class GeckoBottomAppBar extends StatelessWidget {
   const GeckoBottomAppBar({Key? key, this.actualRoute = ''}) : super(key: key);

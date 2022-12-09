@@ -16,7 +16,7 @@ import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/11_congratulations.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class OnboardingStepTen extends StatelessWidget {
   OnboardingStepTen({Key? validationKey, this.scanDerivation = false})

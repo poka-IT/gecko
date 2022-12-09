@@ -11,7 +11,7 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SearchIdentityQuery extends StatelessWidget {
   const SearchIdentityQuery({Key? key, required this.name}) : super(key: key);

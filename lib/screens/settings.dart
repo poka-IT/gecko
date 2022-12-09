@@ -9,7 +9,7 @@ import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/globals.dart';
 import 'package:polkawallet_sdk/api/types/networkParams.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SettingsScreen extends StatelessWidget {
   final MyWalletsProvider _myWallets = MyWalletsProvider();

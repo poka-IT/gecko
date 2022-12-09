@@ -6,7 +6,7 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/widgets/wallet_name.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:truncate/truncate.dart';
 
 class NameByAddress extends StatelessWidget {

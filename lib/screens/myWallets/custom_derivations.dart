@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CustomDerivation extends StatefulWidget {
   const CustomDerivation({Key? key}) : super(key: key);

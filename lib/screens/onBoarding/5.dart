@@ -12,7 +12,7 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/6.dart';
 import 'package:printing/printing.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 AsyncSnapshot<List>? mnemoList;
 

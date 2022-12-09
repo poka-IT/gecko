@@ -19,7 +19,7 @@ import 'package:polkawallet_sdk/polkawallet_sdk.dart';
 import 'package:polkawallet_sdk/storage/keyring.dart';
 import 'package:polkawallet_sdk/storage/types/keyPairData.dart';
 import 'package:polkawallet_sdk/webviewWithExtension/types/signExtrinsicParam.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:truncate/truncate.dart';
 import 'package:pointycastle/pointycastle.dart' as pc;
 import "package:hex/hex.dart";
@@ -887,7 +887,7 @@ class SubstrateSdk with ChangeNotifier {
 
     final toCerts = await getCertsCounter(destAddress);
 
-    // log.d('debug: ${currencyParameters['minCertForMembership']}');
+    log.i('debug: ${currencyParameters['minCertForMembership']}');
 
     if (toIdtyStatus == 'noid') {
       txInfo = TxInfoData(

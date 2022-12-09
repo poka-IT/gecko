@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class Certifications extends StatelessWidget {
   const Certifications(

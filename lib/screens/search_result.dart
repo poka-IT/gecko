@@ -8,7 +8,7 @@ import 'package:gecko/providers/search.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/search_result_list.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SearchResultScreen extends StatelessWidget {
   const SearchResultScreen({Key? key}) : super(key: key);

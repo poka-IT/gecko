@@ -24,6 +24,6 @@ echo "ip_address=127.0.0.1" > .env
 
 # Stop Duniter
 cd integration_test/duniter
-docker compose down
+# docker compose down
 
 

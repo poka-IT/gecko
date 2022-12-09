@@ -22,7 +22,7 @@ import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:qr_flutter/qr_flutter.dart';
 

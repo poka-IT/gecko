@@ -5,9 +5,9 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/common_elements.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class MyWalletsProvider with ChangeNotifier {
+class MyWalletsProvider extends ChangeNotifier {
   List<WalletData> listWallets = [];
   String pinCode = '';
   late String mnemonic;
@@ -233,3 +233,9 @@ class MyWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 }
+
+  // Finally, we are using StateNotifierProvider to allow the UI to interact with
+// our TodosNotifier class.
+final myWalletsProvider = ChangeNotifierProvider<MyWalletsProvider>((ref) {
+  return MyWalletsProvider();
+});

@@ -7,7 +7,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/10.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class OnboardingStepNine extends StatelessWidget {
   const OnboardingStepNine({Key? key, this.scanDerivation = false})

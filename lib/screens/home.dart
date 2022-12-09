@@ -25,7 +25,7 @@ import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/settings.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/screens/my_contacts.dart';
 
 class HomeScreen extends StatefulWidget {

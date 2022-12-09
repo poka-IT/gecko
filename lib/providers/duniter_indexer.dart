@@ -6,22 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
-import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/cesium_plus.dart';
-import 'package:gecko/providers/search.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:gecko/screens/wallet_view.dart';
-import 'package:gecko/widgets/balance.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:provider/provider.dart';
 
 class DuniterIndexer with ChangeNotifier {
   Map<String, String?> walletNameIndexer = {};
   String? fetchMoreCursor;
   Map? pageInfo;
-  int nPage = 1;
-  int nRepositories = 20;
   List? transBC;
   List listIndexerEndpoints = [];
   bool isLoadingIndexer = false;
@@ -92,7 +83,6 @@ class DuniterIndexer with ChangeNotifier {
 
     if (configBox.containsKey('customIndexer')) {
       return configBox.get('customIndexer');
-      // listIndexerEndpoints.insert(0, configBox.get('customIndexer'));
     }
 
     if (configBox.containsKey('indexerEndpoint')) {
@@ -154,125 +144,6 @@ class DuniterIndexer with ChangeNotifier {
     return indexerEndpoint;
   }
 
-  Widget searchIdentity(BuildContext context, String name) {
-    // WalletOptionsProvider _walletOptions =
-    //     Provider.of<WalletOptionsProvider>(context, listen: false);
-    WalletsProfilesProvider walletsProfiles =
-        Provider.of<WalletsProfilesProvider>(context, listen: false);
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final searchProvider = Provider.of<SearchProvider>(context, listen: false);
-    if (indexerEndpoint == '') {
-      return const Text('Aucun résultat');
-    }
-
-    log.d(indexerEndpoint);
-    final httpLink = HttpLink(
-      '$indexerEndpoint/v1/graphql',
-    );
-
-    final client = ValueNotifier(
-      GraphQLClient(
-        cache: GraphQLCache(
-            store: HiveStore()), // GraphQLCache(store: HiveStore())
-        link: httpLink,
-      ),
-    );
-    return GraphQLProvider(
-      client: client,
-      child: Query(
-          options: QueryOptions(
-            document: gql(
-                searchAddressByNameQ), // this is the query string you just created
-            variables: {
-              'name': name,
-            },
-            // pollInterval: const Duration(seconds: 10),
-          ),
-          builder: (QueryResult result,
-              {VoidCallback? refetch, FetchMore? fetchMore}) {
-            if (result.hasException) {
-              return Text(result.exception.toString());
-            }
-
-            if (result.isLoading) {
-              return Text('loading'.tr());
-            }
-
-            final List identities = result.data?['search_identity'] ?? [];
-
-            if (identities.isEmpty) {
-              return Text('noResult'.tr());
-            }
-
-            for (Map profile in identities) {
-              duniterIndexer.walletNameIndexer
-                  .putIfAbsent(profile['pubkey'], () => profile['name']);
-            }
-
-            searchProvider.resultLenght = identities.length;
-            // TODO: Find a way to reload a provider here, in Widget build...
-
-            double avatarSize = 55;
-            return Expanded(
-              child: ListView(children: <Widget>[
-                for (Map profile in identities)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 5),
-                    child: ListTile(
-                        key: keySearchResult(profile['pubkey']),
-                        horizontalTitleGap: 40,
-                        contentPadding: const EdgeInsets.all(5),
-                        leading: defaultAvatar(avatarSize),
-                        title: Row(children: <Widget>[
-                          Text(getShortPubkey(profile['pubkey']),
-                              style: const TextStyle(
-                                  fontSize: 18,
-                                  fontFamily: 'Monospace',
-                                  fontWeight: FontWeight.w500),
-                              textAlign: TextAlign.center),
-                        ]),
-                        trailing: SizedBox(
-                          width: 110,
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Balance(
-                                          address: profile['pubkey'], size: 16),
-                                    ]),
-                              ]),
-                        ),
-                        subtitle: Row(children: <Widget>[
-                          Text(profile['name'] ?? '',
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.w500),
-                              textAlign: TextAlign.center),
-                        ]),
-                        dense: false,
-                        isThreeLine: false,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) {
-                              walletsProfiles.address = profile['pubkey'];
-                              return WalletViewScreen(
-                                address: profile['pubkey'],
-                                username: name,
-                                avatar:
-                                    g1WalletsBox.get(profile['pubkey'])?.avatar,
-                              );
-                            }),
-                          );
-                        }),
-                  ),
-              ]),
-            );
-          }),
-    );
-  }
-
   List parseHistory(blockchainTX, pubkey) {
     List transBC = [];
     int i = 0;
@@ -296,34 +167,21 @@ class DuniterIndexer with ChangeNotifier {
       }
       transBC[i].add(amount);
       transBC[i].add(direction);
-      // transBC[i].add(''); //transaction comment
 
       i++;
     }
     return transBC;
   }
 
-  FetchMoreOptions? checkQueryResult(result, opts, pubkey) {
+  FetchMoreOptions? mergeQueryResult(result, opts, pubkey, nRepositories) {
     final List<dynamic>? blockchainTX =
         (result.data['transaction_connection']['edges'] as List<dynamic>?);
-    // final List<dynamic> mempoolTX =
-    //     (result.data['txsHistoryMp']['receiving'] as List<dynamic>);
 
     pageInfo = result.data['transaction_connection']['pageInfo'];
     fetchMoreCursor = pageInfo!['endCursor'];
     final hasNextPage = pageInfo!['hasNextPage'];
     final hasPreviousPage = pageInfo!['hasPreviousPage'];
-    if (fetchMoreCursor == null) nPage = 1;
-
     log.d('endCursor: $fetchMoreCursor $hasNextPage $hasPreviousPage');
-
-    // if (nPage == 1) {
-    //   nRepositories = 20;
-    // } else if (nPage == 4) {
-    //   nRepositories = 40;
-    // }
-    // // nRepositories = 10;
-    nPage++;
 
     if (fetchMoreCursor != null) {
       opts = FetchMoreOptions(
@@ -336,18 +194,12 @@ class DuniterIndexer with ChangeNotifier {
                 as List<dynamic>
           ];
 
-          log.d('repos:  $previousResultData');
-          log.d('repos:  $fetchMoreResultData');
-          log.d('repos:  $repos');
-
           fetchMoreResultData['transaction_connection']['edges'] = repos;
           return fetchMoreResultData;
         },
       );
     }
 
-    log.d(
-        "###### DEBUG H Parse blockchainTX list. Cursor: $fetchMoreCursor ######");
     if (fetchMoreCursor != null) {
       transBC = parseHistory(blockchainTX, pubkey);
     } else {
@@ -394,4 +246,87 @@ Future<QueryResult> _execQuery(
       QueryOptions(document: gql(query), variables: variables);
 
   return await client.query(options);
+}
+
+Map computeHistoryView(repository, lastDateDelimiter, isDouble) {
+  bool isTody = false;
+  bool isYesterday = false;
+  bool isThisWeek = false;
+  bool isMigrationTime = false;
+  String? dateDelimiter;
+  DateTime now = DateTime.now();
+  final bool isUdUnit = configBox.get('isUdUnit') ?? false;
+
+  late double amount;
+  late String finalAmount;
+  DateTime date = repository[0];
+  String dateForm;
+  bool isDelimiter = true;
+
+  if ({4, 10, 11, 12}.contains(date.month)) {
+    dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, 3)}.";
+  } else if ({1, 2, 7, 9}.contains(date.month)) {
+    dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, 4)}.";
+  } else {
+    dateForm = "${date.day} ${monthsInYear[date.month]}";
+  }
+
+  final transactionDate = DateTime(date.year, date.month, date.day);
+  final todayDate = DateTime(now.year, now.month, now.day);
+  final yesterdayDate = DateTime(now.year, now.month, now.day - 1);
+
+  if (transactionDate == todayDate && !isTody) {
+    dateDelimiter = lastDateDelimiter = "today".tr();
+    isTody = true;
+  } else if (transactionDate == yesterdayDate && !isYesterday) {
+    dateDelimiter = lastDateDelimiter = "yesterday".tr();
+    isYesterday = true;
+  } else if (weekNumber(date) == weekNumber(now) &&
+      date.year == now.year &&
+      transactionDate != yesterdayDate &&
+      transactionDate != todayDate &&
+      !isThisWeek) {
+    dateDelimiter = lastDateDelimiter = "thisWeek".tr();
+    isThisWeek = true;
+  } else if (lastDateDelimiter != "${monthsInYear[date.month]} ${date.year}" &&
+      transactionDate != todayDate &&
+      transactionDate != yesterdayDate &&
+      !(weekNumber(date) == weekNumber(now) && date.year == now.year)) {
+    if (date.year == now.year) {
+      dateDelimiter = lastDateDelimiter = monthsInYear[date.month];
+    } else {
+      dateDelimiter =
+          lastDateDelimiter = "${monthsInYear[date.month]} ${date.year}";
+    }
+  } else {
+    isDelimiter = false;
+  }
+
+  amount = repository[4] == 'RECEIVED' ? repository[3] : repository[3] * -1;
+
+  if (isUdUnit) {
+    amount = round(amount / balanceRatio);
+    finalAmount = 'ud'.tr(args: ['$amount ']);
+  } else {
+    finalAmount = '$amount $currencyName';
+  }
+
+  if (date.compareTo(startBlockchainTime) < 0) {
+    isMigrationTime = true;
+  } else {
+    isMigrationTime = false;
+  }
+
+  return {
+    'finalAmount': finalAmount,
+    'isMigrationTime': isMigrationTime,
+    'dateDelimiter': dateDelimiter ?? '',
+    'isDelimiter': isDelimiter,
+    'dateForm': dateForm,
+  };
+}
+
+int weekNumber(DateTime date) {
+  int dayOfYear = int.parse(DateFormat("D").format(date));
+  return ((dayOfYear - date.weekday + 10) / 7).floor();
 }

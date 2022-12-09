@@ -80,8 +80,6 @@ class TransactionTile extends StatelessWidget {
           dense: false,
           isThreeLine: false,
           onTap: () {
-            duniterIndexer.nPage = 1;
-            // _cesiumPlusProvider.avatarCancelToken.cancel('cancelled');
             Navigator.push(
               context,
               PageNoTransit(builder: (context) {

@@ -6,7 +6,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/header_profile.dart';
@@ -26,14 +25,10 @@ class ActivityScreen extends StatefulWidget with ChangeNotifier {
 }
 
 class _ActivityScreenState extends State<ActivityScreen> {
-  @override
-  void initState() {
-    final duniterIndexerInit =
-        Provider.of<DuniterIndexer>(context, listen: false);
-    duniterIndexerInit.nPage = 1;
-
-    super.initState();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  // }
 
   final ScrollController scrollController = ScrollController();
   final double avatarsSize = 80;
@@ -62,6 +57,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
   Widget historyQuery(context) {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    int nPage = 1;
+    int nRepositories = 20;
 
     if (indexerEndpoint == '') {
       return Column(children: <Widget>[
@@ -132,9 +129,22 @@ class _ActivityScreenState extends State<ActivityScreen> {
               }
 
               if (result.isNotLoading) {
-                // log.d(result.data);
-                opts = duniterIndexer.checkQueryResult(
-                    result, opts, widget.address);
+                if (duniterIndexer.fetchMoreCursor == null) nPage = 1;
+
+                // log.d('nPage: $nPage');
+
+                if (nPage <= 3) {
+                  nRepositories = 20;
+                } else if (nPage <= 6) {
+                  nRepositories = 40;
+                } else if (nPage <= 12) {
+                  nRepositories = 80;
+                } else {
+                  nRepositories = 120;
+                }
+                nPage++;
+                opts = duniterIndexer.mergeQueryResult(
+                    result, opts, widget.address, nRepositories);
               }
 
               // Build history list
@@ -167,6 +177,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
   Widget historyView(context, result) {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    int keyID = 0;
+    const double avatarSize = 200;
+    String? lastDateDelimiter;
+    bool? isDouble;
+    bool isMigrationPassed = false;
 
     return duniterIndexer.transBC == null
         ? Column(children: <Widget>[
@@ -177,7 +192,53 @@ class _ActivityScreenState extends State<ActivityScreen> {
             )
           ])
         : Column(children: <Widget>[
-            getHistory(context, duniterIndexer),
+            Column(
+                children: duniterIndexer.transBC!.map((repository) {
+              final answer =
+                  computeHistoryView(repository, lastDateDelimiter, isDouble);
+              isDouble = lastDateDelimiter == answer['dateDelimiter'] ||
+                  answer['dateDelimiter'] == '';
+              lastDateDelimiter = answer['dateDelimiter'];
+              bool isMigrationTime = false;
+              if (answer['isMigrationTime'] && !isMigrationPassed) {
+                isMigrationPassed = true;
+                isMigrationTime = true;
+              }
+
+              return Column(children: <Widget>[
+                if (isMigrationTime)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 30),
+                    child: Text(
+                      'Début de la ĞDev',
+                      style: TextStyle(
+                          fontSize: 25,
+                          color: Colors.blueAccent,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                if (!isDouble!)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 30),
+                    child: Text(
+                      answer['dateDelimiter'],
+                      style: const TextStyle(
+                          fontSize: 23,
+                          color: orangeC,
+                          fontWeight: FontWeight.w300),
+                    ),
+                  ),
+                TransactionTile(
+                    widget: widget,
+                    keyID: keyID,
+                    avatarSize: avatarSize,
+                    repository: repository,
+                    dateForm: answer['dateForm'],
+                    finalAmount: answer['finalAmount'],
+                    duniterIndexer: duniterIndexer,
+                    context: context),
+              ]);
+            }).toList()),
             if (result.isLoading && duniterIndexer.pageInfo!['hasPreviousPage'])
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -196,139 +257,5 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 ],
               )
           ]);
-  }
-
-  Widget getHistory(BuildContext context, DuniterIndexer duniterIndexer) {
-    int keyID = 0;
-    String? dateDelimiter;
-    String? lastDateDelimiter;
-    const double avatarSize = 200;
-
-    bool isTody = false;
-    bool isYesterday = false;
-    bool isThisWeek = false;
-    bool isMigrationTime = false;
-    bool isMigrationTimePassed = false;
-
-    final Map<int, String> monthsInYear = {
-      1: "month1".tr(),
-      2: "month2".tr(),
-      3: "month3".tr(),
-      4: "month4".tr(),
-      5: "month5".tr(),
-      6: "month6".tr(),
-      7: "month7".tr(),
-      8: "month8".tr(),
-      9: "month9".tr(),
-      10: "month10".tr(),
-      11: "month11".tr(),
-      12: "month12".tr()
-    };
-
-    return Column(
-        children: duniterIndexer.transBC!.map((repository) {
-      // log.d('bbbbbbbbbbbbbbbbbbbbbb: ' + repository.toString());
-
-      DateTime now = DateTime.now();
-      DateTime date = repository[0];
-
-      String dateForm;
-      if ({4, 10, 11, 12}.contains(date.month)) {
-        dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, 3)}.";
-      } else if ({1, 2, 7, 9}.contains(date.month)) {
-        dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, 4)}.";
-      } else {
-        dateForm = "${date.day} ${monthsInYear[date.month]}";
-      }
-
-      int weekNumber(DateTime date) {
-        int dayOfYear = int.parse(DateFormat("D").format(date));
-        return ((dayOfYear - date.weekday + 10) / 7).floor();
-      }
-
-      final transactionDate = DateTime(date.year, date.month, date.day);
-      final todayDate = DateTime(now.year, now.month, now.day);
-      final yesterdayDate = DateTime(now.year, now.month, now.day - 1);
-
-      if (transactionDate == todayDate && !isTody) {
-        dateDelimiter = lastDateDelimiter = "today".tr();
-        isTody = true;
-      } else if (transactionDate == yesterdayDate && !isYesterday) {
-        dateDelimiter = lastDateDelimiter = "yesterday".tr();
-        isYesterday = true;
-      } else if (weekNumber(date) == weekNumber(now) &&
-          date.year == now.year &&
-          lastDateDelimiter != "thisWeek".tr() &&
-          transactionDate != yesterdayDate &&
-          transactionDate != todayDate &&
-          !isThisWeek) {
-        dateDelimiter = lastDateDelimiter = "thisWeek".tr();
-        isThisWeek = true;
-      } else if (lastDateDelimiter != monthsInYear[date.month] &&
-          lastDateDelimiter != "${monthsInYear[date.month]} ${date.year}" &&
-          transactionDate != todayDate &&
-          transactionDate != yesterdayDate &&
-          !(weekNumber(date) == weekNumber(now) && date.year == now.year)) {
-        if (date.year == now.year) {
-          dateDelimiter = lastDateDelimiter = monthsInYear[date.month];
-        } else {
-          dateDelimiter =
-              lastDateDelimiter = "${monthsInYear[date.month]} ${date.year}";
-        }
-      } else {
-        dateDelimiter = null;
-      }
-
-      final bool isUdUnit = configBox.get('isUdUnit') ?? false;
-      late double amount;
-      late String finalAmount;
-      amount = repository[4] == 'RECEIVED' ? repository[3] : repository[3] * -1;
-
-      if (isUdUnit) {
-        amount = round(amount / balanceRatio);
-        finalAmount = 'ud'.tr(args: ['$amount ']);
-      } else {
-        finalAmount = '$amount $currencyName';
-      }
-
-      if (!isMigrationTimePassed && date.compareTo(startBlockchainTime) < 0) {
-        isMigrationTimePassed = true;
-        isMigrationTime = true;
-      } else {
-        isMigrationTime = false;
-      }
-
-      return Column(children: <Widget>[
-        if (isMigrationTime)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 30),
-            child: Text(
-              'Début de la ĞDev',
-              style: TextStyle(
-                  fontSize: 25,
-                  color: Colors.blueAccent,
-                  fontWeight: FontWeight.w500),
-            ),
-          ),
-        if (dateDelimiter != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 30),
-            child: Text(
-              dateDelimiter!,
-              style: const TextStyle(
-                  fontSize: 23, color: orangeC, fontWeight: FontWeight.w300),
-            ),
-          ),
-        TransactionTile(
-            widget: widget,
-            keyID: keyID,
-            avatarSize: avatarSize,
-            repository: repository,
-            dateForm: dateForm,
-            finalAmount: finalAmount,
-            duniterIndexer: duniterIndexer,
-            context: context),
-      ]);
-    }).toList());
   }
 }

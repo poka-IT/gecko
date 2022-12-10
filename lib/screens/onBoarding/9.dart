@@ -72,6 +72,12 @@ class OnboardingStepNine extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 30),
+              Text(
+                  'Pendant la phase de test de Ğecko,\nles codes secrets\nsont systématiquement AAAAA.'
+                      .tr(),
+                  style: TextStyle(color: Colors.grey[700], fontSize: 15),
+                  textAlign: TextAlign.center),
               Expanded(
                   child: Align(
                       alignment: Alignment.bottomCenter,

@@ -204,5 +204,7 @@
     "sent": "Envoyés",
     "createIdentity": "Créer sa nouvelle\nidentité",
     "memberAccountOf": "Compte de {}",
-    "pasteAddress": "Coller l'adresse depuis\nle presse-papier"
+    "pasteAddress": "Coller l'adresse depuis\nle presse-papier",
+    "historyStart" :"Début de l'historique",
+    "blockchainStart": "Début de la ĞDev"
 }

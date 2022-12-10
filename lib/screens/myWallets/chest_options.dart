@@ -11,7 +11,6 @@ import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/common_elements.dart';
-import 'package:gecko/screens/myWallets/change_pin.dart';
 import 'package:gecko/screens/myWallets/custom_derivations.dart';
 import 'package:gecko/screens/myWallets/show_seed.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
@@ -106,26 +105,27 @@ class ChestOptions extends StatelessWidget {
               Consumer<SubstrateSdk>(builder: (context, sub, _) {
                 return InkWell(
                   key: keyChangePin,
-                  onTap: sub.nodeConnected
-                      ? () async {
-                          // await _chestProvider.changePin(context, cesiumWallet);
-                          String? pinResult = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return ChangePinScreen(
-                                  walletName: currentChest.name,
-                                  walletProvider: walletProvider,
-                                );
-                              },
-                            ),
-                          );
+                  onTap: null,
+                  //  sub.nodeConnected
+                  //     ? () async {
+                  //         // await _chestProvider.changePin(context, cesiumWallet);
+                  //         String? pinResult = await Navigator.push(
+                  //           context,
+                  //           MaterialPageRoute(
+                  //             builder: (context) {
+                  //               return ChangePinScreen(
+                  //                 walletName: currentChest.name,
+                  //                 walletProvider: walletProvider,
+                  //               );
+                  //             },
+                  //           ),
+                  //         );
 
-                          if (pinResult != null) {
-                            walletProvider.pinCode = pinResult;
-                          }
-                        }
-                      : null,
+                  //         if (pinResult != null) {
+                  //           walletProvider.pinCode = pinResult;
+                  //         }
+                  //       }
+                  //     : null,
                   child: SizedBox(
                       height: 50,
                       child: Row(children: <Widget>[
@@ -140,7 +140,7 @@ class ChestOptions extends StatelessWidget {
                           style: TextStyle(
                               fontSize: 20,
                               color: sub.nodeConnected
-                                  ? Colors.black
+                                  ? Colors.grey[500]
                                   : Colors.grey[500]),
                         ),
                       ])),

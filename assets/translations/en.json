@@ -203,5 +203,7 @@
     "sent": "Sent",
     "createIdentity": "Create a new \nidentity",
     "memberAccountOf": "Account of {}",
-    "pasteAddress": "Paste address from\nclipboard"
+    "pasteAddress": "Paste address from\nclipboard",
+    "historyStart" :"Beginning of history",
+    "blockchainStart": "Beginning of the ĞDev"
 }

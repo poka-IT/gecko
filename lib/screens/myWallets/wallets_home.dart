@@ -14,7 +14,6 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/chest_options.dart';
-import 'package:gecko/screens/myWallets/choose_chest.dart';
 import 'package:gecko/screens/myWallets/import_g1_v1.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
@@ -183,22 +182,23 @@ class WalletsHome extends StatelessWidget {
       const SizedBox(height: 20),
       InkWell(
         key: keyChangeChest,
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) {
-              return const ChooseChest();
-            }),
-          );
-        },
+        onTap: null,
+        //  () {
+        //   Navigator.push(
+        //     context,
+        //     MaterialPageRoute(builder: (context) {
+        //       return const ChooseChest();
+        //     }),
+        //   );
+        // },
         child: SizedBox(
           width: 400,
           height: 60,
           child: Center(
               child: Text('changeChest'.tr(),
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 22,
-                      color: orangeC,
+                      color: Colors.grey[500],
                       fontWeight: FontWeight.w500))),
         ),
       ),

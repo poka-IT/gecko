@@ -93,6 +93,7 @@ class SearchResult extends StatelessWidget {
           dense: false,
           isThreeLine: false,
           onTap: () {
+            Navigator.pop(context);
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) {

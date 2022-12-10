@@ -3,14 +3,12 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 
 class TransactionTile extends StatelessWidget {
   const TransactionTile({
     Key? key,
-    required this.widget,
     required this.keyID,
     required this.avatarSize,
     required this.repository,
@@ -20,7 +18,6 @@ class TransactionTile extends StatelessWidget {
     required this.context,
   }) : super(key: key);
 
-  final ActivityScreen widget;
   final int keyID;
   final double avatarSize;
   final List repository;
@@ -49,7 +46,7 @@ class TransactionTile extends StatelessWidget {
           subtitle: RichText(
             text: TextSpan(
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 17,
                 color: Colors.grey[700],
               ),
               children: <TextSpan>[
@@ -60,22 +57,27 @@ class TransactionTile extends StatelessWidget {
                   TextSpan(
                     text: '  ·  ',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 25,
                       color: Colors.grey[550],
                     ),
                   ),
                 TextSpan(
                   text: repository[2],
                   style: TextStyle(
-                    fontStyle: FontStyle.italic,
-                    color: Colors.grey[600],
-                  ),
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey[600],
+                      fontSize: 19),
                 ),
               ],
             ),
           ),
           trailing: Text(finalAmount,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: repository[4] == 'RECEIVED'
+                      ? Colors.green[700]
+                      : Colors.blue[700]),
               textAlign: TextAlign.justify),
           dense: false,
           isThreeLine: false,
@@ -85,7 +87,7 @@ class TransactionTile extends StatelessWidget {
               PageNoTransit(builder: (context) {
                 return WalletViewScreen(
                   address: repository[1],
-                  username: widget.username ?? '',
+                  username: repository[2] ?? '',
                 );
               }),
             );

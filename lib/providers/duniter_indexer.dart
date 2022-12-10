@@ -264,9 +264,9 @@ Map computeHistoryView(repository, lastDateDelimiter, isDouble) {
   bool isDelimiter = true;
 
   if ({4, 10, 11, 12}.contains(date.month)) {
-    dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, 3)}.";
+    dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, 3)}";
   } else if ({1, 2, 7, 9}.contains(date.month)) {
-    dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, 4)}.";
+    dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, 4)}";
   } else {
     dateForm = "${date.day} ${monthsInYear[date.month]}";
   }

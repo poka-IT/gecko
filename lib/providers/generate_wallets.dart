@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:durt/durt.dart' as durt;
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -88,8 +89,7 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     log.i("Is $expectedWord equal to input $normInputWord ?");
     if (expectedWord == normInputWord ||
-        inputWord == 'triche' ||
-        inputWord == '3.14') {
+        (kDebugMode && inputWord == 'triche')) {
       log.d('Word is OK');
       isAskedWordValid = true;
       askedWordColor = Colors.green[600];

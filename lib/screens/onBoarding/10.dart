@@ -13,8 +13,11 @@ import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
-import 'package:gecko/screens/common_elements.dart';
+import 'package:gecko/widgets/commons/build_progress_bar.dart';
+import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/screens/onBoarding/11_congratulations.dart';
+import 'package:gecko/widgets/commons/fader_transition.dart';
+import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 
@@ -37,7 +40,6 @@ class OnboardingStepTen extends StatelessWidget {
     final sub = Provider.of<SubstrateSdk>(context);
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
-    CommonElements common = CommonElements();
     final pinLenght = generateWalletProvider.pin.text.length;
 
     return WillPopScope(
@@ -70,9 +72,9 @@ class OnboardingStepTen extends StatelessWidget {
             child: Stack(children: [
               Column(children: <Widget>[
                 SizedBox(height: isTall ? 40 : 20),
-                common.buildProgressBar(9),
+                const BuildProgressBar(pagePosition: 9),
                 SizedBox(height: isTall ? 40 : 20),
-                common.buildText("geckoWillCheckPassword".tr()),
+                BuildText(text: "geckoWillCheckPassword".tr()),
                 SizedBox(height: isTall ? 60 : 10),
                 Visibility(
                   visible: generateWalletProvider.scanedValidWalletNumber != -1,
@@ -156,7 +158,7 @@ class OnboardingStepTen extends StatelessWidget {
                 }),
                 const SizedBox(height: 10),
               ]),
-              CommonElements().offlineInfo(context),
+              const OfflineInfo(),
             ]),
           )),
     );

@@ -7,9 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
-import 'package:gecko/screens/common_elements.dart';
+import 'package:gecko/widgets/commons/build_progress_bar.dart';
+import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/screens/onBoarding/7.dart';
 import 'package:gecko/screens/onBoarding/9.dart';
+import 'package:gecko/widgets/commons/fader_transition.dart';
+import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:provider/provider.dart';
 
 class OnboardingStepSix extends StatelessWidget {
@@ -27,7 +30,6 @@ class OnboardingStepSix extends StatelessWidget {
     final generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context, listen: true);
 
-    CommonElements common = CommonElements();
     _mnemonicController.text = generatedMnemonic!;
 
     return WillPopScope(
@@ -56,14 +58,14 @@ class OnboardingStepSix extends StatelessWidget {
               alignment: Alignment.topCenter,
               child: Column(children: [
                 SizedBox(height: isTall ? 40 : 20),
-                common.buildProgressBar(5),
+                const BuildProgressBar(pagePosition: 5),
                 SizedBox(height: isTall ? 40 : 20),
-                common.buildText(
-                    "didYouNoteMnemonicToBeSureTypeWord".tr(args: [
+                BuildText(
+                    text: "didYouNoteMnemonicToBeSureTypeWord".tr(args: [
                       (generateWalletProvider.nbrWord + 1).toString()
                     ]),
-                    20,
-                    true),
+                    size: 20,
+                    isMd: true),
                 SizedBox(height: isTall ? 70 : 20),
                 Text('${generateWalletProvider.nbrWord + 1}',
                     key: keyAskedWord,
@@ -135,7 +137,7 @@ class OnboardingStepSix extends StatelessWidget {
                 SizedBox(height: 35 * ratio),
               ]),
             ),
-            CommonElements().offlineInfo(context),
+            const OfflineInfo(),
           ]),
         ),
       ),

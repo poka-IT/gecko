@@ -3,8 +3,9 @@ import 'package:easy_localization/easy_localization.dart';
 
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/9.dart';
+import 'package:gecko/widgets/commons/intro_info.dart';
+import 'package:gecko/widgets/commons/offline_info.dart';
 
 class OnboardingStepEight extends StatelessWidget {
   const OnboardingStepEight({Key? key, this.scanDerivation = false})
@@ -13,7 +14,6 @@ class OnboardingStepEight extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    CommonElements common = CommonElements();
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -29,15 +29,14 @@ class OnboardingStepEight extends StatelessWidget {
       extendBodyBehindAppBar: true,
       body: SafeArea(
         child: Stack(children: [
-          common.infoIntro(
-              context,
-              'thisPasswordProtectsYourWalletsInASecureChest'.tr(),
-              'coffre-fort-protege-les-portefeuilles.png',
-              '>',
-              OnboardingStepNine(scanDerivation: scanDerivation),
-              7,
+          InfoIntro(
+              text: 'thisPasswordProtectsYourWalletsInASecureChest'.tr(),
+              assetName: 'coffre-fort-protege-les-portefeuilles.png',
+              buttonText: '>',
+              nextScreen: OnboardingStepNine(scanDerivation: scanDerivation),
+              pagePosition: 7,
               isMd: true),
-          CommonElements().offlineInfo(context),
+          const OfflineInfo(),
         ]),
       ),
     );

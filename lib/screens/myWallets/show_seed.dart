@@ -8,7 +8,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:gecko/screens/common_elements.dart';
+import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
@@ -27,8 +27,6 @@ class ShowSeed extends StatelessWidget {
   Widget build(BuildContext context) {
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
-    CommonElements common = CommonElements();
-
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     WalletData defaultWallet = myWalletProvider.getDefaultWallet();
@@ -66,7 +64,7 @@ class ShowSeed extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Column(children: [
-                          common.buildText('keepYourMnemonicSecret'.tr()),
+                          BuildText(text: 'keepYourMnemonicSecret'.tr()),
                           SizedBox(height: 35 * ratio),
                           sentanceArray(context, seed.data!.split(' ')),
                           const SizedBox(height: 20),

@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/providers/search.dart';
-import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
+import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/search_result_list.dart';
 import 'package:provider/provider.dart';
 
@@ -86,7 +86,7 @@ class SearchResultScreen extends StatelessWidget {
                       walletsProfilesClass: walletsProfilesClass),
                 ]),
           ),
-          CommonElements().offlineInfo(context),
+          const OfflineInfo(),
         ]),
       ),
     );

@@ -4,7 +4,7 @@ import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/screens/common_elements.dart';
+import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:provider/provider.dart';
 
 class MyWalletsProvider with ChangeNotifier {

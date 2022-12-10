@@ -4,16 +4,15 @@ import 'package:easy_localization/easy_localization.dart';
 
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/4.dart';
+import 'package:gecko/widgets/commons/intro_info.dart';
+import 'package:gecko/widgets/commons/offline_info.dart';
 
 class OnboardingStepThree extends StatelessWidget {
   const OnboardingStepThree({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    CommonElements common = CommonElements();
-
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -29,9 +28,13 @@ class OnboardingStepThree extends StatelessWidget {
       extendBodyBehindAppBar: true,
       body: SafeArea(
         child: Stack(children: [
-          common.infoIntro(context, 'warningForgotPassword'.tr(),
-              'forgot_password.png'.tr(), '>', const OnboardingStepFor(), 2),
-          CommonElements().offlineInfo(context),
+          InfoIntro(
+              text: 'warningForgotPassword'.tr(),
+              assetName: 'forgot_password.png'.tr(),
+              buttonText: '>',
+              nextScreen: const OnboardingStepFor(),
+              pagePosition: 2),
+          const OfflineInfo(),
         ]),
       ),
     );

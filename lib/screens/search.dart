@@ -8,9 +8,10 @@ import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/search.dart';
-import 'package:gecko/screens/common_elements.dart';
+import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:gecko/screens/search_result.dart';
 import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:provider/provider.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -190,7 +191,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
               Spacer(flex: screenHeight <= 800 ? 1 : 2),
             ]),
-            CommonElements().offlineInfo(context),
+            const OfflineInfo(),
           ]),
         ),
       ),

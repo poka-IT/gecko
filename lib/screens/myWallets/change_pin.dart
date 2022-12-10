@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:durt/durt.dart';
 
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/stateful_wrapper.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -13,7 +12,7 @@ import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 
 import 'package:provider/provider.dart';
 
-class ChangePinScreen extends StatelessWidget with ChangeNotifier {
+class ChangePinScreen extends StatefulWidget with ChangeNotifier {
   ChangePinScreen(
       {Key? keyMyWallets,
       required this.walletName,
@@ -22,7 +21,18 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
   final String? walletName;
   final MyWalletsProvider walletProvider;
 
+  @override
+  State<ChangePinScreen> createState() => _ChangePinScreenState();
+}
+
+class _ChangePinScreenState extends State<ChangePinScreen> {
   final TextEditingController newPin = TextEditingController();
+
+  @override
+  void initState() {
+    newPin.text = randomSecretCode(pinLength);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,18 +58,12 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
               }),
           title: SizedBox(
             height: 22,
-            child: Text(walletName!),
+            child: Text(widget.walletName!),
           ),
         ),
         body: Center(
           child: SafeArea(
             child: Column(children: <Widget>[
-              StatefulWrapper(
-                onInit: () {
-                  newPin.text = randomSecretCode(pinLength);
-                },
-                child: Container(),
-              ),
               const SizedBox(height: 80),
               Text(
                 'choosePassword'.tr(),
@@ -118,8 +122,8 @@ class ChangePinScreen extends StatelessWidget with ChangeNotifier {
                     }
                     if (pin != null || myWalletProvider.pinCode != '') {
                       await sub.changePassword(context, defaultWallet.address,
-                          walletProvider.pinCode, newPin.text);
-                      walletProvider.pinCode = newPin.text;
+                          widget.walletProvider.pinCode, newPin.text);
+                      widget.walletProvider.pinCode = newPin.text;
                       newPin.text = '';
                       Navigator.pop(context);
                     }

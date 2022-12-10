@@ -3,8 +3,9 @@ import 'package:easy_localization/easy_localization.dart';
 
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/8.dart';
+import 'package:gecko/widgets/commons/intro_info.dart';
+import 'package:gecko/widgets/commons/offline_info.dart';
 
 class OnboardingStepSeven extends StatelessWidget {
   const OnboardingStepSeven({Key? key, this.scanDerivation = false})
@@ -13,7 +14,6 @@ class OnboardingStepSeven extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    CommonElements common = CommonElements();
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -29,15 +29,14 @@ class OnboardingStepSeven extends StatelessWidget {
       extendBodyBehindAppBar: true,
       body: SafeArea(
         child: Stack(children: [
-          common.infoIntro(
-              context,
-              'geckoWillGenerateAPassword'.tr(),
-              'coffre-fort-code-secret-dans-telephone.png',
-              '>',
-              OnboardingStepEight(scanDerivation: scanDerivation),
-              6,
+          InfoIntro(
+              text: 'geckoWillGenerateAPassword'.tr(),
+              assetName: 'coffre-fort-code-secret-dans-telephone.png',
+              buttonText: '>',
+              nextScreen: OnboardingStepEight(scanDerivation: scanDerivation),
+              pagePosition: 6,
               boxHeight: 400),
-          CommonElements().offlineInfo(context),
+          const OfflineInfo(),
         ]),
       ),
     );

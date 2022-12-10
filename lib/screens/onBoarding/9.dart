@@ -5,8 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
-import 'package:gecko/screens/common_elements.dart';
+import 'package:gecko/widgets/commons/build_progress_bar.dart';
+import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/screens/onBoarding/10.dart';
+import 'package:gecko/widgets/commons/next_button.dart';
+import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:provider/provider.dart';
 
 class OnboardingStepNine extends StatelessWidget {
@@ -20,7 +23,6 @@ class OnboardingStepNine extends StatelessWidget {
         Provider.of<GenerateWalletsProvider>(context);
     // final myWalletProvider =
     //     Provider.of<MyWalletsProvider>(context);
-    CommonElements common = CommonElements();
 
     generateWalletProvider.pin.text = debugPin // kDebugMode &&
         ? 'AAAAA'
@@ -43,9 +45,9 @@ class OnboardingStepNine extends StatelessWidget {
           child: Stack(children: [
             Column(children: <Widget>[
               SizedBox(height: isTall ? 40 : 20),
-              common.buildProgressBar(8),
+              const BuildProgressBar(pagePosition: 8),
               SizedBox(height: isTall ? 40 : 20),
-              common.buildText("hereIsThePasswordKeepIt".tr(), 20, true),
+              BuildText(text: "hereIsThePasswordKeepIt".tr()),
               const SizedBox(height: 100),
               Stack(
                 alignment: Alignment.centerRight,
@@ -102,11 +104,13 @@ class OnboardingStepNine extends StatelessWidget {
                                     fontWeight: FontWeight.w600))),
                       ))),
               SizedBox(height: 22 * ratio),
-              common.nextButton(context, "iNotedMyPassword".tr(),
-                  OnboardingStepTen(scanDerivation: scanDerivation), false),
+              NextButton(
+                  text: "iNotedMyPassword".tr(),
+                  nextScreen: OnboardingStepTen(scanDerivation: scanDerivation),
+                  isFast: false),
               SizedBox(height: 35 * ratio),
             ]),
-            CommonElements().offlineInfo(context),
+            const OfflineInfo(),
           ]),
         ));
   }

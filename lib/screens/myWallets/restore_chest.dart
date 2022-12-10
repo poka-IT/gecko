@@ -6,9 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/7.dart';
 import 'package:gecko/screens/onBoarding/9.dart';
+import 'package:gecko/widgets/commons/fader_transition.dart';
+import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:provider/provider.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:provider/provider.dart';
@@ -155,7 +156,7 @@ class RestoreChest extends StatelessWidget {
                   )
                 ])
             ]),
-            CommonElements().offlineInfo(context),
+            const OfflineInfo(),
           ]),
         ),
       ),

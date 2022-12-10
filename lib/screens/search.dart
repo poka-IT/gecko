@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -21,6 +23,8 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   bool canPasteAddress = false;
   String pastedAddress = '';
+  Timer? debounce;
+  final int debouneTime = 50;
 
   Future getClipBoard() async {
     final clipboard = await Clipboard.getData('text/plain');
@@ -88,10 +92,12 @@ class _SearchScreenState extends State<SearchScreen> {
                   autofocus: true,
                   maxLines: 1,
                   textAlign: TextAlign.left,
-                  onChanged: (v) async => {
-                    await getClipBoard(),
-                    setState(() {}),
-                    searchProvider.reload()
+                  onChanged: (v) => {
+                    if (debounce?.isActive ?? false) {debounce!.cancel()},
+                    debounce = Timer(Duration(milliseconds: debouneTime), () {
+                      getClipBoard();
+                      searchProvider.reload();
+                    })
                   },
                   decoration: InputDecoration(
                     filled: true,
@@ -99,6 +105,23 @@ class _SearchScreenState extends State<SearchScreen> {
                     prefixIconConstraints: const BoxConstraints(
                       minHeight: 32,
                     ),
+                    suffixIcon: searchProvider.searchController.text == ''
+                        ? null
+                        : Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 17),
+                            child: IconButton(
+                              onPressed: (() async => {
+                                    searchProvider.searchController.text = '',
+                                    await getClipBoard(),
+                                    searchProvider.reload(),
+                                  }),
+                              icon: Icon(
+                                Icons.close,
+                                color: Colors.grey[600],
+                                size: 30,
+                              ),
+                            ),
+                          ),
                     prefixIcon: const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 17),
                       child: Image(

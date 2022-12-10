@@ -5,29 +5,35 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/header_profile.dart';
-import 'package:gecko/widgets/page_route_no_transition.dart';
+import 'package:gecko/widgets/transaction_tile.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
-class ActivityScreen extends StatelessWidget with ChangeNotifier {
+class ActivityScreen extends StatefulWidget with ChangeNotifier {
   ActivityScreen({required this.address, required this.avatar, this.username})
       : super(key: keyActivityScreen);
-  final ScrollController scrollController = ScrollController();
-  final double avatarsSize = 80;
   final String address;
   final String? username;
   final Image avatar;
 
+  @override
+  State<ActivityScreen> createState() => _ActivityScreenState();
+}
+
+class _ActivityScreenState extends State<ActivityScreen> {
+  // @override
+  // void initState() {
+  //   super.initState();
+  // }
+
+  final ScrollController scrollController = ScrollController();
+  final double avatarsSize = 80;
   FetchMore? fetchMore;
   FetchMoreOptions? opts;
-
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -44,13 +50,15 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
         ),
         bottomNavigationBar: const GeckoBottomAppBar(),
         body: Column(children: <Widget>[
-          HeaderProfile(address: address, username: username),
+          HeaderProfile(address: widget.address, username: widget.username),
           historyQuery(context),
         ]));
   }
 
   Widget historyQuery(context) {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    int nPage = 1;
+    int nRepositories = 20;
 
     if (indexerEndpoint == '') {
       return Column(children: <Widget>[
@@ -85,7 +93,7 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
             options: QueryOptions(
               document: gql(getHistoryByAddressQ),
               variables: <String, dynamic>{
-                'address': address,
+                'address': widget.address,
                 'number': 20,
                 'cursor': null
               },
@@ -93,7 +101,9 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
             builder: (QueryResult result, {fetchMore, refetch}) {
               if (result.isLoading && result.data == null) {
                 return const Center(
-                  child: CircularProgressIndicator(),
+                  child: CircularProgressIndicator(
+                    color: orangeC,
+                  ),
                 );
               }
 
@@ -119,8 +129,22 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
               }
 
               if (result.isNotLoading) {
-                // log.d(result.data);
-                opts = duniterIndexer.checkQueryResult(result, opts, address);
+                if (duniterIndexer.fetchMoreCursor == null) nPage = 1;
+
+                // log.d('nPage: $nPage');
+
+                if (nPage <= 3) {
+                  nRepositories = 20;
+                } else if (nPage <= 6) {
+                  nRepositories = 40;
+                } else if (nPage <= 12) {
+                  nRepositories = 80;
+                } else {
+                  nRepositories = 120;
+                }
+                nPage++;
+                opts = duniterIndexer.mergeQueryResult(
+                    result, opts, widget.address, nRepositories);
               }
 
               // Build history list
@@ -153,6 +177,11 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
 
   Widget historyView(context, result) {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    int keyID = 0;
+    const double avatarSize = 200;
+    String? lastDateDelimiter;
+    bool? isDouble;
+    bool isMigrationPassed = false;
 
     return duniterIndexer.transBC == null
         ? Column(children: <Widget>[
@@ -163,7 +192,53 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
             )
           ])
         : Column(children: <Widget>[
-            getTransactionTile(context, duniterIndexer),
+            Column(
+                children: duniterIndexer.transBC!.map((repository) {
+              final answer =
+                  computeHistoryView(repository, lastDateDelimiter, isDouble);
+              isDouble = lastDateDelimiter == answer['dateDelimiter'] ||
+                  answer['dateDelimiter'] == '';
+              lastDateDelimiter = answer['dateDelimiter'];
+              bool isMigrationTime = false;
+              if (answer['isMigrationTime'] && !isMigrationPassed) {
+                isMigrationPassed = true;
+                isMigrationTime = true;
+              }
+
+              return Column(children: <Widget>[
+                if (isMigrationTime)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 30),
+                    child: Text(
+                      'Début de la ĞDev',
+                      style: TextStyle(
+                          fontSize: 25,
+                          color: Colors.blueAccent,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                if (!isDouble!)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 30),
+                    child: Text(
+                      answer['dateDelimiter'],
+                      style: const TextStyle(
+                          fontSize: 23,
+                          color: orangeC,
+                          fontWeight: FontWeight.w300),
+                    ),
+                  ),
+                TransactionTile(
+                    widget: widget,
+                    keyID: keyID,
+                    avatarSize: avatarSize,
+                    repository: repository,
+                    dateForm: answer['dateForm'],
+                    finalAmount: answer['finalAmount'],
+                    duniterIndexer: duniterIndexer,
+                    context: context),
+              ]);
+            }).toList()),
             if (result.isLoading && duniterIndexer.pageInfo!['hasPreviousPage'])
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -182,197 +257,5 @@ class ActivityScreen extends StatelessWidget with ChangeNotifier {
                 ],
               )
           ]);
-  }
-
-  Widget getTransactionTile(
-      BuildContext context, DuniterIndexer duniterIndexer) {
-    int keyID = 0;
-    String? dateDelimiter;
-    String? lastDateDelimiter;
-    const double avatarSize = 200;
-
-    bool isTody = false;
-    bool isYesterday = false;
-    bool isThisWeek = false;
-    bool isMigrationTime = false;
-    bool isMigrationTimePassed = false;
-
-    final Map<int, String> monthsInYear = {
-      1: "month1".tr(),
-      2: "month2".tr(),
-      3: "month3".tr(),
-      4: "month4".tr(),
-      5: "month5".tr(),
-      6: "month6".tr(),
-      7: "month7".tr(),
-      8: "month8".tr(),
-      9: "month9".tr(),
-      10: "month10".tr(),
-      11: "month11".tr(),
-      12: "month12".tr()
-    };
-
-    return Column(
-        children: duniterIndexer.transBC!.map((repository) {
-      // log.d('bbbbbbbbbbbbbbbbbbbbbb: ' + repository.toString());
-
-      DateTime now = DateTime.now();
-      DateTime date = repository[0];
-
-      String dateForm;
-      if ({4, 10, 11, 12}.contains(date.month)) {
-        dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, 3)}.";
-      } else if ({1, 2, 7, 9}.contains(date.month)) {
-        dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, 4)}.";
-      } else {
-        dateForm = "${date.day} ${monthsInYear[date.month]}";
-      }
-
-      int weekNumber(DateTime date) {
-        int dayOfYear = int.parse(DateFormat("D").format(date));
-        return ((dayOfYear - date.weekday + 10) / 7).floor();
-      }
-
-      final transactionDate = DateTime(date.year, date.month, date.day);
-      final todayDate = DateTime(now.year, now.month, now.day);
-      final yesterdayDate = DateTime(now.year, now.month, now.day - 1);
-
-      if (transactionDate == todayDate && !isTody) {
-        dateDelimiter = lastDateDelimiter = "today".tr();
-        isTody = true;
-      } else if (transactionDate == yesterdayDate && !isYesterday) {
-        dateDelimiter = lastDateDelimiter = "yesterday".tr();
-        isYesterday = true;
-      } else if (weekNumber(date) == weekNumber(now) &&
-          date.year == now.year &&
-          lastDateDelimiter != "thisWeek".tr() &&
-          transactionDate != yesterdayDate &&
-          transactionDate != todayDate &&
-          !isThisWeek) {
-        dateDelimiter = lastDateDelimiter = "thisWeek".tr();
-        isThisWeek = true;
-      } else if (lastDateDelimiter != monthsInYear[date.month] &&
-          lastDateDelimiter != "${monthsInYear[date.month]} ${date.year}" &&
-          transactionDate != todayDate &&
-          transactionDate != yesterdayDate &&
-          !(weekNumber(date) == weekNumber(now) && date.year == now.year)) {
-        if (date.year == now.year) {
-          dateDelimiter = lastDateDelimiter = monthsInYear[date.month];
-        } else {
-          dateDelimiter =
-              lastDateDelimiter = "${monthsInYear[date.month]} ${date.year}";
-        }
-      } else {
-        dateDelimiter = null;
-      }
-
-      final bool isUdUnit = configBox.get('isUdUnit') ?? false;
-      late double amount;
-      late String finalAmount;
-      amount = repository[4] == 'RECEIVED' ? repository[3] : repository[3] * -1;
-
-      if (isUdUnit) {
-        amount = round(amount / balanceRatio);
-        finalAmount = 'ud'.tr(args: ['$amount ']);
-      } else {
-        finalAmount = '$amount $currencyName';
-      }
-
-      if (!isMigrationTimePassed && date.compareTo(startBlockchainTime) < 0) {
-        isMigrationTimePassed = true;
-        isMigrationTime = true;
-      } else {
-        isMigrationTime = false;
-      }
-
-      return Column(children: <Widget>[
-        if (isMigrationTime)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 30),
-            child: Text(
-              'Début de la ĞDev',
-              style: TextStyle(
-                  fontSize: 25,
-                  color: Colors.blueAccent,
-                  fontWeight: FontWeight.w500),
-            ),
-          ),
-        if (dateDelimiter != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 30),
-            child: Text(
-              dateDelimiter!,
-              style: const TextStyle(
-                  fontSize: 23, color: orangeC, fontWeight: FontWeight.w300),
-            ),
-          ),
-        Padding(
-          padding: const EdgeInsets.only(right: 0),
-          child:
-              // Row(children: [Column(children: [],)],)
-              ListTile(
-                  key: keyTransaction(keyID++),
-                  contentPadding: const EdgeInsets.only(
-                      left: 20, right: 30, top: 15, bottom: 15),
-                  leading: ClipOval(
-                    child: defaultAvatar(avatarSize),
-                  ),
-                  title: Padding(
-                    padding: const EdgeInsets.only(bottom: 5),
-                    child: Text(getShortPubkey(repository[1]),
-                        style: const TextStyle(
-                            fontSize: 18, fontFamily: 'Monospace')),
-                  ),
-                  subtitle: RichText(
-                    text: TextSpan(
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[700],
-                      ),
-                      children: <TextSpan>[
-                        TextSpan(
-                          text: dateForm,
-                        ),
-                        if (repository[2] != '')
-                          TextSpan(
-                            text: '  ·  ',
-                            style: TextStyle(
-                              fontSize: 20,
-                              color: Colors.grey[550],
-                            ),
-                          ),
-                        TextSpan(
-                          text: repository[2],
-                          style: TextStyle(
-                            fontStyle: FontStyle.italic,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  trailing: Text(finalAmount,
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.w500),
-                      textAlign: TextAlign.justify),
-                  dense: false,
-                  isThreeLine: false,
-                  onTap: () {
-                    duniterIndexer.nPage = 1;
-                    // _cesiumPlusProvider.avatarCancelToken.cancel('cancelled');
-                    Navigator.push(
-                      context,
-                      PageNoTransit(builder: (context) {
-                        return WalletViewScreen(
-                          address: repository[1],
-                          username: username ?? '',
-                        );
-                      }),
-                    );
-                    // Navigator.pop(context);
-                  }),
-        ),
-      ]);
-    }).toList());
   }
 }

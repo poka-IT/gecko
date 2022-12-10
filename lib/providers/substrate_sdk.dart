@@ -180,8 +180,6 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<Map<String, double>> getBalance(String address) async {
-    log.d('BALANCE: $address');
-
     if (!nodeConnected) {
       return {
         'transferableBalance': 0,
@@ -220,6 +218,8 @@ class SubstrateSdk with ChangeNotifier {
     };
 
     // log.i(finalBalances);
+    log.d(
+        '${getShortPubkey(address)} --- BALANCE: ${finalBalances['transferableBalance']}');
 
     return finalBalances;
   }

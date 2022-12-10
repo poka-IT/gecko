@@ -1,0 +1,96 @@
+import 'package:flutter/material.dart';
+import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/cesium_plus.dart';
+import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/screens/activity.dart';
+import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/widgets/page_route_no_transition.dart';
+
+class TransactionTile extends StatelessWidget {
+  const TransactionTile({
+    Key? key,
+    required this.widget,
+    required this.keyID,
+    required this.avatarSize,
+    required this.repository,
+    required this.dateForm,
+    required this.finalAmount,
+    required this.duniterIndexer,
+    required this.context,
+  }) : super(key: key);
+
+  final ActivityScreen widget;
+  final int keyID;
+  final double avatarSize;
+  final List repository;
+  final String dateForm;
+  final String finalAmount;
+  final DuniterIndexer duniterIndexer;
+  final BuildContext context;
+
+  @override
+  Widget build(BuildContext context) {
+    final newKey = keyID + 1;
+    return Padding(
+      padding: const EdgeInsets.only(right: 0),
+      child: ListTile(
+          key: keyTransaction(newKey),
+          contentPadding:
+              const EdgeInsets.only(left: 20, right: 30, top: 15, bottom: 15),
+          leading: ClipOval(
+            child: defaultAvatar(avatarSize),
+          ),
+          title: Padding(
+            padding: const EdgeInsets.only(bottom: 5),
+            child: Text(getShortPubkey(repository[1]),
+                style: const TextStyle(fontSize: 18, fontFamily: 'Monospace')),
+          ),
+          subtitle: RichText(
+            text: TextSpan(
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[700],
+              ),
+              children: <TextSpan>[
+                TextSpan(
+                  text: dateForm,
+                ),
+                if (repository[2] != '')
+                  TextSpan(
+                    text: '  ·  ',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.grey[550],
+                    ),
+                  ),
+                TextSpan(
+                  text: repository[2],
+                  style: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          trailing: Text(finalAmount,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+              textAlign: TextAlign.justify),
+          dense: false,
+          isThreeLine: false,
+          onTap: () {
+            Navigator.push(
+              context,
+              PageNoTransit(builder: (context) {
+                return WalletViewScreen(
+                  address: repository[1],
+                  username: widget.username ?? '',
+                );
+              }),
+            );
+            // Navigator.pop(context);
+          }),
+    );
+  }
+}

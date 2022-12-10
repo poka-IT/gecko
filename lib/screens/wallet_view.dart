@@ -15,7 +15,7 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/activity.dart';
-import 'package:gecko/screens/common_elements.dart';
+import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:gecko/screens/myWallets/choose_wallet.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';

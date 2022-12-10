@@ -4,8 +4,8 @@ import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
+import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/contacts_list.dart';
 import 'package:provider/provider.dart';
 
@@ -44,7 +44,7 @@ class ContactsScreen extends StatelessWidget {
               avatarSize: avatarSize,
               walletsProfilesClass: walletsProfilesClass,
               duniterIndexer: duniterIndexer),
-          CommonElements().offlineInfo(context),
+          const OfflineInfo(),
         ]),
       ),
     );

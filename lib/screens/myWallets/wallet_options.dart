@@ -12,13 +12,13 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/certifications.dart';
-import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/myWallets/manage_membership.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/certifications.dart';
+import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
@@ -289,7 +289,7 @@ class WalletOptions extends StatelessWidget {
               ]),
             ),
           ),
-          CommonElements().offlineInfo(context),
+          const OfflineInfo(),
         ]),
       ),
     );

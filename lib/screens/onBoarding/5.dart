@@ -9,8 +9,11 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:gecko/screens/common_elements.dart';
+import 'package:gecko/widgets/commons/build_progress_bar.dart';
+import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/screens/onBoarding/6.dart';
+import 'package:gecko/widgets/commons/fader_transition.dart';
+import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 
@@ -34,8 +37,6 @@ class _ChooseChestState extends State<OnboardingStepFive> {
     final generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context, listen: false);
 
-    final CommonElements common = CommonElements();
-
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -53,9 +54,9 @@ class _ChooseChestState extends State<OnboardingStepFive> {
         child: Stack(children: [
           Column(children: [
             SizedBox(height: isTall ? 40 : 20),
-            common.buildProgressBar(4),
+            const BuildProgressBar(pagePosition: 4),
             SizedBox(height: isTall ? 40 : 20),
-            common.buildText('geckoGeneratedYourMnemonicKeepItSecret'.tr()),
+            BuildText(text: 'geckoGeneratedYourMnemonicKeepItSecret'.tr()),
             SizedBox(height: 35 * ratio),
             sentanceArray(context),
             SizedBox(height: 17 * ratio),
@@ -142,7 +143,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
             const Spacer(),
             // SizedBox(height: 35 * ratio),
           ]),
-          CommonElements().offlineInfo(context),
+          const OfflineInfo(),
         ]),
       ),
     );

@@ -3,15 +3,15 @@ import 'package:easy_localization/easy_localization.dart';
 
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/2.dart';
+import 'package:gecko/widgets/commons/intro_info.dart';
+import 'package:gecko/widgets/commons/offline_info.dart';
 
 class OnboardingStepOne extends StatelessWidget {
   const OnboardingStepOne({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    CommonElements common = CommonElements();
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -27,16 +27,15 @@ class OnboardingStepOne extends StatelessWidget {
       extendBodyBehindAppBar: true,
       body: SafeArea(
         child: Stack(children: [
-          common.infoIntro(
-            context,
-            'geckoGenerateYourWalletFromMnemonic'.tr(),
-            'fabrication-de-portefeuille.png',
-            '>',
-            const OnboardingStepTwo(),
-            0,
+          InfoIntro(
+            text: 'geckoGenerateYourWalletFromMnemonic'.tr(),
+            assetName: 'fabrication-de-portefeuille.png',
+            buttonText: '>',
+            nextScreen: const OnboardingStepTwo(),
+            pagePosition: 0,
             isMd: true,
           ),
-          CommonElements().offlineInfo(context),
+          const OfflineInfo(),
         ]),
       ),
     );

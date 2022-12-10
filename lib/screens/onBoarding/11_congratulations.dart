@@ -5,15 +5,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/screens/common_elements.dart';
+import 'package:gecko/widgets/commons/build_text.dart';
 
 class OnboardingStepEleven extends StatelessWidget {
   const OnboardingStepEleven({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    CommonElements common = CommonElements();
-
     return Scaffold(
         backgroundColor: backgroundColor,
         appBar: AppBar(
@@ -30,7 +28,7 @@ class OnboardingStepEleven extends StatelessWidget {
         body: SafeArea(
           child: Column(children: <Widget>[
             const SizedBox(height: 40),
-            common.buildText("yourChestAndWalletWereCreatedSuccessfully".tr()),
+            BuildText(text: "yourChestAndWalletWereCreatedSuccessfully".tr()),
             SizedBox(height: isTall ? 20 : 10),
             Image.asset(
               'assets/onBoarding/gecko-clin.gif',

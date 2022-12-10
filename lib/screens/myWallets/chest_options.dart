@@ -10,11 +10,11 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/custom_derivations.dart';
 import 'package:gecko/screens/myWallets/show_seed.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
+import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:provider/provider.dart';
 
 class ChestOptions extends StatelessWidget {
@@ -211,7 +211,7 @@ class ChestOptions extends StatelessWidget {
             ]),
           ),
         ),
-        CommonElements().offlineInfo(context),
+        const OfflineInfo(),
       ]),
     );
   }

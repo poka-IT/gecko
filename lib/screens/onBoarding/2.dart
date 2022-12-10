@@ -4,16 +4,15 @@ import 'package:easy_localization/easy_localization.dart';
 
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/onBoarding/3.dart';
+import 'package:gecko/widgets/commons/intro_info.dart';
+import 'package:gecko/widgets/commons/offline_info.dart';
 
 class OnboardingStepTwo extends StatelessWidget {
   const OnboardingStepTwo({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    CommonElements common = CommonElements();
-
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -29,14 +28,14 @@ class OnboardingStepTwo extends StatelessWidget {
       extendBodyBehindAppBar: true,
       body: SafeArea(
         child: Stack(children: [
-          common.infoIntro(
-              context,
-              'keepThisMnemonicSecure'.tr(),
-              'fabrication-de-portefeuille-impossible-sans-phrase.png',
-              '>',
-              const OnboardingStepThree(),
-              1),
-          CommonElements().offlineInfo(context),
+          InfoIntro(
+              text: 'keepThisMnemonicSecure'.tr(),
+              assetName:
+                  'fabrication-de-portefeuille-impossible-sans-phrase.png',
+              buttonText: '>',
+              nextScreen: const OnboardingStepThree(),
+              pagePosition: 1),
+          const OfflineInfo(),
         ]),
       ),
     );

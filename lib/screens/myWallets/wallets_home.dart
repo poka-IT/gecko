@@ -12,7 +12,6 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
-import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/screens/myWallets/chest_options.dart';
 import 'package:gecko/screens/myWallets/import_g1_v1.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
@@ -20,6 +19,8 @@ import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
+import 'package:gecko/widgets/commons/offline_info.dart';
+import 'package:gecko/widgets/commons/smooth_transition.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:truncate/truncate.dart';
@@ -78,7 +79,7 @@ class WalletsHome extends StatelessWidget {
         body: SafeArea(
           child: Stack(children: [
             myWalletsTiles(context, currentChestNumber),
-            CommonElements().offlineInfo(context),
+            const OfflineInfo(),
           ]),
         ),
       ),

@@ -8,9 +8,9 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/certifications.dart';
-import 'package:gecko/screens/common_elements.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/certifications.dart';
+import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart';
@@ -111,7 +111,7 @@ class HeaderProfile extends StatelessWidget {
           ]),
         ]),
       ),
-      CommonElements().offlineInfo(context),
+      const OfflineInfo(),
     ]);
   }
 }

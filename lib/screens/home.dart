@@ -164,19 +164,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                 ),
-                ListTile(
-                  key: keyContacts,
-                  title: Text('contactsManagement'.tr()),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return const ContactsScreen();
-                      }),
-                    );
-                  },
-                ),
+                if (isWalletsExists)
+                  ListTile(
+                    key: keyContacts,
+                    title: Text('contactsManagement'.tr()),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) {
+                          return const ContactsScreen();
+                        }),
+                      );
+                    },
+                  ),
               ])),
               Align(
                   alignment: FractionalOffset.bottomCenter,

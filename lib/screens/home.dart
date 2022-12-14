@@ -47,24 +47,28 @@ class _HomeScreenState extends State<HomeScreen> {
       final myWalletProvider =
           Provider.of<MyWalletsProvider>(context, listen: false);
 
-      configBox = await Hive.openBox("configBox");
       final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
 
-      if (!sub.sdkReady && !sub.sdkLoading) await sub.initApi();
-      if (sub.sdkReady && !sub.nodeConnected) {
-        // Check if versionData non compatible, drop everything
-        if (isWalletsExists &&
-            (configBox.get('dataVersion') ?? 0) < dataVersion) {
-          await infoPopup(context, "chestNotCompatibleMustReinstallGecko".tr());
-          await Hive.deleteBoxFromDisk('walletBox');
-          await Hive.deleteBoxFromDisk('chestBox');
-          chestBox = await Hive.openBox<ChestData>("chestBox");
-          await configBox.delete('defaultWallet');
-          await sub.deleteAllAccounts();
-          configBox.put('dataVersion', dataVersion);
-          myWalletProvider.reload();
-        }
+      // Check if versionData non compatible, drop everything
+      if (configBox.get('dataVersion') == null) {
+        configBox.put('dataVersion', dataVersion);
+      }
+      if (isWalletsExists && (configBox.get('dataVersion')) < dataVersion) {
+        if (!sub.sdkReady && !sub.sdkLoading) sub.initApi();
+        await infoPopup(context, "chestNotCompatibleMustReinstallGecko".tr());
+        await Hive.deleteBoxFromDisk('walletBox');
+        await Hive.deleteBoxFromDisk('chestBox');
+        chestBox = await Hive.openBox<ChestData>("chestBox");
+        await configBox.delete('defaultWallet');
+        if (!sub.sdkReady && !sub.sdkLoading) await sub.initApi();
+        await sub.deleteAllAccounts();
+        configBox.put('dataVersion', dataVersion);
+        myWalletProvider.reload();
+      } else {
+        if (!sub.sdkReady && !sub.sdkLoading) await sub.initApi();
+      }
 
+      if (sub.sdkReady && !sub.nodeConnected) {
         walletBox = await Hive.openBox<WalletData>("walletBox");
         await Hive.deleteBoxFromDisk('g1WalletsBox');
         g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
@@ -164,19 +168,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                 ),
-                ListTile(
-                  key: keyContacts,
-                  title: Text('contactsManagement'.tr()),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return const ContactsScreen();
-                      }),
-                    );
-                  },
-                ),
+                if (isWalletsExists)
+                  ListTile(
+                    key: keyContacts,
+                    title: Text('contactsManagement'.tr()),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) {
+                          return const ContactsScreen();
+                        }),
+                      );
+                    },
+                  ),
               ])),
               Align(
                   alignment: FractionalOffset.bottomCenter,

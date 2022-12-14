@@ -58,8 +58,11 @@ Future<void> main() async {
 
   HomeProvider homeProvider = HomeProvider();
   // DuniterIndexer _duniterIndexer = DuniterIndexer();
+
   await initHiveForFlutter();
   await homeProvider.initHive();
+  configBox = await Hive.openBox("configBox");
+
   appVersion = await homeProvider.getAppVersion();
 
   // Configure Hive and open boxes

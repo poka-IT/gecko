@@ -15,11 +15,11 @@
         android:label="Ğecko"
         android:usesCleartextTraffic="true">
         <!-- TODO: Remove usesCleartextTraffic for production mode ! kopa -->
-        <!-- android:icon="@mipmap/ic_launcher"> -->
+        <!-- android:icon="@mipmap/launcher_icon"> -->
         <activity
             android:requestLegacyExternalStorage="true"
             android:name=".MainActivity"
-            android:icon="@mipmap/ic_launcher"
+            android:icon="@mipmap/launcher_icon"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
@@ -33,7 +33,7 @@
             <!-- <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
-              android:icon="@mipmap/ic_launcher"
+              android:icon="@mipmap/launcher_icon"
             /> -->
             
             <intent-filter>

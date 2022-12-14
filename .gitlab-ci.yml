@@ -30,6 +30,7 @@ build_and_test:
   stage: build_and_test
   script:
     - flutter clean
+    - rm -rf /root/.pub-cache
     - flutter pub get
     - flutter analyze
 

@@ -119,11 +119,6 @@ class HomeProvider with ChangeNotifier {
     return list[i];
   }
 
-  void handleSearchStart() {
-    isSearching = true;
-    notifyListeners();
-  }
-
   // void playSound(String customSound, double volume) async {
   //   await player.play('$customSound.wav',
   //       volume: volume, mode: PlayerMode.LOW_LATENCY, stayAwake: false);

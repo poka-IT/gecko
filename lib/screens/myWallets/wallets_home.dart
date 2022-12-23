@@ -24,9 +24,48 @@ import 'package:gecko/widgets/commons/smooth_transition.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:truncate/truncate.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
-class WalletsHome extends StatelessWidget {
+class WalletsHome extends StatefulWidget {
   const WalletsHome({Key? key}) : super(key: key);
+
+  @override
+  State<WalletsHome> createState() => _WalletsHomeState();
+}
+
+class _WalletsHomeState extends State<WalletsHome> {
+  final safeKey = GlobalKey();
+  // List<TargetFocus> targets = [];
+
+  @override
+  void initState() {
+    // targets
+    //     .add(TargetFocus(identify: "Target 1", keyTarget: safeKey, contents: [
+    //   TargetContent(
+    //       align: ContentAlign.right,
+    //       child: Column(
+    //         mainAxisSize: MainAxisSize.min,
+    //         crossAxisAlignment: CrossAxisAlignment.start,
+    //         children: const <Widget>[
+    //           Text(
+    //             "Titulo lorem ipsum",
+    //             style: TextStyle(
+    //                 fontWeight: FontWeight.bold,
+    //                 color: Colors.white,
+    //                 fontSize: 20.0),
+    //           ),
+    //           Padding(
+    //             padding: EdgeInsets.only(top: 10.0),
+    //             child: Text(
+    //               "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin pulvinar tortor eget maximus iaculis.",
+    //               style: TextStyle(color: Colors.white),
+    //             ),
+    //           )
+    //         ],
+    //       ))
+    // ]));
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -252,7 +291,7 @@ class WalletsHome extends StatelessWidget {
     //   return Offset(d.feedbackOffset.dx - 30, d.feedbackOffset.dy - 0);
     // }
 
-    showTutorial();
+    // showTutorial();
     // Future.delayed(const Duration(seconds: 1), showTutorial);
 
     return CustomScrollView(slivers: <Widget>[

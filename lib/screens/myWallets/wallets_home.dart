@@ -238,17 +238,22 @@ class WalletsHome extends StatelessWidget {
 
     WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
     final screenWidth = MediaQuery.of(context).size.width;
-    int nTule = 2;
+    int nTule;
 
     if (screenWidth >= 900) {
       nTule = 4;
     } else if (screenWidth >= 650) {
       nTule = 3;
+    } else {
+      nTule = 2;
     }
     // Offset followDragAnchorStrategy(
     //     Draggable<Object> d, BuildContext context, Offset point) {
     //   return Offset(d.feedbackOffset.dx - 30, d.feedbackOffset.dy - 0);
     // }
+
+    showTutorial();
+    // Future.delayed(const Duration(seconds: 1), showTutorial);
 
     return CustomScrollView(slivers: <Widget>[
       const SliverToBoxAdapter(child: SizedBox(height: 20)),
@@ -375,10 +380,9 @@ class WalletsHome extends StatelessWidget {
                                             ),
                                 )),
                                 Stack(children: <Widget>[
-                                  balanceBuilder(
-                                      context,
-                                      repository.address,
-                                      repository.address ==
+                                  BalanceBuilder(
+                                      address: repository.address,
+                                      isDefault: repository.address ==
                                           defaultWallet.address),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
@@ -432,29 +436,6 @@ class WalletsHome extends StatelessWidget {
           ]),
       SliverToBoxAdapter(child: chestOptions(context, myWalletProvider)),
     ]);
-  }
-
-  Widget balanceBuilder(context, String address, bool isDefault) {
-    return Container(
-      width: double.infinity,
-      color: isDefault ? orangeC : yellowC,
-      child: Padding(
-          padding:
-              const EdgeInsets.only(left: 5, right: 5, top: 38, bottom: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Opacity(
-                opacity: 0.7,
-                child: Balance(
-                    address: address,
-                    size: 16,
-                    color: isDefault ? Colors.white : Colors.black,
-                    loadingColor: isDefault ? yellowC : orangeC),
-              )
-            ],
-          )),
-    );
   }
 
   Widget addNewDerivation(context) {
@@ -515,6 +496,41 @@ class WalletsHome extends StatelessWidget {
                     )),
               ),
             ])));
+  }
+}
+
+class BalanceBuilder extends StatelessWidget {
+  const BalanceBuilder({
+    Key? key,
+    required this.address,
+    required this.isDefault,
+  }) : super(key: key);
+
+  final String address;
+  final bool isDefault;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      color: isDefault ? orangeC : yellowC,
+      child: Padding(
+          padding:
+              const EdgeInsets.only(left: 5, right: 5, top: 38, bottom: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Opacity(
+                opacity: 0.7,
+                child: Balance(
+                    address: address,
+                    size: 16,
+                    color: isDefault ? Colors.white : Colors.black,
+                    loadingColor: isDefault ? yellowC : orangeC),
+              )
+            ],
+          )),
+    );
   }
 }
 

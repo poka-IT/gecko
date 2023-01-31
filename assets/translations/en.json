@@ -205,5 +205,10 @@
     "memberAccountOf": "Account of {}",
     "pasteAddress": "Paste address from\nclipboard",
     "historyStart" :"Beginning of history",
-    "blockchainStart": "Beginning of the ĞDev"
+    "blockchainStart": "Beginning of the ĞDev",
+    "networkSettings": "Network Settings",
+    "displaySettings": "Display Settings",
+    "indexer": "Indexer",
+    "anAutoNodeChoosed": "A secure and valid node will be automatically used from a random list.",
+    "rootWallet": "Root Wallet"
 }

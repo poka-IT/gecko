@@ -271,6 +271,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     // Needed for bad encoding of UTF-8
     word = word.replaceAll('é', 'é');
     word = word.replaceAll('è', 'è');
+    // TODO: what about á à ó ò í ì ú ù ... ? make a function to clean data
 
     int nbrMatch = 0;
     if (bip39Words(appLang).contains(word.toLowerCase())) {
@@ -291,6 +292,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       // Needed for bad encoding of UTF-8
       word = word.replaceAll('é', 'é');
       word = word.replaceAll('è', 'è');
+      // TODO: what about á à ó ò í ì ú ù ... ? make a function to clean data
       if (!bip39Words(appLang).contains(word.toLowerCase())) {
         isValid = false;
       }

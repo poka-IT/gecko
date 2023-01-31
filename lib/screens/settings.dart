@@ -33,7 +33,7 @@ class SettingsScreen extends StatelessWidget {
       body: Column(children: <Widget>[
         const SizedBox(height: 30),
         Text(
-          'Connectivité réseau',
+          'networkSettings'.tr(),
           style: TextStyle(color: Colors.grey[500], fontSize: 22),
         ),
         const SizedBox(height: 20),
@@ -42,7 +42,7 @@ class SettingsScreen extends StatelessWidget {
         indexerEndpointSelection(context),
         const SizedBox(height: 40),
         Text(
-          'Affichage',
+          'displaySettings'.tr(),
           style: TextStyle(color: Colors.grey[500], fontSize: 22),
         ),
         const SizedBox(height: 20),
@@ -297,7 +297,8 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(width: 10),
               const SizedBox(
                 width: 100,
-                child: Text('Indexer : '),
+                // child: Text('indexer'.tr()), // why translation does not work??
+                child: Text('Indexer'),
               ),
               const Spacer(),
               Icon(indexerEndpoint != '' ? Icons.check : Icons.close),

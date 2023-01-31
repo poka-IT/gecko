@@ -96,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
         //   sub.nodeConnected = false;
         // }
 
-        // Améliore ce code car il y a un bug: parfois l'app se croit hors ligne, alors que c'est faux, le téléphone est bien connecté à internet 
+        // Améliore ce code car il y a un bug: parfois l'app se croit hors ligne, alors que c'est faux, le téléphone est bien connecté à internet
         // (GPT vscode extension fixed it for my...)
         HomeProvider homeProvider =
             Provider.of<HomeProvider>(context, listen: false);

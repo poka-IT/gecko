@@ -637,7 +637,8 @@ void paymentPopup(BuildContext context, String toAddress) {
                         autofocus: true,
                         maxLines: 1,
                         textAlign: TextAlign.center,
-                        keyboardType: TextInputType.number,
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         onChanged: (_) async {
                           fees = await sub.txFees(
                               defaultWallet.address,

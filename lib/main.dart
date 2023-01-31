@@ -101,7 +101,7 @@ Future<void> main() async {
                   Locale('en'),
                   Locale('fr'),
                   Locale('es'),
-                  Locale('it'),
+                  Locale('it')
                 ],
                 path: 'assets/translations',
                 fallbackLocale: const Locale('en'),
@@ -115,7 +115,12 @@ Future<void> main() async {
         .then((_) {
       runApp(EasyLocalization(
         // test, force locale :: startLocale: Locale.fromSubtags(languageCode: 'it'),
-        supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it'),],
+        supportedLocales: const [
+          Locale('en'),
+          Locale('fr'),
+          Locale('es'),
+          Locale('it')
+        ],
         path: 'assets/translations',
         fallbackLocale: const Locale('en'),
         child: const Gecko(),

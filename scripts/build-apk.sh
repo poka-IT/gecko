@@ -29,10 +29,10 @@ fi
 DL="/tmp"
 appPathV7="$DL/${APPNAME}-${VERSION}+${BUILD}-v7a.apk"
 appPathV8="$DL/${APPNAME}-${VERSION}+${BUILD}-v8a.apk"
-appPathV8="$DL/${APPNAME}-${VERSION}+${BUILD}-x86_64.apk"
+appPathX84_64="$DL/${APPNAME}-${VERSION}+${BUILD}-x86_64.apk"
 mv build/app/outputs/flutter-apk/$v7_app "$appPathV7" || exit 1
 mv build/app/outputs/flutter-apk/$v8_app "$appPathV8" || exit 1
-mv build/app/outputs/flutter-apk/$x86_64_app "$appPathV8" || exit 1
+mv build/app/outputs/flutter-apk/$x86_64_app "$appPathX84_64" || exit 1
 
 [[ $withPush == "withPush" ]] && /home/poka/scripts/link/pushGecko $VERSION+$BUILD
 

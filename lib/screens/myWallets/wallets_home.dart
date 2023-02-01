@@ -24,6 +24,8 @@ import 'package:gecko/widgets/commons/smooth_transition.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:truncate/truncate.dart';
+// import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+
 class WalletsHome extends StatefulWidget {
   const WalletsHome({Key? key}) : super(key: key);
 

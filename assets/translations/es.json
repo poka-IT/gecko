@@ -206,5 +206,10 @@
     "memberAccountOf": "Account of {}",
     "pasteAddress": "Paste address from\nclipboard",
     "historyStart" :"Beginning of history",
-    "blockchainStart": "Comienzo de la ĞDev"
+    "blockchainStart": "Comienzo de la ĞDev",
+    "networkSettings": "Parametros de red",
+    "displaySettings": "Parametros interficie",
+    "indexer": "Indexer",
+    "anAutoNodeChoosed": "Se usará automáticamente un nodo seguro y valido desde una lista aleatoria.",
+    "rootWallet": "Monedero raíz"
 }

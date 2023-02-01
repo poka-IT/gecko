@@ -206,5 +206,10 @@
     "memberAccountOf": "Compte de {}",
     "pasteAddress": "Coller l'adresse depuis\nle presse-papier",
     "historyStart" :"Début de l'historique",
-    "blockchainStart": "Début de la ĞDev"
+    "blockchainStart": "Début de la ĞDev",
+    "networkSettings": "Connectivité réseau",
+    "displaySettings": "Affichage",
+    "indexer": "Indexer",
+    "anAutoNodeChoosed": "Un noeud sûr et valide sera choisi automatiquement parmis une liste aléatoire.",
+    "rootWallet": "Portefeuille racine"
 }

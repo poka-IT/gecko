@@ -129,7 +129,7 @@ class _CustomDerivationState extends State<CustomDerivation> {
                         '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number! + 2}';
                     if (dropdownValue == 'root') {
                       await myWalletProvider.generateRootWallet(
-                          context, 'Portefeuille racine');
+                          context, 'rootWallet'.tr());
                     } else {
                       await myWalletProvider.generateNewDerivation(
                         context,

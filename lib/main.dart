@@ -100,7 +100,8 @@ Future<void> main() async {
                 supportedLocales: const [
                   Locale('en'),
                   Locale('fr'),
-                  Locale('es')
+                  Locale('es'),
+                  Locale('it')
                 ],
                 path: 'assets/translations',
                 fallbackLocale: const Locale('en'),
@@ -108,12 +109,18 @@ Future<void> main() async {
               ));
             }));
   } else {
-    log.i('Debug mode enabled: No sentry alerte');
+    log.i('Debug mode enabled: No sentry alert');
 
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
         .then((_) {
       runApp(EasyLocalization(
-        supportedLocales: const [Locale('en'), Locale('fr'), Locale('es')],
+        // test, force locale :: startLocale: Locale.fromSubtags(languageCode: 'it'),
+        supportedLocales: const [
+          Locale('en'),
+          Locale('fr'),
+          Locale('es'),
+          Locale('it')
+        ],
         path: 'assets/translations',
         fallbackLocale: const Locale('en'),
         child: const Gecko(),

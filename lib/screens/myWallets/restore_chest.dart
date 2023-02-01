@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:bubble/bubble.dart';
 import 'package:easy_localization/easy_localization.dart';
 

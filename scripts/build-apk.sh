@@ -1,5 +1,4 @@
 #!/bin/bash
-# [[ -z $1 ]] && echo "Please choose a version." && exit 1
 
 fVersion=$(grep "version: " pubspec.yaml | awk '{ print $2 }')
 
@@ -8,7 +7,9 @@ withPush=$1
 APPNAME="gecko"
 VERSION=$(awk -F '+' '{ print $1 }' <<<$fVersion)
 BUILD=$(awk -F '+' '{ print $2 }' <<<$fVersion)
-ori_app="app.apk"
+v7_app="app-armeabi-v7a-release.apk"
+v8_app="app-arm64-v8a-release.apk"
+x86_64_app="app-x86_64-release.apk"
 
 echo "Nom du build final: ${APPNAME}-${VERSION}+${BUILD}.apk"
 [[ $withPush == "withPush" ]] && echo "Publish after build"
@@ -25,18 +26,13 @@ else
 #	flutter build apk --release --build-name $VERSION --build-number $BUILD
 fi
 
-if [[ -d $HOME/kDrive/Gecko-APK ]]; then
-    DL="$HOME/kDrive/Gecko-APK"
-elif [[ -d $HOME/Téléchargements ]]; then
-    DL="$HOME/Téléchargements"
-elif [[ -d $HOME/Downloads ]]; then
-    DL="$HOME/Downloads"
-else
-    DL="/tmp"
-fi
-
-appPath="$DL/${APPNAME}-${VERSION}+${BUILD}.apk"
-mv build/app/outputs/flutter-apk/$ori_app "$appPath" || exit 1
+DL="/tmp"
+appPathV7="$DL/${APPNAME}-${VERSION}+${BUILD}-v7a.apk"
+appPathV8="$DL/${APPNAME}-${VERSION}+${BUILD}-v8a.apk"
+appPathV8="$DL/${APPNAME}-${VERSION}+${BUILD}-x86_64.apk"
+mv build/app/outputs/flutter-apk/$v7_app "$appPathV7" || exit 1
+mv build/app/outputs/flutter-apk/$v8_app "$appPathV8" || exit 1
+mv build/app/outputs/flutter-apk/$x86_64_app "$appPathV8" || exit 1
 
 [[ $withPush == "withPush" ]] && /home/poka/scripts/link/pushGecko $VERSION+$BUILD
 

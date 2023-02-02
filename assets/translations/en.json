@@ -104,6 +104,7 @@
     "identityConfirmed": "Identity confirmed",
     "identityExpired": "Identity expired",
     "confirmYourIdentity": "Confirm your identity",
+    "noResult": "No results",
     "noDuniterNodeAvailableTryLater": "No Duniter node available, please try again later",
     "youAreConnectedToNode": "You are connected to node",
     "accountActivity": "Account activity",
@@ -210,5 +211,6 @@
     "displaySettings": "Display Settings",
     "indexer": "Indexer",
     "anAutoNodeChoosed": "A secure and valid node will be automatically used from a random list.",
-    "rootWallet": "Root Wallet"
+    "rootWallet": "Root Wallet",
+    "blockN": "block N°{}"
 }

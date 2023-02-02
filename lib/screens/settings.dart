@@ -249,7 +249,7 @@ class SettingsScreen extends StatelessWidget {
                   height: sub.getConnectedEndpoint() == null ? 60 : 20,
                   child: Text(
                     sub.getConnectedEndpoint() ??
-                        "Un noeud sûr et valide sera choisi automatiquement parmis une liste aléatoire.",
+                        "anAutoNodeChoosed".tr(), //"Un noeud sûr et valide sera choisi automatiquement parmis une liste aléatoire.",
                     style: TextStyle(
                         fontSize: 15,
                         fontStyle: FontStyle.italic,
@@ -259,7 +259,7 @@ class SettingsScreen extends StatelessWidget {
               );
             }),
             Text(
-              'bloc N°${sub.blocNumber}',
+              'blockN'.tr(args: [sub.blocNumber.toString()]), //'bloc N°${sub.blocNumber}',
               style: TextStyle(fontSize: 14, color: Colors.grey[700]),
             )
           ],
@@ -386,7 +386,7 @@ class SettingsScreen extends StatelessWidget {
               height: 60,
               child: Text(
                 sub.getConnectedEndpoint() ??
-                    "Un noeud sûr et valide sera choisi automatiquement parmis une liste aléatoire.",
+                    "anAutoNodeChoosed".tr(), //"Un noeud sûr et valide sera choisi automatiquement parmis une liste aléatoire.",
                 style: TextStyle(
                     fontSize: 15,
                     fontStyle: FontStyle.italic,

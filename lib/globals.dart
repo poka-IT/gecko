@@ -54,6 +54,7 @@ late int udValue;
 
 // Indexer
 late DateTime startBlockchainTime;
+bool startBlockchainInitialized = false;
 
 late int currentUdIndex;
 

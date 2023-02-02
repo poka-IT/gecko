@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
@@ -24,7 +25,7 @@ class SearchIdentityQuery extends StatelessWidget {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     final searchProvider = Provider.of<SearchProvider>(context, listen: false);
     if (indexerEndpoint == '') {
-      return const Text('Aucun résultat');
+      return Text('noResult'.tr());
     }
 
     log.d(indexerEndpoint);
@@ -52,8 +53,11 @@ class SearchIdentityQuery extends StatelessWidget {
           ),
           builder: (QueryResult result,
               {VoidCallback? refetch, FetchMore? fetchMore}) {
-            if (result.hasException) {
-              return Text(result.exception.toString());
+
+            if (kDebugMode) {
+              if (result.hasException) {
+                return Text(result.exception.toString());
+              }
             }
 
             if (result.isLoading) {

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
@@ -55,8 +56,11 @@ class NameByAddress extends StatelessWidget {
           ),
           builder: (QueryResult result,
               {VoidCallback? refetch, FetchMore? fetchMore}) {
-            if (result.hasException) {
-              return Text(result.exception.toString());
+                
+            if (kDebugMode) {
+              if (result.hasException) {
+                return Text(result.exception.toString());
+              }
             }
 
             if (result.isLoading) {

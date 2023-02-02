@@ -211,5 +211,6 @@
     "displaySettings": "Affichage",
     "indexer": "Indexer",
     "anAutoNodeChoosed": "Un noeud sûr et valide sera choisi automatiquement parmis une liste aléatoire.",
-    "rootWallet": "Portefeuille racine"
+    "rootWallet": "Portefeuille racine",
+    "blockN": "bloc N°{}"
 }

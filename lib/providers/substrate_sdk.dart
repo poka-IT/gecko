@@ -88,7 +88,12 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future _getStorage(String call) async {
-    return await sdk.webView!.evalJavascript('api.query.$call');
+    try{
+      return await sdk.webView!.evalJavascript('api.query.$call');
+    }catch(e){
+      log.i("catched _getStorage error");
+      return Future(() {});
+    }
   }
 
   Future _getStorageConst(String call) async {
@@ -134,11 +139,14 @@ class SubstrateSdk with ChangeNotifier {
     if (certsCounterCache[address] == null) {
       certsCounterCache.putIfAbsent(address, () => []);
     }
-    certsCounterCache.update(
-        address,
-        (value) =>
-            [certsReceiver['receivedCount'], certsReceiver['issuedCount']]);
-
+    try{
+      certsCounterCache.update(
+          address,
+          (value) =>
+              [certsReceiver['receivedCount'] as int, certsReceiver['issuedCount'] as int]);
+    }catch(e){
+      // catching String to int error .. network error?
+    }
     return certsCounterCache[address]!;
   }
 
@@ -370,21 +378,24 @@ class SubstrateSdk with ChangeNotifier {
   // }
 
   Future initCurrencyParameters() async {
-    currencyParameters['ss58'] =
-        await _getStorageConst('system.ss58Prefix.words');
-    currencyParameters['minCertForMembership'] =
-        await _getStorageConst('wot.minCertForMembership.words');
-    currencyParameters['newAccountPrice'] =
-        await _getStorageConst('account.newAccountPrice.words');
-    currencyParameters['existentialDeposit'] =
-        await _getStorageConst('balances.existentialDeposit.words');
-    currencyParameters['certPeriod'] =
-        await _getStorageConst('cert.certPeriod.words');
-    currencyParameters['certMaxByIssuer'] =
-        await _getStorageConst('cert.maxByIssuer.words');
-    currencyParameters['certValidityPeriod'] =
-        await _getStorageConst('cert.validityPeriod.words');
-
+    try{
+      currencyParameters['ss58'] =
+          await _getStorageConst('system.ss58Prefix.words');
+      currencyParameters['minCertForMembership'] =
+          await _getStorageConst('wot.minCertForMembership.words');
+      currencyParameters['newAccountPrice'] =
+          await _getStorageConst('account.newAccountPrice.words');
+      currencyParameters['existentialDeposit'] =
+          await _getStorageConst('balances.existentialDeposit.words');
+      currencyParameters['certPeriod'] =
+          await _getStorageConst('cert.certPeriod.words');
+      currencyParameters['certMaxByIssuer'] =
+          await _getStorageConst('cert.maxByIssuer.words');
+      currencyParameters['certValidityPeriod'] =
+          await _getStorageConst('cert.validityPeriod.words');
+    }catch(e){
+      log.i('error while getting storageVals (network?)');
+    }
     log.i('currencyParameters: $currencyParameters');
   }
 

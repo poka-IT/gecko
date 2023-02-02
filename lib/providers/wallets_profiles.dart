@@ -144,6 +144,15 @@ class WalletsProfilesProvider with ChangeNotifier {
   }
 }
 
+snackMessage(context,
+    {required String message, int duration = 2, double fontSize = 16}) {
+  final snackBar = SnackBar(
+      padding: const EdgeInsets.all(20),
+      content: Text(message, style: TextStyle(fontSize: fontSize)),
+      duration: Duration(seconds: duration));
+  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+}
+
 snackCopyKey(context) {
   final snackBar = SnackBar(
       padding: const EdgeInsets.all(20),

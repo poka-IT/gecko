@@ -3,6 +3,7 @@
 import 'package:bubble/bubble.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
@@ -188,8 +189,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
               ])),
               Align(
-                  alignment: FractionalOffset.bottomCenter,
-                  child: Text('Ğecko v$appVersion')),
+                alignment: FractionalOffset.bottomCenter,
+                child: InkWell(
+                    key: keyCopyAddress,
+                    splashColor: orangeC,
+                    child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Text('Ğecko v$appVersion')),
+                    onTap: () {
+                      Clipboard.setData(
+                          ClipboardData(text: 'Ğecko v$appVersion'));
+                      snackMessage(context,
+                          message:
+                              'Le numéro de version de Ğecko a été copié dans votre presse papier',
+                          duration: 4);
+                    }),
+              ),
               const SizedBox(height: 20)
             ],
           ),

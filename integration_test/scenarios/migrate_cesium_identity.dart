@@ -43,7 +43,7 @@ void main() async {
     await waitForButtonEnabled(keyConfirm);
     await tapKey(keyConfirm);
     spawnBlock(duration: 2000);
-    await waitFor('validé !');
+    await waitFor('validée !');
     await tapKey(keyCloseTransactionScreen, duration: 0);
 
     await tapKey(keyOpenWallet(test6.address), duration: 300);

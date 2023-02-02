@@ -51,7 +51,7 @@ Future payTest2() async {
   await tapKey(keyConfirmPayment);
   spawnBlock(duration: 500);
 
-  await waitFor('validé !', timeout: const Duration(seconds: 1));
+  await waitFor('validée !', timeout: const Duration(seconds: 1));
   await tapKey(keyCloseTransactionScreen, duration: 0);
   await waitFor('12.14');
   spawnBlock(duration: 500);
@@ -64,7 +64,7 @@ Future certifyTest5() async {
   await tapKey(keyCertify);
   await tapKey(keyConfirm);
   spawnBlock(duration: 500);
-  await waitFor('validé !', timeout: const Duration(seconds: 1));
+  await waitFor('validée !', timeout: const Duration(seconds: 1));
   await tapKey(keyCloseTransactionScreen);
   await waitFor('Identité créée');
 
@@ -77,7 +77,7 @@ Future certifyTest5() async {
   await enterText(keyEnterIdentityUsername, test5.name);
   await tapKey(keyConfirm);
   spawnBlock(duration: 500);
-  await waitFor('validé !', timeout: const Duration(seconds: 1));
+  await waitFor('validée !', timeout: const Duration(seconds: 1));
   await tapKey(keyCloseTransactionScreen);
   await waitFor('Identité confirmée');
   humanRead(2);
@@ -103,7 +103,7 @@ Future certifyTest5() async {
   await tapKey(keyCertify);
   await tapKey(keyConfirm);
   spawnBlock(duration: 500);
-  await waitFor('validé !', timeout: const Duration(seconds: 1));
+  await waitFor('validée !', timeout: const Duration(seconds: 1));
   await tapKey(keyCloseTransactionScreen);
   await waitFor('2');
 
@@ -118,7 +118,7 @@ Future certifyTest5() async {
   await tapKey(keyCertify);
   await tapKey(keyConfirm);
   spawnBlock(duration: 500);
-  await waitFor('validé !', timeout: const Duration(seconds: 1));
+  await waitFor('validée !', timeout: const Duration(seconds: 1));
   await tapKey(keyCloseTransactionScreen);
   await waitFor('Vous devez attendre');
 

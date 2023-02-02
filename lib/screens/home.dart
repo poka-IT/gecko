@@ -24,7 +24,6 @@ import 'package:gecko/screens/onBoarding/1.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/settings.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-
 import 'package:provider/provider.dart';
 import 'package:gecko/screens/my_contacts.dart';
 

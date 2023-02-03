@@ -88,9 +88,9 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future _getStorage(String call) async {
-    try{
+    try {
       return await sdk.webView!.evalJavascript('api.query.$call');
-    }catch(e){
+    } catch (e) {
       log.i("catched _getStorage error");
       return Future(() {});
     }
@@ -139,12 +139,14 @@ class SubstrateSdk with ChangeNotifier {
     if (certsCounterCache[address] == null) {
       certsCounterCache.putIfAbsent(address, () => []);
     }
-    try{
+    try {
       certsCounterCache.update(
           address,
-          (value) =>
-              [certsReceiver['receivedCount'] as int, certsReceiver['issuedCount'] as int]);
-    }catch(e){
+          (value) => [
+                certsReceiver['receivedCount'] as int,
+                certsReceiver['issuedCount'] as int
+              ]);
+    } catch (e) {
       // catching String to int error .. network error?
     }
     return certsCounterCache[address]!;
@@ -378,7 +380,7 @@ class SubstrateSdk with ChangeNotifier {
   // }
 
   Future initCurrencyParameters() async {
-    try{
+    try {
       currencyParameters['ss58'] =
           await _getStorageConst('system.ss58Prefix.words');
       currencyParameters['minCertForMembership'] =
@@ -393,7 +395,7 @@ class SubstrateSdk with ChangeNotifier {
           await _getStorageConst('cert.maxByIssuer.words');
       currencyParameters['certValidityPeriod'] =
           await _getStorageConst('cert.validityPeriod.words');
-    }catch(e){
+    } catch (e) {
       log.i('error while getting storageVals (network?)');
     }
     log.i('currencyParameters: $currencyParameters');

@@ -227,12 +227,13 @@ Future<bool> isIdtyExist(String name) async {
 
 Future<DateTime> getBlockStart() async {
   final result = await _execQuery(getBlockchainStartQ, {});
-  if(!result.hasException){
-    startBlockchainTime = DateTime.parse(result.data!['block'][0]['created_at']);
+  if (!result.hasException) {
+    startBlockchainTime =
+        DateTime.parse(result.data!['block'][0]['created_at']);
     startBlockchainInitialized = true;
     return startBlockchainTime;
   }
-  return DateTime(0,0,0,0,0); 
+  return DateTime(0, 0, 0, 0, 0);
 }
 
 Future<QueryResult> _execQuery(

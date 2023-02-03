@@ -223,8 +223,7 @@ class _WalletsHomeState extends State<WalletsHome> {
       const SizedBox(height: 20),
       InkWell(
         key: keyChangeChest,
-        onTap:
-         () {
+        onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) {

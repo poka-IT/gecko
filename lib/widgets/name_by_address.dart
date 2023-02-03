@@ -56,7 +56,6 @@ class NameByAddress extends StatelessWidget {
           ),
           builder: (QueryResult result,
               {VoidCallback? refetch, FetchMore? fetchMore}) {
-                
             if (kDebugMode) {
               if (result.hasException) {
                 return Text(result.exception.toString());

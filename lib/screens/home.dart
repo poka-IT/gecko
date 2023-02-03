@@ -120,7 +120,6 @@ class _HomeScreenState extends State<HomeScreen> {
               getBlockStart();
             }
           }
-          
         });
         // await sub.connectNode(ctx);
       }

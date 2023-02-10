@@ -141,9 +141,8 @@ class HistoryQuery extends StatelessWidget {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     int keyID = 0;
     const double avatarSize = 200;
-    String? lastDateDelimiter;
-    bool? isDouble;
     bool isMigrationPassed = false;
+    List<String> pastDelimiters = [];
 
     return duniterIndexer.transBC == null
         ? Column(children: <Widget>[
@@ -156,11 +155,9 @@ class HistoryQuery extends StatelessWidget {
         : Column(children: <Widget>[
             Column(
                 children: duniterIndexer.transBC!.map((repository) {
-              final answer =
-                  computeHistoryView(repository, lastDateDelimiter, isDouble);
-              isDouble = lastDateDelimiter == answer['dateDelimiter'] ||
-                  answer['dateDelimiter'] == '';
-              lastDateDelimiter = answer['dateDelimiter'];
+              final answer = computeHistoryView(repository);
+              pastDelimiters.add(answer['dateDelimiter']);
+
               bool isMigrationTime = false;
               if (answer['isMigrationTime'] && !isMigrationPassed) {
                 isMigrationPassed = true;
@@ -190,7 +187,12 @@ class HistoryQuery extends StatelessWidget {
                       ],
                     ),
                   ),
-                if (!isDouble!)
+                // if ((countsDelimiter[answer['dateDelimiter']] ?? 0) >= 1)
+
+                if (pastDelimiters.length == 1 ||
+                    pastDelimiters.length >= 2 &&
+                        !(pastDelimiters[pastDelimiters.length - 2] ==
+                            answer['dateDelimiter']))
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 30),
                     child: Text(

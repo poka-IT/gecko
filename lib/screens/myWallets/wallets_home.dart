@@ -224,12 +224,12 @@ class _WalletsHomeState extends State<WalletsHome> {
       InkWell(
         key: keyChangeChest,
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) {
-              return const ChooseChest();
-            }),
-          );
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(builder: (context) {
+          //     return const ChooseChest();
+          //   }),
+          // );
         },
         child: SizedBox(
           width: 400,
@@ -238,7 +238,7 @@ class _WalletsHomeState extends State<WalletsHome> {
               child: Text('changeChest'.tr(),
                   style: const TextStyle(
                       fontSize: 22,
-                      color: orangeC,
+                      color: Colors.grey, //orangeC
                       fontWeight: FontWeight.w500))),
         ),
       ),

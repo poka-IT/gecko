@@ -156,12 +156,12 @@ class UnlockingWallet extends StatelessWidget {
                       InkWell(
                           key: keyChangeChest,
                           onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) {
-                                return const ChooseChest();
-                              }),
-                            );
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(builder: (context) {
+                            //     return const ChooseChest();
+                            //   }),
+                            // );
                           },
                           child: SizedBox(
                             width: 400,
@@ -171,7 +171,7 @@ class UnlockingWallet extends StatelessWidget {
                                 'changeChest'.tr(),
                                 style: const TextStyle(
                                     fontSize: 22,
-                                    color: orangeC,
+                                    color:Colors.grey, // orangeC
                                     fontWeight: FontWeight.w600),
                               ),
                             ),

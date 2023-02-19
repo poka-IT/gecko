@@ -171,7 +171,7 @@ class UnlockingWallet extends StatelessWidget {
                                 'changeChest'.tr(),
                                 style: const TextStyle(
                                     fontSize: 22,
-                                    color:Colors.grey, // orangeC
+                                    color: Colors.grey, // orangeC
                                     fontWeight: FontWeight.w600),
                               ),
                             ),

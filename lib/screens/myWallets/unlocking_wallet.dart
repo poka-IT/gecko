@@ -11,7 +11,7 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/screens/myWallets/choose_chest.dart';
+// import 'package:gecko/screens/myWallets/choose_chest.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/globals.dart';

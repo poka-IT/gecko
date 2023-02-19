@@ -17,7 +17,7 @@ import 'package:gecko/screens/myWallets/import_g1_v1.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/screens/wallet_view.dart';
-import 'package:gecko/screens/myWallets/choose_chest.dart';
+// import 'package:gecko/screens/myWallets/choose_chest.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';

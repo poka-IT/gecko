@@ -31,7 +31,7 @@ class DuniterIndexer with ChangeNotifier {
       final request = await client.postUrl(Uri.parse('$endpoint/v1/graphql'));
       final response = await request.close();
       if (response.statusCode != 200) {
-        log.d('INDEXER IS OFFILINE');
+        log.d('INDEXER IS OFFLINE');
         indexerEndpoint = '';
         isLoadingIndexer = false;
         notifyListeners();
@@ -47,7 +47,7 @@ class DuniterIndexer with ChangeNotifier {
         return true;
       }
     } catch (e) {
-      log.d('INDEXER IS OFFILINE');
+      log.d('INDEXER IS OFFLINE');
       indexerEndpoint = '';
       isLoadingIndexer = false;
       notifyListeners();
@@ -227,8 +227,13 @@ Future<bool> isIdtyExist(String name) async {
 
 Future<DateTime> getBlockStart() async {
   final result = await _execQuery(getBlockchainStartQ, {});
-  startBlockchainTime = DateTime.parse(result.data!['block'][0]['created_at']);
-  return startBlockchainTime;
+  if (!result.hasException) {
+    startBlockchainTime =
+        DateTime.parse(result.data!['block'][0]['created_at']);
+    startBlockchainInitialized = true;
+    return startBlockchainTime;
+  }
+  return DateTime(0, 0, 0, 0, 0);
 }
 
 Future<QueryResult> _execQuery(
@@ -311,7 +316,7 @@ Map computeHistoryView(repository, lastDateDelimiter, isDouble) {
     finalAmount = '$amount $currencyName';
   }
 
-  if (date.compareTo(startBlockchainTime) < 0) {
+  if (startBlockchainInitialized && date.compareTo(startBlockchainTime) < 0) {
     isMigrationTime = true;
   } else {
     isMigrationTime = false;

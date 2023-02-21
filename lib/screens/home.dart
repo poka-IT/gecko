@@ -116,11 +116,10 @@ class _HomeScreenState extends State<HomeScreen> {
               await sub.connectNode(context);
               // Currency parameters
               await sub.initCurrencyParameters();
+              // Indexer Blockchain start
+              getBlockStart();
             }
           }
-
-          // Indexer Blockchain start
-          getBlockStart();
         });
         // await sub.connectNode(ctx);
       }

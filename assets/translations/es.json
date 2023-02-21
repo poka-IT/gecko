@@ -105,6 +105,7 @@
     "identityConfirmed": "Identidad confirmada",
     "identityExpired": "Identidad caducada",
     "confirmYourIdentity": "Confirma tu identidad",
+    "noResult": "Ningún resultado",
     "noDuniterNodeAvailableTryLater": "No hay ningún nodo Duniter disponible, por favor, inténtalo más tarde",
     "youAreConnectedToNode": "Estás conectado al nodo",
     "accountActivity": "Actividad de la cuenta",
@@ -211,5 +212,6 @@
     "displaySettings": "Parametros interficie",
     "indexer": "Indexer",
     "anAutoNodeChoosed": "Se usará automáticamente un nodo seguro y valido desde una lista aleatoria.",
-    "rootWallet": "Monedero raíz"
+    "rootWallet": "Monedero raíz",
+    "blockN": "bloque N°{}"
 }

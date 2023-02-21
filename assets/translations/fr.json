@@ -2,7 +2,7 @@
     "searchWallet": "Rechercher un\nportefeuille",
     "manageWallets": "Gérer mes\nportefeuilles",
     "scanQRCode": "Scanner un\nQR code",
-    "wellConnectedToNode": "Vous êtes bien connecté aux noeud\n{}",
+    "wellConnectedToNode": "Vous êtes bien connecté au noeud\n{}",
     "networkLost": "Le réseau a été perdu...",
     "noDuniterEndointAvailable": "Aucun serveur disponible...",
     "connectionPending": "Connexion en cours...",
@@ -211,5 +211,6 @@
     "displaySettings": "Affichage",
     "indexer": "Indexer",
     "anAutoNodeChoosed": "Un noeud sûr et valide sera choisi automatiquement parmis une liste aléatoire.",
-    "rootWallet": "Portefeuille racine"
+    "rootWallet": "Portefeuille racine",
+    "blockN": "bloc N°{}"
 }

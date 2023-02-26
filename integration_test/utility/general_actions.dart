@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -66,7 +67,7 @@ Future restoreChest() async {
   await enterText(keyPinForm, 'AAAAA', 0);
 
   // Check if string "Accéder à mon coffre" is present in screen
-  await waitFor('Accéder à mon coffre');
+  await waitFor('accessMyChest'.tr());
 
   // Go to wallets home
   await tapKey(keyGoWalletsHome, duration: 0);
@@ -84,7 +85,7 @@ Future restoreChest() async {
   await tapKey(keyCopyAddress);
 
   // Check if string "Cette adresse a été copié" is present in screen
-  await waitFor('Cette adresse a été copié');
+  await waitFor('thisAddressHasBeenCopiedToClipboard'.tr());
 
   // Pop screen 2 time to go back home
   await goBack();
@@ -126,7 +127,7 @@ Future onboardingNewChest() async {
 
   final askedWord = mnemonic[askedWordNumber - 1];
   await enterText(keyInputWord, askedWord);
-  await waitFor('Continuer', exactMatch: true);
+  await waitFor('continue'.tr(), exactMatch: true);
   await tapKey(keyGoNext);
   await tapKey(keyGoNext);
   await tapKey(keyGoNext);
@@ -143,13 +144,13 @@ Future onboardingNewChest() async {
   await enterText(keyPinForm, 'AAAAA', 0);
 
   // Check if string "Accéder à mon coffre" is present in screen
-  await waitFor('Accéder à mon coffre');
+  await waitFor('accessMyChest'.tr());
 
   // Go to wallets home
   await tapKey(keyGoWalletsHome, duration: 0);
 
   // Check if string "Mon portefeuille co" is present in screen
-  await waitFor('Mon portefeuille co');
+  await waitFor('currentWallet'.tr());
   await waitFor('0.0', exactMatch: true);
   // await waitFor('Scanner un');
 }

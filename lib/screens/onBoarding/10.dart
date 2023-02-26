@@ -105,7 +105,7 @@ class OnboardingStepTen extends StatelessWidget {
                     visible: !myWalletProvider.isPinValid &&
                         !myWalletProvider.isPinLoading,
                     child: Text(
-                      "Ce n'est pas le bon code".tr(),
+                      "thisIsNotAGoodCode".tr(),
                       style: const TextStyle(
                           color: Colors.red, fontWeight: FontWeight.w500),
                     ),
@@ -117,10 +117,10 @@ class OnboardingStepTen extends StatelessWidget {
                       ? pinForm(context, walletOptions, pinLenght, 1, 2)
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
+                          children: [
                               Text(
-                                'Vous devez vous connecter à internet\npour valider votre coffre',
-                                style: TextStyle(
+                                "youHaveToBeConnectedToValidateChest".tr(),
+                                style: const TextStyle(
                                   fontSize: 20,
                                   color: Colors.redAccent,
                                   fontWeight: FontWeight.w500,

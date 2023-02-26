@@ -215,5 +215,6 @@
     "rootWallet": "Portafoglio radice",
     "blockN": "blocco N°{}",
     "thisIsNotAGoodCode": "Questo codice non é valido",
-    "youHaveToBeConnectedToValidateChest": "Vous devez vous connecter à internet\npour valider votre coffre"
+    "youHaveToBeConnectedToValidateChest": "Vous devez vous connecter à internet\npour valider votre coffre",
+    "thisIdentityAlreadyExist": "Identitá giá esistente"
 }

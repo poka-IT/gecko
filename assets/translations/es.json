@@ -213,5 +213,8 @@
     "indexer": "Indexer",
     "anAutoNodeChoosed": "Se usará automáticamente un nodo seguro y valido desde una lista aleatoria.",
     "rootWallet": "Monedero raíz",
-    "blockN": "bloque N°{}"
+    "blockN": "bloque N°{}",
+    "thisIsNotAGoodCode": "Este codígo no es valido",
+    "youHaveToBeConnectedToValidateChest": "Tienes que tener conneción\npara validar tu cofre",
+    "thisIdentityAlreadyExist": "Esta identidad ya existe"
 }

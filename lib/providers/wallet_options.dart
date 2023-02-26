@@ -178,7 +178,7 @@ class WalletOptionsProvider with ChangeNotifier {
               ),
               const SizedBox(height: 10),
               Consumer<WalletOptionsProvider>(builder: (context, wOptions, _) {
-                return Text(idtyExist ? 'Cette identité existe déjà' : '',
+                return Text(idtyExist ? "thisIdentityAlreadyExist".tr() : '',
                     style: TextStyle(color: Colors.red[500]));
               })
             ]),

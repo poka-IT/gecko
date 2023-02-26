@@ -212,5 +212,8 @@
     "indexer": "Indexer",
     "anAutoNodeChoosed": "Un noeud sûr et valide sera choisi automatiquement parmis une liste aléatoire.",
     "rootWallet": "Portefeuille racine",
-    "blockN": "bloc N°{}"
+    "blockN": "bloc N°{}",
+    "thisIsNotAGoodCode": "Ce n'est pas le bon code",
+    "youHaveToBeConnectedToValidateChest": "Vous devez vous connecter à internet\npour valider votre coffre",
+    "thisIdentityAlreadyExist": "Cette identité existe déjà"
 }

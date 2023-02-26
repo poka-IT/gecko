@@ -100,8 +100,7 @@ class UnlockingWallet extends StatelessWidget {
                                   style: const TextStyle(
                                       fontSize: 25,
                                       color: Colors.black,
-                                      fontWeight: FontWeight.w700
-                                  ),
+                                      fontWeight: FontWeight.w700),
                                 )),
                           ]),
                       SizedBox(height: 30 * ratio),
@@ -112,8 +111,7 @@ class UnlockingWallet extends StatelessWidget {
                             style: const TextStyle(
                                 fontSize: 19,
                                 color: Colors.black,
-                                fontWeight: FontWeight.w400
-                            ),
+                                fontWeight: FontWeight.w400),
                           )),
                       SizedBox(height: 30 * ratio),
                       if (!myWalletProvider.isPinValid &&

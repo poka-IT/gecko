@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 // --- THIS IS WIP ---
 
 class GeckoStyles {
-
   TextStyle successBold(List<String> pars) {
     return TextStyle(
       color: Colors.green.shade600,
@@ -14,9 +13,7 @@ class GeckoStyles {
   }
 
   TextStyle success() {
-    return TextStyle(
-      color: Colors.green.shade600
-    );
+    return TextStyle(color: Colors.green.shade600);
   }
 
   TextStyle error500(List<String> pars) {

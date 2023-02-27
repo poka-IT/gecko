@@ -213,5 +213,8 @@
     "indexer": "Indexer",
     "anAutoNodeChoosed": "Un nodo sicuro e valido sará automaticamente scelto da una lista casuale.",
     "rootWallet": "Portafoglio radice",
-    "blockN": "blocco N°{}"
+    "blockN": "blocco N°{}",
+    "thisIsNotAGoodCode": "Questo codice non é valido",
+    "youHaveToBeConnectedToValidateChest": "Vous devez vous connecter à internet\npour valider votre coffre",
+    "thisIdentityAlreadyExist": "Identitá giá esistente"
 }

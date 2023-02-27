@@ -212,5 +212,9 @@
     "indexer": "Indexer",
     "anAutoNodeChoosed": "A secure and valid node will be automatically used from a random list.",
     "rootWallet": "Root Wallet",
-    "blockN": "block N°{}"
+    "blockN": "block N°{}",
+    "thisIsNotAGoodCode": "This is not a good code",
+    "youHaveToBeConnectedToValidateChest": "You have to be connected\nto validate your chest",
+    "thisIdentityAlreadyExist": "This identity already exists"
+    
 }

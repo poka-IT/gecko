@@ -30,7 +30,7 @@ class WalletsProfilesProvider with ChangeNotifier {
     try {
       barcode = await BarcodeScanner.scan();
     } catch (e) {
-      log.e(e);
+      log.e("BarcodeScanner ERR: $e");
       return 'false';
     }
     if (isAddress(barcode.rawContent)) {

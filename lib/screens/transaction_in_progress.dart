@@ -42,6 +42,8 @@ class TransactionInProgress extends StatelessWidget {
     String actionName = '';
     final bool isUdUnit = configBox.get('isUdUnit') ?? false;
 
+    log.d("$transType :: $actionName :: $result");
+
     switch (transType) {
       case 'pay':
         {
@@ -94,7 +96,6 @@ class TransactionInProgress extends StatelessWidget {
         {
           isLoading = false;
           // jsonResult = json.decode(_result);
-          log.d(result);
           if (result.contains('blockHash: ')) {
             isValid = true;
             resultText = 'extrinsicValidated'.tr(args: [actionName]);
@@ -110,7 +111,7 @@ class TransactionInProgress extends StatelessWidget {
             } else {
               exception = exceptionSplit[0];
             }
-            // log.d('expection: $_exception');
+            log.d('expection: $exceptionSplit');
             switch (exception) {
               case 'cert.NotRespectCertPeriod':
               case 'identity.CreatorNotAllowedToCreateIdty':

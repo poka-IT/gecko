@@ -117,7 +117,7 @@ class UnlockingWallet extends StatelessWidget {
                       if (!myWalletProvider.isPinValid &&
                           !myWalletProvider.isPinLoading)
                         Text(
-                          "Ce n'est pas le bon code".tr(),
+                          "thisIsNotAGoodCode".tr(),
                           style: const TextStyle(
                               color: Colors.red, fontWeight: FontWeight.w500),
                         ),

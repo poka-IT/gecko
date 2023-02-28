@@ -253,7 +253,7 @@ Future<QueryResult> _execQuery(
   return await client.query(options);
 }
 
-Map computeHistoryView(repository, lastDateDelimiter, isDouble) {
+Map computeHistoryView(repository) {
   bool isTody = false;
   bool isYesterday = false;
   bool isThisWeek = false;
@@ -281,27 +281,26 @@ Map computeHistoryView(repository, lastDateDelimiter, isDouble) {
   final yesterdayDate = DateTime(now.year, now.month, now.day - 1);
 
   if (transactionDate == todayDate && !isTody) {
-    dateDelimiter = lastDateDelimiter = "today".tr();
+    dateDelimiter = "today".tr();
     isTody = true;
   } else if (transactionDate == yesterdayDate && !isYesterday) {
-    dateDelimiter = lastDateDelimiter = "yesterday".tr();
+    dateDelimiter = "yesterday".tr();
     isYesterday = true;
   } else if (weekNumber(date) == weekNumber(now) &&
       date.year == now.year &&
       transactionDate != yesterdayDate &&
       transactionDate != todayDate &&
       !isThisWeek) {
-    dateDelimiter = lastDateDelimiter = "thisWeek".tr();
+    dateDelimiter = "thisWeek".tr();
     isThisWeek = true;
-  } else if (lastDateDelimiter != "${monthsInYear[date.month]} ${date.year}" &&
+  } else if (dateDelimiter != "${monthsInYear[date.month]} ${date.year}" &&
       transactionDate != todayDate &&
       transactionDate != yesterdayDate &&
       !(weekNumber(date) == weekNumber(now) && date.year == now.year)) {
     if (date.year == now.year) {
-      dateDelimiter = lastDateDelimiter = monthsInYear[date.month];
+      dateDelimiter = monthsInYear[date.month];
     } else {
-      dateDelimiter =
-          lastDateDelimiter = "${monthsInYear[date.month]} ${date.year}";
+      dateDelimiter = "${monthsInYear[date.month]} ${date.year}";
     }
   } else {
     isDelimiter = false;

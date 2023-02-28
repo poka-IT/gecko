@@ -164,7 +164,7 @@
     "amount": "Montant:",
     "choiceOfSourceWallet": "Choix du portefeuille source",
     "extrinsicInProgress": "{} en cours",
-    "extrinsicValidated": "{} validé !",
+    "extrinsicValidated": "{} validée !",
     "fromMinus": "de",
     "toMinus": "vers",
     "deleteThisWallet": "Supprimer ce portefeuille",

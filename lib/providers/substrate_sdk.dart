@@ -96,10 +96,19 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
-  Future _getStorageConst(String call) async {
-    return (await sdk.webView!
+  Future<int> _getStorageConst(String call) async {
+    final result = (await sdk.webView!
             .evalJavascript('api.consts.$call', wrapPromise: false) ??
         [null])[0];
+
+    return checkInt(result) ?? 0;
+  }
+
+  int? checkInt(dynamic value) {
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) return int.tryParse(value);
+    return null;
   }
 
   Future<TxSenderData> _setSender(String address) async {
@@ -396,7 +405,7 @@ class SubstrateSdk with ChangeNotifier {
       currencyParameters['certValidityPeriod'] =
           await _getStorageConst('cert.validityPeriod.words');
     } catch (e) {
-      log.i('error while getting storageVals (network?)');
+      log.i('error while getting storageVals (network?) :: $e');
     }
     log.i('currencyParameters: $currencyParameters');
   }

@@ -75,7 +75,7 @@ class SearchIdentityQuery extends StatelessWidget {
             }
 
             searchProvider.resultLenght = identities.length;
-            // TODO: Find a way to reload a provider here, in Widget build...
+            // TODO: Find a way to reload a provider here, in Widget build... riverpod refacto needed...
 
             double avatarSize = 55;
             return Expanded(

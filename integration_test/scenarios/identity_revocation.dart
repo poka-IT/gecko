@@ -39,7 +39,7 @@ void main() async {
     await tapKey(keyRevokeIdty);
     await tapKey(keyConfirm);
     spawnBlock(duration: 2000);
-    await waitFor('validé !', timeout: const Duration(seconds: 4));
+    await waitFor('validée !', timeout: const Duration(seconds: 4));
     await tapKey(keyCloseTransactionScreen, duration: 0);
     await waitFor('Aucune identité', exactMatch: true);
     await sleep();
@@ -60,7 +60,7 @@ void main() async {
     // await waitForButtonEnabled(keyConfirm);
     // await tapKey(keyConfirm, duration: 500);
     // await spawnBlock(duration: 2000);
-    // await waitFor('validé !');
+    // await waitFor('validée !');
     // await tapKey(keyCloseTransactionScreen, duration: 0);
     // await sleep(5000);
   }, timeout: testTimeout());

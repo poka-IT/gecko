@@ -75,8 +75,8 @@ class CesiumPlusProvider with ChangeNotifier {
         data: queryOptions[1],
         options: Options(
           headers: queryOptions[2],
-          sendTimeout: 3000,
-          receiveTimeout: 5000,
+          sendTimeout: const Duration(seconds: 3),
+          receiveTimeout: const Duration(seconds: 5),
         ),
       );
       // response = await http.post((Uri.parse(queryOptions[0])),
@@ -118,8 +118,8 @@ class CesiumPlusProvider with ChangeNotifier {
               data: queryOptions[1],
               options: Options(
                 headers: queryOptions[2],
-                sendTimeout: 4000,
-                receiveTimeout: 15000,
+                sendTimeout: const Duration(seconds: 4),
+                receiveTimeout: const Duration(seconds: 15),
               ),
               cancelToken: avatarCancelToken)
           .timeout(

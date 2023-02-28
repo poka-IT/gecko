@@ -168,7 +168,6 @@ Future<bool> isIconPresent(IconData icon,
     {Duration timeout = const Duration(seconds: 1)}) async {
   await tester.pumpAndSettle();
   final finder = find.byIcon(icon);
-  log.d('tatatatatatata: ${finder.evaluate()}');
   humanRead();
   return finder.evaluate().isEmpty ? false : true;
 }

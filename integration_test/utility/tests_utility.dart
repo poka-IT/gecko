@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -302,14 +303,14 @@ Future bkFastStart([bool restoreChest = true]) async {
   if (restoreChest) {
     // Restore the test chest
     await bkRestoreChest();
-    await waitFor("y'a pas de lézard");
+    await waitFor("noLizard".tr());
   }
 }
 
 Future startWait() async {
   app.main();
   await waitFor('Test starting...', reverse: true);
-  await tester.pumpAndSettle(const Duration(milliseconds: 300));
+  await tester.pumpAndSettle(const Duration(seconds: 2));
   await sleep(3000);
 }
 

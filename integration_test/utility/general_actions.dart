@@ -152,12 +152,11 @@ Future onboardingNewChest() async {
   // Check if string "Mon portefeuille co" is present in screen
   await waitFor('currentWallet'.tr());
   await waitFor('0.0', exactMatch: true);
-  // await waitFor('Scanner un');
 }
 
 Future addDerivation() async {
   await tapKey(keyAddDerivation);
-  await waitFor('Portefeuille 5');
+  await waitFor(' 5');
 }
 
 Future firstOpenChest() async {

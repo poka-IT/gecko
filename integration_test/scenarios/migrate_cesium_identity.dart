@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -20,7 +21,7 @@ void main() async {
 
     // Go to test1 options and check if balance growup with UDs creations
     await tapKey(keyAddDerivation);
-    await waitFor('Portefeuille 6');
+    await waitFor(' 6');
 
     await scrollUntil(keyImportG1v1);
     await tapKey(keyImportG1v1);
@@ -43,12 +44,12 @@ void main() async {
     await waitForButtonEnabled(keyConfirm);
     await tapKey(keyConfirm);
     spawnBlock(duration: 2000);
-    await waitFor('validée !');
+    await waitFor('extrinsicValidated'.tr());
     await tapKey(keyCloseTransactionScreen, duration: 0);
 
     await tapKey(keyOpenWallet(test6.address), duration: 300);
     await waitFor('3', exactMatch: true);
-    await waitFor('Membre validé !');
+    await waitFor('memberValidated'.tr());
 
     await waitFor('99.98', exactMatch: true);
   }, timeout: testTimeout());

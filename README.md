@@ -1,16 +1,13 @@
 # Ğecko
 
-Ğecko is a transaction client owned by [Axiom-Team association] and written in Dart. It is fast and
-secure thanks to native code compilation. It is not intended to manage member accounts, but rather
-simple wallets.
+Ğecko is mobile client for Duniter v2s blockchain (Ḡ1v2): https://duniter.org/blog/duniter-substrate<br>
+It use polkawallet_sdk package to interact with Duniter: https://github.com/polkawallet-io/sdk
 
-The development is quite early, you can participate in the
-discussion [on the Duniter forum](https://forum.duniter.org/t/gecko-nouveau-client-de-paiements-1-sur-mobile-en-cours-de-developpement-dart-flutter/7857) (
-mostly FR)
+This application is maintained by [Axiom-Team association](https://axiom-team.fr/).
 
-[Axiom-Team association]: https://axiom-team.fr/
+You can download the last version of the app [here](https://forum.duniter.org/t/gecko-gdev-last-build/9367/last).<br>
+You can ask questions about Ḡecko developpement in our [Duniter forum](https://forum.duniter.org/t/gecko-talks-user-support/9372/last).
 
-## Getting Started
 
 <div align="center">
 
@@ -21,18 +18,16 @@ mostly FR)
 
 ## Develop
 
-To contribute to the code, we advise you to install the following development environment.
+To contribute to the code, we advise you to install the following development environment:
 
-1. Android Studio
+1. [Android Studio](https://developer.android.com/studio/install)
+2. [Flutter](https://docs.flutter.dev/get-started/install)
+3. [VSCode](https://code.visualstudio.com/docs/setup/linux) or [VSCodium](https://vscodium.com/)
 
-- Android VM
-- Android NDK
-
-1. Flutter SDK
-1. VSCode/Codium Flutter extension
-
-This will take about 12GB on your drive and 30 min of your time (with a good connection). Don't
+This will take about 12GB on your drive and 20 min of your time (with a good connection). Don't
 hesitate to ask on the forum for a peer-coding session if you are stuck.
+
+At the end, `flutter doctor` command should be OK for what you need.
 
 ### Android Studio
 
@@ -42,16 +37,15 @@ Android Studio will let you set up an Android VM and install tools you need.
   method.
 - At startup, do not open a project but click "configure" at the bottom of the "Welcome" menu
 - In "SDK Manager"
-    - SDK Platforms Ttab
-        - note your SDK folder location (later used for Rust environment variables)
-        - select Android 11 (R) API level 30 (default)
-    - SDK Tools
-        - select NDK (native development kit used to compile Rust to native target)
+    - SDK Platforms tab
+        - select Android 11 (R) API level 30 (default) or higher
 - In "AVD Manager"
-    - create a virtual machine (ours is Pixel 4 32bits machine)
-    - launch it in the emulator
+    - create a virtual machine
 
 If you reach this point without trouble, you're good to go for the next step.
+
+### iOS (Xcode on Mac)
+TODO: documentation
 
 ### Flutter SDK
 
@@ -66,37 +60,36 @@ whatever you want.
 Clone the ğecko repo and open a dart file (e.g. `lib/main.dart`). VSCode will suggest you to insall
 relevant extensions.
 
-### Build the app
+### Launch the app in debug mode
 
-In a dart file (e.g. `lib/main.dart`), type the `F5` key to build the code. The app should open
+Start a VM, then open a dart file (e.g. `lib/main.dart`), type the `F5` key to build the code. The app should open
 automatically in your VM which is running.
 
-### Build your app for Desktop
+### Build APK
 
-#### Linux
-
-Install dependancies:
-
-`sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev`
-
-Then build debug for linux:
-
-`flutter run -d linux`
-
-If you get this error:
+You will need to generate PlayStore key or disable signing APK before continue.
+Then, check this script and launch it:
 
 ```
-flutter /usr/share/cmake-3.16/Modules/FindPkgConfig.cmake:643 (_pkg_check_modules_internal)
+./scripts/build-apk.sh 
 ```
 
-Please try:
+### Integration tests
 
-`sudo apt install liblzma-dev`
+Open an android or iOS emulator, then launch this script:
 
-then
+```
+./integration_test/launch_test.sh
+```
 
-`flutter clean && flutter run -d linux`
+It will start the [default test scenario](https://git.duniter.org/clients/gecko/-/blob/master/integration_test/scenarios/gecko_complete.dart).
 
-## Roadmap
+You can start another scenario defined [here](https://git.duniter.org/clients/gecko/-/tree/master/integration_test/scenarios) specifying the name of the file without its extension, for example to run migrate_cesium_identity.dart test:
 
--> https://pad.p2p.legal/gecko-roadmap-2022?view
+```
+./integration_test/launch_test.sh migrate_cesium_identity
+```
+
+### A problem ?
+
+Please open an issue here: https://git.duniter.org/clients/gecko/-/boards

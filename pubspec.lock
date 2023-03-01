@@ -1153,10 +1153,10 @@ packages:
     description:
       path: "."
       ref: gecko-fixes
-      resolved-ref: c97a9223c70b00261f6144543a9f5edf88d6b837
+      resolved-ref: "2e42824adf778c118248ba559be32208e9d9a650"
       url: "https://github.com/poka-IT/sdk.git"
     source: git
-    version: "0.5.0"
+    version: "0.5.2"
   pool:
     dependency: transitive
     description:

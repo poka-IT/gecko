@@ -223,7 +223,7 @@ Future bkConfirmIdentity(
 // Change node in background
 Future bkSetNode([String? endpoint]) async {
   if (endpoint == null) {
-    final ipAddress = dotenv.env['ip_address'] ?? '127.0.0.1';
+    const ipAddress = '10.0.2.2';
     endpoint = 'ws://$ipAddress:9944';
   }
   configBox.put('customEndpoint', endpoint);

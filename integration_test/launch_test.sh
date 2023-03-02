@@ -5,8 +5,9 @@ option=$2
 [[ ! $testName ]] && testName='gecko_complete'
 
 # Get local IP and set .env
-ip_address=$(hostname -I | awk '{print $1}')
-echo "ip_address=$ip_address" > .env
+#ip_address=$(hostname -I 2>/dev/null || ipconfig 2>&1 | grep "IPv4 Address" | head -n1 | awk -F ':' '{ print $2}' | tr -d ' ') # old fashion style...
+#ip_address="10.0.2.2"
+#echo "ip_address=$ip_address" > .env
 [[ $option == 'human' ]] && echo "isHumanReading=true" >> .env
 
 ## Start local Duniter node
@@ -20,10 +21,10 @@ cd ../..
 flutter test integration_test/scenarios/$testName.dart && echo '0' > /tmp/geckoTestResult || echo '1' > /tmp/geckoTestResult
 
 # Reset .env
-echo "ip_address=127.0.0.1" > .env
+echo "ip_address=127.0.0.1" > .env # not used anymore, host IP is 10.0.2.2
 
 # Stop Duniter
 cd integration_test/duniter
 docker compose down
 
-
+exit 0

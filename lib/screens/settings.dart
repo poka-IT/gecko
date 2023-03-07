@@ -146,9 +146,9 @@ class SettingsScreen extends StatelessWidget {
             child: Row(children: [
               const SizedBox(width: 10),
               SizedBox(
-                width: 100,
+                width: 80,
                 child: Text(
-                  'currencyNode'.tr(args: [currencyName]),
+                  'currencyNode'.tr(args: ['']),
                 ),
               ),
               const Spacer(),
@@ -159,7 +159,7 @@ class SettingsScreen extends StatelessWidget {
                 const Icon(Icons.add_card_sharp, size: 0.01),
               const Spacer(),
               SizedBox(
-                width: 265,
+                width: 280,
                 child: Consumer<SettingsProvider>(builder: (context, set, _) {
                   return DropdownButtonHideUnderline(
                     key: keySelectDuniterNodeDropDown,
@@ -299,7 +299,7 @@ class SettingsScreen extends StatelessWidget {
             child: Row(children: [
               const SizedBox(width: 10),
               const SizedBox(
-                width: 100,
+                width: 80,
                 // child: Text('indexer'.tr()), // why translation does not work??
                 child: Text('Indexer'),
               ),
@@ -307,7 +307,7 @@ class SettingsScreen extends StatelessWidget {
               Icon(indexerEndpoint != '' ? Icons.check : Icons.close),
               const Spacer(),
               SizedBox(
-                width: 265,
+                width: 280,
                 child: Consumer<SettingsProvider>(builder: (context, set, _) {
                   return DropdownButtonHideUnderline(
                     child: DropdownButton(

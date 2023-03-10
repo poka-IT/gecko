@@ -119,7 +119,7 @@ class SettingsScreen extends StatelessWidget {
     final customEndpoint = NetworkParams();
     customEndpoint.endpoint = 'Personnalisé';
     final localEndpoint = NetworkParams();
-    localEndpoint.endpoint = 'ws://127.0.0.1:9944';
+    localEndpoint.endpoint = 'ws://10.0.2.2:9944';
     final automaticEndpoint = NetworkParams();
     automaticEndpoint.endpoint = 'Auto';
     // duniterBootstrapNodes.add(_sub.getDuniterCustomEndpoint());

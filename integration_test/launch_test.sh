@@ -21,7 +21,7 @@ cd ../..
 flutter test integration_test/scenarios/$testName.dart && echo '0' > /tmp/geckoTestResult || echo '1' > /tmp/geckoTestResult
 
 # Reset .env
-echo "ip_address=127.0.0.1" > .env # not used anymore, host IP is 10.0.2.2
+# echo "ip_address=127.0.0.1" > .env # not used anymore, host IP is 10.0.2.2
 
 # Stop Duniter
 cd integration_test/duniter

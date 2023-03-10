@@ -29,10 +29,7 @@ class TransactionInProgress extends StatelessWidget {
 
     String resultText;
     bool isLoading = true;
-    // Map jsonResult;
     final result = sub.transactionStatus;
-
-    // sub.spawnBlock();
 
     log.d(walletProfiles.address);
 

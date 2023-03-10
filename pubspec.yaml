@@ -47,8 +47,8 @@ dependencies:
       # url: https://github.com/polkawallet-io/sdk.git
       # ref: develop
       url: https://github.com/poka-IT/sdk.git
-      # ref: gecko-fixes
-      ref: 2e42824adf778c118248ba559be32208e9d9a650
+      # ref: gecko-fixes-2
+      ref: ff98a117e86060a91113107f31355a17ccfb346c
   dots_indicator: ^2.1.0
   connectivity_plus: ^3.0.2
   image_cropper: ^3.0.0

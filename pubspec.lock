@@ -1152,11 +1152,11 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "2e42824adf778c118248ba559be32208e9d9a650"
-      resolved-ref: "2e42824adf778c118248ba559be32208e9d9a650"
+      ref: ff98a117e86060a91113107f31355a17ccfb346c
+      resolved-ref: ff98a117e86060a91113107f31355a17ccfb346c
       url: "https://github.com/poka-IT/sdk.git"
     source: git
-    version: "0.5.2"
+    version: "0.5.3"
   pool:
     dependency: transitive
     description:

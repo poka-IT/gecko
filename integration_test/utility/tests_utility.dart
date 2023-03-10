@@ -1,8 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -13,8 +11,9 @@ import 'package:provider/provider.dart';
 import 'dart:io' as io;
 import 'package:gecko/main.dart' as app;
 
-final bool isHumanReading =
-    dotenv.env['isHumanReading'] == 'true' ? true : false;
+const bool isHumanReading = false;
+// final bool isHumanReading =
+//     dotenv.env['isHumanReading'] == 'true' ? true : false;
 Timeout testTimeout([int seconds = 120]) =>
     Timeout(Duration(seconds: isHumanReading ? 600 : seconds));
 final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);

@@ -16,7 +16,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
@@ -51,9 +50,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
 
-  if (kDebugMode) {
-    await dotenv.load();
-  }
+  // if (kDebugMode) {
+  //   await dotenv.load();
+  // }
 
   HomeProvider homeProvider = HomeProvider();
   // DuniterIndexer _duniterIndexer = DuniterIndexer();

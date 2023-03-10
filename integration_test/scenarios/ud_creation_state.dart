@@ -1,4 +1,3 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:integration_test/integration_test.dart';
@@ -7,7 +6,7 @@ import '../utility/tests_utility.dart';
 
 void main() async {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load();
+  // await dotenv.load();
 
   testWidgets('UDs creation state', (testerLoc) async {
     tester = testerLoc;

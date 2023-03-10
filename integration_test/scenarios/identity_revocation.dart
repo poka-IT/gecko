@@ -1,4 +1,4 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:integration_test/integration_test.dart';
@@ -7,7 +7,7 @@ import '../utility/tests_utility.dart';
 
 void main() async {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load();
+  // await dotenv.load();
 
   testWidgets('Identity revocation', (testerLoc) async {
     tester = testerLoc;
@@ -32,16 +32,17 @@ void main() async {
     await bkConfirmIdentity(fromAddress: test5.address, name: test5.name);
     await bkCertify(fromAddress: test2.address, destAddress: test5.address);
     await bkCertify(fromAddress: test3.address, destAddress: test5.address);
-    await waitFor('Membre validé !', exactMatch: true);
+    await waitFor('memberValidated'.tr(), exactMatch: true);
 
     // Revoke test5
     await tapKey(keyManageMembership, duration: 1000);
     await tapKey(keyRevokeIdty);
     await tapKey(keyConfirm);
     spawnBlock(duration: 2000);
-    await waitFor('validée !', timeout: const Duration(seconds: 4));
+    await waitFor('extrinsicValidated'.tr().substring(3),
+        timeout: const Duration(seconds: 4));
     await tapKey(keyCloseTransactionScreen, duration: 0);
-    await waitFor('Aucune identité', exactMatch: true);
+    await waitFor('noIdentity'.tr(), exactMatch: true);
     await sleep();
 
     // Check test1 cannot be revoked
@@ -49,19 +50,7 @@ void main() async {
     await tapKey(keyAddDerivation);
     await tapKey(keyOpenWallet(test1.address), duration: 500);
     await tapKey(keyManageMembership, duration: 1000);
-    await waitFor('Vous ne pouvez pas révoquer cette identité');
+    await waitFor('youCannotRevokeThisIdentity'.tr().substring(0, 15));
 
-    // // Try migrate test1 identity to test6 address
-    // await tapKey(keyMigrateIdentity);
-    // await tapKey(keySelectWallet);
-    // await tapKey(keySelectThisWallet(test6.address), selectLast: true);
-    // await spawnBlock(number: 100);
-    // await waitFor('Vous devez attendre', reverse: true);
-    // await waitForButtonEnabled(keyConfirm);
-    // await tapKey(keyConfirm, duration: 500);
-    // await spawnBlock(duration: 2000);
-    // await waitFor('validée !');
-    // await tapKey(keyCloseTransactionScreen, duration: 0);
-    // await sleep(5000);
   }, timeout: testTimeout());
 }

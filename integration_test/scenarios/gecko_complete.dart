@@ -1,4 +1,4 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:integration_test/integration_test.dart';
@@ -7,7 +7,7 @@ import '../utility/tests_utility.dart';
 
 void main() async {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load();
+  // await dotenv.load();
 
   testWidgets('Gecko complete', (testerLoc) async {
     // Share WidgetTester to test provider
@@ -35,7 +35,7 @@ void main() async {
 
 Future payTest2() async {
   spawnBlock(until: 13);
-  await waitFor('Rechercher');
+  await waitFor('searchWallet'.tr());
   await tapKey(keyOpenSearch);
   final addressToSearch = await clipPaste();
   final endAddress = addressToSearch.substring(addressToSearch.length - 6);
@@ -51,7 +51,7 @@ Future payTest2() async {
   await tapKey(keyConfirmPayment);
   spawnBlock(duration: 500);
 
-  await waitFor('validée !', timeout: const Duration(seconds: 1));
+  await waitFor('extrinsicValidated'.tr(), timeout: const Duration(seconds: 1));
   await tapKey(keyCloseTransactionScreen, duration: 0);
   await waitFor('12.14');
   spawnBlock(duration: 500);
@@ -64,9 +64,9 @@ Future certifyTest5() async {
   await tapKey(keyCertify);
   await tapKey(keyConfirm);
   spawnBlock(duration: 500);
-  await waitFor('validée !', timeout: const Duration(seconds: 1));
+  await waitFor('extrinsicValidated'.tr(), timeout: const Duration(seconds: 1));
   await tapKey(keyCloseTransactionScreen);
-  await waitFor('Identité créée');
+  await waitFor('identityCreated'.tr());
 
   // Confirm Identity Test5
   await tapKey(keyAppBarChest, duration: 300);
@@ -77,15 +77,15 @@ Future certifyTest5() async {
   await enterText(keyEnterIdentityUsername, test5.name);
   await tapKey(keyConfirm);
   spawnBlock(duration: 500);
-  await waitFor('validée !', timeout: const Duration(seconds: 1));
+  await waitFor('extrinsicValidated'.tr(), timeout: const Duration(seconds: 1));
   await tapKey(keyCloseTransactionScreen);
-  await waitFor('Identité confirmée');
+  await waitFor('identityConfirmed'.tr());
   humanRead(2);
   // Set wallet 2 as default wallet
   await goBack();
   await tapKey(keyOpenWallet(test2.address));
   await tapKey(keySetDefaultWallet);
-  await waitFor('Ce portefeuille est celui par defaut');
+  await waitFor('thisWalletIsDefault'.tr());
 
   // Search Wallet 5 again
   await tapKey(keyAppBarSearch);
@@ -103,7 +103,7 @@ Future certifyTest5() async {
   await tapKey(keyCertify);
   await tapKey(keyConfirm);
   spawnBlock(duration: 500);
-  await waitFor('validée !', timeout: const Duration(seconds: 1));
+  await waitFor('extrinsicValidated'.tr(), timeout: const Duration(seconds: 1));
   await tapKey(keyCloseTransactionScreen);
   await waitFor('2');
 
@@ -118,14 +118,14 @@ Future certifyTest5() async {
   await tapKey(keyCertify);
   await tapKey(keyConfirm);
   spawnBlock(duration: 500);
-  await waitFor('validée !', timeout: const Duration(seconds: 1));
+  await waitFor('extrinsicValidated'.tr(), timeout: const Duration(seconds: 1));
   await tapKey(keyCloseTransactionScreen);
-  await waitFor('Vous devez attendre');
+  await waitFor('mustWaitXBeforeCertify'.substring(0, 12));
 
   // Check if test5 is member
   await tapKey(keyAppBarChest, duration: 300);
   await tapKey(keyOpenWallet(test5.address));
-  await waitFor('Membre validé !');
+  await waitFor('memberValidated'.tr());
 
   // spawn 20 blocs and check if ud is creating
   await spawnBlock(until: 20);

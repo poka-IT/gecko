@@ -16,7 +16,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
@@ -51,9 +50,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
 
-  if (kDebugMode) {
-    await dotenv.load();
-  }
+  // if (kDebugMode) {
+  //   await dotenv.load();
+  // }
 
   HomeProvider homeProvider = HomeProvider();
   // DuniterIndexer _duniterIndexer = DuniterIndexer();
@@ -72,23 +71,9 @@ Future<void> main() async {
 
   chestBox = await Hive.openBox<ChestData>("chestBox");
 
-  // Reset GraphQL cache
-  // final cache = HiveStore();
-  // cache.reset();
-
   HttpOverrides.global = MyHttpOverrides();
 
   if (kReleaseMode && enableSentry) {
-    // CatcherOptions debugOptions = CatcherOptions(DialogReportMode(), [
-    //   SentryHandler(SentryClient(SentryOptions(
-    //       dsn:
-    //           "https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110")))
-    // ]);
-    // // CatcherOptions releaseOptions = CatcherOptions(NotificationReportMode(), [
-    // //   EmailManualHandler(["poka@p2p.legal"])
-    // // ]);
-    // Catcher(rootWidget: Gecko(endPointGVA, _store), debugConfig: debugOptions);
-
     await SentryFlutter.init((options) {
       options.dsn =
           'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';

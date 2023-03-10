@@ -1,7 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -12,8 +11,9 @@ import 'package:provider/provider.dart';
 import 'dart:io' as io;
 import 'package:gecko/main.dart' as app;
 
-final bool isHumanReading =
-    dotenv.env['isHumanReading'] == 'true' ? true : false;
+const bool isHumanReading = false;
+// final bool isHumanReading =
+//     dotenv.env['isHumanReading'] == 'true' ? true : false;
 Timeout testTimeout([int seconds = 120]) =>
     Timeout(Duration(seconds: isHumanReading ? 600 : seconds));
 final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
@@ -167,7 +167,6 @@ Future<bool> isIconPresent(IconData icon,
     {Duration timeout = const Duration(seconds: 1)}) async {
   await tester.pumpAndSettle();
   final finder = find.byIcon(icon);
-  log.d('tatatatatatata: ${finder.evaluate()}');
   humanRead();
   return finder.evaluate().isEmpty ? false : true;
 }
@@ -223,7 +222,7 @@ Future bkConfirmIdentity(
 // Change node in background
 Future bkSetNode([String? endpoint]) async {
   if (endpoint == null) {
-    final ipAddress = dotenv.env['ip_address'] ?? '127.0.0.1';
+    const ipAddress = '10.0.2.2';
     endpoint = 'ws://$ipAddress:9944';
   }
   configBox.put('customEndpoint', endpoint);
@@ -302,14 +301,14 @@ Future bkFastStart([bool restoreChest = true]) async {
   if (restoreChest) {
     // Restore the test chest
     await bkRestoreChest();
-    await waitFor("y'a pas de lézard");
+    await waitFor("noLizard".tr());
   }
 }
 
 Future startWait() async {
   app.main();
   await waitFor('Test starting...', reverse: true);
-  await tester.pumpAndSettle(const Duration(milliseconds: 300));
+  await tester.pumpAndSettle(const Duration(seconds: 2));
   await sleep(3000);
 }
 

@@ -119,6 +119,7 @@ class ImportG1v1 extends StatelessWidget {
                     TextFormField(
                       key: keyCesiumId,
                       autofocus: true,
+                      autocorrect: false,
                       onChanged: (text) {
                         if (debounce?.isActive ?? false) {
                           debounce!.cancel();
@@ -154,6 +155,7 @@ class ImportG1v1 extends StatelessWidget {
                     TextFormField(
                       key: keyCesiumPassword,
                       autofocus: true,
+                      autocorrect: false,
                       onChanged: (text) {
                         if (debounce?.isActive ?? false) {
                           debounce!.cancel();

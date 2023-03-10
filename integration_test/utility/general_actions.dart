@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -11,7 +10,7 @@ import 'tests_utility.dart';
 // GENERAL ACTIONS
 
 Future changeNode() async {
-  final ipAddress = dotenv.env['ip_address'] ?? '127.0.0.1';
+  const ipAddress = '10.0.2.2';
   log.d('ip address: $ipAddress');
 
   await tapKey(keyDrawerMenu);
@@ -152,12 +151,11 @@ Future onboardingNewChest() async {
   // Check if string "Mon portefeuille co" is present in screen
   await waitFor('currentWallet'.tr());
   await waitFor('0.0', exactMatch: true);
-  // await waitFor('Scanner un');
 }
 
 Future addDerivation() async {
   await tapKey(keyAddDerivation);
-  await waitFor('Portefeuille 5');
+  await waitFor(' 5');
 }
 
 Future firstOpenChest() async {

@@ -1,4 +1,4 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:integration_test/integration_test.dart';
@@ -7,7 +7,7 @@ import '../utility/tests_utility.dart';
 
 void main() async {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load();
+  // await dotenv.load();
 
   testWidgets('Certifications state', (testerLoc) async {
     tester = testerLoc;
@@ -25,9 +25,9 @@ void main() async {
     await tapKey(keyConfirmSearch);
     await waitFor(test5.shortAddress());
     await tapKey(keySearchResult(test5.address));
-    await waitFor('Certifier');
-    await waitFor('Vous devez ', reverse: true);
-    await waitFor('Vous pourrez renouveler ', reverse: true);
+    await waitFor('certify'.tr());
+    await waitFor('mustWaitXBeforeCertify'.tr().substring(0, 6), reverse: true);
+    await waitFor('canRenewCertInX'.tr().substring(0, 8), reverse: true);
 
     // Background pay 25
     await bkPay(

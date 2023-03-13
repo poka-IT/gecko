@@ -34,6 +34,10 @@ class WalletsProfilesProvider with ChangeNotifier {
       return 'false';
     }
     if (isAddress(barcode.rawContent)) {
+      Navigator.popUntil(
+        context,
+        ModalRoute.withName('/'),
+      );
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) {

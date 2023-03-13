@@ -62,10 +62,6 @@ class GeckoBottomAppBar extends StatelessWidget {
             iconSize: 70,
             icon: const Image(image: AssetImage('assets/qrcode-scan.png')),
             onPressed: () async {
-              Navigator.popUntil(
-                context,
-                ModalRoute.withName('/'),
-              );
               historyProvider.scan(homeContext);
             },
           ),

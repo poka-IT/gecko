@@ -111,4 +111,3 @@ flutter:
     - assets/onBoarding/progress_bar/
     - assets/walletOptions/
     - sounds/
-    - .env

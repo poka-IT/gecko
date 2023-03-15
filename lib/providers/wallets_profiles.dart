@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +10,7 @@ import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
 // import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:barcode_scan2/barcode_scan2.dart';
+import 'package:confetti/confetti.dart';
 
 class WalletsProfilesProvider with ChangeNotifier {
   WalletsProfilesProvider(this.address);
@@ -21,6 +24,8 @@ class WalletsProfilesProvider with ChangeNotifier {
   TextEditingController payAmount = TextEditingController();
   TextEditingController payComment = TextEditingController();
   num? _balance;
+  final centerController =
+      ConfettiController(duration: const Duration(milliseconds: 300));
 
   Future<String> scan(context) async {
     if (Platform.isAndroid || Platform.isIOS) {
@@ -137,8 +142,12 @@ class WalletsProfilesProvider with ChangeNotifier {
     // log.d(profile.username);
     if (isContact(profile.address)) {
       await contactsBox.delete(profile.address);
+      snackMessage(homeContext, message: 'removedFromcontacts'.tr());
     } else {
+      centerController.play();
       await contactsBox.put(profile.address, profile);
+      // drawStar(Size(50, 50));
+      snackMessage(homeContext, message: 'addedToContacts'.tr());
     }
     notifyListeners();
   }

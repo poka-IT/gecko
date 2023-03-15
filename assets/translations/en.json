@@ -152,7 +152,7 @@
     "canRenewCertInX": "You can renew\nthis certification\nin {}",
     "executeATransfer": "Execute a transfer",
     "executeTheTransfer": "Execute the transfer",
-    "doATransfer" : "Execute a\ntransfer",
+    "doATransfer": "Execute a\ntransfer",
     "seconds": "{} seconds",
     "minutes": "{} minutes",
     "hours": "{} hours {}",
@@ -199,13 +199,13 @@
     "ud": "{}UD",
     "chooseATargetWallet": "Choose a target wallet",
     "thisMnemonicHasBeenCopiedToClipboard": "This mnemonic has been copied to clipboard",
-    "smithCantMigrateIdentity":"You can't migrate this identity while you're member of smith web",
+    "smithCantMigrateIdentity": "You can't migrate this identity while you're member of smith web",
     "received": "Received",
     "sent": "Sent",
     "createIdentity": "Create a new \nidentity",
     "memberAccountOf": "Account of {}",
     "pasteAddress": "Paste address from\nclipboard",
-    "historyStart" :"Beginning of history",
+    "historyStart": "Beginning of history",
     "blockchainStart": "Beginning of the ĞDev",
     "networkSettings": "Network Settings",
     "displaySettings": "Display Settings",
@@ -215,6 +215,7 @@
     "blockN": "block N°{}",
     "thisIsNotAGoodCode": "This is not a good code",
     "youHaveToBeConnectedToValidateChest": "You have to be connected\nto validate your chest",
-    "thisIdentityAlreadyExist": "This identity already exists"
-    
+    "thisIdentityAlreadyExist": "This identity already exists",
+    "removedFromcontacts": "Removed from contacts",
+    "addedToContacts": "Added to contacts"
 }

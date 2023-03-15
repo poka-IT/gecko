@@ -153,7 +153,7 @@
     "canRenewCertInX": "Podrás renovar\nla certificación\nen {}",
     "executeATransfer": "Ejecutar una transacción",
     "executeTheTransfer": "Ejecutar la transacción",
-    "doATransfer" : "Hacer una\ntransacción",
+    "doATransfer": "Hacer una\ntransacción",
     "seconds": "{} segundos",
     "minutes": "{} minutos",
     "hours": "{} horas {}",
@@ -200,13 +200,13 @@
     "ud": "{}DU",
     "chooseATargetWallet": "Elige un monedero de destino",
     "thisMnemonicHasBeenCopiedToClipboard": "This mnemonic has been copied to clipboard",
-    "smithCantMigrateIdentity":"You can't migrate this identity while you're member of smith web",
+    "smithCantMigrateIdentity": "You can't migrate this identity while you're member of smith web",
     "received": "Received",
     "sent": "Sent",
     "createIdentity": "Create a new \nidentity",
     "memberAccountOf": "Account of {}",
     "pasteAddress": "Paste address from\nclipboard",
-    "historyStart" :"Beginning of history",
+    "historyStart": "Beginning of history",
     "blockchainStart": "Comienzo de la ĞDev",
     "networkSettings": "Parametros de red",
     "displaySettings": "Parametros interficie",
@@ -216,5 +216,7 @@
     "blockN": "bloque N°{}",
     "thisIsNotAGoodCode": "Este codígo no es valido",
     "youHaveToBeConnectedToValidateChest": "Tienes que tener conneción\npara validar tu cofre",
-    "thisIdentityAlreadyExist": "Esta identidad ya existe"
+    "thisIdentityAlreadyExist": "Esta identidad ya existe",
+    "removedFromcontacts": "Removed from contacts",
+    "addedToContacts": "Added to contacts"
 }

@@ -2,15 +2,18 @@ import 'package:easy_localization/easy_localization.dart';
 
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/contacts_list.dart';
+import 'package:provider/provider.dart';
 
 class ContactsScreen extends StatelessWidget {
   const ContactsScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    Provider.of<WalletsProfilesProvider>(context, listen: true);
     double avatarSize = 55;
     final myContacts = contactsBox.toMap().values.toList();
 
@@ -34,9 +37,7 @@ class ContactsScreen extends StatelessWidget {
       bottomNavigationBar: const GeckoBottomAppBar(),
       body: SafeArea(
         child: Stack(children: [
-          ContactsList(
-              myContacts: myContacts,
-              avatarSize: avatarSize),
+          ContactsList(myContacts: myContacts, avatarSize: avatarSize),
           const OfflineInfo(),
         ]),
       ),

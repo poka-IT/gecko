@@ -142,12 +142,13 @@ class WalletsProfilesProvider with ChangeNotifier {
     // log.d(profile.username);
     if (isContact(profile.address)) {
       await contactsBox.delete(profile.address);
-      snackMessage(homeContext, message: 'removedFromcontacts'.tr());
+      snackMessage(homeContext,
+          message: 'removedFromcontacts'.tr(), duration: 4);
     } else {
       centerController.play();
       await contactsBox.put(profile.address, profile);
       // drawStar(Size(50, 50));
-      snackMessage(homeContext, message: 'addedToContacts'.tr());
+      snackMessage(homeContext, message: 'addedToContacts'.tr(), duration: 4);
     }
     notifyListeners();
   }

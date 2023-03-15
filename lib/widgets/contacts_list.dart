@@ -26,7 +26,7 @@ class ContactsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final walletsProfilesClass =
-        Provider.of<WalletsProfilesProvider>(context, listen: true);
+        Provider.of<WalletsProfilesProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     return Padding(

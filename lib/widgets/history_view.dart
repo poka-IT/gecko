@@ -10,8 +10,10 @@ class HistoryView extends StatelessWidget {
   const HistoryView({
     Key? key,
     required this.result,
+    required this.address,
   }) : super(key: key);
   final QueryResult result;
+  final String address;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +34,7 @@ class HistoryView extends StatelessWidget {
         : Column(children: <Widget>[
             Column(
                 children: duniterIndexer.transBC!.map((repository) {
-              final answer = computeHistoryView(repository);
+              final answer = computeHistoryView(repository, address);
               pastDelimiters.add(answer['dateDelimiter']);
 
               bool isMigrationTime = false;
@@ -64,8 +66,28 @@ class HistoryView extends StatelessWidget {
                       ],
                     ),
                   ),
-                // if ((countsDelimiter[answer['dateDelimiter']] ?? 0) >= 1)
-
+                if (answer['isChangeOwnerkeyTime'])
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 30),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Image(
+                            image: AssetImage('assets/party.png'), height: 40),
+                        const SizedBox(width: 40),
+                        Text(
+                          'Identité migré !'.tr(),
+                          style: const TextStyle(
+                              fontSize: 25,
+                              color: Colors.blueAccent,
+                              fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(width: 40),
+                        const Image(
+                            image: AssetImage('assets/party.png'), height: 40),
+                      ],
+                    ),
+                  ),
                 if (pastDelimiters.length == 1 ||
                     pastDelimiters.length >= 2 &&
                         !(pastDelimiters[pastDelimiters.length - 2] ==

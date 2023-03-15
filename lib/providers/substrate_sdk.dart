@@ -46,6 +46,7 @@ class SubstrateSdk with ChangeNotifier {
   bool isCesiumAddresLoading = false;
   late int udValue;
   Map<String, List<int>> certsCounterCache = {};
+  Map<String, List> oldOwnerKeys = {};
 
   /////////////////////////////////////
   ////////// 1: API METHODS ///////////
@@ -328,6 +329,29 @@ class SubstrateSdk with ChangeNotifier {
         await _getStorage('cert.storageIdtyCertMeta($idtyIndex)') ?? '';
 
     return certMeta;
+  }
+
+  Future<List> getOldOwnerKey(String address) async {
+    // final walletOptions =
+    //     Provider.of<WalletOptionsProvider>(homeContext, listen: false);
+
+    var idtyIndex = await _getIdentityIndexOf(address);
+    if (idtyIndex == 0) return [];
+
+    final Map? idtyData = await _getStorage('identity.identities($idtyIndex)');
+    if (idtyData == null || idtyData['oldOwnerKey'] == null) return [];
+
+    List oldKeys = idtyData['oldOwnerKey'] ?? [];
+    if (oldKeys.isEmpty) return [];
+
+    oldKeys[1] = blocNumberToDate(oldKeys[1]);
+    oldOwnerKeys.putIfAbsent(address, () => oldKeys);
+
+    return oldKeys;
+  }
+
+  DateTime blocNumberToDate(int blocNumber) {
+    return startBlockchainTime.add(Duration(seconds: blocNumber * 6));
   }
 
   Future<String> idtyStatus(String address) async {

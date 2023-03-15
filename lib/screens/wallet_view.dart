@@ -53,8 +53,6 @@ class WalletViewScreen extends StatelessWidget {
     walletProfile.address = address;
     sub.setCurrentWallet(defaultWallet);
 
-    log.d('aaaaaaaaaaaaaaaaaaa:  $username');
-
     return Scaffold(
         backgroundColor: backgroundColor,
         resizeToAvoidBottomInset: true,

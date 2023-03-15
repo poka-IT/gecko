@@ -8,6 +8,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:provider/provider.dart';
 
 class DuniterIndexer with ChangeNotifier {
   Map<String, String?> walletNameIndexer = {};
@@ -253,14 +254,17 @@ Future<QueryResult> _execQuery(
   return await client.query(options);
 }
 
-Map computeHistoryView(repository) {
+Map computeHistoryView(repository, String address) {
   bool isTody = false;
   bool isYesterday = false;
   bool isThisWeek = false;
   bool isMigrationTime = false;
+  bool isChangeOwnerkeyTime = false;
   String? dateDelimiter;
   DateTime now = DateTime.now();
   final bool isUdUnit = configBox.get('isUdUnit') ?? false;
+
+  final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
 
   late double amount;
   late String finalAmount;
@@ -321,12 +325,21 @@ Map computeHistoryView(repository) {
     isMigrationTime = false;
   }
 
+  log.d('taaaaaaaaaaaaaa: $date');
+  log.d('taaaaaaa: ${sub.oldOwnerKeys[address]?[1]}');
+  if (date.compareTo(sub.oldOwnerKeys[address]?[1] ?? DateTime(2000)) < 0) {
+    isChangeOwnerkeyTime = true;
+  } else {
+    isChangeOwnerkeyTime = false;
+  }
+
   return {
     'finalAmount': finalAmount,
     'isMigrationTime': isMigrationTime,
     'dateDelimiter': dateDelimiter ?? '',
     'isDelimiter': isDelimiter,
     'dateForm': dateForm,
+    'isChangeOwnerkeyTime': isChangeOwnerkeyTime
   };
 }
 

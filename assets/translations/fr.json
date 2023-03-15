@@ -199,13 +199,13 @@
     "ud": "{}DU",
     "chooseATargetWallet": "Choisissez un portefeuille cible",
     "thisMnemonicHasBeenCopiedToClipboard": "Cette phrase secrète viens d'être copié dans votre presse-papier.",
-    "smithCantMigrateIdentity":"Vous ne pouvez pas migrer cette identité\ntant que vous êtes dans la toile forgerons",
+    "smithCantMigrateIdentity": "Vous ne pouvez pas migrer cette identité\ntant que vous êtes dans la toile forgerons",
     "received": "Reçus",
     "sent": "Envoyés",
     "createIdentity": "Créer sa nouvelle\nidentité",
     "memberAccountOf": "Compte de {}",
     "pasteAddress": "Coller l'adresse depuis\nle presse-papier",
-    "historyStart" :"Début de l'historique",
+    "historyStart": "Début de l'historique",
     "blockchainStart": "Début de la ĞDev",
     "networkSettings": "Connectivité réseau",
     "displaySettings": "Affichage",
@@ -215,5 +215,7 @@
     "blockN": "bloc N°{}",
     "thisIsNotAGoodCode": "Ce n'est pas le bon code",
     "youHaveToBeConnectedToValidateChest": "Vous devez vous connecter à internet\npour valider votre coffre",
-    "thisIdentityAlreadyExist": "Cette identité existe déjà"
+    "thisIdentityAlreadyExist": "Cette identité existe déjà",
+    "removedFromcontacts": "Retiré des contact",
+    "addedToContacts": "Ajouté au contacts"
 }

@@ -11,29 +11,30 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/name_by_address.dart';
+import 'package:provider/provider.dart';
 
 class ContactsList extends StatelessWidget {
   const ContactsList({
     Key? key,
     required this.myContacts,
     required this.avatarSize,
-    required this.walletsProfilesClass,
-    required this.duniterIndexer,
   }) : super(key: key);
 
   final List<G1WalletsList> myContacts;
   final double avatarSize;
-  final WalletsProfilesProvider walletsProfilesClass;
-  final DuniterIndexer duniterIndexer;
 
   @override
   Widget build(BuildContext context) {
+    final walletsProfilesClass =
+        Provider.of<WalletsProfilesProvider>(context, listen: false);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            const SizedBox(height: 20),
+            const SizedBox(height: 20, width: double.infinity),
             if (myContacts.isEmpty)
               Text('noContacts'.tr())
             else

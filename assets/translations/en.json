@@ -217,5 +217,6 @@
     "youHaveToBeConnectedToValidateChest": "You have to be connected\nto validate your chest",
     "thisIdentityAlreadyExist": "This identity already exists",
     "removedFromcontacts": "Removed from contacts",
-    "addedToContacts": "Added to contacts"
+    "addedToContacts": "Added to contacts",
+    "certificationsOf": "Certifications of {}"
 }

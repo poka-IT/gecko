@@ -146,7 +146,7 @@ class WalletOptions extends StatelessWidget {
                                         builder: (context, walletProvider, _) {
                                       return NameByAddress(
                                           wallet: wallet,
-                                          size: 27,
+                                          size: 29,
                                           color: Colors.black,
                                           fontWeight: wallet.isMember
                                               ? FontWeight.w500
@@ -183,7 +183,7 @@ class WalletOptions extends StatelessWidget {
                             ]),
                             SizedBox(height: isTall ? 5 : 0),
                             Balance(
-                                address: walletProvider.address.text, size: 21),
+                                address: walletProvider.address.text, size: 24),
                             const SizedBox(width: 30),
                             InkWell(
                               onTap: () => isWalletNameIndexed

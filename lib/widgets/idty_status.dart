@@ -54,7 +54,7 @@ class IdentityStatus extends StatelessWidget {
                       ? showText('memberValidated'.tr(), 18, true)
                       : NameByAddress(
                           wallet: WalletData(address: address),
-                          size: 20,
+                          size: 24,
                           color: Colors.black,
                           fontWeight: FontWeight.w600,
                           fontStyle: FontStyle.normal);

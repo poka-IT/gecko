@@ -218,5 +218,6 @@
     "youHaveToBeConnectedToValidateChest": "Tienes que tener conneción\npara validar tu cofre",
     "thisIdentityAlreadyExist": "Esta identidad ya existe",
     "removedFromcontacts": "Removed from contacts",
-    "addedToContacts": "Added to contacts"
+    "addedToContacts": "Added to contacts",
+    "certificationsOf": "Certifications of {}"
 }

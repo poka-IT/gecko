@@ -217,5 +217,6 @@
     "youHaveToBeConnectedToValidateChest": "Vous devez vous connecter à internet\npour valider votre coffre",
     "thisIdentityAlreadyExist": "Cette identité existe déjà",
     "removedFromcontacts": "Retiré des contact",
-    "addedToContacts": "Ajouté au contacts"
+    "addedToContacts": "Ajouté au contacts",
+    "certificationsOf": "Certifications de {}"
 }

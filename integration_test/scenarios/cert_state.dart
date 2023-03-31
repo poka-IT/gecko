@@ -25,7 +25,7 @@ void main() async {
     await tapKey(keyConfirmSearch);
     await waitFor(test5.shortAddress());
     await tapKey(keySearchResult(test5.address));
-    await waitFor('certify'.tr());
+    await waitFor('createIdentity'.tr());
     await waitFor('mustWaitXBeforeCertify'.tr().substring(0, 6), reverse: true);
     await waitFor('canRenewCertInX'.tr().substring(0, 8), reverse: true);
 

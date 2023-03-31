@@ -95,10 +95,6 @@ class _HomeScreenState extends State<HomeScreen> {
             var connectivityResult = await (Connectivity().checkConnectivity());
             if (connectivityResult != ConnectivityResult.none) {
               await sub.connectNode(context);
-              // Currency parameters
-              await sub.initCurrencyParameters();
-              // Indexer Blockchain start
-              getBlockStart();
             }
           }
         });

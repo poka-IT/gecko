@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
@@ -220,6 +221,7 @@ class SubstrateSdk with ChangeNotifier {
         await _getStorage('universalDividend.pastReevals()');
 
     // Compute amount of claimable UDs
+    currentUdIndex = await getCurrentUdIndex();
     final int unclaimedUds = _computeUnclaimUds(
         idtyData?['data']?['firstEligibleUd'] ?? 0, pastReevals);
 
@@ -264,6 +266,9 @@ class SubstrateSdk with ChangeNotifier {
         currentUdIndex = revalNbr;
       }
     }
+
+    // log.d(
+    //     "debug computeUnclaimUds: ${pastReevals.reversed} --- $firstEligibleUd --- $currentUdIndex");
 
     return totalAmount;
   }
@@ -584,9 +589,13 @@ class SubstrateSdk with ChangeNotifier {
         }
         notifyListeners();
       });
-      currentUdIndex =
-          int.parse(await _getStorage('universalDividend.currentUdIndex()'));
+      currentUdIndex = await getCurrentUdIndex();
       await getBalanceRatio();
+
+      // Currency parameters
+      await initCurrencyParameters();
+      // Indexer Blockchain start
+      getBlockStart();
 
       notifyListeners();
       homeProvider.changeMessage(
@@ -616,6 +625,10 @@ class SubstrateSdk with ChangeNotifier {
       node.add(n);
     }
     return node;
+  }
+
+  Future<int> getCurrentUdIndex() async {
+    return int.parse(await _getStorage('universalDividend.currentUdIndex()'));
   }
 
   NetworkParams getDuniterCustomEndpoint() {
@@ -934,6 +947,9 @@ class SubstrateSdk with ChangeNotifier {
     final toCerts = await getCertsCounter(destAddress);
 
     // log.d('debug: ${currencyParameters['minCertForMembership']}');
+
+    log.d(
+        "debug toCert: ${toCerts[0]} --- ${currencyParameters['minCertForMembership']!} --- $toIdtyStatus");
 
     if (toIdtyStatus == 'noid') {
       txInfo = TxInfoData(

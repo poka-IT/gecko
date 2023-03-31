@@ -11,6 +11,7 @@ const keyAppBarChest = Key('keyAppBarChest');
 
 // Home
 const keyParameters = Key('keyParameters');
+const keyDebugScreen = Key('keyDebugScreen');
 const keyContacts = Key('keyContacts');
 const keyDrawerMenu = Key('keyDrawerMenu');
 const keyOpenWalletsHomme = Key('keyOpenWalletsHomme');

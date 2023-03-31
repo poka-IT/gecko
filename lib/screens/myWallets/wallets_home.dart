@@ -6,7 +6,6 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +24,6 @@ import 'package:gecko/widgets/commons/smooth_transition.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:truncate/truncate.dart';
 // import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
 class WalletsHome extends StatefulWidget {
@@ -228,7 +226,6 @@ class _WalletsHomeState extends State<WalletsHome> {
         Provider.of<WalletOptionsProvider>(context, listen: false);
     final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     if (!isWalletsExists) {
       return const Text('');

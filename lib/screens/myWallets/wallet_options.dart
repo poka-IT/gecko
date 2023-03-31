@@ -41,7 +41,7 @@ class WalletOptions extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
-    // final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     // sub.spawnBlock();
     // sub.spawnBlock(0, 20);
 
@@ -249,9 +249,6 @@ class WalletOptions extends StatelessWidget {
                             walletProvider.isDefaultWallet =
                                 walletOptions.address.text ==
                                     defaultWallet.address;
-                            final walletData = walletBox
-                                    .get(walletOptions.address.text) ??
-                                WalletData(address: walletOptions.address.text);
                             return Column(children: [
                               confirmIdentityButton(walletProvider),
                               pubkeyWidget(walletProvider, ctx),
@@ -267,16 +264,27 @@ class WalletOptions extends StatelessWidget {
                                   currentChest),
                               SizedBox(height: 17 * ratio),
                               // walletProvider.isMember(context, _walletOptions.address.text)
-                              Column(children: [
-                                if (!walletProvider.isDefaultWallet &&
-                                    !walletData.isMember)
-                                  deleteWallet(
-                                      context, walletProvider, currentChest)
-                                else
-                                  const SizedBox(),
-                                if (walletData.isMember)
-                                  const ManageMembershipButton()
-                              ])
+                              FutureBuilder(
+                                  future:
+                                      sub.isMember(walletOptions.address.text),
+                                  builder: (BuildContext context,
+                                      AsyncSnapshot<bool> isMember) {
+                                    if (isMember.connectionState !=
+                                            ConnectionState.done ||
+                                        isMember.hasError) {
+                                      return const Text('');
+                                    }
+                                    return Column(children: [
+                                      if (!walletProvider.isDefaultWallet &&
+                                          !isMember.data!)
+                                        deleteWallet(context, walletProvider,
+                                            currentChest)
+                                      else
+                                        const SizedBox(),
+                                      if (isMember.data!)
+                                        const ManageMembershipButton()
+                                    ]);
+                                  }),
                             ]);
                           }),
                         ]),

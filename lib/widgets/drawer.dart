@@ -64,7 +64,7 @@ class MainDrawer extends StatelessWidget {
               ),
             if (kDebugMode)
               ListTile(
-                key: keyParameters,
+                key: keyDebugScreen,
                 title: Text('Debug screen'.tr()),
                 onTap: () {
                   Navigator.pop(context);

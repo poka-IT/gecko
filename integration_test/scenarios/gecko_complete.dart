@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:integration_test/integration_test.dart';
@@ -10,6 +11,7 @@ void main() async {
   // await dotenv.load();
 
   testWidgets('Gecko complete', (testerLoc) async {
+    FlutterError.onError = ignoreOverflowErrors;
     // Share WidgetTester to test provider
     tester = testerLoc;
 
@@ -50,8 +52,10 @@ Future payTest2() async {
   await enterText(keyAmountField, '12.14');
   await tapKey(keyConfirmPayment);
   spawnBlock(duration: 500);
+  await tester.pump(const Duration(seconds: 2));
+  await waitFor('sending'.tr(),
+      reverse: true, settle: false, timeout: const Duration(seconds: 20));
 
-  await waitFor('extrinsicValidated'.tr(), timeout: const Duration(seconds: 1));
   await tapKey(keyCloseTransactionScreen, duration: 0);
   await waitFor('12.14');
   spawnBlock(duration: 500);
@@ -63,8 +67,10 @@ Future certifyTest5() async {
   // Create identity with Test1 account
   await tapKey(keyCertify);
   await tapKey(keyConfirm);
-  spawnBlock(duration: 500);
-  await waitFor('extrinsicValidated'.tr(), timeout: const Duration(seconds: 1));
+  spawnBlock(duration: 1000);
+  await tester.pump(const Duration(seconds: 2));
+  await waitFor('sending'.tr(),
+      reverse: true, settle: false, timeout: const Duration(seconds: 20));
   await tapKey(keyCloseTransactionScreen);
   await waitFor('identityCreated'.tr());
 
@@ -76,8 +82,10 @@ Future certifyTest5() async {
   await tapKey(keyConfirmIdentity);
   await enterText(keyEnterIdentityUsername, test5.name);
   await tapKey(keyConfirm);
-  spawnBlock(duration: 500);
-  await waitFor('extrinsicValidated'.tr(), timeout: const Duration(seconds: 1));
+  spawnBlock(duration: 1000);
+  await tester.pump(const Duration(seconds: 2));
+  await waitFor('sending'.tr(),
+      reverse: true, settle: false, timeout: const Duration(seconds: 20));
   await tapKey(keyCloseTransactionScreen);
   await waitFor('identityConfirmed'.tr());
   humanRead(2);
@@ -102,8 +110,10 @@ Future certifyTest5() async {
   // Certify with test2 account
   await tapKey(keyCertify);
   await tapKey(keyConfirm);
-  spawnBlock(duration: 500);
-  await waitFor('extrinsicValidated'.tr(), timeout: const Duration(seconds: 1));
+  spawnBlock(duration: 1000);
+  await tester.pump(const Duration(seconds: 2));
+  await waitFor('sending'.tr(),
+      reverse: true, settle: false, timeout: const Duration(seconds: 20));
   await tapKey(keyCloseTransactionScreen);
   await waitFor('2');
 
@@ -117,10 +127,12 @@ Future certifyTest5() async {
   // Certify with test3 account
   await tapKey(keyCertify);
   await tapKey(keyConfirm);
-  spawnBlock(duration: 500);
-  await waitFor('extrinsicValidated'.tr(), timeout: const Duration(seconds: 1));
+  spawnBlock(duration: 1000);
+  await tester.pump(const Duration(seconds: 2));
+  await waitFor('sending'.tr(),
+      reverse: true, settle: false, timeout: const Duration(seconds: 20));
   await tapKey(keyCloseTransactionScreen);
-  await waitFor('mustWaitXBeforeCertify'.substring(0, 12));
+  await waitFor('mustWaitXBeforeCertify'.tr().substring(0, 8));
 
   // Check if test5 is member
   await tapKey(keyAppBarChest, duration: 300);

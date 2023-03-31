@@ -22,6 +22,7 @@ import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/smooth_transition.dart';
+import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:truncate/truncate.dart';
@@ -40,31 +41,6 @@ class _WalletsHomeState extends State<WalletsHome> {
 
   @override
   void initState() {
-    // targets
-    //     .add(TargetFocus(identify: "Target 1", keyTarget: safeKey, contents: [
-    //   TargetContent(
-    //       align: ContentAlign.right,
-    //       child: Column(
-    //         mainAxisSize: MainAxisSize.min,
-    //         crossAxisAlignment: CrossAxisAlignment.start,
-    //         children: const <Widget>[
-    //           Text(
-    //             "Titulo lorem ipsum",
-    //             style: TextStyle(
-    //                 fontWeight: FontWeight.bold,
-    //                 color: Colors.white,
-    //                 fontSize: 20.0),
-    //           ),
-    //           Padding(
-    //             padding: EdgeInsets.only(top: 10.0),
-    //             child: Text(
-    //               "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin pulvinar tortor eget maximus iaculis.",
-    //               style: TextStyle(color: Colors.white),
-    //             ),
-    //           )
-    //         ],
-    //       ))
-    // ]));
     super.initState();
   }
 
@@ -430,31 +406,17 @@ class _WalletsHomeState extends State<WalletsHome> {
                                         children: [
                                           const SizedBox(height: 7),
                                           Opacity(
-                                            opacity: 0.7,
-                                            child: Text(
-                                              duniterIndexer.walletNameIndexer[
-                                                      repository.address] ??
-                                                  truncate(
-                                                      repository.name!, 20),
-                                              style: TextStyle(
-                                                  fontSize: 20,
-                                                  color:
-                                                      defaultWallet.address ==
-                                                              repository.address
-                                                          ? Colors.white
-                                                          : Colors.black,
-                                                  fontWeight: FontWeight.w500),
-                                            ),
-                                          )
-                                          // NameByAddress(
-                                          //   wallet: repository,
-                                          //   address: repository.address,
-                                          //   size: 20,
-                                          // color: defaultWallet.address ==
-                                          //         repository.address
-                                          //     ? Colors.white
-                                          //     : Colors.black,
-                                          // ),
+                                              opacity: 0.7,
+                                              child: NameByAddress(
+                                                wallet: repository,
+                                                size: 20,
+                                                color: defaultWallet.address ==
+                                                        repository.address
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                                fontWeight: FontWeight.w600,
+                                                fontStyle: FontStyle.normal,
+                                              ))
                                         ],
                                       ),
                                     ],

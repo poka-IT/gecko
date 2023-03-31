@@ -60,10 +60,9 @@ class CertTile extends StatelessWidget {
                         TextSpan(
                           text: getShortPubkey(repository['address']),
                           style: TextStyle(
-                            fontStyle: FontStyle.italic,
-                            color: Colors.grey[600],
-                            fontSize: 18
-                          ),
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey[600],
+                              fontSize: 18),
                         ),
                       ],
                     ),

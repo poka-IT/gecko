@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -22,6 +23,8 @@ class IdentityStatus extends StatelessWidget {
   Widget build(BuildContext context) {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
+    final walletData = walletBox.get(address) ?? WalletData(address: address);
+
     return Consumer<SubstrateSdk>(builder: (context, sub, _) {
       return FutureBuilder(
           future: sub.idtyStatus(address),
@@ -30,14 +33,20 @@ class IdentityStatus extends StatelessWidget {
             duniterIndexer.idtyStatusCache[address] = snapshot.data.toString();
             switch (snapshot.data.toString()) {
               case 'noid':
+                walletData.isMember = false;
+                walletBox.put(address, walletData);
                 {
                   return showText('noIdentity'.tr());
                 }
               case 'Created':
+                walletData.isMember = false;
+                walletBox.put(address, walletData);
                 {
                   return showText('identityCreated'.tr());
                 }
               case 'ConfirmedByOwner':
+                walletData.isMember = false;
+                walletBox.put(address, walletData);
                 {
                   return isOwner
                       ? showText('identityConfirmed'.tr())
@@ -49,6 +58,8 @@ class IdentityStatus extends StatelessWidget {
                           fontStyle: FontStyle.italic);
                 }
               case 'Validated':
+                walletData.isMember = true;
+                walletBox.put(address, walletData);
                 {
                   return isOwner
                       ? showText('memberValidated'.tr(), 18, true)
@@ -60,6 +71,8 @@ class IdentityStatus extends StatelessWidget {
                           fontStyle: FontStyle.normal);
                 }
               case 'expired':
+                walletData.isMember = false;
+                walletBox.put(address, walletData);
                 {
                   return showText('identityExpired'.tr());
                 }

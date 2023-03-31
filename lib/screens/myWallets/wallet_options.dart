@@ -13,10 +13,10 @@ import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/certifications.dart';
 import 'package:gecko/screens/activity.dart';
-import 'package:gecko/screens/myWallets/manage_membership.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
+import 'package:gecko/widgets/buttons/manage_membership_button.dart';
 import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/idty_status.dart';
@@ -40,7 +40,6 @@ class WalletOptions extends StatelessWidget {
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     // final sub = Provider.of<SubstrateSdk>(context, listen: false);
     // sub.spawnBlock();
@@ -245,6 +244,14 @@ class WalletOptions extends StatelessWidget {
                           SizedBox(height: 30 * ratio),
                           Consumer<WalletOptionsProvider>(
                               builder: (context, walletProvider, _) {
+                            final defaultWallet =
+                                myWalletProvider.getDefaultWallet();
+                            walletProvider.isDefaultWallet =
+                                walletOptions.address.text ==
+                                    defaultWallet.address;
+                            final walletData = walletBox
+                                    .get(walletOptions.address.text) ??
+                                WalletData(address: walletOptions.address.text);
                             return Column(children: [
                               confirmIdentityButton(walletProvider),
                               pubkeyWidget(walletProvider, ctx),
@@ -260,27 +267,16 @@ class WalletOptions extends StatelessWidget {
                                   currentChest),
                               SizedBox(height: 17 * ratio),
                               // walletProvider.isMember(context, _walletOptions.address.text)
-                              FutureBuilder(
-                                  future:
-                                      sub.isMember(walletOptions.address.text),
-                                  builder: (BuildContext context,
-                                      AsyncSnapshot<bool> isMember) {
-                                    if (isMember.connectionState !=
-                                            ConnectionState.done ||
-                                        isMember.hasError) {
-                                      return const Text('');
-                                    }
-                                    return Column(children: [
-                                      if (!walletProvider.isDefaultWallet &&
-                                          !isMember.data!)
-                                        deleteWallet(context, walletProvider,
-                                            currentChest)
-                                      else
-                                        const SizedBox(),
-                                      if (isMember.data!)
-                                        manageMembership(context)
-                                    ]);
-                                  }),
+                              Column(children: [
+                                if (!walletProvider.isDefaultWallet &&
+                                    !walletData.isMember)
+                                  deleteWallet(
+                                      context, walletProvider, currentChest)
+                                else
+                                  const SizedBox(),
+                                if (walletData.isMember)
+                                  const ManageMembershipButton()
+                              ])
                             ]);
                           }),
                         ]),
@@ -491,36 +487,6 @@ class WalletOptions extends StatelessWidget {
           Text("displayActivity".tr(),
               style:
                   const TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
-        ]),
-      ),
-    );
-  }
-
-  Widget manageMembership(BuildContext context) {
-    final walletOptions =
-        Provider.of<WalletOptionsProvider>(context, listen: false);
-    return InkWell(
-      key: keyManageMembership,
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) {
-            return ManageMembership(
-              address: walletOptions.address.text,
-            );
-          }),
-        );
-      },
-      child: SizedBox(
-        height: 40,
-        child: Row(children: <Widget>[
-          const SizedBox(width: 32),
-          Image.asset(
-            'assets/medal.png',
-            height: 45,
-          ),
-          const SizedBox(width: 22),
-          Text('manageMembership'.tr(), style: const TextStyle(fontSize: 20)),
         ]),
       ),
     );

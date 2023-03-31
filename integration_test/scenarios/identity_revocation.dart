@@ -35,7 +35,7 @@ void main() async {
     await waitFor('memberValidated'.tr(), exactMatch: true);
 
     // Revoke test5
-    await tapKey(keyManageMembership, duration: 1000);
+    await tapKey(keyManageMembership, duration: 5000);
     await tapKey(keyRevokeIdty);
     await tapKey(keyConfirm);
     spawnBlock(duration: 2000);
@@ -49,8 +49,7 @@ void main() async {
     await goBack();
     await tapKey(keyAddDerivation);
     await tapKey(keyOpenWallet(test1.address), duration: 500);
-    await tapKey(keyManageMembership, duration: 1000);
+    await tapKey(keyManageMembership, duration: 3000);
     await waitFor('youCannotRevokeThisIdentity'.tr().substring(0, 15));
-
   }, timeout: testTimeout());
 }

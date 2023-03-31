@@ -16,7 +16,7 @@ class OnboardingStepEleven extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final conffetiController =
-        ConfettiController(duration: const Duration(milliseconds: 300));
+        ConfettiController(duration: const Duration(milliseconds: 500));
     conffetiController.play();
     return WillPopScope(
       onWillPop: () {
@@ -55,16 +55,29 @@ class OnboardingStepEleven extends StatelessWidget {
                 const SizedBox(height: 40),
               ]),
               Align(
-                alignment: Alignment.topCenter,
+                alignment: Alignment.topLeft,
                 child: ConfettiWidget(
                   confettiController: conffetiController,
-                  blastDirection: pi / 2,
-                  maxBlastForce: 5,
+                  blastDirection: pi * 0.1,
+                  maxBlastForce: 10,
                   minBlastForce: 1,
                   emissionFrequency: 0.01,
-                  numberOfParticles: 10,
+                  numberOfParticles: 7,
                   shouldLoop: false,
-                  gravity: 0.1,
+                  gravity: 0.2,
+                ),
+              ),
+              Align(
+                alignment: Alignment.topRight,
+                child: ConfettiWidget(
+                  confettiController: conffetiController,
+                  blastDirection: pi * 0.9,
+                  maxBlastForce: 10,
+                  minBlastForce: 1,
+                  emissionFrequency: 0.01,
+                  numberOfParticles: 7,
+                  shouldLoop: false,
+                  gravity: 0.2,
                 ),
               ),
             ]),

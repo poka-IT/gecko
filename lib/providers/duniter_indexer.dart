@@ -323,6 +323,7 @@ Map computeHistoryView(repository, String address) {
   }
 
   //TODO: Migration date and transaction migration doesn't match, add this event to v2s indexer.
+
   // log.d('debug date transaction: $date');
   // log.d('debug date identity migration: ${sub.oldOwnerKeys[address]?[1]}');
   // if (date.compareTo(sub.oldOwnerKeys[address]?[1] ?? DateTime(2000)) < 0) {

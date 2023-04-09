@@ -24,6 +24,7 @@ import 'package:gecko/widgets/commons/smooth_transition.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 // import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
 class WalletsHome extends StatefulWidget {
@@ -34,9 +35,6 @@ class WalletsHome extends StatefulWidget {
 }
 
 class _WalletsHomeState extends State<WalletsHome> {
-  final safeKey = GlobalKey();
-  // List<TargetFocus> targets = [];
-
   @override
   void initState() {
     super.initState();
@@ -227,6 +225,8 @@ class _WalletsHomeState extends State<WalletsHome> {
     final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
+    final keyDragAndDrop = GlobalKey(debugLabel: 'keyDragAndDrop');
+
     if (!isWalletsExists) {
       return const Text('');
     }
@@ -259,13 +259,45 @@ class _WalletsHomeState extends State<WalletsHome> {
     } else {
       nTule = 2;
     }
-    // Offset followDragAnchorStrategy(
-    //     Draggable<Object> d, BuildContext context, Offset point) {
-    //   return Offset(d.feedbackOffset.dx - 30, d.feedbackOffset.dy - 0);
-    // }
 
-    // showTutorial();
-    // Future.delayed(const Duration(seconds: 1), showTutorial);
+    final tutorialCoachMark = TutorialCoachMark(
+      targets: [
+        TargetFocus(
+          identify: "drag_and_drop",
+          keyTarget: keyDragAndDrop,
+          contents: [
+            TargetContent(
+                child: Column(
+              children: [
+                Image.asset('assets/drag-and-drop.png', height: 140),
+                const SizedBox(height: 15),
+                Text(
+                  'explainDraggableWallet'.tr(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      fontSize: 22, fontWeight: FontWeight.w500),
+                ),
+              ],
+            ))
+          ],
+          alignSkip: Alignment.bottomRight,
+          enableOverlayTab: true,
+        ),
+      ],
+      colorShadow: orangeC,
+      textSkip: "skip".tr(),
+      paddingFocus: 10,
+      opacityShadow: 0.8,
+    );
+
+    // configBox.delete('showDraggableTutorial');
+    final bool showDraggableTutorial =
+        configBox.get('showDraggableTutorial') ?? true;
+
+    if (listWallets.length > 1 && showDraggableTutorial) {
+      tutorialCoachMark.show(context: context);
+      configBox.put('showDraggableTutorial', false);
+    }
 
     return CustomScrollView(slivers: <Widget>[
       const SliverToBoxAdapter(child: SizedBox(height: 20)),
@@ -343,83 +375,91 @@ class _WalletsHomeState extends State<WalletsHome> {
                               ),
                             );
                           },
-                          child: ClipOvalShadow(
-                            shadow: const Shadow(
-                              color: Colors.transparent,
-                              offset: Offset(0, 0),
-                              blurRadius: 5,
-                            ),
-                            clipper: CustomClipperOval(),
-                            child: ClipRRect(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(12)),
-                              child: Column(children: <Widget>[
-                                Expanded(
-                                    child: Container(
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  decoration: const BoxDecoration(
-                                    gradient: RadialGradient(
-                                      radius: 0.8,
-                                      colors: [
-                                        Color.fromARGB(255, 255, 255, 211),
-                                        yellowC,
-                                      ],
+                          child: SizedBox(
+                            key: repository.number == 1
+                                ? keyDragAndDrop
+                                : const Key('nothing'),
+                            child: ClipOvalShadow(
+                              shadow: const Shadow(
+                                color: Colors.transparent,
+                                offset: Offset(0, 0),
+                                blurRadius: 5,
+                              ),
+                              clipper: CustomClipperOval(),
+                              child: ClipRRect(
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(12)),
+                                child: Column(children: <Widget>[
+                                  Expanded(
+                                      child: Container(
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    decoration: const BoxDecoration(
+                                      gradient: RadialGradient(
+                                        radius: 0.8,
+                                        colors: [
+                                          Color.fromARGB(255, 255, 255, 211),
+                                          yellowC,
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  child:
-                                      // SvgPicture.asset('assets/chopp-gecko2.png',
-                                      //         semanticsLabel: 'Gecko', height: 48),
-                                      repository.imageCustomPath == null ||
-                                              repository.imageCustomPath == ''
-                                          ? Image.asset(
-                                              'assets/avatars/${repository.imageDefaultPath}',
-                                              alignment: Alignment.bottomCenter,
-                                              scale: 0.5,
-                                            )
-                                          : Container(
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                color: Colors.transparent,
-                                                image: DecorationImage(
-                                                  fit: BoxFit.fitHeight,
-                                                  image: FileImage(
-                                                    File(repository
-                                                        .imageCustomPath!),
+                                    child:
+                                        // SvgPicture.asset('assets/chopp-gecko2.png',
+                                        //         semanticsLabel: 'Gecko', height: 48),
+                                        repository.imageCustomPath == null ||
+                                                repository.imageCustomPath == ''
+                                            ? Image.asset(
+                                                'assets/avatars/${repository.imageDefaultPath}',
+                                                alignment:
+                                                    Alignment.bottomCenter,
+                                                scale: 0.5,
+                                              )
+                                            : Container(
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: Colors.transparent,
+                                                  image: DecorationImage(
+                                                    fit: BoxFit.fitHeight,
+                                                    image: FileImage(
+                                                      File(repository
+                                                          .imageCustomPath!),
+                                                    ),
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                )),
-                                Stack(children: <Widget>[
-                                  BalanceBuilder(
-                                      address: repository.address,
-                                      isDefault: repository.address ==
-                                          defaultWallet.address),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Column(
-                                        children: [
-                                          const SizedBox(height: 7),
-                                          Opacity(
-                                              opacity: 0.7,
-                                              child: NameByAddress(
-                                                wallet: repository,
-                                                size: 20,
-                                                color: defaultWallet.address ==
-                                                        repository.address
-                                                    ? Colors.white
-                                                    : Colors.black,
-                                                fontWeight: FontWeight.w600,
-                                                fontStyle: FontStyle.normal,
-                                              ))
-                                        ],
-                                      ),
-                                    ],
-                                  ),
+                                  )),
+                                  Stack(children: <Widget>[
+                                    BalanceBuilder(
+                                        address: repository.address,
+                                        isDefault: repository.address ==
+                                            defaultWallet.address),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Column(
+                                          children: [
+                                            const SizedBox(height: 7),
+                                            Opacity(
+                                                opacity: 0.7,
+                                                child: NameByAddress(
+                                                  wallet: repository,
+                                                  size: 20,
+                                                  color:
+                                                      defaultWallet.address ==
+                                                              repository.address
+                                                          ? Colors.white
+                                                          : Colors.black,
+                                                  fontWeight: FontWeight.w600,
+                                                  fontStyle: FontStyle.normal,
+                                                ))
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ]),
                                 ]),
-                              ]),
+                              ),
                             ),
                           ),
                         ),

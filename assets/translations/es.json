@@ -219,5 +219,7 @@
     "thisIdentityAlreadyExist": "Esta identidad ya existe",
     "removedFromcontacts": "Removed from contacts",
     "addedToContacts": "Added to contacts",
-    "certificationsOf": "Certifications of {}"
+    "certificationsOf": "Certifications of {}",
+    "explainDraggableWallet": "Drag and drop a tile onto another to make a transaction, by holding down the tile.",
+    "skip": "Skip"
 }

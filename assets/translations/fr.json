@@ -218,5 +218,7 @@
     "thisIdentityAlreadyExist": "Cette identité existe déjà",
     "removedFromcontacts": "Retiré des contact",
     "addedToContacts": "Ajouté au contacts",
-    "certificationsOf": "Certifications de {}"
+    "certificationsOf": "Certifications de {}",
+    "explainDraggableWallet": "Faites glisser et déposez une tuile sur une autre pour effectuer une transaction, avec un appui long.",
+    "skip": "Passer"
 }

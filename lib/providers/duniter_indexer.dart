@@ -8,7 +8,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:provider/provider.dart';
 
 class DuniterIndexer with ChangeNotifier {
   Map<String, String?> walletNameIndexer = {};
@@ -264,8 +263,6 @@ Map computeHistoryView(repository, String address) {
   DateTime now = DateTime.now();
   final bool isUdUnit = configBox.get('isUdUnit') ?? false;
 
-  final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-
   late double amount;
   late String finalAmount;
   DateTime date = repository[0];
@@ -325,13 +322,15 @@ Map computeHistoryView(repository, String address) {
     isMigrationTime = false;
   }
 
-  log.d('taaaaaaaaaaaaaa: $date');
-  log.d('taaaaaaa: ${sub.oldOwnerKeys[address]?[1]}');
-  if (date.compareTo(sub.oldOwnerKeys[address]?[1] ?? DateTime(2000)) < 0) {
-    isChangeOwnerkeyTime = true;
-  } else {
-    isChangeOwnerkeyTime = false;
-  }
+  //TODO: Migration date and transaction migration doesn't match, add this event to v2s indexer.
+  // log.d('debug date transaction: $date');
+  // log.d('debug date identity migration: ${sub.oldOwnerKeys[address]?[1]}');
+  // if (date.compareTo(sub.oldOwnerKeys[address]?[1] ?? DateTime(2000)) < 0) {
+  //   log.d('taaaaaaaaa: GOOOO');
+  //   isChangeOwnerkeyTime = true;
+  // } else {
+  //   isChangeOwnerkeyTime = false;
+  // }
 
   return {
     'finalAmount': finalAmount,

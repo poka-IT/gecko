@@ -53,6 +53,8 @@ class WalletViewScreen extends StatelessWidget {
     walletProfile.address = address;
     sub.setCurrentWallet(defaultWallet);
 
+    log.d("username: $username");
+
     return Scaffold(
         backgroundColor: backgroundColor,
         resizeToAvoidBottomInset: true,
@@ -359,7 +361,7 @@ class WalletViewScreen extends StatelessWidget {
                           splashColor: yellowC,
                           onTap: sub.nodeConnected
                               ? () {
-                                  paymentPopup(context, address);
+                                  paymentPopup(context, address, username);
                                 }
                               : null,
                           child: const Padding(
@@ -418,7 +420,7 @@ class WalletViewScreen extends StatelessWidget {
   }
 }
 
-void paymentPopup(BuildContext context, String toAddress) {
+void paymentPopup(BuildContext context, String toAddress, String username) {
   final walletViewProvider =
       Provider.of<WalletsProfilesProvider>(context, listen: false);
 
@@ -426,12 +428,10 @@ void paymentPopup(BuildContext context, String toAddress) {
       Provider.of<MyWalletsProvider>(context, listen: false);
 
   const double shapeSize = 20;
-  WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
+  final defaultWallet = myWalletProvider.getDefaultWallet();
   log.d(defaultWallet.address);
 
   bool canValidate = false;
-
-  final toWalletData = myWalletProvider.getWalletDataByAddress(toAddress);
 
   Future executeTransfert() async {
     String? pin;
@@ -582,7 +582,10 @@ void paymentPopup(BuildContext context, String toAddress) {
                             ),
                             padding: const EdgeInsets.all(10),
                             child: Row(children: [
-                              Text(defaultWallet.name!),
+                              Text(g1WalletsBox
+                                      .get(defaultWallet.address)
+                                      ?.username ??
+                                  defaultWallet.name!),
                               const Spacer(),
                               Balance(address: defaultWallet.address, size: 20),
                             ]),
@@ -604,9 +607,9 @@ void paymentPopup(BuildContext context, String toAddress) {
                             children: [
                               const SizedBox(height: 2),
                               Text(
-                                toWalletData == null
+                                username == ''
                                     ? getShortPubkey(toAddress)
-                                    : toWalletData.name!,
+                                    : username,
                                 style: const TextStyle(
                                   fontSize: 21,
                                   fontWeight: FontWeight.w600,

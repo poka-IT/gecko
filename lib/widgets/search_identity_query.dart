@@ -124,7 +124,7 @@ class SearchIdentityQuery extends StatelessWidget {
                               walletsProfiles.address = profile['pubkey'];
                               return WalletViewScreen(
                                 address: profile['pubkey'],
-                                username: name,
+                                username: profile['name'] ?? '',
                                 avatar:
                                     g1WalletsBox.get(profile['pubkey'])?.avatar,
                               );

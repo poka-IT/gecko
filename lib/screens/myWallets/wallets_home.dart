@@ -344,7 +344,11 @@ class _WalletsHomeState extends State<WalletsHome> {
                           .getWalletDataByAddress(senderAddress);
                       await sub.setCurrentWallet(walletData!);
                       sub.reload();
-                      paymentPopup(context, repository.address);
+                      paymentPopup(
+                          context,
+                          repository.address,
+                          g1WalletsBox.get(repository.address)!.username ??
+                              repository.name!);
                     },
                     onMove: (details) {
                       if (repository.address != myWalletProvider.lastFlyBy) {

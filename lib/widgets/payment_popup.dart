@@ -4,12 +4,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:gecko/screens/myWallets/choose_wallet.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/balance.dart';
@@ -24,8 +24,10 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
 
   double fees = 0;
   const double shapeSize = 20;
-  final defaultWallet = myWalletProvider.getDefaultWallet();
+  var defaultWallet = myWalletProvider.getDefaultWallet();
   bool canValidate = false;
+  final amountFocus = FocusNode();
+  final dropdownKey = GlobalKey();
 
   Future executeTransfert() async {
     String? pin;
@@ -59,6 +61,9 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
       );
     }
   }
+
+  myWalletProvider.readAllWallets();
+  log.d(myWalletProvider.listWallets);
 
   showModalBottomSheet<void>(
       shape: const RoundedRectangleBorder(
@@ -140,49 +145,66 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
                       ),
                       const SizedBox(height: 10),
                       Consumer<SubstrateSdk>(builder: (context, sub, _) {
-                        return InkWell(
-                          key: keyChangeChest,
-                          onTap: () async {
-                            String? pin;
-                            if (myWalletProvider.pinCode == '') {
-                              pin = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (homeContext) {
-                                    return UnlockingWallet(
-                                        wallet: defaultWallet);
-                                  },
+                        return DropdownButton(
+                          dropdownColor: const Color(0xffffeed1),
+                          elevation: 12,
+                          key: dropdownKey,
+                          value: defaultWallet,
+                          // onTap: () async {
+                          //   await Future.delayed(const Duration(milliseconds: 10));
+                          //   amountFocus.requestFocus();
+                          // },
+                          selectedItemBuilder: (_) {
+                            return myWalletProvider.listWallets
+                                .map((WalletData wallet) {
+                              return Container(
+                                width: 408,
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Colors.blueAccent.shade200,
+                                      width: 2),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(10.0)),
                                 ),
+                                padding: const EdgeInsets.all(10),
+                                child: Row(children: [
+                                  Text(g1WalletsBox
+                                          .get(wallet.address)
+                                          ?.username ??
+                                      wallet.name!),
+                                  const Spacer(),
+                                  Balance(address: wallet.address, size: 20),
+                                ]),
                               );
-                            }
-                            if (pin != null || myWalletProvider.pinCode != '') {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) {
-                                  return ChooseWalletScreen(
-                                      pin: pin ?? myWalletProvider.pinCode);
-                                }),
-                              );
-                            }
+                            }).toList();
                           },
-                          child: Container(
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                  color: Colors.blueAccent.shade200, width: 2),
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(10.0)),
-                            ),
-                            padding: const EdgeInsets.all(10),
-                            child: Row(children: [
-                              Text(g1WalletsBox
-                                      .get(defaultWallet.address)
-                                      ?.username ??
-                                  defaultWallet.name!),
-                              const Spacer(),
-                              Balance(address: defaultWallet.address, size: 20),
-                            ]),
-                          ),
+                          onChanged: (WalletData? newSelectedWallet) async {
+                            defaultWallet = newSelectedWallet!;
+                            await sub.setCurrentWallet(newSelectedWallet);
+                            sub.reload();
+                            amountFocus.requestFocus();
+                            setState(() {});
+                          },
+                          items: myWalletProvider.listWallets
+                              .map((WalletData wallet) {
+                            return DropdownMenuItem(
+                              value: wallet,
+                              child: Container(
+                                color: const Color(0xffffeed1),
+                                width: 408,
+                                height: 80,
+                                padding: const EdgeInsets.all(10),
+                                child: Row(children: [
+                                  Text(g1WalletsBox
+                                          .get(wallet.address)
+                                          ?.username ??
+                                      wallet.name!),
+                                  const Spacer(),
+                                  Balance(address: wallet.address, size: 20),
+                                ]),
+                              ),
+                            );
+                          }).toList(),
                         );
                       }),
                       const SizedBox(height: 12),
@@ -252,6 +274,7 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
                         key: keyAmountField,
                         controller: walletViewProvider.payAmount,
                         autofocus: true,
+                        focusNode: amountFocus,
                         maxLines: 1,
                         textAlign: TextAlign.center,
                         keyboardType: const TextInputType.numberWithOptions(

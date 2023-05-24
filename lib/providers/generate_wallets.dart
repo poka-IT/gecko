@@ -20,7 +20,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   // NewWallet generatedWallet;
   durt.NewWallet? actualWallet;
 
-  FocusNode walletNameFocus = FocusNode();
+  final walletNameFocus = FocusNode();
   Color? askedWordColor = Colors.black;
   bool isAskedWordValid = false;
   int scanedValidWalletNumber = -1;

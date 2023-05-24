@@ -344,8 +344,23 @@ class WalletViewScreen extends StatelessWidget {
                           key: keyPay,
                           splashColor: yellowC,
                           onTap: sub.nodeConnected
-                              ? () {
-                                  paymentPopup(context, address, username);
+                              ? () async {
+                                  String? pin;
+                                  if (myWalletProvider.pinCode == '') {
+                                    pin = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (homeContext) {
+                                          return UnlockingWallet(
+                                              wallet: defaultWallet);
+                                        },
+                                      ),
+                                    );
+                                  }
+                                  if (pin != null ||
+                                      myWalletProvider.pinCode != '') {
+                                    paymentPopup(context, address, username);
+                                  }
                                 }
                               : null,
                           child: const Padding(

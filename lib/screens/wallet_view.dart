@@ -1,8 +1,4 @@
 // ignore_for_file: use_build_context_synchronously
-
-import 'dart:math';
-
-import 'package:confetti/confetti.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 
@@ -64,16 +60,6 @@ class WalletViewScreen extends StatelessWidget {
           actions: [
             Row(
               children: [
-                ConfettiWidget(
-                  confettiController: walletProfile.centerController,
-                  blastDirection: pi / 2,
-                  maxBlastForce: 7,
-                  minBlastForce: 3,
-                  emissionFrequency: 0,
-                  numberOfParticles: 7,
-                  shouldLoop: false,
-                  gravity: 0.001,
-                ),
                 Consumer<WalletsProfilesProvider>(
                     builder: (context, walletProfile, _) {
                   return IconButton(

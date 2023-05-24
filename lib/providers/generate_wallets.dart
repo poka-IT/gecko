@@ -33,8 +33,8 @@ class GenerateWalletsProvider with ChangeNotifier {
   String? generatedMnemonic;
   bool walletIsGenerated = true;
 
-  TextEditingController mnemonicController = TextEditingController();
-  TextEditingController pin = TextEditingController();
+  final mnemonicController = TextEditingController();
+  final pin = TextEditingController();
 
   // Import wallet
   TextEditingController cesiumID = TextEditingController();

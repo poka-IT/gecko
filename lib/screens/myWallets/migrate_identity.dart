@@ -47,12 +47,12 @@ class MigrateIdentityScreen extends StatelessWidget {
     );
 
     if (walletsList.length < 2) {
-      return Column(
+      return const Column(
         children: [
-          const SizedBox(height: 80),
+          SizedBox(height: 80),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
+            children: [
               Text(
                 'Vous devez avoir au moins 2 portefeuilles\npour effecter cette opération',
                 style: TextStyle(fontSize: 20),
@@ -78,20 +78,18 @@ class MigrateIdentityScreen extends StatelessWidget {
                   fromAddress, selectedWallet.address),
               builder: (BuildContext context, AsyncSnapshot<List> status) {
                 if (status.data == null) {
-                  return Column(children: [
-                    const SizedBox(height: 80),
-                    Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          SizedBox(
-                            height: 35,
-                            width: 35,
-                            child: CircularProgressIndicator(
-                              color: orangeC,
-                              strokeWidth: 4,
-                            ),
-                          ),
-                        ]),
+                  return const Column(children: [
+                    SizedBox(height: 80),
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      SizedBox(
+                        height: 35,
+                        width: 35,
+                        child: CircularProgressIndicator(
+                          color: orangeC,
+                          strokeWidth: 4,
+                        ),
+                      ),
+                    ]),
                   ]);
                 }
 
@@ -136,7 +134,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                 final unit = isUdUnit ? 'ud'.tr(args: ['']) : currencyName;
 
                 return Column(children: <Widget>[
-                  Row(children: const []),
+                  const Row(children: []),
                   const SizedBox(height: 20),
 
                   SizedBox(

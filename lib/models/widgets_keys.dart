@@ -24,6 +24,7 @@ const keyImportG1v1 = Key('keyImportG1v1');
 const keyChangeChest = Key('keyChangeChest');
 const keyListWallets = Key('keyListWallets');
 const keyAddDerivation = Key('keyAddDerivation');
+final keyDragAndDrop = GlobalKey(debugLabel: 'keyDragAndDrop');
 
 // Wallet options
 const keyCopyAddress = Key('keyCopyAddress');

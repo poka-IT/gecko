@@ -71,6 +71,10 @@ Future restoreChest() async {
   // Go to wallets home
   await tapKey(keyGoWalletsHome, duration: 0);
 
+  // Skip tutorial
+  await sleep(500);
+  await tapKey(keyDragAndDrop).timeout(const Duration(seconds: 3));
+
   // Check if string "ĞD" is present in screen
   await waitFor('ĞD');
 

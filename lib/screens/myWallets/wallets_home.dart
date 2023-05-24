@@ -225,15 +225,13 @@ class _WalletsHomeState extends State<WalletsHome> {
     final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    final keyDragAndDrop = GlobalKey(debugLabel: 'keyDragAndDrop');
-
     if (!isWalletsExists) {
       return const Text('');
     }
 
     if (myWalletProvider.listWallets.isEmpty) {
-      return Expanded(
-          child: Column(children: const <Widget>[
+      return const Expanded(
+          child: Column(children: <Widget>[
         Center(
             child: Text(
           'Veuillez générer votre premier portefeuille',

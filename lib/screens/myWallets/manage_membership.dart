@@ -93,9 +93,9 @@ class ManageMembership extends StatelessWidget {
           }),
         );
       },
-      child: SizedBox(
+      child: const SizedBox(
         height: 60,
-        child: Row(children: const <Widget>[
+        child: Row(children: <Widget>[
           SizedBox(width: 16),
           Icon(Icons.change_circle_outlined, size: 35),
           SizedBox(width: 11.5),

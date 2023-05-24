@@ -16,8 +16,8 @@ class TemplateScreen extends StatelessWidget {
               height: 22,
               child: Text('Template screen'),
             )),
-        body: SafeArea(
-          child: Column(children: const <Widget>[
+        body: const SafeArea(
+          child: Column(children: <Widget>[
             SizedBox(height: 20),
             Text('data'),
             SizedBox(height: 20),

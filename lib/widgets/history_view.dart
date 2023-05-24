@@ -96,9 +96,9 @@ class HistoryView extends StatelessWidget {
               ]);
             }).toList()),
             if (result.isLoading && duniterIndexer.pageInfo!['hasPreviousPage'])
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const <Widget>[
+                children: <Widget>[
                   CircularProgressIndicator(),
                 ],
               ),

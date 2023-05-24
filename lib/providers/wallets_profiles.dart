@@ -10,7 +10,6 @@ import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
 // import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:barcode_scan2/barcode_scan2.dart';
-import 'package:confetti/confetti.dart';
 
 class WalletsProfilesProvider with ChangeNotifier {
   WalletsProfilesProvider(this.address);
@@ -24,8 +23,6 @@ class WalletsProfilesProvider with ChangeNotifier {
   TextEditingController payAmount = TextEditingController();
   TextEditingController payComment = TextEditingController();
   num? _balance;
-  final centerController =
-      ConfettiController(duration: const Duration(milliseconds: 300));
 
   Future<String> scan(context) async {
     if (Platform.isAndroid || Platform.isIOS) {
@@ -145,7 +142,6 @@ class WalletsProfilesProvider with ChangeNotifier {
       snackMessage(homeContext,
           message: 'removedFromcontacts'.tr(), duration: 4);
     } else {
-      centerController.play();
       await contactsBox.put(profile.address, profile);
       // drawStar(Size(50, 50));
       snackMessage(homeContext, message: 'addedToContacts'.tr(), duration: 4);

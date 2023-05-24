@@ -34,7 +34,7 @@ dependencies:
     git:
       url: https://github.com/insinfo/qr.flutter.git
       ref: master
-  responsive_framework: ^0.2.0
+  responsive_framework: 0.2.0
   sentry_flutter: ^7.4.1
   shared_preferences: ^2.0.7
   truncate: ^3.0.1
@@ -49,7 +49,7 @@ dependencies:
       url: https://github.com/poka-IT/sdk.git
       # ref: gecko-fixes-2
       ref: ff98a117e86060a91113107f31355a17ccfb346c
-  dots_indicator: ^2.1.0
+  dots_indicator: ^3.0.0
   connectivity_plus: ^3.0.2
   image_cropper: ^3.0.0
   easy_localization: ^3.0.1

@@ -24,7 +24,7 @@ class InfoIntro extends StatelessWidget {
   final String assetName;
   final String buttonText;
   final Widget nextScreen;
-  final double pagePosition;
+  final int pagePosition;
   final bool isMd;
   final bool isFast;
   final double boxHeight;

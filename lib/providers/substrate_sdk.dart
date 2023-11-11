@@ -93,7 +93,7 @@ class SubstrateSdk with ChangeNotifier {
     try {
       return await sdk.webView!.evalJavascript('api.query.$call');
     } catch (e) {
-      log.i("catched _getStorage error");
+      log.e("_getStorage error: $e");
       return Future(() {});
     }
   }
@@ -198,6 +198,16 @@ class SubstrateSdk with ChangeNotifier {
     balanceRatio =
         (configBox.get('isUdUnit') ?? false) ? round(udValue / 100, 6) : 1;
     return balanceRatio;
+  }
+
+  Future getBalanceMulti(List addresses) async {
+    List stringifyAddresses = [];
+    for (var element in addresses) {
+      stringifyAddresses.add('"$element"');
+    }
+    final List balanceGlobal =
+        await _getStorage('system.account.multi($stringifyAddresses)');
+    log.d('debug multi: $balanceGlobal');
   }
 
   Future<Map<String, double>> getBalance(String address) async {

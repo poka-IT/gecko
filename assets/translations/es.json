@@ -23,7 +23,7 @@
     "toUnlockEnterPassword": "Para desbloquear tu cofre, introduce tu contraseña, lejos de lagartijas curiosas:",
     "rememberPassword": "Mantener en memoria mi contraseña durante 15 minutos",
     "myRootWallet": "Mi monedero principal",
-    "currentWallet": "Mi cofre actual",
+    "currentWallet": "Mi monedero actual",
     "wallet": "monedero",
     "displayMnemonic": "Mostrar mi frase de restauración",
     "changePassword": "Cambiar mi contraseña",
@@ -203,7 +203,7 @@
     "smithCantMigrateIdentity": "You can't migrate this identity while you're member of smith web",
     "received": "Received",
     "sent": "Sent",
-    "createIdentity": "Create a new \nidentity",
+    "createIdentity": "Create a new\nidentity",
     "memberAccountOf": "Account of {}",
     "pasteAddress": "Paste address from\nclipboard",
     "historyStart": "Beginning of history",
@@ -218,5 +218,13 @@
     "youHaveToBeConnectedToValidateChest": "Tienes que tener conneción\npara validar tu cofre",
     "thisIdentityAlreadyExist": "Esta identidad ya existe",
     "removedFromcontacts": "Removed from contacts",
-    "addedToContacts": "Added to contacts"
+    "addedToContacts": "Added to contacts",
+    "certificationsOf": "Certifications of {}",
+    "explainDraggableWallet": "Drag and drop a tile onto another to make a transaction, by holding down the tile.",
+    "skip": "Skip",
+    "fees": "fees: {} {}",
+    "feesExplanation": "To ensure network security, an execution fee is charged on each transaction.",
+    "feesExplanationDetails": "These fees are transferred to the common treasury account.",
+    "gotit": "Got it",
+    "moreInfo": "More information"
 }

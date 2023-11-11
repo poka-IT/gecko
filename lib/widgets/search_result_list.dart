@@ -100,8 +100,7 @@ class SearchResult extends StatelessWidget {
                 walletsProfilesClass.address = g1Wallet.address;
                 return WalletViewScreen(
                   address: g1Wallet.address,
-                  username:
-                      duniterIndexer.walletNameIndexer[g1Wallet.address] ?? '',
+                  username: g1WalletsBox.get(g1Wallet)!.username ?? '',
                   avatar: g1WalletsBox.get(g1Wallet.address)?.avatar,
                 );
               }),

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
@@ -46,6 +47,7 @@ class SubstrateSdk with ChangeNotifier {
   bool isCesiumAddresLoading = false;
   late int udValue;
   Map<String, List<int>> certsCounterCache = {};
+  Map<String, List> oldOwnerKeys = {};
 
   /////////////////////////////////////
   ////////// 1: API METHODS ///////////
@@ -91,7 +93,7 @@ class SubstrateSdk with ChangeNotifier {
     try {
       return await sdk.webView!.evalJavascript('api.query.$call');
     } catch (e) {
-      log.i("catched _getStorage error");
+      log.e("_getStorage error: $e");
       return Future(() {});
     }
   }
@@ -198,6 +200,16 @@ class SubstrateSdk with ChangeNotifier {
     return balanceRatio;
   }
 
+  Future getBalanceMulti(List addresses) async {
+    List stringifyAddresses = [];
+    for (var element in addresses) {
+      stringifyAddresses.add('"$element"');
+    }
+    final List balanceGlobal =
+        await _getStorage('system.account.multi($stringifyAddresses)');
+    log.d('debug multi: $balanceGlobal');
+  }
+
   Future<Map<String, double>> getBalance(String address) async {
     if (!nodeConnected) {
       return {
@@ -219,6 +231,7 @@ class SubstrateSdk with ChangeNotifier {
         await _getStorage('universalDividend.pastReevals()');
 
     // Compute amount of claimable UDs
+    currentUdIndex = await getCurrentUdIndex();
     final int unclaimedUds = _computeUnclaimUds(
         idtyData?['data']?['firstEligibleUd'] ?? 0, pastReevals);
 
@@ -263,6 +276,9 @@ class SubstrateSdk with ChangeNotifier {
         currentUdIndex = revalNbr;
       }
     }
+
+    // log.d(
+    //     "debug computeUnclaimUds: ${pastReevals.reversed} --- $firstEligibleUd --- $currentUdIndex");
 
     return totalAmount;
   }
@@ -328,6 +344,29 @@ class SubstrateSdk with ChangeNotifier {
         await _getStorage('cert.storageIdtyCertMeta($idtyIndex)') ?? '';
 
     return certMeta;
+  }
+
+  Future<List> getOldOwnerKey(String address) async {
+    // final walletOptions =
+    //     Provider.of<WalletOptionsProvider>(homeContext, listen: false);
+
+    var idtyIndex = await _getIdentityIndexOf(address);
+    if (idtyIndex == 0) return [];
+
+    final Map? idtyData = await _getStorage('identity.identities($idtyIndex)');
+    if (idtyData == null || idtyData['oldOwnerKey'] == null) return [];
+
+    List oldKeys = idtyData['oldOwnerKey'] ?? [];
+    if (oldKeys.isEmpty) return [];
+
+    oldKeys[1] = blocNumberToDate(oldKeys[1]);
+    oldOwnerKeys.putIfAbsent(address, () => oldKeys);
+
+    return oldKeys;
+  }
+
+  DateTime blocNumberToDate(int blocNumber) {
+    return startBlockchainTime.add(Duration(seconds: blocNumber * 6));
   }
 
   Future<String> idtyStatus(String address) async {
@@ -560,9 +599,13 @@ class SubstrateSdk with ChangeNotifier {
         }
         notifyListeners();
       });
-      currentUdIndex =
-          int.parse(await _getStorage('universalDividend.currentUdIndex()'));
+      currentUdIndex = await getCurrentUdIndex();
       await getBalanceRatio();
+
+      // Currency parameters
+      await initCurrencyParameters();
+      // Indexer Blockchain start
+      getBlockStart();
 
       notifyListeners();
       homeProvider.changeMessage(
@@ -592,6 +635,10 @@ class SubstrateSdk with ChangeNotifier {
       node.add(n);
     }
     return node;
+  }
+
+  Future<int> getCurrentUdIndex() async {
+    return int.parse(await _getStorage('universalDividend.currentUdIndex()'));
   }
 
   NetworkParams getDuniterCustomEndpoint() {
@@ -910,6 +957,9 @@ class SubstrateSdk with ChangeNotifier {
     final toCerts = await getCertsCounter(destAddress);
 
     // log.d('debug: ${currencyParameters['minCertForMembership']}');
+
+    log.d(
+        "debug toCert: ${toCerts[0]} --- ${currencyParameters['minCertForMembership']!} --- $toIdtyStatus");
 
     if (toIdtyStatus == 'noid') {
       txInfo = TxInfoData(

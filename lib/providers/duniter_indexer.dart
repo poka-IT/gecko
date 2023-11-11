@@ -253,58 +253,51 @@ Future<QueryResult> _execQuery(
   return await client.query(options);
 }
 
-Map computeHistoryView(repository) {
-  bool isTody = false;
-  bool isYesterday = false;
-  bool isThisWeek = false;
-  bool isMigrationTime = false;
-  String? dateDelimiter;
-  DateTime now = DateTime.now();
+Map computeHistoryView(repository, String address) {
   final bool isUdUnit = configBox.get('isUdUnit') ?? false;
-
   late double amount;
   late String finalAmount;
-  DateTime date = repository[0];
-  String dateForm;
-  bool isDelimiter = true;
+  final DateTime date = repository[0];
 
-  if ({4, 10, 11, 12}.contains(date.month)) {
-    dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, 3)}";
-  } else if ({1, 2, 7, 9}.contains(date.month)) {
-    dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, 4)}";
-  } else {
-    dateForm = "${date.day} ${monthsInYear[date.month]}";
+  final dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, {
+        1,
+        2,
+        7,
+        9
+      }.contains(date.month) ? 4 : 3)}";
+
+  DateTime normalizeDate(DateTime inputDate) {
+    return DateTime(inputDate.year, inputDate.month, inputDate.day);
   }
 
-  final transactionDate = DateTime(date.year, date.month, date.day);
-  final todayDate = DateTime(now.year, now.month, now.day);
-  final yesterdayDate = DateTime(now.year, now.month, now.day - 1);
+  String getDateDelimiter() {
+    DateTime now = DateTime.now();
+    final transactionDate = normalizeDate(date.toLocal());
+    final todayDate = normalizeDate(now);
+    final yesterdayDate = normalizeDate(now.subtract(const Duration(days: 1)));
+    final isSameWeek = weekNumber(transactionDate) == weekNumber(now) &&
+        transactionDate.year == now.year;
+    final isTodayOrYesterday =
+        transactionDate == todayDate || transactionDate == yesterdayDate;
 
-  if (transactionDate == todayDate && !isTody) {
-    dateDelimiter = "today".tr();
-    isTody = true;
-  } else if (transactionDate == yesterdayDate && !isYesterday) {
-    dateDelimiter = "yesterday".tr();
-    isYesterday = true;
-  } else if (weekNumber(date) == weekNumber(now) &&
-      date.year == now.year &&
-      transactionDate != yesterdayDate &&
-      transactionDate != todayDate &&
-      !isThisWeek) {
-    dateDelimiter = "thisWeek".tr();
-    isThisWeek = true;
-  } else if (dateDelimiter != "${monthsInYear[date.month]} ${date.year}" &&
-      transactionDate != todayDate &&
-      transactionDate != yesterdayDate &&
-      !(weekNumber(date) == weekNumber(now) && date.year == now.year)) {
-    if (date.year == now.year) {
-      dateDelimiter = monthsInYear[date.month];
+    if (transactionDate == todayDate) {
+      return "today".tr();
+    } else if (transactionDate == yesterdayDate) {
+      return "yesterday".tr();
+    } else if (isSameWeek && !isTodayOrYesterday) {
+      return "thisWeek".tr();
+    } else if (!isSameWeek && !isTodayOrYesterday) {
+      if (transactionDate.year == now.year) {
+        return monthsInYear[transactionDate.month]!;
+      } else {
+        return "${monthsInYear[transactionDate.month]} ${transactionDate.year}";
+      }
     } else {
-      dateDelimiter = "${monthsInYear[date.month]} ${date.year}";
+      return '';
     }
-  } else {
-    isDelimiter = false;
   }
+
+  final dateDelimiter = getDateDelimiter();
 
   amount = repository[4] == 'RECEIVED' ? repository[3] : repository[3] * -1;
 
@@ -315,17 +308,19 @@ Map computeHistoryView(repository) {
     finalAmount = '$amount $currencyName';
   }
 
-  if (startBlockchainInitialized && date.compareTo(startBlockchainTime) < 0) {
-    isMigrationTime = true;
-  } else {
-    isMigrationTime = false;
-  }
+  bool isMigrationTime =
+      startBlockchainInitialized && date.compareTo(startBlockchainTime) < 0;
+
+  //TODO: Migration date and transaction migration doesn't match, add this event to v2s indexer.
+
+  // log.d('debug date transaction: $date');
+  // log.d('debug date identity migration: ${sub.oldOwnerKeys[address]?[1]}');
+  // isChangeOwnerkeyTime = date.compareTo(sub.oldOwnerKeys[address]?[1] ?? DateTime(2000)) < 0;
 
   return {
     'finalAmount': finalAmount,
     'isMigrationTime': isMigrationTime,
-    'dateDelimiter': dateDelimiter ?? '',
-    'isDelimiter': isDelimiter,
+    'dateDelimiter': dateDelimiter,
     'dateForm': dateForm,
   };
 }

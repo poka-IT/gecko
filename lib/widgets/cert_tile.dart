@@ -37,12 +37,12 @@ class CertTile extends StatelessWidget {
                   title: Padding(
                     padding: const EdgeInsets.only(bottom: 5),
                     child: Text(repository['name'],
-                        style: const TextStyle(fontSize: 20)),
+                        style: const TextStyle(fontSize: 22)),
                   ),
                   subtitle: RichText(
                     text: TextSpan(
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 18,
                         color: Colors.grey[700],
                       ),
                       children: <TextSpan>[
@@ -60,9 +60,9 @@ class CertTile extends StatelessWidget {
                         TextSpan(
                           text: getShortPubkey(repository['address']),
                           style: TextStyle(
-                            fontStyle: FontStyle.italic,
-                            color: Colors.grey[600],
-                          ),
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey[600],
+                              fontSize: 18),
                         ),
                       ],
                     ),

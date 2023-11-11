@@ -35,12 +35,15 @@ void main() async {
     await waitFor('memberValidated'.tr(), exactMatch: true);
 
     // Revoke test5
-    await tapKey(keyManageMembership, duration: 1000);
+    await goBack();
+    await tapKey(keyOpenWallet(test5.address));
+    await tapKey(keyManageMembership, duration: 100);
     await tapKey(keyRevokeIdty);
     await tapKey(keyConfirm);
-    spawnBlock(duration: 2000);
-    await waitFor('extrinsicValidated'.tr().substring(3),
-        timeout: const Duration(seconds: 4));
+    spawnBlock(duration: 1000);
+    await tester.pump(const Duration(seconds: 2));
+    await waitFor('sending'.tr(),
+        reverse: true, settle: false, timeout: const Duration(seconds: 20));
     await tapKey(keyCloseTransactionScreen, duration: 0);
     await waitFor('noIdentity'.tr(), exactMatch: true);
     await sleep();
@@ -48,9 +51,8 @@ void main() async {
     // Check test1 cannot be revoked
     await goBack();
     await tapKey(keyAddDerivation);
-    await tapKey(keyOpenWallet(test1.address), duration: 500);
-    await tapKey(keyManageMembership, duration: 1000);
+    await tapKey(keyOpenWallet(test1.address), duration: 300);
+    await tapKey(keyManageMembership, duration: 300);
     await waitFor('youCannotRevokeThisIdentity'.tr().substring(0, 15));
-
   }, timeout: testTimeout());
 }

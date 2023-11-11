@@ -13,10 +13,10 @@ import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/certifications.dart';
 import 'package:gecko/screens/activity.dart';
-import 'package:gecko/screens/myWallets/manage_membership.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
+import 'package:gecko/widgets/buttons/manage_membership_button.dart';
 import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/idty_status.dart';
@@ -40,9 +40,8 @@ class WalletOptions extends StatelessWidget {
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    // final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     // sub.spawnBlock();
     // sub.spawnBlock(0, 20);
 
@@ -146,7 +145,7 @@ class WalletOptions extends StatelessWidget {
                                         builder: (context, walletProvider, _) {
                                       return NameByAddress(
                                           wallet: wallet,
-                                          size: 27,
+                                          size: 29,
                                           color: Colors.black,
                                           fontWeight: wallet.isMember
                                               ? FontWeight.w500
@@ -183,7 +182,7 @@ class WalletOptions extends StatelessWidget {
                             ]),
                             SizedBox(height: isTall ? 5 : 0),
                             Balance(
-                                address: walletProvider.address.text, size: 21),
+                                address: walletProvider.address.text, size: 24),
                             const SizedBox(width: 30),
                             InkWell(
                               onTap: () => isWalletNameIndexed
@@ -245,6 +244,11 @@ class WalletOptions extends StatelessWidget {
                           SizedBox(height: 30 * ratio),
                           Consumer<WalletOptionsProvider>(
                               builder: (context, walletProvider, _) {
+                            final defaultWallet =
+                                myWalletProvider.getDefaultWallet();
+                            walletProvider.isDefaultWallet =
+                                walletOptions.address.text ==
+                                    defaultWallet.address;
                             return Column(children: [
                               confirmIdentityButton(walletProvider),
                               pubkeyWidget(walletProvider, ctx),
@@ -278,7 +282,7 @@ class WalletOptions extends StatelessWidget {
                                       else
                                         const SizedBox(),
                                       if (isMember.data!)
-                                        manageMembership(context)
+                                        const ManageMembershipButton()
                                     ]);
                                   }),
                             ]);
@@ -491,36 +495,6 @@ class WalletOptions extends StatelessWidget {
           Text("displayActivity".tr(),
               style:
                   const TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
-        ]),
-      ),
-    );
-  }
-
-  Widget manageMembership(BuildContext context) {
-    final walletOptions =
-        Provider.of<WalletOptionsProvider>(context, listen: false);
-    return InkWell(
-      key: keyManageMembership,
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) {
-            return ManageMembership(
-              address: walletOptions.address.text,
-            );
-          }),
-        );
-      },
-      child: SizedBox(
-        height: 40,
-        child: Row(children: <Widget>[
-          const SizedBox(width: 32),
-          Image.asset(
-            'assets/medal.png',
-            height: 45,
-          ),
-          const SizedBox(width: 22),
-          Text('manageMembership'.tr(), style: const TextStyle(fontSize: 20)),
         ]),
       ),
     );

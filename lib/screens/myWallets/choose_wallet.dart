@@ -85,7 +85,7 @@ class ChooseWalletScreen extends StatelessWidget {
     }
 
     if (myWalletProvider.listWallets.isEmpty) {
-      return Column(children: const <Widget>[
+      return const Column(children: <Widget>[
         Center(
             child: Text(
           'Veuillez générer votre premier portefeuille',

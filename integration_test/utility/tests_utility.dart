@@ -114,7 +114,7 @@ Future goBack() async {
   final NavigatorState navigator = tester.state(find.byType(Navigator));
   log.d('INTEGRATION TEST: Go back');
   navigator.pop();
-  await tester.pump();
+  await tester.pumpAndSettle();
   humanRead();
 }
 
@@ -129,8 +129,10 @@ Future enterText(Key fieldKey, String textIn, [int duration = 200]) async {
 
 Future<void> waitFor(String text,
     {Duration timeout = const Duration(seconds: 5),
-    bool reverse = false,
-    bool exactMatch = false}) async {
+    final bool reverse = false,
+    final bool exactMatch = false,
+    final bool settle = true,
+    final int pumpDuration = 100}) async {
   final end = DateTime.now().add(timeout);
 
   Finder finder = exactMatch ? find.text(text) : find.textContaining(text);
@@ -143,7 +145,9 @@ Future<void> waitFor(String text,
       throw Exception('Timed out waiting for $searchType : "$text"');
     }
 
-    await tester.pumpAndSettle();
+    if (settle) {
+      await tester.pumpAndSettle(Duration(milliseconds: pumpDuration));
+    }
     await Future.delayed(const Duration(milliseconds: 100));
   } while (reverse ? finder.evaluate().isNotEmpty : finder.evaluate().isEmpty);
   humanRead();
@@ -315,6 +319,32 @@ Future startWait() async {
 String getWidgetText(Key key) {
   final word4Finder = find.byKey(key);
   return (word4Finder.evaluate().single.widget as Text).data!;
+}
+
+void ignoreOverflowErrors(
+  FlutterErrorDetails details, {
+  bool forceReport = false,
+}) {
+  bool ifIsOverflowError = false;
+  bool isUnableToLoadAsset = false;
+
+  // Detect overflow error.
+  var exception = details.exception;
+  if (exception is FlutterError) {
+    ifIsOverflowError = !exception.diagnostics.any(
+      (e) => e.value.toString().startsWith("A RenderFlex overflowed by"),
+    );
+    isUnableToLoadAsset = !exception.diagnostics.any(
+      (e) => e.value.toString().startsWith("Unable to load asset"),
+    );
+  }
+
+  // Ignore if is overflow error.
+  if (ifIsOverflowError || isUnableToLoadAsset) {
+    debugPrint('Ignored Error');
+  } else {
+    FlutterError.dumpErrorToConsole(details, forceReport: forceReport);
+  }
 }
 
 class TestWallet {

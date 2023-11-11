@@ -74,9 +74,9 @@ class HeaderProfile extends StatelessWidget {
                     ),
                   ),
                 ]),
-                const SizedBox(height: 25),
-                Balance(address: address, size: 22),
-                const SizedBox(height: 10),
+                const SizedBox(height: 23),
+                Balance(address: address, size: 25),
+                const SizedBox(height: 9),
                 InkWell(
                   onTap: () => duniterIndexer.walletNameIndexer[address] != null
                       ? {

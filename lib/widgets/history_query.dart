@@ -116,7 +116,12 @@ class HistoryQuery extends StatelessWidget {
                       child: ListView(
                         key: keyListTransactions,
                         controller: scrollController,
-                        children: <Widget>[HistoryView(result: result)],
+                        children: <Widget>[
+                          HistoryView(
+                            result: result,
+                            address: address,
+                          )
+                        ],
                       ),
                     ),
                   ),

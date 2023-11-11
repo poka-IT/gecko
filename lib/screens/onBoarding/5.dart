@@ -94,7 +94,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
                     ),
                     onPressed: () {
                       Clipboard.setData(ClipboardData(
-                          text: generateWalletProvider.generatedMnemonic));
+                          text: generateWalletProvider.generatedMnemonic!));
                       snackCopySeed(context);
                     },
                     child: Row(children: <Widget>[

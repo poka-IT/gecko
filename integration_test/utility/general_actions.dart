@@ -66,10 +66,14 @@ Future restoreChest() async {
   await enterText(keyPinForm, 'AAAAA', 0);
 
   // Check if string "Accéder à mon coffre" is present in screen
-  await waitFor('accessMyChest'.tr());
+  await waitFor('accessMyChest'.tr(), pumpDuration: 30);
 
   // Go to wallets home
   await tapKey(keyGoWalletsHome, duration: 0);
+
+  // Skip tutorial
+  await sleep(500);
+  await tapKey(keyDragAndDrop).timeout(const Duration(seconds: 3));
 
   // Check if string "ĞD" is present in screen
   await waitFor('ĞD');

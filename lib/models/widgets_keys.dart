@@ -11,6 +11,7 @@ const keyAppBarChest = Key('keyAppBarChest');
 
 // Home
 const keyParameters = Key('keyParameters');
+const keyDebugScreen = Key('keyDebugScreen');
 const keyContacts = Key('keyContacts');
 const keyDrawerMenu = Key('keyDrawerMenu');
 const keyOpenWalletsHomme = Key('keyOpenWalletsHomme');
@@ -23,6 +24,7 @@ const keyImportG1v1 = Key('keyImportG1v1');
 const keyChangeChest = Key('keyChangeChest');
 const keyListWallets = Key('keyListWallets');
 const keyAddDerivation = Key('keyAddDerivation');
+final keyDragAndDrop = GlobalKey(debugLabel: 'keyDragAndDrop');
 
 // Wallet options
 const keyCopyAddress = Key('keyCopyAddress');

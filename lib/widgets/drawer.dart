@@ -24,11 +24,11 @@ class MainDrawer extends StatelessWidget {
         children: <Widget>[
           Expanded(
               child: ListView(padding: EdgeInsets.zero, children: <Widget>[
-            DrawerHeader(
-              decoration: const BoxDecoration(
+            const DrawerHeader(
+              decoration: BoxDecoration(
                 color: orangeC,
               ),
-              child: Column(children: const <Widget>[
+              child: Column(children: <Widget>[
                 SizedBox(height: 0),
                 Image(
                     image: AssetImage('assets/icon/gecko_final.png'),
@@ -64,7 +64,7 @@ class MainDrawer extends StatelessWidget {
               ),
             if (kDebugMode)
               ListTile(
-                key: keyParameters,
+                key: keyDebugScreen,
                 title: Text('Debug screen'.tr()),
                 onTap: () {
                   Navigator.pop(context);

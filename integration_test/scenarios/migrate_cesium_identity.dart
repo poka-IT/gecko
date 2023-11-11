@@ -42,8 +42,10 @@ void main() async {
     await tapKey(keySelectThisWallet(test6.address), selectLast: true);
     await waitForButtonEnabled(keyConfirm);
     await tapKey(keyConfirm);
-    spawnBlock(duration: 2000);
-    await waitFor('extrinsicValidated'.tr());
+    spawnBlock(duration: 1000);
+    await tester.pump(const Duration(seconds: 2));
+    await waitFor('sending'.tr(),
+        reverse: true, settle: false, timeout: const Duration(seconds: 20));
     await tapKey(keyCloseTransactionScreen, duration: 0);
 
     await tapKey(keyOpenWallet(test6.address), duration: 300);

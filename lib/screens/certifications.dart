@@ -23,7 +23,7 @@ class CertificationsScreen extends StatelessWidget {
             toolbarHeight: 60 * ratio,
             title: SizedBox(
               height: 22,
-              child: Text('Certifications de $username'),
+              child: Text('certificationsOf'.tr(args: [username])),
             )),
         body: SafeArea(
           child: Accordion(
@@ -45,7 +45,10 @@ class CertificationsScreen extends StatelessWidget {
                   headerBackgroundColor: yellowC,
                   headerBackgroundColorOpened: orangeC,
                   header: Row(children: [
-                    Text('received'.tr()),
+                    Text(
+                      'received'.tr(),
+                      style: const TextStyle(fontSize: 20),
+                    ),
                     const SizedBox(width: 5),
                     CertsCounter(address: address)
                   ]),
@@ -60,7 +63,10 @@ class CertificationsScreen extends StatelessWidget {
                   headerBackgroundColor: yellowC,
                   headerBackgroundColorOpened: orangeC,
                   header: Row(children: [
-                    Text('sent'.tr()),
+                    Text(
+                      'sent'.tr(),
+                      style: const TextStyle(fontSize: 20),
+                    ),
                     const SizedBox(width: 5),
                     CertsCounter(address: address, isSent: true)
                   ]),

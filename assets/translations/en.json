@@ -23,7 +23,7 @@
     "toUnlockEnterPassword": "To unlock your safe, enter your secret code, away from prying lizards:",
     "rememberPassword": "Keep this code in memory for 15 minutes",
     "myRootWallet": "My root wallet",
-    "currentWallet": "My current chest",
+    "currentWallet": "My current wallet",
     "wallet": "Wallet",
     "displayMnemonic": "Display my mnemonic sentence",
     "changePassword": "Change my password",
@@ -202,7 +202,7 @@
     "smithCantMigrateIdentity": "You can't migrate this identity while you're member of smith web",
     "received": "Received",
     "sent": "Sent",
-    "createIdentity": "Create a new \nidentity",
+    "createIdentity": "Create a new\nidentity",
     "memberAccountOf": "Account of {}",
     "pasteAddress": "Paste address from\nclipboard",
     "historyStart": "Beginning of history",
@@ -217,5 +217,13 @@
     "youHaveToBeConnectedToValidateChest": "You have to be connected\nto validate your chest",
     "thisIdentityAlreadyExist": "This identity already exists",
     "removedFromcontacts": "Removed from contacts",
-    "addedToContacts": "Added to contacts"
+    "addedToContacts": "Added to contacts",
+    "certificationsOf": "Certifications of {}",
+    "explainDraggableWallet": "Drag and drop a tile onto another to make a transaction, by holding down the tile.",
+    "skip": "Skip",
+    "fees": "fees: {} {}",
+    "feesExplanation": "To ensure network security, an execution fee is charged on each transaction.",
+    "feesExplanationDetails": "These fees are transferred to the common treasury account.",
+    "gotit": "Got it",
+    "moreInfo": "More information"
 }

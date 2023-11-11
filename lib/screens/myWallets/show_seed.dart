@@ -81,7 +81,7 @@ class ShowSeed extends StatelessWidget {
                               ),
                               onPressed: () {
                                 Clipboard.setData(
-                                    ClipboardData(text: seed.data));
+                                    ClipboardData(text: seed.data!));
                                 snackCopySeed(context);
                               },
                               child: Row(children: <Widget>[

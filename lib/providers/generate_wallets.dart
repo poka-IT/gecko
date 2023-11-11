@@ -20,7 +20,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   // NewWallet generatedWallet;
   durt.NewWallet? actualWallet;
 
-  FocusNode walletNameFocus = FocusNode();
+  final walletNameFocus = FocusNode();
   Color? askedWordColor = Colors.black;
   bool isAskedWordValid = false;
   int scanedValidWalletNumber = -1;
@@ -33,8 +33,8 @@ class GenerateWalletsProvider with ChangeNotifier {
   String? generatedMnemonic;
   bool walletIsGenerated = true;
 
-  TextEditingController mnemonicController = TextEditingController();
-  TextEditingController pin = TextEditingController();
+  final mnemonicController = TextEditingController();
+  final pin = TextEditingController();
 
   // Import wallet
   TextEditingController cesiumID = TextEditingController();

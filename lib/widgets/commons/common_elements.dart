@@ -155,11 +155,14 @@ Future<void> infoPopup(BuildContext context, String title) async {
             children: [
               TextButton(
                 key: keyInfoPopup,
-                child: const Text(
-                  "D'accord",
-                  style: TextStyle(
-                    fontSize: 21,
-                    color: Color(0xffD80000),
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Text(
+                    "gotit".tr(),
+                    style: const TextStyle(
+                      fontSize: 21,
+                      color: Color(0xffD80000),
+                    ),
                   ),
                 ),
                 onPressed: () {

@@ -6,7 +6,6 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:flutter/material.dart';
@@ -16,16 +15,15 @@ import 'package:gecko/screens/myWallets/chest_options.dart';
 import 'package:gecko/screens/myWallets/import_g1_v1.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
-import 'package:gecko/screens/wallet_view.dart';
-// import 'package:gecko/screens/myWallets/choose_chest.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/smooth_transition.dart';
+import 'package:gecko/widgets/name_by_address.dart';
+import 'package:gecko/widgets/payment_popup.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:truncate/truncate.dart';
-// import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
 class WalletsHome extends StatefulWidget {
   const WalletsHome({Key? key}) : super(key: key);
@@ -35,36 +33,8 @@ class WalletsHome extends StatefulWidget {
 }
 
 class _WalletsHomeState extends State<WalletsHome> {
-  final safeKey = GlobalKey();
-  // List<TargetFocus> targets = [];
-
   @override
   void initState() {
-    // targets
-    //     .add(TargetFocus(identify: "Target 1", keyTarget: safeKey, contents: [
-    //   TargetContent(
-    //       align: ContentAlign.right,
-    //       child: Column(
-    //         mainAxisSize: MainAxisSize.min,
-    //         crossAxisAlignment: CrossAxisAlignment.start,
-    //         children: const <Widget>[
-    //           Text(
-    //             "Titulo lorem ipsum",
-    //             style: TextStyle(
-    //                 fontWeight: FontWeight.bold,
-    //                 color: Colors.white,
-    //                 fontSize: 20.0),
-    //           ),
-    //           Padding(
-    //             padding: EdgeInsets.only(top: 10.0),
-    //             child: Text(
-    //               "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin pulvinar tortor eget maximus iaculis.",
-    //               style: TextStyle(color: Colors.white),
-    //             ),
-    //           )
-    //         ],
-    //       ))
-    // ]));
     super.initState();
   }
 
@@ -252,15 +222,14 @@ class _WalletsHomeState extends State<WalletsHome> {
         Provider.of<WalletOptionsProvider>(context, listen: false);
     final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     if (!isWalletsExists) {
       return const Text('');
     }
 
     if (myWalletProvider.listWallets.isEmpty) {
-      return Expanded(
-          child: Column(children: const <Widget>[
+      return const Expanded(
+          child: Column(children: <Widget>[
         Center(
             child: Text(
           'Veuillez générer votre premier portefeuille',
@@ -286,13 +255,45 @@ class _WalletsHomeState extends State<WalletsHome> {
     } else {
       nTule = 2;
     }
-    // Offset followDragAnchorStrategy(
-    //     Draggable<Object> d, BuildContext context, Offset point) {
-    //   return Offset(d.feedbackOffset.dx - 30, d.feedbackOffset.dy - 0);
-    // }
 
-    // showTutorial();
-    // Future.delayed(const Duration(seconds: 1), showTutorial);
+    final tutorialCoachMark = TutorialCoachMark(
+      targets: [
+        TargetFocus(
+          identify: "drag_and_drop",
+          keyTarget: keyDragAndDrop,
+          contents: [
+            TargetContent(
+                child: Column(
+              children: [
+                Image.asset('assets/drag-and-drop.png', height: 140),
+                const SizedBox(height: 15),
+                Text(
+                  'explainDraggableWallet'.tr(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      fontSize: 22, fontWeight: FontWeight.w500),
+                ),
+              ],
+            ))
+          ],
+          alignSkip: Alignment.bottomRight,
+          enableOverlayTab: true,
+        ),
+      ],
+      colorShadow: orangeC,
+      textSkip: "skip".tr(),
+      paddingFocus: 10,
+      opacityShadow: 0.8,
+    );
+
+    // configBox.delete('showDraggableTutorial');
+    final bool showDraggableTutorial =
+        configBox.get('showDraggableTutorial') ?? true;
+
+    if (listWallets.length > 1 && showDraggableTutorial) {
+      tutorialCoachMark.show(context: context);
+      configBox.put('showDraggableTutorial', false);
+    }
 
     return CustomScrollView(slivers: <Widget>[
       const SliverToBoxAdapter(child: SizedBox(height: 20)),
@@ -339,7 +340,11 @@ class _WalletsHomeState extends State<WalletsHome> {
                           .getWalletDataByAddress(senderAddress);
                       await sub.setCurrentWallet(walletData!);
                       sub.reload();
-                      paymentPopup(context, repository.address);
+                      paymentPopup(
+                          context,
+                          repository.address,
+                          g1WalletsBox.get(repository.address)!.username ??
+                              repository.name!);
                     },
                     onMove: (details) {
                       if (repository.address != myWalletProvider.lastFlyBy) {
@@ -370,97 +375,91 @@ class _WalletsHomeState extends State<WalletsHome> {
                               ),
                             );
                           },
-                          child: ClipOvalShadow(
-                            shadow: const Shadow(
-                              color: Colors.transparent,
-                              offset: Offset(0, 0),
-                              blurRadius: 5,
-                            ),
-                            clipper: CustomClipperOval(),
-                            child: ClipRRect(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(12)),
-                              child: Column(children: <Widget>[
-                                Expanded(
-                                    child: Container(
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  decoration: const BoxDecoration(
-                                    gradient: RadialGradient(
-                                      radius: 0.8,
-                                      colors: [
-                                        Color.fromARGB(255, 255, 255, 211),
-                                        yellowC,
-                                      ],
+                          child: SizedBox(
+                            key: repository.number == 1
+                                ? keyDragAndDrop
+                                : const Key('nothing'),
+                            child: ClipOvalShadow(
+                              shadow: const Shadow(
+                                color: Colors.transparent,
+                                offset: Offset(0, 0),
+                                blurRadius: 5,
+                              ),
+                              clipper: CustomClipperOval(),
+                              child: ClipRRect(
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(12)),
+                                child: Column(children: <Widget>[
+                                  Expanded(
+                                      child: Container(
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    decoration: const BoxDecoration(
+                                      gradient: RadialGradient(
+                                        radius: 0.8,
+                                        colors: [
+                                          Color.fromARGB(255, 255, 255, 211),
+                                          yellowC,
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  child:
-                                      // SvgPicture.asset('assets/chopp-gecko2.png',
-                                      //         semanticsLabel: 'Gecko', height: 48),
-                                      repository.imageCustomPath == null ||
-                                              repository.imageCustomPath == ''
-                                          ? Image.asset(
-                                              'assets/avatars/${repository.imageDefaultPath}',
-                                              alignment: Alignment.bottomCenter,
-                                              scale: 0.5,
-                                            )
-                                          : Container(
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                color: Colors.transparent,
-                                                image: DecorationImage(
-                                                  fit: BoxFit.fitHeight,
-                                                  image: FileImage(
-                                                    File(repository
-                                                        .imageCustomPath!),
+                                    child:
+                                        // SvgPicture.asset('assets/chopp-gecko2.png',
+                                        //         semanticsLabel: 'Gecko', height: 48),
+                                        repository.imageCustomPath == null ||
+                                                repository.imageCustomPath == ''
+                                            ? Image.asset(
+                                                'assets/avatars/${repository.imageDefaultPath}',
+                                                alignment:
+                                                    Alignment.bottomCenter,
+                                                scale: 0.5,
+                                              )
+                                            : Container(
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: Colors.transparent,
+                                                  image: DecorationImage(
+                                                    fit: BoxFit.fitHeight,
+                                                    image: FileImage(
+                                                      File(repository
+                                                          .imageCustomPath!),
+                                                    ),
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                )),
-                                Stack(children: <Widget>[
-                                  BalanceBuilder(
-                                      address: repository.address,
-                                      isDefault: repository.address ==
-                                          defaultWallet.address),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Column(
-                                        children: [
-                                          const SizedBox(height: 7),
-                                          Opacity(
-                                            opacity: 0.7,
-                                            child: Text(
-                                              duniterIndexer.walletNameIndexer[
-                                                      repository.address] ??
-                                                  truncate(
-                                                      repository.name!, 20),
-                                              style: TextStyle(
-                                                  fontSize: 20,
+                                  )),
+                                  Stack(children: <Widget>[
+                                    BalanceBuilder(
+                                        address: repository.address,
+                                        isDefault: repository.address ==
+                                            defaultWallet.address),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Column(
+                                          children: [
+                                            const SizedBox(height: 7),
+                                            Opacity(
+                                                opacity: 0.7,
+                                                child: NameByAddress(
+                                                  wallet: repository,
+                                                  size: 20,
                                                   color:
                                                       defaultWallet.address ==
                                                               repository.address
                                                           ? Colors.white
                                                           : Colors.black,
-                                                  fontWeight: FontWeight.w500),
-                                            ),
-                                          )
-                                          // NameByAddress(
-                                          //   wallet: repository,
-                                          //   address: repository.address,
-                                          //   size: 20,
-                                          // color: defaultWallet.address ==
-                                          //         repository.address
-                                          //     ? Colors.white
-                                          //     : Colors.black,
-                                          // ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
+                                                  fontWeight: FontWeight.w600,
+                                                  fontStyle: FontStyle.normal,
+                                                ))
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ]),
                                 ]),
-                              ]),
+                              ),
                             ),
                           ),
                         ),

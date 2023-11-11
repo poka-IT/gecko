@@ -61,11 +61,11 @@ class ImportG1v1 extends StatelessWidget {
                   // log.d(_certs.data);
 
                   if (status.data == null) {
-                    return Column(children: [
-                      const SizedBox(height: 80),
+                    return const Column(children: [
+                      SizedBox(height: 80),
                       Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
+                          children: [
                             SizedBox(
                               height: 35,
                               width: 35,

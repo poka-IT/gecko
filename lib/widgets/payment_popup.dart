@@ -145,6 +145,7 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
                       ),
                       const SizedBox(height: 10),
                       Consumer<SubstrateSdk>(builder: (context, sub, _) {
+                        // TODO: about keyboard dismiss issue, should try this: https://stackoverflow.com/a/76352647/8301867
                         return DropdownButton(
                           dropdownColor: const Color(0xffffeed1),
                           elevation: 12,

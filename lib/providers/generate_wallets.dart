@@ -9,8 +9,6 @@ import 'package:gecko/models/bip39_words.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:provider/provider.dart';
 import "package:unorm_dart/unorm_dart.dart" as unorm;
@@ -149,77 +147,6 @@ class GenerateWalletsProvider with ChangeNotifier {
       notifyListeners();
     }
     return pin.text;
-  }
-
-  Future<Uint8List> printWallet(AsyncSnapshot<List>? mnemoList) async {
-    final ByteData fontData =
-        await rootBundle.load("assets/OpenSans-Regular.ttf");
-    final pw.Font ttf = pw.Font.ttf(fontData.buffer.asByteData());
-    final pdf = pw.Document();
-
-    // const imageProvider = AssetImage('assets/icon/gecko_final.png');
-    // final geckoLogo = await flutterImageProvider(imageProvider);
-
-    pw.Widget arrayCell(dataWord) {
-      return pw.SizedBox(
-        width: 120,
-        child: pw.Column(children: <pw.Widget>[
-          pw.Text(
-            dataWord.split(':')[0],
-            style: pw.TextStyle(
-                fontSize: 15, color: const PdfColor(0.5, 0, 0), font: ttf),
-          ),
-          pw.Text(
-            dataWord.split(':')[1],
-            style: pw.TextStyle(
-                fontSize: 20, color: const PdfColor(0, 0, 0), font: ttf),
-          ),
-          pw.SizedBox(height: 10)
-        ]),
-      );
-    }
-
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        build: (context) {
-          return pw.Column(
-            // mainAxisAlignment: pw.MainAxisAlignment.center,
-            // mainAxisSize: pw.MainAxisSize.max,
-            // crossAxisAlignment: pw.CrossAxisAlignment.center,
-            children: <pw.Widget>[
-              pw.Row(children: <pw.Widget>[
-                arrayCell(mnemoList!.data![0]),
-                arrayCell(mnemoList.data![1]),
-                arrayCell(mnemoList.data![2]),
-                arrayCell(mnemoList.data![3]),
-              ]),
-              pw.Row(children: <pw.Widget>[
-                arrayCell(mnemoList.data![4]),
-                arrayCell(mnemoList.data![5]),
-                arrayCell(mnemoList.data![6]),
-                arrayCell(mnemoList.data![7]),
-              ]),
-              pw.Row(children: <pw.Widget>[
-                arrayCell(mnemoList.data![8]),
-                arrayCell(mnemoList.data![9]),
-                arrayCell(mnemoList.data![10]),
-                arrayCell(mnemoList.data![11])
-              ]),
-              pw.Expanded(
-                  child: pw.Align(
-                      alignment: pw.Alignment.bottomCenter,
-                      child: pw.Text(
-                        "Gardez cette feuille préciseusement, à l’abri des lézards indiscrets.",
-                        style: pw.TextStyle(fontSize: 15, font: ttf),
-                      )))
-            ],
-          );
-        },
-      ),
-    );
-
-    return pdf.save();
   }
 
   Future<void> generateCesiumWalletPubkey(

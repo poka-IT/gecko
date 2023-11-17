@@ -714,7 +714,7 @@ class SubstrateSdk with ChangeNotifier {
     final seed = await sdk.api.keyring.getDecryptedSeed(keyring, pin);
 
     String seedText;
-    if (seed == null) {
+    if (seed == null || seed.seed == null) {
       seedText = '';
     } else {
       seedText = seed.seed!.split('//')[0];

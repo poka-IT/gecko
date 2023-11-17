@@ -120,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     //TODO: finish to implement multiqueries
-    
+
     // final sub = Provider.of<SubstrateSdk>(context, listen: false);
     // sub.getBalanceMulti([
     //   '5CQ8T4qpbYJq7uVsxGPQ5q2df7x3Wa4aRY6HUWMBYjfLZhnn',

@@ -242,21 +242,19 @@ class PrintWallet extends StatelessWidget {
         await rootBundle.load("assets/OpenSans-Regular.ttf");
     final pw.Font ttf = pw.Font.ttf(fontData.buffer.asByteData());
     final pdf = pw.Document();
-    int nbr = 1;
 
     final seedList = seed.split(' ');
 
-    // const imageProvider = AssetImage('assets/icon/gecko_final.png');
-    // final geckoLogo = await flutterImageProvider(imageProvider);
+    const imageProvider = AssetImage('assets/icon/gecko_final.png');
+    final geckoLogo = await flutterImageProvider(imageProvider);
 
-    pw.Widget arrayCell(String dataWord, int nbr) {
-      nbr++;
-
+    pw.Widget arrayCell(int number, String dataWord) {
       return pw.SizedBox(
         width: 120,
+        height: 70,
         child: pw.Column(children: <pw.Widget>[
           pw.Text(
-            nbr.toString(),
+            number.toString(),
             style: pw.TextStyle(
                 fontSize: 15, color: const PdfColor(0.5, 0, 0), font: ttf),
           ),
@@ -274,38 +272,44 @@ class PrintWallet extends StatelessWidget {
       pw.Page(
         pageFormat: PdfPageFormat.a4,
         build: (context) {
-          return pw.Column(
-            // mainAxisAlignment: pw.MainAxisAlignment.center,
-            // mainAxisSize: pw.MainAxisSize.max,
-            // crossAxisAlignment: pw.CrossAxisAlignment.center,
-            children: <pw.Widget>[
-              pw.Row(children: <pw.Widget>[
-                arrayCell(seedList[0], nbr),
-                arrayCell(seedList[1], nbr),
-                arrayCell(seedList[2], nbr),
-                arrayCell(seedList[3], nbr),
-              ]),
-              pw.Row(children: <pw.Widget>[
-                arrayCell(seedList[4], nbr),
-                arrayCell(seedList[5], nbr),
-                arrayCell(seedList[6], nbr),
-                arrayCell(seedList[7], nbr),
-              ]),
-              pw.Row(children: <pw.Widget>[
-                arrayCell(seedList[8], nbr),
-                arrayCell(seedList[9], nbr),
-                arrayCell(seedList[10], nbr),
-                arrayCell(seedList[11], nbr)
-              ]),
-              pw.Expanded(
-                  child: pw.Align(
-                      alignment: pw.Alignment.bottomCenter,
-                      child: pw.Text(
-                        "Gardez cette feuille préciseusement, à l’abri des lézards indiscrets.",
-                        style: pw.TextStyle(fontSize: 15, font: ttf),
-                      )))
-            ],
-          );
+          return pw.Stack(children: <pw.Widget>[
+            pw.Positioned(top: 217, child: pw.Text('-'.padRight(130, '-'))),
+            pw.Positioned(bottom: 217, child: pw.Text('-'.padRight(130, '-'))),
+            pw.Column(
+              // mainAxisAlignment: pw.MainAxisAlignment.center,
+              // mainAxisSize: pw.MainAxisSize.max,
+              // crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: <pw.Widget>[
+                pw.SizedBox(height: 10),
+                pw.Row(children: <pw.Widget>[
+                  arrayCell(1, seedList[0]),
+                  arrayCell(2, seedList[1]),
+                  arrayCell(3, seedList[2]),
+                  arrayCell(4, seedList[3]),
+                ]),
+                pw.Row(children: <pw.Widget>[
+                  arrayCell(5, seedList[4]),
+                  arrayCell(6, seedList[5]),
+                  arrayCell(7, seedList[6]),
+                  arrayCell(8, seedList[7]),
+                ]),
+                pw.Row(children: <pw.Widget>[
+                  arrayCell(9, seedList[8]),
+                  arrayCell(10, seedList[9]),
+                  arrayCell(11, seedList[10]),
+                  arrayCell(12, seedList[11])
+                ]),
+                pw.SizedBox(height: 105),
+                pw.Image(geckoLogo, height: 80),
+                pw.SizedBox(height: 205),
+                pw.Text(
+                  "Gardez cette feuille préciseusement, à l’abri des lézards indiscrets.\nElle vous permettra de restaurer tous vos portefeuilles à tout moment.",
+                  textAlign: pw.TextAlign.center,
+                  style: pw.TextStyle(fontSize: 15, font: ttf),
+                )
+              ],
+            )
+          ]);
         },
       ),
     );

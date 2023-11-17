@@ -467,7 +467,8 @@ class _WalletsHomeState extends State<WalletsHome> {
                     }),
               ),
             Consumer<SubstrateSdk>(builder: (context, sub, _) {
-              return sub.nodeConnected
+              return sub.nodeConnected &&
+                      myWalletProvider.listWallets.length < 30
                   ? addNewDerivation(context)
                   : const Text('');
             }),

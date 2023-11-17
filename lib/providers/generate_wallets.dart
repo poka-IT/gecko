@@ -23,7 +23,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   bool isAskedWordValid = false;
   int scanedValidWalletNumber = -1;
   int scanedWalletNumber = -1;
-  int numberScan = 20;
+  int numberScan = 60;
 
   late int nbrWord;
   String? nbrWordAlpha;
@@ -301,6 +301,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     bool isAlive = false;
     scanedValidWalletNumber = 0;
     scanedWalletNumber = 0;
+    Map<String, int> addressToScan = {};
     notifyListeners();
 
     if (!sub.nodeConnected) {
@@ -315,37 +316,38 @@ class GenerateWalletsProvider with ChangeNotifier {
       isAlive = true;
     }
 
-    for (var derivationNbr in [for (var i = 0; i < numberScan; i += 1) i]) {
+    for (int derivationNbr in [for (var i = 0; i < numberScan; i += 1) i]) {
       final addressData = await sub.sdk.api.keyring.addressFromMnemonic(
           sub.currencyParameters['ss58']!,
           cryptoType: CryptoType.sr25519,
           mnemonic: generatedMnemonic!,
           derivePath: '//$derivationNbr');
+      addressToScan.putIfAbsent(addressData.address!, () => derivationNbr);
+    }
 
-      final Map balance = await sub.getBalance(addressData.address!).timeout(
-            const Duration(seconds: 1),
-            onTimeout: () => {'transferableBalance': 0},
-          );
-      // const balance = 0;
+    final balanceList =
+        await sub.getBalanceMulti(addressToScan.keys.toList()).timeout(
+              const Duration(seconds: 20),
+              onTimeout: () => {},
+            );
 
-      log.d(
-          "${addressData.address!}: ${balance['transferableBalance']} $currencyName");
-      if (balance['transferableBalance'] != 0) {
+    for (String scannedWallet in balanceList.keys) {
+      if (balanceList[scannedWallet]!['transferableBalance'] != 0) {
         isAlive = true;
         String walletName = scanedValidWalletNumber == 0
             ? 'currentWallet'.tr()
             : '${'wallet'.tr()} ${scanedValidWalletNumber + 1}';
         await sub.importAccount(
             mnemonic: generatedMnemonic!,
-            derivePath: '//$derivationNbr',
+            derivePath: "//${addressToScan[scannedWallet]}",
             password: pin.text);
 
         WalletData myWallet = WalletData(
             chest: currentChestNumber,
-            address: addressData.address!,
+            address: scannedWallet,
             number: scanedValidWalletNumber,
             name: walletName,
-            derivation: derivationNbr,
+            derivation: addressToScan[scannedWallet],
             imageDefaultPath: '${scanedValidWalletNumber % 4}.png',
             isOwned: true);
         await walletBox.put(myWallet.address, myWallet);
@@ -354,6 +356,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       scanedWalletNumber = scanedWalletNumber + 1;
       notifyListeners();
     }
+
     log.d(scanedWalletNumber);
     scanedWalletNumber = -1;
     scanedValidWalletNumber = -1;
@@ -371,8 +374,6 @@ class GenerateWalletsProvider with ChangeNotifier {
           const Duration(seconds: 1),
           onTimeout: () => {},
         );
-
-    log.d(balance);
 
     log.d(
         "${addressData.address!}: ${balance['transferableBalance']} $currencyName");

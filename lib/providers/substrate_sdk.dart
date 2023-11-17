@@ -236,8 +236,6 @@ class SubstrateSdk with ChangeNotifier {
       nbr++;
     }
 
-    log.i(finalBalancesList);
-
     return finalBalancesList;
   }
 
@@ -274,8 +272,6 @@ class SubstrateSdk with ChangeNotifier {
     // Calculate transferable and potential balance
     final int transferableBalance =
         (balanceGlobal['data']['free'] + unclaimedUds);
-
-    // log.d('udValue: $udValue');
 
     return {
       'transferableBalance': round((transferableBalance / balanceRatio) / 100),

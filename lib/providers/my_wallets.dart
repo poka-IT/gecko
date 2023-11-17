@@ -104,10 +104,8 @@ class MyWalletsProvider with ChangeNotifier {
 
         myWalletProvider.pinCode = '';
 
-        await Navigator.of(context).pushNamedAndRemoveUntil(
-          '/',
-          ModalRoute.withName('/'),
-        );
+        await Navigator.of(context)
+            .pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
       }
       return 0;
     } catch (e) {

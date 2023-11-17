@@ -119,14 +119,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ratio = 1.125;
     }
 
-    //TODO: finish to implement multiqueries
-
-    // final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    // sub.getBalanceMulti([
-    //   '5CQ8T4qpbYJq7uVsxGPQ5q2df7x3Wa4aRY6HUWMBYjfLZhnn',
-    //   '5Dq8xjvkmbz7q4g2LbZgyExD26VSCutfEc6n4W4AfQeVHZqz'
-    // ]);
-
     return Scaffold(
         resizeToAvoidBottomInset: false,
         drawer: MainDrawer(isWalletsExists: isWalletsExists),

@@ -200,14 +200,45 @@ class SubstrateSdk with ChangeNotifier {
     return balanceRatio;
   }
 
-  Future getBalanceMulti(List addresses) async {
+  Future<Map<String, Map<String, double>>> getBalanceMulti(
+      List<String> addresses) async {
     List stringifyAddresses = [];
     for (var element in addresses) {
       stringifyAddresses.add('"$element"');
     }
-    final List balanceGlobal =
-        await _getStorage('system.account.multi($stringifyAddresses)');
-    log.d('debug multi: $balanceGlobal');
+
+    // Get onchain storage values
+    final List<Map> balanceGlobalMulti =
+        (await _getStorage('system.account.multi($stringifyAddresses)') as List)
+            .map((dynamic e) => e as Map<String, dynamic>)
+            .toList();
+    log.d('debug multi: $balanceGlobalMulti');
+
+    final List<int?> idtyIndexList = (await _getStorage(
+            'identity.identityIndexOf.multi($stringifyAddresses)') as List)
+        .map((dynamic e) => e as int?)
+        .toList();
+    final List<Map?> idtyDataList = (idtyIndexList.isEmpty
+            ? []
+            : (await _getStorage('identity.identities.multi($idtyIndexList)'))
+                as List)
+        .map((dynamic e) => e as Map<String, dynamic>?)
+        .toList();
+    final List pastReevals =
+        await _getStorage('universalDividend.pastReevals()');
+
+    int nbr = 0;
+    Map<String, Map<String, double>> finalBalancesList = {};
+    for (Map balanceGlobal in balanceGlobalMulti) {
+      final computedBalance =
+          await _computeBalance(idtyDataList[nbr], pastReevals, balanceGlobal);
+      finalBalancesList.putIfAbsent(addresses[nbr], () => computedBalance);
+      nbr++;
+    }
+
+    log.i(finalBalancesList);
+
+    return finalBalancesList;
   }
 
   Future<Map<String, double>> getBalance(String address) async {
@@ -230,6 +261,11 @@ class SubstrateSdk with ChangeNotifier {
     final List pastReevals =
         await _getStorage('universalDividend.pastReevals()');
 
+    return _computeBalance(idtyData, pastReevals, balanceGlobal);
+  }
+
+  Future<Map<String, double>> _computeBalance(
+      Map? idtyData, List pastReevals, Map balanceGlobal) async {
     // Compute amount of claimable UDs
     currentUdIndex = await getCurrentUdIndex();
     final int unclaimedUds = _computeUnclaimUds(
@@ -241,19 +277,13 @@ class SubstrateSdk with ChangeNotifier {
 
     // log.d('udValue: $udValue');
 
-    Map<String, double> finalBalances = {
+    return {
       'transferableBalance': round((transferableBalance / balanceRatio) / 100),
       'free': round((balanceGlobal['data']['free'] / balanceRatio) / 100),
       'unclaimedUds': round((unclaimedUds / balanceRatio) / 100),
       'reserved':
           round((balanceGlobal['data']['reserved'] / balanceRatio) / 100),
     };
-
-    // log.i(finalBalances);
-    log.d(
-        '${getShortPubkey(address)} --- BALANCE: ${finalBalances['transferableBalance']}');
-
-    return finalBalances;
   }
 
   int _computeUnclaimUds(int firstEligibleUd, List pastReevals) {

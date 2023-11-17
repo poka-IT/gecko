@@ -225,5 +225,6 @@
     "feesExplanation": "To ensure network security, an execution fee is charged on each transaction.",
     "feesExplanationDetails": "These fees are transferred to the common treasury account.",
     "gotit": "Got it",
-    "moreInfo": "More information"
+    "moreInfo": "More information",
+    "keepThisPaperSafe": "Keep this sheet safe from prying lizards.\nIt will allow you to restore all your wallets at any time."
 }

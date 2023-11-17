@@ -303,7 +303,7 @@ class PrintWallet extends StatelessWidget {
                 pw.Image(geckoLogo, height: 80),
                 pw.SizedBox(height: 205),
                 pw.Text(
-                  "Gardez cette feuille préciseusement, à l’abri des lézards indiscrets.\nElle vous permettra de restaurer tous vos portefeuilles à tout moment.",
+                  "keepThisPaperSafe".tr(),
                   textAlign: pw.TextAlign.center,
                   style: pw.TextStyle(fontSize: 15, font: ttf),
                 )

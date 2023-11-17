@@ -29,6 +29,8 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
   final amountFocus = FocusNode();
   final dropdownKey = GlobalKey();
 
+  walletViewProvider.payAmount.text = '';
+
   Future executeTransfert() async {
     String? pin;
     if (myWalletProvider.pinCode == '') {
@@ -56,7 +58,8 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) {
-          return const TransactionInProgress();
+          return TransactionInProgress(
+              toAddress: toAddress, toUsername: username);
         }),
       );
     }
@@ -333,7 +336,11 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
                             backgroundColor: orangeC, // foreground
                           ),
                           onPressed: canValidate
-                              ? () async => await executeTransfert()
+                              ? () async {
+                                  // FocusScope.of(context).unfocus();
+                                  Navigator.pop(context);
+                                  await executeTransfert();
+                                }
                               : null,
                           child: Text(
                             'executeTheTransfer'.tr(),
@@ -348,8 +355,9 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
             ),
           );
         });
-      }).then((value) => walletViewProvider.payAmount.text = '');
+      });
 }
+//).then((value) => walletViewProvider.payAmount.text = ''
 
 Future<void> infoFeesPopup(BuildContext context) async {
   return showDialog<void>(

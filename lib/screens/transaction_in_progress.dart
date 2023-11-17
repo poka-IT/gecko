@@ -12,11 +12,16 @@ import 'package:provider/provider.dart';
 
 class TransactionInProgress extends StatelessWidget {
   const TransactionInProgress(
-      {Key? key, this.transType = 'pay', this.fromAddress, this.toAddress})
+      {Key? key,
+      this.transType = 'pay',
+      this.fromAddress,
+      this.toAddress,
+      this.toUsername})
       : super(key: key);
   final String transType;
   final String? fromAddress;
   final String? toAddress;
+  final String? toUsername;
 
   @override
   Widget build(BuildContext context) {
@@ -33,8 +38,15 @@ class TransactionInProgress extends StatelessWidget {
 
     log.d(walletProfiles.address);
 
-    final from = fromAddress ?? myWalletProvider.getDefaultWallet().name!;
-    final to = toAddress ?? getShortPubkey(walletProfiles.address);
+    final from = fromAddress ??
+        g1WalletsBox
+            .get(myWalletProvider.getDefaultWallet().address)
+            ?.username ??
+        myWalletProvider.getDefaultWallet().name!;
+    String to = toAddress ?? walletProfiles.address;
+    to =
+        myWalletProvider.getWalletDataByAddress(to)?.name ?? getShortPubkey(to);
+
     final amount = walletProfiles.payAmount.text;
     String actionName = '';
     final bool isUdUnit = configBox.get('isUdUnit') ?? false;
@@ -220,7 +232,7 @@ class TransactionInProgress extends StatelessWidget {
                         style: const TextStyle(fontSize: 18),
                       ),
                       Text(
-                        to,
+                        toUsername ?? to,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.w600),

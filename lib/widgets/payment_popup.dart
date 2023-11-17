@@ -145,16 +145,14 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
                       ),
                       const SizedBox(height: 10),
                       Consumer<SubstrateSdk>(builder: (context, sub, _) {
-                        // TODO: about keyboard dismiss issue, should try this: https://stackoverflow.com/a/76352647/8301867
                         return DropdownButton(
                           dropdownColor: const Color(0xffffeed1),
                           elevation: 12,
                           key: dropdownKey,
                           value: defaultWallet,
-                          // onTap: () async {
-                          //   await Future.delayed(const Duration(milliseconds: 10));
-                          //   amountFocus.requestFocus();
-                          // },
+                          onTap: () {
+                            FocusScope.of(context).requestFocus(amountFocus);
+                          },
                           selectedItemBuilder: (_) {
                             return myWalletProvider.listWallets
                                 .map((WalletData wallet) {
@@ -268,53 +266,60 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      TextField(
-                        textInputAction: TextInputAction.done,
-                        onEditingComplete: () async =>
-                            canValidate ? await executeTransfert() : null,
-                        key: keyAmountField,
-                        controller: walletViewProvider.payAmount,
-                        autofocus: true,
-                        focusNode: amountFocus,
-                        maxLines: 1,
-                        textAlign: TextAlign.center,
-                        keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
-                        onChanged: (_) async {
-                          fees = await sub.txFees(
-                              defaultWallet.address,
-                              toAddress,
-                              double.parse(
-                                  walletViewProvider.payAmount.text == ''
-                                      ? '0'
-                                      : walletViewProvider.payAmount.text));
-                          log.d(fees);
-                          setState(() {});
+                      Focus(
+                        onFocusChange: (focused) {
+                          setState(() {
+                            FocusScope.of(context).requestFocus(amountFocus);
+                          });
                         },
-                        inputFormatters: <TextInputFormatter>[
-                          FilteringTextInputFormatter.deny(',',
-                              replacementString: '.'),
-                          FilteringTextInputFormatter.allow(
-                              RegExp(r'(^\d+\.?\d{0,2})')),
-                        ],
-                        decoration: InputDecoration(
-                          hintText: '0.00',
-                          suffix: Text(isUdUnit
-                              ? 'ud'.tr(args: [''])
-                              : currencyName), // udUnitDisplay(40),
-                          filled: true,
-                          fillColor: Colors.transparent,
-                          focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.grey[500]!, width: 2),
-                            borderRadius: BorderRadius.circular(8),
+                        child: TextField(
+                          textInputAction: TextInputAction.done,
+                          onEditingComplete: () async =>
+                              canValidate ? await executeTransfert() : null,
+                          key: keyAmountField,
+                          controller: walletViewProvider.payAmount,
+                          autofocus: true,
+                          focusNode: amountFocus,
+                          maxLines: 1,
+                          textAlign: TextAlign.center,
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
+                          onChanged: (_) async {
+                            fees = await sub.txFees(
+                                defaultWallet.address,
+                                toAddress,
+                                double.parse(
+                                    walletViewProvider.payAmount.text == ''
+                                        ? '0'
+                                        : walletViewProvider.payAmount.text));
+                            log.d(fees);
+                            setState(() {});
+                          },
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.deny(',',
+                                replacementString: '.'),
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'(^\d+\.?\d{0,2})')),
+                          ],
+                          decoration: InputDecoration(
+                            hintText: '0.00',
+                            suffix: Text(isUdUnit
+                                ? 'ud'.tr(args: [''])
+                                : currencyName), // udUnitDisplay(40),
+                            filled: true,
+                            fillColor: Colors.transparent,
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.grey[500]!, width: 2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            contentPadding: const EdgeInsets.all(20),
                           ),
-                          contentPadding: const EdgeInsets.all(20),
-                        ),
-                        style: const TextStyle(
-                          fontSize: 35,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w600,
+                          style: const TextStyle(
+                            fontSize: 35,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                       const Spacer(),

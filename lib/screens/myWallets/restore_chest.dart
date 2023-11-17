@@ -141,12 +141,13 @@ class RestoreChest extends StatelessWidget {
                           genW.pasteMnemonic(context);
                         },
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             const Icon(
                               Icons.content_paste_go,
-                              size: 25,
+                              size: 27,
                             ),
-                            const SizedBox(width: 10),
+                            // const SizedBox(width: 10),
                             Text(
                               'pasteFromClipboard'.tr(),
                               textAlign: TextAlign.center,

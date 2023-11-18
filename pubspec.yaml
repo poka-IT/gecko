@@ -3,12 +3,12 @@ description: Pay with G1.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 version: 0.1.1+58
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -47,8 +47,8 @@ dependencies:
       # url: https://github.com/polkawallet-io/sdk.git
       # ref: develop
       url: https://github.com/poka-IT/sdk.git
-      # ref: gecko-fixes-2
-      ref: ff98a117e86060a91113107f31355a17ccfb346c
+      ref: gecko-fixes-3
+      # ref: ff98a117e86060a91113107f31355a17ccfb346c
   dots_indicator: ^3.0.0
   connectivity_plus: ^3.0.2
   image_cropper: ^3.0.0
@@ -81,7 +81,7 @@ dev_dependencies:
   dart_code_metrics: ^5.0.1
 
 icons_launcher:
-  image_path: 'assets/icon/gecko_flat.png'
+  image_path: "assets/icon/gecko_flat.png"
   platforms:
     android:
       enable: true

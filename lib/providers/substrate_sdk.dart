@@ -35,7 +35,6 @@ class SubstrateSdk with ChangeNotifier {
   bool importIsLoading = false;
   int blocNumber = 0;
   bool isLoadingEndpoint = false;
-  String debugConnection = '';
   String transactionStatus = '';
   final int initSs58 = 42;
   Map<String, int> currencyParameters = {};
@@ -595,7 +594,7 @@ class SubstrateSdk with ChangeNotifier {
             ? [getDuniterCustomEndpoint()]
             : getDuniterBootstrap();
 
-    int timeout = 10000;
+    int timeout = 15;
 
     if (sdk.api.connectedNode?.endpoint != null) {
       await sdk.api.setting.unsubscribeBestNumber();
@@ -603,16 +602,16 @@ class SubstrateSdk with ChangeNotifier {
 
     isLoadingEndpoint = true;
     notifyListeners();
-    final res = await sdk.api.connectNode(keyring, listEndpoints).timeout(
-          Duration(milliseconds: timeout),
+    final resNode = await sdk.api.connectNode(keyring, listEndpoints).timeout(
+          Duration(seconds: timeout),
           onTimeout: () => null,
         );
     isLoadingEndpoint = false;
     notifyListeners();
-    if (res != null) {
+    if (resNode != null) {
       nodeConnected = true;
       // await getSs58Prefix();
-
+      
       // Subscribe bloc number
       sdk.api.setting.subscribeBestNumber((res) {
         blocNumber = int.parse(res.toString());
@@ -641,7 +640,6 @@ class SubstrateSdk with ChangeNotifier {
       // snackNode(ctx, true);
     } else {
       nodeConnected = false;
-      debugConnection = res.toString();
       notifyListeners();
       homeProvider.changeMessage("noDuniterEndointAvailable".tr(), 0);
       if (!myWalletProvider.checkIfWalletExist()) snackNode(homeContext, false);

@@ -611,7 +611,7 @@ class SubstrateSdk with ChangeNotifier {
     if (resNode != null) {
       nodeConnected = true;
       // await getSs58Prefix();
-      
+
       // Subscribe bloc number
       sdk.api.setting.subscribeBestNumber((res) {
         blocNumber = int.parse(res.toString());

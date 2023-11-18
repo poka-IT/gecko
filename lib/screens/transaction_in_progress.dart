@@ -168,7 +168,7 @@ class TransactionInProgress extends StatelessWidget {
         onWillPop: () {
           sub.transactionStatus = '';
           Navigator.pop(context);
-          if (transType == 'pay' || transType == 'identityMigration') {
+          if (transType == 'identityMigration') {
             Navigator.pop(context);
           }
           return Future<bool>.value(true);
@@ -285,8 +285,7 @@ class TransactionInProgress extends StatelessWidget {
                           onPressed: () {
                             Navigator.pop(context);
                             sub.transactionStatus = '';
-                            if (transType == 'pay' ||
-                                transType == 'identityMigration') {
+                            if (transType == 'identityMigration') {
                               Navigator.pop(context);
                             }
                           },

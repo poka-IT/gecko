@@ -13,6 +13,7 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/balance.dart';
+import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -66,6 +67,8 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
   }
 
   myWalletProvider.readAllWallets();
+  myWalletProvider.listWallets
+      .sort((a, b) => a.derivation!.compareTo(b.derivation!));
   log.d(myWalletProvider.listWallets);
 
   showModalBottomSheet<void>(
@@ -149,65 +152,68 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
                       const SizedBox(height: 10),
                       Consumer<SubstrateSdk>(builder: (context, sub, _) {
                         return DropdownButton(
-                          dropdownColor: const Color(0xffffeed1),
-                          elevation: 12,
-                          key: dropdownKey,
-                          value: defaultWallet,
-                          onTap: () {
-                            FocusScope.of(context).requestFocus(amountFocus);
-                          },
-                          selectedItemBuilder: (_) {
-                            return myWalletProvider.listWallets
+                            dropdownColor: const Color(0xffffeed1),
+                            elevation: 12,
+                            key: dropdownKey,
+                            value: defaultWallet,
+                            menuMaxHeight: 300,
+                            onTap: () {
+                              FocusScope.of(context).requestFocus(amountFocus);
+                            },
+                            selectedItemBuilder: (_) {
+                              return myWalletProvider.listWallets
+                                  .map((WalletData wallet) {
+                                return Container(
+                                  width: 408,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: Colors.blueAccent.shade200,
+                                        width: 2),
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(10.0)),
+                                  ),
+                                  padding: const EdgeInsets.all(10),
+                                  child: Visibility(
+                                    visible:
+                                        wallet.address == defaultWallet.address,
+                                    child: Row(children: [
+                                      NameByAddress(
+                                          wallet: wallet,
+                                          fontStyle: FontStyle.normal),
+                                      const Spacer(),
+                                      Balance(
+                                          address: wallet.address, size: 20),
+                                    ]),
+                                  ),
+                                );
+                              }).toList();
+                            },
+                            onChanged: (WalletData? newSelectedWallet) async {
+                              defaultWallet = newSelectedWallet!;
+                              await sub.setCurrentWallet(newSelectedWallet);
+                              sub.reload();
+                              amountFocus.requestFocus();
+                              setState(() {});
+                            },
+                            items: myWalletProvider.listWallets
                                 .map((WalletData wallet) {
-                              return Container(
-                                width: 408,
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color: Colors.blueAccent.shade200,
-                                      width: 2),
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(10.0)),
+                              return DropdownMenuItem(
+                                value: wallet,
+                                child: Container(
+                                  color: const Color(0xffffeed1),
+                                  width: 408,
+                                  height: 80,
+                                  padding: const EdgeInsets.all(10),
+                                  child: Row(children: [
+                                    NameByAddress(
+                                        wallet: wallet,
+                                        fontStyle: FontStyle.normal),
+                                    const Spacer(),
+                                    Balance(address: wallet.address, size: 20),
+                                  ]),
                                 ),
-                                padding: const EdgeInsets.all(10),
-                                child: Row(children: [
-                                  Text(g1WalletsBox
-                                          .get(wallet.address)
-                                          ?.username ??
-                                      wallet.name!),
-                                  const Spacer(),
-                                  Balance(address: wallet.address, size: 20),
-                                ]),
                               );
-                            }).toList();
-                          },
-                          onChanged: (WalletData? newSelectedWallet) async {
-                            defaultWallet = newSelectedWallet!;
-                            await sub.setCurrentWallet(newSelectedWallet);
-                            sub.reload();
-                            amountFocus.requestFocus();
-                            setState(() {});
-                          },
-                          items: myWalletProvider.listWallets
-                              .map((WalletData wallet) {
-                            return DropdownMenuItem(
-                              value: wallet,
-                              child: Container(
-                                color: const Color(0xffffeed1),
-                                width: 408,
-                                height: 80,
-                                padding: const EdgeInsets.all(10),
-                                child: Row(children: [
-                                  Text(g1WalletsBox
-                                          .get(wallet.address)
-                                          ?.username ??
-                                      wallet.name!),
-                                  const Spacer(),
-                                  Balance(address: wallet.address, size: 20),
-                                ]),
-                              ),
-                            );
-                          }).toList(),
-                        );
+                            }).toList());
                       }),
                       const SizedBox(height: 12),
                       Row(
@@ -285,6 +291,7 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
                           focusNode: amountFocus,
                           maxLines: 1,
                           textAlign: TextAlign.center,
+                          autocorrect: false,
                           keyboardType: const TextInputType.numberWithOptions(
                               decimal: true),
                           onChanged: (_) async {
@@ -337,7 +344,6 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
                           ),
                           onPressed: canValidate
                               ? () async {
-                                  // FocusScope.of(context).unfocus();
                                   Navigator.pop(context);
                                   await executeTransfert();
                                 }

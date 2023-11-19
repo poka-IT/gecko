@@ -1,11 +1,11 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:flutter/material.dart';
@@ -14,13 +14,11 @@ import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/myWallets/chest_options.dart';
 import 'package:gecko/screens/myWallets/import_g1_v1.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
-import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
-import 'package:gecko/widgets/commons/smooth_transition.dart';
-import 'package:gecko/widgets/name_by_address.dart';
 import 'package:gecko/widgets/payment_popup.dart';
+import 'package:gecko/widgets/wallet_tile.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
@@ -99,6 +97,7 @@ class _WalletsHomeState extends State<WalletsHome> {
   Widget dragInfo(BuildContext context) {
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     final walletDataFrom =
         myWalletProvider.getWalletDataByAddress(myWalletProvider.dragAddress);
@@ -109,6 +108,14 @@ class _WalletsHomeState extends State<WalletsHome> {
         myWalletProvider.dragAddress == myWalletProvider.lastFlyBy;
 
     final screenWidth = MediaQuery.of(homeContext).size.width;
+
+    final fromName =
+        duniterIndexer.walletNameIndexer[walletDataFrom!.address] ??
+            walletDataFrom.name;
+
+    final toName = duniterIndexer.walletNameIndexer[walletDataTo!.address] ??
+        walletDataTo.name;
+
     return Container(
       color: yellowC,
       width: screenWidth,
@@ -118,10 +125,9 @@ class _WalletsHomeState extends State<WalletsHome> {
         children: [
           const SizedBox(height: 5),
           Text('${'executeATransfer'.tr()}:'),
-          MarkdownBody(data: '${'from'.tr()} **${walletDataFrom!.name}**'),
+          MarkdownBody(data: '${'from'.tr()} **$fromName**'),
           if (isSameAddress) Text('chooseATargetWallet'.tr()),
-          if (!isSameAddress)
-            MarkdownBody(data: 'Vers: **${walletDataTo!.name}**'),
+          if (!isSameAddress) MarkdownBody(data: 'Vers: **$toName**'),
         ],
       )),
     );
@@ -359,116 +365,16 @@ class _WalletsHomeState extends State<WalletsHome> {
                       List<dynamic> accepted,
                       List<dynamic> rejected,
                     ) {
-                      return Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: GestureDetector(
-                          key: keyOpenWallet(repository.address),
-                          onTap: () {
-                            walletOptions.getAddress(
-                                currentChestNumber, repository.derivation!);
-                            Navigator.push(
-                              context,
-                              SmoothTransition(
-                                page: WalletOptions(
-                                  wallet: repository,
-                                ),
-                              ),
-                            );
-                          },
-                          child: SizedBox(
-                            key: repository.number == 1
-                                ? keyDragAndDrop
-                                : const Key('nothing'),
-                            child: ClipOvalShadow(
-                              shadow: const Shadow(
-                                color: Colors.transparent,
-                                offset: Offset(0, 0),
-                                blurRadius: 5,
-                              ),
-                              clipper: CustomClipperOval(),
-                              child: ClipRRect(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(12)),
-                                child: Column(children: <Widget>[
-                                  Expanded(
-                                      child: Container(
-                                    width: double.infinity,
-                                    height: double.infinity,
-                                    decoration: const BoxDecoration(
-                                      gradient: RadialGradient(
-                                        radius: 0.8,
-                                        colors: [
-                                          Color.fromARGB(255, 255, 255, 211),
-                                          yellowC,
-                                        ],
-                                      ),
-                                    ),
-                                    child:
-                                        // SvgPicture.asset('assets/chopp-gecko2.png',
-                                        //         semanticsLabel: 'Gecko', height: 48),
-                                        repository.imageCustomPath == null ||
-                                                repository.imageCustomPath == ''
-                                            ? Image.asset(
-                                                'assets/avatars/${repository.imageDefaultPath}',
-                                                alignment:
-                                                    Alignment.bottomCenter,
-                                                scale: 0.5,
-                                              )
-                                            : Container(
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  color: Colors.transparent,
-                                                  image: DecorationImage(
-                                                    fit: BoxFit.fitHeight,
-                                                    image: FileImage(
-                                                      File(repository
-                                                          .imageCustomPath!),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                  )),
-                                  Stack(children: <Widget>[
-                                    BalanceBuilder(
-                                        address: repository.address,
-                                        isDefault: repository.address ==
-                                            defaultWallet.address),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Column(
-                                          children: [
-                                            const SizedBox(height: 7),
-                                            Opacity(
-                                                opacity: 0.7,
-                                                child: NameByAddress(
-                                                  wallet: repository,
-                                                  size: 20,
-                                                  color:
-                                                      defaultWallet.address ==
-                                                              repository.address
-                                                          ? Colors.white
-                                                          : Colors.black,
-                                                  fontWeight: FontWeight.w600,
-                                                  fontStyle: FontStyle.normal,
-                                                ))
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ]),
-                                ]),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
+                      return WalletTile(
+                          repository: repository,
+                          walletOptions: walletOptions,
+                          defaultWallet: defaultWallet,
+                          currentChestNumber: currentChestNumber);
                     }),
               ),
             Consumer<SubstrateSdk>(builder: (context, sub, _) {
               return sub.nodeConnected &&
-                      myWalletProvider.listWallets.length < 30
+                      myWalletProvider.listWallets.length < maxWalletsInSafe
                   ? addNewDerivation(context)
                   : const Text('');
             }),

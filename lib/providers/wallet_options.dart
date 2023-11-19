@@ -29,7 +29,6 @@ class WalletOptionsProvider with ChangeNotifier {
   TextEditingController nameController = TextEditingController();
   late bool isDefaultWallet;
   bool canValidateNameBool = false;
-  Future<NewWallet>? get badWallet => null;
   Map<String, double> balanceCache = {};
 
   int getPinLenght(walletNbr) {

@@ -15,8 +15,6 @@ import "package:unorm_dart/unorm_dart.dart" as unorm;
 
 class GenerateWalletsProvider with ChangeNotifier {
   GenerateWalletsProvider();
-  // NewWallet generatedWallet;
-  durt.NewWallet? actualWallet;
 
   final walletNameFocus = FocusNode();
   Color? askedWordColor = Colors.black;
@@ -171,7 +169,6 @@ class GenerateWalletsProvider with ChangeNotifier {
   void resetCesiumImportView() {
     cesiumID.text = cesiumPWD.text = cesiumPubkey.text = pin.text = '';
     canImport = isCesiumIDVisible = isCesiumPWDVisible = false;
-    actualWallet = null;
     notifyListeners();
   }
 

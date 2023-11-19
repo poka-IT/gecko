@@ -145,7 +145,8 @@ class WalletOptions extends StatelessWidget {
                                           wallet: wallet,
                                           size: 29,
                                           color: Colors.black,
-                                          fontWeight: wallet.isMember
+                                          fontWeight: wallet.identityStatus ==
+                                                  IdtyStatus.validated
                                               ? FontWeight.w500
                                               : FontWeight.w400,
                                           fontStyle: FontStyle.normal);

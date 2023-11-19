@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/widgets/name_by_address.dart';
@@ -21,75 +20,58 @@ class IdentityStatus extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-
     final walletData = walletBox.get(address) ?? WalletData(address: address);
 
     return Consumer<SubstrateSdk>(builder: (context, sub, _) {
       return FutureBuilder(
           future: sub.idtyStatus(address),
-          initialData: '',
-          builder: (context, snapshot) {
-            duniterIndexer.idtyStatusCache[address] = snapshot.data.toString();
-            switch (snapshot.data.toString()) {
-              case 'noid':
-                walletData.isMember = false;
-                walletBox.put(address, walletData);
-                {
-                  return showText('noIdentity'.tr());
-                }
-              case 'Created':
-                walletData.isMember = false;
-                walletBox.put(address, walletData);
-                {
-                  return showText('identityCreated'.tr());
-                }
-              case 'ConfirmedByOwner':
-                walletData.isMember = false;
-                walletBox.put(address, walletData);
-                {
-                  return isOwner
-                      ? showText('identityConfirmed'.tr())
-                      : NameByAddress(
-                          wallet: WalletData(address: address),
-                          size: 20,
-                          color: Colors.grey[700]!,
-                          fontWeight: FontWeight.w500,
-                          fontStyle: FontStyle.italic);
-                }
-              case 'Validated':
-                walletData.isMember = true;
-                walletBox.put(address, walletData);
-                {
-                  return isOwner
-                      ? showText('memberValidated'.tr(), 18, true)
-                      : NameByAddress(
-                          wallet: WalletData(address: address),
-                          size: 24,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w600,
-                          fontStyle: FontStyle.normal);
-                }
-              case 'expired':
-                walletData.isMember = false;
-                walletBox.put(address, walletData);
-                {
-                  return showText('identityExpired'.tr());
-                }
+          initialData: walletData.identityStatus,
+          builder: (context, AsyncSnapshot<IdtyStatus> snapshot) {
+            final resStatus = snapshot.data!;
+            walletData.identityStatus = resStatus;
+            walletBox.put(address, walletData);
+
+            if (!isOwner) {
+              if (resStatus == IdtyStatus.confirmed) {
+                return NameByAddress(
+                    wallet: WalletData(address: address),
+                    size: 20,
+                    color: Colors.grey[700]!,
+                    fontWeight: FontWeight.w500,
+                    fontStyle: FontStyle.italic);
+              } else if (resStatus == IdtyStatus.validated) {
+                return NameByAddress(
+                    wallet: WalletData(address: address),
+                    size: 24,
+                    color: Colors.black,
+                    fontWeight: FontWeight.w600,
+                    fontStyle: FontStyle.normal);
+              }
             }
+
+            final Map<IdtyStatus, String> statusText = {
+              IdtyStatus.none: 'noIdentity'.tr(),
+              IdtyStatus.created: 'identityCreated'.tr(),
+              IdtyStatus.confirmed: 'identityConfirmed'.tr(),
+              IdtyStatus.validated: 'memberValidated'.tr(),
+              IdtyStatus.expired: 'identityExpired'.tr(),
+              IdtyStatus.unknown: ''
+            };
+
             return SizedBox(
-              child: showText('', 18, false, false),
+              child: showText(statusText[resStatus]!,
+                  bold: resStatus == IdtyStatus.validated ? true : false),
             );
           });
     });
   }
 
   AnimatedFadeOutIn showText(String text,
-      [double size = 18, bool bold = false, bool smooth = true]) {
+      {double size = 18, bool bold = false}) {
     // log.d('$address $text');
     return AnimatedFadeOutIn<String>(
       data: text,
-      duration: Duration(milliseconds: smooth ? 200 : 0),
+      duration: const Duration(milliseconds: 150),
       builder: (value) => Text(
         value,
         textAlign: TextAlign.center,

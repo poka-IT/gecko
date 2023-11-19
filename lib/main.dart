@@ -68,6 +68,7 @@ Future<void> main() async {
   Hive.registerAdapter(ChestDataAdapter());
   Hive.registerAdapter(G1WalletsListAdapter());
   Hive.registerAdapter(IdAdapter());
+  Hive.registerAdapter(IdtyStatusAdapter());
 
   chestBox = await Hive.openBox<ChestData>("chestBox");
 

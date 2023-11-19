@@ -312,9 +312,9 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<bool> isMember(String address) async {
-    final isMember = await idtyStatus(address) == 'Validated';
+    final isMember = await idtyStatus(address) == IdtyStatus.validated;
     final walletData = walletBox.get(address) ?? WalletData(address: address);
-    walletData.isMember = isMember;
+    walletData.identityStatus = IdtyStatus.validated;
     walletBox.put(address, walletData);
     // notifyListeners();
     return isMember;
@@ -350,9 +350,9 @@ class SubstrateSdk with ChangeNotifier {
       } else if (nextIssuableOn > blocNumber) {
         final certDelayDuration = (nextIssuableOn - blocNumber) * 6;
         result.putIfAbsent('certDelay', () => certDelayDuration);
-      } else if (toStatus == 'Created') {
+      } else if (toStatus == IdtyStatus.created) {
         result.putIfAbsent('toStatus', () => 1);
-      } else if (toStatus == 'noid') {
+      } else if (toStatus == IdtyStatus.none) {
         result.putIfAbsent('toStatus', () => 2);
         result.putIfAbsent('canCert', () => 0);
       } else {
@@ -397,28 +397,34 @@ class SubstrateSdk with ChangeNotifier {
     return startBlockchainTime.add(Duration(seconds: blocNumber * 6));
   }
 
-  Future<String> idtyStatus(String address) async {
+  Future<IdtyStatus> idtyStatus(String address) async {
     // final walletOptions =
     //     Provider.of<WalletOptionsProvider>(homeContext, listen: false);
 
     var idtyIndex = await _getIdentityIndexOf(address);
 
     if (idtyIndex == null) {
-      return 'noid';
+      return IdtyStatus.none;
     }
 
     final idtyStatus = await _getStorage('identity.identities($idtyIndex)');
 
     if (idtyStatus != null) {
-      final String status = idtyStatus['status'];
+      switch (idtyStatus['status']) {
+        case 'Created':
+          return IdtyStatus.created;
 
-      // if (address == walletOptions.address.text && status == 'Validated') {
-      //   walletOptions.reloadBuild();
-      // }
+        case 'ConfirmedByOwner':
+          return IdtyStatus.confirmed;
 
-      return (status);
+        case 'Validated':
+          return IdtyStatus.validated;
+
+        default:
+          return IdtyStatus.unknown;
+      }
     } else {
-      return 'expired';
+      return IdtyStatus.expired;
     }
   }
 
@@ -970,7 +976,7 @@ class SubstrateSdk with ChangeNotifier {
     final fromIndex = await _getIdentityIndexOf(fromAddress);
     final toIndex = await _getIdentityIndexOf(destAddress);
 
-    if (myIdtyStatus != 'Validated') {
+    if (myIdtyStatus != IdtyStatus.validated) {
       transactionStatus = 'notMember';
       notifyListeners();
       return 'notMember';
@@ -988,17 +994,17 @@ class SubstrateSdk with ChangeNotifier {
     log.d(
         "debug toCert: ${toCerts?[0]} --- ${currencyParameters['minCertForMembership']!} --- $toIdtyStatus");
 
-    if (toIdtyStatus == 'noid') {
+    if (toIdtyStatus == IdtyStatus.none) {
       txInfo = TxInfoData(
         'identity',
         'createIdentity',
         sender,
       );
       txOptions = [destAddress];
-    } else if (toIdtyStatus == 'Validated' ||
-        toIdtyStatus == 'ConfirmedByOwner') {
+    } else if (toIdtyStatus == IdtyStatus.validated ||
+        toIdtyStatus == IdtyStatus.confirmed) {
       if (toCerts![0] >= currencyParameters['minCertForMembership']! - 1 &&
-          toIdtyStatus != 'Validated') {
+          toIdtyStatus != IdtyStatus.validated) {
         log.i('Batch cert and membership validation');
         txInfo = TxInfoData(
           'utility',

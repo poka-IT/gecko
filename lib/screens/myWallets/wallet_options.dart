@@ -262,28 +262,16 @@ class WalletOptions extends StatelessWidget {
                                   walletOptions,
                                   currentChest),
                               SizedBox(height: 17 * ratio),
-                              // walletProvider.isMember(context, _walletOptions.address.text)
-                              FutureBuilder(
-                                  future:
-                                      sub.isMember(walletOptions.address.text),
-                                  builder: (BuildContext context,
-                                      AsyncSnapshot<bool> isMember) {
-                                    if (isMember.connectionState !=
-                                            ConnectionState.done ||
-                                        isMember.hasError) {
-                                      return const Text('');
-                                    }
-                                    return Column(children: [
-                                      if (!walletProvider.isDefaultWallet &&
-                                          !isMember.data!)
-                                        deleteWallet(context, walletProvider,
-                                            currentChest)
-                                      else
-                                        const SizedBox(),
-                                      if (isMember.data!)
-                                        const ManageMembershipButton()
-                                    ]);
-                                  }),
+                              Column(children: [
+                                if (!walletProvider.isDefaultWallet &&
+                                    !wallet.isMembre())
+                                  deleteWallet(
+                                      context, walletProvider, currentChest)
+                                else
+                                  const SizedBox(),
+                                if (wallet.isMembre())
+                                  const ManageMembershipButton()
+                              ])
                             ]);
                           }),
                         ]),

@@ -61,6 +61,24 @@ class WalletData extends HiveObject {
     return "$chest:$number:$name:$derivation:$imageDefaultPath";
   }
 
+  bool hasIdentity() {
+    return identityStatus == IdtyStatus.created ||
+        identityStatus == IdtyStatus.confirmed ||
+        identityStatus == IdtyStatus.validated;
+  }
+
+  bool isMembre() {
+    return identityStatus == IdtyStatus.validated;
+  }
+
+  bool exist() {
+    return balance != 0;
+  }
+
+  bool hasCustomImage() {
+    return imageCustomPath != null;
+  }
+
   // returns only the id part of the ':'-separated string
   List<int?> id() {
     return [chest, number];

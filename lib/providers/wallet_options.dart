@@ -369,18 +369,4 @@ class WalletOptionsProvider with ChangeNotifier {
     await configBox.put('isCacheChecked', !isCacheChecked);
     notifyListeners();
   }
-
-  String? getAddress(int chest, int derivation) {
-    String? addressGet;
-    walletBox.toMap().forEach((key, value) {
-      if (value.chest == chest && value.derivation == derivation) {
-        addressGet = value.address;
-        return;
-      }
-    });
-
-    address.text = addressGet ?? '';
-
-    return addressGet;
-  }
 }

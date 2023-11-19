@@ -31,6 +31,7 @@ class HeaderProfile extends StatelessWidget {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     return Stack(children: <Widget>[
       Consumer<SubstrateSdk>(builder: (context, sub, _) {
@@ -78,7 +79,7 @@ class HeaderProfile extends StatelessWidget {
                 Balance(address: address, size: 25),
                 const SizedBox(height: 9),
                 InkWell(
-                  onTap: () => duniterIndexer.walletNameIndexer[address] != null
+                  onTap: () => sub.certsCounterCache[address] != null
                       ? {
                           Navigator.push(
                             context,

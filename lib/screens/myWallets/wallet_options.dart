@@ -43,14 +43,12 @@ class WalletOptions extends StatelessWidget {
 
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    log.d(walletOptions.address.text);
+    walletOptions.address.text = wallet.address;
 
     final currentChest = myWalletProvider.getCurrentChest();
-    bool isWalletNameIndexed =
+    final isWalletNameIndexed =
         duniterIndexer.walletNameIndexer[walletOptions.address.text] != null;
 
-    // final currentWallet = _myWalletProvider.getDefaultWallet();
-    // log.d(_walletOptions.getAddress(_currentChest, 3));
     log.d("Wallet options: $currentChest:${wallet.derivation}");
 
     return WillPopScope(
@@ -184,7 +182,9 @@ class WalletOptions extends StatelessWidget {
                                 address: walletProvider.address.text, size: 24),
                             const SizedBox(width: 30),
                             InkWell(
-                              onTap: () => isWalletNameIndexed
+                              onTap: () => sub.certsCounterCache[
+                                          walletProvider.address.text] !=
+                                      null
                                   ? {
                                       Navigator.push(
                                         context,

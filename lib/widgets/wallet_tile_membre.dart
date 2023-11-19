@@ -8,8 +8,8 @@ import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/smooth_transition.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 
-class WalletTile extends StatelessWidget {
-  const WalletTile({
+class WalletTileMembre extends StatelessWidget {
+  const WalletTileMembre({
     Key? key,
     required this.repository,
     required this.defaultWallet,
@@ -21,7 +21,7 @@ class WalletTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 70, vertical: 20),
       child: GestureDetector(
         key: keyOpenWallet(repository.address),
         onTap: () {
@@ -36,6 +36,7 @@ class WalletTile extends StatelessWidget {
         },
         child: SizedBox(
           key: repository.number == 1 ? keyDragAndDrop : const Key('nothing'),
+          height: 240,
           child: ClipOvalShadow(
             shadow: const Shadow(
               color: Colors.transparent,
@@ -132,7 +133,7 @@ class BalanceBuilder extends StatelessWidget {
       color: isDefault ? orangeC : yellowC,
       child: Padding(
           padding:
-              const EdgeInsets.only(left: 5, right: 5, top: 38, bottom: 10),
+              const EdgeInsets.only(left: 5, right: 5, top: 45, bottom: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

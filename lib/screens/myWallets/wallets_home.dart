@@ -10,15 +10,14 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/myWallets/chest_options.dart';
 import 'package:gecko/screens/myWallets/import_g1_v1.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
-import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/payment_popup.dart';
 import 'package:gecko/widgets/wallet_tile.dart';
+import 'package:gecko/widgets/wallet_tile_membre.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
@@ -224,8 +223,6 @@ class _WalletsHomeState extends State<WalletsHome> {
 
   Widget myWalletsTiles(BuildContext context, int currentChestNumber) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
-    final walletOptions =
-        Provider.of<WalletOptionsProvider>(context, listen: false);
     final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
@@ -249,6 +246,13 @@ class _WalletsHomeState extends State<WalletsHome> {
     listWallets.sort((p1, p2) {
       return Comparable.compare(p1.number!, p2.number!);
     });
+
+    // Get first wallet with identity
+    final idtyWallet = listWallets.firstWhere(
+      (w) => w.hasIdentity(),
+      orElse: () => WalletData(address: ''),
+    );
+    listWallets.removeWhere((w) => w.address == idtyWallet.address);
 
     WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
     final screenWidth = MediaQuery.of(context).size.width;
@@ -303,6 +307,10 @@ class _WalletsHomeState extends State<WalletsHome> {
 
     return CustomScrollView(slivers: <Widget>[
       const SliverToBoxAdapter(child: SizedBox(height: 20)),
+      if (idtyWallet.address != '')
+        SliverToBoxAdapter(
+            child: WalletTileMembre(
+                repository: idtyWallet, defaultWallet: defaultWallet)),
       SliverGrid.count(
           key: keyListWallets,
           crossAxisCount: nTule,
@@ -366,10 +374,7 @@ class _WalletsHomeState extends State<WalletsHome> {
                       List<dynamic> rejected,
                     ) {
                       return WalletTile(
-                          repository: repository,
-                          walletOptions: walletOptions,
-                          defaultWallet: defaultWallet,
-                          currentChestNumber: currentChestNumber);
+                          repository: repository, defaultWallet: defaultWallet);
                     }),
               ),
             Consumer<SubstrateSdk>(builder: (context, sub, _) {
@@ -441,97 +446,5 @@ class _WalletsHomeState extends State<WalletsHome> {
                     )),
               ),
             ])));
-  }
-}
-
-class BalanceBuilder extends StatelessWidget {
-  const BalanceBuilder({
-    Key? key,
-    required this.address,
-    required this.isDefault,
-  }) : super(key: key);
-
-  final String address;
-  final bool isDefault;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      color: isDefault ? orangeC : yellowC,
-      child: Padding(
-          padding:
-              const EdgeInsets.only(left: 5, right: 5, top: 38, bottom: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Opacity(
-                opacity: 0.7,
-                child: Balance(
-                    address: address,
-                    size: 16,
-                    color: isDefault ? Colors.white : Colors.black,
-                    loadingColor: isDefault ? yellowC : orangeC),
-              )
-            ],
-          )),
-    );
-  }
-}
-
-class CustomClipperOval extends CustomClipper<Rect> {
-  @override
-  Rect getClip(Size size) {
-    return Rect.fromCircle(
-        center: Offset(size.width / 2, size.width / 2),
-        radius: size.width / 2 + 3);
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Rect> oldClipper) {
-    return false;
-  }
-}
-
-class ClipOvalShadow extends StatelessWidget {
-  final Shadow shadow;
-  final CustomClipper<Rect> clipper;
-  final Widget child;
-
-  const ClipOvalShadow({
-    Key? key,
-    required this.shadow,
-    required this.clipper,
-    required this.child,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _ClipOvalShadowPainter(
-        clipper: clipper,
-        shadow: shadow,
-      ),
-      child: ClipRect(clipper: clipper, child: child),
-    );
-  }
-}
-
-class _ClipOvalShadowPainter extends CustomPainter {
-  final Shadow shadow;
-  final CustomClipper<Rect> clipper;
-
-  _ClipOvalShadowPainter({required this.shadow, required this.clipper});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    var paint = shadow.toPaint();
-    var clipRect = clipper.getClip(size).shift(const Offset(0, 0));
-    canvas.drawOval(clipRect, paint);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return true;
   }
 }

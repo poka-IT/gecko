@@ -137,12 +137,15 @@ class SubstrateSdk with ChangeNotifier {
   ////////// 2: GET ONCHAIN STORAGE //////////
   ////////////////////////////////////////////
 
-  Future<int> _getIdentityIndexOf(String address) async {
-    return await _getStorage('identity.identityIndexOf("$address")') ?? 0;
+  Future<int?> _getIdentityIndexOf(String address) async {
+    return await _getStorage('identity.identityIndexOf("$address")');
   }
 
-  Future<List<int>> getCertsCounter(String address) async {
+  Future<List<int>?> getCertsCounter(String address) async {
     final idtyIndex = await _getIdentityIndexOf(address);
+    if (idtyIndex == null) {
+      return null;
+    }
     final certsReceiver =
         await _getStorage('cert.storageIdtyCertMeta($idtyIndex)') ?? [];
 
@@ -400,7 +403,7 @@ class SubstrateSdk with ChangeNotifier {
 
     var idtyIndex = await _getIdentityIndexOf(address);
 
-    if (idtyIndex == 0) {
+    if (idtyIndex == null) {
       return 'noid';
     }
 
@@ -983,7 +986,7 @@ class SubstrateSdk with ChangeNotifier {
     // log.d('debug: ${currencyParameters['minCertForMembership']}');
 
     log.d(
-        "debug toCert: ${toCerts[0]} --- ${currencyParameters['minCertForMembership']!} --- $toIdtyStatus");
+        "debug toCert: ${toCerts?[0]} --- ${currencyParameters['minCertForMembership']!} --- $toIdtyStatus");
 
     if (toIdtyStatus == 'noid') {
       txInfo = TxInfoData(
@@ -994,7 +997,7 @@ class SubstrateSdk with ChangeNotifier {
       txOptions = [destAddress];
     } else if (toIdtyStatus == 'Validated' ||
         toIdtyStatus == 'ConfirmedByOwner') {
-      if (toCerts[0] >= currencyParameters['minCertForMembership']! - 1 &&
+      if (toCerts![0] >= currencyParameters['minCertForMembership']! - 1 &&
           toIdtyStatus != 'Validated') {
         log.i('Batch cert and membership validation');
         txInfo = TxInfoData(
@@ -1055,7 +1058,7 @@ class SubstrateSdk with ChangeNotifier {
     final prefix = 'icok'.codeUnits;
     final genesisHashString = await getGenesisHash();
     final genesisHash = HEX.decode(genesisHashString.substring(2)) as Uint8List;
-    final idtyIndex = _int32bytes(await _getIdentityIndexOf(fromAddress));
+    final idtyIndex = _int32bytes((await _getIdentityIndexOf(fromAddress))!);
     final oldPubkey = await addressToPubkey(fromAddress);
     final messageToSign =
         Uint8List.fromList(prefix + genesisHash + idtyIndex + oldPubkey);
@@ -1114,7 +1117,7 @@ newKeySig: $newKeySig""");
     final prefix = 'revo'.codeUnits;
     final genesisHashString = await getGenesisHash();
     final genesisHash = HEX.decode(genesisHashString.substring(2)) as Uint8List;
-    final idtyIndexBytes = _int32bytes(idtyIndex);
+    final idtyIndexBytes = _int32bytes(idtyIndex!);
     final messageToSign =
         Uint8List.fromList(prefix + genesisHash + idtyIndexBytes);
     final revocationSig =

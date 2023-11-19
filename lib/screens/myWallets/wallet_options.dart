@@ -42,8 +42,6 @@ class WalletOptions extends StatelessWidget {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    // sub.spawnBlock();
-    // sub.spawnBlock(0, 20);
 
     log.d(walletOptions.address.text);
 

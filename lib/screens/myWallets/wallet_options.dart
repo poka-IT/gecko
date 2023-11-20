@@ -193,9 +193,10 @@ class WalletOptions extends StatelessWidget {
                                               address:
                                                   walletProvider.address.text,
                                               username: duniterIndexer
-                                                      .walletNameIndexer[
-                                                  walletProvider
-                                                      .address.text]!);
+                                                          .walletNameIndexer[
+                                                      walletProvider
+                                                          .address.text] ??
+                                                  '');
                                         }),
                                       ),
                                     }

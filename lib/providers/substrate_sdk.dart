@@ -214,18 +214,23 @@ class SubstrateSdk with ChangeNotifier {
         (await _getStorage('system.account.multi($stringifyAddresses)') as List)
             .map((dynamic e) => e as Map<String, dynamic>)
             .toList();
-    log.d('debug multi: $balanceGlobalMulti');
 
     final List<int?> idtyIndexList = (await _getStorage(
             'identity.identityIndexOf.multi($stringifyAddresses)') as List)
         .map((dynamic e) => e as int?)
         .toList();
-    final List<Map?> idtyDataList = (idtyIndexList.isEmpty
+
+    //FIXME: With local dev duniter node only, need to switch null values by unused init as index to have good idtyDataList...
+    final List<int> idtyIndexListNoNull =
+        idtyIndexList.map((item) => item ?? 99999999).toList();
+
+    final List<Map?> idtyDataList = (idtyIndexListNoNull.isEmpty
             ? []
-            : (await _getStorage('identity.identities.multi($idtyIndexList)'))
-                as List)
+            : (await _getStorage(
+                'identity.identities.multi($idtyIndexListNoNull)')) as List)
         .map((dynamic e) => e as Map<String, dynamic>?)
         .toList();
+
     final List pastReevals =
         await _getStorage('universalDividend.pastReevals()');
 
@@ -309,19 +314,6 @@ class SubstrateSdk with ChangeNotifier {
     //     "debug computeUnclaimUds: ${pastReevals.reversed} --- $firstEligibleUd --- $currentUdIndex");
 
     return totalAmount;
-  }
-
-  Future<bool> isSmithGet(String address) async {
-    var idtyIndex = await _getIdentityIndexOf(address);
-
-    final Map smithExpireOn =
-        (await _getStorage('smithsMembership.membership($idtyIndex)')) ?? {};
-
-    if (smithExpireOn.isEmpty) {
-      return false;
-    } else {
-      return true;
-    }
   }
 
   Future<Map<String, int>> certState(String from, String to) async {
@@ -423,10 +415,9 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<bool> isSmith(String address) async {
     var idtyIndex = await _getIdentityIndexOf(address);
-    if (idtyIndex == 0) return false;
+    if (idtyIndex == -1) return false;
 
-    final isSmith =
-        await _getStorage('smithsMembership.membership($idtyIndex)');
+    final isSmith = await _getStorage('smithMembership.membership($idtyIndex)');
     return isSmith == null ? false : true;
   }
 
@@ -746,7 +737,6 @@ class SubstrateSdk with ChangeNotifier {
       seedText = seed.seed!.split('//')[0];
     }
 
-    log.d(seedText);
     return seedText;
   }
 
@@ -885,7 +875,7 @@ class SubstrateSdk with ChangeNotifier {
         ? {'transferableBalance': 0}
         : await getBalance(fromAddress);
     final fromIdtyStatus =
-        fromAddress == '' ? 'noid' : await idtyStatus(fromAddress);
+        fromAddress == '' ? IdtyStatus.none : await idtyStatus(fromAddress);
     final fromHasConsumer =
         fromAddress == '' ? false : await hasAccountConsumers(fromAddress);
     final toIdtyStatus = await idtyStatus(toAddress);
@@ -981,8 +971,6 @@ class SubstrateSdk with ChangeNotifier {
     String? rawParams;
 
     final toCerts = await getCertsCounter(destAddress);
-
-    // log.d('debug: ${currencyParameters['minCertForMembership']}');
 
     log.d(
         "debug toCert: ${toCerts?[0]} --- ${currencyParameters['minCertForMembership']!} --- $toIdtyStatus");
@@ -1136,7 +1124,7 @@ newKeySig: $newKeySig""");
   Future migrateCsToV2(String salt, String password, String destAddress,
       {required destPassword,
       required Map balance,
-      String idtyStatus = 'noid'}) async {
+      IdtyStatus idtyStatus = IdtyStatus.none}) async {
     final scrypt = pc.KeyDerivator('scrypt');
 
     scrypt.init(
@@ -1167,7 +1155,7 @@ newKeySig: $newKeySig""");
     );
 
     log.d('g1migration idtyStatus: $idtyStatus');
-    if (idtyStatus != 'noid') {
+    if (idtyStatus != IdtyStatus.none) {
       await migrateIdentity(
           fromAddress: keypair.address!,
           destAddress: destAddress,

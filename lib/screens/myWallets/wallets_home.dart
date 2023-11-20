@@ -252,7 +252,9 @@ class _WalletsHomeState extends State<WalletsHome> {
       (w) => w.hasIdentity(),
       orElse: () => WalletData(address: ''),
     );
-    listWallets.removeWhere((w) => w.address == idtyWallet.address);
+
+    List<WalletData> listWalletsWithoutIdty = listWallets.toList();
+    listWalletsWithoutIdty.removeWhere((w) => w.address == idtyWallet.address);
 
     WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
     final screenWidth = MediaQuery.of(context).size.width;
@@ -318,7 +320,7 @@ class _WalletsHomeState extends State<WalletsHome> {
           crossAxisSpacing: 0,
           mainAxisSpacing: 0,
           children: <Widget>[
-            for (WalletData repository in listWallets)
+            for (WalletData repository in listWalletsWithoutIdty)
               LongPressDraggable<String>(
                 delay: const Duration(milliseconds: 200),
                 data: repository.address,

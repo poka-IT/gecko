@@ -340,10 +340,11 @@ class WalletOptions extends StatelessWidget {
   Widget confirmIdentityButton(WalletOptionsProvider walletProvider) {
     return Consumer<SubstrateSdk>(builder: (context, sub, _) {
       return FutureBuilder(
-          future: sub.idtyStatus(walletProvider.address.text),
-          initialData: '',
-          builder: (context, snapshot) {
-            if (snapshot.data == IdtyStatus.created) {
+          future: sub.idtyStatus([walletProvider.address.text]),
+          initialData: const [IdtyStatus.unknown],
+          builder:
+              (BuildContext context, AsyncSnapshot<List<IdtyStatus>> snapshot) {
+            if (snapshot.data!.first == IdtyStatus.created) {
               return Column(children: [
                 SizedBox(
                   width: 320,

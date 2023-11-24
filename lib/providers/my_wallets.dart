@@ -207,6 +207,7 @@ class MyWalletsProvider with ChangeNotifier {
         isOwned: true);
 
     await walletBox.put(newWallet.address, newWallet);
+    await readAllWallets();
 
     isNewDerivationLoading = false;
     notifyListeners();
@@ -260,15 +261,15 @@ class MyWalletsProvider with ChangeNotifier {
 
     chestNumber ??= getCurrentChest();
 
-    List<WalletData> walletConfig = await readAllWallets(chestNumber);
-    walletConfig.sort((p1, p2) {
+    // List<WalletData> walletConfig = await readAllWallets(chestNumber);
+    listWallets.sort((p1, p2) {
       return Comparable.compare(p1.number!, p2.number!);
     });
 
-    if (walletConfig.isEmpty) {
+    if (listWallets.isEmpty) {
       newDerivationNbr = 2;
     } else {
-      WalletData lastWallet = walletConfig.reduce(
+      WalletData lastWallet = listWallets.reduce(
           (curr, next) => curr.derivation! > next.derivation! ? curr : next);
 
       if (lastWallet.derivation == -1) {
@@ -277,7 +278,7 @@ class MyWalletsProvider with ChangeNotifier {
         newDerivationNbr = lastWallet.derivation! + (isOneshoot ? 1 : 2);
       }
 
-      newWalletNbr = walletConfig.last.number! + 1;
+      newWalletNbr = listWallets.last.number! + 1;
     }
 
     return [newWalletNbr, newDerivationNbr];

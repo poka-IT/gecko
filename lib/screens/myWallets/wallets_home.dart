@@ -37,7 +37,8 @@ class _WalletsHomeState extends State<WalletsHome> {
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
+    final myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
 
     final currentChestNumber = myWalletProvider.getCurrentChest();
     final ChestData currentChest = chestBox.get(currentChestNumber)!;

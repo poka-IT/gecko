@@ -28,7 +28,6 @@ class TransactionInProgress extends StatelessWidget {
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     bool isValid = false;
-
     bool isLoading = true;
     final result = sub.transactionStatus;
 
@@ -51,6 +50,7 @@ class TransactionInProgress extends StatelessWidget {
       'revokeIdty': 'revokeAdhesion'.tr(),
       'identityMigration': 'identityMigration'.tr(),
     };
+
     String resultText = '';
     final Map<String, String> resultMap = {
       '': 'sending'.tr(),
@@ -93,145 +93,146 @@ class TransactionInProgress extends StatelessWidget {
     log.d("$transType :: ${actionMap[transType]} :: $result");
 
     return WillPopScope(
-        onWillPop: () {
-          sub.transactionStatus = '';
+      onWillPop: () {
+        sub.transactionStatus = '';
+        Navigator.pop(context);
+        if (transType == 'identityMigration') {
           Navigator.pop(context);
-          if (transType == 'identityMigration') {
-            Navigator.pop(context);
-          }
-          return Future<bool>.value(true);
-        },
-        child: Scaffold(
-          backgroundColor: backgroundColor,
-          appBar: AppBar(
-              toolbarHeight: 60 * ratio,
-              elevation: 0,
-              automaticallyImplyLeading: false,
-              title: SizedBox(
-                height: 22,
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text('extrinsicInProgress'.tr(args: [
-                        actionMap[transType] ?? 'strangeTransaction'.tr()
-                      ]))
-                    ]),
-              )),
-          body: SafeArea(
-            child: Align(
-                alignment: FractionalOffset.bottomCenter,
-                child: Column(children: <Widget>[
-                  Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        yellowC,
-                        backgroundColor,
-                      ],
-                    )),
-                    child: Column(children: <Widget>[
-                      const SizedBox(height: 10),
-                      if (transType == 'pay')
-                        Text(
-                          isUdUnit
-                              ? 'ud'.tr(args: ['$amount '])
-                              : '$amount $currencyName',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w600),
-                        ),
-                      if (transType == 'pay') const SizedBox(height: 10),
+        }
+        return Future<bool>.value(true);
+      },
+      child: Scaffold(
+        backgroundColor: backgroundColor,
+        appBar: AppBar(
+            toolbarHeight: 60 * ratio,
+            elevation: 0,
+            automaticallyImplyLeading: false,
+            title: SizedBox(
+              height: 22,
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text('extrinsicInProgress'.tr(args: [
+                      actionMap[transType] ?? 'strangeTransaction'.tr()
+                    ]))
+                  ]),
+            )),
+        body: SafeArea(
+          child: Align(
+              alignment: FractionalOffset.bottomCenter,
+              child: Column(children: <Widget>[
+                Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      yellowC,
+                      backgroundColor,
+                    ],
+                  )),
+                  child: Column(children: <Widget>[
+                    const SizedBox(height: 10),
+                    if (transType == 'pay')
                       Text(
-                        'fromMinus'.tr(),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 18),
-                      ),
-                      Text(
-                        from,
+                        isUdUnit
+                            ? 'ud'.tr(args: ['$amount '])
+                            : '$amount $currencyName',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.w600),
                       ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'toMinus'.tr(),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 18),
-                      ),
-                      Text(
-                        toUsername ?? to,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 20),
-                    ]),
-                  ),
-                  // const SizedBox(height: 20, width: double.infinity),
-                  const Spacer(),
-                  Column(children: [
-                    Visibility(
-                      visible: isLoading,
-                      child: const SizedBox(
-                        height: 18,
-                        width: 18,
-                        child: CircularProgressIndicator(
-                          color: orangeC,
-                          strokeWidth: 2,
-                        ),
-                      ),
+                    if (transType == 'pay') const SizedBox(height: 10),
+                    Text(
+                      'fromMinus'.tr(),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 18),
                     ),
-                    Visibility(
-                      visible: !isLoading,
-                      child: Icon(
-                        isValid ? Icons.done_all : Icons.close,
-                        size: 35,
-                        color: isValid ? Colors.greenAccent : Colors.redAccent,
-                      ),
+                    Text(
+                      from,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      resultText,
+                      'toMinus'.tr(),
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 19 * ratio),
+                      style: const TextStyle(fontSize: 18),
                     ),
+                    Text(
+                      toUsername ?? to,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 20),
                   ]),
-                  const Spacer(),
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: SizedBox(
-                        width: 380 * ratio,
-                        height: 60 * ratio,
-                        child: ElevatedButton(
-                          key: keyCloseTransactionScreen,
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white, elevation: 4,
-                            backgroundColor: orangeC, // foreground
-                          ),
-                          onPressed: () {
+                ),
+                // const SizedBox(height: 20, width: double.infinity),
+                const Spacer(),
+                Column(children: [
+                  Visibility(
+                    visible: isLoading,
+                    child: const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(
+                        color: orangeC,
+                        strokeWidth: 2,
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible: !isLoading,
+                    child: Icon(
+                      isValid ? Icons.done_all : Icons.close,
+                      size: 35,
+                      color: isValid ? Colors.greenAccent : Colors.redAccent,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    resultText,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 19 * ratio),
+                  ),
+                ]),
+                const Spacer(),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: SizedBox(
+                      width: 380 * ratio,
+                      height: 60 * ratio,
+                      child: ElevatedButton(
+                        key: keyCloseTransactionScreen,
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white, elevation: 4,
+                          backgroundColor: orangeC, // foreground
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          sub.transactionStatus = '';
+                          if (transType == 'identityMigration') {
                             Navigator.pop(context);
-                            sub.transactionStatus = '';
-                            if (transType == 'identityMigration') {
-                              Navigator.pop(context);
-                            }
-                          },
-                          child: Text(
-                            'close'.tr(),
-                            style: TextStyle(
-                                fontSize: 23 * ratio,
-                                fontWeight: FontWeight.w600),
-                          ),
+                          }
+                        },
+                        child: Text(
+                          'close'.tr(),
+                          style: TextStyle(
+                              fontSize: 23 * ratio,
+                              fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
                   ),
-                  SizedBox(height: isTall ? 80 : 20)
-                ])),
-          ),
-        ));
+                ),
+                SizedBox(height: isTall ? 80 : 20)
+              ])),
+        ),
+      ),
+    );
   }
 }

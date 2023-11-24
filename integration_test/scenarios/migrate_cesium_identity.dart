@@ -19,6 +19,7 @@ void main() async {
     await firstOpenChest();
 
     // Go to test1 options and check if balance growup with UDs creations
+    await scrollUntil(keyAddDerivation);
     await tapKey(keyAddDerivation);
     await waitFor(' 6');
 
@@ -50,6 +51,7 @@ void main() async {
     await tapKey(keyCloseTransactionScreen, duration: 0);
 
     await tapKey(keyOpenWallet(test6.address), duration: 300);
+    await pump(number: 4);
     await waitFor('3', exactMatch: true);
     await waitFor('memberValidated'.tr());
 

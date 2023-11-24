@@ -175,7 +175,7 @@ Future firstOpenChest() async {
 }
 
 Future skipWalletDragTutorial() async {
-  await pump(duration: const Duration(milliseconds: 500), number: 4);
+  await pump(duration: const Duration(milliseconds: 500), number: 6);
   await pump(duration: const Duration(seconds: 2));
   if (await isPresent('explainDraggableWallet'.tr().substring(0, 13),
       timeout: const Duration(seconds: 5), settle: false)) {

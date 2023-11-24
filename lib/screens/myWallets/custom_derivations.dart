@@ -137,12 +137,6 @@ class _CustomDerivationState extends State<CustomDerivation> {
                     }
                     Navigator.pop(context);
                     Navigator.pop(context);
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(builder: (context) {
-                    //     return const WalletsHome();
-                    //   }),
-                    // );
                   }
                 },
                 child: Text(

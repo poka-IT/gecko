@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -8,7 +10,6 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/search.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
-import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:provider/provider.dart';
 
@@ -111,18 +112,15 @@ class GeckoBottomAppBar extends StatelessWidget {
                             ),
                           );
                         }
-
                         if (pin != null || myWalletProvider.pinCode != '') {
-                          Navigator.popUntil(
-                            context,
-                            ModalRoute.withName('/'),
-                          );
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) {
-                              return const WalletsHome();
-                            }),
-                          );
+                          // log.d(
+                          //     isRoutePresentInNavigator(context, '/mywallets'));
+                          Navigator.popUntil(context, ModalRoute.withName('/'));
+                          //FIXME: Should not have to wait 300 milliseconds when /mywallets exist in navigator...
+                          sleep(const Duration(milliseconds: 300));
+                          Navigator.pushNamed(context, '/mywallets');
+                          // Navigator.pushNamedAndRemoveUntil(
+                          //     context, '/mywallets', ModalRoute.withName('/'));
                         }
                       },
               ),
@@ -133,4 +131,16 @@ class GeckoBottomAppBar extends StatelessWidget {
       ),
     );
   }
+}
+
+bool isRoutePresentInNavigator(BuildContext context, String routeName) {
+  bool isPresent = false;
+  Navigator.popUntil(context, (route) {
+    log.d(route.settings.name);
+    if (route.settings.name == routeName) {
+      isPresent = true;
+    }
+    return true;
+  });
+  return isPresent;
 }

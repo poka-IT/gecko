@@ -166,9 +166,9 @@ class Gecko extends StatelessWidget {
           colorScheme:
               ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]),
         ),
-        home: const HomeScreen(),
         initialRoute: "/",
         routes: {
+          '/': (context) => const HomeScreen(),
           '/mywallets': (context) => const WalletsHome(),
           '/search': (context) => const SearchScreen(),
           '/searchResult': (context) => const SearchResultScreen(),

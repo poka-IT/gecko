@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:gecko/screens/onBoarding/5.dart';
 import 'package:provider/provider.dart';
 
@@ -132,12 +131,7 @@ class _ChooseChestState extends State<ChooseChest> {
                     ModalRoute.withName('/'),
                   );
                   if (myWalletProvider.pinCode != '') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return const WalletsHome();
-                      }),
-                    );
+                    Navigator.pushNamed(context, '/mywallets');
                   }
                 },
                 child: Text(

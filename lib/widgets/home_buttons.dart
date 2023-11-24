@@ -9,7 +9,6 @@ import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
-import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:provider/provider.dart';
 
@@ -105,12 +104,7 @@ class HomeButtons extends StatelessWidget {
                               );
                             }
                             if (pin != null || myWalletProvider.pinCode != '') {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) {
-                                  return const WalletsHome();
-                                }),
-                              );
+                              Navigator.pushNamed(context, '/mywallets');
                             }
                           },
                     child: Padding(

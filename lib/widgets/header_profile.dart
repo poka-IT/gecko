@@ -87,7 +87,8 @@ class HeaderProfile extends StatelessWidget {
                               return CertificationsScreen(
                                   address: address,
                                   username: duniterIndexer
-                                      .walletNameIndexer[address]!);
+                                          .walletNameIndexer[address] ??
+                                      '');
                             }),
                           ),
                         }

@@ -92,7 +92,7 @@ class SubstrateSdk with ChangeNotifier {
 
   Future _getStorage(String call) async {
     try {
-      log.d(call);
+      // log.d(call);
       return await sdk.webView!.evalJavascript('api.query.$call');
     } catch (e) {
       log.e("_getStorage error: $e");
@@ -148,8 +148,6 @@ class SubstrateSdk with ChangeNotifier {
     String jsonString = jsonEncode(addresses);
     return List<int?>.from(
         await _getStorage('identity.identityIndexOf.multi($jsonString)'));
-    // .map((e) => e as int?)
-    // .toList() as List<int?>;
   }
 
   Future<List<int>?> getCertsCounter(String address) async {
@@ -395,16 +393,13 @@ class SubstrateSdk with ChangeNotifier {
     // final walletOptions =
     //     Provider.of<WalletOptionsProvider>(homeContext, listen: false);
 
-    log.d(addresses);
-    final idtyIndexes = (await _getIdentityIndexOfMulti(addresses));
-    // .map((dynamic e) => e as String)
-    // .toList();
-    log.d(idtyIndexes);
-    final jsonString = jsonEncode(idtyIndexes);
+    final idtyIndexes = await _getIdentityIndexOfMulti(addresses);
+
+    //FIXME: should not have to replace null values by 99999999
+    final idtyIndexesFix = idtyIndexes.map((item) => item ?? 99999999).toList();
+    final jsonString = jsonEncode(idtyIndexesFix);
     final List idtyStatusList =
         await _getStorage('identity.identities.multi($jsonString)');
-
-    log.d(idtyStatusList);
 
     List<IdtyStatus> resultStatus = [];
 

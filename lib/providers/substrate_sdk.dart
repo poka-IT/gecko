@@ -345,8 +345,6 @@ class SubstrateSdk with ChangeNotifier {
       }
     }
 
-    // if (toStatus == 'Created') result.putIfAbsent('toStatus', () => 1);
-
     return result;
   }
 
@@ -1052,6 +1050,7 @@ class SubstrateSdk with ChangeNotifier {
     final messageToSignHex = HEX.encode(messageToSign);
     final newKeySig =
         await _signMessage(messageToSign, destAddress, destPassword);
+    final newKeySigType = '{"Sr25519": "$newKeySig"}';
 
     // messageToSign: [105, 99, 111, 107, 7, 193, 18, 255, 106, 185, 215, 208, 213, 49, 235, 229, 159, 152, 179, 83, 24, 178, 129, 59, 22, 85, 87, 115, 128, 129, 157, 56, 214, 24, 45, 153, 21, 0, 0, 0, 181, 82, 178, 99, 198, 4, 156, 190, 78, 35, 102, 137, 255, 7, 162, 31, 16, 79, 255, 132, 130, 237, 230, 222, 176, 88, 245, 217, 237, 78, 196, 239]
 
@@ -1067,7 +1066,7 @@ oldPubkey: $oldPubkey
 
 messageToSign: $messageToSign
 messageToSignHex: $messageToSignHex
-newKeySig: $newKeySig""");
+newKeySig: $newKeySigType""");
 
     if (withBalance) {
       txInfo = TxInfoData(
@@ -1078,7 +1077,7 @@ newKeySig: $newKeySig""");
 
       const tx1 = 'api.tx.universalDividend.claimUds()';
       final tx2 =
-          'api.tx.identity.changeOwnerKey("$destAddress", "$newKeySig")';
+          'api.tx.identity.changeOwnerKey("$destAddress", $newKeySigType)';
       final tx3 = 'api.tx.balances.transferAll("$destAddress", false)';
 
       rawParams = fromBalance['unclaimedUds'] == 0
@@ -1091,7 +1090,7 @@ newKeySig: $newKeySig""");
         sender,
       );
 
-      txOptions = [destAddress, newKeySig];
+      txOptions = [destAddress, newKeySigType];
     }
 
     return await _executeCall(txInfo, txOptions, fromPassword, rawParams);

@@ -169,7 +169,7 @@ class SubstrateSdk with ChangeNotifier {
     final idtyIndexFrom = await _getIdentityIndexOf(from);
     final idtyIndexTo = await _getIdentityIndexOf(to);
 
-    if (idtyIndexFrom == 0 || idtyIndexTo == 0) return 0;
+    if (idtyIndexFrom == null || idtyIndexTo == null) return 0;
 
     final List certData =
         await _getStorage('cert.certsByReceiver($idtyIndexTo)') ?? [];
@@ -362,7 +362,7 @@ class SubstrateSdk with ChangeNotifier {
     //     Provider.of<WalletOptionsProvider>(homeContext, listen: false);
 
     var idtyIndex = await _getIdentityIndexOf(address);
-    if (idtyIndex == 0) return [];
+    if (idtyIndex == null) return [];
 
     final Map? idtyData = await _getStorage('identity.identities($idtyIndex)');
     if (idtyData == null || idtyData['oldOwnerKey'] == null) return [];

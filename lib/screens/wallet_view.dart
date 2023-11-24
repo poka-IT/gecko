@@ -194,7 +194,7 @@ class WalletViewScreen extends StatelessWidget {
                       }
                     }
 
-                    final toStatus = snapshot.data!['toStatus'] ?? 0;
+                    final toStatus = snapshot.data!['toStatus'];
 
                     return Visibility(
                       visible: (snapshot.data != {}),
@@ -272,7 +272,7 @@ class WalletViewScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 9),
                             Text(
-                              toStatus == 0
+                              toStatus == null
                                   ? "certify".tr()
                                   : "createIdentity".tr(),
                               textAlign: TextAlign.center,

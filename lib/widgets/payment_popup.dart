@@ -66,10 +66,8 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
     }
   }
 
-  myWalletProvider.readAllWallets();
-  myWalletProvider.listWallets
-      .sort((a, b) => a.derivation!.compareTo(b.derivation!));
-  log.d(myWalletProvider.listWallets);
+  myWalletProvider.readAllWallets().then((value) => myWalletProvider.listWallets
+      .sort((a, b) => a.derivation!.compareTo(b.derivation!)));
 
   showModalBottomSheet<void>(
       shape: const RoundedRectangleBorder(

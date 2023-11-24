@@ -253,7 +253,7 @@ class OnboardingStepTen extends StatelessWidget {
                       isOwned: true);
                   await walletBox.put(myWallet.address, myWallet);
                 }
-                myWalletProvider.readAllWallets(currentChest);
+                await myWalletProvider.readAllWallets(currentChest);
                 myWalletProvider.reload();
 
                 generateWalletProvider.generatedMnemonic = '';

@@ -41,8 +41,6 @@ class _WalletsHomeState extends State<WalletsHome> {
 
     final currentChestNumber = myWalletProvider.getCurrentChest();
     final ChestData currentChest = chestBox.get(currentChestNumber)!;
-    myWalletProvider.listWallets =
-        myWalletProvider.readAllWallets(currentChestNumber);
 
     return WillPopScope(
       onWillPop: () {
@@ -83,12 +81,29 @@ class _WalletsHomeState extends State<WalletsHome> {
                 actualRoute: 'safeHome',
               )
             : dragInfo(context),
-        body: SafeArea(
-          child: Stack(children: [
-            myWalletsTiles(context, currentChestNumber),
-            const OfflineInfo(),
-          ]),
-        ),
+        body: FutureBuilder(
+            future: myWalletProvider.readAllWallets(currentChestNumber),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done ||
+                  snapshot.hasError) {
+                return const Center(
+                  child: SizedBox(
+                    height: 50,
+                    width: 50,
+                    child: CircularProgressIndicator(
+                      color: orangeC,
+                      strokeWidth: 3,
+                    ),
+                  ),
+                );
+              }
+              return SafeArea(
+                child: Stack(children: [
+                  myWalletsTiles(context, currentChestNumber),
+                  const OfflineInfo(),
+                ]),
+              );
+            }),
       ),
     );
   }

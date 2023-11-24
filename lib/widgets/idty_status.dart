@@ -24,10 +24,10 @@ class IdentityStatus extends StatelessWidget {
 
     return Consumer<SubstrateSdk>(builder: (context, sub, _) {
       return FutureBuilder(
-          future: sub.idtyStatus(address),
-          initialData: walletData.identityStatus,
-          builder: (context, AsyncSnapshot<IdtyStatus> snapshot) {
-            final resStatus = snapshot.data!;
+          future: sub.idtyStatus([address]),
+          initialData: [walletData.identityStatus],
+          builder: (context, AsyncSnapshot<List<IdtyStatus>> snapshot) {
+            final resStatus = snapshot.data!.first;
             walletData.identityStatus = resStatus;
             walletBox.put(address, walletData);
 

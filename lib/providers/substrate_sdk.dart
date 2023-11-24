@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously, body_might_complete_normally_catch_error
 
+import 'dart:convert';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/foundation.dart';
@@ -90,10 +92,11 @@ class SubstrateSdk with ChangeNotifier {
 
   Future _getStorage(String call) async {
     try {
+      log.d(call);
       return await sdk.webView!.evalJavascript('api.query.$call');
     } catch (e) {
       log.e("_getStorage error: $e");
-      return Future(() {});
+      throw Exception("_getStorage error: $e");
     }
   }
 
@@ -139,6 +142,14 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<int?> _getIdentityIndexOf(String address) async {
     return await _getStorage('identity.identityIndexOf("$address")');
+  }
+
+  Future<List<int?>> _getIdentityIndexOfMulti(List<String> addresses) async {
+    String jsonString = jsonEncode(addresses);
+    return List<int?>.from(
+        await _getStorage('identity.identityIndexOf.multi($jsonString)'));
+    // .map((e) => e as int?)
+    // .toList() as List<int?>;
   }
 
   Future<List<int>?> getCertsCounter(String address) async {
@@ -318,7 +329,7 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<Map<String, int>> certState(String from, String to) async {
     Map<String, int> result = {};
-    final toStatus = await idtyStatus(to);
+    final toStatus = (await idtyStatus([to])).first;
 
     final myWallets = MyWalletsProvider();
 
@@ -380,35 +391,52 @@ class SubstrateSdk with ChangeNotifier {
     return startBlockchainTime.add(Duration(seconds: blocNumber * 6));
   }
 
-  Future<IdtyStatus> idtyStatus(String address) async {
+  Future<List<IdtyStatus>> idtyStatus(List<String> addresses) async {
     // final walletOptions =
     //     Provider.of<WalletOptionsProvider>(homeContext, listen: false);
 
-    var idtyIndex = await _getIdentityIndexOf(address);
+    log.d(addresses);
+    final idtyIndexes = (await _getIdentityIndexOfMulti(addresses));
+    // .map((dynamic e) => e as String)
+    // .toList();
+    log.d(idtyIndexes);
+    final jsonString = jsonEncode(idtyIndexes);
+    final List idtyStatusList =
+        await _getStorage('identity.identities.multi($jsonString)');
 
-    if (idtyIndex == null) {
-      return IdtyStatus.none;
-    }
+    log.d(idtyStatusList);
 
-    final idtyStatus = await _getStorage('identity.identities($idtyIndex)');
+    List<IdtyStatus> resultStatus = [];
 
-    if (idtyStatus != null) {
+    for (final idtyStatus in idtyStatusList) {
+      if (idtyStatus == null) {
+        resultStatus.add(IdtyStatus.none);
+        continue;
+      }
+
       switch (idtyStatus['status']) {
         case 'Created':
-          return IdtyStatus.created;
+          resultStatus.add(IdtyStatus.created);
+          break;
 
         case 'ConfirmedByOwner':
-          return IdtyStatus.confirmed;
+          resultStatus.add(IdtyStatus.confirmed);
+          break;
 
         case 'Validated':
-          return IdtyStatus.validated;
+          resultStatus.add(IdtyStatus.validated);
+          break;
+
+        case 'Expired':
+          resultStatus.add(IdtyStatus.expired);
+          break;
 
         default:
-          return IdtyStatus.unknown;
+          resultStatus.add(IdtyStatus.unknown);
+          break;
       }
-    } else {
-      return IdtyStatus.expired;
     }
+    return resultStatus;
   }
 
   Future<bool> isSmith(String address) async {
@@ -872,11 +900,12 @@ class SubstrateSdk with ChangeNotifier {
     final fromBalance = fromAddress == ''
         ? {'transferableBalance': 0}
         : await getBalance(fromAddress);
-    final fromIdtyStatus =
-        fromAddress == '' ? IdtyStatus.none : await idtyStatus(fromAddress);
+
+    final statusList = await idtyStatus([fromAddress, toAddress]);
+    final fromIdtyStatus = statusList[0];
     final fromHasConsumer =
         fromAddress == '' ? false : await hasAccountConsumers(fromAddress);
-    final toIdtyStatus = await idtyStatus(toAddress);
+    final toIdtyStatus = statusList[1];
     final isSmithData = await isSmith(fromAddress);
 
     return [
@@ -951,11 +980,14 @@ class SubstrateSdk with ChangeNotifier {
       String fromAddress, String destAddress, String password) async {
     transactionStatus = '';
 
-    final myIdtyStatus = await idtyStatus(fromAddress);
-    final toIdtyStatus = await idtyStatus(destAddress);
+    final statusList = await idtyStatus([fromAddress, destAddress]);
+    final myIdtyStatus = statusList[0];
+    final toIdtyStatus = statusList[1];
 
-    final fromIndex = await _getIdentityIndexOf(fromAddress);
-    final toIndex = await _getIdentityIndexOf(destAddress);
+    final idtyIndexList =
+        await _getIdentityIndexOfMulti([fromAddress, destAddress]);
+    final fromIndex = idtyIndexList[0];
+    final toIndex = idtyIndexList[1];
 
     if (myIdtyStatus != IdtyStatus.validated) {
       transactionStatus = 'notMember';

@@ -40,78 +40,30 @@ class MyWalletsProvider with ChangeNotifier {
     chest = chest ?? configBox.get('currentChest') ?? 0;
     listWallets.clear();
     final wallets = walletBox.toMap().values.toList();
+    Map<String, WalletData> walletsToScan = {};
     for (var walletFromBox in wallets) {
       if (walletFromBox.chest == chest) {
         if (walletFromBox.identityStatus == IdtyStatus.unknown) {
-          walletFromBox.identityStatus =
-              await sub.idtyStatus(walletFromBox.address);
-          walletBox.put(walletFromBox.address, walletFromBox);
+          walletsToScan.putIfAbsent(
+              walletFromBox.address, (() => walletFromBox));
+        } else {
+          listWallets.add(walletFromBox);
         }
-        listWallets.add(walletFromBox);
       }
+    }
+
+    // update all idty status in lists
+    int n = 0;
+    final idtyStatusList = await sub.idtyStatus(walletsToScan.keys.toList());
+    for (final wallet in walletsToScan.values) {
+      wallet.identityStatus = idtyStatusList[n];
+      walletBox.put(wallet.address, wallet);
+      listWallets.add(wallet);
+      n++;
     }
 
     return listWallets;
   }
-
-  // List<WalletData> readAllWallets([int? chest]) {
-  //   final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-  //   bool hasFetchStatus = false;
-  //   List<Future> futures = [];
-  //   chest = chest ?? configBox.get('currentChest') ?? 0;
-  //   listWallets.clear();
-  //   walletBox.toMap().forEach((key, walletFromBox) {
-  //     if (walletFromBox.chest == chest) {
-  //       if (walletFromBox.identityStatus == IdtyStatus.unknown) {
-  //         hasFetchStatus = true;
-  //         futures.add(sub.idtyStatus(walletFromBox.address).then((valueStatus) {
-  //           walletFromBox.identityStatus = valueStatus;
-  //           listWallets.add(walletFromBox);
-  //           // walletBox.put(key, walletFromBox);
-  //         }));
-  //       } else {
-  //         listWallets.add(walletFromBox);
-  //       }
-  //     }
-  //   });
-  //   // if (hasFetchStatus) {
-  //   //   sleep(const Duration(milliseconds: 300));
-  //   //   log.d('yoooooooooo');
-  //   //   readAllWallets(chest);
-  //   // }
-
-  //   if (hasFetchStatus) {
-  //     Future.wait(futures).then((_) {
-  //       return listWallets;
-  //       // while (listWallets.any((element) =>
-  //       //     element.chest == chest &&
-  //       //     element.identityStatus == IdtyStatus.unknown)) {
-
-  //       // List tata = listWallets.toList();
-  //       // log.d(listWallets);
-  //       // while (tata.length < walletBox.length) {
-  //       //   tata = listWallets.toList();
-  //       //   sleep(const Duration(milliseconds: 500));
-  //       //   Map status = {};
-  //       //   for (var walletInList in tata) {
-  //       //     status.putIfAbsent(
-  //       //         walletInList.name, () => walletInList.identityStatus);
-  //       //   }
-  //       //   log.d(status);
-  //       //   log.d('yoooooo');
-
-  //       //   status.clear();
-  //       // }
-  //     });
-  //   }
-
-  //   // if (hasFetchStatus) {
-  //   //   walletBox.putAll(
-  //   //       Map.fromEntries(listWallets.map((e) => MapEntry(e.address, e))));
-  //   // }
-
-  //   return listWallets;
-  // }
 
   WalletData? getWalletDataById(List<int?> id) {
     if (id.isEmpty) return WalletData(address: '', isOwned: true);
@@ -261,7 +213,6 @@ class MyWalletsProvider with ChangeNotifier {
 
     chestNumber ??= getCurrentChest();
 
-    // List<WalletData> walletConfig = await readAllWallets(chestNumber);
     listWallets.sort((p1, p2) {
       return Comparable.compare(p1.number!, p2.number!);
     });

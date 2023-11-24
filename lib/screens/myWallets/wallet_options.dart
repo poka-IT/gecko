@@ -343,7 +343,7 @@ class WalletOptions extends StatelessWidget {
           future: sub.idtyStatus(walletProvider.address.text),
           initialData: '',
           builder: (context, snapshot) {
-            if (snapshot.data == 'Created') {
+            if (snapshot.data == IdtyStatus.created) {
               return Column(children: [
                 SizedBox(
                   width: 320,
@@ -542,7 +542,7 @@ class WalletOptions extends StatelessWidget {
     // WalletData defaultWallet = _myWalletProvider.getDefaultWallet()!;
     // defaultWallet = wallet;
     await sub.setCurrentWallet(wallet);
-    myWalletProvider.readAllWallets(currentChest);
+    await myWalletProvider.readAllWallets(currentChest);
     myWalletProvider.reload();
     walletOptions.reload();
   }
@@ -575,9 +575,9 @@ class WalletOptions extends StatelessWidget {
             onTap: canDelete
                 ? () async {
                     await walletOptions.deleteWallet(context, wallet);
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) async {
                       myWalletProvider.listWallets =
-                          myWalletProvider.readAllWallets(currentChest);
+                          await myWalletProvider.readAllWallets(currentChest);
                       myWalletProvider.reload();
                     });
                   }

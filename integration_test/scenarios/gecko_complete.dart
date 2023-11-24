@@ -65,10 +65,11 @@ Future payTest2() async {
 
 Future certifyTest5() async {
   // Create identity with Test1 account
+  await pump(number: 8);
   await tapKey(keyCertify);
   await tapKey(keyConfirm);
   spawnBlock(duration: 1000);
-  await tester.pump(const Duration(seconds: 2));
+  await pump(number: 3);
   await waitFor('sending'.tr(),
       reverse: true, settle: false, timeout: const Duration(seconds: 20));
   await tapKey(keyCloseTransactionScreen);
@@ -83,7 +84,7 @@ Future certifyTest5() async {
   await enterText(keyEnterIdentityUsername, test5.name);
   await tapKey(keyConfirm);
   spawnBlock(duration: 1000);
-  await tester.pump(const Duration(seconds: 2));
+  await pump(number: 3);
   await waitFor('sending'.tr(),
       reverse: true, settle: false, timeout: const Duration(seconds: 20));
   await tapKey(keyCloseTransactionScreen);
@@ -111,7 +112,7 @@ Future certifyTest5() async {
   await tapKey(keyCertify);
   await tapKey(keyConfirm);
   spawnBlock(duration: 1000);
-  await tester.pump(const Duration(seconds: 2));
+  await pump(number: 3);
   await waitFor('sending'.tr(),
       reverse: true, settle: false, timeout: const Duration(seconds: 20));
   await tapKey(keyCloseTransactionScreen);
@@ -119,16 +120,16 @@ Future certifyTest5() async {
 
   // Change default wallet to test3
   await tapKey(keyPay);
-  await tapKey(keyChangeChest);
+  await tapKey(keyDropdownWallets);
   await tapKey(keySelectThisWallet(test3.address));
-  await tapKey(keyConfirm);
+  await tapKey(keyPopButton);
   await sleep();
 
   // Certify with test3 account
   await tapKey(keyCertify);
   await tapKey(keyConfirm);
   spawnBlock(duration: 1000);
-  await tester.pump(const Duration(seconds: 2));
+  await pump(number: 3);
   await waitFor('sending'.tr(),
       reverse: true, settle: false, timeout: const Duration(seconds: 20));
   await tapKey(keyCloseTransactionScreen);

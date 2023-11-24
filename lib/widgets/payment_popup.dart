@@ -28,7 +28,6 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
   var defaultWallet = myWalletProvider.getDefaultWallet();
   bool canValidate = false;
   final amountFocus = FocusNode();
-  final dropdownKey = GlobalKey();
 
   walletViewProvider.payAmount.text = '';
 
@@ -132,6 +131,7 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
                                   fontSize: 26, fontWeight: FontWeight.w700),
                             ),
                             IconButton(
+                              key: keyPopButton,
                               iconSize: 40,
                               icon: const Icon(Icons.cancel_outlined),
                               onPressed: () {
@@ -152,7 +152,7 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
                         return DropdownButton(
                             dropdownColor: const Color(0xffffeed1),
                             elevation: 12,
-                            key: dropdownKey,
+                            key: keyDropdownWallets,
                             value: defaultWallet,
                             menuMaxHeight: 300,
                             onTap: () {
@@ -197,6 +197,7 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
                                 .map((WalletData wallet) {
                               return DropdownMenuItem(
                                 value: wallet,
+                                key: keySelectThisWallet(wallet.address),
                                 child: Container(
                                   color: const Color(0xffffeed1),
                                   width: 408,

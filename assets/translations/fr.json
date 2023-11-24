@@ -226,5 +226,6 @@
     "feesExplanationDetails": "Ces frais sont transférés vers le compte de trésorerie commune.",
     "gotit": "J'ai compris",
     "moreInfo": "Plus d'info",
-    "keepThisPaperSafe": "Gardez cette feuille précieusement, à l’abri des lézards indiscrets.\nElle vous permettra de restaurer tous vos portefeuilles à tout moment."
+    "keepThisPaperSafe": "Gardez cette feuille précieusement, à l’abri des lézards indiscrets.\nElle vous permettra de restaurer tous vos portefeuilles à tout moment.",
+    "fundsUnavailable": "Fonds insuffisants"
 }

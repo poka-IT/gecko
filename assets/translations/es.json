@@ -227,5 +227,6 @@
     "feesExplanationDetails": "These fees are transferred to the common treasury account.",
     "gotit": "Got it",
     "moreInfo": "More information",
-    "keepThisPaperSafe": "Keep this sheet safe from prying lizards.\nIt will allow you to restore all your wallets at any time."
+    "keepThisPaperSafe": "Keep this sheet safe from prying lizards.\nIt will allow you to restore all your wallets at any time.",
+    "fundsUnavailable": "Insufficient funds"
 }

@@ -1,5 +1,4 @@
 import 'package:easy_localization/easy_localization.dart';
-
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -7,8 +6,6 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:provider/provider.dart';
-// import 'package:gecko/models/home.dart';
-// import 'package:provider/provider.dart';
 
 class TransactionInProgress extends StatelessWidget {
   const TransactionInProgress(
@@ -32,11 +29,8 @@ class TransactionInProgress extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context, listen: false);
     bool isValid = false;
 
-    String resultText;
     bool isLoading = true;
     final result = sub.transactionStatus;
-
-    log.d(walletProfiles.address);
 
     final from = fromAddress ??
         g1WalletsBox
@@ -48,121 +42,55 @@ class TransactionInProgress extends StatelessWidget {
         myWalletProvider.getWalletDataByAddress(to)?.name ?? getShortPubkey(to);
 
     final amount = walletProfiles.payAmount.text;
-    String actionName = '';
     final bool isUdUnit = configBox.get('isUdUnit') ?? false;
 
-    log.d("$transType :: $actionName :: $result");
+    final Map<String, String> actionMap = {
+      'pay': 'transaction'.tr(),
+      'cert': 'certification'.tr(),
+      'comfirmIdty': 'identityConfirm'.tr(),
+      'revokeIdty': 'revokeAdhesion'.tr(),
+      'identityMigration': 'identityMigration'.tr(),
+    };
+    String resultText = '';
+    final Map<String, String> resultMap = {
+      '': 'sending'.tr(),
+      'Ready': 'propagating'.tr(),
+      'Broadcast': 'validating'.tr(),
+      'cert.NotRespectCertPeriod': '24hbetweenCerts'.tr(),
+      'identity.CreatorNotAllowedToCreateIdty': '24hbetweenCerts'.tr(),
+      'cert.CannotCertifySelf': 'canNotCertifySelf'.tr(),
+      'identity.IdtyNameAlreadyExist': 'nameAlreadyExist'.tr(),
+      'balances.KeepAlive': '2GDtoKeepAlive'.tr(),
+      '1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low':
+          'youHaveToFeedThisAccountBeforeUsing'.tr(),
+      'Token.FundsUnavailable': 'fundsUnavailable'.tr(),
+      'timeout': 'execTimeoutOver'.tr(),
+    };
 
-    switch (transType) {
-      case 'pay':
-        {
-          actionName = 'transaction'.tr();
-        }
-        break;
-      case 'cert':
-        {
-          actionName = 'certification'.tr();
-        }
-        break;
-      case 'comfirmIdty':
-        {
-          actionName = "identityConfirm".tr();
-        }
-        break;
-      case 'revokeIdty':
-        {
-          actionName = "revokeAdhesion".tr();
-        }
-        break;
-      case 'identityMigration':
-        {
-          actionName = "identityMigration".tr();
-        }
-        break;
-      default:
-        {
-          actionName = 'strangeTransaction'.tr();
-        }
+    if (result.contains('blockHash: ')) {
+      isLoading = false;
+      isValid = true;
+      resultText = 'extrinsicValidated'
+          .tr(args: [actionMap[transType] ?? 'strangeTransaction'.tr()]);
+      log.i('Bloc of last transaction: ${sub.blocNumber} --- $result');
+    } else if (result.contains('Exception: ')) {
+      isLoading = false;
+      isValid = false;
+      resultText = "${"anErrorOccurred".tr()}:\n";
+      final List exceptionSplit = result.split('Exception: ');
+      String exception;
+      if (exceptionSplit.length > 1) {
+        exception = exceptionSplit[1];
+      } else {
+        exception = exceptionSplit[0];
+      }
+      resultText = resultMap[exception] ?? "$resultText\n$exception";
+      log.d('expection: $exceptionSplit');
+    } else {
+      resultText = resultMap[result] ?? 'unknown status...';
     }
 
-    switch (result) {
-      case '':
-        {
-          resultText = 'sending'.tr();
-        }
-        break;
-      case 'Ready':
-        {
-          resultText = 'propagating'.tr();
-        }
-        break;
-      case 'Broadcast':
-        {
-          resultText = 'validating'.tr();
-        }
-        break;
-      default:
-        {
-          isLoading = false;
-          // jsonResult = json.decode(_result);
-          if (result.contains('blockHash: ')) {
-            isValid = true;
-            resultText = 'extrinsicValidated'.tr(args: [actionName]);
-            log.i(
-                'g1migration Bloc of last transaction: ${sub.blocNumber} --- $result');
-          } else {
-            isValid = false;
-            resultText = "${"anErrorOccurred".tr()}:\n";
-            final List exceptionSplit = result.split('Exception: ');
-            String exception;
-            if (exceptionSplit.length > 1) {
-              exception = exceptionSplit[1];
-            } else {
-              exception = exceptionSplit[0];
-            }
-            log.d('expection: $exceptionSplit');
-            switch (exception) {
-              case 'cert.NotRespectCertPeriod':
-              case 'identity.CreatorNotAllowedToCreateIdty':
-                {
-                  resultText = "24hbetweenCerts".tr();
-                }
-                break;
-              case 'cert.CannotCertifySelf':
-                {
-                  resultText = "canNotCertifySelf".tr();
-                }
-                break;
-              case 'identity.IdtyNameAlreadyExist':
-                {
-                  resultText = "nameAlreadyExist".tr();
-                }
-                break;
-              case 'balances.KeepAlive':
-                {
-                  resultText = "2GDtoKeepAlive".tr();
-                }
-                break;
-              case '1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low':
-                {
-                  resultText = "youHaveToFeedThisAccountBeforeUsing".tr();
-                }
-                break;
-
-              case 'timeout':
-                {
-                  resultText += "execTimeoutOver".tr();
-                }
-                break;
-              default:
-                {
-                  resultText += "\n$exception";
-                }
-                break;
-            }
-          }
-        }
-    }
+    log.d("$transType :: ${actionMap[transType]} :: $result");
 
     return WillPopScope(
         onWillPop: () {
@@ -184,7 +112,9 @@ class TransactionInProgress extends StatelessWidget {
                 child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      Text('extrinsicInProgress'.tr(args: [actionName]))
+                      Text('extrinsicInProgress'.tr(args: [
+                        actionMap[transType] ?? 'strangeTransaction'.tr()
+                      ]))
                     ]),
               )),
           body: SafeArea(

@@ -402,33 +402,20 @@ class SubstrateSdk with ChangeNotifier {
         await _getStorage('identity.identities.multi($jsonString)');
 
     List<IdtyStatus> resultStatus = [];
+    final mapStatus = {
+      null: IdtyStatus.none,
+      'Created': IdtyStatus.created,
+      'ConfirmedByOwner': IdtyStatus.confirmed,
+      'Validated': IdtyStatus.validated,
+      'Expired': IdtyStatus.expired,
+      'unknown': IdtyStatus.unknown,
+    };
 
     for (final idtyStatus in idtyStatusList) {
       if (idtyStatus == null) {
         resultStatus.add(IdtyStatus.none);
-        continue;
-      }
-
-      switch (idtyStatus['status']) {
-        case 'Created':
-          resultStatus.add(IdtyStatus.created);
-          break;
-
-        case 'ConfirmedByOwner':
-          resultStatus.add(IdtyStatus.confirmed);
-          break;
-
-        case 'Validated':
-          resultStatus.add(IdtyStatus.validated);
-          break;
-
-        case 'Expired':
-          resultStatus.add(IdtyStatus.expired);
-          break;
-
-        default:
-          resultStatus.add(IdtyStatus.unknown);
-          break;
+      } else {
+        resultStatus.add(mapStatus[idtyStatus['status']] ?? IdtyStatus.unknown);
       }
     }
     return resultStatus;

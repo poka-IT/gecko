@@ -19,7 +19,7 @@ import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
 import 'package:gecko/widgets/drawer.dart';
-import 'package:gecko/widgets/home_buttons.dart';
+import 'package:gecko/widgets/buttons/home_buttons.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 

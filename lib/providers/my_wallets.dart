@@ -13,8 +13,8 @@ class MyWalletsProvider with ChangeNotifier {
   late String mnemonic;
   int? pinLenght;
   bool isNewDerivationLoading = false;
-  String lastFlyBy = '';
-  String dragAddress = '';
+  WalletData? lastFlyBy;
+  WalletData? dragAddress;
   bool isPinValid = false;
   bool isPinLoading = true;
 

@@ -1,25 +1,22 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/screens/myWallets/chest_options.dart';
-import 'package:gecko/screens/myWallets/import_g1_v1.dart';
-import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
+import 'package:gecko/widgets/buttons/add_new_derivation_button.dart';
+import 'package:gecko/widgets/buttons/chest_options_buttons.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/drag_tule_action.dart';
+import 'package:gecko/widgets/drag_wallets_info.dart';
 import 'package:gecko/widgets/wallet_tile.dart';
 import 'package:gecko/widgets/wallet_tile_membre.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
 class WalletsHome extends StatefulWidget {
@@ -79,11 +76,14 @@ class _WalletsHomeState extends State<WalletsHome> {
         ),
         bottomNavigationBar:
             Consumer<MyWalletsProvider>(builder: (context, _, __) {
-          return myWalletProvider.lastFlyBy == ''
+          return myWalletProvider.lastFlyBy == null
               ? const GeckoBottomAppBar(
                   actualRoute: 'safeHome',
                 )
-              : dragInfo(context);
+              : DragWalletsInfo(
+                  lastFlyBy: myWalletProvider.lastFlyBy!,
+                  dragAddress: myWalletProvider.dragAddress!,
+                );
         }),
         body: FutureBuilder(
             future: myWalletProvider.readAllWallets(currentChestNumber),
@@ -110,134 +110,6 @@ class _WalletsHomeState extends State<WalletsHome> {
             }),
       ),
     );
-  }
-
-  Widget dragInfo(BuildContext context) {
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-
-    final walletDataFrom =
-        myWalletProvider.getWalletDataByAddress(myWalletProvider.dragAddress);
-    final walletDataTo =
-        myWalletProvider.getWalletDataByAddress(myWalletProvider.lastFlyBy);
-
-    final bool isSameAddress =
-        myWalletProvider.dragAddress == myWalletProvider.lastFlyBy;
-
-    final screenWidth = MediaQuery.of(homeContext).size.width;
-
-    final fromName =
-        duniterIndexer.walletNameIndexer[walletDataFrom!.address] ??
-            walletDataFrom.name;
-
-    final toName = duniterIndexer.walletNameIndexer[walletDataTo!.address] ??
-        walletDataTo.name;
-
-    return Container(
-      color: yellowC,
-      width: screenWidth,
-      height: 80,
-      child: Center(
-          child: Column(
-        children: [
-          const SizedBox(height: 5),
-          Text('${'executeATransfer'.tr()}:'),
-          MarkdownBody(data: '${'from'.tr()} **$fromName**'),
-          if (isSameAddress) Text('chooseATargetWallet'.tr()),
-          if (!isSameAddress) MarkdownBody(data: 'Vers: **$toName**'),
-        ],
-      )),
-    );
-  }
-
-  Widget chestOptions(BuildContext context, final myWalletProvider) {
-    return Column(children: [
-      const SizedBox(height: 50),
-      SizedBox(
-          height: 80,
-          width: 420,
-          child: ElevatedButton.icon(
-            icon: Image.asset(
-              'assets/chests/config.png',
-              height: 60,
-            ),
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.black, elevation: 2,
-              backgroundColor: floattingYellow, // foreground
-            ),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) {
-                return ChestOptions(walletProvider: myWalletProvider);
-              }),
-            ),
-            label: Text(
-              "   ${"manageChest".tr()}",
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: Color(0xff8a3c0f),
-              ),
-            ),
-          )),
-      const SizedBox(height: 30),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SvgPicture.asset(
-            'assets/cesium_bw2.svg',
-            semanticsLabel: 'CS',
-            height: 50,
-          ),
-          const SizedBox(width: 5),
-          InkWell(
-            key: keyImportG1v1,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) {
-                  return const ImportG1v1();
-                }),
-              );
-            },
-            child: SizedBox(
-              width: 350,
-              height: 60,
-              child: Center(
-                  child: Text('importG1v1'.tr(),
-                      style: TextStyle(
-                          fontSize: 22,
-                          color: Colors.blue[900],
-                          fontWeight: FontWeight.w500))),
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 20),
-      InkWell(
-        key: keyChangeChest,
-        onTap: () {
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(builder: (context) {
-          //     return const ChooseChest();
-          //   }),
-          // );
-        },
-        child: SizedBox(
-          width: 400,
-          height: 60,
-          child: Center(
-              child: Text('changeChest'.tr(),
-                  style: const TextStyle(
-                      fontSize: 22,
-                      color: Colors.grey, //orangeC
-                      fontWeight: FontWeight.w500))),
-        ),
-      ),
-      const SizedBox(height: 30)
-    ]);
   }
 
   Widget myWalletsTiles(BuildContext context, int currentChestNumber) {
@@ -348,73 +220,11 @@ class _WalletsHomeState extends State<WalletsHome> {
             Consumer<SubstrateSdk>(builder: (context, sub, _) {
               return sub.nodeConnected &&
                       myWalletProvider.listWallets.length < maxWalletsInSafe
-                  ? addNewDerivation(context)
+                  ? const AddNewDerivationButton()
                   : const Text('');
             }),
           ]),
-      SliverToBoxAdapter(child: chestOptions(context, myWalletProvider)),
+      const SliverToBoxAdapter(child: ChestOptionsButtons()),
     ]);
-  }
-
-  Widget addNewDerivation(context) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
-
-    String newDerivationName =
-        '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number! + 2}';
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.all(Radius.circular(12)),
-        child: Column(children: <Widget>[
-          Expanded(
-            child: InkWell(
-                key: keyAddDerivation,
-                onTap: () async {
-                  if (!myWalletProvider.isNewDerivationLoading) {
-                    WalletData? defaultWallet =
-                        myWalletProvider.getDefaultWallet();
-                    String? pin;
-                    if (myWalletProvider.pinCode == '') {
-                      pin = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (homeContext) {
-                            return UnlockingWallet(wallet: defaultWallet);
-                          },
-                        ),
-                      );
-                    }
-                    if (pin != null || myWalletProvider.pinCode != '') {
-                      await myWalletProvider.generateNewDerivation(
-                          context, newDerivationName);
-                    }
-                  }
-                },
-                child: Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  decoration: const BoxDecoration(color: floattingYellow),
-                  child: Center(
-                      child: myWalletProvider.isNewDerivationLoading
-                          ? const SizedBox(
-                              height: 60,
-                              width: 60,
-                              child: CircularProgressIndicator(
-                                color: orangeC,
-                                strokeWidth: 7,
-                              ),
-                            )
-                          : const Text(
-                              '+',
-                              style: TextStyle(
-                                  fontSize: 150,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFFFCB437)),
-                            )),
-                )),
-          ),
-        ]),
-      ),
-    );
   }
 }

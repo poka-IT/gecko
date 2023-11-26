@@ -26,10 +26,10 @@ class DragTuleAction extends StatelessWidget {
           const Offset(0, 0),
       // feedbackOffset: const Offset(-500, -500),
       // dragAnchorStrategy: childDragAnchorStrategy,
-      onDragStarted: () => myWalletProvider.dragAddress = wallet.address,
+      onDragStarted: () => myWalletProvider.dragAddress = wallet,
       onDragEnd: (_) {
-        myWalletProvider.lastFlyBy = '';
-        myWalletProvider.dragAddress = '';
+        myWalletProvider.lastFlyBy = null;
+        myWalletProvider.dragAddress = null;
         myWalletProvider.reload();
       },
       feedback: ElevatedButton(
@@ -56,8 +56,8 @@ class DragTuleAction extends StatelessWidget {
                 g1WalletsBox.get(wallet.address)!.username ?? wallet.name!);
           },
           onMove: (details) {
-            if (wallet.address != myWalletProvider.lastFlyBy) {
-              myWalletProvider.lastFlyBy = wallet.address;
+            if (wallet.address != myWalletProvider.lastFlyBy?.address) {
+              myWalletProvider.lastFlyBy = wallet;
               myWalletProvider.reload();
             }
           },

@@ -6,6 +6,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/widgets/balance.dart';
+import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/commons/smooth_transition.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
@@ -48,63 +49,84 @@ class WalletTileMembre extends StatelessWidget {
               borderRadius: const BorderRadius.all(Radius.circular(12)),
               child: Column(children: <Widget>[
                 Expanded(
-                    child: Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  decoration: const BoxDecoration(
-                    gradient: RadialGradient(
-                      radius: 0.8,
-                      colors: [
-                        Color.fromARGB(255, 255, 255, 211),
-                        yellowC,
-                      ],
-                    ),
-                  ),
-                  child: repository.imageCustomPath == null ||
-                          repository.imageCustomPath == ''
-                      ? Image.asset(
-                          'assets/avatars/${repository.imageDefaultPath}',
-                          alignment: Alignment.bottomCenter,
-                          scale: 0.5,
-                        )
-                      : Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.transparent,
-                            image: DecorationImage(
-                              fit: BoxFit.fitHeight,
-                              image: FileImage(
-                                File(repository.imageCustomPath!),
-                              ),
-                            ),
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        height: double.infinity,
+                        decoration: const BoxDecoration(
+                          gradient: RadialGradient(
+                            radius: 0.8,
+                            colors: [
+                              Color.fromARGB(255, 255, 255, 211),
+                              yellowC,
+                            ],
                           ),
                         ),
-                )),
+                        child: repository.imageCustomPath == null ||
+                                repository.imageCustomPath == ''
+                            ? Image.asset(
+                                'assets/avatars/${repository.imageDefaultPath}',
+                                alignment: Alignment.bottomCenter,
+                                scale: 0.5,
+                              )
+                            : Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.transparent,
+                                  image: DecorationImage(
+                                    fit: BoxFit.fitHeight,
+                                    image: FileImage(
+                                      File(repository.imageCustomPath!),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                      ),
+                      Positioned(
+                        left: 25,
+                        top: 25,
+                        child: Opacity(
+                          opacity: 0.6,
+                          child: Image.asset('assets/medal.png',
+                              color: Colors.black, height: 40),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 Stack(children: <Widget>[
                   BalanceBuilder(
                       address: repository.address,
                       isDefault: repository.address == defaultWallet.address),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Column(
-                        children: [
-                          const SizedBox(height: 7),
-                          Opacity(
-                              opacity: 0.7,
-                              child: NameByAddress(
-                                wallet: repository,
-                                size: 20,
-                                color:
-                                    defaultWallet.address == repository.address
-                                        ? Colors.white
-                                        : Colors.black,
-                                fontWeight: FontWeight.w600,
-                                fontStyle: FontStyle.normal,
-                              ))
-                        ],
-                      ),
-                    ],
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Column(children: [
+                      const SizedBox(height: 10),
+                      Opacity(
+                          opacity: 0.7,
+                          child: NameByAddress(
+                            wallet: repository,
+                            size: 20,
+                            color: defaultWallet.address == repository.address
+                                ? Colors.white
+                                : Colors.black,
+                            fontWeight: FontWeight.w600,
+                            fontStyle: FontStyle.normal,
+                          ))
+                    ]),
+                  ]),
+                  Positioned(
+                    right: 25,
+                    top: 25,
+                    child: Opacity(
+                      opacity: 0.7,
+                      child: Certifications(
+                          address: repository.address,
+                          color: defaultWallet.address == repository.address
+                              ? Colors.white
+                              : Colors.black,
+                          size: 15),
+                    ),
                   ),
                 ]),
               ]),
@@ -133,7 +155,7 @@ class BalanceBuilder extends StatelessWidget {
       color: isDefault ? orangeC : yellowC,
       child: Padding(
           padding:
-              const EdgeInsets.only(left: 5, right: 5, top: 45, bottom: 10),
+              const EdgeInsets.only(left: 5, right: 5, top: 45, bottom: 15),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

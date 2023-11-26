@@ -20,66 +20,62 @@ class CertTile extends StatelessWidget {
 
     return Column(
         children: listCerts.map((repository) {
-      // log.d('bbbbbbbbbbbbbbbbbbbbbb: ' + repository.toString());
-
       return Column(children: <Widget>[
         Padding(
           padding: const EdgeInsets.only(right: 0),
-          child:
-              // Row(children: [Column(children: [],)],)
-              ListTile(
-                  key: keyTransaction(keyID++),
-                  contentPadding: const EdgeInsets.only(
-                      left: 20, right: 30, top: 15, bottom: 15),
-                  leading: ClipOval(
-                    child: defaultAvatar(avatarSize),
+          child: ListTile(
+              key: keyTransaction(keyID++),
+              contentPadding: const EdgeInsets.only(
+                  left: 20, right: 30, top: 15, bottom: 15),
+              leading: ClipOval(
+                child: defaultAvatar(avatarSize),
+              ),
+              title: Padding(
+                padding: const EdgeInsets.only(bottom: 5),
+                child: Text(repository['name'],
+                    style: const TextStyle(fontSize: 22)),
+              ),
+              subtitle: RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.grey[700],
                   ),
-                  title: Padding(
-                    padding: const EdgeInsets.only(bottom: 5),
-                    child: Text(repository['name'],
-                        style: const TextStyle(fontSize: 22)),
-                  ),
-                  subtitle: RichText(
-                    text: TextSpan(
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.grey[700],
-                      ),
-                      children: <TextSpan>[
-                        TextSpan(
-                          text: repository['date'],
-                        ),
-                        if (repository[2] != '')
-                          TextSpan(
-                            text: '  ·  ',
-                            style: TextStyle(
-                              fontSize: 20,
-                              color: Colors.grey[550],
-                            ),
-                          ),
-                        TextSpan(
-                          text: getShortPubkey(repository['address']),
-                          style: TextStyle(
-                              fontStyle: FontStyle.italic,
-                              color: Colors.grey[600],
-                              fontSize: 18),
-                        ),
-                      ],
+                  children: <TextSpan>[
+                    TextSpan(
+                      text: repository['date'],
                     ),
-                  ),
-                  dense: false,
-                  isThreeLine: false,
-                  onTap: () {
-                    Navigator.push(
-                      homeContext,
-                      MaterialPageRoute(builder: (context) {
-                        return WalletViewScreen(
-                          address: repository['address'],
-                          username: repository['name'],
-                        );
-                      }),
+                    if (repository[2] != '')
+                      TextSpan(
+                        text: '  ·  ',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.grey[550],
+                        ),
+                      ),
+                    TextSpan(
+                      text: getShortPubkey(repository['address']),
+                      style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          color: Colors.grey[600],
+                          fontSize: 18),
+                    ),
+                  ],
+                ),
+              ),
+              dense: false,
+              isThreeLine: false,
+              onTap: () {
+                Navigator.push(
+                  homeContext,
+                  MaterialPageRoute(builder: (context) {
+                    return WalletViewScreen(
+                      address: repository['address'],
+                      username: repository['name'],
                     );
                   }),
+                );
+              }),
         ),
       ]);
     }).toList());

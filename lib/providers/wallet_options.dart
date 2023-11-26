@@ -161,7 +161,6 @@ class WalletOptionsProvider with ChangeNotifier {
                       !await isIdtyExist(idtyName.text) &&
                       idtyName.text.length >= 2 &&
                       idtyName.text.length <= 32;
-                  log.d('aaaaaaaaaa: $canValidate');
 
                   notifyListeners();
                 },

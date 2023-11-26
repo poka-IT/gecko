@@ -88,9 +88,8 @@ class ContactsList extends StatelessWidget {
                                 walletsProfilesClass.address = g1Wallet.address;
                                 return WalletViewScreen(
                                   address: g1Wallet.address,
-                                  username: duniterIndexer.walletNameIndexer[
-                                          g1Wallet.address] ??
-                                      '',
+                                  username: duniterIndexer
+                                      .walletNameIndexer[g1Wallet.address],
                                   avatar: g1WalletsBox
                                       .get(g1Wallet.address)
                                       ?.avatar,

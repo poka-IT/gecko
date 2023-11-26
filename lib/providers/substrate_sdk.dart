@@ -52,7 +52,7 @@ class SubstrateSdk with ChangeNotifier {
 
   /////////////////////////////////////
   ////////// 1: API METHODS ///////////
-  /////////////////////////////////////
+  /////////////////////////////////////3
 
   Future<String> _executeCall(TxInfoData txInfo, txOptions, String password,
       [String? rawParams]) async {
@@ -71,10 +71,10 @@ class SubstrateSdk with ChangeNotifier {
       );
       log.d(hash);
       if (hash.isEmpty) {
-        transactionStatus = 'timeout';
+        transactionStatus = 'Exception: timeout';
         notifyListeners();
 
-        return 'timeout';
+        return 'Exception: timeout';
       } else {
         // Success !
         transactionStatus = hash.toString();

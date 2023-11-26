@@ -100,7 +100,7 @@ class SearchResult extends StatelessWidget {
                 walletsProfilesClass.address = g1Wallet.address;
                 return WalletViewScreen(
                   address: g1Wallet.address,
-                  username: g1Wallet.username ?? '',
+                  username: g1Wallet.username,
                   avatar: g1Wallet.avatar,
                 );
               }),

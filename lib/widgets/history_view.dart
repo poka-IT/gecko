@@ -112,7 +112,7 @@ class HistoryView extends StatelessWidget {
                     PageNoTransit(builder: (context) {
                       return WalletViewScreen(
                         address: sub.oldOwnerKeys[address]![0],
-                        username: '',
+                        username: null,
                       );
                     }),
                   ),

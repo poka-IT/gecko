@@ -29,7 +29,7 @@ class WalletViewScreen extends StatelessWidget {
       {required this.address, required this.username, this.avatar, Key? key})
       : super(key: key);
   final String address;
-  final String username;
+  final String? username;
   final Image? avatar;
   final double buttonSize = 100;
   final double buttonFontSize = 18;

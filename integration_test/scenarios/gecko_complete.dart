@@ -54,8 +54,9 @@ Future payTest2() async {
   spawnBlock(duration: 500);
   await tester.pump(const Duration(seconds: 2));
   await waitFor('sending'.tr(),
-      reverse: true, settle: false, timeout: const Duration(seconds: 20));
-
+      reverse: true, timeout: const Duration(seconds: 20));
+  await waitFor('extrinsicValidated'.tr(args: ['transaction'.tr()]),
+      timeout: const Duration(seconds: 12));
   await tapKey(keyCloseTransactionScreen, duration: 0);
   await waitFor('12.14');
   spawnBlock(duration: 500);
@@ -71,7 +72,9 @@ Future certifyTest5() async {
   spawnBlock(duration: 1000);
   await pump(number: 3);
   await waitFor('sending'.tr(),
-      reverse: true, settle: false, timeout: const Duration(seconds: 20));
+      reverse: true, timeout: const Duration(seconds: 20));
+  await waitFor('extrinsicValidated'.tr(args: ['certification'.tr()]),
+      timeout: const Duration(seconds: 6));
   await tapKey(keyCloseTransactionScreen);
   await waitFor('identityCreated'.tr());
 
@@ -86,7 +89,7 @@ Future certifyTest5() async {
   spawnBlock(duration: 1000);
   await pump(number: 3);
   await waitFor('sending'.tr(),
-      reverse: true, settle: false, timeout: const Duration(seconds: 20));
+      reverse: true, timeout: const Duration(seconds: 20));
   await tapKey(keyCloseTransactionScreen);
   await waitFor('identityConfirmed'.tr());
   humanRead(2);

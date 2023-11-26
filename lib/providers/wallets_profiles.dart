@@ -45,7 +45,7 @@ class WalletsProfilesProvider with ChangeNotifier {
         MaterialPageRoute(builder: (context) {
           return WalletViewScreen(
             address: barcode!.rawContent,
-            username: '',
+            username: null,
           );
         }),
       );

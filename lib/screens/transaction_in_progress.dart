@@ -36,6 +36,7 @@ class TransactionInProgress extends StatelessWidget {
             .get(myWalletProvider.getDefaultWallet().address)
             ?.username ??
         myWalletProvider.getDefaultWallet().name!;
+
     String to = toAddress ?? walletProfiles.address;
     to =
         myWalletProvider.getWalletDataByAddress(to)?.name ?? getShortPubkey(to);
@@ -64,7 +65,7 @@ class TransactionInProgress extends StatelessWidget {
       '1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low':
           'youHaveToFeedThisAccountBeforeUsing'.tr(),
       'Token.FundsUnavailable': 'fundsUnavailable'.tr(),
-      'timeout': 'execTimeoutOver'.tr(),
+      'Exception: timeout': 'execTimeoutOver'.tr(),
     };
 
     if (result.contains('blockHash: ')) {
@@ -73,17 +74,10 @@ class TransactionInProgress extends StatelessWidget {
           .tr(args: [actionMap[transType] ?? 'strangeTransaction'.tr()]);
       log.i('Bloc of last transaction: ${sub.blocNumber} --- $result');
     } else if (result.contains('Exception: ')) {
-      isValid = false;
       resultText = "${"anErrorOccurred".tr()}:\n";
-      final List exceptionSplit = result.split('Exception: ');
-      String exception;
-      if (exceptionSplit.length > 1) {
-        exception = exceptionSplit[1];
-      } else {
-        exception = exceptionSplit[0];
-      }
+      final String exception = result.split('Exception: ')[1];
       resultText = resultMap[exception] ?? "$resultText\n$exception";
-      log.d('expection: $exceptionSplit');
+      log.d('Error: $exception');
     } else {
       isLoading = true;
       resultText = resultMap[result] ?? 'unknown status...';

@@ -17,7 +17,7 @@ import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-void paymentPopup(BuildContext context, String toAddress, String username) {
+void paymentPopup(BuildContext context, String toAddress, String? username) {
   final walletViewProvider =
       Provider.of<WalletsProfilesProvider>(context, listen: false);
   final myWalletProvider =
@@ -229,9 +229,7 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
                             children: [
                               const SizedBox(height: 2),
                               Text(
-                                username == ''
-                                    ? getShortPubkey(toAddress)
-                                    : username,
+                                username ?? getShortPubkey(toAddress),
                                 style: const TextStyle(
                                   fontSize: 21,
                                   fontWeight: FontWeight.w600,

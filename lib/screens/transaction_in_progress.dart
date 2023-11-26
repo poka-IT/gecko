@@ -28,7 +28,7 @@ class TransactionInProgress extends StatelessWidget {
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     bool isValid = false;
-    bool isLoading = true;
+    bool isLoading = false;
     final result = sub.transactionStatus;
 
     final from = fromAddress ??
@@ -68,13 +68,11 @@ class TransactionInProgress extends StatelessWidget {
     };
 
     if (result.contains('blockHash: ')) {
-      isLoading = false;
       isValid = true;
       resultText = 'extrinsicValidated'
           .tr(args: [actionMap[transType] ?? 'strangeTransaction'.tr()]);
       log.i('Bloc of last transaction: ${sub.blocNumber} --- $result');
     } else if (result.contains('Exception: ')) {
-      isLoading = false;
       isValid = false;
       resultText = "${"anErrorOccurred".tr()}:\n";
       final List exceptionSplit = result.split('Exception: ');
@@ -87,6 +85,7 @@ class TransactionInProgress extends StatelessWidget {
       resultText = resultMap[exception] ?? "$resultText\n$exception";
       log.d('expection: $exceptionSplit');
     } else {
+      isLoading = true;
       resultText = resultMap[result] ?? 'unknown status...';
     }
 

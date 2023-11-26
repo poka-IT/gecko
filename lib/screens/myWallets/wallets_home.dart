@@ -15,7 +15,7 @@ import 'package:gecko/screens/myWallets/import_g1_v1.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
-import 'package:gecko/widgets/payment_popup.dart';
+import 'package:gecko/widgets/drag_tule_action.dart';
 import 'package:gecko/widgets/wallet_tile.dart';
 import 'package:gecko/widgets/wallet_tile_membre.dart';
 import 'package:provider/provider.dart';
@@ -77,11 +77,14 @@ class _WalletsHomeState extends State<WalletsHome> {
           ),
           backgroundColor: const Color(0xffFFD58D),
         ),
-        bottomNavigationBar: myWalletProvider.lastFlyBy == ''
-            ? const GeckoBottomAppBar(
-                actualRoute: 'safeHome',
-              )
-            : dragInfo(context),
+        bottomNavigationBar:
+            Consumer<MyWalletsProvider>(builder: (context, _, __) {
+          return myWalletProvider.lastFlyBy == ''
+              ? const GeckoBottomAppBar(
+                  actualRoute: 'safeHome',
+                )
+              : dragInfo(context);
+        }),
         body: FutureBuilder(
             future: myWalletProvider.readAllWallets(currentChestNumber),
             builder: (context, snapshot) {
@@ -240,7 +243,6 @@ class _WalletsHomeState extends State<WalletsHome> {
   Widget myWalletsTiles(BuildContext context, int currentChestNumber) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
     final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     if (!isWalletsExists) {
       return const Text('');
@@ -272,7 +274,6 @@ class _WalletsHomeState extends State<WalletsHome> {
     List<WalletData> listWalletsWithoutIdty = listWallets.toList();
     listWalletsWithoutIdty.removeWhere((w) => w.address == idtyWallet.address);
 
-    WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
     final screenWidth = MediaQuery.of(context).size.width;
     int nTule;
 
@@ -327,8 +328,11 @@ class _WalletsHomeState extends State<WalletsHome> {
       const SliverToBoxAdapter(child: SizedBox(height: 20)),
       if (idtyWallet.address != '')
         SliverToBoxAdapter(
-            child: WalletTileMembre(
-                repository: idtyWallet, defaultWallet: defaultWallet)),
+          child: DragTuleAction(
+            wallet: idtyWallet,
+            child: WalletTileMembre(repository: idtyWallet),
+          ),
+        ),
       SliverGrid.count(
           key: keyListWallets,
           crossAxisCount: nTule,
@@ -337,63 +341,9 @@ class _WalletsHomeState extends State<WalletsHome> {
           mainAxisSpacing: 0,
           children: <Widget>[
             for (WalletData repository in listWalletsWithoutIdty)
-              LongPressDraggable<String>(
-                delay: const Duration(milliseconds: 200),
-                data: repository.address,
-                dragAnchorStrategy:
-                    (Draggable<Object> _, BuildContext __, Offset ___) =>
-                        const Offset(0, 0),
-                // feedbackOffset: const Offset(-500, -500),
-                // dragAnchorStrategy: childDragAnchorStrategy,
-                onDragStarted: () =>
-                    myWalletProvider.dragAddress = repository.address,
-                onDragEnd: (_) {
-                  myWalletProvider.lastFlyBy = '';
-                  myWalletProvider.dragAddress = '';
-                  myWalletProvider.reload();
-                },
-                feedback: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: orangeC,
-                    shape: const CircleBorder(),
-                    padding: const EdgeInsets.all(15),
-                  ),
-                  child: const SizedBox(
-                    height: 35,
-                    child: Image(image: AssetImage('assets/vector_white.png')),
-                  ),
-                ),
-                child: DragTarget<String>(
-                    onAccept: (senderAddress) async {
-                      log.d(
-                          'INTERPAY: sender: $senderAddress --- receiver: ${repository.address}');
-                      final walletData = myWalletProvider
-                          .getWalletDataByAddress(senderAddress);
-                      await sub.setCurrentWallet(walletData!);
-                      sub.reload();
-                      paymentPopup(
-                          context,
-                          repository.address,
-                          g1WalletsBox.get(repository.address)!.username ??
-                              repository.name!);
-                    },
-                    onMove: (details) {
-                      if (repository.address != myWalletProvider.lastFlyBy) {
-                        myWalletProvider.lastFlyBy = repository.address;
-                        myWalletProvider.reload();
-                      }
-                    },
-                    onWillAccept: (senderAddress) =>
-                        senderAddress != repository.address,
-                    builder: (
-                      BuildContext context,
-                      List<dynamic> accepted,
-                      List<dynamic> rejected,
-                    ) {
-                      return WalletTile(
-                          repository: repository, defaultWallet: defaultWallet);
-                    }),
+              DragTuleAction(
+                wallet: repository,
+                child: WalletTile(repository: repository),
               ),
             Consumer<SubstrateSdk>(builder: (context, sub, _) {
               return sub.nodeConnected &&
@@ -412,57 +362,59 @@ class _WalletsHomeState extends State<WalletsHome> {
     String newDerivationName =
         '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number! + 2}';
     return Padding(
-        padding: const EdgeInsets.all(16),
-        child: ClipRRect(
-            borderRadius: const BorderRadius.all(Radius.circular(12)),
-            child: Column(children: <Widget>[
-              Expanded(
-                child: InkWell(
-                    key: keyAddDerivation,
-                    onTap: () async {
-                      if (!myWalletProvider.isNewDerivationLoading) {
-                        WalletData? defaultWallet =
-                            myWalletProvider.getDefaultWallet();
-                        String? pin;
-                        if (myWalletProvider.pinCode == '') {
-                          pin = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (homeContext) {
-                                return UnlockingWallet(wallet: defaultWallet);
-                              },
-                            ),
-                          );
-                        }
-                        if (pin != null || myWalletProvider.pinCode != '') {
-                          await myWalletProvider.generateNewDerivation(
-                              context, newDerivationName);
-                        }
-                      }
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      height: double.infinity,
-                      decoration: const BoxDecoration(color: floattingYellow),
-                      child: Center(
-                          child: myWalletProvider.isNewDerivationLoading
-                              ? const SizedBox(
-                                  height: 60,
-                                  width: 60,
-                                  child: CircularProgressIndicator(
-                                    color: orangeC,
-                                    strokeWidth: 7,
-                                  ),
-                                )
-                              : const Text(
-                                  '+',
-                                  style: TextStyle(
-                                      fontSize: 150,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFFFCB437)),
-                                )),
-                    )),
-              ),
-            ])));
+      padding: const EdgeInsets.all(16),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
+        child: Column(children: <Widget>[
+          Expanded(
+            child: InkWell(
+                key: keyAddDerivation,
+                onTap: () async {
+                  if (!myWalletProvider.isNewDerivationLoading) {
+                    WalletData? defaultWallet =
+                        myWalletProvider.getDefaultWallet();
+                    String? pin;
+                    if (myWalletProvider.pinCode == '') {
+                      pin = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (homeContext) {
+                            return UnlockingWallet(wallet: defaultWallet);
+                          },
+                        ),
+                      );
+                    }
+                    if (pin != null || myWalletProvider.pinCode != '') {
+                      await myWalletProvider.generateNewDerivation(
+                          context, newDerivationName);
+                    }
+                  }
+                },
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  decoration: const BoxDecoration(color: floattingYellow),
+                  child: Center(
+                      child: myWalletProvider.isNewDerivationLoading
+                          ? const SizedBox(
+                              height: 60,
+                              width: 60,
+                              child: CircularProgressIndicator(
+                                color: orangeC,
+                                strokeWidth: 7,
+                              ),
+                            )
+                          : const Text(
+                              '+',
+                              style: TextStyle(
+                                  fontSize: 150,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFFFCB437)),
+                            )),
+                )),
+          ),
+        ]),
+      ),
+    );
   }
 }

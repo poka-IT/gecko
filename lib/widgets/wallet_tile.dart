@@ -3,23 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/smooth_transition.dart';
 import 'package:gecko/widgets/name_by_address.dart';
+import 'package:provider/provider.dart';
 
 class WalletTile extends StatelessWidget {
   const WalletTile({
     Key? key,
     required this.repository,
-    required this.defaultWallet,
   }) : super(key: key);
 
   final WalletData repository;
-  final WalletData defaultWallet;
 
   @override
   Widget build(BuildContext context) {
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
+    final defaultWallet = myWalletProvider.getDefaultWallet();
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: GestureDetector(

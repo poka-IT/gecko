@@ -68,6 +68,7 @@ Future<void> main() async {
   Hive.registerAdapter(ChestDataAdapter());
   Hive.registerAdapter(G1WalletsListAdapter());
   Hive.registerAdapter(IdAdapter());
+  Hive.registerAdapter(IdtyStatusAdapter());
 
   chestBox = await Hive.openBox<ChestData>("chestBox");
 
@@ -165,9 +166,9 @@ class Gecko extends StatelessWidget {
           colorScheme:
               ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]),
         ),
-        home: const HomeScreen(),
         initialRoute: "/",
         routes: {
+          '/': (context) => const HomeScreen(),
           '/mywallets': (context) => const WalletsHome(),
           '/search': (context) => const SearchScreen(),
           '/searchResult': (context) => const SearchResultScreen(),

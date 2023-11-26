@@ -43,7 +43,7 @@ class ManageMembership extends StatelessWidget {
             migrateIdentity(context),
             const SizedBox(height: 10),
             FutureBuilder(
-                future: sub.isSmithGet(address),
+                future: sub.isSmith(address),
                 builder: (BuildContext context, AsyncSnapshot<bool> isSmith) {
                   if (isSmith.data ?? false) {
                     return SizedBox(

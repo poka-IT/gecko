@@ -1,0 +1,65 @@
+{
+  "initial_monetary_mass": 50100,
+  "identities": {
+    "test1": {
+      "index": 0,
+      "balance": 10000,
+      "membership_expire_on": 1705509948,
+      "next_cert_issuable_on": 1668347505,
+      "certs_received": {
+        "test2": 1727758466,
+        "test3": 1727758466,
+        "test4": 1727758466
+      },
+      "owner_pubkey": "BgC76sdA6zxPSAMW6sZ1e3NEntLrkLT8DY3z2MEmJJgK"
+    },
+    "test2": {
+      "index": 1,
+      "balance": 10000,
+      "membership_expire_on": 1705509948,
+      "next_cert_issuable_on": 1668347505,
+      "certs_received": {
+        "test1": 1727758466,
+        "test3": 1727758466,
+        "test4": 1727758466
+      },
+      "owner_pubkey": "6xNFhRFHKyx9iZ3ucc3AFf5cjsWw5jH3p6EnFXw3D8T6"
+    },
+    "test3": {
+      "index": 2,
+      "balance": 10000,
+      "membership_expire_on": 1705509948,
+      "next_cert_issuable_on": 1668347505,
+      "certs_received": {
+        "test1": 1727758466,
+        "test2": 1727758466,
+        "test4": 1727758466
+      },
+      "owner_pubkey": "BpSSPEVE1yze9wrfjkU4wfnFa7WgKNysHxe3H9iT9fvx"
+    },
+    "test4": {
+      "index": 3,
+      "balance": 10000,
+      "membership_expire_on": 1705509948,
+      "next_cert_issuable_on": 1668347505,
+      "certs_received": {
+        "test1": 1727758466,
+        "test2": 1727758466,
+        "test3": 1727758466
+      },
+      "owner_pubkey": "5LqbvutJtRTHvnforyndwPbkC4Kf5cJtdRQaDcHoMi8S"
+    },
+    "testCesium1": {
+      "index": 4,
+      "balance": 10000,
+      "membership_expire_on": 1705509948,
+      "next_cert_issuable_on": 1668347505,
+      "certs_received": {
+        "test1": 1727758466,
+        "test2": 1727758466,
+        "test3": 1727758466
+      },
+      "owner_pubkey": "DCovzCEnQm9GUWe6mr8u42JR1JAuoj3HbQUGdCkfTzSr"
+    }
+  }
+}

@@ -19,6 +19,7 @@ void main() async {
     await firstOpenChest();
 
     // Go to test1 options and check if balance growup with UDs creations
+    await scrollUntil(keyAddDerivation);
     await tapKey(keyAddDerivation);
     await waitFor(' 6');
 
@@ -44,15 +45,17 @@ void main() async {
     await tapKey(keyConfirm);
     spawnBlock(duration: 1000);
     await tester.pump(const Duration(seconds: 2));
+    await tester.pump(const Duration(seconds: 1));
     await waitFor('sending'.tr(),
         reverse: true, settle: false, timeout: const Duration(seconds: 20));
     await tapKey(keyCloseTransactionScreen, duration: 0);
 
     await tapKey(keyOpenWallet(test6.address), duration: 300);
+    await pump(number: 4);
     await waitFor('3', exactMatch: true);
     await waitFor('memberValidated'.tr());
 
-    await waitFor('99.98', exactMatch: true);
+    await waitFor('110.01', exactMatch: true);
   }, timeout: testTimeout());
 }
 

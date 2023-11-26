@@ -25,7 +25,7 @@ Future changeNode() async {
 }
 
 Future deleteAllWallets() async {
-  if (await isPresent('Rechercher')) {
+  if (await isPresent('searchWallet'.tr())) {
     await tapKey(keyDrawerMenu);
     await tapKey(keyParameters);
 
@@ -65,15 +65,17 @@ Future restoreChest() async {
   // Enter password
   await enterText(keyPinForm, 'AAAAA', 0);
 
+  // pump a few frame
+  await pump(duration: const Duration(milliseconds: 500), number: 10);
+
   // Check if string "Accéder à mon coffre" is present in screen
-  await waitFor('accessMyChest'.tr(), pumpDuration: 30);
+  await waitFor('accessMyChest'.tr(), settle: false);
 
   // Go to wallets home
   await tapKey(keyGoWalletsHome, duration: 0);
 
   // Skip tutorial
-  await sleep(500);
-  await tapKey(keyDragAndDrop).timeout(const Duration(seconds: 3));
+  await skipWalletDragTutorial();
 
   // Check if string "ĞD" is present in screen
   await waitFor('ĞD');
@@ -168,5 +170,15 @@ Future firstOpenChest() async {
   final isCached = await isIconPresent(Icons.check_box);
   if (!isCached) await tapKey(keyCachePassword, duration: 0);
   await enterText(keyPinForm, 'AAAAA', 0);
-  await waitFor('100.0', exactMatch: true);
+  await skipWalletDragTutorial();
+  await waitFor(test1.name);
+}
+
+Future skipWalletDragTutorial() async {
+  await pump(duration: const Duration(milliseconds: 500), number: 6);
+  await pump(duration: const Duration(seconds: 2));
+  if (await isPresent('explainDraggableWallet'.tr().substring(0, 13),
+      timeout: const Duration(seconds: 5), settle: false)) {
+    await tapKey(keyDragAndDrop, duration: 0);
+  }
 }

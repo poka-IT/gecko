@@ -172,7 +172,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                 context,
                                 MaterialPageRoute(builder: (context) {
                                   return WalletViewScreen(
-                                      address: pastedAddress, username: '');
+                                      address: pastedAddress, username: null);
                                 }),
                               );
                             }

@@ -27,10 +27,12 @@ class ImportG1v1 extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context, listen: false);
 
     Timer? debounce;
-    const int debouneTime = 300;
+    const int debouneTime = 600;
     WalletData selectedWallet = myWalletProvider.getDefaultWallet();
     bool canValidate = false;
     String validationStatus = '';
+
+    log.d(myWalletProvider.listWallets);
 
     return WillPopScope(
       onWillPop: () {
@@ -58,8 +60,6 @@ class ImportG1v1 extends StatelessWidget {
                 future: sub.getBalanceAndIdtyStatus(
                     sub.g1V1NewAddress, selectedWallet.address),
                 builder: (BuildContext context, AsyncSnapshot<List> status) {
-                  // log.d(_certs.data);
-
                   if (status.data == null) {
                     return const Column(children: [
                       SizedBox(height: 80),
@@ -79,12 +79,10 @@ class ImportG1v1 extends StatelessWidget {
                   }
 
                   final Map balance = status.data?[0] ?? {};
-                  final String idtyStatus = status.data?[1];
-                  final String myIdtyStatus = status.data?[2];
+                  final IdtyStatus idtyStatus = status.data?[1];
+                  final IdtyStatus myIdtyStatus = status.data?[2];
                   final bool hasConsumer = status.data?[3] ?? false;
                   final bool isSmith = status.data?[4] ?? false;
-
-                  // log.d('hasconsumer: $hasConsumer');
 
                   if (balance['transferableBalance'] != 0 && !hasConsumer) {
                     canValidate = true;
@@ -96,7 +94,8 @@ class ImportG1v1 extends StatelessWidget {
                         : 'thisAccountIsEmpty'.tr();
                   }
 
-                  if (idtyStatus != 'noid' && myIdtyStatus != 'noid') {
+                  if (idtyStatus != IdtyStatus.none &&
+                      myIdtyStatus != IdtyStatus.none) {
                     canValidate = false;
                     validationStatus =
                         'youCannotMigrateIdentityToExistingIdentity'.tr();

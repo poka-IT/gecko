@@ -96,8 +96,8 @@ class MigrateIdentityScreen extends StatelessWidget {
                 // log.d('statusData: ${status.data}');
 
                 final Map balance = status.data?[0] ?? {};
-                final String idtyStatus = status.data?[1];
-                final String myIdtyStatus = status.data?[2];
+                final IdtyStatus idtyStatus = status.data?[1];
+                final IdtyStatus myIdtyStatus = status.data?[2];
                 final bool hasConsumer = status.data?[3] ?? false;
                 final bool isSmith = status.data?[4] ?? false;
 
@@ -110,7 +110,8 @@ class MigrateIdentityScreen extends StatelessWidget {
                     !hasConsumer) {
                   canValidate = true;
                   validationStatus = '';
-                } else if (idtyStatus != 'noid' && myIdtyStatus != 'noid') {
+                } else if (idtyStatus != IdtyStatus.none &&
+                    myIdtyStatus != IdtyStatus.none) {
                   canValidate = false;
                   validationStatus =
                       'youCannotMigrateIdentityToExistingIdentity'.tr();

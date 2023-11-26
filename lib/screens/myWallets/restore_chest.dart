@@ -25,7 +25,6 @@ class RestoreChest extends StatelessWidget {
     final genW = Provider.of<GenerateWalletsProvider>(context, listen: false);
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    genW.actualWallet = null;
     if (genW.isSentenceComplete(context)) {
       genW.generatedMnemonic =
           '${genW.cellController0.text} ${genW.cellController1.text} ${genW.cellController2.text} ${genW.cellController3.text} ${genW.cellController4.text} ${genW.cellController5.text} ${genW.cellController6.text} ${genW.cellController7.text} ${genW.cellController8.text} ${genW.cellController9.text} ${genW.cellController10.text} ${genW.cellController11.text}';
@@ -141,12 +140,13 @@ class RestoreChest extends StatelessWidget {
                           genW.pasteMnemonic(context);
                         },
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             const Icon(
                               Icons.content_paste_go,
-                              size: 25,
+                              size: 27,
                             ),
-                            const SizedBox(width: 10),
+                            // const SizedBox(width: 10),
                             Text(
                               'pasteFromClipboard'.tr(),
                               textAlign: TextAlign.center,

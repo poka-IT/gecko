@@ -1,10 +1,8 @@
 // ignore_for_file: file_names
 
 import 'dart:math';
-
 import 'package:confetti/confetti.dart';
 import 'package:easy_localization/easy_localization.dart';
-
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -91,17 +89,20 @@ Widget finishButton(BuildContext context) {
     width: 380 * ratio,
     height: 60 * ratio,
     child: ElevatedButton(
-        key: keyGoWalletsHome,
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white, elevation: 4,
-          backgroundColor: orangeC, // foreground
-        ),
-        onPressed: () {
-          Navigator.pushNamedAndRemoveUntil(
-              context, '/mywallets', ModalRoute.withName('/'));
-        },
-        child: Text("accessMyChest".tr(),
-            style:
-                TextStyle(fontSize: 22 * ratio, fontWeight: FontWeight.w600))),
+      key: keyGoWalletsHome,
+      style: ElevatedButton.styleFrom(
+        foregroundColor: Colors.white,
+        elevation: 4,
+        backgroundColor: orangeC,
+      ),
+      onPressed: () {
+        Navigator.pushNamedAndRemoveUntil(
+            context, '/mywallets', ModalRoute.withName('/'));
+      },
+      child: Text(
+        "accessMyChest".tr(),
+        style: TextStyle(fontSize: 22 * ratio, fontWeight: FontWeight.w600),
+      ),
+    ),
   );
 }

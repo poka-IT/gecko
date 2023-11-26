@@ -28,18 +28,27 @@ class WalletData extends HiveObject {
   bool isOwned;
 
   @HiveField(8)
-  bool isMember;
+  IdtyStatus identityStatus;
 
-  WalletData(
-      {required this.address,
-      this.chest,
-      this.number,
-      this.name,
-      this.derivation,
-      this.imageDefaultPath,
-      this.imageCustomPath,
-      this.isOwned = false,
-      this.isMember = false});
+  @HiveField(9)
+  double balance;
+
+  @HiveField(10)
+  List<int>? certs;
+
+  WalletData({
+    required this.address,
+    this.chest,
+    this.number,
+    this.name,
+    this.derivation,
+    this.imageDefaultPath,
+    this.imageCustomPath,
+    this.isOwned = false,
+    this.identityStatus = IdtyStatus.unknown,
+    this.balance = 0,
+    this.certs,
+  });
 
   // representation of WalletData when debugging
   @override
@@ -52,15 +61,47 @@ class WalletData extends HiveObject {
     return "$chest:$number:$name:$derivation:$imageDefaultPath";
   }
 
+  bool hasIdentity() {
+    return identityStatus == IdtyStatus.created ||
+        identityStatus == IdtyStatus.confirmed ||
+        identityStatus == IdtyStatus.validated;
+  }
+
+  bool isMembre() {
+    return identityStatus == IdtyStatus.validated;
+  }
+
+  bool exist() {
+    return balance != 0;
+  }
+
+  bool hasCustomImage() {
+    return imageCustomPath != null;
+  }
+
   // returns only the id part of the ':'-separated string
   List<int?> id() {
     return [chest, number];
   }
 }
 
-class NewWallet {
-  final String address;
-  final String password;
+@HiveType(typeId: 5)
+enum IdtyStatus {
+  @HiveField(0)
+  none,
 
-  NewWallet._(this.address, this.password);
+  @HiveField(1)
+  created,
+
+  @HiveField(2)
+  confirmed,
+
+  @HiveField(3)
+  validated,
+
+  @HiveField(4)
+  expired,
+
+  @HiveField(5)
+  unknown
 }

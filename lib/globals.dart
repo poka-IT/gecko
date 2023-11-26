@@ -8,10 +8,11 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:logger/logger.dart';
 
 // Version of box data
-const int dataVersion = 6;
+const int dataVersion = 7;
 
 late String appVersion;
 const int pinLength = 5;
+const int maxWalletsInSafe = 30;
 const String appLang = 'english';
 
 late Box<WalletData> walletBox;

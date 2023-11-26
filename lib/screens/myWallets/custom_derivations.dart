@@ -35,9 +35,7 @@ class _CustomDerivationState extends State<CustomDerivation> {
       for (var i = 0; i < 51; i += 1) i.toString()
     ];
 
-    final listWallets = myWalletProvider.readAllWallets();
-
-    for (WalletData wallet in listWallets) {
+    for (WalletData wallet in myWalletProvider.listWallets) {
       derivationList.remove(wallet.derivation.toString());
       if (wallet.derivation == -1) {
         derivationList.remove('root');
@@ -139,12 +137,6 @@ class _CustomDerivationState extends State<CustomDerivation> {
                     }
                     Navigator.pop(context);
                     Navigator.pop(context);
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(builder: (context) {
-                    //     return const WalletsHome();
-                    //   }),
-                    // );
                   }
                 },
                 child: Text(

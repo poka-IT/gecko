@@ -29,6 +29,8 @@ class TransactionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final newKey = keyID + 1;
+    final String? username = repository[2] == '' ? null : repository[2];
+
     return Padding(
       padding: const EdgeInsets.only(right: 0),
       child: ListTile(
@@ -53,7 +55,7 @@ class TransactionTile extends StatelessWidget {
                 TextSpan(
                   text: dateForm,
                 ),
-                if (repository[2] != '')
+                if (username != null)
                   TextSpan(
                     text: '  ·  ',
                     style: TextStyle(
@@ -62,7 +64,7 @@ class TransactionTile extends StatelessWidget {
                     ),
                   ),
                 TextSpan(
-                  text: repository[2],
+                  text: username,
                   style: TextStyle(
                       fontStyle: FontStyle.italic,
                       color: Colors.grey[600],
@@ -87,7 +89,7 @@ class TransactionTile extends StatelessWidget {
               PageNoTransit(builder: (context) {
                 return WalletViewScreen(
                   address: repository[1],
-                  username: repository[2] ?? '',
+                  username: username,
                 );
               }),
             );

@@ -42,17 +42,13 @@ class WalletOptions extends StatelessWidget {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    // sub.spawnBlock();
-    // sub.spawnBlock(0, 20);
 
-    log.d(walletOptions.address.text);
+    walletOptions.address.text = wallet.address;
 
     final currentChest = myWalletProvider.getCurrentChest();
-    bool isWalletNameIndexed =
+    final isWalletNameIndexed =
         duniterIndexer.walletNameIndexer[walletOptions.address.text] != null;
 
-    // final currentWallet = _myWalletProvider.getDefaultWallet();
-    // log.d(_walletOptions.getAddress(_currentChest, 3));
     log.d("Wallet options: $currentChest:${wallet.derivation}");
 
     return WillPopScope(
@@ -147,7 +143,8 @@ class WalletOptions extends StatelessWidget {
                                           wallet: wallet,
                                           size: 29,
                                           color: Colors.black,
-                                          fontWeight: wallet.isMember
+                                          fontWeight: wallet.identityStatus ==
+                                                  IdtyStatus.validated
                                               ? FontWeight.w500
                                               : FontWeight.w400,
                                           fontStyle: FontStyle.normal);
@@ -185,7 +182,9 @@ class WalletOptions extends StatelessWidget {
                                 address: walletProvider.address.text, size: 24),
                             const SizedBox(width: 30),
                             InkWell(
-                              onTap: () => isWalletNameIndexed
+                              onTap: () => sub.certsCounterCache[
+                                          walletProvider.address.text] !=
+                                      null
                                   ? {
                                       Navigator.push(
                                         context,
@@ -194,9 +193,10 @@ class WalletOptions extends StatelessWidget {
                                               address:
                                                   walletProvider.address.text,
                                               username: duniterIndexer
-                                                      .walletNameIndexer[
-                                                  walletProvider
-                                                      .address.text]!);
+                                                          .walletNameIndexer[
+                                                      walletProvider
+                                                          .address.text] ??
+                                                  '');
                                         }),
                                       ),
                                     }
@@ -263,28 +263,16 @@ class WalletOptions extends StatelessWidget {
                                   walletOptions,
                                   currentChest),
                               SizedBox(height: 17 * ratio),
-                              // walletProvider.isMember(context, _walletOptions.address.text)
-                              FutureBuilder(
-                                  future:
-                                      sub.isMember(walletOptions.address.text),
-                                  builder: (BuildContext context,
-                                      AsyncSnapshot<bool> isMember) {
-                                    if (isMember.connectionState !=
-                                            ConnectionState.done ||
-                                        isMember.hasError) {
-                                      return const Text('');
-                                    }
-                                    return Column(children: [
-                                      if (!walletProvider.isDefaultWallet &&
-                                          !isMember.data!)
-                                        deleteWallet(context, walletProvider,
-                                            currentChest)
-                                      else
-                                        const SizedBox(),
-                                      if (isMember.data!)
-                                        const ManageMembershipButton()
-                                    ]);
-                                  }),
+                              Column(children: [
+                                if (!walletProvider.isDefaultWallet &&
+                                    !wallet.isMembre())
+                                  deleteWallet(
+                                      context, walletProvider, currentChest)
+                                else
+                                  const SizedBox(),
+                                if (wallet.isMembre())
+                                  const ManageMembershipButton()
+                              ])
                             ]);
                           }),
                         ]),
@@ -352,10 +340,11 @@ class WalletOptions extends StatelessWidget {
   Widget confirmIdentityButton(WalletOptionsProvider walletProvider) {
     return Consumer<SubstrateSdk>(builder: (context, sub, _) {
       return FutureBuilder(
-          future: sub.idtyStatus(walletProvider.address.text),
-          initialData: '',
-          builder: (context, snapshot) {
-            if (snapshot.data == 'Created') {
+          future: sub.idtyStatus([walletProvider.address.text]),
+          initialData: const [IdtyStatus.unknown],
+          builder:
+              (BuildContext context, AsyncSnapshot<List<IdtyStatus>> snapshot) {
+            if (snapshot.data!.first == IdtyStatus.created) {
               return Column(children: [
                 SizedBox(
                   width: 320,
@@ -554,7 +543,7 @@ class WalletOptions extends StatelessWidget {
     // WalletData defaultWallet = _myWalletProvider.getDefaultWallet()!;
     // defaultWallet = wallet;
     await sub.setCurrentWallet(wallet);
-    myWalletProvider.readAllWallets(currentChest);
+    await myWalletProvider.readAllWallets(currentChest);
     myWalletProvider.reload();
     walletOptions.reload();
   }
@@ -587,9 +576,9 @@ class WalletOptions extends StatelessWidget {
             onTap: canDelete
                 ? () async {
                     await walletOptions.deleteWallet(context, wallet);
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) async {
                       myWalletProvider.listWallets =
-                          myWalletProvider.readAllWallets(currentChest);
+                          await myWalletProvider.readAllWallets(currentChest);
                       myWalletProvider.reload();
                     });
                   }

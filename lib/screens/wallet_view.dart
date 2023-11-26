@@ -29,7 +29,7 @@ class WalletViewScreen extends StatelessWidget {
       {required this.address, required this.username, this.avatar, Key? key})
       : super(key: key);
   final String address;
-  final String username;
+  final String? username;
   final Image? avatar;
   final double buttonSize = 100;
   final double buttonFontSize = 18;
@@ -194,7 +194,7 @@ class WalletViewScreen extends StatelessWidget {
                       }
                     }
 
-                    final toStatus = snapshot.data!['toStatus'] ?? 0;
+                    final toStatus = snapshot.data!['toStatus'];
 
                     return Visibility(
                       visible: (snapshot.data != {}),
@@ -272,7 +272,7 @@ class WalletViewScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 9),
                             Text(
-                              toStatus == 0
+                              toStatus == null
                                   ? "certify".tr()
                                   : "createIdentity".tr(),
                               textAlign: TextAlign.center,

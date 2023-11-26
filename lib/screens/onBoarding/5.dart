@@ -9,12 +9,12 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/screens/myWallets/show_seed.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/screens/onBoarding/6.dart';
 import 'package:gecko/widgets/commons/fader_transition.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
-import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 
 AsyncSnapshot<List>? mnemoList;
@@ -63,14 +63,13 @@ class _ChooseChestState extends State<OnboardingStepFive> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                // const SizedBox(height: 10),
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) {
                         return PrintWallet(
-                            generateWalletProvider.generatedMnemonic);
+                            generateWalletProvider.generatedMnemonic!);
                       }),
                     );
                   },
@@ -79,7 +78,6 @@ class _ChooseChestState extends State<OnboardingStepFive> {
                     height: 42 * ratio,
                   ),
                 ),
-
                 SizedBox(
                   height: 40,
                   width: 120,
@@ -219,44 +217,6 @@ Widget arrayCell(dataWord) {
       ),
     ]),
   );
-}
-
-class PrintWallet extends StatelessWidget {
-  const PrintWallet(this.sentence, {Key? key}) : super(key: key);
-
-  final String? sentence;
-
-  @override
-  Widget build(BuildContext context) {
-    final generateWalletProvider =
-        Provider.of<GenerateWalletsProvider>(context, listen: false);
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
-              onPressed: () {
-                Navigator.pop(context);
-              }),
-          backgroundColor: yellowC,
-          foregroundColor: Colors.black,
-          toolbarHeight: 60 * ratio,
-          title: const SizedBox(
-            height: 22,
-            child: Text(
-              'printMyMnemonic',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ),
-        body: PdfPreview(
-          canDebug: false,
-          canChangeOrientation: false,
-          build: (format) => generateWalletProvider.printWallet(mnemoList),
-        ),
-      ),
-    );
-  }
 }
 
 Widget nextButton(

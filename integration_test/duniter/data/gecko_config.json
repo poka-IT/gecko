@@ -1,0 +1,38 @@
+{
+  "ud": 1000,
+  "first_ud": 6000,
+  "first_ud_reeval": 600000,
+  "parameters": {
+    "babe_epoch_duration": 30,
+    "cert_period": 15,
+    "cert_max_by_issuer": 10,
+    "cert_min_received_cert_to_issue_cert": 2,
+    "cert_validity_period": 1000,
+    "idty_confirm_period": 40,
+    "idty_creation_period": 50,
+    "membership_period": 1000,
+    "pending_membership_period": 500,
+    "ud_creation_period": 10,
+    "ud_reeval_period": 50,
+    "smith_cert_period": 15,
+    "smith_cert_max_by_issuer": 8,
+    "smith_cert_min_received_cert_to_issue_cert": 2,
+    "smith_cert_validity_period": 1000,
+    "smith_membership_period": 1000,
+    "smith_pending_membership_period": 500,
+    "smith_wot_first_cert_issuable_on": 4,
+    "smith_wot_min_cert_for_membership": 3,
+    "wot_first_cert_issuable_on": 0,
+    "wot_min_cert_for_create_idty_right": 3,
+    "wot_min_cert_for_membership": 3
+  },
+  "clique_smiths": [
+    { "name": "test1" },
+    { "name": "test2" },
+    { "name": "test3" },
+    { "name": "test4" }
+  ],
+  "sudo_key": "5FeggKqw2AbnGZF9Y9WPM2QTgzENS3Hit94Ewgmzdg5a3LNa",
+  "treasury_funder_address": "5FeggKqw2AbnGZF9Y9WPM2QTgzENS3Hit94Ewgmzdg5a3LNa",
+  "technical_committee": ["test1", "test2", "test3"]
+}

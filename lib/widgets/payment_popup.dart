@@ -13,10 +13,11 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/balance.dart';
+import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-void paymentPopup(BuildContext context, String toAddress, String username) {
+void paymentPopup(BuildContext context, String toAddress, String? username) {
   final walletViewProvider =
       Provider.of<WalletsProfilesProvider>(context, listen: false);
   final myWalletProvider =
@@ -27,7 +28,8 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
   var defaultWallet = myWalletProvider.getDefaultWallet();
   bool canValidate = false;
   final amountFocus = FocusNode();
-  final dropdownKey = GlobalKey();
+
+  walletViewProvider.payAmount.text = '';
 
   Future executeTransfert() async {
     String? pin;
@@ -56,14 +58,15 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) {
-          return const TransactionInProgress();
+          return TransactionInProgress(
+              toAddress: toAddress, toUsername: username);
         }),
       );
     }
   }
 
-  myWalletProvider.readAllWallets();
-  log.d(myWalletProvider.listWallets);
+  myWalletProvider.readAllWallets().then((value) => myWalletProvider.listWallets
+      .sort((a, b) => a.derivation!.compareTo(b.derivation!)));
 
   showModalBottomSheet<void>(
       shape: const RoundedRectangleBorder(
@@ -128,6 +131,7 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
                                   fontSize: 26, fontWeight: FontWeight.w700),
                             ),
                             IconButton(
+                              key: keyPopButton,
                               iconSize: 40,
                               icon: const Icon(Icons.cancel_outlined),
                               onPressed: () {
@@ -145,68 +149,70 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
                       ),
                       const SizedBox(height: 10),
                       Consumer<SubstrateSdk>(builder: (context, sub, _) {
-                        // TODO: about keyboard dismiss issue, should try this: https://stackoverflow.com/a/76352647/8301867
                         return DropdownButton(
-                          dropdownColor: const Color(0xffffeed1),
-                          elevation: 12,
-                          key: dropdownKey,
-                          value: defaultWallet,
-                          // onTap: () async {
-                          //   await Future.delayed(const Duration(milliseconds: 10));
-                          //   amountFocus.requestFocus();
-                          // },
-                          selectedItemBuilder: (_) {
-                            return myWalletProvider.listWallets
+                            dropdownColor: const Color(0xffffeed1),
+                            elevation: 12,
+                            key: keyDropdownWallets,
+                            value: defaultWallet,
+                            menuMaxHeight: 300,
+                            onTap: () {
+                              FocusScope.of(context).requestFocus(amountFocus);
+                            },
+                            selectedItemBuilder: (_) {
+                              return myWalletProvider.listWallets
+                                  .map((WalletData wallet) {
+                                return Container(
+                                  width: 408,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: Colors.blueAccent.shade200,
+                                        width: 2),
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(10.0)),
+                                  ),
+                                  padding: const EdgeInsets.all(10),
+                                  child: Visibility(
+                                    visible:
+                                        wallet.address == defaultWallet.address,
+                                    child: Row(children: [
+                                      NameByAddress(
+                                          wallet: wallet,
+                                          fontStyle: FontStyle.normal),
+                                      const Spacer(),
+                                      Balance(
+                                          address: wallet.address, size: 20),
+                                    ]),
+                                  ),
+                                );
+                              }).toList();
+                            },
+                            onChanged: (WalletData? newSelectedWallet) async {
+                              defaultWallet = newSelectedWallet!;
+                              await sub.setCurrentWallet(newSelectedWallet);
+                              sub.reload();
+                              amountFocus.requestFocus();
+                              setState(() {});
+                            },
+                            items: myWalletProvider.listWallets
                                 .map((WalletData wallet) {
-                              return Container(
-                                width: 408,
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color: Colors.blueAccent.shade200,
-                                      width: 2),
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(10.0)),
+                              return DropdownMenuItem(
+                                value: wallet,
+                                key: keySelectThisWallet(wallet.address),
+                                child: Container(
+                                  color: const Color(0xffffeed1),
+                                  width: 408,
+                                  height: 80,
+                                  padding: const EdgeInsets.all(10),
+                                  child: Row(children: [
+                                    NameByAddress(
+                                        wallet: wallet,
+                                        fontStyle: FontStyle.normal),
+                                    const Spacer(),
+                                    Balance(address: wallet.address, size: 20),
+                                  ]),
                                 ),
-                                padding: const EdgeInsets.all(10),
-                                child: Row(children: [
-                                  Text(g1WalletsBox
-                                          .get(wallet.address)
-                                          ?.username ??
-                                      wallet.name!),
-                                  const Spacer(),
-                                  Balance(address: wallet.address, size: 20),
-                                ]),
                               );
-                            }).toList();
-                          },
-                          onChanged: (WalletData? newSelectedWallet) async {
-                            defaultWallet = newSelectedWallet!;
-                            await sub.setCurrentWallet(newSelectedWallet);
-                            sub.reload();
-                            amountFocus.requestFocus();
-                            setState(() {});
-                          },
-                          items: myWalletProvider.listWallets
-                              .map((WalletData wallet) {
-                            return DropdownMenuItem(
-                              value: wallet,
-                              child: Container(
-                                color: const Color(0xffffeed1),
-                                width: 408,
-                                height: 80,
-                                padding: const EdgeInsets.all(10),
-                                child: Row(children: [
-                                  Text(g1WalletsBox
-                                          .get(wallet.address)
-                                          ?.username ??
-                                      wallet.name!),
-                                  const Spacer(),
-                                  Balance(address: wallet.address, size: 20),
-                                ]),
-                              ),
-                            );
-                          }).toList(),
-                        );
+                            }).toList());
                       }),
                       const SizedBox(height: 12),
                       Row(
@@ -223,9 +229,7 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
                             children: [
                               const SizedBox(height: 2),
                               Text(
-                                username == ''
-                                    ? getShortPubkey(toAddress)
-                                    : username,
+                                username ?? getShortPubkey(toAddress),
                                 style: const TextStyle(
                                   fontSize: 21,
                                   fontWeight: FontWeight.w600,
@@ -268,53 +272,61 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      TextField(
-                        textInputAction: TextInputAction.done,
-                        onEditingComplete: () async =>
-                            canValidate ? await executeTransfert() : null,
-                        key: keyAmountField,
-                        controller: walletViewProvider.payAmount,
-                        autofocus: true,
-                        focusNode: amountFocus,
-                        maxLines: 1,
-                        textAlign: TextAlign.center,
-                        keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
-                        onChanged: (_) async {
-                          fees = await sub.txFees(
-                              defaultWallet.address,
-                              toAddress,
-                              double.parse(
-                                  walletViewProvider.payAmount.text == ''
-                                      ? '0'
-                                      : walletViewProvider.payAmount.text));
-                          log.d(fees);
-                          setState(() {});
+                      Focus(
+                        onFocusChange: (focused) {
+                          setState(() {
+                            FocusScope.of(context).requestFocus(amountFocus);
+                          });
                         },
-                        inputFormatters: <TextInputFormatter>[
-                          FilteringTextInputFormatter.deny(',',
-                              replacementString: '.'),
-                          FilteringTextInputFormatter.allow(
-                              RegExp(r'(^\d+\.?\d{0,2})')),
-                        ],
-                        decoration: InputDecoration(
-                          hintText: '0.00',
-                          suffix: Text(isUdUnit
-                              ? 'ud'.tr(args: [''])
-                              : currencyName), // udUnitDisplay(40),
-                          filled: true,
-                          fillColor: Colors.transparent,
-                          focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.grey[500]!, width: 2),
-                            borderRadius: BorderRadius.circular(8),
+                        child: TextField(
+                          textInputAction: TextInputAction.done,
+                          onEditingComplete: () async =>
+                              canValidate ? await executeTransfert() : null,
+                          key: keyAmountField,
+                          controller: walletViewProvider.payAmount,
+                          autofocus: true,
+                          focusNode: amountFocus,
+                          maxLines: 1,
+                          textAlign: TextAlign.center,
+                          autocorrect: false,
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
+                          onChanged: (_) async {
+                            fees = await sub.txFees(
+                                defaultWallet.address,
+                                toAddress,
+                                double.parse(
+                                    walletViewProvider.payAmount.text == ''
+                                        ? '0'
+                                        : walletViewProvider.payAmount.text));
+                            log.d(fees);
+                            setState(() {});
+                          },
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.deny(',',
+                                replacementString: '.'),
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'(^\d+\.?\d{0,2})')),
+                          ],
+                          decoration: InputDecoration(
+                            hintText: '0.00',
+                            suffix: Text(isUdUnit
+                                ? 'ud'.tr(args: [''])
+                                : currencyName), // udUnitDisplay(40),
+                            filled: true,
+                            fillColor: Colors.transparent,
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.grey[500]!, width: 2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            contentPadding: const EdgeInsets.all(20),
                           ),
-                          contentPadding: const EdgeInsets.all(20),
-                        ),
-                        style: const TextStyle(
-                          fontSize: 35,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w600,
+                          style: const TextStyle(
+                            fontSize: 35,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                       const Spacer(),
@@ -328,7 +340,10 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
                             backgroundColor: orangeC, // foreground
                           ),
                           onPressed: canValidate
-                              ? () async => await executeTransfert()
+                              ? () async {
+                                  Navigator.pop(context);
+                                  await executeTransfert();
+                                }
                               : null,
                           child: Text(
                             'executeTheTransfer'.tr(),
@@ -343,8 +358,9 @@ void paymentPopup(BuildContext context, String toAddress, String username) {
             ),
           );
         });
-      }).then((value) => walletViewProvider.payAmount.text = '');
+      });
 }
+//).then((value) => walletViewProvider.payAmount.text = ''
 
 Future<void> infoFeesPopup(BuildContext context) async {
   return showDialog<void>(

@@ -98,6 +98,8 @@ const keyCesiumPassword = Key('keyCesiumPassword');
 const keySelectWallet = Key('keySelectWallet');
 const keyCesiumIdVisible = Key('keyCesiumIdVisible');
 
+const keyDropdownWallets = Key('keyDropdownKey');
+
 // Items keys
 Key keyTransaction(int keyId) => Key('keyTransaction$keyId');
 Key keyMnemonicWord(String word) => Key('keyMnemonicWord$word');

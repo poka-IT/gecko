@@ -19,7 +19,7 @@ import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
 import 'package:gecko/widgets/drawer.dart';
-import 'package:gecko/widgets/home_buttons.dart';
+import 'package:gecko/widgets/buttons/home_buttons.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -118,14 +118,6 @@ class _HomeScreenState extends State<HomeScreen> {
       isTall = true;
       ratio = 1.125;
     }
-
-    //TODO: finish to implement multiqueries
-    
-    // final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    // sub.getBalanceMulti([
-    //   '5CQ8T4qpbYJq7uVsxGPQ5q2df7x3Wa4aRY6HUWMBYjfLZhnn',
-    //   '5Dq8xjvkmbz7q4g2LbZgyExD26VSCutfEc6n4W4AfQeVHZqz'
-    // ]);
 
     return Scaffold(
         resizeToAvoidBottomInset: false,

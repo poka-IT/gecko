@@ -33,6 +33,10 @@ class NameByAddress extends StatelessWidget {
       return WalletName(wallet: wallet, size: size, color: color);
     }
 
+    // if (g1WalletsBox.get(wallet.address)?.username != null) {
+    //   return Text(g1WalletsBox.get(wallet.address)!.username!);
+    // }
+
     final httpLink = HttpLink(
       '$indexerEndpoint/v1/graphql',
     );
@@ -47,12 +51,10 @@ class NameByAddress extends StatelessWidget {
       client: client,
       child: Query(
           options: QueryOptions(
-            document: gql(
-                getNameByAddressQ), // this is the query string you just created
+            document: gql(getNameByAddressQ),
             variables: {
               'address': wallet.address,
             },
-            // pollInterval: const Duration(seconds: 10),
           ),
           builder: (QueryResult result,
               {VoidCallback? refetch, FetchMore? fetchMore}) {
@@ -75,8 +77,6 @@ class NameByAddress extends StatelessWidget {
                     address: wallet.address,
                     username:
                         duniterIndexer.walletNameIndexer[wallet.address]));
-
-            // log.d(g1WalletsBox.toMap().values.first.username);
 
             if (duniterIndexer.walletNameIndexer[wallet.address] == null) {
               return WalletName(wallet: wallet, size: size, color: color);

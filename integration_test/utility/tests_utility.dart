@@ -53,6 +53,15 @@ Future sleep([int time = 1000]) async {
   await Future.delayed(Duration(milliseconds: time));
 }
 
+Future pump(
+    {Duration duration = const Duration(milliseconds: 300),
+    int number = 1}) async {
+  for (int i = 0; i < number; i++) {
+    log.d("pump $i");
+    await tester.pump(duration = duration);
+  }
+}
+
 Future<String> clipPaste() async =>
     (await Clipboard.getData('text/plain'))?.text ?? '';
 
@@ -146,7 +155,8 @@ Future<void> waitFor(String text,
     }
 
     if (settle) {
-      await tester.pumpAndSettle(Duration(milliseconds: pumpDuration));
+      await tester.pumpAndSettle(Duration(milliseconds: pumpDuration),
+          EnginePhase.sendSemanticsUpdate, timeout);
     }
     await Future.delayed(const Duration(milliseconds: 100));
   } while (reverse ? finder.evaluate().isNotEmpty : finder.evaluate().isEmpty);
@@ -155,9 +165,9 @@ Future<void> waitFor(String text,
 
 // Test if text is visible on screen, return a boolean
 Future<bool> isPresent(String text,
-    {Duration timeout = const Duration(seconds: 1)}) async {
+    {Duration timeout = const Duration(seconds: 1), bool settle = true}) async {
   try {
-    await waitFor(text, timeout: timeout);
+    await waitFor(text, timeout: timeout, settle: settle);
     humanRead();
     return true;
   } catch (exception) {
@@ -278,8 +288,8 @@ Future<WalletData> _addImportAccount(
 Future bkDeleteAllWallets() async {
   final myWalletProvider =
       Provider.of<MyWalletsProvider>(homeContext, listen: false);
-  final isWalletsPresents =
-      await isPresent('Scanner un', timeout: const Duration(milliseconds: 300));
+  final isWalletsPresents = await isPresent('scanQRCode'.tr(),
+      timeout: const Duration(milliseconds: 300));
   if (isWalletsPresents) {
     await walletBox.clear();
     await chestBox.clear();

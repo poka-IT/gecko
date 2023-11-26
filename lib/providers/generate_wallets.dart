@@ -9,23 +9,19 @@ import 'package:gecko/models/bip39_words.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:provider/provider.dart';
 import "package:unorm_dart/unorm_dart.dart" as unorm;
 
 class GenerateWalletsProvider with ChangeNotifier {
   GenerateWalletsProvider();
-  // NewWallet generatedWallet;
-  durt.NewWallet? actualWallet;
 
   final walletNameFocus = FocusNode();
   Color? askedWordColor = Colors.black;
   bool isAskedWordValid = false;
   int scanedValidWalletNumber = -1;
   int scanedWalletNumber = -1;
-  int numberScan = 20;
+  int numberScan = 60;
 
   late int nbrWord;
   String? nbrWordAlpha;
@@ -151,77 +147,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     return pin.text;
   }
 
-  Future<Uint8List> printWallet(AsyncSnapshot<List>? mnemoList) async {
-    final ByteData fontData =
-        await rootBundle.load("assets/OpenSans-Regular.ttf");
-    final pw.Font ttf = pw.Font.ttf(fontData.buffer.asByteData());
-    final pdf = pw.Document();
-
-    // const imageProvider = AssetImage('assets/icon/gecko_final.png');
-    // final geckoLogo = await flutterImageProvider(imageProvider);
-
-    pw.Widget arrayCell(dataWord) {
-      return pw.SizedBox(
-        width: 120,
-        child: pw.Column(children: <pw.Widget>[
-          pw.Text(
-            dataWord.split(':')[0],
-            style: pw.TextStyle(
-                fontSize: 15, color: const PdfColor(0.5, 0, 0), font: ttf),
-          ),
-          pw.Text(
-            dataWord.split(':')[1],
-            style: pw.TextStyle(
-                fontSize: 20, color: const PdfColor(0, 0, 0), font: ttf),
-          ),
-          pw.SizedBox(height: 10)
-        ]),
-      );
-    }
-
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        build: (context) {
-          return pw.Column(
-            // mainAxisAlignment: pw.MainAxisAlignment.center,
-            // mainAxisSize: pw.MainAxisSize.max,
-            // crossAxisAlignment: pw.CrossAxisAlignment.center,
-            children: <pw.Widget>[
-              pw.Row(children: <pw.Widget>[
-                arrayCell(mnemoList!.data![0]),
-                arrayCell(mnemoList.data![1]),
-                arrayCell(mnemoList.data![2]),
-                arrayCell(mnemoList.data![3]),
-              ]),
-              pw.Row(children: <pw.Widget>[
-                arrayCell(mnemoList.data![4]),
-                arrayCell(mnemoList.data![5]),
-                arrayCell(mnemoList.data![6]),
-                arrayCell(mnemoList.data![7]),
-              ]),
-              pw.Row(children: <pw.Widget>[
-                arrayCell(mnemoList.data![8]),
-                arrayCell(mnemoList.data![9]),
-                arrayCell(mnemoList.data![10]),
-                arrayCell(mnemoList.data![11])
-              ]),
-              pw.Expanded(
-                  child: pw.Align(
-                      alignment: pw.Alignment.bottomCenter,
-                      child: pw.Text(
-                        "Gardez cette feuille préciseusement, à l’abri des lézards indiscrets.",
-                        style: pw.TextStyle(fontSize: 15, font: ttf),
-                      )))
-            ],
-          );
-        },
-      ),
-    );
-
-    return pdf.save();
-  }
-
   Future<void> generateCesiumWalletPubkey(
       String cesiumID, String cesiumPWD) async {
     cesiumWallet = durt.CesiumWallet(cesiumID, cesiumPWD);
@@ -244,7 +169,6 @@ class GenerateWalletsProvider with ChangeNotifier {
   void resetCesiumImportView() {
     cesiumID.text = cesiumPWD.text = cesiumPubkey.text = pin.text = '';
     canImport = isCesiumIDVisible = isCesiumPWDVisible = false;
-    actualWallet = null;
     notifyListeners();
   }
 
@@ -374,6 +298,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     bool isAlive = false;
     scanedValidWalletNumber = 0;
     scanedWalletNumber = 0;
+    Map<String, int> addressToScan = {};
     notifyListeners();
 
     if (!sub.nodeConnected) {
@@ -388,37 +313,38 @@ class GenerateWalletsProvider with ChangeNotifier {
       isAlive = true;
     }
 
-    for (var derivationNbr in [for (var i = 0; i < numberScan; i += 1) i]) {
+    for (int derivationNbr in [for (var i = 0; i < numberScan; i += 1) i]) {
       final addressData = await sub.sdk.api.keyring.addressFromMnemonic(
           sub.currencyParameters['ss58']!,
           cryptoType: CryptoType.sr25519,
           mnemonic: generatedMnemonic!,
           derivePath: '//$derivationNbr');
+      addressToScan.putIfAbsent(addressData.address!, () => derivationNbr);
+    }
 
-      final Map balance = await sub.getBalance(addressData.address!).timeout(
-            const Duration(seconds: 1),
-            onTimeout: () => {'transferableBalance': 0},
-          );
-      // const balance = 0;
+    final balanceList =
+        await sub.getBalanceMulti(addressToScan.keys.toList()).timeout(
+              const Duration(seconds: 20),
+              onTimeout: () => {},
+            );
 
-      log.d(
-          "${addressData.address!}: ${balance['transferableBalance']} $currencyName");
-      if (balance['transferableBalance'] != 0) {
+    for (String scannedWallet in balanceList.keys) {
+      if (balanceList[scannedWallet]!['transferableBalance'] != 0) {
         isAlive = true;
         String walletName = scanedValidWalletNumber == 0
             ? 'currentWallet'.tr()
             : '${'wallet'.tr()} ${scanedValidWalletNumber + 1}';
         await sub.importAccount(
             mnemonic: generatedMnemonic!,
-            derivePath: '//$derivationNbr',
+            derivePath: "//${addressToScan[scannedWallet]}",
             password: pin.text);
 
         WalletData myWallet = WalletData(
             chest: currentChestNumber,
-            address: addressData.address!,
+            address: scannedWallet,
             number: scanedValidWalletNumber,
             name: walletName,
-            derivation: derivationNbr,
+            derivation: addressToScan[scannedWallet],
             imageDefaultPath: '${scanedValidWalletNumber % 4}.png',
             isOwned: true);
         await walletBox.put(myWallet.address, myWallet);
@@ -427,6 +353,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       scanedWalletNumber = scanedWalletNumber + 1;
       notifyListeners();
     }
+
     log.d(scanedWalletNumber);
     scanedWalletNumber = -1;
     scanedValidWalletNumber = -1;
@@ -444,8 +371,6 @@ class GenerateWalletsProvider with ChangeNotifier {
           const Duration(seconds: 1),
           onTimeout: () => {},
         );
-
-    log.d(balance);
 
     log.d(
         "${addressData.address!}: ${balance['transferableBalance']} $currencyName");

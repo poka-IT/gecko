@@ -13,8 +13,8 @@ class MyWalletsProvider with ChangeNotifier {
   late String mnemonic;
   int? pinLenght;
   bool isNewDerivationLoading = false;
-  String lastFlyBy = '';
-  String dragAddress = '';
+  WalletData? lastFlyBy;
+  WalletData? dragAddress;
   bool isPinValid = false;
   bool isPinLoading = true;
 
@@ -35,14 +35,32 @@ class MyWalletsProvider with ChangeNotifier {
     }
   }
 
-  List<WalletData> readAllWallets([int? chest]) {
+  Future<List<WalletData>> readAllWallets([int? chest]) async {
+    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
     chest = chest ?? configBox.get('currentChest') ?? 0;
     listWallets.clear();
-    walletBox.toMap().forEach((key, value) {
-      if (value.chest == chest) {
-        listWallets.add(value);
+    final wallets = walletBox.toMap().values.toList();
+    Map<String, WalletData> walletsToScan = {};
+    for (var walletFromBox in wallets) {
+      if (walletFromBox.chest == chest) {
+        if (walletFromBox.identityStatus == IdtyStatus.unknown) {
+          walletsToScan.putIfAbsent(
+              walletFromBox.address, (() => walletFromBox));
+        } else {
+          listWallets.add(walletFromBox);
+        }
       }
-    });
+    }
+
+    // update all idty status in lists
+    int n = 0;
+    final idtyStatusList = await sub.idtyStatus(walletsToScan.keys.toList());
+    for (final wallet in walletsToScan.values) {
+      wallet.identityStatus = idtyStatusList[n];
+      walletBox.put(wallet.address, wallet);
+      listWallets.add(wallet);
+      n++;
+    }
 
     return listWallets;
   }
@@ -104,10 +122,8 @@ class MyWalletsProvider with ChangeNotifier {
 
         myWalletProvider.pinCode = '';
 
-        await Navigator.of(context).pushNamedAndRemoveUntil(
-          '/',
-          ModalRoute.withName('/'),
-        );
+        await Navigator.of(context)
+            .pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
       }
       return 0;
     } catch (e) {
@@ -120,7 +136,7 @@ class MyWalletsProvider with ChangeNotifier {
     isNewDerivationLoading = true;
     notifyListeners();
 
-    final List idList = getNextWalletNumberAndDerivation();
+    final List idList = await getNextWalletNumberAndDerivation();
     int newWalletNbr = idList[0];
     int newDerivationNbr = number ?? idList[1];
 
@@ -143,6 +159,7 @@ class MyWalletsProvider with ChangeNotifier {
         isOwned: true);
 
     await walletBox.put(newWallet.address, newWallet);
+    await readAllWallets();
 
     isNewDerivationLoading = false;
     notifyListeners();
@@ -157,7 +174,7 @@ class MyWalletsProvider with ChangeNotifier {
     int newWalletNbr;
     int? chest = getCurrentChest();
 
-    List<WalletData> walletConfig = readAllWallets(chest);
+    List<WalletData> walletConfig = await readAllWallets(chest);
     walletConfig.sort((p1, p2) {
       return Comparable.compare(p1.number!, p2.number!);
     });
@@ -189,22 +206,21 @@ class MyWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  List<int> getNextWalletNumberAndDerivation(
-      {int? chestNumber, bool isOneshoot = false}) {
+  Future<List<int>> getNextWalletNumberAndDerivation(
+      {int? chestNumber, bool isOneshoot = false}) async {
     int newDerivationNbr = 0;
     int newWalletNbr = 0;
 
     chestNumber ??= getCurrentChest();
 
-    List<WalletData> walletConfig = readAllWallets(chestNumber);
-    walletConfig.sort((p1, p2) {
+    listWallets.sort((p1, p2) {
       return Comparable.compare(p1.number!, p2.number!);
     });
 
-    if (walletConfig.isEmpty) {
+    if (listWallets.isEmpty) {
       newDerivationNbr = 2;
     } else {
-      WalletData lastWallet = walletConfig.reduce(
+      WalletData lastWallet = listWallets.reduce(
           (curr, next) => curr.derivation! > next.derivation! ? curr : next);
 
       if (lastWallet.derivation == -1) {
@@ -213,7 +229,7 @@ class MyWalletsProvider with ChangeNotifier {
         newDerivationNbr = lastWallet.derivation! + (isOneshoot ? 1 : 2);
       }
 
-      newWalletNbr = walletConfig.last.number! + 1;
+      newWalletNbr = listWallets.last.number! + 1;
     }
 
     return [newWalletNbr, newDerivationNbr];

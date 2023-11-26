@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously, body_might_complete_normally_catch_error
 
+import 'dart:convert';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/foundation.dart';
@@ -35,7 +37,6 @@ class SubstrateSdk with ChangeNotifier {
   bool importIsLoading = false;
   int blocNumber = 0;
   bool isLoadingEndpoint = false;
-  String debugConnection = '';
   String transactionStatus = '';
   final int initSs58 = 42;
   Map<String, int> currencyParameters = {};
@@ -51,7 +52,7 @@ class SubstrateSdk with ChangeNotifier {
 
   /////////////////////////////////////
   ////////// 1: API METHODS ///////////
-  /////////////////////////////////////
+  /////////////////////////////////////3
 
   Future<String> _executeCall(TxInfoData txInfo, txOptions, String password,
       [String? rawParams]) async {
@@ -70,10 +71,10 @@ class SubstrateSdk with ChangeNotifier {
       );
       log.d(hash);
       if (hash.isEmpty) {
-        transactionStatus = 'timeout';
+        transactionStatus = 'Exception: timeout';
         notifyListeners();
 
-        return 'timeout';
+        return 'Exception: timeout';
       } else {
         // Success !
         transactionStatus = hash.toString();
@@ -91,10 +92,11 @@ class SubstrateSdk with ChangeNotifier {
 
   Future _getStorage(String call) async {
     try {
+      // log.d(call);
       return await sdk.webView!.evalJavascript('api.query.$call');
     } catch (e) {
       log.e("_getStorage error: $e");
-      return Future(() {});
+      throw Exception("_getStorage error: $e");
     }
   }
 
@@ -138,12 +140,21 @@ class SubstrateSdk with ChangeNotifier {
   ////////// 2: GET ONCHAIN STORAGE //////////
   ////////////////////////////////////////////
 
-  Future<int> _getIdentityIndexOf(String address) async {
-    return await _getStorage('identity.identityIndexOf("$address")') ?? 0;
+  Future<int?> _getIdentityIndexOf(String address) async {
+    return await _getStorage('identity.identityIndexOf("$address")');
   }
 
-  Future<List<int>> getCertsCounter(String address) async {
+  Future<List<int?>> _getIdentityIndexOfMulti(List<String> addresses) async {
+    String jsonString = jsonEncode(addresses);
+    return List<int?>.from(
+        await _getStorage('identity.identityIndexOf.multi($jsonString)'));
+  }
+
+  Future<List<int>?> getCertsCounter(String address) async {
     final idtyIndex = await _getIdentityIndexOf(address);
+    if (idtyIndex == null) {
+      return null;
+    }
     final certsReceiver =
         await _getStorage('cert.storageIdtyCertMeta($idtyIndex)') ?? [];
 
@@ -167,7 +178,7 @@ class SubstrateSdk with ChangeNotifier {
     final idtyIndexFrom = await _getIdentityIndexOf(from);
     final idtyIndexTo = await _getIdentityIndexOf(to);
 
-    if (idtyIndexFrom == 0 || idtyIndexTo == 0) return 0;
+    if (idtyIndexFrom == null || idtyIndexTo == null) return 0;
 
     final List certData =
         await _getStorage('cert.certsByReceiver($idtyIndexTo)') ?? [];
@@ -200,14 +211,48 @@ class SubstrateSdk with ChangeNotifier {
     return balanceRatio;
   }
 
-  Future getBalanceMulti(List addresses) async {
+  Future<Map<String, Map<String, double>>> getBalanceMulti(
+      List<String> addresses) async {
     List stringifyAddresses = [];
     for (var element in addresses) {
       stringifyAddresses.add('"$element"');
     }
-    final List balanceGlobal =
-        await _getStorage('system.account.multi($stringifyAddresses)');
-    log.d('debug multi: $balanceGlobal');
+
+    // Get onchain storage values
+    final List<Map> balanceGlobalMulti =
+        (await _getStorage('system.account.multi($stringifyAddresses)') as List)
+            .map((dynamic e) => e as Map<String, dynamic>)
+            .toList();
+
+    final List<int?> idtyIndexList = (await _getStorage(
+            'identity.identityIndexOf.multi($stringifyAddresses)') as List)
+        .map((dynamic e) => e as int?)
+        .toList();
+
+    //FIXME: With local dev duniter node only, need to switch null values by unused init as index to have good idtyDataList...
+    final List<int> idtyIndexListNoNull =
+        idtyIndexList.map((item) => item ?? 99999999).toList();
+
+    final List<Map?> idtyDataList = (idtyIndexListNoNull.isEmpty
+            ? []
+            : (await _getStorage(
+                'identity.identities.multi($idtyIndexListNoNull)')) as List)
+        .map((dynamic e) => e as Map<String, dynamic>?)
+        .toList();
+
+    final List pastReevals =
+        await _getStorage('universalDividend.pastReevals()');
+
+    int nbr = 0;
+    Map<String, Map<String, double>> finalBalancesList = {};
+    for (Map balanceGlobal in balanceGlobalMulti) {
+      final computedBalance =
+          await _computeBalance(idtyDataList[nbr], pastReevals, balanceGlobal);
+      finalBalancesList.putIfAbsent(addresses[nbr], () => computedBalance);
+      nbr++;
+    }
+
+    return finalBalancesList;
   }
 
   Future<Map<String, double>> getBalance(String address) async {
@@ -230,6 +275,11 @@ class SubstrateSdk with ChangeNotifier {
     final List pastReevals =
         await _getStorage('universalDividend.pastReevals()');
 
+    return _computeBalance(idtyData, pastReevals, balanceGlobal);
+  }
+
+  Future<Map<String, double>> _computeBalance(
+      Map? idtyData, List pastReevals, Map balanceGlobal) async {
     // Compute amount of claimable UDs
     currentUdIndex = await getCurrentUdIndex();
     final int unclaimedUds = _computeUnclaimUds(
@@ -239,21 +289,13 @@ class SubstrateSdk with ChangeNotifier {
     final int transferableBalance =
         (balanceGlobal['data']['free'] + unclaimedUds);
 
-    // log.d('udValue: $udValue');
-
-    Map<String, double> finalBalances = {
+    return {
       'transferableBalance': round((transferableBalance / balanceRatio) / 100),
       'free': round((balanceGlobal['data']['free'] / balanceRatio) / 100),
       'unclaimedUds': round((unclaimedUds / balanceRatio) / 100),
       'reserved':
           round((balanceGlobal['data']['reserved'] / balanceRatio) / 100),
     };
-
-    // log.i(finalBalances);
-    log.d(
-        '${getShortPubkey(address)} --- BALANCE: ${finalBalances['transferableBalance']}');
-
-    return finalBalances;
   }
 
   int _computeUnclaimUds(int firstEligibleUd, List pastReevals) {
@@ -283,33 +325,13 @@ class SubstrateSdk with ChangeNotifier {
     return totalAmount;
   }
 
-  Future<bool> isMember(String address) async {
-    final isMember = await idtyStatus(address) == 'Validated';
-    final walletData = walletBox.get(address) ?? WalletData(address: address);
-    walletData.isMember = isMember;
-    walletBox.put(address, walletData);
-    // notifyListeners();
-    return isMember;
-  }
-
-  Future<bool> isSmithGet(String address) async {
-    var idtyIndex = await _getIdentityIndexOf(address);
-
-    final Map smithExpireOn =
-        (await _getStorage('smithsMembership.membership($idtyIndex)')) ?? {};
-
-    if (smithExpireOn.isEmpty) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-
   Future<Map<String, int>> certState(String from, String to) async {
     Map<String, int> result = {};
-    final toStatus = await idtyStatus(to);
+    final toStatus = (await idtyStatus([to])).first;
 
-    if (from != to && await isMember(from)) {
+    final myWallets = MyWalletsProvider();
+
+    if (from != to && myWallets.getWalletDataByAddress(from)!.isMembre()) {
       final removableOn = await getCertValidityPeriod(from, to);
       final certMeta = await getCertMeta(from);
       final int nextIssuableOn = certMeta['nextIssuableOn'] ?? 0;
@@ -322,17 +344,15 @@ class SubstrateSdk with ChangeNotifier {
       } else if (nextIssuableOn > blocNumber) {
         final certDelayDuration = (nextIssuableOn - blocNumber) * 6;
         result.putIfAbsent('certDelay', () => certDelayDuration);
-      } else if (toStatus == 'Created') {
+      } else if (toStatus == IdtyStatus.created) {
         result.putIfAbsent('toStatus', () => 1);
-      } else if (toStatus == 'noid') {
+      } else if (toStatus == IdtyStatus.none) {
         result.putIfAbsent('toStatus', () => 2);
         result.putIfAbsent('canCert', () => 0);
       } else {
         result.putIfAbsent('canCert', () => 0);
       }
     }
-
-    // if (toStatus == 'Created') result.putIfAbsent('toStatus', () => 1);
 
     return result;
   }
@@ -351,7 +371,7 @@ class SubstrateSdk with ChangeNotifier {
     //     Provider.of<WalletOptionsProvider>(homeContext, listen: false);
 
     var idtyIndex = await _getIdentityIndexOf(address);
-    if (idtyIndex == 0) return [];
+    if (idtyIndex == null) return [];
 
     final Map? idtyData = await _getStorage('identity.identities($idtyIndex)');
     if (idtyData == null || idtyData['oldOwnerKey'] == null) return [];
@@ -369,37 +389,43 @@ class SubstrateSdk with ChangeNotifier {
     return startBlockchainTime.add(Duration(seconds: blocNumber * 6));
   }
 
-  Future<String> idtyStatus(String address) async {
+  Future<List<IdtyStatus>> idtyStatus(List<String> addresses) async {
     // final walletOptions =
     //     Provider.of<WalletOptionsProvider>(homeContext, listen: false);
 
-    var idtyIndex = await _getIdentityIndexOf(address);
+    final idtyIndexes = await _getIdentityIndexOfMulti(addresses);
 
-    if (idtyIndex == 0) {
-      return 'noid';
+    //FIXME: should not have to replace null values by 99999999
+    final idtyIndexesFix = idtyIndexes.map((item) => item ?? 99999999).toList();
+    final jsonString = jsonEncode(idtyIndexesFix);
+    final List idtyStatusList =
+        await _getStorage('identity.identities.multi($jsonString)');
+
+    List<IdtyStatus> resultStatus = [];
+    final mapStatus = {
+      null: IdtyStatus.none,
+      'Created': IdtyStatus.created,
+      'ConfirmedByOwner': IdtyStatus.confirmed,
+      'Validated': IdtyStatus.validated,
+      'Expired': IdtyStatus.expired,
+      'unknown': IdtyStatus.unknown,
+    };
+
+    for (final idtyStatus in idtyStatusList) {
+      if (idtyStatus == null) {
+        resultStatus.add(IdtyStatus.none);
+      } else {
+        resultStatus.add(mapStatus[idtyStatus['status']] ?? IdtyStatus.unknown);
+      }
     }
-
-    final idtyStatus = await _getStorage('identity.identities($idtyIndex)');
-
-    if (idtyStatus != null) {
-      final String status = idtyStatus['status'];
-
-      // if (address == walletOptions.address.text && status == 'Validated') {
-      //   walletOptions.reloadBuild();
-      // }
-
-      return (status);
-    } else {
-      return 'expired';
-    }
+    return resultStatus;
   }
 
   Future<bool> isSmith(String address) async {
     var idtyIndex = await _getIdentityIndexOf(address);
-    if (idtyIndex == 0) return false;
+    if (idtyIndex == -1) return false;
 
-    final isSmith =
-        await _getStorage('smithsMembership.membership($idtyIndex)');
+    final isSmith = await _getStorage('smithMembership.membership($idtyIndex)');
     return isSmith == null ? false : true;
   }
 
@@ -569,7 +595,7 @@ class SubstrateSdk with ChangeNotifier {
             ? [getDuniterCustomEndpoint()]
             : getDuniterBootstrap();
 
-    int timeout = 10000;
+    int timeout = 15;
 
     if (sdk.api.connectedNode?.endpoint != null) {
       await sdk.api.setting.unsubscribeBestNumber();
@@ -577,13 +603,13 @@ class SubstrateSdk with ChangeNotifier {
 
     isLoadingEndpoint = true;
     notifyListeners();
-    final res = await sdk.api.connectNode(keyring, listEndpoints).timeout(
-          Duration(milliseconds: timeout),
+    final resNode = await sdk.api.connectNode(keyring, listEndpoints).timeout(
+          Duration(seconds: timeout),
           onTimeout: () => null,
         );
     isLoadingEndpoint = false;
     notifyListeners();
-    if (res != null) {
+    if (resNode != null) {
       nodeConnected = true;
       // await getSs58Prefix();
 
@@ -615,7 +641,6 @@ class SubstrateSdk with ChangeNotifier {
       // snackNode(ctx, true);
     } else {
       nodeConnected = false;
-      debugConnection = res.toString();
       notifyListeners();
       homeProvider.changeMessage("noDuniterEndointAvailable".tr(), 0);
       if (!myWalletProvider.checkIfWalletExist()) snackNode(homeContext, false);
@@ -714,13 +739,12 @@ class SubstrateSdk with ChangeNotifier {
     final seed = await sdk.api.keyring.getDecryptedSeed(keyring, pin);
 
     String seedText;
-    if (seed == null) {
+    if (seed == null || seed.seed == null) {
       seedText = '';
     } else {
       seedText = seed.seed!.split('//')[0];
     }
 
-    log.d(seedText);
     return seedText;
   }
 
@@ -858,11 +882,12 @@ class SubstrateSdk with ChangeNotifier {
     final fromBalance = fromAddress == ''
         ? {'transferableBalance': 0}
         : await getBalance(fromAddress);
-    final fromIdtyStatus =
-        fromAddress == '' ? 'noid' : await idtyStatus(fromAddress);
+
+    final statusList = await idtyStatus([fromAddress, toAddress]);
+    final fromIdtyStatus = statusList[0];
     final fromHasConsumer =
         fromAddress == '' ? false : await hasAccountConsumers(fromAddress);
-    final toIdtyStatus = await idtyStatus(toAddress);
+    final toIdtyStatus = statusList[1];
     final isSmithData = await isSmith(fromAddress);
 
     return [
@@ -937,13 +962,16 @@ class SubstrateSdk with ChangeNotifier {
       String fromAddress, String destAddress, String password) async {
     transactionStatus = '';
 
-    final myIdtyStatus = await idtyStatus(fromAddress);
-    final toIdtyStatus = await idtyStatus(destAddress);
+    final statusList = await idtyStatus([fromAddress, destAddress]);
+    final myIdtyStatus = statusList[0];
+    final toIdtyStatus = statusList[1];
 
-    final fromIndex = await _getIdentityIndexOf(fromAddress);
-    final toIndex = await _getIdentityIndexOf(destAddress);
+    final idtyIndexList =
+        await _getIdentityIndexOfMulti([fromAddress, destAddress]);
+    final fromIndex = idtyIndexList[0];
+    final toIndex = idtyIndexList[1];
 
-    if (myIdtyStatus != 'Validated') {
+    if (myIdtyStatus != IdtyStatus.validated) {
       transactionStatus = 'notMember';
       notifyListeners();
       return 'notMember';
@@ -956,22 +984,20 @@ class SubstrateSdk with ChangeNotifier {
 
     final toCerts = await getCertsCounter(destAddress);
 
-    // log.d('debug: ${currencyParameters['minCertForMembership']}');
-
     log.d(
-        "debug toCert: ${toCerts[0]} --- ${currencyParameters['minCertForMembership']!} --- $toIdtyStatus");
+        "debug toCert: ${toCerts?[0]} --- ${currencyParameters['minCertForMembership']!} --- $toIdtyStatus");
 
-    if (toIdtyStatus == 'noid') {
+    if (toIdtyStatus == IdtyStatus.none) {
       txInfo = TxInfoData(
         'identity',
         'createIdentity',
         sender,
       );
       txOptions = [destAddress];
-    } else if (toIdtyStatus == 'Validated' ||
-        toIdtyStatus == 'ConfirmedByOwner') {
-      if (toCerts[0] >= currencyParameters['minCertForMembership']! - 1 &&
-          toIdtyStatus != 'Validated') {
+    } else if (toIdtyStatus == IdtyStatus.validated ||
+        toIdtyStatus == IdtyStatus.confirmed) {
+      if (toCerts![0] >= currencyParameters['minCertForMembership']! - 1 &&
+          toIdtyStatus != IdtyStatus.validated) {
         log.i('Batch cert and membership validation');
         txInfo = TxInfoData(
           'utility',
@@ -1031,13 +1057,14 @@ class SubstrateSdk with ChangeNotifier {
     final prefix = 'icok'.codeUnits;
     final genesisHashString = await getGenesisHash();
     final genesisHash = HEX.decode(genesisHashString.substring(2)) as Uint8List;
-    final idtyIndex = _int32bytes(await _getIdentityIndexOf(fromAddress));
+    final idtyIndex = _int32bytes((await _getIdentityIndexOf(fromAddress))!);
     final oldPubkey = await addressToPubkey(fromAddress);
     final messageToSign =
         Uint8List.fromList(prefix + genesisHash + idtyIndex + oldPubkey);
     final messageToSignHex = HEX.encode(messageToSign);
     final newKeySig =
         await _signMessage(messageToSign, destAddress, destPassword);
+    final newKeySigType = '{"Sr25519": "$newKeySig"}';
 
     // messageToSign: [105, 99, 111, 107, 7, 193, 18, 255, 106, 185, 215, 208, 213, 49, 235, 229, 159, 152, 179, 83, 24, 178, 129, 59, 22, 85, 87, 115, 128, 129, 157, 56, 214, 24, 45, 153, 21, 0, 0, 0, 181, 82, 178, 99, 198, 4, 156, 190, 78, 35, 102, 137, 255, 7, 162, 31, 16, 79, 255, 132, 130, 237, 230, 222, 176, 88, 245, 217, 237, 78, 196, 239]
 
@@ -1053,7 +1080,7 @@ oldPubkey: $oldPubkey
 
 messageToSign: $messageToSign
 messageToSignHex: $messageToSignHex
-newKeySig: $newKeySig""");
+newKeySig: $newKeySigType""");
 
     if (withBalance) {
       txInfo = TxInfoData(
@@ -1064,7 +1091,7 @@ newKeySig: $newKeySig""");
 
       const tx1 = 'api.tx.universalDividend.claimUds()';
       final tx2 =
-          'api.tx.identity.changeOwnerKey("$destAddress", "$newKeySig")';
+          'api.tx.identity.changeOwnerKey("$destAddress", $newKeySigType)';
       final tx3 = 'api.tx.balances.transferAll("$destAddress", false)';
 
       rawParams = fromBalance['unclaimedUds'] == 0
@@ -1077,7 +1104,7 @@ newKeySig: $newKeySig""");
         sender,
       );
 
-      txOptions = [destAddress, newKeySig];
+      txOptions = [destAddress, newKeySigType];
     }
 
     return await _executeCall(txInfo, txOptions, fromPassword, rawParams);
@@ -1090,7 +1117,7 @@ newKeySig: $newKeySig""");
     final prefix = 'revo'.codeUnits;
     final genesisHashString = await getGenesisHash();
     final genesisHash = HEX.decode(genesisHashString.substring(2)) as Uint8List;
-    final idtyIndexBytes = _int32bytes(idtyIndex);
+    final idtyIndexBytes = _int32bytes(idtyIndex!);
     final messageToSign =
         Uint8List.fromList(prefix + genesisHash + idtyIndexBytes);
     final revocationSig =
@@ -1110,7 +1137,7 @@ newKeySig: $newKeySig""");
   Future migrateCsToV2(String salt, String password, String destAddress,
       {required destPassword,
       required Map balance,
-      String idtyStatus = 'noid'}) async {
+      IdtyStatus idtyStatus = IdtyStatus.none}) async {
     final scrypt = pc.KeyDerivator('scrypt');
 
     scrypt.init(
@@ -1141,7 +1168,7 @@ newKeySig: $newKeySig""");
     );
 
     log.d('g1migration idtyStatus: $idtyStatus');
-    if (idtyStatus != 'noid') {
+    if (idtyStatus != IdtyStatus.none) {
       await migrateIdentity(
           fromAddress: keypair.address!,
           destAddress: destAddress,

@@ -29,7 +29,6 @@ class WalletOptionsProvider with ChangeNotifier {
   TextEditingController nameController = TextEditingController();
   late bool isDefaultWallet;
   bool canValidateNameBool = false;
-  Future<NewWallet>? get badWallet => null;
   Map<String, double> balanceCache = {};
 
   int getPinLenght(walletNbr) {
@@ -162,7 +161,6 @@ class WalletOptionsProvider with ChangeNotifier {
                       !await isIdtyExist(idtyName.text) &&
                       idtyName.text.length >= 2 &&
                       idtyName.text.length <= 32;
-                  log.d('aaaaaaaaaa: $canValidate');
 
                   notifyListeners();
                 },
@@ -369,19 +367,5 @@ class WalletOptionsProvider with ChangeNotifier {
     bool isCacheChecked = configBox.get('isCacheChecked') ?? false;
     await configBox.put('isCacheChecked', !isCacheChecked);
     notifyListeners();
-  }
-
-  String? getAddress(int chest, int derivation) {
-    String? addressGet;
-    walletBox.toMap().forEach((key, value) {
-      if (value.chest == chest && value.derivation == derivation) {
-        addressGet = value.address;
-        return;
-      }
-    });
-
-    address.text = addressGet ?? '';
-
-    return addressGet;
   }
 }

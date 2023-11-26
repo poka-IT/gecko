@@ -19,20 +19,19 @@ class Certifications extends StatelessWidget {
       Consumer<SubstrateSdk>(builder: (context, sdk, _) {
         return FutureBuilder(
             future: sdk.getCertsCounter(address),
-            builder: (BuildContext context, AsyncSnapshot<List<int>> certs) {
-              // log.d(_certs.data);
-
-              return certs.data?[0] != 0 && certs.data != null
+            builder: (BuildContext context, AsyncSnapshot<List<int>?> certs) {
+              return certs.data != null
                   ? Row(
                       children: [
-                        Image.asset('assets/medal.png', height: 20),
+                        Image.asset('assets/medal.png',
+                            color: color, height: 20),
                         const SizedBox(width: 1),
                         Text(certs.data?[0].toString() ?? '0',
-                            style: const TextStyle(fontSize: 20)),
+                            style: TextStyle(fontSize: 20, color: color)),
                         const SizedBox(width: 5),
                         Text(
                           "(${certs.data?[1].toString() ?? '0'})",
-                          style: const TextStyle(fontSize: 14),
+                          style: TextStyle(fontSize: 14, color: color),
                         )
                       ],
                     )

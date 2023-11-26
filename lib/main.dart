@@ -157,6 +157,8 @@ class Gecko extends StatelessWidget {
             foregroundColor: Color(0xFF000000),
           ),
           primaryColor: const Color(0xffFFD58D),
+          scaffoldBackgroundColor: backgroundColor,
+          canvasColor: backgroundColor,
           textTheme: const TextTheme(
             bodyLarge: TextStyle(fontSize: 16),
             bodyMedium: TextStyle(fontSize: 18),

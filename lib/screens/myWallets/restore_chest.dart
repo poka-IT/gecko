@@ -30,21 +30,14 @@ class RestoreChest extends StatelessWidget {
           '${genW.cellController0.text} ${genW.cellController1.text} ${genW.cellController2.text} ${genW.cellController3.text} ${genW.cellController4.text} ${genW.cellController5.text} ${genW.cellController6.text} ${genW.cellController7.text} ${genW.cellController8.text} ${genW.cellController9.text} ${genW.cellController10.text} ${genW.cellController11.text}';
     }
 
-    return WillPopScope(
-      onWillPop: () {
+    return PopScope(
+      onPopInvoked: (_) {
         genW.resetImportView();
-        return Future<bool>.value(true);
       },
       child: Scaffold(
         backgroundColor: backgroundColor,
         appBar: AppBar(
             toolbarHeight: 60 * ratio,
-            leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () {
-                  genW.resetImportView();
-                  Navigator.of(context).pop();
-                }),
             title: SizedBox(
               height: 22,
               child: Text('restoreAChest'.tr()),

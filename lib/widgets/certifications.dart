@@ -27,11 +27,11 @@ class Certifications extends StatelessWidget {
                             color: color, height: 20),
                         const SizedBox(width: 1),
                         Text(certs.data?[0].toString() ?? '0',
-                            style: TextStyle(fontSize: 20, color: color)),
+                            style: TextStyle(fontSize: size, color: color)),
                         const SizedBox(width: 5),
                         Text(
                           "(${certs.data?[1].toString() ?? '0'})",
-                          style: TextStyle(fontSize: 14, color: color),
+                          style: TextStyle(fontSize: size * 0.7, color: color),
                         )
                       ],
                     )

@@ -16,10 +16,8 @@ class OnboardingStepEleven extends StatelessWidget {
     final conffetiController =
         ConfettiController(duration: const Duration(milliseconds: 500));
     conffetiController.play();
-    return WillPopScope(
-      onWillPop: () {
-        return Future<bool>.value(false);
-      },
+    return PopScope(
+      canPop: false,
       child: Scaffold(
           backgroundColor: backgroundColor,
           appBar: AppBar(

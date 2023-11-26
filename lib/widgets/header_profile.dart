@@ -37,7 +37,7 @@ class HeaderProfile extends StatelessWidget {
       Consumer<SubstrateSdk>(builder: (context, sub, _) {
         bool isAccountExist = walletOptions.balanceCache[address] != 0;
         return Container(
-            height: 180,
+            height: 185,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
@@ -75,9 +75,9 @@ class HeaderProfile extends StatelessWidget {
                     ),
                   ),
                 ]),
-                const SizedBox(height: 23),
+                const SizedBox(height: 18),
                 Balance(address: address, size: 25),
-                const SizedBox(height: 9),
+                const SizedBox(height: 5),
                 InkWell(
                   onTap: () => sub.certsCounterCache[address] != null
                       ? {
@@ -100,7 +100,7 @@ class HeaderProfile extends StatelessWidget {
                           address: address,
                           isOwner: false,
                           color: Colors.black),
-                      Certifications(address: address, size: 14)
+                      Certifications(address: address, size: 19)
                     ],
                   ),
                 ),

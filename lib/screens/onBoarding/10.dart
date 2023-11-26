@@ -1,10 +1,8 @@
 // ignore_for_file: file_names
 // ignore_for_file: must_be_immutable
 
-import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
-
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -42,11 +40,10 @@ class OnboardingStepTen extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context, listen: false);
     final pinLenght = generateWalletProvider.pin.text.length;
 
-    return WillPopScope(
-      onWillPop: () {
+    return PopScope(
+      onPopInvoked: (_) {
         myWalletProvider.isPinValid = false;
         myWalletProvider.isPinLoading = true;
-        return Future<bool>.value(true);
       },
       child: Scaffold(
           backgroundColor: backgroundColor,
@@ -59,13 +56,6 @@ class OnboardingStepTen extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
-            leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () {
-                  myWalletProvider.isPinValid = false;
-                  myWalletProvider.isPinLoading = true;
-                  Navigator.of(context).pop();
-                }),
           ),
           extendBodyBehindAppBar: true,
           body: SafeArea(

@@ -35,23 +35,15 @@ class _ActivityScreenState extends State<ActivityScreen> {
   Widget build(BuildContext context) {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: true);
 
-    return WillPopScope(
-      onWillPop: () {
+    return PopScope(
+      onPopInvoked: (_) {
         duniterIndexer.fetchMoreCursor =
             duniterIndexer.pageInfo = duniterIndexer.transBC = null;
-        return Future<bool>.value(true);
       },
       child: Scaffold(
           appBar: AppBar(
             elevation: 0,
             toolbarHeight: 60 * ratio,
-            leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () {
-                  duniterIndexer.fetchMoreCursor =
-                      duniterIndexer.pageInfo = duniterIndexer.transBC = null;
-                  Navigator.of(context).pop();
-                }),
             title: SizedBox(
               height: 22,
               child: Text('accountActivity'.tr()),

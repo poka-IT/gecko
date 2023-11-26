@@ -34,22 +34,14 @@ class ImportG1v1 extends StatelessWidget {
 
     log.d(myWalletProvider.listWallets);
 
-    return WillPopScope(
-      onWillPop: () {
+    return PopScope(
+      onPopInvoked: (_) {
         resetScreen(context);
-        return Future<bool>.value(true);
       },
       child: Scaffold(
         backgroundColor: backgroundColor,
         appBar: AppBar(
             toolbarHeight: 60 * ratio,
-            leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () {
-                  resetScreen(context);
-
-                  Navigator.of(context).pop();
-                }),
             title: SizedBox(
               height: 22,
               child: Text('importOldAccount'.tr()),
@@ -277,6 +269,7 @@ class ImportG1v1 extends StatelessWidget {
                                         pin ?? myWalletProvider.pinCode,
                                     balance: balance,
                                     idtyStatus: idtyStatus);
+                                Navigator.pop(context);
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(builder: (context) {

@@ -139,7 +139,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                               },
                             ),
                           ]),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 5),
                       Text(
                         'from'.tr(),
                         style: TextStyle(
@@ -147,7 +147,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                             fontWeight: FontWeight.w500,
                             color: Colors.grey[600]),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 5),
                       Consumer<SubstrateSdk>(builder: (context, sub, _) {
                         return DropdownButton(
                             dropdownColor: const Color(0xffffeed1),
@@ -170,7 +170,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                     borderRadius: const BorderRadius.all(
                                         Radius.circular(10.0)),
                                   ),
-                                  padding: const EdgeInsets.all(10),
+                                  padding: const EdgeInsets.all(7),
                                   child: Visibility(
                                     visible:
                                         wallet.address == defaultWallet.address,
@@ -202,7 +202,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                   color: const Color(0xffffeed1),
                                   width: 408,
                                   height: 80,
-                                  padding: const EdgeInsets.all(10),
+                                  padding: const EdgeInsets.all(7),
                                   child: Row(children: [
                                     NameByAddress(
                                         wallet: wallet,
@@ -239,7 +239,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 7),
                       Row(
                         children: [
                           Text(
@@ -320,10 +320,10 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                   color: Colors.grey[500]!, width: 2),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            contentPadding: const EdgeInsets.all(20),
+                            contentPadding: const EdgeInsets.all(15),
                           ),
                           style: const TextStyle(
-                            fontSize: 35,
+                            fontSize: 33,
                             color: Colors.black,
                             fontWeight: FontWeight.w600,
                           ),

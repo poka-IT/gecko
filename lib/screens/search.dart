@@ -49,10 +49,9 @@ class _SearchScreenState extends State<SearchScreen> {
     final canValidate = searchProvider.searchController.text.length >= 2;
     // final canPasteAddress = false;
 
-    return WillPopScope(
-      onWillPop: () {
+    return PopScope(
+      onPopInvoked: (_) {
         searchProvider.searchController.text = '';
-        return Future<bool>.value(true);
       },
       child: Scaffold(
         backgroundColor: backgroundColor,
@@ -63,12 +62,6 @@ class _SearchScreenState extends State<SearchScreen> {
             height: 22,
             child: Text('search'.tr()),
           ),
-          leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
-              onPressed: () {
-                searchProvider.searchController.text = '';
-                Navigator.of(context).pop();
-              }),
         ),
         body: SafeArea(
           child: Stack(children: [

@@ -1218,6 +1218,7 @@ void snackNode(BuildContext context, bool isConnected) {
         "${"youAreConnectedToNode".tr()}\n${sub.getConnectedEndpoint()!.split('//')[1]}";
   }
   final snackBar = SnackBar(
+      backgroundColor: Colors.grey[900],
       padding: const EdgeInsets.all(20),
       content: Text(message, style: const TextStyle(fontSize: 16)),
       duration: const Duration(seconds: 4));

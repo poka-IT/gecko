@@ -32,11 +32,10 @@ class OnboardingStepSix extends StatelessWidget {
 
     _mnemonicController.text = generatedMnemonic!;
 
-    return WillPopScope(
-      onWillPop: () {
+    return PopScope(
+      onPopInvoked: (_) {
         generateWalletProvider.isAskedWordValid = false;
         generateWalletProvider.askedWordColor = Colors.black;
-        return Future<bool>.value(true);
       },
       child: Scaffold(
         backgroundColor: backgroundColor,

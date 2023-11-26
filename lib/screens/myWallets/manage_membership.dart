@@ -47,7 +47,7 @@ class ManageMembership extends StatelessWidget {
                 builder: (BuildContext context, AsyncSnapshot<bool> isSmith) {
                   if (isSmith.data ?? false) {
                     return SizedBox(
-                        height: 70,
+                        height: 75,
                         child: Row(
                           children: <Widget>[
                             const SizedBox(width: 20),
@@ -65,7 +65,7 @@ class ManageMembership extends StatelessWidget {
                                       style: TextStyle(
                                           fontSize: 20,
                                           color: Colors.grey[500])),
-                                  const SizedBox(height: 5),
+                                  const SizedBox(height: 2),
                                   Text("youCannotRevokeThisIdentity".tr(),
                                       style: TextStyle(
                                           fontSize: 14,

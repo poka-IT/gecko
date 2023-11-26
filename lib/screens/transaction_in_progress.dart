@@ -85,14 +85,9 @@ class TransactionInProgress extends StatelessWidget {
 
     log.d("$transType :: ${actionMap[transType]} :: $result");
 
-    return WillPopScope(
-      onWillPop: () {
+    return PopScope(
+      onPopInvoked: (_) {
         sub.transactionStatus = '';
-        Navigator.pop(context);
-        if (transType == 'identityMigration') {
-          Navigator.pop(context);
-        }
-        return Future<bool>.value(true);
       },
       child: Scaffold(
         backgroundColor: backgroundColor,
@@ -206,11 +201,8 @@ class TransactionInProgress extends StatelessWidget {
                           backgroundColor: orangeC, // foreground
                         ),
                         onPressed: () {
-                          Navigator.pop(context);
                           sub.transactionStatus = '';
-                          if (transType == 'identityMigration') {
-                            Navigator.pop(context);
-                          }
+                          Navigator.pop(context);
                         },
                         child: Text(
                           'close'.tr(),

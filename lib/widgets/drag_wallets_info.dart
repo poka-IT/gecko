@@ -35,7 +35,7 @@ class DragWalletsInfo extends StatelessWidget {
       child: Center(
           child: Column(
         children: [
-          const SizedBox(height: 5),
+          const SizedBox(height: 2),
           Text('${'executeATransfer'.tr()}:'),
           MarkdownBody(data: '${'from'.tr()} **$fromName**'),
           if (isSameAddress) Text('chooseATargetWallet'.tr()),

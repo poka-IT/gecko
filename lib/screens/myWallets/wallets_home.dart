@@ -40,75 +40,57 @@ class _WalletsHomeState extends State<WalletsHome> {
     final currentChestNumber = myWalletProvider.getCurrentChest();
     final ChestData currentChest = chestBox.get(currentChestNumber)!;
 
-    return WillPopScope(
-      onWillPop: () {
-        Navigator.popUntil(
-          context,
-          ModalRoute.withName('/'),
-        );
-        return Future<bool>.value(true);
-      },
-      child: Scaffold(
-        backgroundColor: backgroundColor,
-        appBar: AppBar(
-          elevation: 1,
-          toolbarHeight: 60 * ratio,
-          leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
-              onPressed: () {
-                Navigator.popUntil(
-                  context,
-                  ModalRoute.withName('/'),
-                );
-              }),
-          title: Row(
-            children: [
-              Image.asset(
-                'assets/chests/${currentChest.imageName}',
-                height: 32,
-              ),
-              const SizedBox(width: 17),
-              Text(currentChest.name!,
-                  style: TextStyle(color: Colors.grey[850])),
-            ],
-          ),
-          backgroundColor: const Color(0xffFFD58D),
+    return Scaffold(
+      backgroundColor: backgroundColor,
+      appBar: AppBar(
+        elevation: 1,
+        toolbarHeight: 60 * ratio,
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/chests/${currentChest.imageName}',
+              height: 32,
+            ),
+            const SizedBox(width: 17),
+            Text(currentChest.name!, style: TextStyle(color: Colors.grey[850])),
+          ],
         ),
-        bottomNavigationBar:
-            Consumer<MyWalletsProvider>(builder: (context, _, __) {
-          return myWalletProvider.lastFlyBy == null
-              ? const GeckoBottomAppBar(
-                  actualRoute: 'safeHome',
-                )
-              : DragWalletsInfo(
-                  lastFlyBy: myWalletProvider.lastFlyBy!,
-                  dragAddress: myWalletProvider.dragAddress!,
-                );
-        }),
-        body: FutureBuilder(
-            future: myWalletProvider.readAllWallets(currentChestNumber),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState != ConnectionState.done ||
-                  snapshot.hasError) {
-                return const Center(
-                  child: SizedBox(
-                    height: 50,
-                    width: 50,
-                    child: CircularProgressIndicator(
-                      color: orangeC,
-                      strokeWidth: 3,
-                    ),
-                  ),
-                );
-              }
-              return SafeArea(
-                child: Stack(children: [
-                  myWalletsTiles(context, currentChestNumber),
-                  const OfflineInfo(),
-                ]),
-              );
-            }),
+        backgroundColor: const Color(0xffFFD58D),
       ),
+      bottomNavigationBar:
+          Consumer<MyWalletsProvider>(builder: (context, _, __) {
+        return myWalletProvider.lastFlyBy == null
+            ? const GeckoBottomAppBar(
+                actualRoute: 'safeHome',
+              )
+            : DragWalletsInfo(
+                lastFlyBy: myWalletProvider.lastFlyBy!,
+                dragAddress: myWalletProvider.dragAddress!,
+              );
+      }),
+      body: FutureBuilder(
+          future: myWalletProvider.readAllWallets(currentChestNumber),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done ||
+                snapshot.hasError) {
+              return const Center(
+                child: SizedBox(
+                  height: 50,
+                  width: 50,
+                  child: CircularProgressIndicator(
+                    color: orangeC,
+                    strokeWidth: 3,
+                  ),
+                ),
+              );
+            }
+            return SafeArea(
+              child: Stack(children: [
+                myWalletsTiles(context, currentChestNumber),
+                const OfflineInfo(),
+              ]),
+            );
+          }),
     );
   }
 

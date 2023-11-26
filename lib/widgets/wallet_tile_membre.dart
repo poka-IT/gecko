@@ -125,7 +125,7 @@ class WalletTileMembre extends StatelessWidget {
                           color: defaultWallet.address == repository.address
                               ? Colors.white
                               : Colors.black,
-                          size: 15),
+                          size: 18),
                     ),
                   ),
                 ]),

@@ -139,7 +139,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                   const SizedBox(height: 20),
 
                   SizedBox(
-                    width: 350,
+                    width: 400,
                     child: MarkdownBody(
                         data: 'areYouSureMigrateIdentity'.tr(args: [
                           duniterIndexer.walletNameIndexer[fromAddress] ??

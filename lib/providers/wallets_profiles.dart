@@ -157,6 +157,7 @@ class WalletsProfilesProvider with ChangeNotifier {
 snackMessage(context,
     {required String message, int duration = 2, double fontSize = 16}) {
   final snackBar = SnackBar(
+      backgroundColor: Colors.grey[900],
       padding: const EdgeInsets.all(20),
       content: Text(message, style: TextStyle(fontSize: fontSize)),
       duration: Duration(seconds: duration));
@@ -165,6 +166,7 @@ snackMessage(context,
 
 snackCopyKey(context) {
   final snackBar = SnackBar(
+      backgroundColor: Colors.grey[900],
       padding: const EdgeInsets.all(20),
       content: Text("thisAddressHasBeenCopiedToClipboard".tr(),
           style: const TextStyle(fontSize: 16)),
@@ -174,6 +176,7 @@ snackCopyKey(context) {
 
 snackCopySeed(context) {
   final snackBar = SnackBar(
+      backgroundColor: Colors.grey[900],
       padding: const EdgeInsets.all(20),
       content: Text("thisMnemonicHasBeenCopiedToClipboard".tr(),
           style: const TextStyle(fontSize: 17)),

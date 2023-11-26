@@ -42,7 +42,7 @@ class IdentityStatus extends StatelessWidget {
               } else if (resStatus == IdtyStatus.validated) {
                 return NameByAddress(
                     wallet: WalletData(address: address),
-                    size: 24,
+                    size: 22,
                     color: Colors.black,
                     fontWeight: FontWeight.w600,
                     fontStyle: FontStyle.normal);

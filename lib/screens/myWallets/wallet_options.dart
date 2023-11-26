@@ -51,13 +51,11 @@ class WalletOptions extends StatelessWidget {
 
     log.d("Wallet options: $currentChest:${wallet.derivation}");
 
-    return WillPopScope(
-      onWillPop: () {
+    return PopScope(
+      onPopInvoked: (_) {
         walletOptions.isEditing = false;
         walletOptions.isBalanceBlur = false;
         myWalletProvider.reload();
-        Navigator.pop(context);
-        return Future<bool>.value(true);
       },
       child: Scaffold(
         backgroundColor: backgroundColor,
@@ -65,14 +63,6 @@ class WalletOptions extends StatelessWidget {
         appBar: AppBar(
           toolbarHeight: 60 * ratio,
           elevation: 0,
-          leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
-              onPressed: () {
-                walletOptions.isEditing = false;
-                walletOptions.isBalanceBlur = false;
-                myWalletProvider.reload();
-                Navigator.pop(context);
-              }),
           title: SizedBox(
             height: 22,
             child: Consumer<WalletOptionsProvider>(
@@ -210,7 +200,7 @@ class WalletOptions extends StatelessWidget {
                                         color: orangeC),
                                     Certifications(
                                         address: walletProvider.address.text,
-                                        size: 15)
+                                        size: 20)
                                   ]),
                             ),
                             SizedBox(height: 10 * ratio),

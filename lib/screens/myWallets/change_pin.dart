@@ -40,22 +40,15 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 
-    return WillPopScope(
-      onWillPop: () {
+    return PopScope(
+      onPopInvoked: (_) {
         newPin.text = '';
-        return Future<bool>.value(true);
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           elevation: 1,
           toolbarHeight: 60 * ratio,
-          leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
-              onPressed: () {
-                newPin.text = '';
-                Navigator.of(context).pop();
-              }),
           title: SizedBox(
             height: 22,
             child: Text(widget.walletName!),

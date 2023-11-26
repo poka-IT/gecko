@@ -78,7 +78,7 @@ Future tapKey(Key buttonKey,
     await tester.pumpAndSettle(Duration(milliseconds: duration));
   }
   final Finder finder = customFinder ?? find.byKey(buttonKey);
-  log.d('INTEGRATION TEST: Tap on ${finder.description}}');
+  log.d('INTEGRATION TEST: Tap on ${finder.describeMatch(Plurality.zero)}}');
   await tester.tap(selectLast ? finder.last : finder);
   humanRead();
 }

@@ -43,6 +43,7 @@ class MyWalletsProvider with ChangeNotifier {
     Map<String, WalletData> walletsToScan = {};
     for (var walletFromBox in wallets) {
       if (walletFromBox.chest == chest) {
+        // log.d('${walletFromBox.number} - ${walletFromBox.name}');
         if (walletFromBox.identityStatus == IdtyStatus.unknown) {
           walletsToScan.putIfAbsent(
               walletFromBox.address, (() => walletFromBox));
@@ -61,7 +62,6 @@ class MyWalletsProvider with ChangeNotifier {
       listWallets.add(wallet);
       n++;
     }
-
     return listWallets;
   }
 
@@ -201,6 +201,7 @@ class MyWalletsProvider with ChangeNotifier {
         isOwned: true);
 
     await walletBox.put(newWallet.address, newWallet);
+    await readAllWallets();
 
     isNewDerivationLoading = false;
     notifyListeners();

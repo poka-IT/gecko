@@ -9,6 +9,7 @@ import 'package:gecko/models/bip39_words.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/widgets/scan_derivations_info.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:provider/provider.dart';
 import "package:unorm_dart/unorm_dart.dart" as unorm;
@@ -19,6 +20,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   final walletNameFocus = FocusNode();
   Color? askedWordColor = Colors.black;
   bool isAskedWordValid = false;
+  var scanStatus = ScanDerivationsStatus.none;
   int scanedValidWalletNumber = -1;
   int scanedWalletNumber = -1;
   int numberScan = 60;
@@ -296,7 +298,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final currentChestNumber = configBox.get('currentChest');
     bool isAlive = false;
-    scanedValidWalletNumber = 0;
     scanedWalletNumber = 0;
     Map<String, int> addressToScan = {};
     notifyListeners();
@@ -305,14 +306,14 @@ class GenerateWalletsProvider with ChangeNotifier {
       return false;
     }
 
+    scanStatus = ScanDerivationsStatus.rootScanning;
     final hasRoot = await scanRootBalance(sub, currentChestNumber);
-    scanedWalletNumber = 1;
     notifyListeners();
     if (hasRoot) {
-      scanedValidWalletNumber = 1;
       isAlive = true;
     }
 
+    scanStatus = ScanDerivationsStatus.scanning;
     for (int derivationNbr in [for (var i = 0; i < numberScan; i += 1) i]) {
       final addressData = await sub.sdk.api.keyring.addressFromMnemonic(
           sub.currencyParameters['ss58']!,
@@ -328,35 +329,37 @@ class GenerateWalletsProvider with ChangeNotifier {
               onTimeout: () => {},
             );
 
-    for (String scannedWallet in balanceList.keys) {
-      if (balanceList[scannedWallet]!['transferableBalance'] != 0) {
-        isAlive = true;
-        String walletName = scanedValidWalletNumber == 0
-            ? 'currentWallet'.tr()
-            : '${'wallet'.tr()} ${scanedValidWalletNumber + 1}';
-        await sub.importAccount(
-            mnemonic: generatedMnemonic!,
-            derivePath: "//${addressToScan[scannedWallet]}",
-            password: pin.text);
+    // Remove unused wallets
+    balanceList.removeWhere((key, value) => value['transferableBalance'] == 0);
+    scanedValidWalletNumber = balanceList.length + scanedWalletNumber;
 
-        WalletData myWallet = WalletData(
-            chest: currentChestNumber,
-            address: scannedWallet,
-            number: scanedValidWalletNumber,
-            name: walletName,
-            derivation: addressToScan[scannedWallet],
-            imageDefaultPath: '${scanedValidWalletNumber % 4}.png',
-            isOwned: true);
-        await walletBox.put(myWallet.address, myWallet);
-        scanedValidWalletNumber = scanedValidWalletNumber + 1;
-      }
-      scanedWalletNumber = scanedWalletNumber + 1;
+    scanStatus = ScanDerivationsStatus.import;
+    for (String scannedWallet in balanceList.keys) {
+      isAlive = true;
+      String walletName = scanedWalletNumber == 0
+          ? 'currentWallet'.tr()
+          : '${'wallet'.tr()} ${scanedWalletNumber + 1}';
+      await sub.importAccount(
+          mnemonic: generatedMnemonic!,
+          derivePath: "//${addressToScan[scannedWallet]}",
+          password: pin.text);
+
+      WalletData myWallet = WalletData(
+          chest: currentChestNumber,
+          address: scannedWallet,
+          number: scanedWalletNumber,
+          name: walletName,
+          derivation: addressToScan[scannedWallet],
+          imageDefaultPath: '${scanedWalletNumber % 4}.png',
+          isOwned: true);
+      await walletBox.put(myWallet.address, myWallet);
+      scanedWalletNumber++;
       notifyListeners();
     }
 
     log.d(scanedWalletNumber);
-    scanedWalletNumber = -1;
-    scanedValidWalletNumber = -1;
+    scanStatus = ScanDerivationsStatus.none;
+    scanedWalletNumber = scanedValidWalletNumber = -1;
     notifyListeners();
     return isAlive;
   }
@@ -387,6 +390,7 @@ class GenerateWalletsProvider with ChangeNotifier {
           imageDefaultPath: '0.png',
           isOwned: true);
       await walletBox.put(myWallet.address, myWallet);
+      scanedWalletNumber++;
       return true;
     } else {
       return false;

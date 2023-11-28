@@ -560,7 +560,8 @@ class WalletOptions extends StatelessWidget {
               walletOptions.balanceCache[walletOptions.address.text] ?? -1;
           final bool canDelete = !isDefaultWallet &&
               !hasConsumers.data! &&
-              (balance > 2 || balance == 0);
+              (balance > 2 || balance == 0) &&
+              !wallet.hasIdentity();
           return InkWell(
             key: keyDeleteWallet,
             onTap: canDelete

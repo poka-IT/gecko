@@ -135,8 +135,8 @@ class _CustomDerivationState extends State<CustomDerivation> {
                         int.parse(dropdownValue!),
                       );
                     }
-                    Navigator.pop(context);
-                    Navigator.pop(context);
+                    Navigator.popUntil(
+                        context, ModalRoute.withName('/mywallets'));
                   }
                 },
                 child: Text(

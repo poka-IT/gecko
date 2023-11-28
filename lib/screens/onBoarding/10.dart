@@ -16,6 +16,7 @@ import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/screens/onBoarding/11_congratulations.dart';
 import 'package:gecko/widgets/commons/fader_transition.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
+import 'package:gecko/widgets/scan_derivations_info.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 
@@ -66,30 +67,7 @@ class OnboardingStepTen extends StatelessWidget {
                 SizedBox(height: isTall ? 40 : 20),
                 BuildText(text: "geckoWillCheckPassword".tr()),
                 SizedBox(height: isTall ? 60 : 10),
-                Visibility(
-                  visible: generateWalletProvider.scanedValidWalletNumber != -1,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 15),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("derivationsScanProgress".tr(args: [
-                          '${generateWalletProvider.scanedWalletNumber}',
-                          '${generateWalletProvider.numberScan + 1}'
-                        ])),
-                        const SizedBox(width: 10),
-                        const SizedBox(
-                          height: 22,
-                          width: 22,
-                          child: CircularProgressIndicator(
-                            color: orangeC,
-                            strokeWidth: 3,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                const ScanDerivationsInfo(),
                 Consumer<MyWalletsProvider>(builder: (context, mw, _) {
                   return Visibility(
                     visible: !myWalletProvider.isPinValid &&

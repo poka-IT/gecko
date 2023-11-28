@@ -27,7 +27,7 @@ class TransactionInProgress extends StatelessWidget {
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
-    var txStatus = TransactionStatus.nothing;
+    var txStatus = TransactionStatus.none;
     final result = sub.transactionStatus;
 
     final from = fromAddress ??
@@ -68,7 +68,7 @@ class TransactionInProgress extends StatelessWidget {
     };
 
     if (result == null) {
-      txStatus = TransactionStatus.nothing;
+      txStatus = TransactionStatus.none;
     } else if (result.contains('blockHash: ')) {
       txStatus = TransactionStatus.success;
       resultText = 'extrinsicValidated'
@@ -192,7 +192,7 @@ class TransactionInProgress extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Visibility(
-                    visible: txStatus != TransactionStatus.nothing,
+                    visible: txStatus != TransactionStatus.none,
                     child: Text(
                       resultText,
                       textAlign: TextAlign.center,
@@ -235,4 +235,4 @@ class TransactionInProgress extends StatelessWidget {
   }
 }
 
-enum TransactionStatus { loading, failed, success, nothing }
+enum TransactionStatus { loading, failed, success, none }

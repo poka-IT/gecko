@@ -84,7 +84,8 @@ class DuniterIndexer with ChangeNotifier {
       return configBox.get('customIndexer');
     }
 
-    if (configBox.containsKey('indexerEndpoint')) {
+    if (configBox.containsKey('indexerEndpoint') &&
+        listIndexerEndpoints.contains(configBox.get('indexerEndpoint'))) {
       if (await checkIndexerEndpoint(configBox.get('indexerEndpoint'))) {
         return configBox.get('indexerEndpoint');
       }
@@ -98,7 +99,7 @@ class DuniterIndexer with ChangeNotifier {
     client.connectionTimeout = const Duration(milliseconds: 3000);
 
     do {
-      int listLenght = listIndexerEndpoints.length - 1;
+      final listLenght = listIndexerEndpoints.length - 1;
       if (i >= listLenght) {
         log.e('NO VALID INDEXER ENDPOINT FOUND');
         indexerEndpoint = '';
@@ -111,7 +112,7 @@ class DuniterIndexer with ChangeNotifier {
       }
 
       try {
-        String endpointPath = '${listIndexerEndpoints[i]}/v1/graphql';
+        final endpointPath = '${listIndexerEndpoints[i]}/v1/graphql';
 
         final request = await client.postUrl(Uri.parse(endpointPath));
         final response = await request.close();

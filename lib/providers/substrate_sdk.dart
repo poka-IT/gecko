@@ -37,7 +37,7 @@ class SubstrateSdk with ChangeNotifier {
   bool importIsLoading = false;
   int blocNumber = 0;
   bool isLoadingEndpoint = false;
-  String transactionStatus = '';
+  String? transactionStatus;
   final int initSs58 = 42;
   Map<String, int> currencyParameters = {};
   TextEditingController csSalt = TextEditingController();
@@ -908,7 +908,7 @@ class SubstrateSdk with ChangeNotifier {
       required String destAddress,
       required double amount,
       required String password}) async {
-    transactionStatus = '';
+    transactionStatus = 'sending';
 
     final sender = await _setSender(fromAddress);
 
@@ -960,7 +960,7 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<String> certify(
       String fromAddress, String destAddress, String password) async {
-    transactionStatus = '';
+    transactionStatus = 'sending';
 
     final statusList = await idtyStatus([fromAddress, destAddress]);
     final myIdtyStatus = statusList[0];
@@ -1028,6 +1028,7 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<String> confirmIdentity(
       String fromAddress, String name, String password) async {
+    transactionStatus = 'sending';
     final sender = await _setSender(fromAddress);
 
     final txInfo = TxInfoData(
@@ -1047,7 +1048,7 @@ class SubstrateSdk with ChangeNotifier {
       required String destPassword,
       required Map fromBalance,
       bool withBalance = false}) async {
-    transactionStatus = '';
+    transactionStatus = 'sending';
     final sender = await _setSender(fromAddress);
 
     TxInfoData txInfo;

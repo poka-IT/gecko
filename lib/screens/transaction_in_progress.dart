@@ -27,8 +27,7 @@ class TransactionInProgress extends StatelessWidget {
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
-    bool isValid = false;
-    bool isLoading = false;
+    var txStatus = TransactionStatus.nothing;
     final result = sub.transactionStatus;
 
     final from = fromAddress ??
@@ -54,7 +53,7 @@ class TransactionInProgress extends StatelessWidget {
 
     String resultText = '';
     final Map<String, String> resultMap = {
-      '': 'sending'.tr(),
+      'sending': 'sending'.tr(),
       'Ready': 'propagating'.tr(),
       'Broadcast': 'validating'.tr(),
       'cert.NotRespectCertPeriod': '24hbetweenCerts'.tr(),
@@ -68,18 +67,21 @@ class TransactionInProgress extends StatelessWidget {
       'Exception: timeout': 'execTimeoutOver'.tr(),
     };
 
-    if (result.contains('blockHash: ')) {
-      isValid = true;
+    if (result == null) {
+      txStatus = TransactionStatus.nothing;
+    } else if (result.contains('blockHash: ')) {
+      txStatus = TransactionStatus.success;
       resultText = 'extrinsicValidated'
           .tr(args: [actionMap[transType] ?? 'strangeTransaction'.tr()]);
       log.i('Bloc of last transaction: ${sub.blocNumber} --- $result');
     } else if (result.contains('Exception: ')) {
+      txStatus = TransactionStatus.failed;
       resultText = "${"anErrorOccurred".tr()}:\n";
       final String exception = result.split('Exception: ')[1];
       resultText = resultMap[exception] ?? "$resultText\n$exception";
       log.d('Error: $exception');
     } else {
-      isLoading = true;
+      txStatus = TransactionStatus.loading;
       resultText = resultMap[result] ?? 'unknown status...';
     }
 
@@ -87,7 +89,7 @@ class TransactionInProgress extends StatelessWidget {
 
     return PopScope(
       onPopInvoked: (_) {
-        sub.transactionStatus = '';
+        sub.transactionStatus = null;
       },
       child: Scaffold(
         backgroundColor: backgroundColor,
@@ -162,7 +164,7 @@ class TransactionInProgress extends StatelessWidget {
                 const Spacer(),
                 Column(children: [
                   Visibility(
-                    visible: isLoading,
+                    visible: txStatus == TransactionStatus.loading,
                     child: const SizedBox(
                       height: 18,
                       width: 18,
@@ -173,18 +175,29 @@ class TransactionInProgress extends StatelessWidget {
                     ),
                   ),
                   Visibility(
-                    visible: !isLoading,
-                    child: Icon(
-                      isValid ? Icons.done_all : Icons.close,
+                    visible: txStatus == TransactionStatus.success,
+                    child: const Icon(
+                      Icons.done_all,
                       size: 35,
-                      color: isValid ? Colors.greenAccent : Colors.redAccent,
+                      color: Colors.greenAccent,
+                    ),
+                  ),
+                  Visibility(
+                    visible: txStatus == TransactionStatus.failed,
+                    child: const Icon(
+                      Icons.close,
+                      size: 35,
+                      color: Colors.redAccent,
                     ),
                   ),
                   const SizedBox(height: 10),
-                  Text(
-                    resultText,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 19 * ratio),
+                  Visibility(
+                    visible: txStatus != TransactionStatus.nothing,
+                    child: Text(
+                      resultText,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 19 * ratio),
+                    ),
                   ),
                 ]),
                 const Spacer(),
@@ -201,7 +214,7 @@ class TransactionInProgress extends StatelessWidget {
                           backgroundColor: orangeC, // foreground
                         ),
                         onPressed: () {
-                          sub.transactionStatus = '';
+                          sub.transactionStatus = null;
                           Navigator.pop(context);
                         },
                         child: Text(
@@ -221,3 +234,5 @@ class TransactionInProgress extends StatelessWidget {
     );
   }
 }
+
+enum TransactionStatus { loading, failed, success, nothing }

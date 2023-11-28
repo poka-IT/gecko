@@ -37,7 +37,7 @@ class GeckoBottomAppBar extends StatelessWidget {
           const Spacer(),
           const SizedBox(width: 11),
           IconButton(
-            key: keyAppBarSearch,
+            key: keyAppBarHome,
             iconSize: 55,
             icon: const Icon(Icons.home_outlined),
             onPressed: () {
@@ -52,7 +52,6 @@ class GeckoBottomAppBar extends StatelessWidget {
           const Spacer(),
           IconButton(
             key: keyAppBarQrcode,
-            iconSize: 70,
             icon: const Image(image: AssetImage('assets/qrcode-scan.png')),
             onPressed: () async {
               historyProvider.scan(homeContext);
@@ -61,6 +60,7 @@ class GeckoBottomAppBar extends StatelessWidget {
           const Spacer(),
           const SizedBox(width: 15),
           Stack(
+            alignment: AlignmentDirectional.center,
             children: [
               if (lockAction)
                 Center(
@@ -86,7 +86,6 @@ class GeckoBottomAppBar extends StatelessWidget {
                 ),
               IconButton(
                 key: keyAppBarChest,
-                iconSize: 60,
                 icon: const Image(image: AssetImage('assets/wallet.png')),
                 onPressed: lockAction
                     ? null

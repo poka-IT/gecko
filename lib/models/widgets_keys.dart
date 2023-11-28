@@ -5,7 +5,7 @@ const keyInfoPopup = Key('keyInfoPopup');
 const keyGoNext = Key('keyGoNext');
 const keyCancel = Key('keyCancel');
 const keyConfirm = Key('keyConfirm');
-const keyAppBarSearch = Key('keyAppBarSearch');
+const keyAppBarHome = Key('keyAppBarSearch');
 const keyAppBarQrcode = Key('keyAppBarQrcode');
 const keyAppBarChest = Key('keyAppBarChest');
 

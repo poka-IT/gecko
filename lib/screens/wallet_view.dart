@@ -1,5 +1,4 @@
-//FIXME: flutter upgrades should fix this... one day.
-// ignore_for_file: use_build_context_synchronously, prefer_const_constructors
+// ignore_for_file: use_build_context_synchronously
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
@@ -25,6 +24,9 @@ import 'package:gecko/widgets/payment_popup.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+const double buttonSize = 100;
+const double buttonFontSize = 18;
+
 class WalletViewScreen extends StatelessWidget {
   const WalletViewScreen(
       {required this.address, required this.username, this.avatar, Key? key})
@@ -32,8 +34,6 @@ class WalletViewScreen extends StatelessWidget {
   final String address;
   final String? username;
   final Image? avatar;
-  final double buttonSize = 100;
-  final double buttonFontSize = 18;
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +149,7 @@ class WalletViewScreen extends StatelessWidget {
                 Text(
                   "displayNActivity".tr(),
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontSize: buttonFontSize, fontWeight: FontWeight.w500),
                 ),
               ]),
@@ -277,7 +277,7 @@ class WalletViewScreen extends StatelessWidget {
                                   ? "certify".tr()
                                   : "createIdentity".tr(),
                               textAlign: TextAlign.center,
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontSize: buttonFontSize,
                                   fontWeight: FontWeight.w500),
                             ),
@@ -319,7 +319,7 @@ class WalletViewScreen extends StatelessWidget {
                 Text(
                   "copyAddress".tr(),
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontSize: buttonFontSize, fontWeight: FontWeight.w500),
                 ),
               ]),

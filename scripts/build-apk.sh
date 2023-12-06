@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 fVersion=$(grep "version: " pubspec.yaml | awk '{ print $2 }')
 
 withPush=$1
@@ -19,7 +21,8 @@ echo "Nom du build final: ${APPNAME}-${VERSION}+${BUILD}.apk"
 
 flutter clean
 if [[ $1 == "bundle" ]]; then
-	flutter build appbundle --release --target-platform android-arm,android-arm64 --build-name $VERSION --build-number $BUILD
+	flutter build appbundle --release --build-name $VERSION --build-number $BUILD
+	exit 0
 else
 #	flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64 --build-name $VERSION --build-number $BUILD
 	flutter build apk --release --split-per-abi --build-name $VERSION --build-number $BUILD

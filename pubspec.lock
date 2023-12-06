@@ -1192,8 +1192,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: gecko-fixes-3
-      resolved-ref: ac7347e907ca30766eedb9e15583ebc20916d56c
+      ref: "8b254d9e98cb367b4a57d67f8c6f5bbe89a52552"
+      resolved-ref: "8b254d9e98cb367b4a57d67f8c6f5bbe89a52552"
       url: "https://github.com/poka-IT/sdk.git"
     source: git
     version: "0.5.4+4"

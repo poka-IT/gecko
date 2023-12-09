@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/search.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/balance.dart';
+import 'package:gecko/widgets/cesium_avatar.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -86,7 +86,8 @@ class SearchIdentityQuery extends StatelessWidget {
                         key: keySearchResult(profile['pubkey']),
                         horizontalTitleGap: 40,
                         contentPadding: const EdgeInsets.all(5),
-                        leading: defaultAvatar(avatarSize),
+                        leading: CesiumAvatar(
+                            address: profile['pubkey'], size: avatarSize),
                         title: Row(children: <Widget>[
                           Text(getShortPubkey(profile['pubkey']),
                               style: const TextStyle(
@@ -125,8 +126,6 @@ class SearchIdentityQuery extends StatelessWidget {
                               return WalletViewScreen(
                                 address: profile['pubkey'],
                                 username: profile['name'],
-                                avatar:
-                                    g1WalletsBox.get(profile['pubkey'])?.avatar,
                               );
                             }),
                           );

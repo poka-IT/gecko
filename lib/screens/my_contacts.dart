@@ -14,7 +14,6 @@ class ContactsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Provider.of<WalletsProfilesProvider>(context, listen: true);
-    double avatarSize = 55;
     final myContacts = contactsBox.toMap().values.toList();
 
     // Order contacts by username
@@ -37,7 +36,7 @@ class ContactsScreen extends StatelessWidget {
       bottomNavigationBar: const GeckoBottomAppBar(),
       body: SafeArea(
         child: Stack(children: [
-          ContactsList(myContacts: myContacts, avatarSize: avatarSize),
+          ContactsList(myContacts: myContacts),
           const OfflineInfo(),
         ]),
       ),

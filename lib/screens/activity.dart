@@ -13,11 +13,10 @@ import 'package:provider/provider.dart';
 
 class ActivityScreen extends StatefulWidget {
   const ActivityScreen(
-      {required this.address, required this.avatar, this.username})
+      {required this.address, this.username})
       : super(key: keyActivityScreen);
   final String address;
   final String? username;
-  final Image avatar;
 
   @override
   State<ActivityScreen> createState() => _ActivityScreenState();

@@ -6,7 +6,6 @@ import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -29,11 +28,10 @@ const double buttonFontSize = 18;
 
 class WalletViewScreen extends StatelessWidget {
   const WalletViewScreen(
-      {required this.address, required this.username, this.avatar, Key? key})
+      {required this.address, required this.username, Key? key})
       : super(key: key);
   final String address;
   final String? username;
-  final Image? avatar;
 
   @override
   Widget build(BuildContext context) {
@@ -136,9 +134,7 @@ class WalletViewScreen extends StatelessWidget {
                             Navigator.push(
                               context,
                               PageNoTransit(builder: (context) {
-                                return ActivityScreen(
-                                    address: address,
-                                    avatar: defaultAvatar(50));
+                                return ActivityScreen(address: address);
                               }),
                             );
                           }),

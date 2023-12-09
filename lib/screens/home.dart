@@ -6,6 +6,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
@@ -41,6 +42,8 @@ class _HomeScreenState extends State<HomeScreen> {
           Provider.of<DuniterIndexer>(context, listen: false);
       final myWalletProvider =
           Provider.of<MyWalletsProvider>(context, listen: false);
+      final csProvider =
+          Provider.of<CesiumPlusProvider>(context, listen: false);
 
       final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
 
@@ -66,6 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (sub.sdkReady && !sub.nodeConnected) {
         walletBox = await Hive.openBox<WalletData>("walletBox");
         await Hive.deleteBoxFromDisk('g1WalletsBox');
+        await csProvider.deleteAvatarFolder();
         g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
         contactsBox = await Hive.openBox<G1WalletsList>("contactsBox");
 

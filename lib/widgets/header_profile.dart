@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
@@ -10,6 +9,7 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/certifications.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/certifications.dart';
+import 'package:gecko/widgets/cesium_avatar.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
@@ -50,7 +50,7 @@ class HeaderProfile extends StatelessWidget {
             ));
       }),
       Padding(
-        padding: const EdgeInsets.only(left: 30, right: 40),
+        padding: const EdgeInsets.only(left: 30, right: 30),
         child: Row(children: <Widget>[
           Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,9 +107,7 @@ class HeaderProfile extends StatelessWidget {
               ]),
           const Spacer(),
           Column(children: <Widget>[
-            ClipOval(
-              child: defaultAvatar(avatarSize),
-            ),
+            CesiumAvatar(address: address, size: avatarSize),
           ]),
         ]),
       ),

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 part 'g1_wallets_list.g.dart';
@@ -15,22 +14,18 @@ class G1WalletsList {
   Id? id;
 
   @HiveField(3)
-  Image? avatar;
-
-  @HiveField(4)
   String? username;
 
-  @HiveField(5)
+  @HiveField(4)
   String? csName;
 
-  @HiveField(6)
+  @HiveField(5)
   bool? isMembre;
 
   G1WalletsList({
     required this.address,
     this.balance,
     this.id,
-    this.avatar,
     this.username,
     this.csName,
     this.isMembre,

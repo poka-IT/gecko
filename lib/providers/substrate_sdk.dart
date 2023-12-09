@@ -136,6 +136,42 @@ class SubstrateSdk with ChangeNotifier {
     return res?.signature ?? '';
   }
 
+  Future<String> signCsPlusDocument(String document, String address) async {
+    final myWallets =
+        Provider.of<MyWalletsProvider>(homeContext, listen: false);
+    final messageToSign = Uint8List.fromList(document.codeUnits);
+    // final pubkeyV1 = json.decode(document)['issuer'];
+    // final address = await pubkeyV1ToAddress(pubkeyV1);
+    // final walletData = myWallets.getWalletDataByAddress(address);
+    // final derivationPath =
+    //     walletData!.derivation == null ? '' : "//${walletData.derivation}";
+
+    // final seed = await getSeed(address, myWallets.pinCode);
+    // final addressEd25519 = await importAccount(
+    //     mnemonic: seed,
+    //     password: 'AAAAA',
+    //     cryptoType: CryptoType.ed25519,
+    //     derivePath: derivationPath);
+
+    // final pubkeyEd25519 = await addressToPubkeyB58(addressEd25519);
+
+    final signatureString =
+        await _signMessage(messageToSign, address, myWallets.pinCode);
+    final signatureInt = HEX.decode(signatureString.substring(2));
+    final signature64 = base64Encode(signatureInt);
+
+//     await deleteAccounts([addressEd25519]);
+
+//     log.d("""
+// $addressEd25519
+// $pubkeyEd25519
+// $derivationPath
+// $signature64
+// """);
+
+    return signature64;
+  }
+
   ////////////////////////////////////////////
   ////////// 2: GET ONCHAIN STORAGE //////////
   ////////////////////////////////////////////
@@ -449,9 +485,16 @@ class SubstrateSdk with ChangeNotifier {
     return pubkeyByte;
   }
 
-  // Future pubkeyToAddress(String pubkey) async {
-  //   await sdk.api.account.encodeAddress([pubkey]);
-  // }
+  Future<String> addressToPubkeyB58(String address) async {
+    return Base58Encode(await addressToPubkey(address));
+  }
+
+  Future<String> pubkeyV1ToAddress(String pubkey) async {
+    final pubkeyByte = Base58Decode(pubkey);
+    final String pubkeyHex = '0x${HEX.encode(pubkeyByte)}';
+    final address = await sdk.api.account.encodeAddress([pubkeyHex]);
+    return address!.keys.first;
+  }
 
   Future initCurrencyParameters() async {
     try {
@@ -677,7 +720,8 @@ class SubstrateSdk with ChangeNotifier {
   Future<String> importAccount(
       {String mnemonic = '',
       String derivePath = '',
-      required String password}) async {
+      required String password,
+      CryptoType cryptoType = CryptoType.sr25519}) async {
     const keytype = KeyType.mnemonic;
     if (mnemonic != '') generatedMnemonic = mnemonic;
 
@@ -691,7 +735,7 @@ class SubstrateSdk with ChangeNotifier {
             name: derivePath,
             password: password,
             derivePath: derivePath,
-            cryptoType: CryptoType.sr25519)
+            cryptoType: cryptoType)
         .catchError((e) {
       importIsLoading = false;
       notifyListeners();
@@ -746,12 +790,6 @@ class SubstrateSdk with ChangeNotifier {
     }
 
     return seedText;
-  }
-
-  int getDerivationNumber(String address) {
-    final account = getKeypair(address);
-    final deriveNbr = account.name!.split('//')[1];
-    return int.parse(deriveNbr);
   }
 
   Future<KeyPairData?> changePassword(BuildContext context, String address,

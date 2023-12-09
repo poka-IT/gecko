@@ -286,6 +286,8 @@ class WalletOptions extends StatelessWidget {
             if (newPath != '') {
               wallet.imageCustomPath = newPath;
               walletBox.put(wallet.key, wallet);
+              // Uncomment to enable Cs+ avatar storage
+              // CesiumPlusProvider().setAvatar(wallet.address, newPath);
             }
             walletProvider.reload();
           },
@@ -448,17 +450,7 @@ class WalletOptions extends StatelessWidget {
         Navigator.push(
           context,
           PageNoTransit(builder: (context) {
-            return ActivityScreen(
-                address: walletProvider.address.text,
-                avatar: wallet.imageCustomPath == null
-                    ? Image.asset(
-                        'assets/avatars/${wallet.imageDefaultPath}',
-                        width: 110,
-                      )
-                    : Image.asset(
-                        wallet.imageCustomPath!,
-                        width: 110,
-                      ));
+            return ActivityScreen(address: walletProvider.address.text);
           }),
         );
       },

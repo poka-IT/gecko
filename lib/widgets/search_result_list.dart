@@ -3,13 +3,13 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/search.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/balance.dart';
+import 'package:gecko/widgets/cesium_avatar.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:gecko/widgets/search_identity_query.dart';
 
@@ -65,7 +65,7 @@ class SearchResult extends StatelessWidget {
           key: keySearchResult(g1Wallet.address),
           horizontalTitleGap: 40,
           contentPadding: const EdgeInsets.all(5),
-          leading: defaultAvatar(avatarSize),
+          leading: CesiumAvatar(address: g1Wallet.address, size: avatarSize),
           title: Row(children: <Widget>[
             Text(getShortPubkey(g1Wallet.address),
                 style: const TextStyle(
@@ -101,7 +101,6 @@ class SearchResult extends StatelessWidget {
                 return WalletViewScreen(
                   address: g1Wallet.address,
                   username: g1Wallet.username,
-                  avatar: g1Wallet.avatar,
                 );
               }),
             );

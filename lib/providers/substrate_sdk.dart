@@ -1043,9 +1043,13 @@ class SubstrateSdk with ChangeNotifier {
           sender,
         );
         final tx1 = 'api.tx.cert.addCert($fromIndex, $toIndex)';
-        final tx2 = 'api.tx.identity.validateIdentity($toIndex)';
 
-        rawParams = '[[$tx1, $tx2]]';
+        //TODO: add requestDistanceEvaluation tx when available
+
+        // final tx2 = 'api.tx.distance.requestDistanceEvaluation($toIndex)';
+        // final tx2 = 'api.tx.identity.validateIdentity($toIndex)';
+
+        rawParams = '[[$tx1]]';
       } else {
         txInfo = TxInfoData(
           'cert',

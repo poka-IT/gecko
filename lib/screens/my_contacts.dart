@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
+import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/contacts_list.dart';
 import 'package:provider/provider.dart';
 
@@ -24,15 +25,8 @@ class ContactsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-        elevation: 1,
-        toolbarHeight: 60 * ratio,
-        title: SizedBox(
-          height: 22,
-          child: Text(
-              'contactsManagementWithNbr'.tr(args: ['${myContacts.length}'])),
-        ),
-      ),
+      appBar: GeckoAppBar(
+          'contactsManagementWithNbr'.tr(args: ['${myContacts.length}'])),
       bottomNavigationBar: const GeckoBottomAppBar(),
       body: SafeArea(
         child: Stack(children: [

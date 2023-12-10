@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:provider/provider.dart';
 
@@ -14,11 +15,7 @@ class DebugScreen extends StatelessWidget {
     return Scaffold(
         backgroundColor: backgroundColor,
         appBar: AppBar(
-            toolbarHeight: 60 * ratio,
-            title: const SizedBox(
-              height: 22,
-              child: Text('Debug screen'),
-            )),
+            toolbarHeight: scaleSize(57), title: const Text('Debug screen')),
         body: SafeArea(
           child: Column(children: <Widget>[
             const SizedBox(height: 40),

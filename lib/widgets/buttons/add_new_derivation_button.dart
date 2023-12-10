@@ -3,6 +3,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -21,7 +22,7 @@ class AddNewDerivationButton extends StatelessWidget {
     String newDerivationName =
         '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number! + 2}';
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(scaleSize(11)),
       child: ClipRRect(
         borderRadius: const BorderRadius.all(Radius.circular(12)),
         child: Column(children: <Widget>[
@@ -55,20 +56,20 @@ class AddNewDerivationButton extends StatelessWidget {
                   decoration: const BoxDecoration(color: floattingYellow),
                   child: Center(
                       child: myWalletProvider.isNewDerivationLoading
-                          ? const SizedBox(
-                              height: 60,
-                              width: 60,
-                              child: CircularProgressIndicator(
+                          ? ScaledSizedBox(
+                              height: 50,
+                              width: 50,
+                              child: const CircularProgressIndicator(
                                 color: orangeC,
-                                strokeWidth: 7,
+                                strokeWidth: 6,
                               ),
                             )
-                          : const Text(
+                          : Text(
                               '+',
-                              style: TextStyle(
-                                  fontSize: 150,
+                              style: scaledTextStyle(
+                                  fontSize: 110,
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFFFCB437)),
+                                  color: const Color(0xFFFCB437)),
                             )),
                 )),
           ),

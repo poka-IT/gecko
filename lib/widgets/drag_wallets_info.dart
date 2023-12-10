@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:provider/provider.dart';
@@ -27,19 +28,35 @@ class DragWalletsInfo extends StatelessWidget {
 
     final toName =
         duniterIndexer.walletNameIndexer[lastFlyBy.address] ?? lastFlyBy.name;
+    final mdStyle = MarkdownStyleSheet(
+      p: scaledTextStyle(fontSize: 16, color: Colors.black, letterSpacing: 0.3),
+      textAlign: WrapAlignment.spaceBetween,
+    );
 
     return Container(
       color: yellowC,
       width: screenWidth,
-      height: 80,
+      height: scaleSize(85),
       child: Center(
           child: Column(
         children: [
-          const SizedBox(height: 2),
-          Text('${'executeATransfer'.tr()}:'),
-          MarkdownBody(data: '${'from'.tr()} **$fromName**'),
-          if (isSameAddress) Text('chooseATargetWallet'.tr()),
-          if (!isSameAddress) MarkdownBody(data: 'Vers: **$toName**'),
+          ScaledSizedBox(height: 2),
+          Text(
+            '${'executeATransfer'.tr()}:',
+            style: scaledTextStyle(fontSize: 16),
+          ),
+          MarkdownBody(
+              data: '${'from'.tr(args: [''])} **$fromName**',
+              styleSheet: mdStyle),
+          if (isSameAddress)
+            Text(
+              'chooseATargetWallet'.tr(),
+              style: scaledTextStyle(fontSize: 16),
+            ),
+          if (!isSameAddress)
+            MarkdownBody(
+                data: '${'to'.tr(args: [''])} **$toName**',
+                styleSheet: mdStyle),
         ],
       )),
     );

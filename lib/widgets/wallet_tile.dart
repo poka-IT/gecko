@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -24,7 +25,7 @@ class WalletTile extends StatelessWidget {
     final defaultWallet = myWalletProvider.getDefaultWallet();
 
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(scaleSize(11)),
       child: GestureDetector(
         key: keyOpenWallet(repository.address),
         onTap: () {
@@ -37,7 +38,7 @@ class WalletTile extends StatelessWidget {
             ),
           );
         },
-        child: SizedBox(
+        child: ScaledSizedBox(
           key: repository.number == 1 ? keyDragAndDrop : const Key('nothing'),
           child: ClipOvalShadow(
             shadow: const Shadow(
@@ -91,12 +92,12 @@ class WalletTile extends StatelessWidget {
                     children: [
                       Column(
                         children: [
-                          const SizedBox(height: 7),
+                          ScaledSizedBox(height: 5),
                           Opacity(
                               opacity: 0.7,
                               child: NameByAddress(
                                 wallet: repository,
-                                size: 20,
+                                size: 16,
                                 color:
                                     defaultWallet.address == repository.address
                                         ? Colors.white
@@ -135,7 +136,7 @@ class BalanceBuilder extends StatelessWidget {
       color: isDefault ? orangeC : yellowC,
       child: Padding(
           padding:
-              const EdgeInsets.only(left: 5, right: 5, top: 38, bottom: 10),
+              EdgeInsets.only(left: 5, right: 5, top: scaleSize(28), bottom: 6),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -143,7 +144,7 @@ class BalanceBuilder extends StatelessWidget {
                 opacity: 0.7,
                 child: Balance(
                     address: address,
-                    size: 16,
+                    size: 14,
                     color: isDefault ? Colors.white : Colors.black,
                     loadingColor: isDefault ? yellowC : orangeC),
               )

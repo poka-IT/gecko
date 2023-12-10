@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:provider/provider.dart';
 
@@ -22,24 +23,33 @@ class ScanDerivationsInfo extends StatelessWidget {
           children: [
             if (generateWalletProvider.scanStatus ==
                 ScanDerivationsStatus.rootScanning)
-              Text('scanRootDerivationInProgress'.tr()),
+              Text(
+                'scanRootDerivationInProgress'.tr(),
+                style: scaledTextStyle(fontSize: 16),
+              ),
             if (generateWalletProvider.scanStatus ==
                 ScanDerivationsStatus.scanning)
-              Text('derivationsScanProgress'
-                  .tr(args: [generateWalletProvider.numberScan.toString()])),
+              Text(
+                'derivationsScanProgress'
+                    .tr(args: [generateWalletProvider.numberScan.toString()]),
+                style: scaledTextStyle(fontSize: 16),
+              ),
             if (generateWalletProvider.scanStatus ==
                 ScanDerivationsStatus.import)
-              Text("importDerivationsInProgress".tr(args: [
-                '${generateWalletProvider.scanedWalletNumber}',
-                '${generateWalletProvider.scanedValidWalletNumber}'
-              ])),
-            const SizedBox(width: 10),
-            const SizedBox(
+              Text(
+                "importDerivationsInProgress".tr(args: [
+                  '${generateWalletProvider.scanedWalletNumber}',
+                  '${generateWalletProvider.scanedValidWalletNumber}'
+                ]),
+                style: scaledTextStyle(fontSize: 16),
+              ),
+            ScaledSizedBox(width: 10),
+            ScaledSizedBox(
               height: 22,
               width: 22,
               child: CircularProgressIndicator(
                 color: orangeC,
-                strokeWidth: 3,
+                strokeWidth: scaleSize(3),
               ),
             ),
           ],

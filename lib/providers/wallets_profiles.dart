@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -36,6 +37,7 @@ class WalletsProfilesProvider with ChangeNotifier {
       return 'false';
     }
     if (isAddress(barcode.rawContent)) {
+      address = barcode.rawContent;
       Navigator.popUntil(
         context,
         ModalRoute.withName('/'),
@@ -55,51 +57,6 @@ class WalletsProfilesProvider with ChangeNotifier {
     return barcode.rawContent;
   }
 
-  // Future<String> pay(BuildContext context, {int? derivation}) async {
-  //   MyWalletsProvider _myWalletProvider =
-  //       Provider.of<MyWalletsProvider>(context, listen: false);
-  //   int? currentChest = configBox.get('currentChest');
-  //   String result;
-
-  //     derivation ??=
-  //         _myWalletProvider.getDefaultWallet(currentChest)!.derivation!;
-  //     result = await Gva(node: endPointGVA).pay(
-  //         recipient: pubkey!,
-  //         amount: double.parse(payAmount.text),
-  //         mnemonic: _myWalletProvider.mnemonic,
-  //         comment: payComment.text,
-  //         derivation: derivation,
-  //         lang: appLang);
-
-  //   return result;
-  // }
-
-  bool isAddress(address) {
-    final RegExp regExp = RegExp(
-      r'^[a-zA-Z0-9]+$',
-      caseSensitive: false,
-      multiLine: false,
-    );
-
-    if (regExp.hasMatch(address) == true &&
-        address.length > 45 &&
-        address.length < 52) {
-      log.d("C'est une adresse !");
-
-      this.address = address;
-
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-// poka: Do99s6wQR2JLfhirPdpAERSjNbmjjECzGxHNJMiNKT3P
-// Pi: D2meevcAHFTS2gQMvmRW5Hzi25jDdikk4nC4u1FkwRaU         // For debug
-// Boris: JE6mkuzSpT3ePciCPRTpuMT9fqPUVVLJz2618d33p7tn
-// Matograine portefeuille: 9p5nHsES6xujFR7pw2yGy4PLKKHgWsMvsDHaHF64Uj25.
-// Lion simone: 78jhpprYkMNF6i5kQPXfkAVBpd2aqcpieNsXTSW4c21f
-
   void resetdHistory() {
     notifyListeners();
   }
@@ -107,21 +64,6 @@ class WalletsProfilesProvider with ChangeNotifier {
   String generateIdenticon(String pubkey) {
     return Jdenticon.toSvg(pubkey);
   }
-
-  // Future<num> getBalance(String _pubkey) async {
-  //   final url = Uri.parse(
-  //       '$endPointGVA?query={%20balance(script:%20%22$_pubkey%22)%20{%20amount%20base%20}%20}');
-  //   final response = await http.get(url);
-  //   final result = json.decode(response.body);
-
-  //   if (result['data']['balance'] == null) {
-  //     balance = 0.0;
-  //   } else {
-  //     balance = removeDecimalZero(result['data']['balance']['amount'] / 100);
-  //   }
-
-  //   return balance;
-  // }
 
   Future<num?> getBalance(String? pubkey) async {
     while (_balance == null) {
@@ -136,14 +78,12 @@ class WalletsProfilesProvider with ChangeNotifier {
   }
 
   Future addContact(G1WalletsList profile) async {
-    // log.d(profile.username);
     if (isContact(profile.address)) {
       await contactsBox.delete(profile.address);
       snackMessage(homeContext,
           message: 'removedFromcontacts'.tr(), duration: 4);
     } else {
       await contactsBox.put(profile.address, profile);
-      // drawStar(Size(50, 50));
       snackMessage(homeContext, message: 'addedToContacts'.tr(), duration: 4);
     }
     notifyListeners();
@@ -154,12 +94,28 @@ class WalletsProfilesProvider with ChangeNotifier {
   }
 }
 
+bool isAddress(address) {
+  final RegExp regExp = RegExp(
+    r'^[a-zA-Z0-9]+$',
+    caseSensitive: false,
+    multiLine: false,
+  );
+
+  if (regExp.hasMatch(address) == true &&
+      address.length > 45 &&
+      address.length < 52) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 snackMessage(context,
     {required String message, int duration = 2, double fontSize = 16}) {
   final snackBar = SnackBar(
       backgroundColor: Colors.grey[900],
-      padding: const EdgeInsets.all(20),
-      content: Text(message, style: TextStyle(fontSize: fontSize)),
+      padding: EdgeInsets.all(scaleSize(19)),
+      content: Text(message, style: scaledTextStyle(fontSize: fontSize)),
       duration: Duration(seconds: duration));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
@@ -167,9 +123,9 @@ snackMessage(context,
 snackCopyKey(context) {
   final snackBar = SnackBar(
       backgroundColor: Colors.grey[900],
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(scaleSize(19)),
       content: Text("thisAddressHasBeenCopiedToClipboard".tr(),
-          style: const TextStyle(fontSize: 16)),
+          style: scaledTextStyle(fontSize: 16)),
       duration: const Duration(seconds: 2));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
@@ -177,9 +133,9 @@ snackCopyKey(context) {
 snackCopySeed(context) {
   final snackBar = SnackBar(
       backgroundColor: Colors.grey[900],
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(scaleSize(19)),
       content: Text("thisMnemonicHasBeenCopiedToClipboard".tr(),
-          style: const TextStyle(fontSize: 17)),
+          style: scaledTextStyle(fontSize: 16)),
       duration: const Duration(seconds: 4));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }

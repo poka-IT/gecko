@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
@@ -36,52 +38,50 @@ class TransactionTile extends StatelessWidget {
       child: ListTile(
           key: keyTransaction(newKey),
           contentPadding:
-              const EdgeInsets.only(left: 20, right: 30, top: 15, bottom: 15),
+              const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
           leading: ClipOval(
             child: defaultAvatar(avatarSize),
           ),
           title: Padding(
             padding: const EdgeInsets.only(bottom: 5),
             child: Text(getShortPubkey(repository[1]),
-                style: const TextStyle(fontSize: 18, fontFamily: 'Monospace')),
+                style: scaledTextStyle(fontSize: 17, fontFamily: 'Monospace')),
           ),
           subtitle: RichText(
             text: TextSpan(
-              style: TextStyle(
+              style: scaledTextStyle(
                 fontSize: 17,
                 color: Colors.grey[700],
               ),
               children: <TextSpan>[
-                TextSpan(
-                  text: dateForm,
-                ),
+                TextSpan(text: dateForm, style: scaledTextStyle(fontSize: 16)),
                 if (username != null)
                   TextSpan(
                     text: '  ·  ',
-                    style: TextStyle(
-                      fontSize: 25,
+                    style: scaledTextStyle(
+                      fontSize: 21,
                       color: Colors.grey[550],
                     ),
                   ),
                 TextSpan(
                   text: username,
-                  style: TextStyle(
+                  style: scaledTextStyle(
                       fontStyle: FontStyle.italic,
                       color: Colors.grey[600],
-                      fontSize: 19),
+                      fontSize: 16),
                 ),
               ],
             ),
           ),
           trailing: Text(finalAmount,
-              style: TextStyle(
-                  fontSize: 18,
+              style: scaledTextStyle(
+                  fontSize: 17,
                   fontWeight: FontWeight.w500,
                   color: repository[4] == 'RECEIVED'
                       ? Colors.green[700]
                       : Colors.blue[700]),
               textAlign: TextAlign.justify),
-          dense: false,
+          dense: !isTall,
           isThreeLine: false,
           onTap: () {
             Navigator.push(
@@ -93,7 +93,6 @@ class TransactionTile extends StatelessWidget {
                 );
               }),
             );
-            // Navigator.pop(context);
           }),
     );
   }

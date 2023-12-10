@@ -1,19 +1,20 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 
 Future<bool?> confirmPopup(BuildContext context, String title) async {
   return showDialog<bool>(
     context: context,
-    barrierDismissible: true, // user must tap button!
+    barrierDismissible: true,
     builder: (BuildContext context) {
       return AlertDialog(
         backgroundColor: backgroundColor,
         content: Text(
           title,
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+          style: scaledTextStyle(fontSize: 19, fontWeight: FontWeight.w500),
         ),
         actions: <Widget>[
           Row(
@@ -23,26 +24,27 @@ Future<bool?> confirmPopup(BuildContext context, String title) async {
                 key: keyConfirm,
                 child: Text(
                   "yes".tr(),
-                  style: const TextStyle(
-                    fontSize: 21,
-                    color: Color(0xffD80000),
+                  style: scaledTextStyle(
+                    fontSize: 19,
+                    color: const Color(0xffD80000),
                   ),
                 ),
                 onPressed: () {
                   Navigator.pop(context, true);
                 },
               ),
-              const SizedBox(width: 20),
+              ScaledSizedBox(width: 20),
               TextButton(
                 child: Text(
                   "no".tr(),
-                  style: const TextStyle(fontSize: 21),
+                  style:
+                      scaledTextStyle(fontSize: 19, color: Colors.blueAccent),
                 ),
                 onPressed: () {
                   Navigator.pop(context, false);
                 },
               ),
-              const SizedBox(height: 120)
+              ScaledSizedBox(height: 70)
             ],
           )
         ],
@@ -58,45 +60,45 @@ Future<bool?> confirmPopupCertification(BuildContext context, String question1,
     barrierDismissible: true,
     builder: (BuildContext context) {
       return AlertDialog(
-        // actionsPadding: const EdgeInsets.all(0.0),
         backgroundColor: backgroundColor,
-        content: SizedBox(
-          height: 240,
+        content: ScaledSizedBox(
+          height: 230,
           child: Column(
             children: [
-              const SizedBox(height: 15),
+              ScaledSizedBox(height: 15),
               Text(
                 question1,
                 textAlign: TextAlign.center,
                 style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w400),
+                    scaledTextStyle(fontSize: 19, fontWeight: FontWeight.w400),
               ),
-              const SizedBox(height: 20),
+              ScaledSizedBox(height: 20),
               Text(
                 username,
                 textAlign: TextAlign.center,
                 style:
-                    const TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
+                    scaledTextStyle(fontSize: 22, fontWeight: FontWeight.w500),
               ),
-              const SizedBox(height: 20),
+              ScaledSizedBox(height: 20),
               Text(
                 question2,
                 textAlign: TextAlign.center,
                 style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w400),
+                    scaledTextStyle(fontSize: 19, fontWeight: FontWeight.w400),
               ),
-              const SizedBox(height: 20),
+              ScaledSizedBox(height: 20),
               Text(
                 address,
                 textAlign: TextAlign.center,
                 style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                    scaledTextStyle(fontSize: 19, fontWeight: FontWeight.w500),
               ),
-              const SizedBox(height: 20),
-              const Text(
+              ScaledSizedBox(height: 20),
+              Text(
                 '?',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400),
+                style:
+                    scaledTextStyle(fontSize: 19, fontWeight: FontWeight.w400),
               ),
             ],
           ),
@@ -109,26 +111,26 @@ Future<bool?> confirmPopupCertification(BuildContext context, String question1,
                 key: keyConfirm,
                 child: Text(
                   "yes".tr(),
-                  style: const TextStyle(
-                    fontSize: 25,
-                    color: Color(0xffD80000),
+                  style: scaledTextStyle(
+                    fontSize: 20,
+                    color: const Color(0xffD80000),
                   ),
                 ),
                 onPressed: () {
                   Navigator.pop(context, true);
                 },
               ),
-              const SizedBox(width: 35),
+              ScaledSizedBox(width: 32),
               TextButton(
                 child: Text(
                   "no".tr(),
-                  style: const TextStyle(fontSize: 25),
+                  style: scaledTextStyle(fontSize: 20),
                 ),
                 onPressed: () {
                   Navigator.pop(context, false);
                 },
               ),
-              const SizedBox(height: 120)
+              ScaledSizedBox(height: 120)
             ],
           )
         ],
@@ -147,7 +149,7 @@ Future<void> infoPopup(BuildContext context, String title) async {
         content: Text(
           title,
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+          style: scaledTextStyle(fontSize: 20, fontWeight: FontWeight.w500),
         ),
         actions: <Widget>[
           Row(
@@ -159,9 +161,9 @@ Future<void> infoPopup(BuildContext context, String title) async {
                   padding: const EdgeInsets.all(8),
                   child: Text(
                     "gotit".tr(),
-                    style: const TextStyle(
+                    style: scaledTextStyle(
                       fontSize: 21,
-                      color: Color(0xffD80000),
+                      color: const Color(0xffD80000),
                     ),
                   ),
                 ),
@@ -176,42 +178,3 @@ Future<void> infoPopup(BuildContext context, String title) async {
     },
   );
 }
-
-bool isAddress(address) {
-  final RegExp regExp = RegExp(
-    r'^[a-zA-Z0-9]+$',
-    caseSensitive: false,
-    multiLine: false,
-  );
-
-  if (regExp.hasMatch(address) == true &&
-      address.length > 45 &&
-      address.length < 52) {
-    log.d("C'est une adresse !");
-
-    return true;
-  } else {
-    return false;
-  }
-}
-
-// Widget geckoAppBar() {
-//   return AppBar(
-//     toolbarHeight: 60 * ratio,
-//     elevation: 0,
-//     leading: IconButton(
-//         icon: const Icon(Icons.arrow_back, color: Colors.black),
-//         onPressed: () {
-//           _walletOptions.isEditing = false;
-//           _walletOptions.isBalanceBlur = false;
-//           Navigator.pop(context);
-//         }),
-//     title: SizedBox(
-//       height: 22,
-//       child: Consumer<WalletOptionsProvider>(
-//           builder: (context, walletProvider, _) {
-//         return Text(_walletOptions.nameController.text);
-//       }),
-//     ),
-//   );
-// }

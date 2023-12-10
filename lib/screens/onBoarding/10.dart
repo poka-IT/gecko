@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
@@ -16,6 +17,7 @@ import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/screens/onBoarding/11_congratulations.dart';
 import 'package:gecko/widgets/commons/fader_transition.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
+import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/scan_derivations_info.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
@@ -48,25 +50,15 @@ class OnboardingStepTen extends StatelessWidget {
       },
       child: Scaffold(
           backgroundColor: backgroundColor,
-          appBar: AppBar(
-            toolbarHeight: 60 * ratio,
-            title: SizedBox(
-              height: 22,
-              child: Text(
-                'myPassword'.tr(),
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-          ),
-          extendBodyBehindAppBar: true,
+          appBar: GeckoAppBar('myPassword'.tr()),
           body: SafeArea(
             child: Stack(children: [
               Column(children: <Widget>[
-                SizedBox(height: isTall ? 40 : 20),
+                ScaledSizedBox(height: isTall ? 25 : 5),
                 const BuildProgressBar(pagePosition: 9),
-                SizedBox(height: isTall ? 40 : 20),
+                ScaledSizedBox(height: isTall ? 25 : 5),
                 BuildText(text: "geckoWillCheckPassword".tr()),
-                SizedBox(height: isTall ? 60 : 10),
+                ScaledSizedBox(height: isTall ? 25 : 0),
                 const ScanDerivationsInfo(),
                 Consumer<MyWalletsProvider>(builder: (context, mw, _) {
                   return Visibility(
@@ -74,12 +66,14 @@ class OnboardingStepTen extends StatelessWidget {
                         !myWalletProvider.isPinLoading,
                     child: Text(
                       "thisIsNotAGoodCode".tr(),
-                      style: const TextStyle(
-                          color: Colors.red, fontWeight: FontWeight.w500),
+                      style: scaledTextStyle(
+                          fontSize: 16,
+                          color: Colors.red,
+                          fontWeight: FontWeight.w500),
                     ),
                   );
                 }),
-                SizedBox(height: isTall ? 20 : 10),
+                ScaledSizedBox(height: isTall ? 20 : 0),
                 Consumer<SubstrateSdk>(builder: (context, sub, _) {
                   return sub.nodeConnected
                       ? pinForm(context, walletOptions, pinLenght, 1, 2)
@@ -88,7 +82,7 @@ class OnboardingStepTen extends StatelessWidget {
                           children: [
                               Text(
                                 "youHaveToBeConnectedToValidateChest".tr(),
-                                style: const TextStyle(
+                                style: scaledTextStyle(
                                   fontSize: 20,
                                   color: Colors.redAccent,
                                   fontWeight: FontWeight.w500,
@@ -106,25 +100,25 @@ class OnboardingStepTen extends StatelessWidget {
                             walletOptions.changePinCacheChoice();
                           },
                           child: Row(children: [
-                            const SizedBox(height: 30),
+                            ScaledSizedBox(height: isTall ? 30 : 0),
                             const Spacer(),
                             Icon(
                               configBox.get('isCacheChecked') ?? false
                                   ? Icons.check_box
                                   : Icons.check_box_outline_blank,
                               color: orangeC,
+                              size: scaleSize(22),
                             ),
-                            const SizedBox(width: 8),
+                            ScaledSizedBox(width: 8),
                             Text(
                               'rememberPassword'.tr(),
-                              style: TextStyle(
-                                  fontSize: 16, color: Colors.grey[700]),
+                              style: scaledTextStyle(
+                                  fontSize: 15, color: Colors.grey[700]),
                             ),
                             const Spacer()
                           ]))
                       : const Text('');
                 }),
-                const SizedBox(height: 10),
               ]),
               const OfflineInfo(),
             ]),
@@ -159,6 +153,7 @@ class OnboardingStepTen extends StatelessWidget {
             length: pinLenght,
             obscureText: true,
             obscuringCharacter: '*',
+            useHapticFeedback: true,
             animationType: AnimationType.slide,
             animationDuration: const Duration(milliseconds: 40),
             validator: (v) {
@@ -173,13 +168,13 @@ class OnboardingStepTen extends StatelessWidget {
               borderWidth: 4,
               shape: PinCodeFieldShape.box,
               borderRadius: BorderRadius.circular(5),
-              fieldHeight: 50 * ratio,
-              fieldWidth: 50,
+              fieldHeight: scaleSize(47),
+              fieldWidth: scaleSize(47),
               activeFillColor: Colors.black,
             ),
-            showCursor: kDebugMode ? false : true,
+            showCursor: !kDebugMode,
             cursorColor: Colors.black,
-            textStyle: const TextStyle(fontSize: 27, height: 1.6),
+            textStyle: const TextStyle(fontSize: 25, height: 1.6),
             backgroundColor: const Color(0xffF9F9F1),
             enableActiveFill: false,
             controller: enterPin,
@@ -194,7 +189,6 @@ class OnboardingStepTen extends StatelessWidget {
             onCompleted: (pin) async {
               myWalletProvider.pinCode = pin.toUpperCase();
               myWalletProvider.pinLenght = pinLenght;
-              log.d('$pin || ${generateWalletProvider.pin.text}');
               if (pin.toUpperCase() == generateWalletProvider.pin.text) {
                 pinColor = Colors.green[500];
                 myWalletProvider.isPinLoading = false;
@@ -225,8 +219,7 @@ class OnboardingStepTen extends StatelessWidget {
                 myWalletProvider.reload();
 
                 generateWalletProvider.generatedMnemonic = '';
-                myWalletProvider.resetPinCode();
-                // sleep(const Duration(milliseconds: 500));
+                myWalletProvider.debounceResetPinCode();
                 Navigator.push(
                   context,
                   FaderTransition(
@@ -238,7 +231,6 @@ class OnboardingStepTen extends StatelessWidget {
                 myWalletProvider.isPinValid = false;
                 pinColor = Colors.red[600];
                 enterPin.text = '';
-                // myWalletProvider.reload();
                 pinFocus.requestFocus();
               }
             },

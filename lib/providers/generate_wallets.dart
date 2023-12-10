@@ -85,10 +85,8 @@ class GenerateWalletsProvider with ChangeNotifier {
     final expectedWord = mnemo.split(' ')[nbrWord];
     final normInputWord = unorm.nfkd(inputWord);
 
-    log.i("Is $expectedWord equal to input $normInputWord ?");
     if (expectedWord == normInputWord ||
         (kDebugMode && inputWord == 'triche')) {
-      log.d('Word is OK');
       isAskedWordValid = true;
       askedWordColor = Colors.green[600];
       // walletNameFocus.nextFocus();
@@ -155,7 +153,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     String walletPubkey = cesiumWallet.pubkey;
 
     cesiumPubkey.text = walletPubkey;
-    log.d(walletPubkey);
   }
 
   void cesiumIDisVisible() {
@@ -202,7 +199,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     if (bip39Words(appLang).contains(word.toLowerCase())) {
       for (var bipWord in bip39Words(appLang)) {
         if (bipWord.startsWith(word)) {
-          isValid = nbrMatch == 0 ? true : false;
+          isValid = nbrMatch == 0;
           if (checkRedondance) nbrMatch = nbrMatch + 1;
         }
       }
@@ -357,7 +354,6 @@ class GenerateWalletsProvider with ChangeNotifier {
       notifyListeners();
     }
 
-    log.d(scanedWalletNumber);
     scanStatus = ScanDerivationsStatus.none;
     scanedWalletNumber = scanedValidWalletNumber = -1;
     notifyListeners();
@@ -375,8 +371,6 @@ class GenerateWalletsProvider with ChangeNotifier {
           onTimeout: () => {},
         );
 
-    log.d(
-        "${addressData.address!}: ${balance['transferableBalance']} $currencyName");
     if (balance['transferableBalance'] != 0) {
       String walletName = 'myRootWallet'.tr();
       await sub.importAccount(mnemonic: generatedMnemonic!, password: pin.text);

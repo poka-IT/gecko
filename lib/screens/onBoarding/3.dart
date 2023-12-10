@@ -7,6 +7,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/screens/onBoarding/4.dart';
 import 'package:gecko/widgets/commons/intro_info.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
+import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class OnboardingStepThree extends StatelessWidget {
   const OnboardingStepThree({Key? key}) : super(key: key);
@@ -15,25 +16,17 @@ class OnboardingStepThree extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-        toolbarHeight: 60 * ratio,
-        title: SizedBox(
-          height: 22,
-          child: Text(
-            'yourMnemonic'.tr(),
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ),
-      ),
-      extendBodyBehindAppBar: true,
+      appBar: GeckoAppBar('yourMnemonic'.tr()),
       body: SafeArea(
         child: Stack(children: [
           InfoIntro(
-              text: 'warningForgotPassword'.tr(),
-              assetName: 'forgot_password.png'.tr(),
-              buttonText: '>',
-              nextScreen: const OnboardingStepFor(),
-              pagePosition: 2),
+            text: 'warningForgotPassword'.tr(),
+            assetName: 'forgot_password.png'.tr(),
+            buttonText: '>',
+            nextScreen: const OnboardingStepFor(),
+            pagePosition: 2,
+            boxHeight: 316,
+          ),
           const OfflineInfo(),
         ]),
       ),

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -23,8 +24,8 @@ import 'package:gecko/widgets/payment_popup.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-const double buttonSize = 100;
-const double buttonFontSize = 18;
+const double buttonSize = 83;
+const double buttonFontSize = 14;
 
 class WalletViewScreen extends StatelessWidget {
   const WalletViewScreen(
@@ -35,25 +36,24 @@ class WalletViewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    WalletsProfilesProvider walletProfile =
+    final walletProfile =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
+    final defaultWallet = myWalletProvider.getDefaultWallet();
 
     walletProfile.address = address;
     sub.setCurrentWallet(defaultWallet);
-
-    log.d("username: $username");
 
     return Scaffold(
         backgroundColor: backgroundColor,
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
           elevation: 0,
-          toolbarHeight: 60 * ratio,
+          toolbarHeight: scaleSize(57),
+          titleSpacing: 10,
           actions: [
             Row(
               children: [
@@ -65,7 +65,6 @@ class WalletViewScreen extends StatelessWidget {
                       g1WalletsBox.toMap().forEach((key, value) {
                         if (key == address) newContact = value;
                       });
-                      // G1WalletsList(pubkey: pubkey!, username: username);
                       await walletProfile.addContact(
                           newContact ?? G1WalletsList(address: address));
                     },
@@ -73,11 +72,11 @@ class WalletViewScreen extends StatelessWidget {
                       walletProfile.isContact(address)
                           ? Icons.add_reaction_rounded
                           : Icons.add_reaction_outlined,
-                      size: 35,
+                      size: scaleSize(33),
                     ),
                   );
                 }),
-                const SizedBox(width: 10),
+                ScaledSizedBox(width: isTall ? 10 : 0),
                 InkWell(
                   onTap: () {
                     Navigator.push(
@@ -92,44 +91,42 @@ class WalletViewScreen extends StatelessWidget {
                   child: QrImageWidget(
                     data: walletProfile.address,
                     version: QrVersions.auto,
-                    size: 80,
+                    size: scaleSize(65),
                   ),
                 ),
               ],
             )
           ],
-          title: SizedBox(
-              height: 22,
-              child: Text(duniterIndexer
-                          .walletNameIndexer[walletProfile.address] ==
-                      null
-                  ? 'seeAWallet'.tr()
-                  : 'memberAccountOf'.tr(args: [
-                      duniterIndexer.walletNameIndexer[walletProfile.address] ??
-                          '?'
-                    ]))),
+          title: Text(
+            duniterIndexer.walletNameIndexer[walletProfile.address] == null
+                ? 'seeAWallet'.tr()
+                : 'memberAccountOf'.tr(args: [
+                    duniterIndexer.walletNameIndexer[walletProfile.address] ??
+                        '?'
+                  ]),
+            style: scaledTextStyle(fontSize: 18),
+          ),
         ),
         bottomNavigationBar: const GeckoBottomAppBar(),
         body: SafeArea(
           child: Column(children: <Widget>[
             HeaderProfile(address: address, username: username),
-            SizedBox(height: isTall ? 30 : 15),
+            ScaledSizedBox(height: 25),
             Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
               Column(children: <Widget>[
-                SizedBox(
+                ScaledSizedBox(
                   height: buttonSize,
                   child: ClipOval(
                     child: Material(
                       color: yellowC,
                       child: InkWell(
                           key: keyViewActivity,
-                          splashColor: orangeC, // inkwell color
-                          child: const Padding(
-                              padding: EdgeInsets.all(13),
-                              child: Image(
-                                  image: AssetImage(
-                                      'assets/walletOptions/clock.png'),
-                                  height: 90)),
+                          splashColor: orangeC,
+                          child: Padding(
+                            padding: EdgeInsets.all(scaleSize(10)),
+                            child:
+                                Image.asset('assets/walletOptions/clock.png'),
+                          ),
                           onTap: () {
                             Navigator.push(
                               context,
@@ -141,11 +138,11 @@ class WalletViewScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 9),
+                ScaledSizedBox(height: 6),
                 Text(
                   "displayNActivity".tr(),
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: scaledTextStyle(
                       fontSize: buttonFontSize, fontWeight: FontWeight.w500),
                 ),
               ]),
@@ -154,10 +151,8 @@ class WalletViewScreen extends StatelessWidget {
                 return FutureBuilder(
                   future: sub.certState(defaultWallet.address, address),
                   builder: (context, AsyncSnapshot<Map<String, int>> snapshot) {
-                    if (snapshot.data == null) return const SizedBox();
+                    if (snapshot.data == null) return ScaledSizedBox();
                     String duration = '';
-                    log.d(
-                        '${getShortPubkey(address)} --- certDelay ${snapshot.data!['certDelay']} --- certRenewable ${snapshot.data!['certRenewable']}');
 
                     if (snapshot.data!['certDelay'] != null ||
                         snapshot.data!['certRenewable'] != null) {
@@ -199,7 +194,7 @@ class WalletViewScreen extends StatelessWidget {
                         if (snapshot.data!['canCert'] != null ||
                             duration == 'seconds'.tr(args: ['0']))
                           Column(children: <Widget>[
-                            SizedBox(
+                            ScaledSizedBox(
                               height: buttonSize,
                               child: ClipOval(
                                 child: Material(
@@ -267,13 +262,13 @@ class WalletViewScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 9),
+                            ScaledSizedBox(height: 6),
                             Text(
                               toStatus == null
                                   ? "certify".tr()
                                   : "createIdentity".tr(),
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
+                              style: scaledTextStyle(
                                   fontSize: buttonFontSize,
                                   fontWeight: FontWeight.w500),
                             ),
@@ -291,7 +286,7 @@ class WalletViewScreen extends StatelessWidget {
                 );
               }),
               Column(children: <Widget>[
-                SizedBox(
+                ScaledSizedBox(
                   height: buttonSize,
                   child: ClipOval(
                     child: Material(
@@ -299,11 +294,12 @@ class WalletViewScreen extends StatelessWidget {
                       child: InkWell(
                           key: keyCopyAddress,
                           splashColor: orangeC,
-                          child: const Padding(
-                              padding: EdgeInsets.all(20),
-                              child: Image(
-                                  image: AssetImage('assets/copy_key.png'),
-                                  height: 90)),
+                          child: Padding(
+                            padding: EdgeInsets.all(scaleSize(17)),
+                            child: const Image(
+                              image: AssetImage('assets/copy_key.png'),
+                            ),
+                          ),
                           onTap: () {
                             Clipboard.setData(ClipboardData(text: address));
                             snackCopyKey(context);
@@ -311,11 +307,11 @@ class WalletViewScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 9),
+                ScaledSizedBox(height: 6),
                 Text(
                   "copyAddress".tr(),
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: scaledTextStyle(
                       fontSize: buttonFontSize, fontWeight: FontWeight.w500),
                 ),
               ]),
@@ -325,7 +321,7 @@ class WalletViewScreen extends StatelessWidget {
               return Opacity(
                 opacity: sub.nodeConnected ? 1 : 0.5,
                 child: Container(
-                  height: buttonSize,
+                  height: scaleSize(buttonSize),
                   decoration: BoxDecoration(
                     color: const Color(0xff7c94b6),
                     borderRadius: const BorderRadius.all(Radius.circular(100)),
@@ -360,9 +356,9 @@ class WalletViewScreen extends StatelessWidget {
                                   }
                                 }
                               : null,
-                          child: const Padding(
-                            padding: EdgeInsets.all(14),
-                            child: Image(
+                          child: Padding(
+                            padding: EdgeInsets.all(scaleSize(10)),
+                            child: const Image(
                                 image: AssetImage('assets/vector_white.png')),
                           )),
                     ),
@@ -370,44 +366,41 @@ class WalletViewScreen extends StatelessWidget {
                 ),
               );
             }),
-            const SizedBox(height: 9),
+            ScaledSizedBox(height: 6),
             Consumer<SubstrateSdk>(builder: (context, sub, _) {
               return Text(
                 'doATransfer'.tr(),
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: scaledTextStyle(
                     color: sub.nodeConnected ? Colors.black : Colors.grey[500],
                     fontSize: buttonFontSize,
                     fontWeight: FontWeight.w500),
               );
             }),
-            SizedBox(height: isTall ? 50 : 20)
+            ScaledSizedBox(height: isTall ? 50 : 7)
           ]),
         ));
   }
 
   Widget waitToCert(String status, String duration) {
     return Column(children: <Widget>[
-      SizedBox(
+      ScaledSizedBox(
         height: buttonSize,
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 0),
-          child: Container(
-            foregroundDecoration: const BoxDecoration(
-              color: Colors.grey,
-              backgroundBlendMode: BlendMode.saturation,
-            ),
-            child: const Opacity(
-              opacity: 0.5,
-              child: Image(image: AssetImage('assets/gecko_certify.png')),
-            ),
+        child: Container(
+          foregroundDecoration: const BoxDecoration(
+            color: Colors.grey,
+            backgroundBlendMode: BlendMode.saturation,
+          ),
+          child: const Opacity(
+            opacity: 0.5,
+            child: Image(image: AssetImage('assets/gecko_certify.png')),
           ),
         ),
       ),
       Text(
         status.tr(args: [duration]),
         textAlign: TextAlign.center,
-        style: TextStyle(
+        style: scaledTextStyle(
             fontSize: buttonFontSize - 4,
             fontWeight: FontWeight.w400,
             color: Colors.grey[600]),

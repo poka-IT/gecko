@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 
 class BuildImage extends StatelessWidget {
   const BuildImage({
@@ -15,10 +16,11 @@ class BuildImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ratio = isTall ? 1 : 0.95;
     return Container(
         padding: const EdgeInsets.all(0),
-        width: 440,
-        height: isTall ? boxHeight : boxHeight * 0.9,
+        width: scaleSize(imageWidth * ratio),
+        height: scaleSize(boxHeight * ratio),
         decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
@@ -29,6 +31,6 @@ class BuildImage extends StatelessWidget {
               ],
             ),
             border: Border.all(color: Colors.grey[900]!)),
-        child: Image.asset('assets/onBoarding/$assetName', width: imageWidth));
+        child: Image.asset('assets/onBoarding/$assetName'));
   }
 }

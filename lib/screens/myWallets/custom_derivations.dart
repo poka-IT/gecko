@@ -4,9 +4,11 @@ import 'package:easy_localization/easy_localization.dart';
 
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
+import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
 class CustomDerivation extends StatefulWidget {
@@ -48,28 +50,27 @@ class _CustomDerivationState extends State<CustomDerivation> {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-          toolbarHeight: 60 * ratio,
-          title: SizedBox(
-            height: 22,
-            child: Text('createCustomDerivation'.tr()),
-          )),
+      appBar: GeckoAppBar('createCustomDerivation'.tr()),
       body: Center(
         child: SafeArea(
           child: Column(children: <Widget>[
             const Spacer(),
             Text(
               'chooseDerivation'.tr(),
+              style: scaledTextStyle(fontSize: 17),
             ),
-            const SizedBox(height: 20),
-            SizedBox(
+            ScaledSizedBox(height: 20),
+            ScaledSizedBox(
               width: 100,
               child: DropdownButton<String>(
                 value: dropdownValue,
                 menuMaxHeight: 300,
-                icon: const Icon(Icons.arrow_downward),
+                icon: Icon(
+                  Icons.arrow_downward,
+                  size: scaleSize(20),
+                ),
                 elevation: 16,
-                style: const TextStyle(color: orangeC),
+                style: scaledTextStyle(color: orangeC),
                 underline: Container(
                   height: 2,
                   color: orangeC,
@@ -83,14 +84,14 @@ class _CustomDerivationState extends State<CustomDerivation> {
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                       value: value,
-                      child: SizedBox(
+                      child: ScaledSizedBox(
                         width: 75,
                         child: Row(children: [
                           const Spacer(),
                           Text(
                             value,
-                            style: const TextStyle(
-                                fontSize: 20, color: Colors.black),
+                            style: scaledTextStyle(
+                                fontSize: 17, color: Colors.black),
                           ),
                           const Spacer(),
                         ]),
@@ -99,13 +100,14 @@ class _CustomDerivationState extends State<CustomDerivation> {
               ),
             ),
             const Spacer(flex: 1),
-            SizedBox(
-              width: 410,
-              height: 70,
+            ScaledSizedBox(
+              width: 240,
+              height: 55,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, elevation: 4,
-                  backgroundColor: orangeC, // foreground
+                  foregroundColor: Colors.white,
+                  elevation: 4,
+                  backgroundColor: orangeC,
                 ),
                 onPressed: () async {
                   WalletData? defaultWallet =
@@ -141,8 +143,10 @@ class _CustomDerivationState extends State<CustomDerivation> {
                 },
                 child: Text(
                   'validate'.tr(),
-                  style: const TextStyle(
-                      fontSize: 24, fontWeight: FontWeight.w600),
+                  style: scaledTextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white),
                 ),
               ),
             ),

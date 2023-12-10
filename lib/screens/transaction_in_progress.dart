@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -73,13 +74,12 @@ class TransactionInProgress extends StatelessWidget {
       txStatus = TransactionStatus.success;
       resultText = 'extrinsicValidated'
           .tr(args: [actionMap[transType] ?? 'strangeTransaction'.tr()]);
-      log.i('Bloc of last transaction: ${sub.blocNumber} --- $result');
     } else if (result.contains('Exception: ')) {
       txStatus = TransactionStatus.failed;
       resultText = "${"anErrorOccurred".tr()}:\n";
       final String exception = result.split('Exception: ')[1];
       resultText = resultMap[exception] ?? "$resultText\n$exception";
-      log.d('Error: $exception');
+      log.e('Error: $exception');
     } else {
       txStatus = TransactionStatus.loading;
       resultText = resultMap[result] ?? 'unknown status...';
@@ -94,19 +94,19 @@ class TransactionInProgress extends StatelessWidget {
       child: Scaffold(
         backgroundColor: backgroundColor,
         appBar: AppBar(
-            toolbarHeight: 60 * ratio,
+            toolbarHeight: scaleSize(57),
             elevation: 0,
             automaticallyImplyLeading: false,
-            title: SizedBox(
-              height: 22,
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text('extrinsicInProgress'.tr(args: [
+            title: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    'extrinsicInProgress'.tr(args: [
                       actionMap[transType] ?? 'strangeTransaction'.tr()
-                    ]))
-                  ]),
-            )),
+                    ]),
+                    style: scaledTextStyle(fontSize: 20),
+                  )
+                ])),
         body: SafeArea(
           child: Align(
               alignment: FractionalOffset.bottomCenter,
@@ -123,52 +123,58 @@ class TransactionInProgress extends StatelessWidget {
                     ],
                   )),
                   child: Column(children: <Widget>[
-                    const SizedBox(height: 10),
+                    ScaledSizedBox(height: 10),
                     if (transType == 'pay')
                       Text(
                         isUdUnit
                             ? 'ud'.tr(args: ['$amount '])
                             : '$amount $currencyName',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w600),
+                        style: scaledTextStyle(
+                            fontSize: 17, fontWeight: FontWeight.w500),
                       ),
-                    if (transType == 'pay') const SizedBox(height: 10),
+                    if (transType == 'pay') ScaledSizedBox(height: 10),
                     Text(
                       'fromMinus'.tr(),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 18),
+                      style: scaledTextStyle(fontSize: 16),
                     ),
                     Text(
                       from,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.w600),
+                      style: scaledTextStyle(
+                          fontSize: 17, fontWeight: FontWeight.w500),
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'toMinus'.tr(),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 18),
+                    Visibility(
+                      visible: from != to,
+                      child: Column(
+                        children: [
+                          ScaledSizedBox(height: 10),
+                          Text(
+                            'toMinus'.tr(),
+                            textAlign: TextAlign.center,
+                            style: scaledTextStyle(fontSize: 16),
+                          ),
+                          Text(
+                            toUsername ?? to,
+                            textAlign: TextAlign.center,
+                            style: scaledTextStyle(
+                                fontSize: 17, fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
                     ),
-                    Text(
-                      toUsername ?? to,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 20),
+                    ScaledSizedBox(height: 20),
                   ]),
                 ),
-                // const SizedBox(height: 20, width: double.infinity),
                 const Spacer(),
                 Column(children: [
                   Visibility(
                     visible: txStatus == TransactionStatus.loading,
-                    child: const SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CircularProgressIndicator(
+                    child: ScaledSizedBox(
+                      height: 17,
+                      width: 17,
+                      child: const CircularProgressIndicator(
                         color: orangeC,
                         strokeWidth: 2,
                       ),
@@ -176,27 +182,27 @@ class TransactionInProgress extends StatelessWidget {
                   ),
                   Visibility(
                     visible: txStatus == TransactionStatus.success,
-                    child: const Icon(
+                    child: Icon(
                       Icons.done_all,
-                      size: 35,
+                      size: scaleSize(32),
                       color: Colors.greenAccent,
                     ),
                   ),
                   Visibility(
                     visible: txStatus == TransactionStatus.failed,
-                    child: const Icon(
+                    child: Icon(
                       Icons.close,
-                      size: 35,
+                      size: scaleSize(32),
                       color: Colors.redAccent,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  ScaledSizedBox(height: 10),
                   Visibility(
                     visible: txStatus != TransactionStatus.none,
                     child: Text(
                       resultText,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 19 * ratio),
+                      style: scaledTextStyle(fontSize: 17),
                     ),
                   ),
                 ]),
@@ -204,9 +210,9 @@ class TransactionInProgress extends StatelessWidget {
                 Expanded(
                   child: Align(
                     alignment: Alignment.bottomCenter,
-                    child: SizedBox(
-                      width: 380 * ratio,
-                      height: 60 * ratio,
+                    child: ScaledSizedBox(
+                      width: 300,
+                      height: 55,
                       child: ElevatedButton(
                         key: keyCloseTransactionScreen,
                         style: ElevatedButton.styleFrom(
@@ -219,15 +225,14 @@ class TransactionInProgress extends StatelessWidget {
                         },
                         child: Text(
                           'close'.tr(),
-                          style: TextStyle(
-                              fontSize: 23 * ratio,
-                              fontWeight: FontWeight.w600),
+                          style: scaledTextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
                   ),
                 ),
-                SizedBox(height: isTall ? 80 : 20)
+                ScaledSizedBox(height: 80)
               ])),
         ),
       ),

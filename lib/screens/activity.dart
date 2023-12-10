@@ -2,6 +2,7 @@
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
@@ -12,8 +13,7 @@ import 'package:gecko/widgets/history_query.dart';
 import 'package:provider/provider.dart';
 
 class ActivityScreen extends StatefulWidget {
-  const ActivityScreen(
-      {required this.address, this.username})
+  const ActivityScreen({required this.address, this.username})
       : super(key: keyActivityScreen);
   final String address;
   final String? username;
@@ -42,10 +42,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
       child: Scaffold(
           appBar: AppBar(
             elevation: 0,
-            toolbarHeight: 60 * ratio,
-            title: SizedBox(
-              height: 22,
-              child: Text('accountActivity'.tr()),
+            toolbarHeight: scaleSize(57),
+            title: Text(
+              'accountActivity'.tr(),
+              style: scaledTextStyle(fontSize: 20),
             ),
           ),
           bottomNavigationBar: const GeckoBottomAppBar(),

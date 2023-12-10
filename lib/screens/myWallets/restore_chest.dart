@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -12,6 +13,7 @@ import 'package:gecko/screens/onBoarding/7.dart';
 import 'package:gecko/screens/onBoarding/9.dart';
 import 'package:gecko/widgets/commons/fader_transition.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
+import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 // import 'package:gecko/models/home.dart';
 // import 'package:provider/provider.dart';
@@ -36,18 +38,13 @@ class RestoreChest extends StatelessWidget {
       },
       child: Scaffold(
         backgroundColor: backgroundColor,
-        appBar: AppBar(
-            toolbarHeight: 60 * ratio,
-            title: SizedBox(
-              height: 22,
-              child: Text('restoreAChest'.tr()),
-            )),
+        appBar: GeckoAppBar('restoreAChest'.tr()),
         body: SafeArea(
           child: Stack(children: [
             Column(children: <Widget>[
-              SizedBox(height: isTall ? 30 : 15),
+              ScaledSizedBox(height: isTall ? 20 : 3),
               bubbleSpeak('toRestoreEnterMnemonic'.tr()),
-              SizedBox(height: isTall ? 30 : 15),
+              ScaledSizedBox(height: isTall ? 20 : 5),
               Column(children: <Widget>[
                 Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -57,7 +54,7 @@ class RestoreChest extends StatelessWidget {
                       arrayCell(context, genW.cellController2),
                       arrayCell(context, genW.cellController3),
                     ]),
-                const SizedBox(height: 15),
+                ScaledSizedBox(height: isTall ? 10 : 3),
                 Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: <Widget>[
@@ -66,7 +63,7 @@ class RestoreChest extends StatelessWidget {
                       arrayCell(context, genW.cellController6),
                       arrayCell(context, genW.cellController7),
                     ]),
-                const SizedBox(height: 15),
+                ScaledSizedBox(height: isTall ? 10 : 3),
                 Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: <Widget>[
@@ -81,9 +78,9 @@ class RestoreChest extends StatelessWidget {
                 Expanded(
                     child: Align(
                   alignment: Alignment.center,
-                  child: SizedBox(
-                    width: 410,
-                    height: 70,
+                  child: ScaledSizedBox(
+                    width: 340,
+                    height: 55,
                     child: ElevatedButton(
                       key: keyGoNext,
                       style: ElevatedButton.styleFrom(
@@ -110,8 +107,10 @@ class RestoreChest extends StatelessWidget {
                       },
                       child: Text(
                         'restoreThisChest'.tr(),
-                        style: const TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.w600),
+                        style: scaledTextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white),
                       ),
                     ),
                   ),
@@ -119,10 +118,10 @@ class RestoreChest extends StatelessWidget {
                 ))
               else
                 Column(children: [
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: 190,
-                    height: 60,
+                  ScaledSizedBox(height: 20),
+                  ScaledSizedBox(
+                    width: 210,
+                    height: 55,
                     child: ElevatedButton(
                         key: keyPastMnemonic,
                         style: ElevatedButton.styleFrom(
@@ -135,16 +134,15 @@ class RestoreChest extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.content_paste_go,
-                              size: 27,
+                              size: scaleSize(28),
                             ),
-                            // const SizedBox(width: 10),
                             Text(
                               'pasteFromClipboard'.tr(),
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                  fontSize: 17, fontWeight: FontWeight.w400),
+                              style: scaledTextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w400),
                             ),
                           ],
                         )),
@@ -161,7 +159,7 @@ class RestoreChest extends StatelessWidget {
   Widget bubbleSpeak(String text) {
     return Bubble(
       margin: const BubbleEdges.symmetric(horizontal: 20),
-      padding: BubbleEdges.all(isTall ? 25 : 15),
+      padding: BubbleEdges.all(scaleSize(15)),
       borderWidth: 1,
       borderColor: Colors.black,
       radius: Radius.zero,
@@ -170,8 +168,8 @@ class RestoreChest extends StatelessWidget {
         text,
         key: keyBubbleSpeak,
         textAlign: TextAlign.justify,
-        style: const TextStyle(
-            color: Colors.black, fontSize: 19, fontWeight: FontWeight.w400),
+        style: scaledTextStyle(
+            color: Colors.black, fontSize: 17, fontWeight: FontWeight.w400),
       ),
     );
   }
@@ -181,8 +179,8 @@ class RestoreChest extends StatelessWidget {
         Provider.of<GenerateWalletsProvider>(context);
 
     return Container(
-      width: 102,
-      height: 40 * ratio,
+      width: scaleSize(87),
+      height: scaleSize(37),
       // ),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey),
@@ -213,7 +211,7 @@ class RestoreChest extends StatelessWidget {
           }
         },
         textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 20),
+        style: scaledTextStyle(fontSize: 17),
       ),
     );
   }
@@ -221,7 +219,7 @@ class RestoreChest extends StatelessWidget {
   Future<bool?> badMnemonicPopup(BuildContext context) async {
     return showDialog<bool>(
       context: context,
-      barrierDismissible: true, // user must tap button!
+      barrierDismissible: true,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Phrase incorrecte'),

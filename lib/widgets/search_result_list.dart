@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
@@ -36,12 +37,11 @@ class SearchResult extends StatelessWidget {
           if (snapshot.data?.isEmpty ?? true) {
             return SearchIdentityQuery(
                 name: searchProvider.searchController.text);
-            // const Text('Aucun résultat');
           } else {
             return Expanded(
               child: ListView(children: <Widget>[
                 for (G1WalletsList g1Wallet in snapshot.data ?? [])
-                  resultTile(g1Wallet, context),
+                  resultTileAddressSearch(g1Wallet, context),
               ]),
             );
           }
@@ -58,53 +58,50 @@ class SearchResult extends StatelessWidget {
     );
   }
 
-  Padding resultTile(G1WalletsList g1Wallet, BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 5),
-      child: ListTile(
-          key: keySearchResult(g1Wallet.address),
-          horizontalTitleGap: 40,
-          contentPadding: const EdgeInsets.all(5),
-          leading: CesiumAvatar(address: g1Wallet.address, size: avatarSize),
-          title: Row(children: <Widget>[
-            Text(getShortPubkey(g1Wallet.address),
-                style: const TextStyle(
-                    fontSize: 18,
-                    fontFamily: 'Monospace',
-                    fontWeight: FontWeight.w500),
-                textAlign: TextAlign.center),
-          ]),
-          trailing:
+  Widget resultTileAddressSearch(G1WalletsList g1Wallet, BuildContext context) {
+    return ListTile(
+        key: keySearchResult(g1Wallet.address),
+        horizontalTitleGap: 10,
+        contentPadding: const EdgeInsets.all(5),
+        leading: CesiumAvatar(address: g1Wallet.address, size: avatarSize),
+        title: Row(children: <Widget>[
+          Text(getShortPubkey(g1Wallet.address),
+              style: scaledTextStyle(
+                  fontSize: 18,
+                  fontFamily: 'Monospace',
+                  fontWeight: FontWeight.w500),
+              textAlign: TextAlign.center),
+        ]),
+        trailing:
+            Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          ScaledSizedBox(
+            width: 110,
+            child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
               Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            SizedBox(
-              width: 110,
-              child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Balance(address: g1Wallet.address, size: 16),
-                ]),
+                Balance(address: g1Wallet.address, size: 15),
               ]),
-            ),
-          ]),
-          subtitle: Row(children: <Widget>[
-            NameByAddress(
-              wallet: WalletData(address: g1Wallet.address),
-            ),
-          ]),
-          dense: false,
-          isThreeLine: false,
-          onTap: () {
-            Navigator.pop(context);
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) {
-                walletsProfilesClass.address = g1Wallet.address;
-                return WalletViewScreen(
-                  address: g1Wallet.address,
-                  username: g1Wallet.username,
-                );
-              }),
-            );
-          }),
-    );
+            ]),
+          ),
+        ]),
+        subtitle: Row(children: <Widget>[
+          NameByAddress(
+            wallet: WalletData(address: g1Wallet.address),
+          ),
+        ]),
+        dense: false,
+        isThreeLine: false,
+        onTap: () {
+          Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) {
+              walletsProfilesClass.address = g1Wallet.address;
+              return WalletViewScreen(
+                address: g1Wallet.address,
+                username: g1Wallet.username,
+              );
+            }),
+          );
+        });
   }
 }

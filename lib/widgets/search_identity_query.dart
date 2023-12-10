@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/search.dart';
@@ -28,7 +29,6 @@ class SearchIdentityQuery extends StatelessWidget {
       return Text('noResult'.tr());
     }
 
-    log.d(indexerEndpoint);
     final httpLink = HttpLink(
       '$indexerEndpoint/v1/graphql',
     );
@@ -44,12 +44,10 @@ class SearchIdentityQuery extends StatelessWidget {
       client: client,
       child: Query(
           options: QueryOptions(
-            document: gql(
-                searchAddressByNameQ), // this is the query string you just created
+            document: gql(searchAddressByNameQ),
             variables: {
               'name': name,
             },
-            // pollInterval: const Duration(seconds: 10),
           ),
           builder: (QueryResult result,
               {VoidCallback? refetch, FetchMore? fetchMore}) {
@@ -76,61 +74,58 @@ class SearchIdentityQuery extends StatelessWidget {
 
             searchProvider.resultLenght = identities.length;
 
-            double avatarSize = 55;
+            final avatarSize = scaleSize(45);
             return Expanded(
               child: ListView(children: <Widget>[
                 for (Map profile in identities)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 5),
-                    child: ListTile(
-                        key: keySearchResult(profile['pubkey']),
-                        horizontalTitleGap: 40,
-                        contentPadding: const EdgeInsets.all(5),
-                        leading: CesiumAvatar(
-                            address: profile['pubkey'], size: avatarSize),
-                        title: Row(children: <Widget>[
-                          Text(getShortPubkey(profile['pubkey']),
-                              style: const TextStyle(
-                                  fontSize: 18,
-                                  fontFamily: 'Monospace',
-                                  fontWeight: FontWeight.w500),
-                              textAlign: TextAlign.center),
-                        ]),
-                        trailing: SizedBox(
-                          width: 110,
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Balance(
-                                          address: profile['pubkey'], size: 16),
-                                    ]),
-                              ]),
-                        ),
-                        subtitle: Row(children: <Widget>[
-                          Text(profile['name'] ?? '',
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.w500),
-                              textAlign: TextAlign.center),
-                        ]),
-                        dense: false,
-                        isThreeLine: false,
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) {
-                              walletsProfiles.address = profile['pubkey'];
-                              return WalletViewScreen(
-                                address: profile['pubkey'],
-                                username: profile['name'],
-                              );
-                            }),
-                          );
-                        }),
-                  ),
+                  ListTile(
+                      key: keySearchResult(profile['pubkey']),
+                      horizontalTitleGap: 10,
+                      contentPadding: const EdgeInsets.only(right: 2),
+                      leading: CesiumAvatar(
+                          address: profile['pubkey'], size: avatarSize),
+                      title: Row(children: <Widget>[
+                        Text(getShortPubkey(profile['pubkey']),
+                            style: scaledTextStyle(
+                                fontSize: 16,
+                                fontFamily: 'Monospace',
+                                fontWeight: FontWeight.w500),
+                            textAlign: TextAlign.center),
+                      ]),
+                      trailing: ScaledSizedBox(
+                        width: 120,
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Balance(
+                                        address: profile['pubkey'], size: 15),
+                                  ]),
+                            ]),
+                      ),
+                      subtitle: Row(children: <Widget>[
+                        Text(profile['name'] ?? '',
+                            style: scaledTextStyle(
+                                fontSize: 17, fontWeight: FontWeight.w500),
+                            textAlign: TextAlign.center),
+                      ]),
+                      dense: !isTall,
+                      isThreeLine: false,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) {
+                            walletsProfiles.address = profile['pubkey'];
+                            return WalletViewScreen(
+                              address: profile['pubkey'],
+                              username: profile['name'],
+                            );
+                          }),
+                        );
+                      }),
               ]),
             );
           }),

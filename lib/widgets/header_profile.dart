@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -27,7 +28,7 @@ class HeaderProfile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double avatarSize = 140;
+    final avatarSize = scaleSize(110);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
@@ -37,7 +38,7 @@ class HeaderProfile extends StatelessWidget {
       Consumer<SubstrateSdk>(builder: (context, sub, _) {
         bool isAccountExist = walletOptions.balanceCache[address] != 0;
         return Container(
-            height: 185,
+            height: scaleSize(160),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
@@ -50,13 +51,13 @@ class HeaderProfile extends StatelessWidget {
             ));
       }),
       Padding(
-        padding: const EdgeInsets.only(left: 30, right: 30),
+        padding: EdgeInsets.only(left: scaleSize(19), right: scaleSize(19)),
         child: Row(children: <Widget>[
           Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Container(
-                  height: 10,
+                  height: 5,
                   color: yellowC,
                 ),
                 Row(children: [
@@ -68,16 +69,17 @@ class HeaderProfile extends StatelessWidget {
                     },
                     child: Text(
                       getShortPubkey(address),
-                      style: const TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w800,
+                      style: scaledTextStyle(
+                        fontSize: 23,
+                        fontFamily: 'Monospace',
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
                   ),
                 ]),
-                const SizedBox(height: 18),
-                Balance(address: address, size: 25),
-                const SizedBox(height: 5),
+                ScaledSizedBox(height: 15),
+                Balance(address: address, size: 20),
+                ScaledSizedBox(height: 5),
                 InkWell(
                   onTap: () => sub.certsCounterCache[address] != null
                       ? {
@@ -100,13 +102,15 @@ class HeaderProfile extends StatelessWidget {
                           address: address,
                           isOwner: false,
                           color: Colors.black),
-                      Certifications(address: address, size: 19)
+                      Certifications(address: address, size: 18)
                     ],
                   ),
                 ),
               ]),
           const Spacer(),
+          // ScaledSizedBox(width: 20),
           Column(children: <Widget>[
+            ScaledSizedBox(height: 15),
             CesiumAvatar(address: address, size: avatarSize),
           ]),
         ]),

@@ -6,6 +6,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/screens/onBoarding/2.dart';
 import 'package:gecko/widgets/commons/intro_info.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
+import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class OnboardingStepOne extends StatelessWidget {
   const OnboardingStepOne({Key? key}) : super(key: key);
@@ -14,17 +15,7 @@ class OnboardingStepOne extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-        toolbarHeight: 60 * ratio,
-        title: SizedBox(
-          height: 22,
-          child: Text(
-            'newWallet'.tr(),
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ),
-      ),
-      extendBodyBehindAppBar: true,
+      appBar: GeckoAppBar('newWallet'.tr()),
       body: SafeArea(
         child: Stack(children: [
           InfoIntro(

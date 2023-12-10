@@ -3,12 +3,14 @@ import 'package:flutter/services.dart';
 
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
+import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
@@ -33,12 +35,7 @@ class ShowSeed extends StatelessWidget {
 
     return Scaffold(
         backgroundColor: backgroundColor,
-        appBar: AppBar(
-            toolbarHeight: 60 * ratio,
-            title: SizedBox(
-              height: 22,
-              child: Text('myMnemonic'.tr()),
-            )),
+        appBar: GeckoAppBar('myMnemonic'.tr()),
         body: SafeArea(
           child: Column(children: <Widget>[
             const Spacer(flex: 1),
@@ -48,10 +45,10 @@ class ShowSeed extends StatelessWidget {
                 builder: (BuildContext context, AsyncSnapshot<String?> seed) {
                   if (seed.connectionState != ConnectionState.done ||
                       seed.hasError) {
-                    return const SizedBox(
+                    return ScaledSizedBox(
                       height: 15,
                       width: 15,
-                      child: CircularProgressIndicator(
+                      child: const CircularProgressIndicator(
                         color: orangeC,
                         strokeWidth: 2,
                       ),
@@ -64,74 +61,82 @@ class ShowSeed extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Column(children: [
-                          BuildText(text: 'keepYourMnemonicSecret'.tr()),
-                          SizedBox(height: 35 * ratio),
+                          BuildText(
+                              text: 'keepYourMnemonicSecret'.tr(), size: 16),
+                          ScaledSizedBox(height: 35),
                           sentanceArray(context, seed.data!.split(' ')),
-                          const SizedBox(height: 20),
-                          SizedBox(
-                            height: 40,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.black,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                          ScaledSizedBox(height: 20),
+                          Row(
+                            children: [
+                              ScaledSizedBox(
+                                height: 39,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    foregroundColor: Colors.black,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    backgroundColor: orangeC,
+                                    elevation: 1,
+                                  ),
+                                  onPressed: () {
+                                    Clipboard.setData(
+                                        ClipboardData(text: seed.data!));
+                                    snackCopySeed(context);
+                                  },
+                                  child: Row(children: <Widget>[
+                                    Image.asset(
+                                      'assets/walletOptions/copy-white.png',
+                                      height: scaleSize(24),
+                                    ),
+                                    ScaledSizedBox(width: 7),
+                                    Text(
+                                      'copy'.tr(),
+                                      style: scaledTextStyle(
+                                          fontSize: 14, color: Colors.grey[50]),
+                                    )
+                                  ]),
                                 ),
-                                backgroundColor: orangeC,
-                                elevation: 1, // foreground
                               ),
-                              onPressed: () {
-                                Clipboard.setData(
-                                    ClipboardData(text: seed.data!));
-                                snackCopySeed(context);
-                              },
-                              child: Row(children: <Widget>[
-                                Image.asset(
-                                  'assets/walletOptions/copy-white.png',
-                                  height: 25,
+                              ScaledSizedBox(width: 50),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) {
+                                      return PrintWallet(seed.data);
+                                    }),
+                                  );
+                                },
+                                child: Image.asset(
+                                  'assets/printer.png',
+                                  height: scaleSize(38),
                                 ),
-                                const SizedBox(width: 7),
-                                Text(
-                                  'copy'.tr(),
-                                  style: TextStyle(
-                                      fontSize: 15, color: Colors.grey[50]),
-                                )
-                              ]),
-                            ),
-                          ),
-                          const SizedBox(height: 30),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) {
-                                  return PrintWallet(seed.data);
-                                }),
-                              );
-                            },
-                            child: Image.asset(
-                              'assets/printer.png',
-                              height: 42 * ratio,
-                            ),
+                              ),
+                            ],
                           ),
                         ]),
                       ]);
                 }),
-            const Spacer(flex: 2),
-            SizedBox(
-              width: 380 * ratio,
-              height: 60 * ratio,
+            const Spacer(flex: 3),
+            ScaledSizedBox(
+              width: 240,
+              height: 55,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, elevation: 4,
-                  backgroundColor: orangeC, // foreground
+                  foregroundColor: Colors.white,
+                  elevation: 4,
+                  backgroundColor: orangeC,
                 ),
                 onPressed: () {
                   Navigator.pop(context);
                 },
                 child: Text(
                   'close'.tr(),
-                  style: TextStyle(
-                      fontSize: 23 * ratio, fontWeight: FontWeight.w600),
+                  style: scaledTextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white),
                 ),
               ),
             ),
@@ -141,61 +146,55 @@ class ShowSeed extends StatelessWidget {
   }
 
   Widget sentanceArray(BuildContext context, List mnemonic) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 3),
-      child: Container(
-          constraints: const BoxConstraints(maxWidth: 450),
-          decoration: BoxDecoration(
-              border: Border.all(color: Colors.black),
-              color: const Color(0xffeeeedd),
-              borderRadius: const BorderRadius.all(
-                Radius.circular(10),
-              )),
-          padding: const EdgeInsets.all(20),
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Row(children: <Widget>[
-                  arrayCell(mnemonic[0], 1),
-                  arrayCell(mnemonic[1], 2),
-                  arrayCell(mnemonic[2], 3),
-                  arrayCell(mnemonic[3], 4),
-                ]),
-                const SizedBox(height: 15),
-                Row(children: <Widget>[
-                  arrayCell(mnemonic[4], 5),
-                  arrayCell(mnemonic[5], 6),
-                  arrayCell(mnemonic[6], 7),
-                  arrayCell(mnemonic[7], 8),
-                ]),
-                const SizedBox(height: 15),
-                Row(children: <Widget>[
-                  arrayCell(mnemonic[8], 9),
-                  arrayCell(mnemonic[9], 10),
-                  arrayCell(mnemonic[10], 11),
-                  arrayCell(mnemonic[11], 12),
-                ]),
-              ])),
-    );
+    return Container(
+        constraints: BoxConstraints(maxWidth: scaleSize(360)),
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.black),
+            color: const Color(0xffeeeedd),
+            borderRadius: const BorderRadius.all(
+              Radius.circular(10),
+            )),
+        padding: EdgeInsets.all(scaleSize(14)),
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Row(children: <Widget>[
+                arrayCell(mnemonic[0], 1),
+                arrayCell(mnemonic[1], 2),
+                arrayCell(mnemonic[2], 3),
+                arrayCell(mnemonic[3], 4),
+              ]),
+              ScaledSizedBox(height: 15),
+              Row(children: <Widget>[
+                arrayCell(mnemonic[4], 5),
+                arrayCell(mnemonic[5], 6),
+                arrayCell(mnemonic[6], 7),
+                arrayCell(mnemonic[7], 8),
+              ]),
+              ScaledSizedBox(height: 15),
+              Row(children: <Widget>[
+                arrayCell(mnemonic[8], 9),
+                arrayCell(mnemonic[9], 10),
+                arrayCell(mnemonic[10], 11),
+                arrayCell(mnemonic[11], 12),
+              ]),
+            ]));
   }
 
   Widget arrayCell(dataWord, int nbr) {
-    log.d(nbr);
-
-    return SizedBox(
-      width: 100,
+    return ScaledSizedBox(
+      width: 82,
       child: Column(children: <Widget>[
         Text(
           nbr.toString(),
-          style:
-              TextStyle(fontSize: 13 * ratio, color: const Color(0xff6b6b52)),
+          style: scaledTextStyle(fontSize: 11, color: const Color(0xff6b6b52)),
         ),
         Text(
           dataWord,
           key: keyMnemonicWord(dataWord),
-          style: TextStyle(fontSize: 17 * ratio, color: Colors.black),
+          style: scaledTextStyle(fontSize: 16, color: Colors.black),
         ),
       ]),
     );
@@ -219,13 +218,10 @@ class PrintWallet extends StatelessWidget {
               }),
           backgroundColor: yellowC,
           foregroundColor: Colors.black,
-          toolbarHeight: 60 * ratio,
-          title: SizedBox(
-            height: 22,
-            child: Text(
-              'printMyMnemonic'.tr(),
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
+          toolbarHeight: scaleSize(57),
+          title: Text(
+            'printMyMnemonic'.tr(),
+            style: scaledTextStyle(fontWeight: FontWeight.w600),
           ),
         ),
         body: PdfPreview(

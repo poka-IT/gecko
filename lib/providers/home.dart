@@ -109,7 +109,6 @@ class HomeProvider with ChangeNotifier {
       configBox.put('endpoint', listEndpoints);
     }
 
-    log.i('ENDPOINT: $listEndpoints');
     return listEndpoints;
   }
 

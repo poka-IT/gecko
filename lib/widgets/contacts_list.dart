@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
@@ -27,11 +29,11 @@ class ContactsList extends StatelessWidget {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 5),
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            const SizedBox(height: 20, width: double.infinity),
+            ScaledSizedBox(height: 10, width: double.infinity),
             if (myContacts.isEmpty)
               Text('noContacts'.tr())
             else
@@ -42,14 +44,15 @@ class ContactsList extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 5),
                       child: ListTile(
                           key: keySearchResult('keyID++'),
-                          horizontalTitleGap: 40,
+                          horizontalTitleGap: 7,
                           contentPadding: const EdgeInsets.all(5),
-                          leading:
-                              CesiumAvatar(address: g1Wallet.address, size: 55),
+                          dense: !isTall,
+                          leading: CesiumAvatar(
+                              address: g1Wallet.address, size: scaleSize(50)),
                           title: Row(children: <Widget>[
                             Text(getShortPubkey(g1Wallet.address),
-                                style: const TextStyle(
-                                    fontSize: 18,
+                                style: scaledTextStyle(
+                                    fontSize: 16,
                                     fontFamily: 'Monospace',
                                     fontWeight: FontWeight.w500),
                                 textAlign: TextAlign.center),
@@ -57,7 +60,7 @@ class ContactsList extends StatelessWidget {
                           trailing: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                SizedBox(
+                                ScaledSizedBox(
                                   width: 110,
                                   child: Row(
                                       mainAxisAlignment: MainAxisAlignment.end,
@@ -68,16 +71,16 @@ class ContactsList extends StatelessWidget {
                                             children: [
                                               Balance(
                                                   address: g1Wallet.address,
-                                                  size: 16),
+                                                  size: scaleSize(14)),
                                             ]),
                                       ]),
                                 ),
                               ]),
                           subtitle: Row(children: <Widget>[
                             NameByAddress(
+                                size: scaleSize(17),
                                 wallet: WalletData(address: g1Wallet.address))
                           ]),
-                          dense: false,
                           isThreeLine: false,
                           onTap: () {
                             Navigator.push(

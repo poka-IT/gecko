@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/myWallets/manage_membership.dart';
@@ -26,16 +27,16 @@ class ManageMembershipButton extends StatelessWidget {
           }),
         );
       },
-      child: SizedBox(
+      child: ScaledSizedBox(
         height: 40,
         child: Row(children: <Widget>[
-          const SizedBox(width: 32),
+          ScaledSizedBox(width: 28),
           Image.asset(
             'assets/medal.png',
-            height: 45,
+            height: scaleSize(42),
           ),
-          const SizedBox(width: 22),
-          Text('manageMembership'.tr(), style: const TextStyle(fontSize: 20)),
+          ScaledSizedBox(width: 20),
+          Text('manageMembership'.tr(), style: scaledTextStyle(fontSize: 18)),
         ]),
       ),
     );

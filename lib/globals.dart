@@ -22,14 +22,11 @@ late Box<G1WalletsList> g1WalletsBox;
 late Box<G1WalletsList> contactsBox;
 // late Box keystoreBox;
 late Directory imageDirectory;
+late bool isTall;
 
 String cesiumPod = "https://g1.data.le-sou.org";
 // String cesiumPod = "https://g1.data.presles.fr";
 // String cesiumPod = "https://g1.data.e-is.pro";
-
-// Responsive ratios
-late bool isTall;
-late double ratio;
 
 // Contexts
 late BuildContext homeContext;

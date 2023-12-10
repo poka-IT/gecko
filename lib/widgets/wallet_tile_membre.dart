@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -22,7 +23,8 @@ class WalletTileMembre extends StatelessWidget {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
     final defaultWallet = myWalletProvider.getDefaultWallet();
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 70, vertical: 20),
+      padding: EdgeInsets.symmetric(
+          horizontal: scaleSize(52), vertical: scaleSize(15)),
       child: GestureDetector(
         key: keyOpenWallet(repository.address),
         onTap: () {
@@ -35,9 +37,9 @@ class WalletTileMembre extends StatelessWidget {
             ),
           );
         },
-        child: SizedBox(
+        child: ScaledSizedBox(
           key: repository.number == 1 ? keyDragAndDrop : const Key('nothing'),
-          height: 240,
+          height: 180,
           child: ClipOvalShadow(
             shadow: const Shadow(
               color: Colors.transparent,
@@ -84,12 +86,12 @@ class WalletTileMembre extends StatelessWidget {
                               ),
                       ),
                       Positioned(
-                        left: 25,
-                        top: 25,
+                        left: 20,
+                        top: 20,
                         child: Opacity(
-                          opacity: 0.6,
+                          opacity: 0.8,
                           child: Image.asset('assets/medal.png',
-                              color: Colors.black, height: 40),
+                              color: orangeC, height: scaleSize(33)),
                         ),
                       ),
                     ],
@@ -101,12 +103,12 @@ class WalletTileMembre extends StatelessWidget {
                       isDefault: repository.address == defaultWallet.address),
                   Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                     Column(children: [
-                      const SizedBox(height: 10),
+                      ScaledSizedBox(height: 5),
                       Opacity(
                           opacity: 0.7,
                           child: NameByAddress(
                             wallet: repository,
-                            size: 20,
+                            size: 18,
                             color: defaultWallet.address == repository.address
                                 ? Colors.white
                                 : Colors.black,
@@ -116,8 +118,8 @@ class WalletTileMembre extends StatelessWidget {
                     ]),
                   ]),
                   Positioned(
-                    right: 25,
-                    top: 25,
+                    right: scaleSize(12),
+                    top: scaleSize(18),
                     child: Opacity(
                       opacity: 0.7,
                       child: Certifications(
@@ -125,7 +127,7 @@ class WalletTileMembre extends StatelessWidget {
                           color: defaultWallet.address == repository.address
                               ? Colors.white
                               : Colors.black,
-                          size: 18),
+                          size: 15),
                     ),
                   ),
                 ]),
@@ -154,8 +156,8 @@ class BalanceBuilder extends StatelessWidget {
       width: double.infinity,
       color: isDefault ? orangeC : yellowC,
       child: Padding(
-          padding:
-              const EdgeInsets.only(left: 5, right: 5, top: 45, bottom: 15),
+          padding: EdgeInsets.only(
+              left: 5, right: 5, top: scaleSize(27), bottom: scaleSize(11)),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -163,7 +165,7 @@ class BalanceBuilder extends StatelessWidget {
                 opacity: 0.7,
                 child: Balance(
                     address: address,
-                    size: 16,
+                    size: 15,
                     color: isDefault ? Colors.white : Colors.black,
                     loadingColor: isDefault ? yellowC : orangeC),
               )

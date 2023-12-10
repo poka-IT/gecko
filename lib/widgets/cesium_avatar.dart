@@ -13,7 +13,6 @@ class CesiumAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final csProvider = Provider.of<CesiumPlusProvider>(context, listen: false);
-    log.d('tatata');
 
     return ClipOval(
       child: FutureBuilder(

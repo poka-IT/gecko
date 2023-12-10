@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -194,8 +195,6 @@ class CesiumPlusProvider with ChangeNotifier {
 
     List queryOptions =
         await _buildQuerySetAvatar(pubkeyV1, address, avatarString);
-    log.d(queryOptions[0]);
-    log.d(jsonDecode(queryOptions[1]));
 
     late Response response;
     try {
@@ -211,7 +210,6 @@ class CesiumPlusProvider with ChangeNotifier {
           .timeout(
             const Duration(seconds: 15),
           );
-      log.d(response.data);
       return response.statusCode == 200;
     } catch (e) {
       log.e(e);
@@ -260,4 +258,4 @@ class CesiumPlusProvider with ChangeNotifier {
 }
 
 Image defaultAvatar(double size) =>
-    Image.asset(('assets/icon_user.png'), height: size);
+    Image.asset(('assets/icon_user.png'), height: scaleSize(size));

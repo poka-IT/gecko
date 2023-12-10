@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:provider/provider.dart';
 
@@ -24,18 +25,20 @@ class Certifications extends StatelessWidget {
                   ? Row(
                       children: [
                         Image.asset('assets/medal.png',
-                            color: color, height: 20),
-                        const SizedBox(width: 1),
+                            color: color, height: scaleSize(18)),
+                        ScaledSizedBox(width: 1),
                         Text(certs.data?[0].toString() ?? '0',
-                            style: TextStyle(fontSize: size, color: color)),
-                        const SizedBox(width: 5),
+                            style:
+                                scaledTextStyle(fontSize: size, color: color)),
+                        ScaledSizedBox(width: 5),
                         Text(
                           "(${certs.data?[1].toString() ?? '0'})",
-                          style: TextStyle(fontSize: size * 0.7, color: color),
+                          style: scaledTextStyle(
+                              fontSize: size * 0.7, color: color),
                         )
                       ],
                     )
-                  : const Text('');
+                  : const SizedBox();
             });
       }),
     ]);

@@ -40,8 +40,8 @@ class SubstrateSdk with ChangeNotifier {
   String? transactionStatus;
   final int initSs58 = 42;
   Map<String, int> currencyParameters = {};
-  TextEditingController csSalt = TextEditingController();
-  TextEditingController csPassword = TextEditingController();
+  final csSalt = TextEditingController();
+  final csPassword = TextEditingController();
   String g1V1NewAddress = '';
   String g1V1OldPubkey = '';
   bool isCesiumIDVisible = false;
@@ -140,34 +140,11 @@ class SubstrateSdk with ChangeNotifier {
     final myWallets =
         Provider.of<MyWalletsProvider>(homeContext, listen: false);
     final messageToSign = Uint8List.fromList(document.codeUnits);
-    // final pubkeyV1 = json.decode(document)['issuer'];
-    // final address = await pubkeyV1ToAddress(pubkeyV1);
-    // final walletData = myWallets.getWalletDataByAddress(address);
-    // final derivationPath =
-    //     walletData!.derivation == null ? '' : "//${walletData.derivation}";
-
-    // final seed = await getSeed(address, myWallets.pinCode);
-    // final addressEd25519 = await importAccount(
-    //     mnemonic: seed,
-    //     password: 'AAAAA',
-    //     cryptoType: CryptoType.ed25519,
-    //     derivePath: derivationPath);
-
-    // final pubkeyEd25519 = await addressToPubkeyB58(addressEd25519);
 
     final signatureString =
         await _signMessage(messageToSign, address, myWallets.pinCode);
     final signatureInt = HEX.decode(signatureString.substring(2));
     final signature64 = base64Encode(signatureInt);
-
-//     await deleteAccounts([addressEd25519]);
-
-//     log.d("""
-// $addressEd25519
-// $pubkeyEd25519
-// $derivationPath
-// $signature64
-// """);
 
     return signature64;
   }
@@ -232,7 +209,7 @@ class SubstrateSdk with ChangeNotifier {
   Future<bool> hasAccountConsumers(String address) async {
     final accountInfo = await _getStorage('system.account("$address")');
     final consumers = accountInfo['consumers'];
-    return consumers == 0 ? false : true;
+    return !(consumers == 0);
   }
 
   Future<int> getUdValue() async {
@@ -355,9 +332,6 @@ class SubstrateSdk with ChangeNotifier {
       }
     }
 
-    // log.d(
-    //     "debug computeUnclaimUds: ${pastReevals.reversed} --- $firstEligibleUd --- $currentUdIndex");
-
     return totalAmount;
   }
 
@@ -462,7 +436,7 @@ class SubstrateSdk with ChangeNotifier {
     if (idtyIndex == -1) return false;
 
     final isSmith = await _getStorage('smithMembership.membership($idtyIndex)');
-    return isSmith == null ? false : true;
+    return !(isSmith == null);
   }
 
   Future<String> getGenesisHash() async {
@@ -471,8 +445,6 @@ class SubstrateSdk with ChangeNotifier {
           wrapPromise: false,
         ) ??
         [];
-    // log.d('genesisHash: $genesisHash');
-    // log.d('genesisHash: ${HEX.decode(genesisHash.substring(2))}');
     return genesisHash;
   }
 
@@ -497,23 +469,23 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future initCurrencyParameters() async {
-    try {
-      currencyParameters['ss58'] =
-          await _getStorageConst('system.ss58Prefix.words');
-      currencyParameters['minCertForMembership'] =
-          await _getStorageConst('wot.minCertForMembership.words');
-      currencyParameters['newAccountPrice'] =
-          await _getStorageConst('account.newAccountPrice.words');
-      currencyParameters['existentialDeposit'] =
-          await _getStorageConst('balances.existentialDeposit.words');
-      currencyParameters['certPeriod'] =
-          await _getStorageConst('cert.certPeriod.words');
-      currencyParameters['certMaxByIssuer'] =
-          await _getStorageConst('cert.maxByIssuer.words');
-      currencyParameters['certValidityPeriod'] =
-          await _getStorageConst('cert.validityPeriod.words');
-    } catch (e) {
-      log.i('error while getting storageVals (network?) :: $e');
+    const currencyParametersNames = {
+      'ss58': 'system.ss58Prefix.words',
+      'minCertForMembership': 'wot.minCertForMembership.words',
+      'newAccountPrice': 'account.newAccountPrice.words',
+      'existentialDeposit': 'balances.existentialDeposit.words',
+      'certPeriod': 'cert.certPeriod.words',
+      'certMaxByIssuer': 'cert.maxByIssuer.words',
+      'certValidityPeriod': 'cert.validityPeriod.words',
+    };
+
+    for (var param in currencyParametersNames.keys) {
+      try {
+        currencyParameters[param] =
+            await _getStorageConst(currencyParametersNames[param]!);
+      } catch (e) {
+        log.e('error while getting param $param :: $e');
+      }
     }
     log.i('currencyParameters: $currencyParameters');
   }
@@ -603,7 +575,7 @@ class SubstrateSdk with ChangeNotifier {
     // final dateText = await sdk.webView!
     //     .evalJavascript('api.tx($dateTextByte)', wrapPromise: false);
 
-    // log.d('aaaaaaaaaaaaaaaaaaaaa: $dateText');
+    // log.d('Blockchain start: $dateText');
     return DateFormat();
   }
 
@@ -654,12 +626,10 @@ class SubstrateSdk with ChangeNotifier {
     notifyListeners();
     if (resNode != null) {
       nodeConnected = true;
-      // await getSs58Prefix();
 
       // Subscribe bloc number
       sdk.api.setting.subscribeBestNumber((res) {
         blocNumber = int.parse(res.toString());
-        // log.d(sdk.api.connectedNode?.endpoint);
         if (sdk.api.connectedNode?.endpoint == null) {
           nodeConnected = false;
           homeProvider.changeMessage("networkLost".tr(), 0);
@@ -673,6 +643,7 @@ class SubstrateSdk with ChangeNotifier {
 
       // Currency parameters
       await initCurrencyParameters();
+
       // Indexer Blockchain start
       getBlockStart();
 
@@ -681,15 +652,14 @@ class SubstrateSdk with ChangeNotifier {
           "wellConnectedToNode"
               .tr(args: [getConnectedEndpoint()!.split('/')[2]]),
           5);
-      // snackNode(ctx, true);
     } else {
       nodeConnected = false;
       notifyListeners();
       homeProvider.changeMessage("noDuniterEndointAvailable".tr(), 0);
-      if (!myWalletProvider.checkIfWalletExist()) snackNode(homeContext, false);
+      if (!myWalletProvider.isWalletsExists()) snackNode(homeContext, false);
     }
 
-    log.d(sdk.api.connectedNode?.endpoint);
+    log.i('Connected to node: ${sdk.api.connectedNode?.endpoint}');
   }
 
   List<NetworkParams> getDuniterBootstrap() {
@@ -741,7 +711,6 @@ class SubstrateSdk with ChangeNotifier {
       notifyListeners();
     });
     if (json == null) return '';
-    // log.d(json);
     try {
       await sdk.api.keyring.addAccount(
         keyring,
@@ -798,7 +767,7 @@ class SubstrateSdk with ChangeNotifier {
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
     keyring.setCurrent(account);
-    myWalletProvider.resetPinCode();
+    myWalletProvider.debounceResetPinCode();
 
     return await sdk.api.keyring.changePassword(keyring, passOld, passNew);
   }
@@ -1036,7 +1005,7 @@ class SubstrateSdk with ChangeNotifier {
         toIdtyStatus == IdtyStatus.confirmed) {
       if (toCerts![0] >= currencyParameters['minCertForMembership']! - 1 &&
           toIdtyStatus != IdtyStatus.validated) {
-        log.i('Batch cert and membership validation');
+        log.d('Batch cert and membership validation');
         txInfo = TxInfoData(
           'utility',
           'batchAll',
@@ -1108,8 +1077,6 @@ class SubstrateSdk with ChangeNotifier {
     final newKeySig =
         await _signMessage(messageToSign, destAddress, destPassword);
     final newKeySigType = '{"Sr25519": "$newKeySig"}';
-
-    // messageToSign: [105, 99, 111, 107, 7, 193, 18, 255, 106, 185, 215, 208, 213, 49, 235, 229, 159, 152, 179, 83, 24, 178, 129, 59, 22, 85, 87, 115, 128, 129, 157, 56, 214, 24, 45, 153, 21, 0, 0, 0, 181, 82, 178, 99, 198, 4, 156, 190, 78, 35, 102, 137, 255, 7, 162, 31, 16, 79, 255, 132, 130, 237, 230, 222, 176, 88, 245, 217, 237, 78, 196, 239]
 
     log.d("""
 fromAddress: $fromAddress
@@ -1210,7 +1177,6 @@ newKeySig: $newKeySigType""");
       password: password,
     );
 
-    log.d('g1migration idtyStatus: $idtyStatus');
     if (idtyStatus != IdtyStatus.none) {
       await migrateIdentity(
           fromAddress: keypair.address!,

@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -42,7 +43,6 @@ class ChestProvider with ChangeNotifier {
 
   List<String> getChestWallets(ChestData chest) {
     List<String> toDelete = [];
-    log.d(chest.key);
     walletBox.toMap().forEach((key, WalletData value) {
       if (value.chest == chest.key) {
         toDelete.add(value.address);
@@ -54,19 +54,27 @@ class ChestProvider with ChangeNotifier {
   Future<bool?> _confirmDeletingChest(context, String? walletName) async {
     return showDialog<bool>(
       context: context,
-      barrierDismissible: true, // user must tap button!
+      barrierDismissible: true,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('areYouSureToDeleteWallet'.tr(args: [walletName!])),
+          title: Text(
+            'areYouSureToDeleteWallet'.tr(args: [walletName!]),
+            style: scaledTextStyle(fontSize: 17),
+          ),
           actions: <Widget>[
             TextButton(
-              child: Text("no".tr(), key: keyCancel),
+              child: Text("no".tr(),
+                  style:
+                      scaledTextStyle(fontSize: 17, color: Colors.blueAccent),
+                  key: keyCancel),
               onPressed: () {
                 Navigator.pop(context, false);
               },
             ),
             TextButton(
-              child: Text("yes".tr(), key: keyConfirm),
+              child: Text("yes".tr(),
+                  style: scaledTextStyle(fontSize: 17, color: Colors.red),
+                  key: keyConfirm),
               onPressed: () {
                 Navigator.pop(context, true);
               },

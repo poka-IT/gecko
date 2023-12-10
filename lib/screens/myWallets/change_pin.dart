@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:durt/durt.dart';
 
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -48,11 +49,8 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           elevation: 1,
-          toolbarHeight: 60 * ratio,
-          title: SizedBox(
-            height: 22,
-            child: Text(widget.walletName!),
-          ),
+          toolbarHeight: scaleSize(57),
+          title: Text(widget.walletName!),
         ),
         body: Center(
           child: SafeArea(

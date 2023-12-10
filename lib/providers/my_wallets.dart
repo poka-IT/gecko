@@ -26,30 +26,22 @@ class MyWalletsProvider with ChangeNotifier {
     return configBox.get('currentChest');
   }
 
-  bool checkIfWalletExist() {
-    if (chestBox.isEmpty) {
-      // log.i('No wallets detected');
-      return false;
-    } else {
-      return true;
-    }
-  }
+  bool isWalletsExists() => chestBox.isNotEmpty;
 
   Future<List<WalletData>> readAllWallets([int? chest]) async {
     final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-    chest = chest ?? configBox.get('currentChest') ?? 0;
+    chest = chest ?? getCurrentChest();
     listWallets.clear();
     final wallets = walletBox.toMap().values.toList();
     Map<String, WalletData> walletsToScan = {};
     for (var walletFromBox in wallets) {
-      if (walletFromBox.chest == chest) {
-        // log.d('${walletFromBox.number} - ${walletFromBox.name}');
-        if (walletFromBox.identityStatus == IdtyStatus.unknown) {
-          walletsToScan.putIfAbsent(
-              walletFromBox.address, (() => walletFromBox));
-        } else {
-          listWallets.add(walletFromBox);
-        }
+      if (walletFromBox.chest != chest) {
+        continue;
+      }
+      if (walletFromBox.identityStatus == IdtyStatus.unknown) {
+        walletsToScan.putIfAbsent(walletFromBox.address, (() => walletFromBox));
+      } else {
+        listWallets.add(walletFromBox);
       }
     }
 
@@ -221,7 +213,7 @@ class MyWalletsProvider with ChangeNotifier {
     if (listWallets.isEmpty) {
       newDerivationNbr = 2;
     } else {
-      WalletData lastWallet = listWallets.reduce(
+      final lastWallet = listWallets.reduce(
           (curr, next) => curr.derivation! > next.derivation! ? curr : next);
 
       if (lastWallet.derivation == -1) {
@@ -237,7 +229,7 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   int lockPin = 0;
-  Future resetPinCode([int minutes = 15]) async {
+  Future debounceResetPinCode([int minutes = 15]) async {
     lockPin++;
     final actualLock = lockPin;
     await Future.delayed(

@@ -3,6 +3,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/home.dart';
@@ -38,14 +39,14 @@ class HomeButtons extends StatelessWidget {
             ),
             child: ClipOval(
               child: Material(
-                color: orangeC, // button color
+                color: orangeC,
                 child: InkWell(
                     key: keyOpenSearch,
                     child: Padding(
-                      padding: const EdgeInsets.all(18),
+                      padding: EdgeInsets.all(scaleSize(15)),
                       child: Image(
                           image: const AssetImage('assets/home/loupe.png'),
-                          height: 62 * ratio),
+                          height: scaleSize(58)),
                     ),
                     onTap: () {
                       Navigator.push(
@@ -58,17 +59,17 @@ class HomeButtons extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          ScaledSizedBox(height: 10),
           Text(
             "searchWallet".tr(),
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: scaledTextStyle(
                 color: Colors.white,
-                fontSize: 15 * ratio,
+                fontSize: 13.5,
                 fontWeight: FontWeight.w500),
           )
         ]),
-        const SizedBox(width: 120),
+        ScaledSizedBox(width: 95),
         Column(children: <Widget>[
           Container(
             decoration: const BoxDecoration(
@@ -108,26 +109,26 @@ class HomeButtons extends StatelessWidget {
                             }
                           },
                     child: Padding(
-                        padding: const EdgeInsets.all(18),
+                        padding: EdgeInsets.all(scaleSize(14.5)),
                         child: Image(
                             image: const AssetImage('assets/home/wallet.png'),
-                            height: 68 * ratio))),
+                            height: scaleSize(61)))),
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          ScaledSizedBox(height: 10),
           Text(
             "manageWallets".tr(),
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: scaledTextStyle(
                 color: Colors.white,
-                fontSize: 15 * ratio,
+                fontSize: 13.5,
                 fontWeight: FontWeight.w500),
           )
         ])
       ]),
       Padding(
-        padding: EdgeInsets.only(top: 35 * ratio),
+        padding: EdgeInsets.only(top: scaleSize(30)),
         child:
             Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
           Column(children: <Widget>[
@@ -145,29 +146,29 @@ class HomeButtons extends StatelessWidget {
                   color: orangeC, // button color
                   child: InkWell(
                       child: Padding(
-                          padding: const EdgeInsets.all(18),
+                          padding: EdgeInsets.all(scaleSize(14)),
                           child: Image(
                               image: const AssetImage('assets/home/qrcode.png'),
-                              height: 68 * ratio)),
+                              height: scaleSize(62))),
                       onTap: () async {
                         await historyProvider.scan(context);
                       }),
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            ScaledSizedBox(height: 10),
             Text(
               "scanQRCode".tr(),
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: scaledTextStyle(
                   color: Colors.white,
-                  fontSize: 15 * ratio,
+                  fontSize: 13.5,
                   fontWeight: FontWeight.w500),
             )
           ])
         ]),
       ),
-      SizedBox(height: isTall ? 80 : 40)
+      ScaledSizedBox(height: isTall ? 60 : 30)
     ]);
   }
 }

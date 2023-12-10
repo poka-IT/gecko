@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/widgets/history_view.dart';
@@ -24,11 +25,11 @@ class HistoryQuery extends StatelessWidget {
 
     if (indexerEndpoint == '') {
       return Column(children: <Widget>[
-        const SizedBox(height: 50),
+        ScaledSizedBox(height: 50),
         Text(
           "noNetworkNoHistory".tr(),
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 18),
+          style: scaledTextStyle(fontSize: 18),
         )
       ]);
     }
@@ -72,28 +73,26 @@ class HistoryQuery extends StatelessWidget {
               if (result.hasException) {
                 log.e('Error Indexer: ${result.exception}');
                 return Column(children: <Widget>[
-                  const SizedBox(height: 50),
+                  ScaledSizedBox(height: 50),
                   Text(
                     "noNetworkNoHistory".tr(),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 18),
+                    style: scaledTextStyle(fontSize: 18),
                   )
                 ]);
               } else if (result
                   .data?['transaction_connection']?['edges'].isEmpty) {
                 return Column(children: <Widget>[
-                  const SizedBox(height: 50),
+                  ScaledSizedBox(height: 50),
                   Text(
                     "noDataToDisplay".tr(),
-                    style: const TextStyle(fontSize: 18),
+                    style: scaledTextStyle(fontSize: 18),
                   )
                 ]);
               }
 
               if (result.isNotLoading) {
                 if (duniterIndexer.fetchMoreCursor == null) nPage = 1;
-
-                // log.d('nPage: $nPage');
 
                 if (nPage <= 3) {
                   nRepositories = 20;

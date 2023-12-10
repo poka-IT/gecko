@@ -2,9 +2,9 @@
 // ignore_for_file: must_be_immutable
 
 import 'package:easy_localization/easy_localization.dart';
-
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
@@ -13,6 +13,7 @@ import 'package:gecko/screens/onBoarding/7.dart';
 import 'package:gecko/screens/onBoarding/9.dart';
 import 'package:gecko/widgets/commons/fader_transition.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
+import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
 class OnboardingStepSix extends StatelessWidget {
@@ -22,7 +23,7 @@ class OnboardingStepSix extends StatelessWidget {
 
   final bool skipIntro;
   String? generatedMnemonic;
-  TextEditingController wordController = TextEditingController();
+  final wordController = TextEditingController();
   final TextEditingController _mnemonicController = TextEditingController();
 
   @override
@@ -40,47 +41,37 @@ class OnboardingStepSix extends StatelessWidget {
       child: Scaffold(
         backgroundColor: backgroundColor,
         resizeToAvoidBottomInset: false,
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          toolbarHeight: 60 * ratio,
-          title: SizedBox(
-            height: 22,
-            child: Text(
-              'yourMnemonic'.tr(),
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ),
+        appBar: GeckoAppBar('yourMnemonic'.tr()),
         body: SafeArea(
           child: Stack(children: [
             Align(
               alignment: Alignment.topCenter,
               child: Column(children: [
-                SizedBox(height: isTall ? 40 : 20),
+                ScaledSizedBox(height: isTall ? 25 : 5),
                 const BuildProgressBar(pagePosition: 5),
-                SizedBox(height: isTall ? 40 : 20),
+                ScaledSizedBox(height: isTall ? 25 : 5),
                 BuildText(
                     text: "didYouNoteMnemonicToBeSureTypeWord".tr(args: [
                       (generateWalletProvider.nbrWord + 1).toString()
                     ]),
-                    size: 20,
                     isMd: true),
-                SizedBox(height: isTall ? 70 : 20),
-                Text('${generateWalletProvider.nbrWord + 1}',
-                    key: keyAskedWord,
-                    style: TextStyle(
-                        fontSize: isTall ? 17 : 15,
-                        color: orangeC,
-                        fontWeight: FontWeight.w400)),
-                const SizedBox(height: 10),
+                ScaledSizedBox(height: isTall ? 40 : 5),
+                if (isTall)
+                  Text('${generateWalletProvider.nbrWord + 1}',
+                      key: keyAskedWord,
+                      style: scaledTextStyle(
+                          fontSize: 20,
+                          color: orangeC,
+                          fontWeight: FontWeight.w500)),
+                if (isTall) ScaledSizedBox(height: 5),
                 Container(
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(7),
                         border: Border.all(
                           color: Colors.grey[600]!,
-                          width: 3,
+                          width: scaleSize(3),
                         )),
-                    width: 430,
+                    width: scaleSize(340),
                     child: TextFormField(
                         key: keyInputWord,
                         autofocus: true,
@@ -94,8 +85,8 @@ class OnboardingStepSix extends StatelessWidget {
                         maxLines: 1,
                         textAlign: TextAlign.center,
                         decoration: InputDecoration(
-                          labelStyle: TextStyle(
-                              fontSize: 22.0,
+                          labelStyle: scaledTextStyle(
+                              fontSize: 19,
                               color: Colors.grey[500],
                               fontWeight: FontWeight.w500),
                           labelText: generateWalletProvider.isAskedWordValid
@@ -103,10 +94,10 @@ class OnboardingStepSix extends StatelessWidget {
                               : "${generateWalletProvider.nbrWordAlpha} ${"nthMnemonicWord".tr()}",
                           fillColor: const Color(0xffeeeedd),
                           filled: true,
-                          contentPadding: const EdgeInsets.all(12),
+                          contentPadding: const EdgeInsets.all(10),
                         ),
-                        style: TextStyle(
-                            fontSize: 40.0,
+                        style: scaledTextStyle(
+                            fontSize: 26,
                             color: generateWalletProvider.askedWordColor,
                             fontWeight: FontWeight.w500))),
                 Visibility(
@@ -133,7 +124,7 @@ class OnboardingStepSix extends StatelessWidget {
                 //     ),
                 //   ),
                 // ),
-                SizedBox(height: 35 * ratio),
+                ScaledSizedBox(height: 40),
               ]),
             ),
             const OfflineInfo(),
@@ -151,9 +142,9 @@ Widget nextButton(BuildContext context, String text, nextScreen, bool isFast) {
   generateWalletProvider.isAskedWordValid = false;
   generateWalletProvider.askedWordColor = Colors.black;
 
-  return SizedBox(
-    width: 380 * ratio,
-    height: 60 * ratio,
+  return ScaledSizedBox(
+    width: 340,
+    height: 55,
     child: ElevatedButton(
       key: keyGoNext,
       style: ElevatedButton.styleFrom(
@@ -166,7 +157,8 @@ Widget nextButton(BuildContext context, String text, nextScreen, bool isFast) {
       },
       child: Text(
         text,
-        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+        style: scaledTextStyle(
+            fontSize: 22, fontWeight: FontWeight.w600, color: Colors.white),
       ),
     ),
   );

@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -43,13 +44,12 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
         ),
       );
     }
-    log.d(pin);
     if (pin != null || myWalletProvider.pinCode != '') {
       // Payment workflow !
       final sub = Provider.of<SubstrateSdk>(context, listen: false);
       final acc = sub.getCurrentWallet();
       log.d(
-          "fromAddress: ${acc.address!},destAddress: $toAddress, amount: ${double.parse(walletViewProvider.payAmount.text)},  password: $pin");
+          "fromAddress: ${acc.address!},destAddress: $toAddress, amount: ${double.parse(walletViewProvider.payAmount.text)}");
       sub.pay(
           fromAddress: acc.address!,
           destAddress: toAddress,
@@ -105,7 +105,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
             padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom),
             child: Container(
-              height: 420,
+              height: scaleSize(400),
               decoration: const ShapeDecoration(
                 color: Color(0xffffeed1),
                 shape: RoundedRectangleBorder(
@@ -116,8 +116,11 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                 ),
               ),
               child: Padding(
-                padding: const EdgeInsets.only(
-                    top: 24, bottom: 0, left: 24, right: 24),
+                padding: EdgeInsets.only(
+                    top: scaleSize(14),
+                    bottom: 0,
+                    left: scaleSize(16),
+                    right: scaleSize(16)),
                 child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -127,125 +130,137 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                           children: [
                             Text(
                               'executeATransfer'.tr(),
-                              style: const TextStyle(
-                                  fontSize: 26, fontWeight: FontWeight.w700),
+                              style: scaledTextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.w700),
                             ),
                             IconButton(
                               key: keyPopButton,
-                              iconSize: 40,
+                              iconSize: scaleSize(32),
                               icon: const Icon(Icons.cancel_outlined),
                               onPressed: () {
                                 Navigator.pop(context);
                               },
                             ),
                           ]),
-                      const SizedBox(height: 5),
+                      ScaledSizedBox(height: 5),
                       Text(
-                        'from'.tr(),
-                        style: TextStyle(
-                            fontSize: 19,
+                        'from'.tr(args: ['']),
+                        style: scaledTextStyle(
+                            fontSize: 16,
                             fontWeight: FontWeight.w500,
                             color: Colors.grey[600]),
                       ),
-                      const SizedBox(height: 5),
+                      ScaledSizedBox(height: 5),
                       Consumer<SubstrateSdk>(builder: (context, sub, _) {
-                        return DropdownButton(
-                            dropdownColor: const Color(0xffffeed1),
-                            elevation: 12,
-                            key: keyDropdownWallets,
-                            value: defaultWallet,
-                            menuMaxHeight: 300,
-                            onTap: () {
-                              FocusScope.of(context).requestFocus(amountFocus);
-                            },
-                            selectedItemBuilder: (_) {
-                              return myWalletProvider.listWallets
+                        return Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                                color: Colors.blueAccent.shade200, width: 2),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(10)),
+                          ),
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.all(0),
+                          child: DropdownButton(
+                              dropdownColor: const Color(0xffffeed1),
+                              elevation: 12,
+                              key: keyDropdownWallets,
+                              value: defaultWallet,
+                              menuMaxHeight: scaleSize(270),
+                              onTap: () {
+                                FocusScope.of(context)
+                                    .requestFocus(amountFocus);
+                              },
+                              selectedItemBuilder: (_) {
+                                return myWalletProvider.listWallets
+                                    .map((WalletData wallet) {
+                                  return Container(
+                                    width: scaleSize(isTall ? 315 : 310),
+                                    padding: EdgeInsets.all(scaleSize(7)),
+                                    child: Visibility(
+                                      visible: wallet.address ==
+                                          defaultWallet.address,
+                                      child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            NameByAddress(
+                                              wallet: wallet,
+                                              fontStyle: FontStyle.normal,
+                                              size: 18,
+                                            ),
+                                            const Spacer(),
+                                            // const Text('data')
+                                            Balance(
+                                                address: wallet.address,
+                                                size: 18),
+                                          ]),
+                                    ),
+                                  );
+                                }).toList();
+                              },
+                              onChanged: (WalletData? newSelectedWallet) async {
+                                defaultWallet = newSelectedWallet!;
+                                await sub.setCurrentWallet(newSelectedWallet);
+                                sub.reload();
+                                amountFocus.requestFocus();
+                                setState(() {});
+                              },
+                              items: myWalletProvider.listWallets
                                   .map((WalletData wallet) {
-                                return Container(
-                                  width: 408,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                        color: Colors.blueAccent.shade200,
-                                        width: 2),
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(10.0)),
-                                  ),
-                                  padding: const EdgeInsets.all(7),
-                                  child: Visibility(
-                                    visible:
-                                        wallet.address == defaultWallet.address,
-                                    child: Row(children: [
-                                      NameByAddress(
-                                          wallet: wallet,
-                                          fontStyle: FontStyle.normal),
-                                      const Spacer(),
-                                      Balance(
-                                          address: wallet.address, size: 20),
-                                    ]),
+                                return DropdownMenuItem(
+                                  value: wallet,
+                                  key: keySelectThisWallet(wallet.address),
+                                  child: Container(
+                                    color: const Color(0xffffeed1),
+                                    width: scaleSize(isTall ? 315 : 310),
+                                    padding: const EdgeInsets.all(10),
+                                    child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          NameByAddress(
+                                            wallet: wallet,
+                                            fontStyle: FontStyle.normal,
+                                            size: 18,
+                                          ),
+                                          const Spacer(),
+                                          Balance(
+                                              address: wallet.address,
+                                              size: 18),
+                                        ]),
                                   ),
                                 );
-                              }).toList();
-                            },
-                            onChanged: (WalletData? newSelectedWallet) async {
-                              defaultWallet = newSelectedWallet!;
-                              await sub.setCurrentWallet(newSelectedWallet);
-                              sub.reload();
-                              amountFocus.requestFocus();
-                              setState(() {});
-                            },
-                            items: myWalletProvider.listWallets
-                                .map((WalletData wallet) {
-                              return DropdownMenuItem(
-                                value: wallet,
-                                key: keySelectThisWallet(wallet.address),
-                                child: Container(
-                                  color: const Color(0xffffeed1),
-                                  width: 408,
-                                  height: 80,
-                                  padding: const EdgeInsets.all(7),
-                                  child: Row(children: [
-                                    NameByAddress(
-                                        wallet: wallet,
-                                        fontStyle: FontStyle.normal),
-                                    const Spacer(),
-                                    Balance(address: wallet.address, size: 20),
-                                  ]),
-                                ),
-                              );
-                            }).toList());
+                              }).toList()),
+                        );
                       }),
-                      const SizedBox(height: 12),
+                      ScaledSizedBox(height: 12),
                       Row(
                         children: [
                           Text(
-                            'to'.tr(),
-                            style: TextStyle(
-                                fontSize: 19,
+                            'to'.tr(args: ['']),
+                            style: scaledTextStyle(
+                                fontSize: 16,
                                 fontWeight: FontWeight.w500,
                                 color: Colors.grey[600]),
                           ),
-                          const SizedBox(width: 10),
-                          Column(
-                            children: [
-                              const SizedBox(height: 2),
-                              Text(
-                                username ?? getShortPubkey(toAddress),
-                                style: const TextStyle(
-                                  fontSize: 21,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
+                          ScaledSizedBox(width: 10),
+                          Text(
+                            username ?? getShortPubkey(toAddress),
+                            style: scaledTextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 7),
+                      ScaledSizedBox(height: 7),
                       Row(
                         children: [
                           Text(
                             'amount'.tr(),
-                            style: TextStyle(
-                                fontSize: 19,
+                            style: scaledTextStyle(
+                                fontSize: 16,
                                 fontWeight: FontWeight.w500,
                                 color: Colors.grey[600]),
                           ),
@@ -254,24 +269,25 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                             onTap: () => infoFeesPopup(context),
                             child: Row(
                               children: [
-                                const Icon(Icons.info_outlined, color: orangeC),
-                                const SizedBox(width: 5),
+                                Icon(Icons.info_outlined,
+                                    color: orangeC, size: scaleSize(21)),
+                                ScaledSizedBox(width: 5),
                                 Text(
                                   'fees'.tr(
                                       args: [fees.toString(), currencyName]),
-                                  style: const TextStyle(
+                                  style: scaledTextStyle(
                                     color: orangeC,
-                                    fontSize: 17,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          ScaledSizedBox(width: 10),
                         ],
                       ),
-                      const SizedBox(height: 10),
+                      ScaledSizedBox(height: 10),
                       Focus(
                         onFocusChange: (focused) {
                           setState(() {
@@ -299,7 +315,6 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                     walletViewProvider.payAmount.text == ''
                                         ? '0'
                                         : walletViewProvider.payAmount.text));
-                            log.d(fees);
                             setState(() {});
                           },
                           inputFormatters: <TextInputFormatter>[
@@ -310,9 +325,8 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                           ],
                           decoration: InputDecoration(
                             hintText: '0.00',
-                            suffix: Text(isUdUnit
-                                ? 'ud'.tr(args: [''])
-                                : currencyName), // udUnitDisplay(40),
+                            suffix: Text(
+                                isUdUnit ? 'ud'.tr(args: ['']) : currencyName),
                             filled: true,
                             fillColor: Colors.transparent,
                             focusedBorder: OutlineInputBorder(
@@ -320,24 +334,25 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                   color: Colors.grey[500]!, width: 2),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            contentPadding: const EdgeInsets.all(15),
+                            contentPadding: EdgeInsets.all(scaleSize(9)),
                           ),
-                          style: const TextStyle(
-                            fontSize: 33,
+                          style: scaledTextStyle(
+                            fontSize: 25,
                             color: Colors.black,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
                       const Spacer(),
-                      SizedBox(
+                      ScaledSizedBox(
                         width: double.infinity,
-                        height: 60,
+                        height: 55,
                         child: ElevatedButton(
                           key: keyConfirmPayment,
                           style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white, elevation: 4,
-                            backgroundColor: orangeC, // foreground
+                            foregroundColor: Colors.white,
+                            elevation: 4,
+                            backgroundColor: orangeC,
                           ),
                           onPressed: canValidate
                               ? () async {
@@ -347,8 +362,8 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                               : null,
                           child: Text(
                             'executeTheTransfer'.tr(),
-                            style: const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.w600),
+                            style: scaledTextStyle(
+                                fontSize: 18, fontWeight: FontWeight.w600),
                           ),
                         ),
                       ),
@@ -373,19 +388,19 @@ Future<void> infoFeesPopup(BuildContext context) async {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.info_outlined, color: orangeC, size: 40),
-            const SizedBox(height: 20),
+            ScaledSizedBox(height: 20),
             Text(
               'feesExplanation'.tr(),
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+              style: scaledTextStyle(fontSize: 20, fontWeight: FontWeight.w500),
             ),
-            const SizedBox(height: 30),
+            ScaledSizedBox(height: 30),
             Text(
               'feesExplanationDetails'.tr(),
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w300),
+              style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w300),
             ),
-            const SizedBox(height: 5),
+            ScaledSizedBox(height: 5),
             InkWell(
               onTap: () async => await _launchUrl('https://duniter.org'),
               child: Container(
@@ -401,7 +416,7 @@ Future<void> infoFeesPopup(BuildContext context) async {
                 child: Text(
                   'moreInfo'.tr(),
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: scaledTextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w300,
                     color: Colors.blueAccent,
@@ -422,9 +437,9 @@ Future<void> infoFeesPopup(BuildContext context) async {
                   padding: const EdgeInsets.all(8),
                   child: Text(
                     'gotit'.tr(),
-                    style: const TextStyle(
+                    style: scaledTextStyle(
                       fontSize: 21,
-                      color: Color(0xffD80000),
+                      color: const Color(0xffD80000),
                     ),
                   ),
                 ),

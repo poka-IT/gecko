@@ -58,7 +58,6 @@ class WalletOptionsProvider with ChangeNotifier {
         final myWalletProvider =
             Provider.of<MyWalletsProvider>(context, listen: false);
         final defaultWallet = myWalletProvider.getDefaultWallet();
-        log.d(defaultWallet.address);
         sub.pay(
             fromAddress: wallet.address,
             destAddress: defaultWallet.address,
@@ -118,9 +117,6 @@ class WalletOptionsProvider with ChangeNotifier {
         log.w('No image selected.');
         return '';
       }
-      // await imageFile.copy(newPath);
-
-      log.i(newPath);
       return newPath;
     } else {
       log.w('No image selected.');

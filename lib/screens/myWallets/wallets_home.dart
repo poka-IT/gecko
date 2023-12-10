@@ -3,6 +3,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -44,15 +45,21 @@ class _WalletsHomeState extends State<WalletsHome> {
       backgroundColor: backgroundColor,
       appBar: AppBar(
         elevation: 1,
-        toolbarHeight: 60 * ratio,
+        toolbarHeight: scaleSize(57),
         title: Row(
           children: [
             Image.asset(
               'assets/chests/${currentChest.imageName}',
               height: 32,
             ),
-            const SizedBox(width: 17),
-            Text(currentChest.name!, style: TextStyle(color: Colors.grey[850])),
+            ScaledSizedBox(width: 17),
+            Text(
+              currentChest.name!,
+              style: scaledTextStyle(
+                  color: Colors.grey[850],
+                  fontSize: 17,
+                  fontWeight: FontWeight.w500),
+            ),
           ],
         ),
         backgroundColor: const Color(0xffFFD58D),
@@ -73,11 +80,11 @@ class _WalletsHomeState extends State<WalletsHome> {
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done ||
                 snapshot.hasError) {
-              return const Center(
-                child: SizedBox(
+              return Center(
+                child: ScaledSizedBox(
                   height: 50,
                   width: 50,
-                  child: CircularProgressIndicator(
+                  child: const CircularProgressIndicator(
                     color: orangeC,
                     strokeWidth: 3,
                   ),
@@ -96,19 +103,19 @@ class _WalletsHomeState extends State<WalletsHome> {
 
   Widget myWalletsTiles(BuildContext context, int currentChestNumber) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
-    final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
+    final bool isWalletsExists = myWalletProvider.isWalletsExists();
 
     if (!isWalletsExists) {
       return const Text('');
     }
 
     if (myWalletProvider.listWallets.isEmpty) {
-      return const Expanded(
+      return Expanded(
           child: Column(children: <Widget>[
         Center(
             child: Text(
           'Veuillez générer votre premier portefeuille',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
+          style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w500),
         )),
       ]));
     }
@@ -131,9 +138,9 @@ class _WalletsHomeState extends State<WalletsHome> {
     final screenWidth = MediaQuery.of(context).size.width;
     int nTule;
 
-    if (screenWidth >= 900) {
+    if (screenWidth >= 700) {
       nTule = 4;
-    } else if (screenWidth >= 650) {
+    } else if (screenWidth >= 450) {
       nTule = 3;
     } else {
       nTule = 2;
@@ -148,13 +155,13 @@ class _WalletsHomeState extends State<WalletsHome> {
             TargetContent(
                 child: Column(
               children: [
-                Image.asset('assets/drag-and-drop.png', height: 140),
-                const SizedBox(height: 15),
+                Image.asset('assets/drag-and-drop.png', height: scaleSize(115)),
+                ScaledSizedBox(height: 15),
                 Text(
                   'explainDraggableWallet'.tr(),
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.w500),
+                  style: scaledTextStyle(
+                      fontSize: 20, fontWeight: FontWeight.w500),
                 ),
               ],
             ))
@@ -178,35 +185,38 @@ class _WalletsHomeState extends State<WalletsHome> {
       configBox.put('showDraggableTutorial', false);
     }
 
-    return CustomScrollView(slivers: <Widget>[
-      const SliverToBoxAdapter(child: SizedBox(height: 20)),
-      if (idtyWallet.address != '')
-        SliverToBoxAdapter(
-          child: DragTuleAction(
-            wallet: idtyWallet,
-            child: WalletTileMembre(repository: idtyWallet),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 5),
+      child: CustomScrollView(slivers: <Widget>[
+        SliverToBoxAdapter(child: ScaledSizedBox(height: 12)),
+        if (idtyWallet.address != '')
+          SliverToBoxAdapter(
+            child: DragTuleAction(
+              wallet: idtyWallet,
+              child: WalletTileMembre(repository: idtyWallet),
+            ),
           ),
-        ),
-      SliverGrid.count(
-          key: keyListWallets,
-          crossAxisCount: nTule,
-          childAspectRatio: 1,
-          crossAxisSpacing: 0,
-          mainAxisSpacing: 0,
-          children: <Widget>[
-            for (WalletData repository in listWalletsWithoutIdty)
-              DragTuleAction(
-                wallet: repository,
-                child: WalletTile(repository: repository),
-              ),
-            Consumer<SubstrateSdk>(builder: (context, sub, _) {
-              return sub.nodeConnected &&
-                      myWalletProvider.listWallets.length < maxWalletsInSafe
-                  ? const AddNewDerivationButton()
-                  : const Text('');
-            }),
-          ]),
-      const SliverToBoxAdapter(child: ChestOptionsButtons()),
-    ]);
+        SliverGrid.count(
+            key: keyListWallets,
+            crossAxisCount: nTule,
+            childAspectRatio: 1,
+            crossAxisSpacing: 0,
+            mainAxisSpacing: 0,
+            children: <Widget>[
+              for (WalletData repository in listWalletsWithoutIdty)
+                DragTuleAction(
+                  wallet: repository,
+                  child: WalletTile(repository: repository),
+                ),
+              Consumer<SubstrateSdk>(builder: (context, sub, _) {
+                return sub.nodeConnected &&
+                        myWalletProvider.listWallets.length < maxWalletsInSafe
+                    ? const AddNewDerivationButton()
+                    : const Text('');
+              }),
+            ]),
+        const SliverToBoxAdapter(child: ChestOptionsButtons()),
+      ]),
+    );
   }
 }

@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -15,6 +16,7 @@ import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/screens/onBoarding/6.dart';
 import 'package:gecko/widgets/commons/fader_transition.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
+import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
 AsyncSnapshot<List>? mnemoList;
@@ -39,30 +41,53 @@ class _ChooseChestState extends State<OnboardingStepFive> {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-        toolbarHeight: 60 * ratio,
-        title: SizedBox(
-          height: 22,
-          child: Text(
-            'yourMnemonic'.tr(),
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ),
-      ),
-      extendBodyBehindAppBar: true,
+      appBar: GeckoAppBar('yourMnemonic'.tr()),
       body: SafeArea(
         child: Stack(children: [
           Column(children: [
-            SizedBox(height: isTall ? 40 : 20),
+            ScaledSizedBox(height: isTall ? 25 : 5),
             const BuildProgressBar(pagePosition: 4),
-            SizedBox(height: isTall ? 40 : 20),
+            ScaledSizedBox(height: isTall ? 25 : 5),
             BuildText(text: 'geckoGeneratedYourMnemonicKeepItSecret'.tr()),
-            SizedBox(height: 35 * ratio),
+            ScaledSizedBox(height: isTall ? 15 : 5),
             sentanceArray(context),
-            SizedBox(height: 17 * ratio),
+            ScaledSizedBox(height: isTall ? 17 : 5),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                ScaledSizedBox(
+                  height: 40,
+                  width: 132,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      backgroundColor: orangeC,
+                      elevation: 1,
+                    ),
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(
+                          text: generateWalletProvider.generatedMnemonic!));
+                      snackCopySeed(context);
+                    },
+                    child: Row(children: <Widget>[
+                      Image.asset(
+                        'assets/walletOptions/copy-white.png',
+                        height: scaleSize(23),
+                      ),
+                      const Spacer(),
+                      Text(
+                        'copy'.tr(),
+                        style: scaledTextStyle(
+                            fontSize: 15, color: Colors.grey[50]),
+                      ),
+                      const Spacer(),
+                    ]),
+                  ),
+                ),
+                ScaledSizedBox(width: 70),
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -75,71 +100,39 @@ class _ChooseChestState extends State<OnboardingStepFive> {
                   },
                   child: Image.asset(
                     'assets/printer.png',
-                    height: 42 * ratio,
-                  ),
-                ),
-                SizedBox(
-                  height: 40,
-                  width: 120,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      backgroundColor: orangeC,
-                      elevation: 1, // foreground
-                    ),
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(
-                          text: generateWalletProvider.generatedMnemonic!));
-                      snackCopySeed(context);
-                    },
-                    child: Row(children: <Widget>[
-                      Image.asset(
-                        'assets/walletOptions/copy-white.png',
-                        height: 25,
-                      ),
-                      const SizedBox(width: 7),
-                      Text(
-                        'copy'.tr(),
-                        style: TextStyle(fontSize: 15, color: Colors.grey[50]),
-                      )
-                    ]),
+                    height: scaleSize(42),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 40),
+            ScaledSizedBox(height: isTall ? 17 : 5),
             Expanded(
               child: Align(
                 alignment: Alignment.bottomCenter,
-                child: SizedBox(
-                  width: 380 * ratio,
-                  height: 60 * ratio,
+                child: ScaledSizedBox(
+                  width: 350,
+                  height: 55,
                   child: ElevatedButton(
                       key: keyGenerateMnemonic,
                       style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.black, elevation: 4,
-                        backgroundColor: const Color(0xffFFD58D), // foreground
+                        foregroundColor: Colors.black,
+                        elevation: 4,
+                        backgroundColor: const Color(0xffFFD58D),
                       ),
                       onPressed: () {
-                        // _generateWalletProvider.reloadBuild();
                         setState(() {});
                       },
                       child: Text("chooseAnotherMnemonic".tr(),
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 22 * ratio,
-                              fontWeight: FontWeight.w600))),
+                          style: scaledTextStyle(
+                              fontSize: 22, fontWeight: FontWeight.w600))),
                 ),
               ),
             ),
-            SizedBox(height: 22 * ratio),
+            ScaledSizedBox(height: isTall ? 20 : 10),
             nextButton(
                 context, "iNotedMyMnemonic".tr(), false, widget.skipIntro),
-            const Spacer(),
-            // SizedBox(height: 35 * ratio),
+            isTall ? const Spacer() : const SizedBox(height: 5),
           ]),
           const OfflineInfo(),
         ]),
@@ -152,68 +145,65 @@ Widget sentanceArray(BuildContext context) {
   final generateWalletProvider =
       Provider.of<GenerateWalletsProvider>(context, listen: false);
 
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 3),
-    child: Container(
-      constraints: const BoxConstraints(maxWidth: 450),
-      decoration: BoxDecoration(
-          border: Border.all(color: Colors.black),
-          color: const Color(0xffeeeedd),
-          borderRadius: const BorderRadius.all(
-            Radius.circular(10),
-          )),
-      padding: const EdgeInsets.all(20),
-      child: FutureBuilder(
-          future: generateWalletProvider.generateWordList(context),
-          builder: (BuildContext context, AsyncSnapshot<List> data) {
-            if (!data.hasData) {
-              return const Text('');
-            } else {
-              mnemoList = data;
-              return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.max,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Row(children: <Widget>[
-                      arrayCell(data.data![0]),
-                      arrayCell(data.data![1]),
-                      arrayCell(data.data![2]),
-                      arrayCell(data.data![3]),
-                    ]),
-                    const SizedBox(height: 15),
-                    Row(children: <Widget>[
-                      arrayCell(data.data![4]),
-                      arrayCell(data.data![5]),
-                      arrayCell(data.data![6]),
-                      arrayCell(data.data![7]),
-                    ]),
-                    const SizedBox(height: 15),
-                    Row(children: <Widget>[
-                      arrayCell(data.data![8]),
-                      arrayCell(data.data![9]),
-                      arrayCell(data.data![10]),
-                      arrayCell(data.data![11]),
-                    ]),
-                  ]);
-            }
-          }),
-    ),
+  return Container(
+    constraints: BoxConstraints(maxWidth: scaleSize(isTall ? 355 : 340)),
+    decoration: BoxDecoration(
+        border: Border.all(color: Colors.black),
+        color: const Color(0xffeeeedd),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(10),
+        )),
+    padding: EdgeInsets.all(scaleSize(11)),
+    child: FutureBuilder(
+        future: generateWalletProvider.generateWordList(context),
+        builder: (BuildContext context, AsyncSnapshot<List> data) {
+          if (!data.hasData) {
+            return const Text('');
+          } else {
+            mnemoList = data;
+            return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Row(children: <Widget>[
+                    arrayCell(data.data![0]),
+                    arrayCell(data.data![1]),
+                    arrayCell(data.data![2]),
+                    arrayCell(data.data![3]),
+                  ]),
+                  ScaledSizedBox(height: 12),
+                  Row(children: <Widget>[
+                    arrayCell(data.data![4]),
+                    arrayCell(data.data![5]),
+                    arrayCell(data.data![6]),
+                    arrayCell(data.data![7]),
+                  ]),
+                  ScaledSizedBox(height: 12),
+                  Row(children: <Widget>[
+                    arrayCell(data.data![8]),
+                    arrayCell(data.data![9]),
+                    arrayCell(data.data![10]),
+                    arrayCell(data.data![11]),
+                  ]),
+                ]);
+          }
+        }),
   );
 }
 
 Widget arrayCell(dataWord) {
-  return SizedBox(
-    width: 100,
+  return ScaledSizedBox(
+    width: scaleSize(isTall ? 78 : 91),
     child: Column(children: <Widget>[
       Text(
         dataWord.split(':')[0],
-        style: TextStyle(fontSize: 13 * ratio, color: const Color(0xff6b6b52)),
+        style: scaledTextStyle(fontSize: 12, color: const Color(0xff6b6b52)),
       ),
       Text(
         dataWord.split(':')[1],
         key: keyMnemonicWord(dataWord.split(':')[0]),
-        style: TextStyle(fontSize: 17 * ratio, color: Colors.black),
+        style: scaledTextStyle(fontSize: 16, color: Colors.black),
       ),
     ]),
   );
@@ -225,9 +215,9 @@ Widget nextButton(
       Provider.of<GenerateWalletsProvider>(context, listen: false);
   final myWalletProvider =
       Provider.of<MyWalletsProvider>(context, listen: false);
-  return SizedBox(
-    width: 380 * ratio,
-    height: 60 * ratio,
+  return ScaledSizedBox(
+    width: 350,
+    height: 55,
     child: ElevatedButton(
       key: keyGoNext,
       style: ElevatedButton.styleFrom(
@@ -251,7 +241,8 @@ Widget nextButton(
       },
       child: Text(
         text,
-        style: TextStyle(fontSize: 22 * ratio, fontWeight: FontWeight.w600),
+        style: scaledTextStyle(
+            fontSize: 22, fontWeight: FontWeight.w600, color: Colors.white),
       ),
     ),
   );

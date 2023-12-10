@@ -11,7 +11,6 @@ import 'tests_utility.dart';
 
 Future changeNode() async {
   const ipAddress = '10.0.2.2';
-  log.d('ip address: $ipAddress');
 
   await tapKey(keyDrawerMenu);
   await tapKey(keyParameters);

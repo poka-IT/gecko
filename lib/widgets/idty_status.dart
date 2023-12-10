@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
@@ -35,14 +36,14 @@ class IdentityStatus extends StatelessWidget {
               if (resStatus == IdtyStatus.confirmed) {
                 return NameByAddress(
                     wallet: WalletData(address: address),
-                    size: 20,
+                    size: 18,
                     color: Colors.grey[700]!,
                     fontWeight: FontWeight.w500,
                     fontStyle: FontStyle.italic);
               } else if (resStatus == IdtyStatus.validated) {
                 return NameByAddress(
                     wallet: WalletData(address: address),
-                    size: 22,
+                    size: 20,
                     color: Colors.black,
                     fontWeight: FontWeight.w600,
                     fontStyle: FontStyle.normal);
@@ -60,7 +61,7 @@ class IdentityStatus extends StatelessWidget {
 
             return SizedBox(
               child: showText(statusText[resStatus]!,
-                  bold: resStatus == IdtyStatus.validated ? true : false),
+                  bold: resStatus == IdtyStatus.validated, size: scaleSize(17)),
             );
           });
     });
@@ -68,7 +69,6 @@ class IdentityStatus extends StatelessWidget {
 
   AnimatedFadeOutIn showText(String text,
       {double size = 18, bool bold = false}) {
-    // log.d('$address $text');
     return AnimatedFadeOutIn<String>(
       data: text,
       duration: const Duration(milliseconds: 150),

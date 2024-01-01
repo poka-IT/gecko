@@ -136,7 +136,7 @@ class SubstrateSdk with ChangeNotifier {
     return res?.signature ?? '';
   }
 
-  Future<String> signCsPlusDocument(String document, String address) async {
+  Future<String> signDatapod(String document, String address) async {
     final myWallets =
         Provider.of<MyWalletsProvider>(homeContext, listen: false);
     final messageToSign = Uint8List.fromList(document.codeUnits);
@@ -232,7 +232,7 @@ class SubstrateSdk with ChangeNotifier {
     }
 
     // Get onchain storage values
-    final List<Map> balanceGlobalMulti =
+    final List<Map> accountMulti =
         (await _getStorage('system.account.multi($stringifyAddresses)') as List)
             .map((dynamic e) => e as Map<String, dynamic>)
             .toList();
@@ -253,14 +253,10 @@ class SubstrateSdk with ChangeNotifier {
         .map((dynamic e) => e as Map<String, dynamic>?)
         .toList();
 
-    final List pastReevals =
-        await _getStorage('universalDividend.pastReevals()');
-
     int nbr = 0;
     Map<String, Map<String, double>> finalBalancesList = {};
-    for (Map balanceGlobal in balanceGlobalMulti) {
-      final computedBalance =
-          await _computeBalance(idtyDataList[nbr], pastReevals, balanceGlobal);
+    for (Map account in accountMulti) {
+      final computedBalance = await _computeBalance(idtyDataList[nbr], account);
       finalBalancesList.putIfAbsent(addresses[nbr], () => computedBalance);
       nbr++;
     }
@@ -279,35 +275,33 @@ class SubstrateSdk with ChangeNotifier {
     }
 
     // Get onchain storage values
-    final Map balanceGlobal = await _getStorage('system.account("$address")');
+    final Map account = await _getStorage('system.account("$address")');
     final int? idtyIndex =
         await _getStorage('identity.identityIndexOf("$address")');
     final Map? idtyData = idtyIndex == null
         ? null
         : await _getStorage('identity.identities($idtyIndex)');
-    final List pastReevals =
-        await _getStorage('universalDividend.pastReevals()');
 
-    return _computeBalance(idtyData, pastReevals, balanceGlobal);
+    return _computeBalance(idtyData, account);
   }
 
   Future<Map<String, double>> _computeBalance(
-      Map? idtyData, List pastReevals, Map balanceGlobal) async {
+      Map? idtyData, Map account) async {
+    final List pastReevals =
+        await _getStorage('universalDividend.pastReevals()');
     // Compute amount of claimable UDs
     currentUdIndex = await getCurrentUdIndex();
     final int unclaimedUds = _computeUnclaimUds(
         idtyData?['data']?['firstEligibleUd'] ?? 0, pastReevals);
 
     // Calculate transferable and potential balance
-    final int transferableBalance =
-        (balanceGlobal['data']['free'] + unclaimedUds);
+    final int transferableBalance = (account['data']['free'] + unclaimedUds);
 
     return {
       'transferableBalance': round((transferableBalance / balanceRatio) / 100),
-      'free': round((balanceGlobal['data']['free'] / balanceRatio) / 100),
+      'free': round((account['data']['free'] / balanceRatio) / 100),
       'unclaimedUds': round((unclaimedUds / balanceRatio) / 100),
-      'reserved':
-          round((balanceGlobal['data']['reserved'] / balanceRatio) / 100),
+      'reserved': round((account['data']['reserved'] / balanceRatio) / 100),
     };
   }
 

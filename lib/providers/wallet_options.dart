@@ -11,6 +11,7 @@ import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
@@ -109,6 +110,9 @@ class WalletOptionsProvider with ChangeNotifier {
         ],
       );
 
+      final datapod =
+          Provider.of<V2sDatapodProvider>(homeContext, listen: false);
+
       final newPath = "${imageDirectory.path}/${pickedFile.name}";
 
       if (croppedFile != null) {
@@ -117,6 +121,7 @@ class WalletOptionsProvider with ChangeNotifier {
         log.w('No image selected.');
         return '';
       }
+      datapod.setAvatar(address.text, newPath);
       return newPath;
     } else {
       log.w('No image selected.');

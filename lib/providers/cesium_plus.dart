@@ -78,7 +78,7 @@ class CesiumPlusProvider with ChangeNotifier {
     final hashDocHex = hashDoc.toString().toUpperCase();
 
     // Generate signature of document
-    final signature = await sub.signCsPlusDocument(hashDocHex, address);
+    final signature = await sub.signDatapod(hashDocHex, address);
 
     // Build final document
     final Map<String, dynamic> data = {

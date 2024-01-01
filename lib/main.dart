@@ -26,6 +26,7 @@ import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -133,7 +134,8 @@ class Gecko extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CesiumPlusProvider()),
         ChangeNotifierProvider(create: (_) => SubstrateSdk()),
         ChangeNotifierProvider(create: (_) => DuniterIndexer()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider())
+        ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(create: (_) => V2sDatapodProvider())
       ],
       child: MaterialApp(
         localizationsDelegates: context.localizationDelegates,

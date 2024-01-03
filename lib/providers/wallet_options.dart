@@ -217,14 +217,17 @@ class WalletOptionsProvider with ChangeNotifier {
                                 final wallet = myWalletProvider
                                     .getWalletDataByAddress(address.text);
                                 await sub.setCurrentWallet(wallet!);
-                                sub.confirmIdentity(walletOptions.address.text,
-                                    idtyName.text, myWalletProvider.pinCode);
+                                final transactionId = await sub.confirmIdentity(
+                                    walletOptions.address.text,
+                                    idtyName.text,
+                                    myWalletProvider.pinCode);
                                 Navigator.pop(context);
 
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(builder: (context) {
                                     return TransactionInProgress(
+                                      transactionId: transactionId,
                                       transType: 'comfirmIdty',
                                       fromAddress:
                                           getShortPubkey(wallet.address),

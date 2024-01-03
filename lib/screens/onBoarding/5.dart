@@ -221,8 +221,9 @@ Widget nextButton(
     child: ElevatedButton(
       key: keyGoNext,
       style: ElevatedButton.styleFrom(
-        foregroundColor: Colors.white, elevation: 4,
-        backgroundColor: orangeC, // foreground
+        foregroundColor: Colors.white,
+        elevation: 4,
+        backgroundColor: orangeC,
       ),
       onPressed: () {
         generateWalletProvider.nbrWord = generateWalletProvider.getRandomInt();

@@ -33,9 +33,8 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
   walletViewProvider.payAmount.text = '';
 
   Future executeTransfert() async {
-    String? pin;
     if (myWalletProvider.pinCode == '') {
-      pin = await Navigator.push(
+      await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (homeContext) {
@@ -44,25 +43,26 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
         ),
       );
     }
-    if (pin != null || myWalletProvider.pinCode != '') {
-      // Payment workflow !
-      final sub = Provider.of<SubstrateSdk>(context, listen: false);
-      final acc = sub.getCurrentWallet();
-      log.d(
-          "fromAddress: ${acc.address!},destAddress: $toAddress, amount: ${double.parse(walletViewProvider.payAmount.text)}");
-      sub.pay(
-          fromAddress: acc.address!,
-          destAddress: toAddress,
-          amount: double.parse(walletViewProvider.payAmount.text),
-          password: pin ?? myWalletProvider.pinCode);
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) {
-          return TransactionInProgress(
-              toAddress: toAddress, toUsername: username);
-        }),
-      );
-    }
+    if (myWalletProvider.pinCode == '') return;
+    // Payment workflow !
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final acc = sub.getCurrentWallet();
+    log.d(
+        "fromAddress: ${acc.address!},destAddress: $toAddress, amount: ${double.parse(walletViewProvider.payAmount.text)}");
+    final transactionId = await sub.pay(
+        fromAddress: acc.address!,
+        destAddress: toAddress,
+        amount: double.parse(walletViewProvider.payAmount.text),
+        password: myWalletProvider.pinCode);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) {
+        return TransactionInProgress(
+            transactionId: transactionId,
+            toAddress: toAddress,
+            toUsername: username);
+      }),
+    );
   }
 
   myWalletProvider.readAllWallets().then((value) => myWalletProvider.listWallets

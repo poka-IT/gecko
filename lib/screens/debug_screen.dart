@@ -39,8 +39,9 @@ class DebugScreen extends StatelessWidget {
                     width: 250,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white, elevation: 4,
-                        backgroundColor: orangeC, // foreground
+                        foregroundColor: Colors.white,
+                        elevation: 4,
+                        backgroundColor: orangeC,
                       ),
                       onPressed: () async => await sub.spawnBlock(),
                       child: const Text(

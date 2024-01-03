@@ -190,28 +190,25 @@ class MigrateIdentityScreen extends StatelessWidget {
                                 );
                               }
 
-                              if (myWalletProvider.pinCode != '') {
-                                sub.migrateIdentity(
-                                    fromAddress: fromAddress,
-                                    destAddress: selectedWallet.address,
-                                    fromPassword:
-                                        pin ?? myWalletProvider.pinCode,
-                                    destPassword:
-                                        pin ?? myWalletProvider.pinCode,
-                                    withBalance: true,
-                                    fromBalance: balance);
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) {
-                                    return TransactionInProgress(
-                                        transType: 'identityMigration',
-                                        fromAddress:
-                                            getShortPubkey(fromAddress),
-                                        toAddress: getShortPubkey(
-                                            selectedWallet.address));
-                                  }),
-                                );
-                              }
+                              if (myWalletProvider.pinCode == '') return;
+                              final transactionId = await sub.migrateIdentity(
+                                  fromAddress: fromAddress,
+                                  destAddress: selectedWallet.address,
+                                  fromPassword: pin ?? myWalletProvider.pinCode,
+                                  destPassword: pin ?? myWalletProvider.pinCode,
+                                  withBalance: true,
+                                  fromBalance: balance);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) {
+                                  return TransactionInProgress(
+                                      transactionId: transactionId,
+                                      transType: 'identityMigration',
+                                      fromAddress: getShortPubkey(fromAddress),
+                                      toAddress: getShortPubkey(
+                                          selectedWallet.address));
+                                }),
+                              );
                             }
                           : null,
                       child: Text(

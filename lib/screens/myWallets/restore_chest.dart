@@ -84,8 +84,9 @@ class RestoreChest extends StatelessWidget {
                     child: ElevatedButton(
                       key: keyGoNext,
                       style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white, elevation: 4,
-                        backgroundColor: orangeC, // foreground
+                        foregroundColor: Colors.white,
+                        elevation: 4,
+                        backgroundColor: orangeC,
                       ),
                       onPressed: () async {
                         if (await sub
@@ -125,8 +126,9 @@ class RestoreChest extends StatelessWidget {
                     child: ElevatedButton(
                         key: keyPastMnemonic,
                         style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.black, elevation: 4,
-                          backgroundColor: yellowC, // foreground
+                          foregroundColor: Colors.black,
+                          elevation: 4,
+                          backgroundColor: yellowC,
                         ),
                         onPressed: () {
                           genW.pasteMnemonic(context);

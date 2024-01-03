@@ -151,7 +151,7 @@ class WalletViewScreen extends StatelessWidget {
                 return FutureBuilder(
                   future: sub.certState(defaultWallet.address, address),
                   builder: (context, AsyncSnapshot<Map<String, int>> snapshot) {
-                    if (snapshot.data == null) return ScaledSizedBox();
+                    if (snapshot.data == null) return const SizedBox.shrink();
                     String duration = '';
 
                     if (snapshot.data!['certDelay'] != null ||
@@ -209,55 +209,53 @@ class WalletViewScreen extends StatelessWidget {
                                                 'assets/gecko_certify.png')),
                                       ),
                                       onTap: () async {
-                                        final bool? result =
+                                        final result =
                                             await confirmPopupCertification(
-                                                context,
-                                                'areYouSureYouWantToCertify1'
-                                                    .tr(),
-                                                duniterIndexer
-                                                            .walletNameIndexer[
-                                                        address] ??
-                                                    "noIdentity".tr(),
-                                                'areYouSureYouWantToCertify2'
-                                                    .tr(),
-                                                getShortPubkey(address));
+                                                    context,
+                                                    'areYouSureYouWantToCertify1'
+                                                        .tr(),
+                                                    duniterIndexer
+                                                                .walletNameIndexer[
+                                                            address] ??
+                                                        "noIdentity".tr(),
+                                                    'areYouSureYouWantToCertify2'
+                                                        .tr(),
+                                                    getShortPubkey(address)) ??
+                                                false;
 
-                                        if (result ?? false) {
-                                          String? pin;
-                                          if (myWalletProvider.pinCode == '') {
-                                            pin = await Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (homeContext) {
-                                                  return UnlockingWallet(
-                                                      wallet: defaultWallet);
-                                                },
-                                              ),
-                                            );
-                                          }
-                                          if (pin != null ||
-                                              myWalletProvider.pinCode != '') {
-                                            WalletsProfilesProvider
-                                                walletViewProvider = Provider
-                                                    .of<WalletsProfilesProvider>(
-                                                        context,
-                                                        listen: false);
-                                            final acc = sub.getCurrentWallet();
-                                            sub.certify(
-                                                acc.address!,
-                                                walletViewProvider.address,
-                                                pin ??
-                                                    myWalletProvider.pinCode);
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) {
-                                                return const TransactionInProgress(
-                                                    transType: 'cert');
-                                              }),
-                                            );
-                                          }
+                                        if (!result) return;
+                                        if (myWalletProvider.pinCode == '') {
+                                          await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (homeContext) {
+                                                return UnlockingWallet(
+                                                    wallet: defaultWallet);
+                                              },
+                                            ),
+                                          );
                                         }
+                                        if (myWalletProvider.pinCode == '') {
+                                          return;
+                                        }
+                                        WalletsProfilesProvider
+                                            walletViewProvider = Provider.of<
+                                                    WalletsProfilesProvider>(
+                                                context,
+                                                listen: false);
+                                        final acc = sub.getCurrentWallet();
+                                        final transactionId = await sub.certify(
+                                            acc.address!,
+                                            walletViewProvider.address,
+                                            myWalletProvider.pinCode);
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(builder: (context) {
+                                            return TransactionInProgress(
+                                                transactionId: transactionId,
+                                                transType: 'cert');
+                                          }),
+                                        );
                                       }),
                                 ),
                               ),

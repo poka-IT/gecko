@@ -141,8 +141,9 @@ class _SearchScreenState extends State<SearchScreen> {
                 child: ElevatedButton(
                   key: keyConfirmSearch,
                   style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white, elevation: 4,
-                    backgroundColor: orangeC, // foreground
+                    foregroundColor: Colors.white,
+                    elevation: 4,
+                    backgroundColor: orangeC,
                   ),
                   onPressed: canValidate
                       ? () {

@@ -239,9 +239,7 @@ class WalletOptions extends StatelessWidget {
                                 if (!walletProvider.isDefaultWallet &&
                                     !wallet.isMembre())
                                   deleteWallet(
-                                      context, walletProvider, currentChest)
-                                else
-                                  ScaledSizedBox(),
+                                      context, walletProvider, currentChest),
                                 if (wallet.isMembre())
                                   const ManageMembershipButton()
                               ])
@@ -327,16 +325,10 @@ class WalletOptions extends StatelessWidget {
                     key: keyConfirmIdentity,
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white, elevation: 4,
-                      backgroundColor: orangeC, // foreground
+                      backgroundColor: orangeC,
                     ),
-                    onPressed: () async {
+                    onPressed: () {
                       walletProvider.confirmIdentityPopup(context);
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(builder: (context) {
-                      //     return const SearchResultScreen();
-                      //   }),
-                      // );
                     },
                     child: Text(
                       'confirmMyIdentity'.tr(),

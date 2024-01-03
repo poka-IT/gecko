@@ -18,11 +18,11 @@ class SearchResultScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final searchProvider = Provider.of<SearchProvider>(context, listen: false);
-    WalletsProfilesProvider walletsProfilesClass =
+    final walletsProfilesClass =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
-    double avatarSize = scaleSize(37);
+    final avatarSize = scaleSize(37);
 
     return Scaffold(
       backgroundColor: backgroundColor,

@@ -93,8 +93,9 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
                 height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.black, elevation: 12,
-                    backgroundColor: Colors.green[400], // foreground
+                    foregroundColor: Colors.black,
+                    elevation: 12,
+                    backgroundColor: Colors.green[400],
                   ),
                   onPressed: () async {
                     WalletData defaultWallet =

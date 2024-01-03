@@ -148,8 +148,9 @@ Widget nextButton(BuildContext context, String text, nextScreen, bool isFast) {
     child: ElevatedButton(
       key: keyGoNext,
       style: ElevatedButton.styleFrom(
-        foregroundColor: Colors.white, elevation: 4,
-        backgroundColor: orangeC, // foreground
+        foregroundColor: Colors.white,
+        elevation: 4,
+        backgroundColor: orangeC,
       ),
       onPressed: () {
         Navigator.push(

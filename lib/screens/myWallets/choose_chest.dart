@@ -106,7 +106,7 @@ class _ChooseChestState extends State<ChooseChest> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.black,
-                  backgroundColor: orangeC, // foreground
+                  backgroundColor: orangeC,
                 ),
                 onPressed: () async {
                   await configBox.put('currentChest', currentChest);

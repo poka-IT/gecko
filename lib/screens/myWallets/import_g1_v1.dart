@@ -22,6 +22,7 @@ import 'package:provider/provider.dart';
 
 class ImportG1v1 extends StatelessWidget {
   const ImportG1v1({Key? key}) : super(key: key);
+  static const int debouneTime = 600;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +30,6 @@ class ImportG1v1 extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context, listen: false);
 
     Timer? debounce;
-    const int debouneTime = 600;
     WalletData selectedWallet = myWalletProvider.getDefaultWallet();
     bool canValidate = false;
     String validationStatus = '';
@@ -297,8 +297,10 @@ class ImportG1v1 extends StatelessWidget {
                                   );
                                 }
 
-                                sub.migrateCsToV2(sub.csSalt.text,
-                                    sub.csPassword.text, selectedWallet.address,
+                                final transactionId = await sub.migrateCsToV2(
+                                    sub.csSalt.text,
+                                    sub.csPassword.text,
+                                    selectedWallet.address,
                                     destPassword:
                                         pin ?? myWalletProvider.pinCode,
                                     balance: balance,
@@ -308,6 +310,7 @@ class ImportG1v1 extends StatelessWidget {
                                   context,
                                   MaterialPageRoute(builder: (context) {
                                     return TransactionInProgress(
+                                        transactionId: transactionId,
                                         transType: 'identityMigration',
                                         fromAddress:
                                             getShortPubkey(sub.g1V1NewAddress),

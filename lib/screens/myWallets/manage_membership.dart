@@ -109,38 +109,41 @@ class ManageMembership extends StatelessWidget {
                 'Êtes-vous certains de vouloir révoquer définitivement cette identité ?') ??
             false;
 
-        if (answer) {
-          final myWalletProvider =
-              Provider.of<MyWalletsProvider>(context, listen: false);
-          final sub = Provider.of<SubstrateSdk>(context, listen: false);
+        if (!answer) return;
+        final myWalletProvider =
+            Provider.of<MyWalletsProvider>(context, listen: false);
+        final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-          WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
-          String? pin;
-          if (myWalletProvider.pinCode == '') {
-            pin = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (homeContext) {
-                  return UnlockingWallet(wallet: defaultWallet);
-                },
-              ),
-            );
-          }
-          if (pin != null || myWalletProvider.pinCode != '') {
-            sub.revokeIdentity(address, myWalletProvider.pinCode);
-          }
-          Navigator.pop(context);
-
-          Navigator.push(
+        WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
+        String? pin;
+        if (myWalletProvider.pinCode == '') {
+          pin = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) {
-              return TransactionInProgress(
-                  transType: 'revokeIdty',
-                  fromAddress: getShortPubkey(address),
-                  toAddress: getShortPubkey(address));
-            }),
+            MaterialPageRoute(
+              builder: (homeContext) {
+                return UnlockingWallet(wallet: defaultWallet);
+              },
+            ),
           );
         }
+
+        if (pin == null || myWalletProvider.pinCode == '') return;
+
+        final transactionId =
+            await sub.revokeIdentity(address, myWalletProvider.pinCode);
+
+        Navigator.pop(context);
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) {
+            return TransactionInProgress(
+                transactionId: transactionId,
+                transType: 'revokeIdty',
+                fromAddress: getShortPubkey(address),
+                toAddress: getShortPubkey(address));
+          }),
+        );
       },
       child: ScaledSizedBox(
         height: 55,

@@ -24,8 +24,9 @@ class NextButton extends StatelessWidget {
       child: ElevatedButton(
         key: keyGoNext,
         style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white, backgroundColor: orangeC,
-          elevation: 4, // foreground
+          foregroundColor: Colors.white,
+          backgroundColor: orangeC,
+          elevation: 4,
         ),
         onPressed: () {
           Navigator.push(

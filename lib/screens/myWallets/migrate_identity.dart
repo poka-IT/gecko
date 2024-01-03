@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/migrate_wallet_checks.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -39,8 +40,6 @@ class MigrateIdentityScreen extends StatelessWidget {
     } else {
       selectedWallet = defaultWallet;
     }
-    bool canValidate = false;
-    String validationStatus = '';
 
     final mdStyle = MarkdownStyleSheet(
       p: scaledTextStyle(fontSize: 17, color: Colors.black, letterSpacing: 0.3),
@@ -72,7 +71,8 @@ class MigrateIdentityScreen extends StatelessWidget {
           return FutureBuilder(
               future: sub.getBalanceAndIdtyStatus(
                   fromAddress, selectedWallet.address),
-              builder: (BuildContext context, AsyncSnapshot<List> status) {
+              builder: (BuildContext context,
+                  AsyncSnapshot<MigrateWalletChecks> status) {
                 if (status.data == null) {
                   return Column(children: [
                     ScaledSizedBox(height: 80),
@@ -89,31 +89,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                   ]);
                 }
 
-                final Map balance = status.data?[0] ?? {};
-                final IdtyStatus idtyStatus = status.data?[1];
-                final IdtyStatus myIdtyStatus = status.data?[2];
-                final bool hasConsumer = status.data?[3] ?? false;
-                final bool isSmith = status.data?[4] ?? false;
-
-                if (isSmith) {
-                  canValidate = false;
-                  validationStatus = 'smithCantMigrateIdentity'.tr();
-                } else if (balance['transferableBalance'] != 0 &&
-                    !hasConsumer) {
-                  canValidate = true;
-                  validationStatus = '';
-                } else if (idtyStatus != IdtyStatus.none &&
-                    myIdtyStatus != IdtyStatus.none) {
-                  canValidate = false;
-                  validationStatus =
-                      'youCannotMigrateIdentityToExistingIdentity'.tr();
-                } else {
-                  canValidate = false;
-                  validationStatus = hasConsumer
-                      ? 'youMustWaitBeforeCashoutThisAccount'.tr(args: ['X'])
-                      : 'thisAccountIsEmpty'.tr();
-                }
-
+                final statusData = status.data!;
                 final walletsList = myWalletProvider.listWallets.toList();
 
                 walletsList
@@ -131,7 +107,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                         data: 'areYouSureMigrateIdentity'.tr(args: [
                           duniterIndexer.walletNameIndexer[fromAddress] ??
                               '???',
-                          '${balance['transferableBalance']} $unit'
+                          '${statusData.balance['transferableBalance']} $unit'
                         ]),
                         styleSheet: mdStyle),
                   ),
@@ -171,7 +147,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                         elevation: 4,
                         backgroundColor: orangeC,
                       ),
-                      onPressed: canValidate
+                      onPressed: statusData.canValidate
                           ? () async {
                               WalletData? defaultWallet =
                                   myWalletProvider.getDefaultWallet();
@@ -196,7 +172,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                                   fromPassword: pin ?? myWalletProvider.pinCode,
                                   destPassword: pin ?? myWalletProvider.pinCode,
                                   withBalance: true,
-                                  fromBalance: balance);
+                                  fromBalance: statusData.balance);
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) {
@@ -221,7 +197,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                   ),
                   ScaledSizedBox(height: 10),
                   Text(
-                    validationStatus,
+                    statusData.validationStatus,
                     textAlign: TextAlign.center,
                     style:
                         scaledTextStyle(fontSize: 15, color: Colors.grey[600]),

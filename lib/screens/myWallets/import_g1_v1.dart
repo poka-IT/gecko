@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/migrate_wallet_checks.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -29,8 +30,6 @@ class ImportG1v1 extends StatelessWidget {
 
     Timer? debounce;
     WalletData selectedWallet = myWalletProvider.getDefaultWallet();
-    bool canValidate = false;
-    String validationStatus = '';
 
     return PopScope(
       onPopInvoked: (_) {
@@ -44,7 +43,8 @@ class ImportG1v1 extends StatelessWidget {
             return FutureBuilder(
                 future: sub.getBalanceAndIdtyStatus(
                     sub.g1V1NewAddress, selectedWallet.address),
-                builder: (BuildContext context, AsyncSnapshot<List> status) {
+                builder: (BuildContext context,
+                    AsyncSnapshot<MigrateWalletChecks> status) {
                   if (status.data == null) {
                     return Column(children: [
                       ScaledSizedBox(height: 80),
@@ -63,37 +63,7 @@ class ImportG1v1 extends StatelessWidget {
                     ]);
                   }
 
-                  final Map balance = status.data?[0] ?? {};
-                  final IdtyStatus idtyStatus = status.data?[1];
-                  final IdtyStatus myIdtyStatus = status.data?[2];
-                  final bool hasConsumer = status.data?[3] ?? false;
-                  final bool isSmith = status.data?[4] ?? false;
-
-                  if (balance['transferableBalance'] != 0 && !hasConsumer) {
-                    canValidate = true;
-                    validationStatus = '';
-                  } else {
-                    canValidate = false;
-                    validationStatus = hasConsumer
-                        ? 'youMustWaitBeforeCashoutThisAccount'.tr()
-                        : 'thisAccountIsEmpty'.tr();
-                  }
-
-                  if (idtyStatus != IdtyStatus.none &&
-                      myIdtyStatus != IdtyStatus.none) {
-                    canValidate = false;
-                    validationStatus =
-                        'youCannotMigrateIdentityToExistingIdentity'.tr();
-                  }
-
-                  if (isSmith) {
-                    canValidate = false;
-                    validationStatus = 'smithCantMigrateIdentity'.tr();
-                  }
-
-                  if (sub.g1V1NewAddress == '') {
-                    validationStatus = '';
-                  }
+                  final statusData = status.data!;
 
                   final bool isUdUnit = configBox.get('isUdUnit') ?? false;
                   final unit = isUdUnit ? 'ud'.tr(args: ['']) : currencyName;
@@ -224,7 +194,7 @@ class ImportG1v1 extends StatelessWidget {
                           Column(
                             children: [
                               Text(
-                                '${balance['transferableBalance']} $unit',
+                                '${statusData.balance['transferableBalance']} $unit',
                                 style: scaledTextStyle(fontSize: 16),
                               ),
                               IdentityStatus(
@@ -277,7 +247,7 @@ class ImportG1v1 extends StatelessWidget {
                           elevation: 4,
                           backgroundColor: orangeC,
                         ),
-                        onPressed: canValidate
+                        onPressed: statusData.canValidate
                             ? () async {
                                 WalletData? defaultWallet =
                                     myWalletProvider.getDefaultWallet();
@@ -301,8 +271,8 @@ class ImportG1v1 extends StatelessWidget {
                                     selectedWallet.address,
                                     destPassword:
                                         pin ?? myWalletProvider.pinCode,
-                                    balance: balance,
-                                    idtyStatus: idtyStatus);
+                                    balance: statusData.balance,
+                                    idtyStatus: statusData.idtyStatus);
                                 Navigator.pop(context);
                                 await Navigator.push(
                                   context,
@@ -328,7 +298,7 @@ class ImportG1v1 extends StatelessWidget {
                     ),
                     ScaledSizedBox(height: 10),
                     Text(
-                      validationStatus,
+                      statusData.validationStatus,
                       textAlign: TextAlign.center,
                       style: scaledTextStyle(
                           fontSize: 14, color: Colors.grey[600]),

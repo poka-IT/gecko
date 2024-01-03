@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
+import 'package:gecko/models/migrate_wallet_checks.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
@@ -886,11 +887,17 @@ class SubstrateSdk with ChangeNotifier {
     return g1V1NewAddress;
   }
 
-  Future<List> getBalanceAndIdtyStatus(
+  Future<MigrateWalletChecks> getBalanceAndIdtyStatus(
       String fromAddress, String toAddress) async {
+    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
+    bool canValidate = false;
+    String validationStatus = '';
+
     final fromBalance = fromAddress == ''
         ? {'transferableBalance': 0}
         : await getBalance(fromAddress);
+
+    final transferableBalance = fromBalance['transferableBalance'];
 
     final statusList = await idtyStatus([fromAddress, toAddress]);
     final fromIdtyStatus = statusList[0];
@@ -899,13 +906,31 @@ class SubstrateSdk with ChangeNotifier {
     final toIdtyStatus = statusList[1];
     final isSmithData = await isSmith(fromAddress);
 
-    return [
-      fromBalance,
-      fromIdtyStatus,
-      toIdtyStatus,
-      fromHasConsumer,
-      isSmithData
-    ];
+    // Check conditions to set 'canValidate' and 'validationStatus'
+    if (transferableBalance != 0 && !fromHasConsumer) {
+      canValidate = true;
+    } else if (toIdtyStatus != IdtyStatus.none &&
+        fromIdtyStatus != IdtyStatus.none) {
+      validationStatus = 'youCannotMigrateIdentityToExistingIdentity'.tr();
+    } else if (isSmithData) {
+      validationStatus = 'smithCantMigrateIdentity'.tr();
+    } else if (fromHasConsumer) {
+      validationStatus = 'youMustWaitBeforeCashoutThisAccount'.tr();
+    } else if (transferableBalance == 0) {
+      validationStatus = 'thisAccountIsEmpty'.tr();
+    }
+
+    if (sub.g1V1NewAddress == '') {
+      validationStatus = '';
+    }
+
+    return MigrateWalletChecks(
+      balance: fromBalance,
+      idtyStatus: toIdtyStatus,
+      isSmith: isSmithData,
+      validationStatus: validationStatus,
+      canValidate: canValidate,
+    );
   }
 
   //////////////////////////////////////

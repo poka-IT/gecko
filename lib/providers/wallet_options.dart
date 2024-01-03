@@ -80,7 +80,8 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Future<String> changeAvatar() async {
-    // File _image;
+    final datapod = Provider.of<V2sDatapodProvider>(homeContext, listen: false);
+
     final picker = ImagePicker();
 
     XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -109,9 +110,6 @@ class WalletOptionsProvider with ChangeNotifier {
           ),
         ],
       );
-
-      final datapod =
-          Provider.of<V2sDatapodProvider>(homeContext, listen: false);
 
       final newPath = "${imageDirectory.path}/${pickedFile.name}";
 
@@ -195,48 +193,47 @@ class WalletOptionsProvider with ChangeNotifier {
                             idtyName.text =
                                 idtyName.text.trim().replaceAll('  ', '');
 
-                            if (idtyName.text.length.clamp(3, 32) ==
+                            if (idtyName.text.length.clamp(3, 32) !=
                                 idtyName.text.length) {
-                              WalletData? defaultWallet =
-                                  myWalletProvider.getDefaultWallet();
-
-                              String? pin;
-                              if (myWalletProvider.pinCode == '') {
-                                pin = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (homeContext) {
-                                      return UnlockingWallet(
-                                          wallet: defaultWallet);
-                                    },
-                                  ),
-                                );
-                              }
-                              if (pin != null ||
-                                  myWalletProvider.pinCode != '') {
-                                final wallet = myWalletProvider
-                                    .getWalletDataByAddress(address.text);
-                                await sub.setCurrentWallet(wallet!);
-                                final transactionId = await sub.confirmIdentity(
-                                    walletOptions.address.text,
-                                    idtyName.text,
-                                    myWalletProvider.pinCode);
-                                Navigator.pop(context);
-
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) {
-                                    return TransactionInProgress(
-                                      transactionId: transactionId,
-                                      transType: 'comfirmIdty',
-                                      fromAddress:
-                                          getShortPubkey(wallet.address),
-                                      toAddress: getShortPubkey(wallet.address),
-                                    );
-                                  }),
-                                );
-                              }
+                              return;
                             }
+
+                            WalletData? defaultWallet =
+                                myWalletProvider.getDefaultWallet();
+
+                            if (myWalletProvider.pinCode == '') {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (homeContext) {
+                                    return UnlockingWallet(
+                                        wallet: defaultWallet);
+                                  },
+                                ),
+                              );
+                            }
+                            if (myWalletProvider.pinCode == '') return;
+
+                            final wallet = myWalletProvider
+                                .getWalletDataByAddress(address.text);
+                            await sub.setCurrentWallet(wallet!);
+                            final transactionId = await sub.confirmIdentity(
+                                walletOptions.address.text,
+                                idtyName.text,
+                                myWalletProvider.pinCode);
+                            Navigator.pop(context);
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) {
+                                return TransactionInProgress(
+                                  transactionId: transactionId,
+                                  transType: 'comfirmIdty',
+                                  fromAddress: getShortPubkey(wallet.address),
+                                  toAddress: getShortPubkey(wallet.address),
+                                );
+                              }),
+                            );
                           }
                         : null,
                     child: Text(

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/scale_functions.dart';
-
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/chest_provider.dart';
@@ -47,8 +46,7 @@ class ChestOptions extends StatelessWidget {
                       Provider.of<MyWalletsProvider>(context, listen: false);
                   WalletData? defaultWallet =
                       myWalletProvider.getDefaultWallet();
-                  String? pin;
-                  pin = await Navigator.push(
+                  final String? pin = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (homeContext) {
@@ -57,17 +55,16 @@ class ChestOptions extends StatelessWidget {
                     ),
                   );
 
-                  if (pin != null) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return ShowSeed(
-                          walletName: currentChest.name,
-                          walletProvider: walletProvider,
-                        );
-                      }),
-                    );
-                  }
+                  if (pin == null) return;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return ShowSeed(
+                        walletName: currentChest.name,
+                        walletProvider: walletProvider,
+                      );
+                    }),
+                  );
                 },
                 child: ScaledSizedBox(
                   height: 60,

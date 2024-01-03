@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:easy_localization/easy_localization.dart';
-
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -112,9 +111,8 @@ class _CustomDerivationState extends State<CustomDerivation> {
                 onPressed: () async {
                   WalletData? defaultWallet =
                       myWalletProvider.getDefaultWallet();
-                  String? pin;
                   if (myWalletProvider.pinCode == '') {
-                    pin = await Navigator.push(
+                    await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (homeContext) {
@@ -124,22 +122,21 @@ class _CustomDerivationState extends State<CustomDerivation> {
                     );
                   }
 
-                  if (pin != null || myWalletProvider.pinCode != '') {
-                    String newDerivationName =
-                        '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number! + 2}';
-                    if (dropdownValue == 'root') {
-                      await myWalletProvider.generateRootWallet(
-                          context, 'rootWallet'.tr());
-                    } else {
-                      await myWalletProvider.generateNewDerivation(
-                        context,
-                        newDerivationName,
-                        int.parse(dropdownValue!),
-                      );
-                    }
-                    Navigator.popUntil(
-                        context, ModalRoute.withName('/mywallets'));
+                  if (myWalletProvider.pinCode != '') return;
+                  String newDerivationName =
+                      '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number! + 2}';
+                  if (dropdownValue == 'root') {
+                    await myWalletProvider.generateRootWallet(
+                        context, 'rootWallet'.tr());
+                  } else {
+                    await myWalletProvider.generateNewDerivation(
+                      context,
+                      newDerivationName,
+                      int.parse(dropdownValue!),
+                    );
                   }
+                  Navigator.popUntil(
+                      context, ModalRoute.withName('/mywallets'));
                 },
                 child: Text(
                   'validate'.tr(),

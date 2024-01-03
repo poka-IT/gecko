@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
-
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
@@ -215,7 +214,7 @@ class SettingsScreen extends StatelessWidget {
                                     configBox.put(
                                         'customEndpoint', finalEndpoint);
                                   }
-                                  await sub.connectNode(context);
+                                  await sub.connectNode();
                                 }
                               : null);
                     }),

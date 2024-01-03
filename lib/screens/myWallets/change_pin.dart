@@ -3,14 +3,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:durt/durt.dart';
-
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
-
 import 'package:provider/provider.dart';
 
 class ChangePinScreen extends StatefulWidget with ChangeNotifier {
@@ -101,9 +99,8 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
                     WalletData defaultWallet =
                         myWalletProvider.getDefaultWallet();
 
-                    String? pin;
                     if (myWalletProvider.pinCode == '') {
-                      pin = await Navigator.push(
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (homeContext) {
@@ -112,13 +109,13 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
                         ),
                       );
                     }
-                    if (pin != null || myWalletProvider.pinCode != '') {
-                      await sub.changePassword(context, defaultWallet.address,
-                          widget.walletProvider.pinCode, newPin.text);
-                      widget.walletProvider.pinCode = newPin.text;
-                      newPin.text = '';
-                      Navigator.pop(context);
-                    }
+                    if (myWalletProvider.pinCode == '') return;
+
+                    await sub.changePassword(context, defaultWallet.address,
+                        widget.walletProvider.pinCode, newPin.text);
+                    widget.walletProvider.pinCode = newPin.text;
+                    newPin.text = '';
+                    Navigator.pop(context);
                   },
                   child: Text(
                     'confirm'.tr(),

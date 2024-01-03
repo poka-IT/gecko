@@ -95,9 +95,8 @@ class GeckoBottomAppBar extends StatelessWidget {
                       : () async {
                           WalletData? defaultWallet =
                               myWalletProvider.getDefaultWallet();
-                          String? pin;
                           if (myWalletProvider.pinCode == '') {
-                            pin = await Navigator.push(
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (homeContext) {
@@ -105,8 +104,8 @@ class GeckoBottomAppBar extends StatelessWidget {
                                 },
                               ),
                             );
-                          }
-                          if (pin != null || myWalletProvider.pinCode != '') {
+
+                            if (myWalletProvider.pinCode == '') return;
                             Navigator.popUntil(
                                 context, ModalRoute.withName('/'));
                             //FIXME: Should not have to wait 300 milliseconds when /mywallets exist in navigator...

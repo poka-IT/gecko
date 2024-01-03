@@ -1,7 +1,6 @@
 // ignore_for_file: file_names
 
 import 'package:easy_localization/easy_localization.dart';
-
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/screens/onBoarding/4.dart';

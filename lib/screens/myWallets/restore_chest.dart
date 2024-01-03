@@ -2,7 +2,6 @@
 
 import 'package:bubble/bubble.dart';
 import 'package:easy_localization/easy_localization.dart';
-
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';

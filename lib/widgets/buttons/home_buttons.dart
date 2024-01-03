@@ -92,9 +92,8 @@ class HomeButtons extends StatelessWidget {
                         : () async {
                             WalletData? defaultWallet =
                                 myWalletProvider.getDefaultWallet();
-                            String? pin;
                             if (myWalletProvider.pinCode == '') {
-                              pin = await Navigator.push(
+                              await Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (homeContext) {
@@ -104,9 +103,8 @@ class HomeButtons extends StatelessWidget {
                                 ),
                               );
                             }
-                            if (pin != null || myWalletProvider.pinCode != '') {
-                              Navigator.pushNamed(context, '/mywallets');
-                            }
+                            if (myWalletProvider.pinCode == '') return;
+                            Navigator.pushNamed(context, '/mywallets');
                           },
                     child: Padding(
                         padding: EdgeInsets.all(scaleSize(14.5)),

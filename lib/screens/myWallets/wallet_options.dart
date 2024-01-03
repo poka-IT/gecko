@@ -324,7 +324,8 @@ class WalletOptions extends StatelessWidget {
                   child: ElevatedButton(
                     key: keyConfirmIdentity,
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white, elevation: 4,
+                      foregroundColor: Colors.white,
+                      elevation: 4,
                       backgroundColor: orangeC,
                     ),
                     onPressed: () {

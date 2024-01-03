@@ -336,9 +336,8 @@ class WalletViewScreen extends StatelessWidget {
                           splashColor: yellowC,
                           onTap: sub.nodeConnected
                               ? () async {
-                                  String? pin;
                                   if (myWalletProvider.pinCode == '') {
-                                    pin = await Navigator.push(
+                                    await Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (homeContext) {
@@ -348,10 +347,8 @@ class WalletViewScreen extends StatelessWidget {
                                       ),
                                     );
                                   }
-                                  if (pin != null ||
-                                      myWalletProvider.pinCode != '') {
-                                    paymentPopup(context, address, username);
-                                  }
+                                  if (myWalletProvider.pinCode == '') return;
+                                  paymentPopup(context, address, username);
                                 }
                               : null,
                           child: Padding(

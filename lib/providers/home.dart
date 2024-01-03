@@ -1,14 +1,9 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-// import 'package:audioplayers/audio_cache.dart';
-// import 'package:audioplayers/audioplayers.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/substrate_sdk.dart';

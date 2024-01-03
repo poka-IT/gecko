@@ -33,9 +33,8 @@ class AddNewDerivationButton extends StatelessWidget {
                   if (!myWalletProvider.isNewDerivationLoading) {
                     WalletData? defaultWallet =
                         myWalletProvider.getDefaultWallet();
-                    String? pin;
                     if (myWalletProvider.pinCode == '') {
-                      pin = await Navigator.push(
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (homeContext) {
@@ -44,10 +43,9 @@ class AddNewDerivationButton extends StatelessWidget {
                         ),
                       );
                     }
-                    if (pin != null || myWalletProvider.pinCode != '') {
-                      await myWalletProvider.generateNewDerivation(
-                          context, newDerivationName);
-                    }
+                    if (myWalletProvider.pinCode == '') return;
+                    await myWalletProvider.generateNewDerivation(
+                        context, newDerivationName);
                   }
                 },
                 child: Container(

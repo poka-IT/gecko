@@ -207,29 +207,6 @@ class TransactionDetails {
   String resultText = '';
   TransactionStatus txStatus = TransactionStatus.none;
 
-  Map<String, String> actionMap = {
-    'pay': 'transaction'.tr(),
-    'cert': 'certification'.tr(),
-    'comfirmIdty': 'identityConfirm'.tr(),
-    'revokeIdty': 'revokeAdhesion'.tr(),
-    'identityMigration': 'identityMigration'.tr(),
-  };
-
-  Map<String, String> resultMap = {
-    'sending': 'sending'.tr(),
-    'Ready': 'propagating'.tr(),
-    'Broadcast': 'validating'.tr(),
-    'cert.NotRespectCertPeriod': '24hbetweenCerts'.tr(),
-    'identity.CreatorNotAllowedToCreateIdty': '24hbetweenCerts'.tr(),
-    'cert.CannotCertifySelf': 'canNotCertifySelf'.tr(),
-    'identity.IdtyNameAlreadyExist': 'nameAlreadyExist'.tr(),
-    'balances.KeepAlive': '2GDtoKeepAlive'.tr(),
-    '1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low':
-        'youHaveToFeedThisAccountBeforeUsing'.tr(),
-    'Token.FundsUnavailable': 'fundsUnavailable'.tr(),
-    'Exception: timeout': 'execTimeoutOver'.tr(),
-  };
-
   TransactionDetails({
     required transactionId,
     required this.fromAddress,
@@ -268,7 +245,7 @@ class TransactionDetails {
     } else if (result.contains('blockHash: ')) {
       txStatus = TransactionStatus.success;
       resultText = 'extrinsicValidated'
-          .tr(args: [actionMap[transType] ?? 'strangeTransaction']);
+          .tr(args: [actionMap[transType] ?? 'strangeTransaction'.tr()]);
     } else if (result.contains('Exception: ')) {
       txStatus = TransactionStatus.failed;
       String exception = result.split('Exception: ')[1];
@@ -278,4 +255,27 @@ class TransactionDetails {
       resultText = resultMap[result] ?? 'Unknown status: $result';
     }
   }
+
+  Map<String, String> actionMap = {
+    'pay': 'transaction'.tr(),
+    'cert': 'certification'.tr(),
+    'comfirmIdty': 'identityConfirm'.tr(),
+    'revokeIdty': 'revokeAdhesion'.tr(),
+    'identityMigration': 'identityMigration'.tr(),
+  };
+
+  Map<String, String> resultMap = {
+    'sending': 'sending'.tr(),
+    'Ready': 'propagating'.tr(),
+    'Broadcast': 'validating'.tr(),
+    'cert.NotRespectCertPeriod': '24hbetweenCerts'.tr(),
+    'identity.CreatorNotAllowedToCreateIdty': '24hbetweenCerts'.tr(),
+    'cert.CannotCertifySelf': 'canNotCertifySelf'.tr(),
+    'identity.IdtyNameAlreadyExist': 'nameAlreadyExist'.tr(),
+    'balances.KeepAlive': '2GDtoKeepAlive'.tr(),
+    '1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low':
+        'youHaveToFeedThisAccountBeforeUsing'.tr(),
+    'Token.FundsUnavailable': 'fundsUnavailable'.tr(),
+    'Exception: timeout': 'execTimeoutOver'.tr(),
+  };
 }

@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously, body_might_complete_normally_catch_error
-
 import 'dart:convert';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fast_base58/fast_base58.dart';
@@ -600,9 +598,10 @@ class SubstrateSdk with ChangeNotifier {
     return sdk.api.connectedNode?.endpoint;
   }
 
-  Future<void> connectNode(BuildContext ctx) async {
-    final homeProvider = Provider.of<HomeProvider>(ctx, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(ctx, listen: false);
+  Future<void> connectNode() async {
+    final homeProvider = Provider.of<HomeProvider>(homeContext, listen: false);
+    final myWalletProvider =
+        Provider.of<MyWalletsProvider>(homeContext, listen: false);
 
     homeProvider.changeMessage("connectionPending".tr(), 0);
 
@@ -658,7 +657,7 @@ class SubstrateSdk with ChangeNotifier {
       nodeConnected = false;
       notifyListeners();
       homeProvider.changeMessage("noDuniterEndointAvailable".tr(), 0);
-      if (!myWalletProvider.isWalletsExists()) snackNode(homeContext, false);
+      if (!myWalletProvider.isWalletsExists()) snackNode(false);
     }
 
     log.i('Connected to node: ${sdk.api.connectedNode?.endpoint}');
@@ -711,6 +710,7 @@ class SubstrateSdk with ChangeNotifier {
         .catchError((e) {
       importIsLoading = false;
       notifyListeners();
+      return e;
     });
     if (json == null) return '';
     try {
@@ -1229,12 +1229,12 @@ newKeySig: $newKeySigType""");
 /////// 6: UI ELEMENTS (off class) /////////
 ////////////////////////////////////////////
 
-void snackNode(BuildContext context, bool isConnected) {
+void snackNode(bool isConnected) {
   String message;
   if (!isConnected) {
     message = "noDuniterNodeAvailableTryLater".tr();
   } else {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
 
     message =
         "${"youAreConnectedToNode".tr()}\n${sub.getConnectedEndpoint()!.split('//')[1]}";
@@ -1244,7 +1244,7 @@ void snackNode(BuildContext context, bool isConnected) {
       padding: const EdgeInsets.all(20),
       content: Text(message, style: const TextStyle(fontSize: 16)),
       duration: const Duration(seconds: 4));
-  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  ScaffoldMessenger.of(homeContext).showSnackBar(snackBar);
 }
 
 String getShortPubkey(String pubkey) {

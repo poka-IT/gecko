@@ -238,7 +238,7 @@ Future bkSetNode([String? endpoint]) async {
     endpoint = 'ws://$ipAddress:9944';
   }
   configBox.put('customEndpoint', endpoint);
-  sub.connectNode(homeContext);
+  sub.connectNode();
 }
 
 // Restore chest in background

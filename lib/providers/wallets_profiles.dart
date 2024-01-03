@@ -9,7 +9,6 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
-// import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:barcode_scan2/barcode_scan2.dart';
 
 class WalletsProfilesProvider with ChangeNotifier {

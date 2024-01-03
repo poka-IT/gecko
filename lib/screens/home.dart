@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
@@ -36,8 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final homeProviderInit =
-          Provider.of<HomeProvider>(context, listen: false);
+      final homeProvider = Provider.of<HomeProvider>(context, listen: false);
       final sub = Provider.of<SubstrateSdk>(context, listen: false);
       final duniterIndexer =
           Provider.of<DuniterIndexer>(context, listen: false);
@@ -74,18 +71,16 @@ class _HomeScreenState extends State<HomeScreen> {
         g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
         contactsBox = await Hive.openBox<G1WalletsList>("contactsBox");
 
-        homeProviderInit.isWalletBoxInit = true;
+        homeProvider.isWalletBoxInit = true;
         myWalletProvider.reload();
 
         duniterIndexer.getValidIndexerEndpoint();
 
-        await homeProviderInit.getValidEndpoints();
+        await homeProvider.getValidEndpoints();
         if (configBox.get('isCacheChecked') == null) {
           configBox.put('isCacheChecked', false);
         }
 
-        HomeProvider homeProvider =
-            Provider.of<HomeProvider>(context, listen: false);
         Connectivity()
             .onConnectivityChanged
             .listen((ConnectivityResult result) async {
@@ -99,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // Check if the phone is actually connected to the internet
             var connectivityResult = await (Connectivity().checkConnectivity());
             if (connectivityResult != ConnectivityResult.none) {
-              await sub.connectNode(context);
+              await sub.connectNode();
             }
           }
         });

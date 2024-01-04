@@ -20,14 +20,14 @@ import 'package:provider/provider.dart';
 import 'package:image_cropper/image_cropper.dart';
 
 class WalletOptionsProvider with ChangeNotifier {
-  TextEditingController address = TextEditingController();
-  final TextEditingController _newWalletName = TextEditingController();
+  final address = TextEditingController();
+  final _newWalletName = TextEditingController();
   bool isWalletUnlock = false;
   bool ischangedPin = false;
-  TextEditingController newPin = TextEditingController();
+  final newPin = TextEditingController();
   bool isEditing = false;
   bool isBalanceBlur = false;
-  TextEditingController nameController = TextEditingController();
+  final nameController = TextEditingController();
   late bool isDefaultWallet;
   bool canValidateNameBool = false;
   Map<String, double> balanceCache = {};
@@ -128,7 +128,7 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Future<String?> confirmIdentityPopup(BuildContext context) async {
-    TextEditingController idtyName = TextEditingController();
+    final idtyName = TextEditingController();
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
@@ -256,7 +256,7 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Future<String?> editWalletName(BuildContext context, List<int?> wID) async {
-    TextEditingController walletName = TextEditingController();
+    final walletName = TextEditingController();
     canValidateNameBool = false;
 
     return showDialog<String>(
@@ -337,7 +337,7 @@ class WalletOptionsProvider with ChangeNotifier {
     );
   }
 
-  bool canValidateName(BuildContext context, TextEditingController walletName) {
+  bool canValidateName(BuildContext context, final walletName) {
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 

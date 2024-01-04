@@ -13,7 +13,7 @@ import 'package:crypto/crypto.dart';
 // import 'package:http/http.dart' as http;
 
 class CesiumPlusProvider with ChangeNotifier {
-  TextEditingController cesiumName = TextEditingController();
+  final cesiumName = TextEditingController();
 
   CancelToken avatarCancelToken = CancelToken();
 

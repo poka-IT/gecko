@@ -24,7 +24,7 @@ class OnboardingStepSix extends StatelessWidget {
   final bool skipIntro;
   String? generatedMnemonic;
   final wordController = TextEditingController();
-  final TextEditingController _mnemonicController = TextEditingController();
+  final _mnemonicController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {

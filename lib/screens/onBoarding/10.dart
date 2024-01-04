@@ -30,7 +30,7 @@ class OnboardingStepTen extends StatelessWidget {
   final formKey = GlobalKey<FormState>();
   Color? pinColor = const Color(0xFFA4B600);
   bool hasError = false;
-  TextEditingController enterPin = TextEditingController();
+  final enterPin = TextEditingController();
   FocusNode pinFocus = FocusNode(debugLabel: 'pinFocusNode');
 
   @override

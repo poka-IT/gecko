@@ -18,7 +18,7 @@ import 'package:provider/provider.dart';
 class HomeProvider with ChangeNotifier {
   bool? isSearching;
   Icon searchIcon = const Icon(Icons.search);
-  final TextEditingController searchQuery = TextEditingController();
+  final searchQuery = TextEditingController();
   Widget appBarTitle = Text('Ğecko', style: TextStyle(color: Colors.grey[850]));
   String homeMessage = "loading".tr();
   String defaultMessage = "noLizard".tr();

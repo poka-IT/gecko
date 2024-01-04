@@ -23,7 +23,7 @@ class ChooseChest extends StatefulWidget {
 }
 
 class _ChooseChestState extends State<ChooseChest> {
-  TextEditingController tplController = TextEditingController();
+  final tplController = TextEditingController();
   CarouselController buttonCarouselController = CarouselController();
   int? currentChest = configBox.get('currentChest');
 

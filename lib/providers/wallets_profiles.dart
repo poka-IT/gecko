@@ -20,8 +20,8 @@ class WalletsProfilesProvider with ChangeNotifier {
   bool isHistoryScreen = false;
   String historySwitchButtun = "Voir l'historique";
   String? rawSvg;
-  TextEditingController payAmount = TextEditingController();
-  TextEditingController payComment = TextEditingController();
+  final payAmount = TextEditingController();
+  final payComment = TextEditingController();
   num? _balance;
 
   Future<String> scan(context) async {

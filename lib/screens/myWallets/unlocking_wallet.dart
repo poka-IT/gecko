@@ -22,7 +22,7 @@ class UnlockingWallet extends StatelessWidget {
   late int currentChestNumber;
   late ChestData currentChest;
   bool canUnlock = true;
-  TextEditingController enterPin = TextEditingController();
+  final enterPin = TextEditingController();
   FocusNode pinFocus = FocusNode(debugLabel: 'pinFocusNode');
 
   // ignore: close_sinks

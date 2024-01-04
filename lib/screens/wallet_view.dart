@@ -88,7 +88,7 @@ class WalletViewScreen extends StatelessWidget {
                       }),
                     );
                   },
-                  child: QrImageWidget(
+                  child: QrImageView(
                     data: walletProfile.address,
                     version: QrVersions.auto,
                     size: scaleSize(65),

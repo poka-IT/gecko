@@ -83,7 +83,7 @@ class WalletOptions extends StatelessWidget {
                   }),
                 );
               },
-              child: QrImageWidget(
+              child: QrImageView(
                 data: walletOptions.address.text,
                 version: QrVersions.auto,
                 size: scaleSize(70),

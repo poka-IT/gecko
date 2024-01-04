@@ -72,7 +72,7 @@ class _QrCodeFullscreenState extends State<QrCodeFullscreen> {
                 child: Column(
                   children: [
                     const Spacer(),
-                    QrImageWidget(
+                    QrImageView(
                       data: widget.address,
                       version: QrVersions.auto,
                       size: scaleSize(320),

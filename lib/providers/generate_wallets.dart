@@ -35,27 +35,27 @@ class GenerateWalletsProvider with ChangeNotifier {
   final pin = TextEditingController();
 
   // Import wallet
-  TextEditingController cesiumID = TextEditingController();
-  TextEditingController cesiumPWD = TextEditingController();
-  TextEditingController cesiumPubkey = TextEditingController();
+  final cesiumID = TextEditingController();
+  final cesiumPWD = TextEditingController();
+  final cesiumPubkey = TextEditingController();
   bool isCesiumIDVisible = false;
   bool isCesiumPWDVisible = false;
   bool canImport = false;
   late durt.CesiumWallet cesiumWallet;
 
   // Import Chest
-  TextEditingController cellController0 = TextEditingController();
-  TextEditingController cellController1 = TextEditingController();
-  TextEditingController cellController2 = TextEditingController();
-  TextEditingController cellController3 = TextEditingController();
-  TextEditingController cellController4 = TextEditingController();
-  TextEditingController cellController5 = TextEditingController();
-  TextEditingController cellController6 = TextEditingController();
-  TextEditingController cellController7 = TextEditingController();
-  TextEditingController cellController8 = TextEditingController();
-  TextEditingController cellController9 = TextEditingController();
-  TextEditingController cellController10 = TextEditingController();
-  TextEditingController cellController11 = TextEditingController();
+  final cellController0 = TextEditingController();
+  final cellController1 = TextEditingController();
+  final cellController2 = TextEditingController();
+  final cellController3 = TextEditingController();
+  final cellController4 = TextEditingController();
+  final cellController5 = TextEditingController();
+  final cellController6 = TextEditingController();
+  final cellController7 = TextEditingController();
+  final cellController8 = TextEditingController();
+  final cellController9 = TextEditingController();
+  final cellController10 = TextEditingController();
+  final cellController11 = TextEditingController();
   bool isFirstTimeSentenceComplete = true;
 
   Future storeHDWChest(BuildContext context) async {
@@ -89,12 +89,10 @@ class GenerateWalletsProvider with ChangeNotifier {
         (kDebugMode && inputWord == 'triche')) {
       isAskedWordValid = true;
       askedWordColor = Colors.green[600];
-      // walletNameFocus.nextFocus();
       notifyListeners();
     } else {
       isAskedWordValid = false;
     }
-    // notifyListeners();
   }
 
   String removeDiacritics(String str) {

@@ -175,7 +175,7 @@ class RestoreChest extends StatelessWidget {
     );
   }
 
-  Widget arrayCell(BuildContext context, TextEditingController cellCtl) {
+  Widget arrayCell(BuildContext context, final cellCtl) {
     final generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
 

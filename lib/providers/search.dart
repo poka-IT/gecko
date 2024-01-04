@@ -3,7 +3,7 @@ import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 
 class SearchProvider with ChangeNotifier {
-  TextEditingController searchController = TextEditingController();
+  final searchController = TextEditingController();
   List searchResult = [];
   int resultLenght = 0;
 

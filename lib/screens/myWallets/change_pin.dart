@@ -25,7 +25,7 @@ class ChangePinScreen extends StatefulWidget with ChangeNotifier {
 }
 
 class _ChangePinScreenState extends State<ChangePinScreen> {
-  final TextEditingController newPin = TextEditingController();
+  final newPin = TextEditingController();
 
   @override
   void initState() {

@@ -10,7 +10,7 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/balance.dart';
-import 'package:gecko/widgets/cesium_avatar.dart';
+import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 
@@ -47,7 +47,7 @@ class ContactsList extends StatelessWidget {
                           horizontalTitleGap: 7,
                           contentPadding: const EdgeInsets.all(5),
                           dense: !isTall,
-                          leading: CesiumAvatar(
+                          leading: DatapodAvatar(
                               address: g1Wallet.address, size: scaleSize(50)),
                           title: Row(children: <Widget>[
                             Text(getShortPubkey(g1Wallet.address),

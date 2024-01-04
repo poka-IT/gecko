@@ -20,7 +20,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/generate_wallets.dart';
@@ -55,7 +54,7 @@ Future<void> main() async {
   //   await dotenv.load();
   // }
 
-  HomeProvider homeProvider = HomeProvider();
+  final homeProvider = HomeProvider();
   // DuniterIndexer _duniterIndexer = DuniterIndexer();
 
   await initHiveForFlutter();
@@ -131,7 +130,6 @@ class Gecko extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
         ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
         ChangeNotifierProvider(create: (_) => SearchProvider()),
-        ChangeNotifierProvider(create: (_) => CesiumPlusProvider()),
         ChangeNotifierProvider(create: (_) => SubstrateSdk()),
         ChangeNotifierProvider(create: (_) => DuniterIndexer()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),

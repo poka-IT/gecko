@@ -1,4 +1,12 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'dart:io';
+
+import 'package:gecko/globals.dart';
+import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 part 'wallet_data.g.dart';
 
 @HiveType(typeId: 0)
@@ -36,6 +44,9 @@ class WalletData extends HiveObject {
   @HiveField(10)
   List<int>? certs;
 
+  @HiveField(11)
+  DateTime? profileUpdatedTime;
+
   WalletData({
     required this.address,
     this.chest,
@@ -44,6 +55,7 @@ class WalletData extends HiveObject {
     this.derivation,
     this.imageDefaultPath,
     this.imageCustomPath,
+    this.profileUpdatedTime,
     this.isOwned = false,
     this.identityStatus = IdtyStatus.unknown,
     this.balance = 0,
@@ -75,11 +87,47 @@ class WalletData extends HiveObject {
     return balance != 0;
   }
 
+  Future<DateTime?> getUpdatedTime() async {
+    final datapod = Provider.of<V2sDatapodProvider>(homeContext, listen: false);
+    return await datapod.profileEditedAt(address);
+  }
+
+  Future<bool> shouldUpdateProfile() async {
+    final remoteUpdatedProfile = await getUpdatedTime();
+    late Duration difference;
+    if (profileUpdatedTime != null && remoteUpdatedProfile != null) {
+      difference = profileUpdatedTime!.difference(remoteUpdatedProfile);
+    } else if (remoteUpdatedProfile != null) {
+      return true;
+    } else {
+      difference = Duration.zero;
+    }
+    return difference.inSeconds.abs() >= 30;
+  }
+
+  /// This method get the remote avatar on v2s-datapod only if needed, and store it on disk
+  Future getDatapodAvatar() async {
+    if (!await shouldUpdateProfile()) return;
+
+    final datapod = Provider.of<V2sDatapodProvider>(homeContext, listen: false);
+    final avatarUuid = const Uuid().v4();
+
+    await datapod.getAvatar(address, saveOnDisk: true, uuid: avatarUuid);
+
+    final avatarPath = '${avatarsDirectory.path}/$address-$avatarUuid';
+    if (!await File(avatarPath).exists()) return;
+
+    profileUpdatedTime = await getUpdatedTime();
+    imageCustomPath = avatarPath;
+
+    walletBox.put(address, this);
+    datapod.reload();
+  }
+
   bool hasCustomImage() {
     return imageCustomPath != null;
   }
 
-  // returns only the id part of the ':'-separated string
   List<int?> id() {
     return [chest, number];
   }

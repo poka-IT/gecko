@@ -24,3 +24,19 @@ mutation ($addressOld: String!, $addressNew: String!, $hash: String!, $signature
   }
 }
 ''';
+
+const String getAvatarQ = r'''
+query ($address: String!) {
+  profiles_by_pk(address: $address) {
+    avatar64
+  }
+}
+''';
+
+const String profileEditedAtQ = r'''
+query ($address: String!) {
+  profiles_by_pk(address: $address) {
+    updated_at
+  }
+}
+''';

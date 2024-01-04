@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/screens/wallet_view.dart';
 
 class CertTile extends StatelessWidget {
@@ -29,7 +29,7 @@ class CertTile extends StatelessWidget {
               contentPadding: EdgeInsets.only(
                   left: 10, right: 0, top: scaleSize(3), bottom: scaleSize(3)),
               leading: ClipOval(
-                child: defaultAvatar(avatarSize),
+                child: V2sDatapodProvider().defaultAvatar(avatarSize),
               ),
               title: Padding(
                 padding: const EdgeInsets.only(bottom: 2),

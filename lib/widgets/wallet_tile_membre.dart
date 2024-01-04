@@ -5,6 +5,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/certifications.dart';
@@ -22,6 +23,9 @@ class WalletTileMembre extends StatelessWidget {
   Widget build(BuildContext context) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
     final defaultWallet = myWalletProvider.getDefaultWallet();
+
+    repository.getDatapodAvatar();
+
     return Padding(
       padding: EdgeInsets.symmetric(
           horizontal: scaleSize(52), vertical: scaleSize(15)),
@@ -53,38 +57,41 @@ class WalletTileMembre extends StatelessWidget {
                 Expanded(
                   child: Stack(
                     children: [
-                      Container(
-                        width: double.infinity,
-                        height: double.infinity,
-                        decoration: const BoxDecoration(
-                          gradient: RadialGradient(
-                            radius: 0.8,
-                            colors: [
-                              Color.fromARGB(255, 255, 255, 211),
-                              yellowC,
-                            ],
+                      Consumer<V2sDatapodProvider>(
+                          builder: (context, datapod, _) {
+                        return Container(
+                          width: double.infinity,
+                          height: double.infinity,
+                          decoration: const BoxDecoration(
+                            gradient: RadialGradient(
+                              radius: 0.8,
+                              colors: [
+                                Color.fromARGB(255, 255, 255, 211),
+                                yellowC,
+                              ],
+                            ),
                           ),
-                        ),
-                        child: repository.imageCustomPath == null ||
-                                repository.imageCustomPath == ''
-                            ? Image.asset(
-                                'assets/avatars/${repository.imageDefaultPath}',
-                                alignment: Alignment.bottomCenter,
-                                scale: 0.5,
-                              )
-                            : Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.transparent,
-                                  image: DecorationImage(
-                                    fit: BoxFit.fitHeight,
-                                    image: FileImage(
-                                      File(repository.imageCustomPath!),
+                          child: repository.imageCustomPath == null ||
+                                  repository.imageCustomPath == ''
+                              ? Image.asset(
+                                  'assets/avatars/${repository.imageDefaultPath}',
+                                  alignment: Alignment.bottomCenter,
+                                  scale: 0.5,
+                                )
+                              : Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.transparent,
+                                    image: DecorationImage(
+                                      fit: BoxFit.fitHeight,
+                                      image: FileImage(
+                                        File(repository.imageCustomPath!),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                      ),
+                        );
+                      }),
                       Positioned(
                         left: 20,
                         top: 20,

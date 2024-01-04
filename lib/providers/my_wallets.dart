@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -5,6 +7,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/commons/common_elements.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 class MyWalletsProvider with ChangeNotifier {
@@ -111,6 +114,12 @@ class MyWalletsProvider with ChangeNotifier {
         await chestBox.clear();
         await configBox.delete('defaultWallet');
         await sub.deleteAllAccounts();
+
+        final directory = await getApplicationDocumentsDirectory();
+        final avatarFolder = Directory('${directory.path}/avatars/');
+        if (await avatarFolder.exists()) {
+          await avatarFolder.delete(recursive: true);
+        }
 
         myWalletProvider.pinCode = '';
 

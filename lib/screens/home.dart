@@ -5,7 +5,6 @@ import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
@@ -13,6 +12,7 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/widgets/bubble_speak.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/widgets/commons/common_elements.dart';
@@ -40,8 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Provider.of<DuniterIndexer>(context, listen: false);
       final myWalletProvider =
           Provider.of<MyWalletsProvider>(context, listen: false);
-      final csProvider =
-          Provider.of<CesiumPlusProvider>(context, listen: false);
+      final datapod = Provider.of<V2sDatapodProvider>(context, listen: false);
 
       final bool isWalletsExists = myWalletProvider.isWalletsExists();
 
@@ -54,6 +53,8 @@ class _HomeScreenState extends State<HomeScreen> {
         await infoPopup(context, "chestNotCompatibleMustReinstallGecko".tr());
         await Hive.deleteBoxFromDisk('walletBox');
         await Hive.deleteBoxFromDisk('chestBox');
+        await datapod.deleteAvatarsDirectory();
+        await avatarsDirectory.create();
         chestBox = await Hive.openBox<ChestData>("chestBox");
         await configBox.delete('defaultWallet');
         if (!sub.sdkReady && !sub.sdkLoading) await sub.initApi();
@@ -67,7 +68,8 @@ class _HomeScreenState extends State<HomeScreen> {
       if (sub.sdkReady && !sub.nodeConnected) {
         walletBox = await Hive.openBox<WalletData>("walletBox");
         await Hive.deleteBoxFromDisk('g1WalletsBox');
-        await csProvider.deleteAvatarFolder();
+        await datapod.deleteAvatarsCacheDirectory();
+        await avatarsCacheDirectory.create();
         g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
         contactsBox = await Hive.openBox<G1WalletsList>("contactsBox");
 

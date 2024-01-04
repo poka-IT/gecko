@@ -10,6 +10,7 @@ import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/certifications.dart';
@@ -258,55 +259,58 @@ class WalletOptions extends StatelessWidget {
   }
 
   Widget avatar(WalletOptionsProvider walletProvider) {
-    return Stack(
-      children: <Widget>[
-        InkWell(
-          onTap: () async {
-            final newPath = await (walletProvider.changeAvatar());
-            if (newPath != '') {
-              wallet.imageCustomPath = newPath;
-              walletBox.put(wallet.key, wallet);
-              // Uncomment to enable Cs+ avatar storage
-              // CesiumPlusProvider().setAvatar(wallet.address, newPath);
-            }
-            walletProvider.reload();
-          },
-          child: wallet.imageCustomPath == null || wallet.imageCustomPath == ''
-              ? Image.asset(
-                  'assets/avatars/${wallet.imageDefaultPath}',
-                  width: scaleSize(122),
-                )
-              : Container(
-                  width: scaleSize(122),
-                  height: scaleSize(122),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.transparent,
-                    image: DecorationImage(
-                      fit: BoxFit.cover,
-                      image: FileImage(
-                        File(wallet.imageCustomPath!),
-                      ),
-                    ),
-                  ),
-                ),
-        ),
-        Positioned(
-          right: 0,
-          top: 0,
-          child: InkWell(
+    return Consumer<V2sDatapodProvider>(builder: (context, datapod, _) {
+      return Stack(
+        children: <Widget>[
+          InkWell(
             onTap: () async {
-              wallet.imageCustomPath = await (walletProvider.changeAvatar());
+              final newPath = await (walletProvider.changeAvatar());
+              if (newPath != '') {
+                wallet.imageCustomPath = newPath;
+                walletBox.put(wallet.key, wallet);
+                // Uncomment to enable Cs+ avatar storage
+                // CesiumPlusProvider().setAvatar(wallet.address, newPath);
+              }
               walletProvider.reload();
             },
-            child: Image.asset(
-              'assets/walletOptions/camera.png',
-              height: scaleSize(38),
+            child:
+                wallet.imageCustomPath == null || wallet.imageCustomPath == ''
+                    ? Image.asset(
+                        'assets/avatars/${wallet.imageDefaultPath}',
+                        width: scaleSize(122),
+                      )
+                    : Container(
+                        width: scaleSize(122),
+                        height: scaleSize(122),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.transparent,
+                          image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: FileImage(
+                              File(wallet.imageCustomPath!),
+                            ),
+                          ),
+                        ),
+                      ),
+          ),
+          Positioned(
+            right: 0,
+            top: 0,
+            child: InkWell(
+              onTap: () async {
+                wallet.imageCustomPath = await (walletProvider.changeAvatar());
+                walletProvider.reload();
+              },
+              child: Image.asset(
+                'assets/walletOptions/camera.png',
+                height: scaleSize(38),
+              ),
             ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+    });
   }
 
   Widget confirmIdentityButton(WalletOptionsProvider walletProvider) {

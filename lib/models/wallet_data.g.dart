@@ -24,6 +24,7 @@ class WalletDataAdapter extends TypeAdapter<WalletData> {
       derivation: fields[4] as int?,
       imageDefaultPath: fields[5] as String?,
       imageCustomPath: fields[6] as String?,
+      profileUpdatedTime: fields[11] as DateTime?,
       isOwned: fields[7] as bool,
       identityStatus: fields[8] as IdtyStatus,
       balance: fields[9] as double,
@@ -34,7 +35,7 @@ class WalletDataAdapter extends TypeAdapter<WalletData> {
   @override
   void write(BinaryWriter writer, WalletData obj) {
     writer
-      ..writeByte(11)
+      ..writeByte(12)
       ..writeByte(0)
       ..write(obj.address)
       ..writeByte(1)
@@ -56,7 +57,9 @@ class WalletDataAdapter extends TypeAdapter<WalletData> {
       ..writeByte(9)
       ..write(obj.balance)
       ..writeByte(10)
-      ..write(obj.certs);
+      ..write(obj.certs)
+      ..writeByte(11)
+      ..write(obj.profileUpdatedTime);
   }
 
   @override

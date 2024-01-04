@@ -11,7 +11,7 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/balance.dart';
-import 'package:gecko/widgets/cesium_avatar.dart';
+import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -82,7 +82,7 @@ class SearchIdentityQuery extends StatelessWidget {
                       key: keySearchResult(profile['pubkey']),
                       horizontalTitleGap: 10,
                       contentPadding: const EdgeInsets.only(right: 2),
-                      leading: CesiumAvatar(
+                      leading: DatapodAvatar(
                           address: profile['pubkey'], size: avatarSize),
                       title: Row(children: <Widget>[
                         Text(getShortPubkey(profile['pubkey']),

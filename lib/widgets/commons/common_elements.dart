@@ -142,14 +142,14 @@ Future<bool?> confirmPopupCertification(BuildContext context, String question1,
 Future<void> infoPopup(BuildContext context, String title) async {
   return showDialog<void>(
     context: context,
-    barrierDismissible: true, // user must tap button!
+    barrierDismissible: true,
     builder: (BuildContext context) {
       return AlertDialog(
         backgroundColor: backgroundColor,
         content: Text(
           title,
           textAlign: TextAlign.center,
-          style: scaledTextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+          style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w500),
         ),
         actions: <Widget>[
           Row(
@@ -162,7 +162,7 @@ Future<void> infoPopup(BuildContext context, String title) async {
                   child: Text(
                     "gotit".tr(),
                     style: scaledTextStyle(
-                      fontSize: 21,
+                      fontSize: 19,
                       color: const Color(0xffD80000),
                     ),
                   ),

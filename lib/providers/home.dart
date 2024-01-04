@@ -48,10 +48,11 @@ class HomeProvider with ChangeNotifier {
 
     // Init app folders
     final documentDir = await getApplicationDocumentsDirectory();
-    imageDirectory = Directory('${documentDir.path}/images');
+    avatarsDirectory = Directory('${documentDir.path}/avatars');
+    avatarsCacheDirectory = Directory('${documentDir.path}/avatarsCache');
 
-    if (!await imageDirectory.exists()) {
-      await imageDirectory.create();
+    if (!await avatarsDirectory.exists()) {
+      await avatarsDirectory.create();
     }
   }
 

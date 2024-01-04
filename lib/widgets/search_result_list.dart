@@ -10,7 +10,7 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/balance.dart';
-import 'package:gecko/widgets/cesium_avatar.dart';
+import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:gecko/widgets/search_identity_query.dart';
 
@@ -63,7 +63,7 @@ class SearchResult extends StatelessWidget {
         key: keySearchResult(g1Wallet.address),
         horizontalTitleGap: 10,
         contentPadding: const EdgeInsets.all(5),
-        leading: CesiumAvatar(address: g1Wallet.address, size: avatarSize),
+        leading: DatapodAvatar(address: g1Wallet.address, size: avatarSize),
         title: Row(children: <Widget>[
           Text(getShortPubkey(g1Wallet.address),
               style: scaledTextStyle(

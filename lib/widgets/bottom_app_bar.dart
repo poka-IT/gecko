@@ -104,16 +104,15 @@ class GeckoBottomAppBar extends StatelessWidget {
                                 },
                               ),
                             );
-
-                            if (myWalletProvider.pinCode == '') return;
-                            Navigator.popUntil(
-                                context, ModalRoute.withName('/'));
-                            //FIXME: Should not have to wait 300 milliseconds when /mywallets exist in navigator...
-                            sleep(const Duration(milliseconds: 300));
-                            Navigator.pushNamed(context, '/mywallets');
-                            // Navigator.pushNamedAndRemoveUntil(
-                            //     context, '/mywallets', ModalRoute.withName('/'));
                           }
+
+                          if (myWalletProvider.pinCode == '') return;
+                          Navigator.popUntil(context, ModalRoute.withName('/'));
+                          //FIXME: Should not have to wait 300 milliseconds when /mywallets exist in navigator...
+                          sleep(const Duration(milliseconds: 300));
+                          Navigator.pushNamed(context, '/mywallets');
+                          // Navigator.pushNamedAndRemoveUntil(
+                          //     context, '/mywallets', ModalRoute.withName('/'));
                         },
                 ),
               ),

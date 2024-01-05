@@ -4,7 +4,6 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';

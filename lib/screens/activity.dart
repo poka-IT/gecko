@@ -45,7 +45,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
             toolbarHeight: scaleSize(57),
             title: Text(
               'accountActivity'.tr(),
-              style: scaledTextStyle(fontSize: 20),
+              style: scaledTextStyle(fontSize: 18),
             ),
           ),
           bottomNavigationBar: const GeckoBottomAppBar(),

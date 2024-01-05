@@ -189,12 +189,11 @@ class V2sDatapodProvider with ChangeNotifier {
     return await file.writeAsBytes(base64.decode(data));
   }
 
-  Image getAvatarLocal(String address, double size) {
+  Image getAvatarLocal(String address) {
     final avatarFile = File('${avatarsCacheDirectory.path}/$address');
     return Image.file(
       avatarFile,
-      height: size,
-      fit: BoxFit.fitWidth,
+      fit: BoxFit.cover,
     );
   }
 
@@ -207,12 +206,11 @@ class V2sDatapodProvider with ChangeNotifier {
     }
   }
 
-    Future deleteAvatarsDirectory() async {
+  Future deleteAvatarsDirectory() async {
     if (await avatarsDirectory.exists()) {
       await avatarsDirectory.delete(recursive: true);
     }
   }
-
 
   reload() {
     notifyListeners();

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/migrate_wallet_checks.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
@@ -1267,7 +1268,7 @@ void snackNode(bool isConnected) {
   final snackBar = SnackBar(
       backgroundColor: Colors.grey[900],
       padding: const EdgeInsets.all(20),
-      content: Text(message, style: const TextStyle(fontSize: 16)),
+      content: Text(message, style: scaledTextStyle(fontSize: 14)),
       duration: const Duration(seconds: 4));
   ScaffoldMessenger.of(homeContext).showSnackBar(snackBar);
 }

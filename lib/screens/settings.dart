@@ -9,6 +9,7 @@ import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/widgets/commons/loading.dart';
+import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:provider/provider.dart';
 
@@ -21,12 +22,7 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-          toolbarHeight: scaleSize(57),
-          title: Text(
-            'parameters'.tr(),
-            style: scaledTextStyle(fontSize: 21),
-          )),
+      appBar: GeckoAppBar('parameters'.tr()),
       body: Column(children: <Widget>[
         ScaledSizedBox(height: 30),
         Text(

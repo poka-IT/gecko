@@ -24,8 +24,9 @@ class DatapodAvatar extends StatelessWidget {
     if (cachedImage.existsSync()) {
       return ScaledSizedBox(
         width: size,
+        height: size,
         child: ClipOval(
-          child: datapod.getAvatarLocal(address, size),
+          child: datapod.getAvatarLocal(address),
         ),
       );
     }
@@ -75,8 +76,7 @@ class DatapodAvatar extends StatelessWidget {
               return ClipOval(
                 child: Image.memory(
                   base64.decode(sanitizedAvatar64),
-                  height: size,
-                  fit: BoxFit.fitWidth,
+                  fit: BoxFit.cover,
                 ),
               );
             }),

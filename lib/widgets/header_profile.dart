@@ -79,30 +79,37 @@ class HeaderProfile extends StatelessWidget {
                 ]),
                 ScaledSizedBox(height: 15),
                 Balance(address: address, size: 20),
-                ScaledSizedBox(height: 5),
-                InkWell(
-                  onTap: () => sub.certsCounterCache[address] != null
-                      ? {
-                          Navigator.push(
-                            context,
-                            PageNoTransit(builder: (context) {
-                              return CertificationsScreen(
-                                  address: address,
-                                  username: duniterIndexer
-                                          .walletNameIndexer[address] ??
-                                      '');
-                            }),
-                          ),
-                        }
-                      : null,
+                ScaledSizedBox(
+                  height: 60,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      IdentityStatus(
-                          address: address,
-                          isOwner: false,
-                          color: Colors.black),
-                      Certifications(address: address, size: 18)
+                      ScaledSizedBox(height: 5),
+                      InkWell(
+                        onTap: () => sub.certsCounterCache[address] != null
+                            ? {
+                                Navigator.push(
+                                  context,
+                                  PageNoTransit(builder: (context) {
+                                    return CertificationsScreen(
+                                        address: address,
+                                        username: duniterIndexer
+                                                .walletNameIndexer[address] ??
+                                            '');
+                                  }),
+                                ),
+                              }
+                            : null,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            IdentityStatus(
+                                address: address,
+                                isOwner: false,
+                                color: Colors.black),
+                            Certifications(address: address, size: 18)
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),

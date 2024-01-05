@@ -6,6 +6,7 @@ import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 
 class TransactionTile extends StatelessWidget {
@@ -40,7 +41,7 @@ class TransactionTile extends StatelessWidget {
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
           leading: ClipOval(
-            child: V2sDatapodProvider().defaultAvatar(avatarSize),
+            child: DatapodAvatar(address: repository[1], size: avatarSize),
           ),
           title: Padding(
             padding: const EdgeInsets.only(bottom: 5),

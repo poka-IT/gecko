@@ -38,7 +38,7 @@ class SubstrateSdk with ChangeNotifier {
   int blocNumber = 0;
   bool isLoadingEndpoint = false;
   Map transactionStatus = {};
-  static const int initSs58 = 42;
+  final int initSs58 = 42;
   Map<String, int> currencyParameters = {};
   final csSalt = TextEditingController();
   final csPassword = TextEditingController();
@@ -890,7 +890,6 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<MigrateWalletChecks> getBalanceAndIdtyStatus(
       String fromAddress, String toAddress) async {
-    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
     bool canValidate = false;
     String validationStatus = '';
 
@@ -908,7 +907,9 @@ class SubstrateSdk with ChangeNotifier {
     final isSmithData = await isSmith(fromAddress);
 
     // Check conditions to set 'canValidate' and 'validationStatus'
-    if (transferableBalance != 0 && !fromHasConsumer) {
+    if (transferableBalance != 0 &&
+        !fromHasConsumer &&
+        await isAddress(toAddress)) {
       canValidate = true;
     } else if (toIdtyStatus != IdtyStatus.none &&
         fromIdtyStatus != IdtyStatus.none) {
@@ -921,14 +922,9 @@ class SubstrateSdk with ChangeNotifier {
       validationStatus = 'thisAccountIsEmpty'.tr();
     }
 
-    if (sub.g1V1NewAddress == '') {
-      validationStatus = '';
-    }
-
     return MigrateWalletChecks(
       balance: fromBalance,
       idtyStatus: toIdtyStatus,
-      isSmith: isSmithData,
       validationStatus: validationStatus,
       canValidate: canValidate,
     );

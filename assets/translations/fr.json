@@ -229,5 +229,9 @@
     "gotit": "J'ai compris",
     "moreInfo": "Plus d'info",
     "keepThisPaperSafe": "Gardez cette feuille précieusement, à l’abri des lézards indiscrets.\nElle vous permettra de restaurer tous vos portefeuilles à tout moment.",
-    "fundsUnavailable": "Fonds insuffisants"
+    "fundsUnavailable": "Fonds insuffisants",
+    "addressNotBelongToMnemonic": "L'adresse que vous avez fournit n'appartient pas à cette phrase de restauration",
+    "enterYourNewMnemonic": "Entrez votre nouvelle phrase de restauration",
+    "enterYourNewAddress": "Entrez votre nouvelle adresse {}",
+    "youCanMigrateThisIdentity": "Vous pouvez migrer vers cette identité !"
 }

@@ -8,7 +8,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:logger/logger.dart';
 
 // Version of box data
-const int dataVersion = 7;
+const int dataVersion = 8;
 
 late String appVersion;
 const int pinLength = 5;
@@ -21,15 +21,16 @@ late Box configBox;
 late Box<G1WalletsList> g1WalletsBox;
 late Box<G1WalletsList> contactsBox;
 // late Box keystoreBox;
-late Directory imageDirectory;
+late Directory avatarsDirectory;
+late Directory avatarsCacheDirectory;
+late bool isTall;
 
-// String cesiumPod = "https://g1.data.le-sou.org";
-String cesiumPod = "https://g1.data.presles.fr";
+const cesiumPod = "https://g1.data.le-sou.org";
+// String cesiumPod = "https://g1.data.presles.fr";
 // String cesiumPod = "https://g1.data.e-is.pro";
 
-// Responsive ratios
-late bool isTall;
-late double ratio;
+const datapodEndpoint = 'https://gdev-datapod.p2p.legal';
+// const v2sDatapod = 'http://10.0.2.2:8080';
 
 // Contexts
 late BuildContext homeContext;

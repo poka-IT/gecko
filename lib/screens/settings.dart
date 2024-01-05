@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
@@ -8,6 +8,7 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/widgets/commons/loading.dart';
 import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:provider/provider.dart';
 
@@ -18,89 +19,85 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double buttonHigh = 50;
-    const double buttonWidth = 240;
-    const double fontSize = 16;
-
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-          toolbarHeight: 60 * ratio,
-          title: SizedBox(
-            height: 22,
-            child: Text('parameters'.tr()),
+          toolbarHeight: scaleSize(57),
+          title: Text(
+            'parameters'.tr(),
+            style: scaledTextStyle(fontSize: 21),
           )),
       body: Column(children: <Widget>[
-        const SizedBox(height: 30),
+        ScaledSizedBox(height: 30),
         Text(
           'networkSettings'.tr(),
-          style: TextStyle(color: Colors.grey[500], fontSize: 22),
+          style: scaledTextStyle(color: Colors.grey[500]!, fontSize: 20),
         ),
-        const SizedBox(height: 20),
+        ScaledSizedBox(height: 20),
         duniterEndpointSelection(context),
-        const SizedBox(height: 30),
+        ScaledSizedBox(height: 30),
         indexerEndpointSelection(context),
-        const SizedBox(height: 40),
+        ScaledSizedBox(height: 35),
         Text(
           'displaySettings'.tr(),
-          style: TextStyle(color: Colors.grey[500], fontSize: 22),
+          style: scaledTextStyle(color: Colors.grey[500]!, fontSize: 20),
         ),
-        const SizedBox(height: 20),
+        ScaledSizedBox(height: 20),
         chooseCurrencyUnit(context),
 
-        // SizedBox(height: isTall ? 80 : 120),
         const Spacer(),
-        SizedBox(
-          height: buttonHigh,
-          width: buttonWidth,
-          child: Center(
-            child: InkWell(
-              key: keyDeleteAllWallets,
-              onTap: () async {
-                log.i('Oublier tous mes coffres');
-                await _myWallets.deleteAllWallet(context);
-              },
-              child: Text(
-                'forgetAllMyChests'.tr(),
-                style: const TextStyle(
-                  fontSize: fontSize + 4,
-                  color: Color(0xffD80000),
-                  fontWeight: FontWeight.w600,
+        Center(
+          child: InkWell(
+            key: keyDeleteAllWallets,
+            onTap: () async {
+              log.w('Oublier tous mes coffres');
+              await _myWallets.deleteAllWallet(context);
+            },
+            child: ScaledSizedBox(
+              height: scaleSize(40),
+              width: 220,
+              child: Center(
+                child: Text(
+                  'forgetAllMyChests'.tr(),
+                  style: scaledTextStyle(
+                    fontSize: 18,
+                    color: const Color(0xffD80000),
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
           ),
         ),
         // const Spacer(),
-        SizedBox(height: isTall ? 90 : 60),
+        ScaledSizedBox(height: 70),
       ]),
     );
   }
 
   Widget chooseCurrencyUnit(BuildContext context) {
-    HomeProvider homeProvider =
-        Provider.of<HomeProvider>(context, listen: false);
+    final homeProvider = Provider.of<HomeProvider>(context, listen: false);
     return InkWell(
       key: keyUdUnit,
       onTap: () async {
         await homeProvider.changeCurrencyUnit(context);
       },
-      child: SizedBox(
+      child: ScaledSizedBox(
         height: 50,
         child: Row(
           children: [
-            const SizedBox(width: 12),
-            Text('showUdAmounts'.tr()),
+            ScaledSizedBox(width: 12),
+            Text('showUdAmounts'.tr(), style: scaledTextStyle(fontSize: 16)),
             const Spacer(),
             Consumer<HomeProvider>(builder: (context, homeProvider, _) {
               final bool isUdUnit = configBox.get('isUdUnit') ?? false;
               return Icon(
                 isUdUnit ? Icons.check_box : Icons.check_box_outline_blank,
                 color: orangeC,
-                size: 32,
+                size: scaleSize(30),
               );
             }),
-            const SizedBox(width: 30),
+            ScaledSizedBox(width: 30),
           ],
         ),
       ),
@@ -133,7 +130,7 @@ class SettingsScreen extends StatelessWidget {
       selectedDuniterEndpoint = customEndpoint.endpoint;
     }
 
-    TextEditingController endpointController = TextEditingController(
+    final endpointController = TextEditingController(
         text: configBox.containsKey('customEndpoint')
             ? configBox.get('customEndpoint')
             : 'wss://');
@@ -141,30 +138,34 @@ class SettingsScreen extends StatelessWidget {
     return Column(children: <Widget>[
       Row(children: [
         Consumer<SubstrateSdk>(builder: (context, sub, _) {
-          log.d(sub.sdk.api.connectedNode?.endpoint);
           return Expanded(
             child: Row(children: [
-              const SizedBox(width: 10),
-              SizedBox(
-                width: 80,
+              ScaledSizedBox(width: 2),
+              ScaledSizedBox(
+                width: 55,
                 child: Text(
-                  'currencyNode'.tr(args: ['']),
+                  'currencyNode'.tr(),
+                  style: scaledTextStyle(fontSize: 16),
                 ),
               ),
               const Spacer(),
-              Icon(sub.nodeConnected && !sub.isLoadingEndpoint
-                  ? Icons.check
-                  : Icons.close),
+              ScaledSizedBox(
+                width: 30,
+                child: Icon(sub.nodeConnected && !sub.isLoadingEndpoint
+                    ? Icons.check
+                    : Icons.close),
+              ),
               if (sub.nodeConnected && !sub.isLoadingEndpoint)
                 const Icon(Icons.add_card_sharp, size: 0.01),
               const Spacer(),
-              SizedBox(
-                width: 280,
+              ScaledSizedBox(
+                height: 52,
+                width: 230,
                 child: Consumer<SettingsProvider>(builder: (context, set, _) {
                   return DropdownButtonHideUnderline(
                     key: keySelectDuniterNodeDropDown,
                     child: DropdownButton(
-                      // alignment: AlignmentDirectional.topStart,
+                      style: scaledTextStyle(fontSize: 16, color: Colors.black),
                       value: selectedDuniterEndpoint,
                       icon: const Icon(Icons.keyboard_arrow_down),
                       items: duniterBootstrapNodes
@@ -176,7 +177,6 @@ class SettingsScreen extends StatelessWidget {
                         );
                       }).toList(),
                       onChanged: (String? newEndpoint) {
-                        log.d(newEndpoint!);
                         selectedDuniterEndpoint = newEndpoint;
                         set.reload();
                       },
@@ -184,9 +184,9 @@ class SettingsScreen extends StatelessWidget {
                   );
                 }),
               ),
-              const Spacer(flex: 5),
+              const Spacer(flex: 3),
               sub.isLoadingEndpoint
-                  ? const CircularProgressIndicator(color: orangeC)
+                  ? Loading(size: scaleSize(32), stroke: 2.5)
                   : Consumer<SettingsProvider>(builder: (context, set, _) {
                       return IconButton(
                           key: keyConnectToEndpoint,
@@ -196,7 +196,7 @@ class SettingsScreen extends StatelessWidget {
                                     sub.getConnectedEndpoint()
                                 ? orangeC
                                 : Colors.grey[500],
-                            size: 40,
+                            size: scaleSize(35),
                           ),
                           onPressed: selectedDuniterEndpoint !=
                                   sub.getConnectedEndpoint()
@@ -214,7 +214,7 @@ class SettingsScreen extends StatelessWidget {
                                     configBox.put(
                                         'customEndpoint', finalEndpoint);
                                   }
-                                  await sub.connectNode(context);
+                                  await sub.connectNode();
                                 }
                               : null);
                     }),
@@ -226,13 +226,14 @@ class SettingsScreen extends StatelessWidget {
       Consumer<SettingsProvider>(builder: (context, set, _) {
         return Visibility(
           visible: selectedDuniterEndpoint == 'Personnalisé',
-          child: SizedBox(
+          child: ScaledSizedBox(
             width: 200,
             height: 50,
             child: TextField(
               key: keyCustomDuniterEndpoint,
               controller: endpointController,
               autocorrect: false,
+              style: scaledTextStyle(fontSize: 16),
             ),
           ),
         );
@@ -244,17 +245,15 @@ class SettingsScreen extends StatelessWidget {
             Consumer<SettingsProvider>(builder: (context, set, _) {
               return Visibility(
                 visible: selectedDuniterEndpoint == 'Auto',
-                child: SizedBox(
+                child: ScaledSizedBox(
                   width: 250,
                   height: sub.getConnectedEndpoint() == null ? 60 : 20,
                   child: Text(
-                    sub.getConnectedEndpoint() ??
-                        "anAutoNodeChoosed"
-                            .tr(), //"Un noeud sûr et valide sera choisi automatiquement parmis une liste aléatoire.",
-                    style: TextStyle(
+                    sub.getConnectedEndpoint() ?? "anAutoNodeChoosed".tr(),
+                    style: scaledTextStyle(
                         fontSize: 15,
                         fontStyle: FontStyle.italic,
-                        color: Colors.grey[700]),
+                        color: Colors.grey[700]!),
                   ),
                 ),
               );
@@ -263,7 +262,7 @@ class SettingsScreen extends StatelessWidget {
               'blockN'.tr(args: [
                 sub.blocNumber.toString()
               ]), //'bloc N°${sub.blocNumber}',
-              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+              style: scaledTextStyle(fontSize: 14, color: Colors.grey[700]),
             )
           ],
         );
@@ -285,7 +284,7 @@ class SettingsScreen extends StatelessWidget {
       selectedIndexerEndpoint = duniterIndexer.listIndexerEndpoints[0];
     }
 
-    TextEditingController indexerEndpointController = TextEditingController(
+    final indexerEndpointController = TextEditingController(
         text: configBox.containsKey('customIndexer')
             ? configBox.get('customIndexer')
             : 'https://');
@@ -293,25 +292,22 @@ class SettingsScreen extends StatelessWidget {
     return Column(children: <Widget>[
       Row(children: [
         Consumer<DuniterIndexer>(builder: (context, indexer, _) {
-          log.d(selectedIndexerEndpoint);
-          log.d(indexer.listIndexerEndpoints);
           return Expanded(
             child: Row(children: [
-              const SizedBox(width: 10),
-              const SizedBox(
-                width: 80,
-                // child: Text('indexer'.tr()), // why translation does not work??
-                child: Text('Indexer'),
+              ScaledSizedBox(width: 5),
+              ScaledSizedBox(
+                width: 55,
+                child: Text('Indexer', style: scaledTextStyle(fontSize: 16)),
               ),
               const Spacer(),
               Icon(indexerEndpoint != '' ? Icons.check : Icons.close),
               const Spacer(),
-              SizedBox(
-                width: 280,
+              ScaledSizedBox(
+                width: 230,
                 child: Consumer<SettingsProvider>(builder: (context, set, _) {
                   return DropdownButtonHideUnderline(
                     child: DropdownButton(
-                      // alignment: AlignmentDirectional.topStart,
+                      style: scaledTextStyle(fontSize: 16, color: Colors.black),
                       value: selectedIndexerEndpoint,
                       icon: const Icon(Icons.keyboard_arrow_down),
                       items:
@@ -322,7 +318,6 @@ class SettingsScreen extends StatelessWidget {
                         );
                       }).toList(),
                       onChanged: (newEndpoint) {
-                        log.d(newEndpoint!);
                         selectedIndexerEndpoint = newEndpoint.toString();
                         set.reload();
                       },
@@ -332,7 +327,7 @@ class SettingsScreen extends StatelessWidget {
               ),
               const Spacer(flex: 5),
               indexer.isLoadingIndexer
-                  ? const CircularProgressIndicator(color: orangeC)
+                  ? Loading(size: scaleSize(32), stroke: 2.5)
                   : Consumer<SettingsProvider>(builder: (context, set, _) {
                       return IconButton(
                           icon: Icon(
@@ -340,7 +335,7 @@ class SettingsScreen extends StatelessWidget {
                             color: selectedIndexerEndpoint != indexerEndpoint
                                 ? orangeC
                                 : Colors.grey[500],
-                            size: 40,
+                            size: scaleSize(35),
                           ),
                           onPressed: selectedIndexerEndpoint != indexerEndpoint
                               ? () async {
@@ -356,7 +351,6 @@ class SettingsScreen extends StatelessWidget {
                                   } else {
                                     configBox.delete('customIndexer');
                                   }
-                                  log.d('connection to indexer $finalEndpoint');
                                   await indexer
                                       .checkIndexerEndpoint(finalEndpoint);
                                 }
@@ -370,12 +364,13 @@ class SettingsScreen extends StatelessWidget {
       Consumer<SettingsProvider>(builder: (context, set, _) {
         return Visibility(
           visible: selectedIndexerEndpoint == 'Personnalisé',
-          child: SizedBox(
+          child: ScaledSizedBox(
             width: 200,
             height: 50,
             child: TextField(
               controller: indexerEndpointController,
               autocorrect: false,
+              style: scaledTextStyle(fontSize: 16),
             ),
           ),
         );
@@ -384,14 +379,12 @@ class SettingsScreen extends StatelessWidget {
         return Consumer<SettingsProvider>(builder: (context, set, _) {
           return Visibility(
             visible: selectedIndexerEndpoint == 'Auto',
-            child: SizedBox(
+            child: ScaledSizedBox(
               width: 250,
               height: 60,
               child: Text(
-                sub.getConnectedEndpoint() ??
-                    "anAutoNodeChoosed"
-                        .tr(), //"Un noeud sûr et valide sera choisi automatiquement parmis une liste aléatoire.",
-                style: TextStyle(
+                sub.getConnectedEndpoint() ?? "anAutoNodeChoosed".tr(),
+                style: scaledTextStyle(
                     fontSize: 15,
                     fontStyle: FontStyle.italic,
                     color: Colors.grey[700]),

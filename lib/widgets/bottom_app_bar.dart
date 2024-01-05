@@ -3,6 +3,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -32,13 +33,13 @@ class GeckoBottomAppBar extends StatelessWidget {
       child: Container(
         color: yellowC,
         width: size.width,
-        height: 80,
+        height: scaleSize(67),
         child: Row(mainAxisAlignment: MainAxisAlignment.start, children: [
           const Spacer(),
-          const SizedBox(width: 11),
+          ScaledSizedBox(width: 11),
           IconButton(
-            key: keyAppBarSearch,
-            iconSize: 55,
+            key: keyAppBarHome,
+            iconSize: scaleSize(53),
             icon: const Icon(Icons.home_outlined),
             onPressed: () {
               searchProvider.reload();
@@ -48,27 +49,27 @@ class GeckoBottomAppBar extends StatelessWidget {
               );
             },
           ),
-          const SizedBox(width: 12),
+          ScaledSizedBox(width: 12),
           const Spacer(),
           IconButton(
             key: keyAppBarQrcode,
-            iconSize: 70,
             icon: const Image(image: AssetImage('assets/qrcode-scan.png')),
             onPressed: () async {
               historyProvider.scan(homeContext);
             },
           ),
           const Spacer(),
-          const SizedBox(width: 15),
+          ScaledSizedBox(width: 15),
           Stack(
+            alignment: AlignmentDirectional.center,
             children: [
               if (lockAction)
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.only(left: 0),
                     child: Container(
-                      width: 75,
-                      height: 75,
+                      width: scaleSize(75),
+                      height: scaleSize(75),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border:
@@ -84,37 +85,37 @@ class GeckoBottomAppBar extends StatelessWidget {
                     ),
                   ),
                 ),
-              IconButton(
-                key: keyAppBarChest,
-                iconSize: 60,
-                icon: const Image(image: AssetImage('assets/wallet.png')),
-                onPressed: lockAction
-                    ? null
-                    : () async {
-                        WalletData? defaultWallet =
-                            myWalletProvider.getDefaultWallet();
-                        String? pin;
-                        if (myWalletProvider.pinCode == '') {
-                          pin = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (homeContext) {
-                                return UnlockingWallet(wallet: defaultWallet);
-                              },
-                            ),
-                          );
-                        }
-                        if (pin != null || myWalletProvider.pinCode != '') {
-                          // log.d(
-                          //     isRoutePresentInNavigator(context, '/mywallets'));
-                          Navigator.popUntil(context, ModalRoute.withName('/'));
-                          //FIXME: Should not have to wait 300 milliseconds when /mywallets exist in navigator...
-                          sleep(const Duration(milliseconds: 300));
-                          Navigator.pushNamed(context, '/mywallets');
-                          // Navigator.pushNamedAndRemoveUntil(
-                          //     context, '/mywallets', ModalRoute.withName('/'));
-                        }
-                      },
+              ScaledSizedBox(
+                height: 53,
+                child: IconButton(
+                  key: keyAppBarChest,
+                  icon: const Image(image: AssetImage('assets/wallet.png')),
+                  onPressed: lockAction
+                      ? null
+                      : () async {
+                          WalletData? defaultWallet =
+                              myWalletProvider.getDefaultWallet();
+                          if (myWalletProvider.pinCode == '') {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (homeContext) {
+                                  return UnlockingWallet(wallet: defaultWallet);
+                                },
+                              ),
+                            );
+
+                            if (myWalletProvider.pinCode == '') return;
+                            Navigator.popUntil(
+                                context, ModalRoute.withName('/'));
+                            //FIXME: Should not have to wait 300 milliseconds when /mywallets exist in navigator...
+                            sleep(const Duration(milliseconds: 300));
+                            Navigator.pushNamed(context, '/mywallets');
+                            // Navigator.pushNamedAndRemoveUntil(
+                            //     context, '/mywallets', ModalRoute.withName('/'));
+                          }
+                        },
+                ),
               ),
             ],
           ),
@@ -128,7 +129,6 @@ class GeckoBottomAppBar extends StatelessWidget {
 bool isRoutePresentInNavigator(BuildContext context, String routeName) {
   bool isPresent = false;
   Navigator.popUntil(context, (route) {
-    log.d(route.settings.name);
     if (route.settings.name == routeName) {
       isPresent = true;
     }

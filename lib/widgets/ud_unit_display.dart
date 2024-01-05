@@ -21,15 +21,14 @@ class UdUnitDisplay extends StatelessWidget {
             children: [
               Text(
                 'ud'.tr(args: ['']),
-                style: TextStyle(
-                    fontSize: isTall ? size : size * 0.9, color: color),
+                style: TextStyle(fontSize: size, color: color),
               ),
               Column(
                 children: [
                   Text(
                     currencyName,
                     style: TextStyle(
-                        fontSize: (isTall ? size : size * 0.9) * 0.7,
+                        fontSize: size * 0.7,
                         fontWeight: FontWeight.w500,
                         color: color),
                   ),
@@ -38,8 +37,6 @@ class UdUnitDisplay extends StatelessWidget {
               )
             ],
           )
-        : Text(currencyName,
-            style:
-                TextStyle(fontSize: isTall ? size : size * 0.9, color: color));
+        : Text(currencyName, style: TextStyle(fontSize: size, color: color));
   }
 }

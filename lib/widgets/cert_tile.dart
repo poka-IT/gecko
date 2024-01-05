@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/screens/wallet_view.dart';
 
 class CertTile extends StatelessWidget {
@@ -16,7 +17,7 @@ class CertTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     int keyID = 0;
-    const double avatarSize = 200;
+    const double avatarSize = 40;
 
     return Column(
         children: listCerts.map((repository) {
@@ -25,45 +26,49 @@ class CertTile extends StatelessWidget {
           padding: const EdgeInsets.only(right: 0),
           child: ListTile(
               key: keyTransaction(keyID++),
-              contentPadding: const EdgeInsets.only(
-                  left: 20, right: 30, top: 15, bottom: 15),
+              contentPadding: EdgeInsets.only(
+                  left: 10, right: 0, top: scaleSize(3), bottom: scaleSize(3)),
               leading: ClipOval(
-                child: defaultAvatar(avatarSize),
+                child: V2sDatapodProvider().defaultAvatar(avatarSize),
               ),
               title: Padding(
-                padding: const EdgeInsets.only(bottom: 5),
-                child: Text(repository['name'],
-                    style: const TextStyle(fontSize: 22)),
+                padding: const EdgeInsets.only(bottom: 2),
+                child: Text(
+                  repository['name'],
+                  style: scaledTextStyle(fontSize: 16),
+                ),
               ),
               subtitle: RichText(
                 text: TextSpan(
-                  style: TextStyle(
-                    fontSize: 18,
+                  style: scaledTextStyle(
+                    fontSize: 15,
                     color: Colors.grey[700],
                   ),
                   children: <TextSpan>[
                     TextSpan(
                       text: repository['date'],
+                      style: scaledTextStyle(fontSize: 15),
                     ),
                     if (repository[2] != '')
                       TextSpan(
                         text: '  ·  ',
-                        style: TextStyle(
-                          fontSize: 20,
+                        style: scaledTextStyle(
+                          fontSize: 19,
                           color: Colors.grey[550],
                         ),
                       ),
                     TextSpan(
                       text: getShortPubkey(repository['address']),
-                      style: TextStyle(
+                      style: scaledTextStyle(
                           fontStyle: FontStyle.italic,
+                          fontFamily: 'Monospace',
                           color: Colors.grey[600],
-                          fontSize: 18),
+                          fontSize: 15),
                     ),
                   ],
                 ),
               ),
-              dense: false,
+              dense: !isTall,
               isThreeLine: false,
               onTap: () {
                 Navigator.push(

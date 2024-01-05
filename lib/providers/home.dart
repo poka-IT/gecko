@@ -1,14 +1,9 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-// import 'package:audioplayers/audio_cache.dart';
-// import 'package:audioplayers/audioplayers.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -23,7 +18,7 @@ import 'package:provider/provider.dart';
 class HomeProvider with ChangeNotifier {
   bool? isSearching;
   Icon searchIcon = const Icon(Icons.search);
-  final TextEditingController searchQuery = TextEditingController();
+  final searchQuery = TextEditingController();
   Widget appBarTitle = Text('Ğecko', style: TextStyle(color: Colors.grey[850]));
   String homeMessage = "loading".tr();
   String defaultMessage = "noLizard".tr();
@@ -53,10 +48,11 @@ class HomeProvider with ChangeNotifier {
 
     // Init app folders
     final documentDir = await getApplicationDocumentsDirectory();
-    imageDirectory = Directory('${documentDir.path}/images');
+    avatarsDirectory = Directory('${documentDir.path}/avatars');
+    avatarsCacheDirectory = Directory('${documentDir.path}/avatarsCache');
 
-    if (!await imageDirectory.exists()) {
-      await imageDirectory.create();
+    if (!await avatarsDirectory.exists()) {
+      await avatarsDirectory.create();
     }
   }
 
@@ -109,7 +105,6 @@ class HomeProvider with ChangeNotifier {
       configBox.put('endpoint', listEndpoints);
     }
 
-    log.i('ENDPOINT: $listEndpoints');
     return listEndpoints;
   }
 

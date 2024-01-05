@@ -4,7 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
-
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/chest_provider.dart';
@@ -15,6 +15,7 @@ import 'package:gecko/screens/myWallets/show_seed.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
+import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
 class ChestOptions extends StatelessWidget {
@@ -31,28 +32,13 @@ class ChestOptions extends StatelessWidget {
     return Scaffold(
       backgroundColor: backgroundColor,
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-          elevation: 1,
-          toolbarHeight: 60 * ratio,
-          // leading: IconButton(
-          //     icon: const Icon(Icons.arrow_back, color: Colors.black),
-          //     onPressed: () {
-          //       // Navigator.popUntil(
-          //       //   context,
-          //       //   ModalRoute.withName('/mywallets'),
-          //       // );
-          //       Navigator.pop(context);
-          //     }),
-          title: SizedBox(
-            height: 22,
-            child: Text(currentChest.name!),
-          )),
+      appBar: GeckoAppBar(currentChest.name!),
       bottomNavigationBar: const GeckoBottomAppBar(),
       body: Stack(children: [
         Builder(
           builder: (ctx) => SafeArea(
             child: Column(children: <Widget>[
-              SizedBox(height: 30 * ratio),
+              ScaledSizedBox(height: 20),
               InkWell(
                 key: keyShowSeed,
                 onTap: () async {
@@ -60,8 +46,7 @@ class ChestOptions extends StatelessWidget {
                       Provider.of<MyWalletsProvider>(context, listen: false);
                   WalletData? defaultWallet =
                       myWalletProvider.getDefaultWallet();
-                  String? pin;
-                  pin = await Navigator.push(
+                  final String? pin = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (homeContext) {
@@ -70,38 +55,40 @@ class ChestOptions extends StatelessWidget {
                     ),
                   );
 
-                  if (pin != null) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return ShowSeed(
-                          walletName: currentChest.name,
-                          walletProvider: walletProvider,
-                        );
-                      }),
-                    );
-                  }
+                  if (pin == null) return;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return ShowSeed(
+                        walletName: currentChest.name,
+                        walletProvider: walletProvider,
+                      );
+                    }),
+                  );
                 },
-                child: SizedBox(
-                  height: 50,
+                child: ScaledSizedBox(
+                  height: 60,
                   child: Row(children: <Widget>[
-                    const SizedBox(width: 20),
+                    ScaledSizedBox(width: 20),
                     Image.asset(
                       'assets/onBoarding/phrase_de_restauration_flou.png',
-                      width: 60,
+                      width: scaleSize(60),
                     ),
-                    const SizedBox(width: 15),
-                    Text(
-                      'displayMnemonic'.tr(),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: orangeC,
+                    ScaledSizedBox(width: 13),
+                    ScaledSizedBox(
+                      width: 270,
+                      child: Text(
+                        'displayMnemonic'.tr(),
+                        style: scaledTextStyle(
+                          fontSize: 17,
+                          color: orangeC,
+                        ),
                       ),
                     ),
                   ]),
                 ),
               ),
-              SizedBox(height: 10 * ratio),
+              ScaledSizedBox(height: 2),
               Consumer<SubstrateSdk>(builder: (context, sub, _) {
                 return InkWell(
                   key: keyChangePin,
@@ -126,19 +113,19 @@ class ChestOptions extends StatelessWidget {
                   //         }
                   //       }
                   //     : null,
-                  child: SizedBox(
-                      height: 50,
+                  child: ScaledSizedBox(
+                      height: 60,
                       child: Row(children: <Widget>[
-                        const SizedBox(width: 26),
+                        ScaledSizedBox(width: 30),
                         Image.asset(
                           'assets/chests/secret_code.png',
-                          height: 25,
+                          height: scaleSize(22),
                         ),
-                        const SizedBox(width: 18),
+                        ScaledSizedBox(width: 18),
                         Text(
                           'changePassword'.tr(),
-                          style: TextStyle(
-                              fontSize: 20,
+                          style: scaledTextStyle(
+                              fontSize: 17,
                               color: sub.nodeConnected
                                   ? Colors.grey[500]
                                   : Colors.grey[500]),
@@ -146,7 +133,7 @@ class ChestOptions extends StatelessWidget {
                       ])),
                 );
               }),
-              SizedBox(height: 10 * ratio),
+              ScaledSizedBox(height: 2),
               Consumer<SubstrateSdk>(builder: (context, sub, _) {
                 return InkWell(
                   key: keycreateRootDerivation,
@@ -162,19 +149,19 @@ class ChestOptions extends StatelessWidget {
                           );
                         }
                       : null,
-                  child: SizedBox(
-                    height: 50,
+                  child: ScaledSizedBox(
+                    height: 60,
                     child: Row(children: <Widget>[
-                      const SizedBox(width: 35),
-                      const Icon(
+                      ScaledSizedBox(width: 37),
+                      Icon(
                         Icons.manage_accounts,
-                        size: 33,
+                        size: scaleSize(31),
                       ),
-                      const SizedBox(width: 25),
+                      ScaledSizedBox(width: 23),
                       Text(
                         'createDerivation'.tr(),
-                        style: TextStyle(
-                            fontSize: 20,
+                        style: scaledTextStyle(
+                            fontSize: 17,
                             color: sub.nodeConnected
                                 ? Colors.black
                                 : Colors.grey[500]),
@@ -183,26 +170,26 @@ class ChestOptions extends StatelessWidget {
                   ),
                 );
               }),
-              SizedBox(height: 10 * ratio),
+              ScaledSizedBox(height: 2),
               InkWell(
                 key: keyDeleteChest,
                 onTap: () async {
                   await chestProvider.deleteChest(context, currentChest);
                 },
-                child: SizedBox(
-                  height: 50,
+                child: ScaledSizedBox(
+                  height: 60,
                   child: Row(children: <Widget>[
-                    const SizedBox(width: 28),
+                    ScaledSizedBox(width: 32),
                     Image.asset(
                       'assets/walletOptions/trash.png',
-                      height: 45,
+                      height: scaleSize(38),
                     ),
-                    const SizedBox(width: 20),
+                    ScaledSizedBox(width: 22),
                     Text(
                       'deleteChest'.tr(),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: Color(0xffD80000),
+                      style: scaledTextStyle(
+                        fontSize: 17,
+                        color: const Color(0xffD80000),
                       ),
                     ),
                   ]),

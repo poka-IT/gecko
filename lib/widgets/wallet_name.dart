@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:truncate/truncate.dart';
 
@@ -16,14 +16,12 @@ class WalletName extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double newSize = (wallet.name?.length ?? 0) <= 15 ? size : size - 2;
-
     return Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
       Text(
         truncate(wallet.name ?? '', 20),
         textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: isTall ? newSize : newSize * 0.9,
+        style: scaledTextStyle(
+          fontSize: size,
           color: color,
           fontWeight: FontWeight.w400,
           fontStyle: FontStyle.italic,

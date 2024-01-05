@@ -20,12 +20,12 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/providers/cesium_plus.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -54,7 +54,7 @@ Future<void> main() async {
   //   await dotenv.load();
   // }
 
-  HomeProvider homeProvider = HomeProvider();
+  final homeProvider = HomeProvider();
   // DuniterIndexer _duniterIndexer = DuniterIndexer();
 
   await initHiveForFlutter();
@@ -130,26 +130,23 @@ class Gecko extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
         ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
         ChangeNotifierProvider(create: (_) => SearchProvider()),
-        ChangeNotifierProvider(create: (_) => CesiumPlusProvider()),
         ChangeNotifierProvider(create: (_) => SubstrateSdk()),
         ChangeNotifierProvider(create: (_) => DuniterIndexer()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider())
+        ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(create: (_) => V2sDatapodProvider())
       ],
       child: MaterialApp(
         localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,
         locale: context.locale,
-        builder: (context, widget) => ResponsiveWrapper.builder(
-            BouncingScrollWrapper.builder(context, widget!),
-            maxWidth: 1200,
-            minWidth: 480,
-            defaultScale: true,
-            breakpoints: [
-              const ResponsiveBreakpoint.resize(480, name: MOBILE),
-              const ResponsiveBreakpoint.autoScale(800, name: TABLET),
-              const ResponsiveBreakpoint.resize(1000, name: DESKTOP),
-            ],
-            background: Container(color: backgroundColor)),
+        builder: (context, child) => ResponsiveBreakpoints.builder(
+          child: child!,
+          breakpoints: [
+            const Breakpoint(start: 0, end: 450, name: MOBILE),
+            const Breakpoint(start: 451, end: 800, name: TABLET),
+            const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
+          ],
+        ),
         title: 'Ğecko',
         theme: ThemeData(
           appBarTheme: const AppBarTheme(
@@ -159,6 +156,7 @@ class Gecko extends StatelessWidget {
           primaryColor: const Color(0xffFFD58D),
           scaffoldBackgroundColor: backgroundColor,
           canvasColor: backgroundColor,
+          dialogBackgroundColor: backgroundColor,
           textTheme: const TextTheme(
             bodyLarge: TextStyle(fontSize: 16),
             bodyMedium: TextStyle(fontSize: 18),

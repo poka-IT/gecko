@@ -1,10 +1,9 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
@@ -13,6 +12,7 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/widgets/bubble_speak.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/widgets/commons/common_elements.dart';
@@ -34,15 +34,15 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final homeProviderInit =
-          Provider.of<HomeProvider>(context, listen: false);
+      final homeProvider = Provider.of<HomeProvider>(context, listen: false);
       final sub = Provider.of<SubstrateSdk>(context, listen: false);
       final duniterIndexer =
           Provider.of<DuniterIndexer>(context, listen: false);
       final myWalletProvider =
           Provider.of<MyWalletsProvider>(context, listen: false);
+      final datapod = Provider.of<V2sDatapodProvider>(context, listen: false);
 
-      final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
+      final bool isWalletsExists = myWalletProvider.isWalletsExists();
 
       // Check if versionData non compatible, drop everything
       if (configBox.get('dataVersion') == null) {
@@ -53,6 +53,8 @@ class _HomeScreenState extends State<HomeScreen> {
         await infoPopup(context, "chestNotCompatibleMustReinstallGecko".tr());
         await Hive.deleteBoxFromDisk('walletBox');
         await Hive.deleteBoxFromDisk('chestBox');
+        await datapod.deleteAvatarsDirectory();
+        await avatarsDirectory.create();
         chestBox = await Hive.openBox<ChestData>("chestBox");
         await configBox.delete('defaultWallet');
         if (!sub.sdkReady && !sub.sdkLoading) await sub.initApi();
@@ -66,25 +68,25 @@ class _HomeScreenState extends State<HomeScreen> {
       if (sub.sdkReady && !sub.nodeConnected) {
         walletBox = await Hive.openBox<WalletData>("walletBox");
         await Hive.deleteBoxFromDisk('g1WalletsBox');
+        await datapod.deleteAvatarsCacheDirectory();
+        await avatarsCacheDirectory.create();
         g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
         contactsBox = await Hive.openBox<G1WalletsList>("contactsBox");
 
-        homeProviderInit.isWalletBoxInit = true;
+        homeProvider.isWalletBoxInit = true;
         myWalletProvider.reload();
 
         duniterIndexer.getValidIndexerEndpoint();
 
-        await homeProviderInit.getValidEndpoints();
+        await homeProvider.getValidEndpoints();
         if (configBox.get('isCacheChecked') == null) {
           configBox.put('isCacheChecked', false);
         }
 
-        HomeProvider homeProvider =
-            Provider.of<HomeProvider>(context, listen: false);
         Connectivity()
             .onConnectivityChanged
             .listen((ConnectivityResult result) async {
-          log.d('Network changed: $result');
+          log.i('Network changed: $result');
           if (result == ConnectivityResult.none) {
             sub.nodeConnected = false;
             await sub.sdk.api.setting.unsubscribeBestNumber();
@@ -94,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // Check if the phone is actually connected to the internet
             var connectivityResult = await (Connectivity().checkConnectivity());
             if (connectivityResult != ConnectivityResult.none) {
-              await sub.connectNode(context);
+              await sub.connectNode();
             }
           }
         });
@@ -110,19 +112,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
     Provider.of<ChestProvider>(context);
-    final bool isWalletsExists = myWalletProvider.checkIfWalletExist();
+    final isWalletsExists = myWalletProvider.isWalletsExists();
 
-    isTall = false;
-    ratio = 1;
-    if (MediaQuery.of(context).size.height >= 930) {
-      isTall = true;
-      ratio = 1.125;
-    }
+    isTall = (MediaQuery.of(context).size.height /
+            MediaQuery.of(context).size.width) >
+        1.75;
 
     return Scaffold(
         resizeToAvoidBottomInset: false,
         drawer: MainDrawer(isWalletsExists: isWalletsExists),
-        backgroundColor: const Color(0xffF9F9F1),
+        backgroundColor: yellowC,
         body: isWalletsExists ? geckHome(context) : welcomeHome(context));
   }
 }
@@ -142,42 +141,43 @@ Widget geckHome(context) {
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
       Stack(children: <Widget>[
         Positioned(
-          top: statusBarHeight + 10,
-          left: 15,
+          top: statusBarHeight + scaleSize(10),
+          left: scaleSize(15),
           child: Builder(
             builder: (context) => IconButton(
               key: keyDrawerMenu,
-              icon: const Icon(
+              icon: Icon(
                 Icons.menu,
-                color: Colors.white,
-                size: 35,
+                color: Colors.black,
+                size: scaleSize(35),
               ),
               onPressed: () => Scaffold.of(context).openDrawer(),
             ),
           ),
         ),
-        const Align(
-          child:
-              Image(image: AssetImage('assets/home/header.png'), height: 210),
+        Align(
+          child: Image(
+              image: const AssetImage('assets/home/header.png'),
+              height: scaleSize(165)),
         ),
       ]),
       Padding(
-        padding: EdgeInsets.only(top: 15 * ratio),
+        padding: const EdgeInsets.only(top: 15),
         child:
             Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
           DefaultTextStyle(
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: scaledTextStyle(
               color: Colors.white,
-              fontSize: 24,
+              fontSize: 19,
               fontWeight: FontWeight.w700,
               shadows: <Shadow>[
-                Shadow(
+                const Shadow(
                   offset: Offset(0, 0),
                   blurRadius: 20,
                   color: Colors.black,
                 ),
-                Shadow(
+                const Shadow(
                   offset: Offset(0, 0),
                   blurRadius: 20,
                   color: Colors.black,
@@ -194,7 +194,7 @@ Widget geckHome(context) {
           ),
         ]),
       ),
-      const SizedBox(height: 15),
+      ScaledSizedBox(height: 15),
       Expanded(
         flex: 1,
         child: Container(
@@ -229,37 +229,38 @@ Widget welcomeHome(context) {
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
       Stack(children: <Widget>[
         Positioned(
-          top: statusBarHeight + 10,
-          left: 15,
+          top: statusBarHeight + scaleSize(10),
+          left: scaleSize(15),
           child: Builder(
             builder: (context) => IconButton(
               key: keyDrawerMenu,
-              icon: const Icon(
+              icon: Icon(
                 Icons.menu,
-                color: Colors.white,
-                size: 35,
+                color: Colors.black,
+                size: scaleSize(35),
               ),
               onPressed: () => Scaffold.of(context).openDrawer(),
             ),
           ),
         ),
-        const Align(
-          child:
-              Image(image: AssetImage('assets/home/header.png'), height: 210),
+        Align(
+          child: Image(
+              image: const AssetImage('assets/home/header.png'),
+              height: scaleSize(165)),
         ),
       ]),
       Padding(
-        padding: EdgeInsets.only(top: 1 * ratio),
+        padding: const EdgeInsets.only(top: 1),
         child:
             Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
           Text(
             "fastAppDescription".tr(args: [currencyName]),
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: scaledTextStyle(
               color: Colors.white,
-              fontSize: 24,
+              fontSize: 20,
               fontWeight: FontWeight.w700,
-              shadows: <Shadow>[
+              shadows: const <Shadow>[
                 Shadow(
                   offset: Offset(0, 0),
                   blurRadius: 20,
@@ -292,39 +293,35 @@ Widget welcomeHome(context) {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 480),
               child: Column(children: <Widget>[
-                const Spacer(),
+                const Spacer(flex: 4),
                 Row(children: <Widget>[
                   Expanded(
                     child: Stack(children: <Widget>[
-                      const Padding(
-                        padding: EdgeInsets.only(top: 55),
+                      Padding(
+                        padding: EdgeInsets.only(top: scaleSize(55)),
                         child: Image(
-                          image: AssetImage('assets/home/gecko-bienvenue.png'),
-                          height: 220,
+                          image: const AssetImage(
+                              'assets/home/gecko-bienvenue.png'),
+                          height: scaleSize(180),
                         ),
                       ),
                       Positioned(
-                        left: 180,
-                        child: BubbleSpeak(text: "noLizard".tr()),
-                      ),
-                      const Positioned(
-                        left: 200,
-                        top: 60,
-                        child: Image(
-                          image: AssetImage('assets/home/bout_de_bulle.png'),
-                        ),
+                        left: scaleSize(160),
+                        top: 10,
+                        child: BubbleSpeakWithTail(text: "noLizard".tr()),
                       ),
                     ]),
                   ),
                 ]),
-                SizedBox(
-                  width: 410,
-                  height: 70,
+                ScaledSizedBox(
+                  width: 330,
+                  height: 60,
                   child: ElevatedButton(
                     key: keyOnboardingNewChest,
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white, elevation: 4,
-                      backgroundColor: orangeC, // foreground
+                      foregroundColor: Colors.white,
+                      elevation: 4,
+                      backgroundColor: orangeC,
                     ),
                     onPressed: () {
                       Navigator.push(
@@ -338,19 +335,21 @@ Widget welcomeHome(context) {
                     },
                     child: Text(
                       'createWallet'.tr(),
-                      style: const TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.w600),
+                      style: scaledTextStyle(
+                          fontSize: 21,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white),
                     ),
                   ),
                 ),
-                SizedBox(height: 25 * ratio),
-                SizedBox(
-                  width: 410,
-                  height: 70,
+                ScaledSizedBox(height: scaleSize(25)),
+                ScaledSizedBox(
+                  width: 330,
+                  height: 60,
                   child: OutlinedButton(
                     key: keyRestoreChest,
                     style: OutlinedButton.styleFrom(
-                        side: const BorderSide(width: 4, color: orangeC)),
+                        side: BorderSide(width: scaleSize(4), color: orangeC)),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -363,14 +362,14 @@ Widget welcomeHome(context) {
                     },
                     child: Text(
                       "restoreWallet".tr(),
-                      style: const TextStyle(
-                          fontSize: 24,
+                      style: scaledTextStyle(
+                          fontSize: 21,
                           color: orangeC,
                           fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
-                SizedBox(height: isTall ? 100 : 50)
+                const Spacer(flex: 3),
               ]),
             ),
           ),

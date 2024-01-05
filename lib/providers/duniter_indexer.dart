@@ -30,7 +30,7 @@ class DuniterIndexer with ChangeNotifier {
       final request = await client.postUrl(Uri.parse('$endpoint/v1/graphql'));
       final response = await request.close();
       if (response.statusCode != 200) {
-        log.d('INDEXER IS OFFLINE');
+        log.w('INDEXER IS OFFLINE');
         indexerEndpoint = '';
         isLoadingIndexer = false;
         notifyListeners();
@@ -46,28 +46,13 @@ class DuniterIndexer with ChangeNotifier {
         return true;
       }
     } catch (e) {
-      log.d('INDEXER IS OFFLINE');
+      log.w('INDEXER IS OFFLINE');
       indexerEndpoint = '';
       isLoadingIndexer = false;
       notifyListeners();
       return false;
     }
   }
-
-  // Future checkIndexerEndpointBackground() async {
-  //   final oldEndpoint = indexerEndpoint;
-  //   while (true) {
-  //     await Future.delayed(const Duration(seconds: 30));
-  //     final isValid = await checkIndexerEndpoint(oldEndpoint);
-  //     if (!isValid) {
-  //       log.d('INDEXER IS OFFILINE');
-  //       indexerEndpoint = '';
-  //     } else {
-  //       // log.d('Indexer is online');
-  //       indexerEndpoint = oldEndpoint;
-  //     }
-  //   }
-  // }
 
   Future<String> getValidIndexerEndpoint() async {
     // await configBox.delete('indexerEndpoint');
@@ -77,14 +62,14 @@ class DuniterIndexer with ChangeNotifier {
         .then((jsonStr) => jsonDecode(jsonStr));
     // _listEndpoints.shuffle();
 
-    log.d(listIndexerEndpoints);
     listIndexerEndpoints.add('Personnalisé');
 
     if (configBox.containsKey('customIndexer')) {
       return configBox.get('customIndexer');
     }
 
-    if (configBox.containsKey('indexerEndpoint')) {
+    if (configBox.containsKey('indexerEndpoint') &&
+        listIndexerEndpoints.contains(configBox.get('indexerEndpoint'))) {
       if (await checkIndexerEndpoint(configBox.get('indexerEndpoint'))) {
         return configBox.get('indexerEndpoint');
       }
@@ -98,7 +83,7 @@ class DuniterIndexer with ChangeNotifier {
     client.connectionTimeout = const Duration(milliseconds: 3000);
 
     do {
-      int listLenght = listIndexerEndpoints.length - 1;
+      final listLenght = listIndexerEndpoints.length - 1;
       if (i >= listLenght) {
         log.e('NO VALID INDEXER ENDPOINT FOUND');
         indexerEndpoint = '';
@@ -111,7 +96,7 @@ class DuniterIndexer with ChangeNotifier {
       }
 
       try {
-        String endpointPath = '${listIndexerEndpoints[i]}/v1/graphql';
+        final endpointPath = '${listIndexerEndpoints[i]}/v1/graphql';
 
         final request = await client.postUrl(Uri.parse(endpointPath));
         final response = await request.close();
@@ -139,7 +124,7 @@ class DuniterIndexer with ChangeNotifier {
       }
     } while (statusCode != 200);
 
-    log.i('INDEXER: $indexerEndpoint');
+    log.i('Indexer: $indexerEndpoint');
     return indexerEndpoint;
   }
 
@@ -202,7 +187,7 @@ class DuniterIndexer with ChangeNotifier {
     if (fetchMoreCursor != null) {
       transBC = parseHistory(blockchainTX, pubkey);
     } else {
-      log.i("###### DEBUG H - Début de l'historique");
+      log.d("Activity start of $pubkey");
     }
 
     return opts;
@@ -221,7 +206,7 @@ Future<bool> isIdtyExist(String name) async {
     'name': name,
   };
   final result = await _execQuery(isIdtyExistQ, variables);
-  return result.data!['identity']?.isEmpty ?? false ? false : true;
+  return result.data!['identity']?.isNotEmpty ?? false;
 }
 
 Future<DateTime> getBlockStart() async {
@@ -309,12 +294,6 @@ Map computeHistoryView(repository, String address) {
 
   bool isMigrationTime =
       startBlockchainInitialized && date.compareTo(startBlockchainTime) < 0;
-
-  //TODO: Migration date and transaction migration doesn't match, add this event to v2s indexer.
-
-  // log.d('debug date transaction: $date');
-  // log.d('debug date identity migration: ${sub.oldOwnerKeys[address]?[1]}');
-  // isChangeOwnerkeyTime = date.compareTo(sub.oldOwnerKeys[address]?[1] ?? DateTime(2000)) < 0;
 
   return {
     'finalAmount': finalAmount,

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -5,6 +7,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/commons/common_elements.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 class MyWalletsProvider with ChangeNotifier {
@@ -26,29 +29,22 @@ class MyWalletsProvider with ChangeNotifier {
     return configBox.get('currentChest');
   }
 
-  bool checkIfWalletExist() {
-    if (chestBox.isEmpty) {
-      // log.i('No wallets detected');
-      return false;
-    } else {
-      return true;
-    }
-  }
+  bool isWalletsExists() => chestBox.isNotEmpty;
 
   Future<List<WalletData>> readAllWallets([int? chest]) async {
     final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-    chest = chest ?? configBox.get('currentChest') ?? 0;
+    chest = chest ?? getCurrentChest();
     listWallets.clear();
     final wallets = walletBox.toMap().values.toList();
     Map<String, WalletData> walletsToScan = {};
     for (var walletFromBox in wallets) {
-      if (walletFromBox.chest == chest) {
-        if (walletFromBox.identityStatus == IdtyStatus.unknown) {
-          walletsToScan.putIfAbsent(
-              walletFromBox.address, (() => walletFromBox));
-        } else {
-          listWallets.add(walletFromBox);
-        }
+      if (walletFromBox.chest != chest) {
+        continue;
+      }
+      if (walletFromBox.identityStatus == IdtyStatus.unknown) {
+        walletsToScan.putIfAbsent(walletFromBox.address, (() => walletFromBox));
+      } else {
+        listWallets.add(walletFromBox);
       }
     }
 
@@ -61,7 +57,6 @@ class MyWalletsProvider with ChangeNotifier {
       listWallets.add(wallet);
       n++;
     }
-
     return listWallets;
   }
 
@@ -119,6 +114,12 @@ class MyWalletsProvider with ChangeNotifier {
         await chestBox.clear();
         await configBox.delete('defaultWallet');
         await sub.deleteAllAccounts();
+
+        final directory = await getApplicationDocumentsDirectory();
+        final avatarFolder = Directory('${directory.path}/avatars/');
+        if (await avatarFolder.exists()) {
+          await avatarFolder.delete(recursive: true);
+        }
 
         myWalletProvider.pinCode = '';
 
@@ -201,6 +202,7 @@ class MyWalletsProvider with ChangeNotifier {
         isOwned: true);
 
     await walletBox.put(newWallet.address, newWallet);
+    await readAllWallets();
 
     isNewDerivationLoading = false;
     notifyListeners();
@@ -220,7 +222,7 @@ class MyWalletsProvider with ChangeNotifier {
     if (listWallets.isEmpty) {
       newDerivationNbr = 2;
     } else {
-      WalletData lastWallet = listWallets.reduce(
+      final lastWallet = listWallets.reduce(
           (curr, next) => curr.derivation! > next.derivation! ? curr : next);
 
       if (lastWallet.derivation == -1) {
@@ -236,7 +238,7 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   int lockPin = 0;
-  Future resetPinCode([int minutes = 15]) async {
+  Future debounceResetPinCode([int minutes = 15]) async {
     lockPin++;
     final actualLock = lockPin;
     await Future.delayed(

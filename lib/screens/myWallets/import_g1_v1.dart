@@ -1,12 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
-
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/migrate_wallet_checks.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -15,11 +15,13 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/certifications.dart';
+import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/idty_status.dart';
 import 'package:provider/provider.dart';
 
 class ImportG1v1 extends StatelessWidget {
   const ImportG1v1({Key? key}) : super(key: key);
+  static const int debouneTime = 600;
 
   @override
   Widget build(BuildContext context) {
@@ -27,12 +29,7 @@ class ImportG1v1 extends StatelessWidget {
         Provider.of<MyWalletsProvider>(context, listen: false);
 
     Timer? debounce;
-    const int debouneTime = 600;
     WalletData selectedWallet = myWalletProvider.getDefaultWallet();
-    bool canValidate = false;
-    String validationStatus = '';
-
-    log.d(myWalletProvider.listWallets);
 
     return PopScope(
       onPopInvoked: (_) {
@@ -40,28 +37,24 @@ class ImportG1v1 extends StatelessWidget {
       },
       child: Scaffold(
         backgroundColor: backgroundColor,
-        appBar: AppBar(
-            toolbarHeight: 60 * ratio,
-            title: SizedBox(
-              height: 22,
-              child: Text('importOldAccount'.tr()),
-            )),
+        appBar: GeckoAppBar('importOldAccount'.tr()),
         body: SafeArea(
           child: Consumer<SubstrateSdk>(builder: (context, sub, _) {
             return FutureBuilder(
                 future: sub.getBalanceAndIdtyStatus(
                     sub.g1V1NewAddress, selectedWallet.address),
-                builder: (BuildContext context, AsyncSnapshot<List> status) {
+                builder: (BuildContext context,
+                    AsyncSnapshot<MigrateWalletChecks> status) {
                   if (status.data == null) {
-                    return const Column(children: [
-                      SizedBox(height: 80),
+                    return Column(children: [
+                      ScaledSizedBox(height: 80),
                       Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SizedBox(
+                            ScaledSizedBox(
                               height: 35,
                               width: 35,
-                              child: CircularProgressIndicator(
+                              child: const CircularProgressIndicator(
                                 color: orangeC,
                                 strokeWidth: 4,
                               ),
@@ -70,43 +63,13 @@ class ImportG1v1 extends StatelessWidget {
                     ]);
                   }
 
-                  final Map balance = status.data?[0] ?? {};
-                  final IdtyStatus idtyStatus = status.data?[1];
-                  final IdtyStatus myIdtyStatus = status.data?[2];
-                  final bool hasConsumer = status.data?[3] ?? false;
-                  final bool isSmith = status.data?[4] ?? false;
-
-                  if (balance['transferableBalance'] != 0 && !hasConsumer) {
-                    canValidate = true;
-                    validationStatus = '';
-                  } else {
-                    canValidate = false;
-                    validationStatus = hasConsumer
-                        ? 'youMustWaitBeforeCashoutThisAccount'.tr()
-                        : 'thisAccountIsEmpty'.tr();
-                  }
-
-                  if (idtyStatus != IdtyStatus.none &&
-                      myIdtyStatus != IdtyStatus.none) {
-                    canValidate = false;
-                    validationStatus =
-                        'youCannotMigrateIdentityToExistingIdentity'.tr();
-                  }
-
-                  if (isSmith) {
-                    canValidate = false;
-                    validationStatus = 'smithCantMigrateIdentity'.tr();
-                  }
-
-                  if (sub.g1V1NewAddress == '') {
-                    validationStatus = '';
-                  }
+                  final statusData = status.data!;
 
                   final bool isUdUnit = configBox.get('isUdUnit') ?? false;
                   final unit = isUdUnit ? 'ud'.tr(args: ['']) : currencyName;
 
                   return Column(children: <Widget>[
-                    const SizedBox(height: 20),
+                    ScaledSizedBox(height: 10),
                     TextFormField(
                       key: keyCesiumId,
                       autofocus: true,
@@ -117,15 +80,18 @@ class ImportG1v1 extends StatelessWidget {
                         }
                         debounce = Timer(
                             const Duration(milliseconds: debouneTime), () {
-                          sub.reload();
-                          sub.csToV2Address(
-                              sub.csSalt.text, sub.csPassword.text);
+                          if (sub.csSalt.text != '' &&
+                              sub.csPassword.text != '') {
+                            sub.reload();
+                            sub.csToV2Address(
+                                sub.csSalt.text, sub.csPassword.text);
+                          }
                         });
                       },
                       keyboardType: TextInputType.text,
                       controller: sub.csSalt,
-                      obscureText: !sub
-                          .isCesiumIDVisible, //This will obscure text dynamically
+                      obscureText: !sub.isCesiumIDVisible,
+                      style: scaledTextStyle(fontSize: 16),
                       decoration: InputDecoration(
                         hintText: 'enterCesiumId'.tr(),
                         suffixIcon: IconButton(
@@ -135,6 +101,7 @@ class ImportG1v1 extends StatelessWidget {
                                 ? Icons.visibility_off
                                 : Icons.visibility,
                             color: Colors.black,
+                            size: scaleSize(22),
                           ),
                           onPressed: () {
                             sub.cesiumIDisVisible();
@@ -142,7 +109,7 @@ class ImportG1v1 extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    ScaledSizedBox(height: 7),
                     TextFormField(
                       key: keyCesiumPassword,
                       autofocus: true,
@@ -154,15 +121,18 @@ class ImportG1v1 extends StatelessWidget {
                         debounce = Timer(
                             const Duration(milliseconds: debouneTime), () {
                           sub.g1V1NewAddress = '';
-                          sub.reload();
-                          sub.csToV2Address(
-                              sub.csSalt.text, sub.csPassword.text);
+                          if (sub.csSalt.text != '' &&
+                              sub.csPassword.text != '') {
+                            sub.reload();
+                            sub.csToV2Address(
+                                sub.csSalt.text, sub.csPassword.text);
+                          }
                         });
                       },
                       keyboardType: TextInputType.text,
                       controller: sub.csPassword,
-                      obscureText: !sub
-                          .isCesiumIDVisible, //This will obscure text dynamically
+                      obscureText: !sub.isCesiumIDVisible,
+                      style: scaledTextStyle(fontSize: 16),
                       decoration: InputDecoration(
                         hintText: 'enterCesiumPassword'.tr(),
                         suffixIcon: IconButton(
@@ -171,6 +141,7 @@ class ImportG1v1 extends StatelessWidget {
                                 ? Icons.visibility_off
                                 : Icons.visibility,
                             color: Colors.black,
+                            size: scaleSize(22),
                           ),
                           onPressed: () {
                             sub.cesiumIDisVisible();
@@ -178,45 +149,75 @@ class ImportG1v1 extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    GestureDetector(
-                      key: keyCopyAddress,
-                      onTap: () {
-                        Clipboard.setData(
-                            ClipboardData(text: sub.g1V1OldPubkey));
-                        snackCopyKey(context);
-                      },
-                      child: Text(
-                        sub.g1V1OldPubkey,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    ScaledSizedBox(height: 20),
+                    Visibility(
+                      visible: sub.g1V1OldPubkey != '',
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Column(
+                            children: [
+                              GestureDetector(
+                                key: keyCopyPubkey,
+                                onTap: () {
+                                  Clipboard.setData(
+                                      ClipboardData(text: sub.g1V1OldPubkey));
+                                  snackCopyKey(context);
+                                },
+                                child: Text(
+                                  'v1: ${getShortPubkey(sub.g1V1OldPubkey)}',
+                                  style: scaledTextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                      fontFamily: 'Monospace'),
+                                ),
+                              ),
+                              ScaledSizedBox(height: 5),
+                              GestureDetector(
+                                key: keyCopyAddress,
+                                onTap: () {
+                                  Clipboard.setData(
+                                      ClipboardData(text: sub.g1V1OldPubkey));
+                                  snackCopyKey(context);
+                                },
+                                child: Text(
+                                  'v2: ${getShortPubkey(sub.g1V1NewAddress)}',
+                                  style: scaledTextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                      fontFamily: 'Monospace'),
+                                ),
+                              ),
+                            ],
+                          ),
+                          ScaledSizedBox(width: 30),
+                          Column(
+                            children: [
+                              Text(
+                                '${statusData.balance['transferableBalance']} $unit',
+                                style: scaledTextStyle(fontSize: 16),
+                              ),
+                              IdentityStatus(
+                                  address: sub.g1V1NewAddress,
+                                  isOwner: false,
+                                  color: Colors.black),
+                              ScaledSizedBox(width: 10),
+                              Certifications(
+                                  address: sub.g1V1NewAddress, size: 14)
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    ScaledSizedBox(height: 20),
                     Text(
-                      '${balance['transferableBalance']} $unit',
-                      style: const TextStyle(fontSize: 17),
+                      'migrateToThisWallet'.tr(),
+                      style: scaledTextStyle(fontSize: 17),
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        IdentityStatus(
-                            address: sub.g1V1NewAddress,
-                            isOwner: false,
-                            color: Colors.black),
-                        const SizedBox(width: 10),
-                        Certifications(address: sub.g1V1NewAddress, size: 14)
-                      ],
-                    ),
-                    const SizedBox(height: 30),
-                    Text('selectDestWallet'.tr()),
-                    const SizedBox(height: 5),
+                    ScaledSizedBox(height: 5),
                     DropdownButtonHideUnderline(
                       key: keySelectWallet,
                       child: DropdownButton(
-                        // alignment: AlignmentDirectional.topStart,
                         value: selectedWallet,
                         icon: const Icon(Icons.keyboard_arrow_down),
                         items: myWalletProvider.listWallets.map((wallet) {
@@ -225,7 +226,7 @@ class ImportG1v1 extends StatelessWidget {
                             value: wallet,
                             child: Text(
                               wallet.name!,
-                              style: const TextStyle(fontSize: 18),
+                              style: scaledTextStyle(fontSize: 17),
                             ),
                           );
                         }).toList(),
@@ -235,17 +236,18 @@ class ImportG1v1 extends StatelessWidget {
                         },
                       ),
                     ),
-                    const SizedBox(height: 30),
-                    SizedBox(
-                      width: 380 * ratio,
-                      height: 60 * ratio,
+                    ScaledSizedBox(height: 10),
+                    ScaledSizedBox(
+                      width: 320,
+                      height: 50,
                       child: ElevatedButton(
                         key: keyConfirm,
                         style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white, elevation: 4,
-                          backgroundColor: orangeC, // foreground
+                          foregroundColor: Colors.white,
+                          elevation: 4,
+                          backgroundColor: orangeC,
                         ),
-                        onPressed: canValidate
+                        onPressed: statusData.canValidate
                             ? () async {
                                 WalletData? defaultWallet =
                                     myWalletProvider.getDefaultWallet();
@@ -263,17 +265,20 @@ class ImportG1v1 extends StatelessWidget {
                                   );
                                 }
 
-                                sub.migrateCsToV2(sub.csSalt.text,
-                                    sub.csPassword.text, selectedWallet.address,
+                                final transactionId = await sub.migrateCsToV2(
+                                    sub.csSalt.text,
+                                    sub.csPassword.text,
+                                    selectedWallet.address,
                                     destPassword:
                                         pin ?? myWalletProvider.pinCode,
-                                    balance: balance,
-                                    idtyStatus: idtyStatus);
+                                    balance: statusData.balance,
+                                    idtyStatus: statusData.idtyStatus);
                                 Navigator.pop(context);
-                                Navigator.push(
+                                await Navigator.push(
                                   context,
                                   MaterialPageRoute(builder: (context) {
                                     return TransactionInProgress(
+                                        transactionId: transactionId,
                                         transType: 'identityMigration',
                                         fromAddress:
                                             getShortPubkey(sub.g1V1NewAddress),
@@ -286,17 +291,17 @@ class ImportG1v1 extends StatelessWidget {
                             : null,
                         child: Text(
                           'migrateAccount'.tr(),
-                          style: TextStyle(
-                              fontSize: 23 * ratio,
-                              fontWeight: FontWeight.w600),
+                          style: scaledTextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    ScaledSizedBox(height: 10),
                     Text(
-                      validationStatus,
+                      statusData.validationStatus,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 15, color: Colors.grey[600]),
+                      style: scaledTextStyle(
+                          fontSize: 14, color: Colors.grey[600]),
                     )
                   ]);
                 });
@@ -312,5 +317,6 @@ class ImportG1v1 extends StatelessWidget {
     sub.csSalt.text = '';
     sub.csPassword.text = '';
     sub.g1V1NewAddress = '';
+    sub.g1V1OldPubkey = '';
   }
 }

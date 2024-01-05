@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/smooth_transition.dart';
@@ -23,8 +25,10 @@ class WalletTile extends StatelessWidget {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
     final defaultWallet = myWalletProvider.getDefaultWallet();
 
+    repository.getDatapodAvatar();
+
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(scaleSize(11)),
       child: GestureDetector(
         key: keyOpenWallet(repository.address),
         onTap: () {
@@ -37,7 +41,7 @@ class WalletTile extends StatelessWidget {
             ),
           );
         },
-        child: SizedBox(
+        child: ScaledSizedBox(
           key: repository.number == 1 ? keyDragAndDrop : const Key('nothing'),
           child: ClipOvalShadow(
             shadow: const Shadow(
@@ -49,39 +53,41 @@ class WalletTile extends StatelessWidget {
             child: ClipRRect(
               borderRadius: const BorderRadius.all(Radius.circular(12)),
               child: Column(children: <Widget>[
-                Expanded(
-                    child: Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  decoration: const BoxDecoration(
-                    gradient: RadialGradient(
-                      radius: 0.8,
-                      colors: [
-                        Color.fromARGB(255, 255, 255, 211),
-                        yellowC,
-                      ],
+                Expanded(child: Consumer<V2sDatapodProvider>(
+                    builder: (context, datapod, _) {
+                  return Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    decoration: const BoxDecoration(
+                      gradient: RadialGradient(
+                        radius: 0.8,
+                        colors: [
+                          Color.fromARGB(255, 255, 255, 211),
+                          yellowC,
+                        ],
+                      ),
                     ),
-                  ),
-                  child: repository.imageCustomPath == null ||
-                          repository.imageCustomPath == ''
-                      ? Image.asset(
-                          'assets/avatars/${repository.imageDefaultPath}',
-                          alignment: Alignment.bottomCenter,
-                          scale: 0.5,
-                        )
-                      : Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.transparent,
-                            image: DecorationImage(
-                              fit: BoxFit.fitHeight,
-                              image: FileImage(
-                                File(repository.imageCustomPath!),
+                    child: repository.imageCustomPath == null ||
+                            repository.imageCustomPath == ''
+                        ? Image.asset(
+                            'assets/avatars/${repository.imageDefaultPath}',
+                            alignment: Alignment.bottomCenter,
+                            scale: 0.5,
+                          )
+                        : Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.transparent,
+                              image: DecorationImage(
+                                fit: BoxFit.fitHeight,
+                                image: FileImage(
+                                  File(repository.imageCustomPath!),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                )),
+                  );
+                })),
                 Stack(children: <Widget>[
                   BalanceBuilder(
                       address: repository.address,
@@ -91,12 +97,12 @@ class WalletTile extends StatelessWidget {
                     children: [
                       Column(
                         children: [
-                          const SizedBox(height: 7),
+                          ScaledSizedBox(height: 5),
                           Opacity(
                               opacity: 0.7,
                               child: NameByAddress(
                                 wallet: repository,
-                                size: 20,
+                                size: 16,
                                 color:
                                     defaultWallet.address == repository.address
                                         ? Colors.white
@@ -135,7 +141,7 @@ class BalanceBuilder extends StatelessWidget {
       color: isDefault ? orangeC : yellowC,
       child: Padding(
           padding:
-              const EdgeInsets.only(left: 5, right: 5, top: 38, bottom: 10),
+              EdgeInsets.only(left: 5, right: 5, top: scaleSize(28), bottom: 6),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -143,7 +149,7 @@ class BalanceBuilder extends StatelessWidget {
                 opacity: 0.7,
                 child: Balance(
                     address: address,
-                    size: 16,
+                    size: 14,
                     color: isDefault ? Colors.white : Colors.black,
                     loadingColor: isDefault ? yellowC : orangeC),
               )

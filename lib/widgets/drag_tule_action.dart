@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -23,9 +24,7 @@ class DragTuleAction extends StatelessWidget {
       delay: const Duration(milliseconds: 200),
       data: wallet.address,
       dragAnchorStrategy: (Draggable<Object> _, BuildContext __, Offset ___) =>
-          const Offset(0, 0),
-      // feedbackOffset: const Offset(-500, -500),
-      // dragAnchorStrategy: childDragAnchorStrategy,
+          const Offset(55, 55),
       onDragStarted: () => myWalletProvider.dragAddress = wallet,
       onDragEnd: (_) {
         myWalletProvider.lastFlyBy = null;
@@ -37,17 +36,15 @@ class DragTuleAction extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: orangeC,
           shape: const CircleBorder(),
-          padding: const EdgeInsets.all(15),
+          padding: EdgeInsets.all(scaleSize(14)),
         ),
-        child: const SizedBox(
-          height: 35,
-          child: Image(image: AssetImage('assets/vector_white.png')),
+        child: SizedBox(
+          height: scaleSize(33),
+          child: const Image(image: AssetImage('assets/vector_white.png')),
         ),
       ),
       child: DragTarget<String>(
           onAccept: (senderAddress) async {
-            log.d(
-                'INTERPAY: sender: $senderAddress --- receiver: ${wallet.address}');
             final walletData =
                 myWalletProvider.getWalletDataByAddress(senderAddress);
             await sub.setCurrentWallet(walletData!);

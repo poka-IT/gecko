@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/wallet_view.dart';
@@ -24,16 +25,16 @@ class HistoryView extends StatelessWidget {
     final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
 
     int keyID = 0;
-    const double avatarSize = 200;
+    const double avatarSize = 50;
     bool isMigrationPassed = false;
     List<String> pastDelimiters = [];
 
     return duniterIndexer.transBC == null
         ? Column(children: <Widget>[
-            const SizedBox(height: 50),
+            ScaledSizedBox(height: 50),
             Text(
               "noTransactionToDisplay".tr(),
-              style: const TextStyle(fontSize: 18),
+              style: scaledTextStyle(fontSize: 18),
             )
           ])
         : Column(children: <Widget>[
@@ -51,23 +52,23 @@ class HistoryView extends StatelessWidget {
               return Column(children: <Widget>[
                 if (isMigrationTime)
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 30),
+                    padding: EdgeInsets.symmetric(vertical: scaleSize(23)),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        const Image(
-                            image: AssetImage('assets/party.png'), height: 40),
-                        const SizedBox(width: 40),
+                        Image(
+                            image: const AssetImage('assets/party.png'),
+                            height: scaleSize(32)),
                         Text(
                           'blockchainStart'.tr(),
-                          style: const TextStyle(
-                              fontSize: 25,
+                          style: scaledTextStyle(
+                              fontSize: 20,
                               color: Colors.blueAccent,
                               fontWeight: FontWeight.w500),
                         ),
-                        const SizedBox(width: 40),
-                        const Image(
-                            image: AssetImage('assets/party.png'), height: 40),
+                        Image(
+                            image: const AssetImage('assets/party.png'),
+                            height: scaleSize(32)),
                       ],
                     ),
                   ),
@@ -76,11 +77,11 @@ class HistoryView extends StatelessWidget {
                         !(pastDelimiters[pastDelimiters.length - 2] ==
                             answer['dateDelimiter']))
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 30),
+                    padding: const EdgeInsets.symmetric(vertical: 20),
                     child: Text(
                       answer['dateDelimiter'],
-                      style: const TextStyle(
-                          fontSize: 23,
+                      style: scaledTextStyle(
+                          fontSize: 20,
                           color: orangeC,
                           fontWeight: FontWeight.w300),
                     ),
@@ -117,30 +118,32 @@ class HistoryView extends StatelessWidget {
                     }),
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.account_circle,
                         size: 40,
-                        color: Colors.blueAccent,
+                        color: Colors.green[700],
                       ),
-                      const SizedBox(width: 40),
                       Column(children: [
                         Text(
                           'Identité migré:'.tr(),
-                          style: const TextStyle(
-                              fontSize: 25,
-                              color: Colors.blueAccent,
+                          style: scaledTextStyle(
+                              fontSize: 20,
+                              color: Colors.green[700],
                               fontWeight: FontWeight.w500),
                         ),
                         Text(
-                            'Ancienne adresse: ${getShortPubkey(sub.oldOwnerKeys[address]![0])}')
+                          'from'.tr(args: [
+                            ' ${getShortPubkey(sub.oldOwnerKeys[address]![0])}'
+                          ]),
+                          style: scaledTextStyle(fontSize: 17),
+                        ),
                       ]),
-                      const SizedBox(width: 40),
-                      const Icon(
+                      Icon(
                         Icons.account_circle,
-                        size: 40,
-                        color: Colors.blueAccent,
+                        size: scaleSize(32),
+                        color: Colors.green[700],
                       ),
                     ],
                   ),
@@ -149,11 +152,11 @@ class HistoryView extends StatelessWidget {
             if (!duniterIndexer.pageInfo!['hasNextPage'])
               Column(
                 children: <Widget>[
-                  const SizedBox(height: 15),
+                  ScaledSizedBox(height: 15),
                   Text("historyStart".tr(),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 20)),
-                  const SizedBox(height: 15)
+                      style: scaledTextStyle(fontSize: 20)),
+                  ScaledSizedBox(height: 15)
                 ],
               )
           ]);

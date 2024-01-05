@@ -1,10 +1,11 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:easy_localization/easy_localization.dart';
-
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/migrate_wallet_checks.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
@@ -13,6 +14,7 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
 class MigrateIdentityScreen extends StatelessWidget {
@@ -38,24 +40,22 @@ class MigrateIdentityScreen extends StatelessWidget {
     } else {
       selectedWallet = defaultWallet;
     }
-    bool canValidate = false;
-    String validationStatus = '';
 
     final mdStyle = MarkdownStyleSheet(
-      p: const TextStyle(fontSize: 18, color: Colors.black, letterSpacing: 0.3),
+      p: scaledTextStyle(fontSize: 17, color: Colors.black, letterSpacing: 0.3),
       textAlign: WrapAlignment.center,
     );
 
     if (walletsList.length < 2) {
-      return const Column(
+      return Column(
         children: [
-          SizedBox(height: 80),
+          ScaledSizedBox(height: 80),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 'Vous devez avoir au moins 2 portefeuilles\npour effecter cette opération',
-                style: TextStyle(fontSize: 20),
+                style: scaledTextStyle(fontSize: 17),
               )
             ],
           )
@@ -65,113 +65,59 @@ class MigrateIdentityScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-          toolbarHeight: 60 * ratio,
-          title: SizedBox(
-            height: 22,
-            child: Text('importOldAccount'.tr()),
-          )),
+      appBar: GeckoAppBar('migrateIdentity'.tr()),
       body: SafeArea(
         child: Consumer<SubstrateSdk>(builder: (context, sub, _) {
           return FutureBuilder(
               future: sub.getBalanceAndIdtyStatus(
                   fromAddress, selectedWallet.address),
-              builder: (BuildContext context, AsyncSnapshot<List> status) {
+              builder: (BuildContext context,
+                  AsyncSnapshot<MigrateWalletChecks> status) {
                 if (status.data == null) {
-                  return const Column(children: [
-                    SizedBox(height: 80),
+                  return Column(children: [
+                    ScaledSizedBox(height: 80),
                     Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      SizedBox(
-                        height: 35,
-                        width: 35,
+                      ScaledSizedBox(
+                        height: scaleSize(32),
+                        width: scaleSize(32),
                         child: CircularProgressIndicator(
                           color: orangeC,
-                          strokeWidth: 4,
+                          strokeWidth: scaleSize(4),
                         ),
                       ),
                     ]),
                   ]);
                 }
 
-                // log.d('statusData: ${status.data}');
-
-                final Map balance = status.data?[0] ?? {};
-                final IdtyStatus idtyStatus = status.data?[1];
-                final IdtyStatus myIdtyStatus = status.data?[2];
-                final bool hasConsumer = status.data?[3] ?? false;
-                final bool isSmith = status.data?[4] ?? false;
-
-                // log.d('hasconsumer: $hasConsumer');
-
-                if (isSmith) {
-                  canValidate = false;
-                  validationStatus = 'smithCantMigrateIdentity'.tr();
-                } else if (balance['transferableBalance'] != 0 &&
-                    !hasConsumer) {
-                  canValidate = true;
-                  validationStatus = '';
-                } else if (idtyStatus != IdtyStatus.none &&
-                    myIdtyStatus != IdtyStatus.none) {
-                  canValidate = false;
-                  validationStatus =
-                      'youCannotMigrateIdentityToExistingIdentity'.tr();
-                } else {
-                  canValidate = false;
-                  validationStatus = hasConsumer
-                      ? 'youMustWaitBeforeCashoutThisAccount'.tr(args: ['X'])
-                      : 'thisAccountIsEmpty'.tr();
-                }
-
-                log.d(
-                    'tatatata: ${sub.g1V1NewAddress}, ${selectedWallet.address}, $balance, $idtyStatus, $myIdtyStatus');
-
+                final statusData = status.data!;
                 final walletsList = myWalletProvider.listWallets.toList();
 
                 walletsList
                     .removeWhere((element) => element.address == fromAddress);
-                // walletsList.add(WalletData(address: 'custom', name: 'custom'));
 
                 final bool isUdUnit = configBox.get('isUdUnit') ?? false;
                 final unit = isUdUnit ? 'ud'.tr(args: ['']) : currencyName;
 
                 return Column(children: <Widget>[
                   const Row(children: []),
-                  const SizedBox(height: 20),
-
-                  SizedBox(
-                    width: 400,
+                  ScaledSizedBox(height: 18),
+                  ScaledSizedBox(
+                    width: 320,
                     child: MarkdownBody(
                         data: 'areYouSureMigrateIdentity'.tr(args: [
                           duniterIndexer.walletNameIndexer[fromAddress] ??
                               '???',
-                          '${balance['transferableBalance']} $unit'
+                          '${statusData.balance['transferableBalance']} $unit'
                         ]),
                         styleSheet: mdStyle),
                   ),
-                  // Text(
-                  //   'areYouSureMigrateIdentity'.tr(args: [
-                  //     duniterIndexer
-                  //         .walletNameIndexer[fromAddress]!,
-                  //     '$balance $currencyName'
-                  //   ]),
-                  //   textAlign: TextAlign.center,
-                  // ),
-                  const SizedBox(height: 20),
-                  Text(
-                    sub.g1V1NewAddress,
-                    style: const TextStyle(
-                        fontSize: 14.0,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Monospace'),
-                  ),
-                  const SizedBox(height: 30),
-                  Text('selectDestWallet'.tr()),
-                  const SizedBox(height: 5),
+                  ScaledSizedBox(height: 55),
+                  Text('migrateToThisWallet'.tr(),
+                      style: scaledTextStyle(fontSize: 17)),
+                  ScaledSizedBox(height: 5),
                   DropdownButtonHideUnderline(
                     key: keySelectWallet,
                     child: DropdownButton(
-                      // alignment: AlignmentDirectional.topStart,
                       value: selectedWallet,
                       icon: const Icon(Icons.keyboard_arrow_down),
                       items: walletsList.map((wallet) {
@@ -180,7 +126,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                           value: wallet,
                           child: Text(
                             wallet.name!,
-                            style: const TextStyle(fontSize: 18),
+                            style: scaledTextStyle(fontSize: 17),
                           ),
                         );
                       }).toList(),
@@ -190,19 +136,19 @@ class MigrateIdentityScreen extends StatelessWidget {
                       },
                     ),
                   ),
-                  const SizedBox(height: 30),
-                  SizedBox(
-                    width: 380 * ratio,
-                    height: 60 * ratio,
+                  const Spacer(flex: 2),
+                  ScaledSizedBox(
+                    width: 320,
+                    height: 55,
                     child: ElevatedButton(
                       key: keyConfirm,
                       style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white, elevation: 4,
-                        backgroundColor: orangeC, // foreground
+                        foregroundColor: Colors.white,
+                        elevation: 4,
+                        backgroundColor: orangeC,
                       ),
-                      onPressed: canValidate
+                      onPressed: statusData.canValidate
                           ? () async {
-                              log.d('GOOO');
                               WalletData? defaultWallet =
                                   myWalletProvider.getDefaultWallet();
 
@@ -219,17 +165,19 @@ class MigrateIdentityScreen extends StatelessWidget {
                                 );
                               }
 
-                              sub.migrateIdentity(
+                              if (myWalletProvider.pinCode == '') return;
+                              final transactionId = await sub.migrateIdentity(
                                   fromAddress: fromAddress,
                                   destAddress: selectedWallet.address,
                                   fromPassword: pin ?? myWalletProvider.pinCode,
                                   destPassword: pin ?? myWalletProvider.pinCode,
                                   withBalance: true,
-                                  fromBalance: balance);
+                                  fromBalance: statusData.balance);
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) {
                                   return TransactionInProgress(
+                                      transactionId: transactionId,
                                       transType: 'identityMigration',
                                       fromAddress: getShortPubkey(fromAddress),
                                       toAddress: getShortPubkey(
@@ -240,17 +188,21 @@ class MigrateIdentityScreen extends StatelessWidget {
                           : null,
                       child: Text(
                         'migrateIdentity'.tr(),
-                        style: TextStyle(
-                            fontSize: 23 * ratio, fontWeight: FontWeight.w600),
+                        style: scaledTextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  ScaledSizedBox(height: 10),
                   Text(
-                    validationStatus,
+                    statusData.validationStatus,
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 15, color: Colors.grey[600]),
-                  )
+                    style:
+                        scaledTextStyle(fontSize: 15, color: Colors.grey[600]),
+                  ),
+                  const Spacer(),
                 ]);
               });
         }),

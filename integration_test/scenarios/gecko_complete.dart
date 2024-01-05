@@ -100,7 +100,7 @@ Future certifyTest5() async {
   await waitFor('thisWalletIsDefault'.tr());
 
   // Search Wallet 5 again
-  await tapKey(keyAppBarSearch);
+  await tapKey(keyAppBarHome);
   final addressToSearch = await clipPaste();
   final endAddress = addressToSearch.substring(addressToSearch.length - 6);
   expect(addressToSearch, test5.address);

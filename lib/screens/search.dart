@@ -1,17 +1,18 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/search.dart';
-import 'package:gecko/widgets/commons/common_elements.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/search_result.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
+import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -28,9 +29,11 @@ class _SearchScreenState extends State<SearchScreen> {
   final int debouneTime = 50;
 
   Future getClipBoard() async {
+    final searchProvider = Provider.of<SearchProvider>(context, listen: false);
     final clipboard = await Clipboard.getData('text/plain');
     pastedAddress = clipboard?.text ?? '';
     canPasteAddress = isAddress(pastedAddress);
+    searchProvider.reload();
   }
 
   @override
@@ -44,10 +47,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final searchProvider = Provider.of<SearchProvider>(context);
-    final screenHeight = MediaQuery.of(context).size.height;
-
     final canValidate = searchProvider.searchController.text.length >= 2;
-    // final canPasteAddress = false;
 
     return PopScope(
       onPopInvoked: (_) {
@@ -55,18 +55,11 @@ class _SearchScreenState extends State<SearchScreen> {
       },
       child: Scaffold(
         backgroundColor: backgroundColor,
-        appBar: AppBar(
-          elevation: 1,
-          toolbarHeight: 60 * ratio,
-          title: SizedBox(
-            height: 22,
-            child: Text('search'.tr()),
-          ),
-        ),
+        appBar: GeckoAppBar('search'.tr()),
         body: SafeArea(
           child: Stack(children: [
             Column(children: <Widget>[
-              SizedBox(height: isTall ? 200 : 100),
+              ScaledSizedBox(height: isTall ? 165 : 60),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 17),
                 child: TextField(
@@ -102,7 +95,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     suffixIcon: searchProvider.searchController.text == ''
                         ? null
                         : Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 17),
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
                             child: IconButton(
                               onPressed: (() async => {
                                     searchProvider.searchController.text = '',
@@ -112,15 +105,16 @@ class _SearchScreenState extends State<SearchScreen> {
                               icon: Icon(
                                 Icons.close,
                                 color: Colors.grey[600],
-                                size: 30,
+                                size: scaleSize(28),
                               ),
                             ),
                           ),
-                    prefixIcon: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 17),
-                      child: Image(
-                          image: AssetImage('assets/loupe-noire.png'),
-                          height: 35),
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 13),
+                      child: Image.asset(
+                        'assets/loupe-noire.png',
+                        height: scaleSize(10),
+                      ),
                     ),
                     border: OutlineInputBorder(
                         borderSide:
@@ -131,24 +125,25 @@ class _SearchScreenState extends State<SearchScreen> {
                           BorderSide(color: Colors.grey[500]!, width: 2.5),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    contentPadding: const EdgeInsets.all(20),
+                    contentPadding: const EdgeInsets.all(13),
                   ),
-                  style: const TextStyle(
-                    fontSize: 20,
+                  style: scaledTextStyle(
+                    fontSize: 17,
                     color: Colors.black,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
               ),
-              const Spacer(flex: 1),
-              SizedBox(
-                width: 320,
-                height: 90,
+              const Spacer(),
+              ScaledSizedBox(
+                width: 270,
+                height: 70,
                 child: ElevatedButton(
                   key: keyConfirmSearch,
                   style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white, elevation: 4,
-                    backgroundColor: orangeC, // foreground
+                    foregroundColor: Colors.white,
+                    elevation: 4,
+                    backgroundColor: orangeC,
                   ),
                   onPressed: canValidate
                       ? () {
@@ -177,12 +172,14 @@ class _SearchScreenState extends State<SearchScreen> {
                             ? 'pasteAddress'.tr()
                             : 'search'.tr(),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        fontSize: 21, fontWeight: FontWeight.w600),
+                    style: scaledTextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white),
                   ),
                 ),
               ),
-              Spacer(flex: screenHeight <= 800 ? 1 : 2),
+              const Spacer(),
             ]),
             const OfflineInfo(),
           ]),

@@ -5,8 +5,10 @@ import 'package:confetti/confetti.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
+import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class OnboardingStepEleven extends StatelessWidget {
   const OnboardingStepEleven({Key? key}) : super(key: key);
@@ -20,35 +22,24 @@ class OnboardingStepEleven extends StatelessWidget {
       canPop: false,
       child: Scaffold(
           backgroundColor: backgroundColor,
-          appBar: AppBar(
-            toolbarHeight: 60 * ratio,
-            leading: const Icon(Icons.check),
-            title: SizedBox(
-              height: 22,
-              child: Text(
-                'allGood'.tr(),
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-          ),
-          extendBodyBehindAppBar: true,
+          appBar: GeckoAppBar('allGood'.tr()),
           body: SafeArea(
             child: Stack(children: [
               Column(children: <Widget>[
-                const SizedBox(height: 40),
+                ScaledSizedBox(height: isTall ? 25 : 5),
                 BuildText(
                     text: "yourChestAndWalletWereCreatedSuccessfully".tr()),
-                SizedBox(height: isTall ? 20 : 10),
+                ScaledSizedBox(height: isTall ? 15 : 5),
                 Image.asset(
                   'assets/onBoarding/gecko-clin.gif',
-                  height: isTall ? 400 : 300,
+                  height: scaleSize(isTall ? 330 : 280),
                 ),
                 Expanded(
                   child: Align(
                       alignment: Alignment.bottomCenter,
                       child: finishButton(context)),
                 ),
-                const SizedBox(height: 40),
+                ScaledSizedBox(height: isTall ? 40 : 5),
               ]),
               Align(
                 alignment: Alignment.topLeft,
@@ -83,9 +74,9 @@ class OnboardingStepEleven extends StatelessWidget {
 }
 
 Widget finishButton(BuildContext context) {
-  return SizedBox(
-    width: 380 * ratio,
-    height: 60 * ratio,
+  return ScaledSizedBox(
+    width: 340,
+    height: 55,
     child: ElevatedButton(
       key: keyGoWalletsHome,
       style: ElevatedButton.styleFrom(
@@ -99,7 +90,8 @@ Widget finishButton(BuildContext context) {
       },
       child: Text(
         "accessMyChest".tr(),
-        style: TextStyle(fontSize: 22 * ratio, fontWeight: FontWeight.w600),
+        style: scaledTextStyle(
+            fontSize: 21, fontWeight: FontWeight.w600, color: Colors.white),
       ),
     ),
   );

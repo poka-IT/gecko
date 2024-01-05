@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/widgets/commons/fader_transition.dart';
 
@@ -17,14 +18,15 @@ class NextButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 380 * ratio,
-      height: 60 * ratio,
+    return ScaledSizedBox(
+      width: 340,
+      height: 55,
       child: ElevatedButton(
         key: keyGoNext,
         style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white, backgroundColor: orangeC,
-          elevation: 4, // foreground
+          foregroundColor: Colors.white,
+          backgroundColor: orangeC,
+          elevation: 4,
         ),
         onPressed: () {
           Navigator.push(
@@ -32,7 +34,8 @@ class NextButton extends StatelessWidget {
         },
         child: Text(
           text,
-          style: TextStyle(fontSize: 23 * ratio, fontWeight: FontWeight.w600),
+          style: scaledTextStyle(
+              fontSize: 23, fontWeight: FontWeight.w600, color: Colors.white),
         ),
       ),
     );

@@ -1,8 +1,9 @@
 // ignore_for_file: file_names
-import 'package:easy_localization/easy_localization.dart';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
@@ -10,6 +11,7 @@ import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/screens/onBoarding/10.dart';
 import 'package:gecko/widgets/commons/next_button.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
+import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
 class OnboardingStepNine extends StatelessWidget {
@@ -21,8 +23,6 @@ class OnboardingStepNine extends StatelessWidget {
   Widget build(BuildContext context) {
     final generateWalletProvider =
         Provider.of<GenerateWalletsProvider>(context);
-    // final myWalletProvider =
-    //     Provider.of<MyWalletsProvider>(context);
 
     generateWalletProvider.pin.text = debugPin // kDebugMode &&
         ? 'AAAAA'
@@ -30,25 +30,15 @@ class OnboardingStepNine extends StatelessWidget {
 
     return Scaffold(
         backgroundColor: backgroundColor,
-        appBar: AppBar(
-          toolbarHeight: 60 * ratio,
-          title: SizedBox(
-            height: 22,
-            child: Text(
-              'myPassword'.tr(),
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ),
-        extendBodyBehindAppBar: true,
+        appBar: GeckoAppBar('myPassword'.tr()),
         body: SafeArea(
           child: Stack(children: [
             Column(children: <Widget>[
-              SizedBox(height: isTall ? 40 : 20),
+              ScaledSizedBox(height: isTall ? 25 : 5),
               const BuildProgressBar(pagePosition: 8),
-              SizedBox(height: isTall ? 40 : 20),
+              ScaledSizedBox(height: isTall ? 25 : 5),
               BuildText(text: "hereIsThePasswordKeepIt".tr()),
-              const SizedBox(height: 100),
+              ScaledSizedBox(height: isTall ? 60 : 10),
               Stack(
                 alignment: Alignment.centerRight,
                 children: <Widget>[
@@ -60,9 +50,9 @@ class OnboardingStepNine extends StatelessWidget {
                       maxLines: 1,
                       textAlign: TextAlign.center,
                       decoration: const InputDecoration(),
-                      style: const TextStyle(
+                      style: scaledTextStyle(
                           letterSpacing: 5,
-                          fontSize: 35.0,
+                          fontSize: 33,
                           color: Colors.black,
                           fontWeight: FontWeight.bold)),
                   IconButton(
@@ -74,41 +64,40 @@ class OnboardingStepNine extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 30),
+              ScaledSizedBox(height: isTall ? 30 : 15),
               Text(
                   'Pendant la phase de test de Ğecko,\nles codes secrets\nsont systématiquement AAAAA.'
                       .tr(),
-                  style: TextStyle(color: Colors.grey[700], fontSize: 15),
+                  style: scaledTextStyle(color: Colors.grey[700], fontSize: 14),
                   textAlign: TextAlign.center),
               Expanded(
                   child: Align(
                       alignment: Alignment.bottomCenter,
-                      child: SizedBox(
-                        width: 380 * ratio,
-                        height: 60 * ratio,
+                      child: ScaledSizedBox(
+                        width: 340,
+                        height: 55,
                         child: ElevatedButton(
                             key: keyChangePin,
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.black,
                               elevation: 4,
-                              backgroundColor:
-                                  const Color(0xffFFD58D), // foreground
+                              backgroundColor: const Color(0xffFFD58D),
                             ),
                             onPressed: () {
                               generateWalletProvider.changePinCode(
                                   reload: true);
                             },
                             child: Text("chooseAnotherPassword".tr(),
-                                style: TextStyle(
-                                    fontSize: 22 * ratio,
+                                style: scaledTextStyle(
+                                    fontSize: 22,
                                     fontWeight: FontWeight.w600))),
                       ))),
-              SizedBox(height: 22 * ratio),
+              ScaledSizedBox(height: 20),
               NextButton(
                   text: "iNotedMyPassword".tr(),
                   nextScreen: OnboardingStepTen(scanDerivation: scanDerivation),
                   isFast: false),
-              SizedBox(height: 35 * ratio),
+              ScaledSizedBox(height: 40),
             ]),
             const OfflineInfo(),
           ]),

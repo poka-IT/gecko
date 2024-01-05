@@ -11,6 +11,7 @@ import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
@@ -19,14 +20,14 @@ import 'package:provider/provider.dart';
 import 'package:image_cropper/image_cropper.dart';
 
 class WalletOptionsProvider with ChangeNotifier {
-  TextEditingController address = TextEditingController();
-  final TextEditingController _newWalletName = TextEditingController();
+  final address = TextEditingController();
+  final _newWalletName = TextEditingController();
   bool isWalletUnlock = false;
   bool ischangedPin = false;
-  TextEditingController newPin = TextEditingController();
+  final newPin = TextEditingController();
   bool isEditing = false;
   bool isBalanceBlur = false;
-  TextEditingController nameController = TextEditingController();
+  final nameController = TextEditingController();
   late bool isDefaultWallet;
   bool canValidateNameBool = false;
   Map<String, double> balanceCache = {};
@@ -48,17 +49,16 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Future<int> deleteWallet(context, WalletData wallet) async {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final datapod = Provider.of<V2sDatapodProvider>(context, listen: false);
     final bool? answer = await (confirmPopup(
         context, 'areYouSureToForgetWallet'.tr(args: [wallet.name!])));
 
     if (answer ?? false) {
       //Check if balance is null
-      final balance = await sub.getBalance(wallet.address);
-      if (balance != {}) {
+      if (balanceCache[wallet.address] != 0) {
         final myWalletProvider =
             Provider.of<MyWalletsProvider>(context, listen: false);
         final defaultWallet = myWalletProvider.getDefaultWallet();
-        log.d(defaultWallet.address);
         sub.pay(
             fromAddress: wallet.address,
             destAddress: defaultWallet.address,
@@ -67,6 +67,11 @@ class WalletOptionsProvider with ChangeNotifier {
       }
 
       await walletBox.delete(wallet.key);
+      if (wallet.imageCustomPath != null) {
+        final avatarFile = File(wallet.imageCustomPath!);
+        await avatarFile.delete();
+      }
+      datapod.deleteProfile(address: wallet.address);
       await sub.deleteAccounts([wallet.address]);
 
       Navigator.pop(context);
@@ -80,14 +85,15 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Future<String> changeAvatar() async {
-    // File _image;
+    final datapod = Provider.of<V2sDatapodProvider>(homeContext, listen: false);
+
     final picker = ImagePicker();
 
     XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       File imageFile = File(pickedFile.path);
-      if (!await imageDirectory.exists()) {
+      if (!await avatarsDirectory.exists()) {
         log.e("Image folder doesn't exist");
         return '';
       }
@@ -110,7 +116,7 @@ class WalletOptionsProvider with ChangeNotifier {
         ],
       );
 
-      final newPath = "${imageDirectory.path}/${pickedFile.name}";
+      final newPath = "${avatarsDirectory.path}/${address.text}";
 
       if (croppedFile != null) {
         await File(croppedFile.path).rename(newPath);
@@ -118,9 +124,7 @@ class WalletOptionsProvider with ChangeNotifier {
         log.w('No image selected.');
         return '';
       }
-      // await imageFile.copy(newPath);
-
-      log.i(newPath);
+      datapod.setAvatar(address.text, newPath);
       return newPath;
     } else {
       log.w('No image selected.');
@@ -129,7 +133,7 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Future<String?> confirmIdentityPopup(BuildContext context) async {
-    TextEditingController idtyName = TextEditingController();
+    final idtyName = TextEditingController();
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
@@ -141,7 +145,7 @@ class WalletOptionsProvider with ChangeNotifier {
 
     return showDialog<String>(
       context: context,
-      barrierDismissible: true, // user must tap button!
+      barrierDismissible: true,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(
@@ -194,45 +198,47 @@ class WalletOptionsProvider with ChangeNotifier {
                             idtyName.text =
                                 idtyName.text.trim().replaceAll('  ', '');
 
-                            if (idtyName.text.length.clamp(3, 32) ==
+                            if (idtyName.text.length.clamp(3, 32) !=
                                 idtyName.text.length) {
-                              WalletData? defaultWallet =
-                                  myWalletProvider.getDefaultWallet();
-
-                              String? pin;
-                              if (myWalletProvider.pinCode == '') {
-                                pin = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (homeContext) {
-                                      return UnlockingWallet(
-                                          wallet: defaultWallet);
-                                    },
-                                  ),
-                                );
-                              }
-                              if (pin != null ||
-                                  myWalletProvider.pinCode != '') {
-                                final wallet = myWalletProvider
-                                    .getWalletDataByAddress(address.text);
-                                await sub.setCurrentWallet(wallet!);
-                                sub.confirmIdentity(walletOptions.address.text,
-                                    idtyName.text, myWalletProvider.pinCode);
-                                Navigator.pop(context);
-
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) {
-                                    return TransactionInProgress(
-                                      transType: 'comfirmIdty',
-                                      fromAddress:
-                                          getShortPubkey(wallet.address),
-                                      toAddress: getShortPubkey(wallet.address),
-                                    );
-                                  }),
-                                );
-                              }
+                              return;
                             }
+
+                            WalletData? defaultWallet =
+                                myWalletProvider.getDefaultWallet();
+
+                            if (myWalletProvider.pinCode == '') {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (homeContext) {
+                                    return UnlockingWallet(
+                                        wallet: defaultWallet);
+                                  },
+                                ),
+                              );
+                            }
+                            if (myWalletProvider.pinCode == '') return;
+
+                            final wallet = myWalletProvider
+                                .getWalletDataByAddress(address.text);
+                            await sub.setCurrentWallet(wallet!);
+                            final transactionId = await sub.confirmIdentity(
+                                walletOptions.address.text,
+                                idtyName.text,
+                                myWalletProvider.pinCode);
+                            Navigator.pop(context);
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) {
+                                return TransactionInProgress(
+                                  transactionId: transactionId,
+                                  transType: 'comfirmIdty',
+                                  fromAddress: getShortPubkey(wallet.address),
+                                  toAddress: getShortPubkey(wallet.address),
+                                );
+                              }),
+                            );
                           }
                         : null,
                     child: Text(
@@ -255,7 +261,7 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Future<String?> editWalletName(BuildContext context, List<int?> wID) async {
-    TextEditingController walletName = TextEditingController();
+    final walletName = TextEditingController();
     canValidateNameBool = false;
 
     return showDialog<String>(
@@ -336,7 +342,7 @@ class WalletOptionsProvider with ChangeNotifier {
     );
   }
 
-  bool canValidateName(BuildContext context, TextEditingController walletName) {
+  bool canValidateName(BuildContext context, final walletName) {
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
 

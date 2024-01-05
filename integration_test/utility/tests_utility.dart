@@ -11,9 +11,7 @@ import 'package:provider/provider.dart';
 import 'dart:io' as io;
 import 'package:gecko/main.dart' as app;
 
-const bool isHumanReading = false;
-// final bool isHumanReading =
-//     dotenv.env['isHumanReading'] == 'true' ? true : false;
+const isHumanReading = false;
 Timeout testTimeout([int seconds = 120]) =>
     Timeout(Duration(seconds: isHumanReading ? 600 : seconds));
 final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
@@ -57,7 +55,7 @@ Future pump(
     {Duration duration = const Duration(milliseconds: 300),
     int number = 1}) async {
   for (int i = 0; i < number; i++) {
-    log.d("pump $i");
+    log.i("pump $i");
     await tester.pump(duration = duration);
   }
 }
@@ -78,7 +76,7 @@ Future tapKey(Key buttonKey,
     await tester.pumpAndSettle(Duration(milliseconds: duration));
   }
   final Finder finder = customFinder ?? find.byKey(buttonKey);
-  log.d('INTEGRATION TEST: Tap on ${finder.describeMatch(Plurality.zero)}}');
+  log.i('INTEGRATION TEST: Tap on ${finder.describeMatch(Plurality.zero)}}');
   await tester.tap(selectLast ? finder.last : finder);
   humanRead();
 }
@@ -106,7 +104,7 @@ Future<void> waitForButtonEnabled(Key key,
     bool reverse = false}) async {
   final end = DateTime.now().add(timeout);
 
-  log.d('INTEGRATION TEST: Wait for $key to be enabled');
+  log.i('INTEGRATION TEST: Wait for $key to be enabled');
 
   do {
     if (DateTime.now().isAfter(end)) {
@@ -121,7 +119,7 @@ Future<void> waitForButtonEnabled(Key key,
 
 Future goBack() async {
   final NavigatorState navigator = tester.state(find.byType(Navigator));
-  log.d('INTEGRATION TEST: Go back');
+  log.i('INTEGRATION TEST: Go back');
   navigator.pop();
   await tester.pumpAndSettle();
   humanRead();
@@ -131,7 +129,7 @@ Future enterText(Key fieldKey, String textIn, [int duration = 200]) async {
   if (duration != 0) {
     await tester.pumpAndSettle(Duration(milliseconds: duration));
   }
-  log.d('INTEGRATION TEST: Enter text: $textIn');
+  log.i('INTEGRATION TEST: Enter text: $textIn');
   await tester.enterText(find.byKey(fieldKey), textIn);
   humanRead();
 }
@@ -145,7 +143,7 @@ Future<void> waitFor(String text,
   final end = DateTime.now().add(timeout);
 
   Finder finder = exactMatch ? find.text(text) : find.textContaining(text);
-  log.d('INTEGRATION TEST: Wait for: $text');
+  log.i('INTEGRATION TEST: Wait for: $text');
 
   final searchType = reverse ? 'reversed text' : 'text';
 
@@ -182,7 +180,7 @@ Future<bool> isIconPresent(IconData icon,
   await tester.pumpAndSettle();
   final finder = find.byIcon(icon);
   humanRead();
-  return finder.evaluate().isEmpty ? false : true;
+  return finder.evaluate().isNotEmpty;
 }
 
 Future spawnBlock({int number = 1, int duration = 200, int? until}) async {
@@ -240,7 +238,7 @@ Future bkSetNode([String? endpoint]) async {
     endpoint = 'ws://$ipAddress:9944';
   }
   configBox.put('customEndpoint', endpoint);
-  sub.connectNode(homeContext);
+  sub.connectNode();
 }
 
 // Restore chest in background

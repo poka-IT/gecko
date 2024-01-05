@@ -9,6 +9,7 @@ import 'package:gecko/models/bip39_words.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/widgets/scan_derivations_info.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:provider/provider.dart';
 import "package:unorm_dart/unorm_dart.dart" as unorm;
@@ -19,6 +20,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   final walletNameFocus = FocusNode();
   Color? askedWordColor = Colors.black;
   bool isAskedWordValid = false;
+  var scanStatus = ScanDerivationsStatus.none;
   int scanedValidWalletNumber = -1;
   int scanedWalletNumber = -1;
   int numberScan = 60;
@@ -33,27 +35,27 @@ class GenerateWalletsProvider with ChangeNotifier {
   final pin = TextEditingController();
 
   // Import wallet
-  TextEditingController cesiumID = TextEditingController();
-  TextEditingController cesiumPWD = TextEditingController();
-  TextEditingController cesiumPubkey = TextEditingController();
+  final cesiumID = TextEditingController();
+  final cesiumPWD = TextEditingController();
+  final cesiumPubkey = TextEditingController();
   bool isCesiumIDVisible = false;
   bool isCesiumPWDVisible = false;
   bool canImport = false;
   late durt.CesiumWallet cesiumWallet;
 
   // Import Chest
-  TextEditingController cellController0 = TextEditingController();
-  TextEditingController cellController1 = TextEditingController();
-  TextEditingController cellController2 = TextEditingController();
-  TextEditingController cellController3 = TextEditingController();
-  TextEditingController cellController4 = TextEditingController();
-  TextEditingController cellController5 = TextEditingController();
-  TextEditingController cellController6 = TextEditingController();
-  TextEditingController cellController7 = TextEditingController();
-  TextEditingController cellController8 = TextEditingController();
-  TextEditingController cellController9 = TextEditingController();
-  TextEditingController cellController10 = TextEditingController();
-  TextEditingController cellController11 = TextEditingController();
+  final cellController0 = TextEditingController();
+  final cellController1 = TextEditingController();
+  final cellController2 = TextEditingController();
+  final cellController3 = TextEditingController();
+  final cellController4 = TextEditingController();
+  final cellController5 = TextEditingController();
+  final cellController6 = TextEditingController();
+  final cellController7 = TextEditingController();
+  final cellController8 = TextEditingController();
+  final cellController9 = TextEditingController();
+  final cellController10 = TextEditingController();
+  final cellController11 = TextEditingController();
   bool isFirstTimeSentenceComplete = true;
 
   Future storeHDWChest(BuildContext context) async {
@@ -83,18 +85,14 @@ class GenerateWalletsProvider with ChangeNotifier {
     final expectedWord = mnemo.split(' ')[nbrWord];
     final normInputWord = unorm.nfkd(inputWord);
 
-    log.i("Is $expectedWord equal to input $normInputWord ?");
     if (expectedWord == normInputWord ||
         (kDebugMode && inputWord == 'triche')) {
-      log.d('Word is OK');
       isAskedWordValid = true;
       askedWordColor = Colors.green[600];
-      // walletNameFocus.nextFocus();
       notifyListeners();
     } else {
       isAskedWordValid = false;
     }
-    // notifyListeners();
   }
 
   String removeDiacritics(String str) {
@@ -153,7 +151,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     String walletPubkey = cesiumWallet.pubkey;
 
     cesiumPubkey.text = walletPubkey;
-    log.d(walletPubkey);
   }
 
   void cesiumIDisVisible() {
@@ -200,7 +197,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     if (bip39Words(appLang).contains(word.toLowerCase())) {
       for (var bipWord in bip39Words(appLang)) {
         if (bipWord.startsWith(word)) {
-          isValid = nbrMatch == 0 ? true : false;
+          isValid = nbrMatch == 0;
           if (checkRedondance) nbrMatch = nbrMatch + 1;
         }
       }
@@ -296,7 +293,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final currentChestNumber = configBox.get('currentChest');
     bool isAlive = false;
-    scanedValidWalletNumber = 0;
     scanedWalletNumber = 0;
     Map<String, int> addressToScan = {};
     notifyListeners();
@@ -305,14 +301,14 @@ class GenerateWalletsProvider with ChangeNotifier {
       return false;
     }
 
+    scanStatus = ScanDerivationsStatus.rootScanning;
     final hasRoot = await scanRootBalance(sub, currentChestNumber);
-    scanedWalletNumber = 1;
     notifyListeners();
     if (hasRoot) {
-      scanedValidWalletNumber = 1;
       isAlive = true;
     }
 
+    scanStatus = ScanDerivationsStatus.scanning;
     for (int derivationNbr in [for (var i = 0; i < numberScan; i += 1) i]) {
       final addressData = await sub.sdk.api.keyring.addressFromMnemonic(
           sub.currencyParameters['ss58']!,
@@ -328,35 +324,36 @@ class GenerateWalletsProvider with ChangeNotifier {
               onTimeout: () => {},
             );
 
-    for (String scannedWallet in balanceList.keys) {
-      if (balanceList[scannedWallet]!['transferableBalance'] != 0) {
-        isAlive = true;
-        String walletName = scanedValidWalletNumber == 0
-            ? 'currentWallet'.tr()
-            : '${'wallet'.tr()} ${scanedValidWalletNumber + 1}';
-        await sub.importAccount(
-            mnemonic: generatedMnemonic!,
-            derivePath: "//${addressToScan[scannedWallet]}",
-            password: pin.text);
+    // Remove unused wallets
+    balanceList.removeWhere((key, value) => value['transferableBalance'] == 0);
+    scanedValidWalletNumber = balanceList.length + scanedWalletNumber;
 
-        WalletData myWallet = WalletData(
-            chest: currentChestNumber,
-            address: scannedWallet,
-            number: scanedValidWalletNumber,
-            name: walletName,
-            derivation: addressToScan[scannedWallet],
-            imageDefaultPath: '${scanedValidWalletNumber % 4}.png',
-            isOwned: true);
-        await walletBox.put(myWallet.address, myWallet);
-        scanedValidWalletNumber = scanedValidWalletNumber + 1;
-      }
-      scanedWalletNumber = scanedWalletNumber + 1;
+    scanStatus = ScanDerivationsStatus.import;
+    for (String scannedWallet in balanceList.keys) {
+      isAlive = true;
+      String walletName = scanedWalletNumber == 0
+          ? 'currentWallet'.tr()
+          : '${'wallet'.tr()} ${scanedWalletNumber + 1}';
+      await sub.importAccount(
+          mnemonic: generatedMnemonic!,
+          derivePath: "//${addressToScan[scannedWallet]}",
+          password: pin.text);
+
+      WalletData myWallet = WalletData(
+          chest: currentChestNumber,
+          address: scannedWallet,
+          number: scanedWalletNumber,
+          name: walletName,
+          derivation: addressToScan[scannedWallet],
+          imageDefaultPath: '${scanedWalletNumber % 4}.png',
+          isOwned: true);
+      await walletBox.put(myWallet.address, myWallet);
+      scanedWalletNumber++;
       notifyListeners();
     }
 
-    log.d(scanedWalletNumber);
-    scanedWalletNumber = -1;
-    scanedValidWalletNumber = -1;
+    scanStatus = ScanDerivationsStatus.none;
+    scanedWalletNumber = scanedValidWalletNumber = -1;
     notifyListeners();
     return isAlive;
   }
@@ -372,8 +369,6 @@ class GenerateWalletsProvider with ChangeNotifier {
           onTimeout: () => {},
         );
 
-    log.d(
-        "${addressData.address!}: ${balance['transferableBalance']} $currencyName");
     if (balance['transferableBalance'] != 0) {
       String walletName = 'myRootWallet'.tr();
       await sub.importAccount(mnemonic: generatedMnemonic!, password: pin.text);
@@ -387,6 +382,7 @@ class GenerateWalletsProvider with ChangeNotifier {
           imageDefaultPath: '0.png',
           isOwned: true);
       await walletBox.put(myWallet.address, myWallet);
+      scanedWalletNumber++;
       return true;
     } else {
       return false;

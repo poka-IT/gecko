@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/widgets/commons/build_image.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
@@ -15,9 +16,9 @@ class InfoIntro extends StatelessWidget {
     required this.pagePosition,
     this.isMd = false,
     this.isFast = false,
-    this.boxHeight = 440,
+    this.boxHeight = 340,
     this.imageWidth = 350,
-    this.textSize = 20,
+    this.textSize = 17,
   }) : super(key: key);
 
   final String text;
@@ -34,12 +35,10 @@ class InfoIntro extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(children: <Widget>[
-      SizedBox(height: isTall ? 40 : 20),
+      ScaledSizedBox(height: isTall ? 25 : 5),
       BuildProgressBar(pagePosition: pagePosition),
-      SizedBox(height: isTall ? 40 : 20),
-
+      ScaledSizedBox(height: isTall ? 25 : 5),
       BuildText(text: text, size: textSize, isMd: isMd),
-
       BuildImage(
           assetName: assetName, boxHeight: boxHeight, imageWidth: imageWidth),
       Expanded(
@@ -49,8 +48,7 @@ class InfoIntro extends StatelessWidget {
               text: buttonText, nextScreen: nextScreen, isFast: false),
         ),
       ),
-      // const SizedBox(height: 40),
-      SizedBox(height: isTall ? 40 : 20),
+      ScaledSizedBox(height: isTall ? 40 : 5),
     ]);
   }
 }

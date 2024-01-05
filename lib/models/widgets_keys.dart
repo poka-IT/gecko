@@ -5,7 +5,7 @@ const keyInfoPopup = Key('keyInfoPopup');
 const keyGoNext = Key('keyGoNext');
 const keyCancel = Key('keyCancel');
 const keyConfirm = Key('keyConfirm');
-const keyAppBarSearch = Key('keyAppBarSearch');
+const keyAppBarHome = Key('keyAppBarSearch');
 const keyAppBarQrcode = Key('keyAppBarQrcode');
 const keyAppBarChest = Key('keyAppBarChest');
 
@@ -28,6 +28,7 @@ final keyDragAndDrop = GlobalKey(debugLabel: 'keyDragAndDrop');
 
 // Wallet options
 const keyCopyAddress = Key('keyCopyAddress');
+const keyCopyPubkey = Key('keyCopyPubkey');
 const keyOpenActivity = Key('keyOpenActivity');
 const keyManageMembership = Key('keyManageMembership');
 const keySetDefaultWallet = Key('keySetDefaultWallet');

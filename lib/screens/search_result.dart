@@ -1,12 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
-
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/providers/search.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
+import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/search_result_list.dart';
 import 'package:provider/provider.dart';
 
@@ -16,29 +17,15 @@ class SearchResultScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final searchProvider = Provider.of<SearchProvider>(context, listen: false);
-    WalletsProfilesProvider walletsProfilesClass =
+    final walletsProfilesClass =
         Provider.of<WalletsProfilesProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
-    double avatarSize = 55;
-    // List<G1WalletsList> myContacts = contactsBox.toMap().values.toList();
-    // myContacts = myContacts
-    //     .where((map) =>
-    //         (map.username ?? '').contains(searchProvider.searchController.text))
-    //     .toList();
-
-    // final  searchProvider.resultLenght.toString();
+    final avatarSize = scaleSize(37);
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-        elevation: 1,
-        toolbarHeight: 60 * ratio,
-        title: SizedBox(
-          height: 22,
-          child: Text('researchResults'.tr()),
-        ),
-      ),
+      appBar: GeckoAppBar('researchResults'.tr()),
       bottomNavigationBar: const GeckoBottomAppBar(),
       body: SafeArea(
         child: Stack(children: [
@@ -47,38 +34,39 @@ class SearchResultScreen extends StatelessWidget {
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  const SizedBox(height: 30),
+                  ScaledSizedBox(height: 20),
                   Center(
                     child: Column(
                       children: <Widget>[
                         Text(
                           "resultsFor".tr(),
-                          style: TextStyle(color: Colors.grey[600]),
+                          style: scaledTextStyle(
+                              color: Colors.grey[600], fontSize: 16),
                         ),
                         Text(
                           '"${searchProvider.searchController.text}"',
-                          style: const TextStyle(
-                              fontStyle: FontStyle.italic, fontSize: 21),
+                          style: scaledTextStyle(
+                              fontStyle: FontStyle.italic, fontSize: 18),
                         )
                       ],
                     ),
                   ),
-                  // const SizedBox(height: 40),
+                  // ScaledSizedBox(height: 40),
                   // Text(
                   //   'Dans mes contacts'.tr(args: [currencyName]),
-                  //   style: const TextStyle(fontSize: 20),
+                  //   style: scaledTextStyle(fontSize: 20),
                   // ),
                   // ContactsList(
                   //     myContacts: myContacts,
                   //     avatarSize: avatarSize,
                   //     walletsProfilesClass: walletsProfilesClass,
                   //     duniterIndexer: duniterIndexer),
-                  const SizedBox(height: 40),
+                  ScaledSizedBox(height: 22),
                   Text(
                     'inBlockchainResult'.tr(args: [currencyName]),
-                    style: const TextStyle(fontSize: 20),
+                    style: scaledTextStyle(fontSize: 16),
                   ),
-                  const SizedBox(height: 20),
+                  ScaledSizedBox(height: 13),
                   SearchResult(
                       searchProvider: searchProvider,
                       duniterIndexer: duniterIndexer,

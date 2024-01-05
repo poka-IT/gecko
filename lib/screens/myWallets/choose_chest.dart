@@ -1,8 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:easy_localization/easy_localization.dart';
-
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -23,7 +23,7 @@ class ChooseChest extends StatefulWidget {
 }
 
 class _ChooseChestState extends State<ChooseChest> {
-  TextEditingController tplController = TextEditingController();
+  final tplController = TextEditingController();
   CarouselController buttonCarouselController = CarouselController();
   int? currentChest = configBox.get('currentChest');
 
@@ -34,14 +34,10 @@ class _ChooseChestState extends State<ChooseChest> {
     return Scaffold(
         backgroundColor: backgroundColor,
         appBar: AppBar(
-            toolbarHeight: 60 * ratio,
-            title: SizedBox(
-              height: 22,
-              child: Text('selectMyChest'.tr()),
-            )),
+            toolbarHeight: scaleSize(57), title: Text('selectMyChest'.tr())),
         body: SafeArea(
           child: Column(children: <Widget>[
-            SizedBox(height: 160 * ratio),
+            const SizedBox(height: 160),
             CarouselSlider(
               carouselController: buttonCarouselController,
               options: CarouselOptions(
@@ -102,14 +98,14 @@ class _ChooseChestState extends State<ChooseChest> {
                   );
                 }).toList(),
               ),
-            SizedBox(height: 80 * ratio),
+            const SizedBox(height: 80),
             SizedBox(
               width: 400,
               height: 70,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.black,
-                  backgroundColor: orangeC, // foreground
+                  backgroundColor: orangeC,
                 ),
                 onPressed: () async {
                   await configBox.put('currentChest', currentChest);

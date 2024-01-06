@@ -197,113 +197,135 @@ class DuniterIndexer with ChangeNotifier {
     String result = n.toStringAsFixed(n.truncateToDouble() == n ? 0 : 2);
     return double.parse(result);
   }
-}
 
 //// Manuals queries
 
-Future<bool> isIdtyExist(String name) async {
-  final variables = <String, dynamic>{
-    'name': name,
-  };
-  final result = await _execQuery(isIdtyExistQ, variables);
-  return result.data!['identity']?.isNotEmpty ?? false;
-}
-
-Future<DateTime> getBlockStart() async {
-  final result = await _execQuery(getBlockchainStartQ, {});
-  if (!result.hasException) {
-    startBlockchainTime =
-        DateTime.parse(result.data!['block'][0]['created_at']);
-    startBlockchainInitialized = true;
-    return startBlockchainTime;
-  }
-  return DateTime(0, 0, 0, 0, 0);
-}
-
-Future<QueryResult> _execQuery(
-    String query, Map<String, dynamic> variables) async {
-  final httpLink = HttpLink(
-    '$indexerEndpoint/v1/graphql',
-  );
-
-  final GraphQLClient client = GraphQLClient(
-    cache: GraphQLCache(),
-    link: httpLink,
-  );
-
-  final QueryOptions options =
-      QueryOptions(document: gql(query), variables: variables);
-
-  return await client.query(options);
-}
-
-Map computeHistoryView(repository, String address) {
-  final bool isUdUnit = configBox.get('isUdUnit') ?? false;
-  late double amount;
-  late String finalAmount;
-  final DateTime date = repository[0];
-
-  final dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, {
-        1,
-        2,
-        7,
-        9
-      }.contains(date.month) ? 4 : 3)}";
-
-  DateTime normalizeDate(DateTime inputDate) {
-    return DateTime(inputDate.year, inputDate.month, inputDate.day);
+  Future<bool> isIdtyExist(String name) async {
+    final variables = <String, dynamic>{
+      'name': name,
+    };
+    final result = await _execQuery(isIdtyExistQ, variables);
+    return result.data!['identity']?.isNotEmpty ?? false;
   }
 
-  String getDateDelimiter() {
-    DateTime now = DateTime.now();
-    final transactionDate = normalizeDate(date.toLocal());
-    final todayDate = normalizeDate(now);
-    final yesterdayDate = normalizeDate(now.subtract(const Duration(days: 1)));
-    final isSameWeek = weekNumber(transactionDate) == weekNumber(now) &&
-        transactionDate.year == now.year;
-    final isTodayOrYesterday =
-        transactionDate == todayDate || transactionDate == yesterdayDate;
-
-    if (transactionDate == todayDate) {
-      return "today".tr();
-    } else if (transactionDate == yesterdayDate) {
-      return "yesterday".tr();
-    } else if (isSameWeek && !isTodayOrYesterday) {
-      return "thisWeek".tr();
-    } else if (!isSameWeek && !isTodayOrYesterday) {
-      if (transactionDate.year == now.year) {
-        return monthsInYear[transactionDate.month]!;
-      } else {
-        return "${monthsInYear[transactionDate.month]} ${transactionDate.year}";
-      }
-    } else {
-      return '';
+  Future<DateTime> getBlockStart() async {
+    final result = await _execQuery(getBlockchainStartQ, {});
+    if (!result.hasException) {
+      startBlockchainTime =
+          DateTime.parse(result.data!['block'][0]['created_at']);
+      startBlockchainInitialized = true;
+      return startBlockchainTime;
     }
+    return DateTime(0, 0, 0, 0, 0);
   }
 
-  final dateDelimiter = getDateDelimiter();
+  Future<QueryResult> _execQuery(
+      String query, Map<String, dynamic> variables) async {
+    final httpLink = HttpLink(
+      '$indexerEndpoint/v1/graphql',
+    );
 
-  amount = repository[4] == 'RECEIVED' ? repository[3] : repository[3] * -1;
+    final client = GraphQLClient(
+      cache: GraphQLCache(),
+      link: httpLink,
+    );
 
-  if (isUdUnit) {
-    amount = round(amount / balanceRatio);
-    finalAmount = 'ud'.tr(args: ['$amount ']);
-  } else {
-    finalAmount = '$amount $currencyName';
+    final options = QueryOptions(document: gql(query), variables: variables);
+
+    return await client.query(options);
   }
 
-  bool isMigrationTime =
-      startBlockchainInitialized && date.compareTo(startBlockchainTime) < 0;
+  Stream<QueryResult> subscribeHistoryIssued(String address) {
+    final wsLink = WebSocketLink(
+      '${indexerEndpoint.replaceFirst('https', 'wss')}/v1/graphql',
+    );
 
-  return {
-    'finalAmount': finalAmount,
-    'isMigrationTime': isMigrationTime,
-    'dateDelimiter': dateDelimiter,
-    'dateForm': dateForm,
-  };
-}
+    final variables = <String, dynamic>{
+      'address': address,
+    };
 
-int weekNumber(DateTime date) {
-  int dayOfYear = int.parse(DateFormat("D").format(date));
-  return ((dayOfYear - date.weekday + 10) / 7).floor();
+    final client = GraphQLClient(
+      cache: GraphQLCache(),
+      link: wsLink,
+    );
+
+    final options = SubscriptionOptions(
+      document: gql(subscribeHistoryIssuedQ),
+      variables: variables,
+    );
+
+    return client.subscribe(options);
+  }
+
+  Map computeHistoryView(repository, String address) {
+    final bool isUdUnit = configBox.get('isUdUnit') ?? false;
+    late double amount;
+    late String finalAmount;
+    final DateTime date = repository[0];
+
+    final dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, {
+          1,
+          2,
+          7,
+          9
+        }.contains(date.month) ? 4 : 3)}";
+
+    DateTime normalizeDate(DateTime inputDate) {
+      return DateTime(inputDate.year, inputDate.month, inputDate.day);
+    }
+
+    String getDateDelimiter() {
+      DateTime now = DateTime.now();
+      final transactionDate = normalizeDate(date.toLocal());
+      final todayDate = normalizeDate(now);
+      final yesterdayDate =
+          normalizeDate(now.subtract(const Duration(days: 1)));
+      final isSameWeek = weekNumber(transactionDate) == weekNumber(now) &&
+          transactionDate.year == now.year;
+      final isTodayOrYesterday =
+          transactionDate == todayDate || transactionDate == yesterdayDate;
+
+      if (transactionDate == todayDate) {
+        return "today".tr();
+      } else if (transactionDate == yesterdayDate) {
+        return "yesterday".tr();
+      } else if (isSameWeek && !isTodayOrYesterday) {
+        return "thisWeek".tr();
+      } else if (!isSameWeek && !isTodayOrYesterday) {
+        if (transactionDate.year == now.year) {
+          return monthsInYear[transactionDate.month]!;
+        } else {
+          return "${monthsInYear[transactionDate.month]} ${transactionDate.year}";
+        }
+      } else {
+        return '';
+      }
+    }
+
+    final dateDelimiter = getDateDelimiter();
+
+    amount = repository[4] == 'RECEIVED' ? repository[3] : repository[3] * -1;
+
+    if (isUdUnit) {
+      amount = round(amount / balanceRatio);
+      finalAmount = 'ud'.tr(args: ['$amount ']);
+    } else {
+      finalAmount = '$amount $currencyName';
+    }
+
+    bool isMigrationTime =
+        startBlockchainInitialized && date.compareTo(startBlockchainTime) < 0;
+
+    return {
+      'finalAmount': finalAmount,
+      'isMigrationTime': isMigrationTime,
+      'dateDelimiter': dateDelimiter,
+      'dateForm': dateForm,
+    };
+  }
+
+  int weekNumber(DateTime date) {
+    int dayOfYear = int.parse(DateFormat("D").format(date));
+    return ((dayOfYear - date.weekday + 10) / 7).floor();
+  }
 }

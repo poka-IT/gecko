@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 
 class Loading extends StatelessWidget {
   const Loading({
@@ -13,7 +14,7 @@ class Loading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return ScaledSizedBox(
       height: size,
       width: size,
       child: CircularProgressIndicator(

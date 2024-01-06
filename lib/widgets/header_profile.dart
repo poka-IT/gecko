@@ -28,7 +28,7 @@ class HeaderProfile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final avatarSize = scaleSize(110);
+    const double avatarSize = 110;
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);

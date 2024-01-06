@@ -96,3 +96,15 @@ query {
   }
 }
 ''';
+
+const String subscribeHistoryIssuedQ = r'''
+subscription ($address: String!) {
+  account_by_pk(pubkey: $address) {
+    transactions_issued(limit: 1, order_by: {created_at: desc}) {
+      receiver_pubkey
+      amount
+      created_at
+    }
+  }
+}
+''';

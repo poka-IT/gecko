@@ -40,7 +40,8 @@ class HistoryView extends StatelessWidget {
         : Column(children: <Widget>[
             Column(
                 children: duniterIndexer.transBC!.map((repository) {
-              final answer = computeHistoryView(repository, address);
+              final answer =
+                  duniterIndexer.computeHistoryView(repository, address);
               pastDelimiters.add(answer['dateDelimiter']);
 
               bool isMigrationTime = false;

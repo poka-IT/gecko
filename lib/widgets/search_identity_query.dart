@@ -74,7 +74,7 @@ class SearchIdentityQuery extends StatelessWidget {
 
             searchProvider.resultLenght = identities.length;
 
-            final avatarSize = scaleSize(45);
+            const double avatarSize = 45;
             return Expanded(
               child: ListView(children: <Widget>[
                 for (Map profile in identities)

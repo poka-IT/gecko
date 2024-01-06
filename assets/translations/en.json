@@ -165,6 +165,7 @@
     "choiceOfSourceWallet": "Choose a source wallet",
     "extrinsicInProgress": "{} in progress",
     "extrinsicValidated": "{} validated !",
+    "extrinsicFinalized": "{} finalized !",
     "fromMinus": "from",
     "toMinus": "to",
     "deleteThisWallet": "Delete this wallet",

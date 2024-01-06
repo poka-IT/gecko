@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/models/transaction_content.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/widgets/transaction_status.dart';
+import 'package:gecko/widgets/transaction_status_icon.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-class TransactionInProgress extends StatelessWidget {
+class TransactionInProgress extends StatefulWidget {
   final String transactionId;
   final String transType;
   final String? fromAddress, toAddress, toUsername;
@@ -23,55 +26,68 @@ class TransactionInProgress extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<TransactionInProgress> createState() => _TransactionInProgressState();
+}
+
+class _TransactionInProgressState extends State<TransactionInProgress> {
+  String resultText = '';
+  late String fromAddressFormat;
+  late String toAddressFormat;
+  late String toUsernameFormat;
+  late String amount;
+  late bool isUdUnit;
+  late TransactionContent txContent;
+
+  @override
+  void initState() {
+    final walletProfiles =
+        Provider.of<WalletsProfilesProvider>(homeContext, listen: false);
+    final myWalletProvider =
+        Provider.of<MyWalletsProvider>(homeContext, listen: false);
+
+    String defaultWalletAddress = myWalletProvider.getDefaultWallet().address;
+    String defaultWalletName = myWalletProvider.getDefaultWallet().name!;
+    String? walletDataName =
+        myWalletProvider.getWalletDataByAddress(widget.toAddress ?? '')?.name;
+
+    fromAddressFormat = widget.fromAddress ??
+        g1WalletsBox.get(defaultWalletAddress)?.username ??
+        defaultWalletName;
+    toAddressFormat = widget.toAddress ?? walletProfiles.address;
+    toUsernameFormat =
+        widget.toUsername ?? walletDataName ?? getShortPubkey(toAddressFormat);
+
+    amount = walletProfiles.payAmount.text;
+    isUdUnit = configBox.get('isUdUnit') ?? false;
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final sub = Provider.of<SubstrateSdk>(context, listen: true);
 
-    final transactionDetails = TransactionDetails(
-      transactionId: transactionId,
-      fromAddress: fromAddress,
-      toAddress: toAddress,
-      toUsername: toUsername,
-      sub: sub,
-      transType: transType,
-    );
-
-    Widget getTransactionStatusIcon(TransactionDetails details) {
-      switch (details.txStatus) {
-        case TransactionStatus.loading:
-          return ScaledSizedBox(
-            height: 17,
-            width: 17,
-            child: const CircularProgressIndicator(
-              color: orangeC,
-              strokeWidth: 2,
-            ),
-          );
-        case TransactionStatus.success:
-          return Icon(
-            Icons.done_all,
-            size: scaleSize(32),
-            color: Colors.greenAccent,
-          );
-        case TransactionStatus.failed:
-          return Icon(
-            Icons.close,
-            size: scaleSize(32),
-            color: Colors.redAccent,
-          );
-        case TransactionStatus.none:
-        default:
-          return const SizedBox.shrink();
-      }
+    if (sub.transactionStatus.containsKey(widget.transactionId)) {
+      txContent = sub.transactionStatus[widget.transactionId]!;
     }
 
-    Widget buildTransactionStatus(TransactionDetails details) {
+    if (txContent.status == TransactionStatus.success) {
+      resultText = 'extrinsicValidated'
+          .tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]);
+    } else if (txContent.status == TransactionStatus.failed) {
+      resultText = errorTransactionMap[txContent.error] ?? txContent.error!;
+    } else {
+      resultText = statusStatusMap[txContent.status] ??
+          'Unknown status: ${txContent.status}';
+    }
+
+    Widget buildTransactionStatus() {
       return Column(
         children: [
-          getTransactionStatusIcon(details),
+          TransactionStatusIcon(txContent.status),
           ScaledSizedBox(height: 7),
-          if (details.txStatus != TransactionStatus.none)
+          if (txContent.status != TransactionStatus.none)
             Text(
-              transactionDetails.resultText,
+              resultText,
               textAlign: TextAlign.center,
               style: scaledTextStyle(fontSize: 17),
             )
@@ -80,9 +96,6 @@ class TransactionInProgress extends StatelessWidget {
     }
 
     return PopScope(
-      onPopInvoked: (_) {
-        sub.resetTransactionStatus();
-      },
       child: Scaffold(
         backgroundColor: backgroundColor,
         appBar: AppBar(
@@ -94,8 +107,7 @@ class TransactionInProgress extends StatelessWidget {
                 children: <Widget>[
                   Text(
                     'extrinsicInProgress'.tr(args: [
-                      transactionDetails.actionMap[transType] ??
-                          'strangeTransaction'.tr()
+                      actionMap[widget.transType] ?? 'strangeTransaction'.tr()
                     ]),
                     style: scaledTextStyle(fontSize: 20),
                   )
@@ -117,30 +129,29 @@ class TransactionInProgress extends StatelessWidget {
                 )),
                 child: Column(children: <Widget>[
                   ScaledSizedBox(height: 10),
-                  if (transType == 'pay')
+                  if (widget.transType == 'pay')
                     Text(
-                      transactionDetails.isUdUnit
-                          ? 'ud'.tr(args: ['${transactionDetails.amount} '])
-                          : '${transactionDetails.amount} $currencyName',
+                      isUdUnit
+                          ? 'ud'.tr(args: ['$amount '])
+                          : '$amount $currencyName',
                       textAlign: TextAlign.center,
                       style: scaledTextStyle(
                           fontSize: 17, fontWeight: FontWeight.w500),
                     ),
-                  if (transType == 'pay') ScaledSizedBox(height: 10),
+                  if (widget.transType == 'pay') ScaledSizedBox(height: 10),
                   Text(
                     'fromMinus'.tr(),
                     textAlign: TextAlign.center,
                     style: scaledTextStyle(fontSize: 16),
                   ),
                   Text(
-                    transactionDetails.fromAddress!,
+                    fromAddressFormat,
                     textAlign: TextAlign.center,
                     style: scaledTextStyle(
                         fontSize: 17, fontWeight: FontWeight.w500),
                   ),
                   Visibility(
-                    visible: transactionDetails.fromAddress !=
-                        transactionDetails.toAddress,
+                    visible: fromAddressFormat != toAddressFormat,
                     child: Column(
                       children: [
                         ScaledSizedBox(height: 10),
@@ -150,7 +161,7 @@ class TransactionInProgress extends StatelessWidget {
                           style: scaledTextStyle(fontSize: 16),
                         ),
                         Text(
-                          transactionDetails.toUsername!,
+                          toUsernameFormat,
                           textAlign: TextAlign.center,
                           style: scaledTextStyle(
                               fontSize: 17, fontWeight: FontWeight.w500),
@@ -162,7 +173,7 @@ class TransactionInProgress extends StatelessWidget {
                 ]),
               ),
               const Spacer(),
-              buildTransactionStatus(transactionDetails),
+              buildTransactionStatus(),
               const Spacer(),
               Expanded(
                 child: Align(
@@ -178,7 +189,6 @@ class TransactionInProgress extends StatelessWidget {
                         backgroundColor: orangeC,
                       ),
                       onPressed: () {
-                        sub.resetTransactionStatus();
                         Navigator.pop(context);
                       },
                       child: Text(
@@ -197,85 +207,4 @@ class TransactionInProgress extends StatelessWidget {
       ),
     );
   }
-}
-
-enum TransactionStatus { loading, failed, success, none }
-
-class TransactionDetails {
-  String? fromAddress, toAddress, toUsername, amount;
-  bool isUdUnit = false;
-  String resultText = '';
-  TransactionStatus txStatus = TransactionStatus.none;
-
-  TransactionDetails({
-    required transactionId,
-    required this.fromAddress,
-    required this.toAddress,
-    required this.toUsername,
-    required SubstrateSdk sub,
-    required String transType,
-  }) {
-    final walletProfiles =
-        Provider.of<WalletsProfilesProvider>(homeContext, listen: false);
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(homeContext, listen: false);
-    String defaultWalletAddress = myWalletProvider.getDefaultWallet().address;
-    String defaultWalletName = myWalletProvider.getDefaultWallet().name!;
-    String? walletDataName =
-        myWalletProvider.getWalletDataByAddress(toAddress ?? '')?.name;
-
-    fromAddress = fromAddress ??
-        g1WalletsBox.get(defaultWalletAddress)?.username ??
-        defaultWalletName;
-    toAddress = toAddress ?? walletProfiles.address;
-    toUsername = toUsername ?? walletDataName ?? getShortPubkey(toAddress!);
-
-    amount = walletProfiles.payAmount.text;
-    isUdUnit = configBox.get('isUdUnit') ?? false;
-
-    if (sub.transactionStatus.containsKey(transactionId)) {
-      calculateTransactionStatus(
-          sub.transactionStatus[transactionId], transType);
-    }
-  }
-
-  void calculateTransactionStatus(String? result, String transType) {
-    if (result == null) {
-      txStatus = TransactionStatus.none;
-    } else if (result.contains('blockHash: ')) {
-      txStatus = TransactionStatus.success;
-      resultText = 'extrinsicValidated'
-          .tr(args: [actionMap[transType] ?? 'strangeTransaction'.tr()]);
-    } else if (result.contains('Exception: ')) {
-      txStatus = TransactionStatus.failed;
-      String exception = result.split('Exception: ')[1];
-      resultText = resultMap[exception] ?? exception;
-    } else {
-      txStatus = TransactionStatus.loading;
-      resultText = resultMap[result] ?? 'Unknown status: $result';
-    }
-  }
-
-  Map<String, String> actionMap = {
-    'pay': 'transaction'.tr(),
-    'cert': 'certification'.tr(),
-    'comfirmIdty': 'identityConfirm'.tr(),
-    'revokeIdty': 'revokeAdhesion'.tr(),
-    'identityMigration': 'identityMigration'.tr(),
-  };
-
-  Map<String, String> resultMap = {
-    'sending': 'sending'.tr(),
-    'Ready': 'propagating'.tr(),
-    'Broadcast': 'validating'.tr(),
-    'cert.NotRespectCertPeriod': '24hbetweenCerts'.tr(),
-    'identity.CreatorNotAllowedToCreateIdty': '24hbetweenCerts'.tr(),
-    'cert.CannotCertifySelf': 'canNotCertifySelf'.tr(),
-    'identity.IdtyNameAlreadyExist': 'nameAlreadyExist'.tr(),
-    'balances.KeepAlive': '2GDtoKeepAlive'.tr(),
-    '1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low':
-        'youHaveToFeedThisAccountBeforeUsing'.tr(),
-    'Token.FundsUnavailable': 'fundsUnavailable'.tr(),
-    'Exception: timeout': 'execTimeoutOver'.tr(),
-  };
 }

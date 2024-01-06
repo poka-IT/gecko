@@ -70,7 +70,7 @@ class WalletData extends HiveObject {
 
   // creates the ':'-separated string from the WalletData
   String inLine() {
-    return "$chest:$number:$name:$derivation:$imageDefaultPath";
+    return "$chest:$number:$name:$derivation:$imageDefaultPath:$imageCustomPath:$identityStatus";
   }
 
   bool hasIdentity() {
@@ -112,7 +112,7 @@ class WalletData extends HiveObject {
     final datapod = Provider.of<V2sDatapodProvider>(homeContext, listen: false);
     final avatarUuid = const Uuid().v4();
 
-    await datapod.getAvatar(address, saveOnDisk: true, uuid: avatarUuid);
+    await datapod.getRemoteAvatar(address, saveOnDisk: true, uuid: avatarUuid);
 
     final avatarPath = '${avatarsDirectory.path}/$address-$avatarUuid';
     if (!await File(avatarPath).exists()) return;

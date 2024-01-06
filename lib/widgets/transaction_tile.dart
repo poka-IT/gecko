@@ -39,9 +39,7 @@ class TransactionTile extends StatelessWidget {
           key: keyTransaction(newKey),
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-          leading: ClipOval(
-            child: DatapodAvatar(address: repository[1], size: avatarSize),
-          ),
+          leading: DatapodAvatar(address: repository[1], size: avatarSize),
           title: Padding(
             padding: const EdgeInsets.only(bottom: 5),
             child: Text(getShortPubkey(repository[1]),

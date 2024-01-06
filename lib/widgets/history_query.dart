@@ -5,17 +5,21 @@ import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/history_view.dart';
+import 'package:gecko/widgets/transaction_in_progress_tile.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
 class HistoryQuery extends StatelessWidget {
-  const HistoryQuery({Key? key, required this.address}) : super(key: key);
+  const HistoryQuery({Key? key, required this.address})
+      : super(key: key);
   final String address;
 
   @override
   Widget build(BuildContext context) {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     final ScrollController scrollController = ScrollController();
     FetchMoreOptions? opts;
@@ -108,6 +112,15 @@ class HistoryQuery extends StatelessWidget {
                     result, opts, address, nRepositories);
               }
 
+              // Get transaction in progress if exist
+              String? transactionId;
+              for (final entry in sub.transactionStatus.entries) {
+                if (entry.value.from == address) {
+                  transactionId = entry.key;
+                  break;
+                }
+              }
+
               // Build history list
               return NotificationListener(
                   child: Builder(
@@ -116,6 +129,9 @@ class HistoryQuery extends StatelessWidget {
                         key: keyListTransactions,
                         controller: scrollController,
                         children: <Widget>[
+                          if (transactionId != null)
+                            TransactionInProgressTule(
+                                address: address, transactionId: transactionId),
                           HistoryView(
                             result: result,
                             address: address,

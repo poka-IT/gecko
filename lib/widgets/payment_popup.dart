@@ -11,6 +11,7 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/balance.dart';
@@ -54,13 +55,17 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
         destAddress: toAddress,
         amount: double.parse(walletViewProvider.payAmount.text),
         password: myWalletProvider.pinCode);
+
+    const legacyMonitor = false;
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) {
-        return TransactionInProgress(
-            transactionId: transactionId,
-            toAddress: toAddress,
-            toUsername: username);
+        return legacyMonitor
+            ? TransactionInProgress(
+                transactionId: transactionId,
+                toAddress: toAddress,
+                toUsername: username)
+            : ActivityScreen(address: acc.address!);
       }),
     );
   }

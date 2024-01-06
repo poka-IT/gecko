@@ -166,6 +166,7 @@
     "choiceOfSourceWallet": "Elige un monedero de origen",
     "extrinsicInProgress": "{} en progreso",
     "extrinsicValidated": "¡ {} validado !",
+    "extrinsicFinalized": "{} finalized !",
     "fromMinus": "de",
     "toMinus": "a",
     "deleteThisWallet": "Borrar este monedero",

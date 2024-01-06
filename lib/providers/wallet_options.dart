@@ -18,6 +18,7 @@ import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:uuid/uuid.dart';
 
 class WalletOptionsProvider with ChangeNotifier {
   final address = TextEditingController();
@@ -116,15 +117,31 @@ class WalletOptionsProvider with ChangeNotifier {
         ],
       );
 
-      final newPath = "${avatarsDirectory.path}/${address.text}";
+      final avatarUuid = const Uuid().v4();
+      final newPath = "${avatarsDirectory.path}/${address.text}-$avatarUuid";
 
-      if (croppedFile != null) {
-        await File(croppedFile.path).rename(newPath);
-      } else {
+      if (croppedFile == null) {
         log.w('No image selected.');
         return '';
       }
+
+      await File(croppedFile.path).rename(newPath);
+
+      final walletData =
+          MyWalletsProvider().getWalletDataByAddress(address.text);
+
+      if (walletData!.imageCustomPath != null) {
+        final avatarFile = File(walletData.imageCustomPath!);
+        await avatarFile.delete();
+      }
+
+      walletData.profileUpdatedTime = DateTime.now();
+      walletData.imageCustomPath = newPath;
+
+      await walletBox.put(address.text, walletData);
+      notifyListeners();
       datapod.setAvatar(address.text, newPath);
+
       return newPath;
     } else {
       log.w('No image selected.');
@@ -139,6 +156,7 @@ class WalletOptionsProvider with ChangeNotifier {
         Provider.of<WalletOptionsProvider>(context, listen: false);
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     bool canValidate = false;
     bool idtyExist = false;
@@ -160,9 +178,9 @@ class WalletOptionsProvider with ChangeNotifier {
               TextField(
                 key: keyEnterIdentityUsername,
                 onChanged: (_) async {
-                  idtyExist = await isIdtyExist(idtyName.text);
+                  idtyExist = await duniterIndexer.isIdtyExist(idtyName.text);
                   canValidate = !idtyExist &&
-                      !await isIdtyExist(idtyName.text) &&
+                      !await duniterIndexer.isIdtyExist(idtyName.text) &&
                       idtyName.text.length >= 2 &&
                       idtyName.text.length <= 32;
 

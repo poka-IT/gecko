@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_datapod.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
@@ -36,9 +35,6 @@ class V2sDatapodProvider with ChangeNotifier {
       List<Map<String, String>>? socials,
       Map<String, double>? geoloc}) async {
     final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-    final myWallets =
-        Provider.of<MyWalletsProvider>(homeContext, listen: false);
-    final walletData = myWallets.getWalletDataByAddress(address);
 
     final messageToSign = jsonEncode({
       'address': address,
@@ -70,9 +66,6 @@ class V2sDatapodProvider with ChangeNotifier {
       return false;
     }
     log.d(result.data!['updateProfile']['message']);
-    walletData!.profileUpdatedTime = DateTime.now();
-    walletBox.put(address, walletData);
-
     return true;
   }
 
@@ -145,7 +138,7 @@ class V2sDatapodProvider with ChangeNotifier {
     return profileDate;
   }
 
-  Future<Image> getAvatar(String address,
+  Future<Image> getRemoteAvatar(String address,
       {double size = 20, bool saveOnDisk = false, String? uuid}) async {
     final variables = <String, dynamic>{
       'address': address,

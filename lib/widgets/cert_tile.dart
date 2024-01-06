@@ -3,8 +3,8 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/widgets/datapod_avatar.dart';
 
 class CertTile extends StatelessWidget {
   const CertTile({
@@ -28,9 +28,8 @@ class CertTile extends StatelessWidget {
               key: keyTransaction(keyID++),
               contentPadding: EdgeInsets.only(
                   left: 10, right: 0, top: scaleSize(3), bottom: scaleSize(3)),
-              leading: ClipOval(
-                child: V2sDatapodProvider().defaultAvatar(avatarSize),
-              ),
+              leading: DatapodAvatar(
+                              address: repository['address'], size: avatarSize),
               title: Padding(
                 padding: const EdgeInsets.only(bottom: 2),
                 child: Text(

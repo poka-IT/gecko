@@ -7,12 +7,14 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/migrate_wallet_checks.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/models/transaction_content.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/widgets/transaction_status.dart';
 import 'package:pinenacl/ed25519.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:polkawallet_sdk/api/types/networkParams.dart';
@@ -37,7 +39,7 @@ class SubstrateSdk with ChangeNotifier {
   bool importIsLoading = false;
   int blocNumber = 0;
   bool isLoadingEndpoint = false;
-  Map transactionStatus = {};
+  Map<String, TransactionContent> transactionStatus = {};
   final int initSs58 = 42;
   Map<String, int> currencyParameters = {};
   final csSalt = TextEditingController();
@@ -54,21 +56,35 @@ class SubstrateSdk with ChangeNotifier {
   ////////// 1: API METHODS ///////////
   /////////////////////////////////////
 
-  Future<String> _executeCall(String currentTransactionId, TxInfoData txInfo,
+  Map<String, TransactionStatus> statusMap = {
+    'sending': TransactionStatus.sending,
+    'Ready': TransactionStatus.propagation,
+    'Broadcast': TransactionStatus.validating,
+    'Finalized': TransactionStatus.finalized
+  };
+
+  Future _executeCall(TransactionContent transcationContent, TxInfoData txInfo,
       txOptions, String password,
       [String? rawParams]) async {
     final walletOptions =
         Provider.of<WalletOptionsProvider>(homeContext, listen: false);
     final walletProfiles =
         Provider.of<WalletsProfilesProvider>(homeContext, listen: false);
-    transactionStatus.putIfAbsent(currentTransactionId, () => 'sending');
+    final currentTransactionId = transcationContent.transactionId;
+    transactionStatus.putIfAbsent(
+        currentTransactionId, () => transcationContent);
     notifyListeners();
 
     try {
       final hash = await sdk.api.tx.signAndSend(txInfo, txOptions, password,
-          rawParam: rawParams, onStatusChange: (p0) {
-        transactionStatus.update(currentTransactionId, (_) => p0,
-            ifAbsent: () => p0);
+          rawParam: rawParams, onStatusChange: (newStatus) {
+        transactionStatus.update(currentTransactionId, (trans) {
+          trans.status = statusMap[newStatus]!;
+          return trans;
+        }, ifAbsent: () {
+          transcationContent.status = statusMap[newStatus]!;
+          return transcationContent;
+        });
         notifyListeners();
       }).timeout(
         const Duration(seconds: 18),
@@ -77,25 +93,47 @@ class SubstrateSdk with ChangeNotifier {
       log.d(hash);
       if (hash.isEmpty) {
         transactionStatus.update(
-            currentTransactionId, (_) => 'Exception: timeout');
+          currentTransactionId,
+          (trans) {
+            trans.status = TransactionStatus.timeout;
+            return trans;
+          },
+          ifAbsent: () {
+            transcationContent.status = TransactionStatus.timeout;
+            return transcationContent;
+          },
+        );
         notifyListeners();
-
-        return 'Exception: timeout';
       } else {
         // Success !
-        transactionStatus.update(currentTransactionId, (_) => hash.toString(),
-            ifAbsent: () => hash.toString());
+        transactionStatus.update(currentTransactionId, (trans) {
+          trans.status = TransactionStatus.success;
+          return trans;
+        }, ifAbsent: () {
+          transcationContent.status = TransactionStatus.success;
+          return transcationContent;
+        });
         notifyListeners();
         walletOptions.reload();
         walletProfiles.reload();
-        return hash.toString();
       }
     } catch (e) {
-      transactionStatus.update(currentTransactionId, (_) => e.toString(),
-          ifAbsent: () => e.toString());
+      transactionStatus.update(
+        currentTransactionId,
+        (trans) {
+          trans.status = TransactionStatus.failed;
+          trans.error = e.toString();
+          return trans;
+        },
+        ifAbsent: () {
+          transcationContent.status = TransactionStatus.failed;
+          transcationContent.error = e.toString();
+          return transcationContent;
+        },
+      );
       notifyListeners();
-      return e.toString();
     }
+    transactionStatus.remove(currentTransactionId);
   }
 
   Future _getStorage(String call) async {
@@ -604,6 +642,8 @@ class SubstrateSdk with ChangeNotifier {
     final homeProvider = Provider.of<HomeProvider>(homeContext, listen: false);
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(homeContext, listen: false);
+    final duniterIndexer =
+        Provider.of<DuniterIndexer>(homeContext, listen: false);
 
     homeProvider.changeMessage("connectionPending".tr(), 0);
 
@@ -648,7 +688,7 @@ class SubstrateSdk with ChangeNotifier {
       await initCurrencyParameters();
 
       // Indexer Blockchain start
-      getBlockStart();
+      duniterIndexer.getBlockStart();
 
       notifyListeners();
       homeProvider.changeMessage(
@@ -985,7 +1025,14 @@ class SubstrateSdk with ChangeNotifier {
     }
 
     final transactionId = const Uuid().v4();
-    _executeCall(transactionId, txInfo, txOptions, password, rawParams);
+    final transactionContent = TransactionContent(
+      transactionId: transactionId,
+      status: TransactionStatus.sending,
+      from: fromAddress,
+      to: destAddress,
+      amount: amount,
+    );
+    _executeCall(transactionContent, txInfo, txOptions, password, rawParams);
     return transactionId;
   }
 
@@ -1053,7 +1100,14 @@ class SubstrateSdk with ChangeNotifier {
 
     log.d('Cert action: ${txInfo.call!}');
     final transactionId = const Uuid().v4();
-    _executeCall(transactionId, txInfo, txOptions, password, rawParams);
+    final transactionContent = TransactionContent(
+      transactionId: const Uuid().v4(),
+      status: TransactionStatus.sending,
+      from: fromAddress,
+      to: destAddress,
+      amount: -1,
+    );
+    _executeCall(transactionContent, txInfo, txOptions, password, rawParams);
     return transactionId;
   }
 
@@ -1069,8 +1123,14 @@ class SubstrateSdk with ChangeNotifier {
     final txOptions = [name];
 
     final transactionId = const Uuid().v4();
-
-    _executeCall(transactionId, txInfo, txOptions, password);
+    final transactionContent = TransactionContent(
+      transactionId: const Uuid().v4(),
+      status: TransactionStatus.sending,
+      from: fromAddress,
+      to: fromAddress,
+      amount: -1,
+    );
+    _executeCall(transactionContent, txInfo, txOptions, password);
 
     return transactionId;
   }
@@ -1140,7 +1200,15 @@ newKeySig: $newKeySigType""");
     }
 
     final transactionId = const Uuid().v4();
-    _executeCall(transactionId, txInfo, txOptions, fromPassword, rawParams);
+    final transactionContent = TransactionContent(
+      transactionId: const Uuid().v4(),
+      status: TransactionStatus.sending,
+      from: fromAddress,
+      to: fromAddress,
+      amount: -1,
+    );
+    _executeCall(
+        transactionContent, txInfo, txOptions, fromPassword, rawParams);
     return transactionId;
   }
 
@@ -1166,7 +1234,14 @@ newKeySig: $newKeySigType""");
 
     final txOptions = [idtyIndex, address, revocationSigTyped];
     final transactionId = const Uuid().v4();
-    _executeCall(transactionId, txInfo, txOptions, password);
+    final transactionContent = TransactionContent(
+      transactionId: const Uuid().v4(),
+      status: TransactionStatus.sending,
+      from: address,
+      to: address,
+      amount: -1,
+    );
+    _executeCall(transactionContent, txInfo, txOptions, password);
     return transactionId;
   }
 
@@ -1240,10 +1315,6 @@ newKeySig: $newKeySigType""");
 
   void reload() {
     notifyListeners();
-  }
-
-  void resetTransactionStatus() {
-    transactionStatus.clear();
   }
 }
 

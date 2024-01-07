@@ -5,6 +5,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:gecko/widgets/transaction_tile.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -97,14 +98,14 @@ class HistoryView extends StatelessWidget {
                     context: context),
               ]);
             }).toList()),
-            if (result.isLoading && duniterIndexer.pageInfo!['hasPreviousPage'])
+            if (result.isLoading && duniterIndexer.hasNextPage)
               const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  CircularProgressIndicator(),
+                  Loading(size: 30, stroke: 3),
                 ],
               ),
-            if (!duniterIndexer.pageInfo!['hasNextPage'] &&
+            if (!duniterIndexer.hasNextPage &&
                 sub.oldOwnerKeys[address]?[0] != null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 30),
@@ -128,7 +129,7 @@ class HistoryView extends StatelessWidget {
                       ),
                       Column(children: [
                         Text(
-                          'identityMigrated:'.tr(),
+                          'identityMigrated'.tr(),
                           style: scaledTextStyle(
                               fontSize: 19,
                               color: Colors.green[700],
@@ -150,7 +151,7 @@ class HistoryView extends StatelessWidget {
                   ),
                 ),
               ),
-            if (!duniterIndexer.pageInfo!['hasNextPage'])
+            if (!duniterIndexer.hasNextPage)
               Column(
                 children: <Widget>[
                   ScaledSizedBox(height: 15),

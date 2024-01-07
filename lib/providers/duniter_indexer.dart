@@ -11,11 +11,10 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 
 class DuniterIndexer with ChangeNotifier {
   Map<String, String?> walletNameIndexer = {};
-  String? fetchMoreCursor;
-  Map? pageInfo;
   List? transBC;
   List listIndexerEndpoints = [];
   bool isLoadingIndexer = false;
+  bool hasNextPage = false;
 
   void reload() {
     notifyListeners();
@@ -128,14 +127,13 @@ class DuniterIndexer with ChangeNotifier {
     return indexerEndpoint;
   }
 
-  List parseHistory(blockchainTX, pubkey) {
+  List parseHistory(List blockchainTX, String address) {
     List transBC = [];
     int i = 0;
 
-    for (final trans in blockchainTX) {
-      final transaction = trans['node'];
+    for (final transaction in blockchainTX) {
       final direction =
-          transaction['issuer_pubkey'] != pubkey ? 'RECEIVED' : 'SENT';
+          transaction['issuer']['pubkey'] != address ? 'RECEIVED' : 'SENT';
 
       transBC.add(i);
       transBC[i] = [];
@@ -143,10 +141,10 @@ class DuniterIndexer with ChangeNotifier {
       final amountBrut = transaction['amount'];
       final amount = removeDecimalZero(amountBrut / 100);
       if (direction == "RECEIVED") {
-        transBC[i].add(transaction['issuer_pubkey']);
+        transBC[i].add(transaction['issuer']['pubkey']);
         transBC[i].add(transaction['issuer']['identity']?['name'] ?? '');
       } else if (direction == "SENT") {
-        transBC[i].add(transaction['receiver_pubkey']);
+        transBC[i].add(transaction['receiver']['pubkey']);
         transBC[i].add(transaction['receiver']['identity']?['name'] ?? '');
       }
       transBC[i].add(amount);
@@ -157,38 +155,35 @@ class DuniterIndexer with ChangeNotifier {
     return transBC;
   }
 
-  FetchMoreOptions? mergeQueryResult(result, opts, pubkey, nRepositories) {
-    final List<dynamic>? blockchainTX =
-        (result.data['transaction_connection']['edges'] as List<dynamic>?);
+  FetchMoreOptions? mergeQueryResult(
+      {required List transactions,
+      required FetchMoreOptions? opts,
+      required String address,
+      required int nRepositories,
+      required int offset}) {
+    // pageInfo = result.data!['transaction_connection']['pageInfo'];
+    // fetchMoreCursor = pageInfo!['endCursor'];
+    // final hasNextPage = pageInfo!['hasNextPage'];
+    // final hasPreviousPage = pageInfo!['hasPreviousPage'];
+    // log.d('endCursor: $fetchMoreCursor $hasNextPage $hasPreviousPage');
 
-    pageInfo = result.data['transaction_connection']['pageInfo'];
-    fetchMoreCursor = pageInfo!['endCursor'];
-    final hasNextPage = pageInfo!['hasNextPage'];
-    final hasPreviousPage = pageInfo!['hasPreviousPage'];
-    log.d('endCursor: $fetchMoreCursor $hasNextPage $hasPreviousPage');
+    // if (fetchMoreCursor != null) {
+    opts = FetchMoreOptions(
+      variables: {'offset': offset, 'number': nRepositories},
+      updateQuery: (previousResultData, fetchMoreResultData) {
+        final List<dynamic> repos = [
+          ...previousResultData!['transaction'] as List<dynamic>,
+          ...fetchMoreResultData!['transaction'] as List<dynamic>
+        ];
 
-    if (fetchMoreCursor != null) {
-      opts = FetchMoreOptions(
-        variables: {'cursor': fetchMoreCursor, 'number': nRepositories},
-        updateQuery: (previousResultData, fetchMoreResultData) {
-          final List<dynamic> repos = [
-            ...previousResultData!['transaction_connection']['edges']
-                as List<dynamic>,
-            ...fetchMoreResultData!['transaction_connection']['edges']
-                as List<dynamic>
-          ];
-
-          fetchMoreResultData['transaction_connection']['edges'] = repos;
-          return fetchMoreResultData;
-        },
-      );
-    }
-
-    if (fetchMoreCursor != null) {
-      transBC = parseHistory(blockchainTX, pubkey);
-    } else {
-      log.d("Activity start of $pubkey");
-    }
+        fetchMoreResultData['transaction'] = repos;
+        return fetchMoreResultData;
+      },
+    );
+    transBC = parseHistory(transactions, address);
+    // } else {
+    //   log.d("Activity start of $address");
+    // }
 
     return opts;
   }
@@ -231,6 +226,8 @@ class DuniterIndexer with ChangeNotifier {
     );
 
     final options = QueryOptions(document: gql(query), variables: variables);
+
+    // 5GMyvKsTNk9wDBy9jwKaX6mhSzmFFtpdK9KNnmrLoSTSuJHv
 
     return await client.query(options);
   }

@@ -12,8 +12,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
 class HistoryQuery extends StatelessWidget {
-  const HistoryQuery({Key? key, required this.address})
-      : super(key: key);
+  const HistoryQuery({Key? key, required this.address}) : super(key: key);
   final String address;
 
   @override
@@ -24,7 +23,6 @@ class HistoryQuery extends StatelessWidget {
     final ScrollController scrollController = ScrollController();
     FetchMoreOptions? opts;
 
-    int nPage = 1;
     int nRepositories = 20;
 
     if (indexerEndpoint == '') {
@@ -39,7 +37,7 @@ class HistoryQuery extends StatelessWidget {
     }
 
     final httpLink = HttpLink(
-      '$indexerEndpoint/v1beta1/relay',
+      '$indexerEndpoint/v1/graphql',
     );
 
     final client = ValueNotifier(
@@ -61,8 +59,8 @@ class HistoryQuery extends StatelessWidget {
               document: gql(getHistoryByAddressQ),
               variables: <String, dynamic>{
                 'address': address,
-                'number': 20,
-                'cursor': null
+                'number': nRepositories,
+                'offset': 0
               },
             ),
             builder: (QueryResult result, {fetchMore, refetch}) {
@@ -73,6 +71,7 @@ class HistoryQuery extends StatelessWidget {
                   ),
                 );
               }
+              final List transactions = result.data?["transaction"];
 
               if (result.hasException) {
                 log.e('Error Indexer: ${result.exception}');
@@ -84,8 +83,7 @@ class HistoryQuery extends StatelessWidget {
                     style: scaledTextStyle(fontSize: 18),
                   )
                 ]);
-              } else if (result
-                  .data?['transaction_connection']?['edges'].isEmpty) {
+              } else if (transactions.isEmpty) {
                 return Column(children: <Widget>[
                   ScaledSizedBox(height: 50),
                   Text(
@@ -95,22 +93,18 @@ class HistoryQuery extends StatelessWidget {
                 ]);
               }
 
-              if (result.isNotLoading) {
-                if (duniterIndexer.fetchMoreCursor == null) nPage = 1;
+              final int totalTransactions =
+                  result.data!["transaction_aggregate"]["aggregate"]["count"];
+              duniterIndexer.hasNextPage =
+                  !(transactions.length == totalTransactions);
 
-                if (nPage <= 3) {
-                  nRepositories = 20;
-                } else if (nPage <= 6) {
-                  nRepositories = 40;
-                } else if (nPage <= 12) {
-                  nRepositories = 80;
-                } else {
-                  nRepositories = 120;
-                }
-                nPage++;
-                opts = duniterIndexer.mergeQueryResult(
-                    result, opts, address, nRepositories);
-              }
+              opts = duniterIndexer.mergeQueryResult(
+                transactions: transactions,
+                opts: opts,
+                address: address,
+                nRepositories: nRepositories,
+                offset: transactions.length,
+              );
 
               // Get transaction in progress if exist
               String? transactionId;
@@ -141,13 +135,13 @@ class HistoryQuery extends StatelessWidget {
                     ),
                   ),
                   onNotification: (dynamic t) {
-                    if (duniterIndexer.pageInfo == null) {
-                      duniterIndexer.reload();
-                    }
+                    // if (duniterIndexer.pageInfo == null) {
+                    //   duniterIndexer.reload();
+                    // }
                     if (t is ScrollEndNotification &&
                         scrollController.position.pixels >=
                             scrollController.position.maxScrollExtent * 0.7 &&
-                        duniterIndexer.pageInfo!['hasNextPage'] &&
+                        duniterIndexer.hasNextPage &&
                         result.isNotLoading) {
                       fetchMore!(opts!);
                     }

@@ -112,7 +112,7 @@ class WalletData extends HiveObject {
     final datapod = Provider.of<V2sDatapodProvider>(homeContext, listen: false);
     final avatarUuid = const Uuid().v4();
 
-    await datapod.getRemoteAvatar(address, saveOnDisk: true, uuid: avatarUuid);
+    await datapod.getRemoteAvatar(address, uuid: avatarUuid);
 
     final avatarPath = '${avatarsDirectory.path}/$address-$avatarUuid';
     if (!await File(avatarPath).exists()) return;

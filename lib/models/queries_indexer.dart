@@ -18,7 +18,7 @@ query ($name: String!) {
 }
 ''';
 
-const String getHistoryByAddressQ = r'''
+const String getHistoryByAddressRelayQ = r'''
 query ($address: String!, $number: Int!, $cursor: String) {
   transaction_connection(where: 
   {_or: [
@@ -51,6 +51,33 @@ query ($address: String!, $number: Int!, $cursor: String) {
       hasNextPage
       hasPreviousPage
       startCursor
+    }
+  }
+}
+''';
+
+const String getHistoryByAddressQ = r'''
+query ($address: String!, $number: Int!, $offset: Int!) {
+  transaction_aggregate(where: {_or: [{issuer_pubkey: {_eq: $address}}, {receiver_pubkey: {_eq: $address}}]}) {
+    aggregate {
+      count
+    }
+  }
+  transaction(where: {_or: [{issuer_pubkey: {_eq: $address}}, {receiver_pubkey: {_eq: $address}}]}, order_by: {created_at: desc}, limit: $number, offset: $offset) {
+    amount
+    comment
+    created_at
+    issuer {
+      pubkey
+      identity {
+        name
+      }
+    }
+    receiver {
+      pubkey
+      identity {
+        name
+      }
     }
   }
 }

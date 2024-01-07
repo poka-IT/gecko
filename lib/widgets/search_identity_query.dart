@@ -36,7 +36,7 @@ class SearchIdentityQuery extends StatelessWidget {
     final client = ValueNotifier(
       GraphQLClient(
         cache: GraphQLCache(
-            store: HiveStore()), // GraphQLCache(store: HiveStore())
+            store: HiveStore()),
         link: httpLink,
       ),
     );

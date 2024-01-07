@@ -139,7 +139,7 @@ class V2sDatapodProvider with ChangeNotifier {
   }
 
   Future<Image> getRemoteAvatar(String address,
-      {double size = 20, bool saveOnDisk = false, String? uuid}) async {
+      {double size = 20, String? uuid}) async {
     final variables = <String, dynamic>{
       'address': address,
     };
@@ -157,12 +157,8 @@ class V2sDatapodProvider with ChangeNotifier {
     final sanitizedAvatar64 =
         avatar64.replaceAll('\n', '').replaceAll('\r', '').replaceAll(' ', '');
 
-    if (saveOnDisk) {
-      log.d('We save avatar for $address');
-      await saveAvatar(address, sanitizedAvatar64, uuid);
-    } else {
-      await cacheAvatar(address, sanitizedAvatar64);
-    }
+    log.d('We save avatar for $address');
+    await saveAvatar(address, sanitizedAvatar64, uuid);
 
     return Image.memory(
       base64.decode(sanitizedAvatar64),
@@ -181,6 +177,30 @@ class V2sDatapodProvider with ChangeNotifier {
     final file = File('${avatarsCacheDirectory.path}/$address');
     return await file.writeAsBytes(base64.decode(data));
   }
+
+  // Future<File> cacheAvatar(String address, String data) async {
+  //   // Get the list of all files in the directory
+  //   final dir = Directory(avatarsCacheDirectory.path);
+  //   var filesList = dir.listSync().whereType<File>().toList();
+
+  //   // Sorting files by modified date, oldest first
+  //   filesList
+  //       .sort((a, b) => a.lastModifiedSync().compareTo(b.lastModifiedSync()));
+
+  //   // If there are more than 20 files, remove the oldest ones
+  //   while (filesList.length > 20) {
+  //     filesList.first.deleteSync();
+  //     filesList.removeAt(0);
+  //   }
+
+  //   // Write the new avatar file
+  //   final file = File('${avatarsCacheDirectory.path}/$address');
+  //   await file.writeAsBytes(base64.decode(data));
+
+  //   log.d('cache files: ${filesList.length}');
+
+  //   return file;
+  // }
 
   Image getAvatarLocal(String address) {
     final avatarFile = File('${avatarsCacheDirectory.path}/$address');

@@ -32,13 +32,13 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: true);
+    Provider.of<DuniterIndexer>(context, listen: true);
 
     return PopScope(
-      onPopInvoked: (_) {
-        duniterIndexer.fetchMoreCursor =
-            duniterIndexer.pageInfo = duniterIndexer.transBC = null;
-      },
+      // onPopInvoked: (_) {
+      //   duniterIndexer.fetchMoreCursor =
+      //       duniterIndexer.pageInfo = duniterIndexer.transBC = null;
+      // },
       child: Scaffold(
           appBar: AppBar(
             elevation: 0,

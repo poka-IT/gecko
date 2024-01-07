@@ -234,5 +234,6 @@
     "addressNotBelongToMnemonic": "The address you provided does not belong to this recovery sentence",
     "enterYourNewMnemonic": "Enter your new recovery sentence",
     "enterYourNewAddress": "Enter your new address {}",
-    "youCanMigrateThisIdentity": "You can migrate this identity !"
+    "youCanMigrateThisIdentity": "You can migrate this identity !",
+    "identityMigrated": "Identity migrated"
 }

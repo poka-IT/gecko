@@ -160,7 +160,7 @@ class _WalletsHomeState extends State<WalletsHome> {
                   'explainDraggableWallet'.tr(),
                   textAlign: TextAlign.center,
                   style: scaledTextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w500),
+                      fontSize: 17, fontWeight: FontWeight.w500),
                 ),
               ],
             ))

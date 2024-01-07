@@ -83,7 +83,7 @@ class OnboardingStepTen extends StatelessWidget {
                               Text(
                                 "youHaveToBeConnectedToValidateChest".tr(),
                                 style: scaledTextStyle(
-                                  fontSize: 20,
+                                  fontSize: 17,
                                   color: Colors.redAccent,
                                   fontWeight: FontWeight.w500,
                                 ),

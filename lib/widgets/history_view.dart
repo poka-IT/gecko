@@ -34,7 +34,7 @@ class HistoryView extends StatelessWidget {
             ScaledSizedBox(height: 50),
             Text(
               "noTransactionToDisplay".tr(),
-              style: scaledTextStyle(fontSize: 18),
+              style: scaledTextStyle(fontSize: 17),
             )
           ])
         : Column(children: <Widget>[
@@ -59,17 +59,17 @@ class HistoryView extends StatelessWidget {
                       children: [
                         Image(
                             image: const AssetImage('assets/party.png'),
-                            height: scaleSize(32)),
+                            height: scaleSize(31)),
                         Text(
                           'blockchainStart'.tr(),
                           style: scaledTextStyle(
-                              fontSize: 20,
+                              fontSize: 19,
                               color: Colors.blueAccent,
                               fontWeight: FontWeight.w500),
                         ),
                         Image(
                             image: const AssetImage('assets/party.png'),
-                            height: scaleSize(32)),
+                            height: scaleSize(31)),
                       ],
                     ),
                   ),
@@ -82,7 +82,7 @@ class HistoryView extends StatelessWidget {
                     child: Text(
                       answer['dateDelimiter'],
                       style: scaledTextStyle(
-                          fontSize: 20,
+                          fontSize: 19,
                           color: orangeC,
                           fontWeight: FontWeight.w300),
                     ),
@@ -128,9 +128,9 @@ class HistoryView extends StatelessWidget {
                       ),
                       Column(children: [
                         Text(
-                          'Identité migré:'.tr(),
+                          'identityMigrated:'.tr(),
                           style: scaledTextStyle(
-                              fontSize: 20,
+                              fontSize: 19,
                               color: Colors.green[700],
                               fontWeight: FontWeight.w500),
                         ),

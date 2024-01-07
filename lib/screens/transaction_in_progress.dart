@@ -194,7 +194,7 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
                       child: Text(
                         'close'.tr(),
                         style: scaledTextStyle(
-                            fontSize: 20, fontWeight: FontWeight.w600),
+                            fontSize: 19, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),

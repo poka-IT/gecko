@@ -169,7 +169,7 @@ class WalletOptionsProvider with ChangeNotifier {
           title: Text(
             'confirmYourIdentity'.tr(),
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
           ),
           content: SizedBox(
             height: 100,
@@ -194,7 +194,7 @@ class WalletOptionsProvider with ChangeNotifier {
                 textAlign: TextAlign.center,
                 autofocus: true,
                 controller: idtyName,
-                style: const TextStyle(fontSize: 19),
+                style: const TextStyle(fontSize: 17),
               ),
               const SizedBox(height: 10),
               Consumer<WalletOptionsProvider>(builder: (context, wOptions, _) {

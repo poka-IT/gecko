@@ -108,7 +108,7 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
                 Text(
                   'Transaction en cours',
                   style: scaledTextStyle(
-                      fontSize: 20,
+                      fontSize: 19,
                       color: Colors.blueAccent,
                       fontWeight: FontWeight.w400),
                 ),

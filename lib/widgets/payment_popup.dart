@@ -136,7 +136,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                             Text(
                               'executeATransfer'.tr(),
                               style: scaledTextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.w700),
+                                  fontSize: 19, fontWeight: FontWeight.w700),
                             ),
                             IconButton(
                               key: keyPopButton,

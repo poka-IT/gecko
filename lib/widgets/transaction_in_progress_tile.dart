@@ -90,7 +90,7 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
         translate: const Offset(0, -40),
         delay: const Duration(seconds: 2),
         duration: const Duration(milliseconds: 700),
-        onCompleted: () => duniterIndexer.reload(),
+        onCompleted: () async => duniterIndexer.refetch?.call(),
         child: Padding(
           padding: const EdgeInsets.all(8),
           child: Container(

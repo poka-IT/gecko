@@ -15,6 +15,7 @@ class DuniterIndexer with ChangeNotifier {
   List listIndexerEndpoints = [];
   bool isLoadingIndexer = false;
   bool hasNextPage = false;
+  Future<QueryResult<Object?>?> Function()? refetch;
 
   void reload() {
     notifyListeners();

@@ -97,21 +97,25 @@ class CertsList extends StatelessWidget {
           // Build history list
           return SizedBox(
             height: windowHeight,
-            child: ListView(
-              key: keyListTransactions,
-              children: <Widget>[
-                result.data == null
-                    ? Column(children: <Widget>[
-                        ScaledSizedBox(height: 50),
-                        Text(
-                          "noTransactionToDisplay".tr(),
-                          style: scaledTextStyle(fontSize: 18),
-                        )
-                      ])
-                    : Column(children: <Widget>[
-                        CertTile(listCerts: listCerts),
-                      ])
-              ],
+            child: RefreshIndicator(
+              color: orangeC,
+              onRefresh: () async => refetch!.call(),
+              child: ListView(
+                key: keyListTransactions,
+                children: <Widget>[
+                  result.data == null
+                      ? Column(children: <Widget>[
+                          ScaledSizedBox(height: 50),
+                          Text(
+                            "noTransactionToDisplay".tr(),
+                            style: scaledTextStyle(fontSize: 18),
+                          )
+                        ])
+                      : Column(children: <Widget>[
+                          CertTile(listCerts: listCerts),
+                        ])
+                ],
+              ),
             ),
           );
         },

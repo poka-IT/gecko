@@ -64,6 +64,7 @@ class HistoryQuery extends StatelessWidget {
               },
             ),
             builder: (QueryResult result, {fetchMore, refetch}) {
+              duniterIndexer.refetch = refetch;
               if (result.isLoading && result.data == null) {
                 return const Center(
                   child: CircularProgressIndicator(
@@ -119,25 +120,27 @@ class HistoryQuery extends StatelessWidget {
               return NotificationListener(
                   child: Builder(
                     builder: (context) => Expanded(
-                      child: ListView(
-                        key: keyListTransactions,
-                        controller: scrollController,
-                        children: <Widget>[
-                          if (transactionId != null)
-                            TransactionInProgressTule(
-                                address: address, transactionId: transactionId),
-                          HistoryView(
-                            result: result,
-                            address: address,
-                          )
-                        ],
+                      child: RefreshIndicator(
+                        color: orangeC,
+                        onRefresh: () async => refetch!.call(),
+                        child: ListView(
+                          key: keyListTransactions,
+                          controller: scrollController,
+                          children: <Widget>[
+                            if (transactionId != null)
+                              TransactionInProgressTule(
+                                  address: address,
+                                  transactionId: transactionId),
+                            HistoryView(
+                              result: result,
+                              address: address,
+                            )
+                          ],
+                        ),
                       ),
                     ),
                   ),
                   onNotification: (dynamic t) {
-                    // if (duniterIndexer.pageInfo == null) {
-                    //   duniterIndexer.reload();
-                    // }
                     if (t is ScrollEndNotification &&
                         scrollController.position.pixels >=
                             scrollController.position.maxScrollExtent * 0.7 &&

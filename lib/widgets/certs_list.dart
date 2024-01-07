@@ -87,11 +87,15 @@ class CertsList extends StatelessWidget {
             final date = DateTime.parse(cert['created_at']);
             final dp = DateTime(date.year, date.month, date.day);
             final dateForm = '${dp.day}-${dp.month}-${dp.year}';
-            listCerts.add({
-              'address': issuerAddress,
-              'name': issuerName,
-              'date': dateForm
-            });
+
+            // Check if we have a more recent certification, we skip
+            if (!listCerts.any((cert) => cert['address'] == issuerAddress)) {
+              listCerts.add({
+                'address': issuerAddress,
+                'name': issuerName,
+                'date': dateForm
+              });
+            }
           }
 
           // Build history list

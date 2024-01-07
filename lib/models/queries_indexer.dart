@@ -85,7 +85,7 @@ query ($address: String!, $number: Int!, $offset: Int!) {
 
 const String getCertsReceived = r'''
 query ($address: String!) {
-  certification(where: {receiver: {pubkey: {_eq: $address}}}) {
+  certification(where: {receiver: {pubkey: {_eq: $address}}}, order_by: {created_at: desc}) {
     issuer {
       pubkey
       name
@@ -97,7 +97,7 @@ query ($address: String!) {
 
 const String getCertsSent = r'''
 query ($address: String!) {
-  certification(where: {issuer: {pubkey: {_eq: $address}}}) {
+  certification(where: {issuer: {pubkey: {_eq: $address}}}, order_by: {created_at: desc}) {
     receiver {
       pubkey
       name

@@ -4,8 +4,10 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/widgets/cert_tile.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:provider/provider.dart';
 
 class CertsList extends StatelessWidget {
   const CertsList(
@@ -18,13 +20,10 @@ class CertsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final indexerProvider = Provider.of<DuniterIndexer>(context, listen: false);
     final screenHeight = MediaQuery.of(context).size.height;
     final appBarHeight = AppBar().preferredSize.height;
     final windowHeight = screenHeight - appBarHeight - (isTall ? 170 : 140);
-
-    final httpLink = HttpLink(
-      '$indexerEndpoint/v1/graphql',
-    );
 
     late String gertCertsReq;
     late String certFrom;
@@ -37,14 +36,8 @@ class CertsList extends StatelessWidget {
       certFrom = 'receiver';
     }
 
-    final client = ValueNotifier(
-      GraphQLClient(
-        cache: GraphQLCache(store: HiveStore()),
-        link: httpLink,
-      ),
-    );
     return GraphQLProvider(
-      client: client,
+      client: ValueNotifier(indexerProvider.indexerClient),
       child: Query(
         options: QueryOptions(
           document: gql(gertCertsReq),
@@ -53,7 +46,7 @@ class CertsList extends StatelessWidget {
           },
         ),
         builder: (QueryResult result, {fetchMore, refetch}) {
-          if (result.isLoading && result.data == null) {
+          if (result.isLoading || result.data == null) {
             return const Center(
               child: CircularProgressIndicator(),
             );

@@ -29,7 +29,7 @@ const cesiumPod = "https://g1.data.le-sou.org";
 // String cesiumPod = "https://g1.data.presles.fr";
 // String cesiumPod = "https://g1.data.e-is.pro";
 
-const datapodEndpoint = 'https://gdev-datapod.p2p.legal';
+const datapodEndpoint = 'gdev-datapod.p2p.legal';
 // const v2sDatapod = 'http://10.0.2.2:8080';
 
 // Contexts

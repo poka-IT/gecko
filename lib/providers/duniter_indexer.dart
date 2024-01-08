@@ -16,6 +16,7 @@ class DuniterIndexer with ChangeNotifier {
   bool isLoadingIndexer = false;
   bool hasNextPage = false;
   Future<QueryResult<Object?>?> Function()? refetch;
+  late GraphQLClient indexerClient;
 
   void reload() {
     notifyListeners();
@@ -27,10 +28,11 @@ class DuniterIndexer with ChangeNotifier {
     final client = HttpClient();
     client.connectionTimeout = const Duration(milliseconds: 4000);
     try {
-      final request = await client.postUrl(Uri.parse('$endpoint/v1/graphql'));
+      final request =
+          await client.postUrl(Uri.parse('https://$endpoint/v1/graphql'));
       final response = await request.close();
       if (response.statusCode != 200) {
-        log.w('INDEXER IS OFFLINE');
+        log.w('Indexer $endpoint is offline');
         indexerEndpoint = '';
         isLoadingIndexer = false;
         notifyListeners();
@@ -46,7 +48,7 @@ class DuniterIndexer with ChangeNotifier {
         return true;
       }
     } catch (e) {
-      log.w('INDEXER IS OFFLINE');
+      log.w('Indexer $endpoint is offline');
       indexerEndpoint = '';
       isLoadingIndexer = false;
       notifyListeners();
@@ -96,7 +98,7 @@ class DuniterIndexer with ChangeNotifier {
       }
 
       try {
-        final endpointPath = '${listIndexerEndpoints[i]}/v1/graphql';
+        final endpointPath = 'https://${listIndexerEndpoints[i]}/v1/graphql';
 
         final request = await client.postUrl(Uri.parse(endpointPath));
         final response = await request.close();
@@ -217,42 +219,24 @@ class DuniterIndexer with ChangeNotifier {
 
   Future<QueryResult> _execQuery(
       String query, Map<String, dynamic> variables) async {
-    final httpLink = HttpLink(
-      '$indexerEndpoint/v1/graphql',
-    );
-
-    final client = GraphQLClient(
-      cache: GraphQLCache(),
-      link: httpLink,
-    );
-
     final options = QueryOptions(document: gql(query), variables: variables);
 
     // 5GMyvKsTNk9wDBy9jwKaX6mhSzmFFtpdK9KNnmrLoSTSuJHv
 
-    return await client.query(options);
+    return await indexerClient.query(options);
   }
 
   Stream<QueryResult> subscribeHistoryIssued(String address) {
-    final wsLink = WebSocketLink(
-      '${indexerEndpoint.replaceFirst('https', 'wss')}/v1/graphql',
-    );
-
     final variables = <String, dynamic>{
       'address': address,
     };
-
-    final client = GraphQLClient(
-      cache: GraphQLCache(),
-      link: wsLink,
-    );
 
     final options = SubscriptionOptions(
       document: gql(subscribeHistoryIssuedQ),
       variables: variables,
     );
 
-    return client.subscribe(options);
+    return indexerClient.subscribe(options);
   }
 
   Map computeHistoryView(repository, String address) {

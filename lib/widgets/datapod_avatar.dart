@@ -30,21 +30,10 @@ class DatapodAvatar extends StatelessWidget {
       );
     }
 
-    final httpLink = HttpLink(
-      '$datapodEndpoint/v1/graphql',
-    );
-
-    final client = ValueNotifier(
-      GraphQLClient(
-        cache: GraphQLCache(),
-        link: httpLink,
-      ),
-    );
-
     return ScaledSizedBox(
       width: size,
       child: GraphQLProvider(
-        client: client,
+        client: ValueNotifier(datapod.datapodClient),
         child: Query(
             options: QueryOptions(
               document: gql(getAvatarQ),
@@ -53,7 +42,7 @@ class DatapodAvatar extends StatelessWidget {
               },
             ),
             builder: (QueryResult result, {fetchMore, refetch}) {
-              if (result.isLoading) {
+              if (result.isLoading || result.data == null) {
                 return Center(
                   child: ClipOval(child: datapod.defaultAvatar(size)),
                 );

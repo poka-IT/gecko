@@ -1,6 +1,5 @@
 [
-    "https://gdev-indexer.p2p.legal",
-    "https://hasura.gdev.coinduf.eu",
-    "https://gdev-hasura.cgeek.fr",
-    "https://hasura-gdev.pini.fr"
+    "gdev-indexer.p2p.legal",
+    "gdev-hasura.cgeek.fr",
+    "hasura-gdev.pini.fr"
 ]

@@ -11,19 +11,14 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 class V2sDatapodProvider with ChangeNotifier {
+  late GraphQLClient datapodClient;
+
   Future<QueryResult> _execQuery(
       String query, Map<String, dynamic> variables) async {
-    final httpLink = HttpLink('$datapodEndpoint/v1/graphql');
-
-    final GraphQLClient client = GraphQLClient(
-      cache: GraphQLCache(),
-      link: httpLink,
-    );
-
     final QueryOptions options =
         QueryOptions(document: gql(query), variables: variables);
 
-    return await client.query(options);
+    return await datapodClient.query(options);
   }
 
   Future<bool> updateProfile(
@@ -174,33 +169,20 @@ class V2sDatapodProvider with ChangeNotifier {
   }
 
   Future<File> cacheAvatar(String address, String data) async {
-    final file = File('${avatarsCacheDirectory.path}/$address');
-    return await file.writeAsBytes(base64.decode(data));
+    final uuid = const Uuid().v4();
+    final tempFile = File('${avatarsCacheDirectory.path}/$uuid$address');
+    final targetFile = File('${avatarsCacheDirectory.path}/$address');
+
+    try {
+      // Write to a temporary file first to prevent data race
+      await tempFile.writeAsBytes(base64.decode(data));
+      log.d('Caching avatar of $address');
+      return await tempFile.rename(targetFile.path);
+    } catch (e) {
+      log.e("An error occurred while caching avatar: $e");
+      rethrow;
+    }
   }
-
-  // Future<File> cacheAvatar(String address, String data) async {
-  //   // Get the list of all files in the directory
-  //   final dir = Directory(avatarsCacheDirectory.path);
-  //   var filesList = dir.listSync().whereType<File>().toList();
-
-  //   // Sorting files by modified date, oldest first
-  //   filesList
-  //       .sort((a, b) => a.lastModifiedSync().compareTo(b.lastModifiedSync()));
-
-  //   // If there are more than 20 files, remove the oldest ones
-  //   while (filesList.length > 20) {
-  //     filesList.first.deleteSync();
-  //     filesList.removeAt(0);
-  //   }
-
-  //   // Write the new avatar file
-  //   final file = File('${avatarsCacheDirectory.path}/$address');
-  //   await file.writeAsBytes(base64.decode(data));
-
-  //   log.d('cache files: ${filesList.length}');
-
-  //   return file;
-  // }
 
   Image getAvatarLocal(String address) {
     final avatarFile = File('${avatarsCacheDirectory.path}/$address');

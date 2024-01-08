@@ -29,19 +29,8 @@ class SearchIdentityQuery extends StatelessWidget {
       return Text('noResult'.tr());
     }
 
-    final httpLink = HttpLink(
-      '$indexerEndpoint/v1/graphql',
-    );
-
-    final client = ValueNotifier(
-      GraphQLClient(
-        cache: GraphQLCache(
-            store: HiveStore()),
-        link: httpLink,
-      ),
-    );
     return GraphQLProvider(
-      client: client,
+      client: ValueNotifier(duniterIndexer.indexerClient),
       child: Query(
           options: QueryOptions(
             document: gql(searchAddressByNameQ),

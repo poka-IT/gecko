@@ -36,19 +36,8 @@ class HistoryQuery extends StatelessWidget {
       ]);
     }
 
-    final httpLink = HttpLink(
-      '$indexerEndpoint/v1/graphql',
-    );
-
-    final client = ValueNotifier(
-      GraphQLClient(
-        cache: GraphQLCache(),
-        link: httpLink,
-      ),
-    );
-
     return GraphQLProvider(
-      client: client,
+      client: ValueNotifier(duniterIndexer.indexerClient),
       child: Expanded(
           child: Column(
         mainAxisAlignment: MainAxisAlignment.start,

@@ -86,7 +86,7 @@ class WalletOptions extends StatelessWidget {
                   ? duniterIndexer
                       .walletNameIndexer[walletOptions.address.text]!
                   : wallet.name!,
-              style: scaledTextStyle(fontSize: 18),
+              style: scaledTextStyle(fontSize: 19),
             );
           }),
           actions: [

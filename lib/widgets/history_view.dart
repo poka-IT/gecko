@@ -54,7 +54,8 @@ class HistoryView extends StatelessWidget {
               return Column(children: <Widget>[
                 if (isMigrationTime)
                   Padding(
-                    padding: EdgeInsets.symmetric(vertical: scaleSize(23)),
+                    padding: EdgeInsets.only(
+                        top: scaleSize(25), bottom: scaleSize(15)),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -64,9 +65,9 @@ class HistoryView extends StatelessWidget {
                         Text(
                           'blockchainStart'.tr(),
                           style: scaledTextStyle(
-                              fontSize: 19,
+                              fontSize: 20,
                               color: Colors.blueAccent,
-                              fontWeight: FontWeight.w500),
+                              fontWeight: FontWeight.w400),
                         ),
                         Image(
                             image: const AssetImage('assets/party.png'),
@@ -83,7 +84,7 @@ class HistoryView extends StatelessWidget {
                     child: Text(
                       answer['dateDelimiter'],
                       style: scaledTextStyle(
-                          fontSize: 19,
+                          fontSize: 20,
                           color: orangeC,
                           fontWeight: FontWeight.w300),
                     ),
@@ -131,7 +132,7 @@ class HistoryView extends StatelessWidget {
                         Text(
                           'identityMigrated'.tr(),
                           style: scaledTextStyle(
-                              fontSize: 19,
+                              fontSize: 20,
                               color: Colors.green[700],
                               fontWeight: FontWeight.w500),
                         ),
@@ -155,10 +156,18 @@ class HistoryView extends StatelessWidget {
               Column(
                 children: <Widget>[
                   ScaledSizedBox(height: 15),
-                  Text("historyStart".tr(),
-                      textAlign: TextAlign.center,
-                      style: scaledTextStyle(fontSize: 20)),
-                  ScaledSizedBox(height: 15)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Icon(Icons.blur_on_outlined, size: scaleSize(31)),
+                      Text("historyStart".tr(),
+                          textAlign: TextAlign.center,
+                          style: scaledTextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w300)),
+                      Icon(Icons.blur_on_outlined, size: scaleSize(31)),
+                    ],
+                  ),
+                  ScaledSizedBox(height: 30)
                 ],
               )
           ]);

@@ -29,9 +29,7 @@ class IdentityStatus extends StatelessWidget {
           future: sub.idtyStatus([address]),
           initialData: [walletData.identityStatus],
           builder: (context, AsyncSnapshot<List<IdtyStatus>> snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return const Loading(size: 18);
-            } else if (snapshot.hasError || snapshot.data == null) {
+            if (snapshot.hasError || snapshot.data == null) {
               log.e(snapshot.error);
               return const Icon(Icons.close, color: Colors.red);
             }

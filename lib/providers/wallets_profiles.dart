@@ -113,7 +113,10 @@ class WalletsProfilesProvider with ChangeNotifier {
 
 Future<bool> isAddress(String address) async {
   final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-  return await sub.sdk.api.account.checkAddressFormat(address, sub.initSs58) ??
+  return await sub.sdk.api.account
+          .checkAddressFormat(address, sub.initSs58)
+          .timeout(const Duration(milliseconds: 300))
+          .onError((_, __) => false) ??
       false;
 }
 

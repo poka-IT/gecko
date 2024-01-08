@@ -5,7 +5,6 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
-import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 

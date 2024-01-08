@@ -23,25 +23,45 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  bool canPasteAddress = false;
-  String pastedAddress = '';
   Timer? debounce;
   final int debouneTime = 50;
+  bool canPasteAddress = false;
+  String pastedAddress = '';
+  Timer? clipboardPollingTimer;
 
-  Future getClipBoard() async {
+  void getClipBoard() {
     final searchProvider = Provider.of<SearchProvider>(context, listen: false);
-    final clipboard = await Clipboard.getData('text/plain');
-    pastedAddress = clipboard?.text ?? '';
-    canPasteAddress = await isAddress(pastedAddress);
-    searchProvider.reload();
+
+    // Function to check clipboard and update if necessary
+    Future<void> checkAndUpdateClipboard() async {
+      var clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+      if (clipboardData?.text != null && clipboardData!.text != pastedAddress) {
+        pastedAddress = clipboardData.text ?? '';
+        canPasteAddress = await isAddress(pastedAddress);
+        searchProvider.reload();
+      }
+    }
+
+    // Check clipboard immediately
+    checkAndUpdateClipboard();
+
+    // Set up the periodic clipboard checking
+    clipboardPollingTimer =
+        Timer.periodic(const Duration(milliseconds: 500), (_) async {
+      await checkAndUpdateClipboard();
+    });
   }
 
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await getClipBoard();
-    });
+    getClipBoard();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    clipboardPollingTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -82,7 +102,6 @@ class _SearchScreenState extends State<SearchScreen> {
                   onChanged: (v) => {
                     if (debounce?.isActive ?? false) {debounce!.cancel()},
                     debounce = Timer(Duration(milliseconds: debouneTime), () {
-                      getClipBoard();
                       searchProvider.reload();
                     })
                   },
@@ -99,7 +118,6 @@ class _SearchScreenState extends State<SearchScreen> {
                             child: IconButton(
                               onPressed: (() async => {
                                     searchProvider.searchController.text = '',
-                                    await getClipBoard(),
                                     searchProvider.reload(),
                                   }),
                               icon: Icon(

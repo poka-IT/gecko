@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -10,6 +9,7 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/balance.dart';
+import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:gecko/widgets/search_identity_query.dart';
@@ -47,11 +47,9 @@ class SearchResult extends StatelessWidget {
           }
         }
         return const Center(
-          heightFactor: 5,
-          child: CircularProgressIndicator(
-            strokeWidth: 3,
-            backgroundColor: yellowC,
-            color: orangeC,
+          child: Loading(
+            stroke: 3,
+            size: 30,
           ),
         );
       },

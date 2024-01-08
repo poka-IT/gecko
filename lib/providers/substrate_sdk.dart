@@ -209,26 +209,27 @@ class SubstrateSdk with ChangeNotifier {
         await _getStorage('identity.identityIndexOf.multi($jsonString)'));
   }
 
-  Future<List<int>?> getCertsCounter(String address) async {
+  Future<List<int>> getCertsCounter(String address) async {
     final idtyIndex = await _getIdentityIndexOf(address);
     if (idtyIndex == null) {
-      return null;
+      return [];
     }
     final certsReceiver =
         await _getStorage('cert.storageIdtyCertMeta($idtyIndex)') ?? [];
 
-    if (certsCounterCache[address] == null) {
-      certsCounterCache.putIfAbsent(address, () => []);
-    }
     try {
       certsCounterCache.update(
           address,
           (value) => [
                 certsReceiver['receivedCount'] as int,
                 certsReceiver['issuedCount'] as int
+              ],
+          ifAbsent: () => [
+                certsReceiver['receivedCount'] as int,
+                certsReceiver['issuedCount'] as int
               ]);
     } catch (e) {
-      // catching String to int error .. network error?
+      log.e(e);
     }
     return certsCounterCache[address]!;
   }
@@ -1059,7 +1060,7 @@ class SubstrateSdk with ChangeNotifier {
     final toCerts = await getCertsCounter(destAddress);
 
     log.d(
-        "debug toCert: ${toCerts?[0]} --- ${currencyParameters['minCertForMembership']!} --- $toIdtyStatus");
+        "debug toCert: ${toCerts[0]} --- ${currencyParameters['minCertForMembership']!} --- $toIdtyStatus");
 
     if (toIdtyStatus == IdtyStatus.none) {
       txInfo = TxInfoData(
@@ -1070,7 +1071,7 @@ class SubstrateSdk with ChangeNotifier {
       txOptions = [destAddress];
     } else if (toIdtyStatus == IdtyStatus.validated ||
         toIdtyStatus == IdtyStatus.confirmed) {
-      if (toCerts![0] >= currencyParameters['minCertForMembership']! - 1 &&
+      if (toCerts[0] >= currencyParameters['minCertForMembership']! - 1 &&
           toIdtyStatus != IdtyStatus.validated) {
         log.d('Batch cert and membership validation');
         txInfo = TxInfoData(

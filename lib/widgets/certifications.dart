@@ -16,31 +16,35 @@ class Certifications extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sub = Provider.of<SubstrateSdk>(context);
+
     return Column(children: <Widget>[
-      Consumer<SubstrateSdk>(builder: (context, sdk, _) {
-        return FutureBuilder(
-            future: sdk.getCertsCounter(address),
-            builder: (BuildContext context, AsyncSnapshot<List<int>?> certs) {
-              return certs.data != null
-                  ? Row(
-                      children: [
-                        Image.asset('assets/medal.png',
-                            color: color, height: scaleSize(18)),
-                        ScaledSizedBox(width: 1),
-                        Text(certs.data?[0].toString() ?? '0',
-                            style:
-                                scaledTextStyle(fontSize: size, color: color)),
-                        ScaledSizedBox(width: 5),
-                        Text(
-                          "(${certs.data?[1].toString() ?? '0'})",
-                          style: scaledTextStyle(
-                              fontSize: size * 0.7, color: color),
-                        )
-                      ],
-                    )
-                  : const SizedBox();
-            });
-      }),
+      FutureBuilder(
+          future: sub.getCertsCounter(address),
+          builder: (BuildContext context, AsyncSnapshot<List<int>?> certs) {
+            if ((certs.data != null && certs.data!.isEmpty) ||
+                sub.certsCounterCache[address] == null) {
+              return const SizedBox.shrink();
+            }
+
+            final receivedCount = sub.certsCounterCache[address]![0];
+            final sentCount = sub.certsCounterCache[address]![1];
+
+            return Row(
+              children: [
+                Image.asset('assets/medal.png',
+                    color: color, height: scaleSize(18)),
+                ScaledSizedBox(width: 1),
+                Text(receivedCount.toString(),
+                    style: scaledTextStyle(fontSize: size, color: color)),
+                ScaledSizedBox(width: 5),
+                Text(
+                  "($sentCount)",
+                  style: scaledTextStyle(fontSize: size * 0.7, color: color),
+                )
+              ],
+            );
+          }),
     ]);
   }
 }

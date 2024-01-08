@@ -327,6 +327,9 @@ class WalletOptions extends StatelessWidget {
           initialData: const [IdtyStatus.unknown],
           builder:
               (BuildContext context, AsyncSnapshot<List<IdtyStatus>> snapshot) {
+            if (!snapshot.hasData || snapshot.hasError) {
+              return const SizedBox.shrink();
+            }
             if (snapshot.data!.first == IdtyStatus.created) {
               return Column(children: [
                 ScaledSizedBox(
@@ -526,7 +529,8 @@ class WalletOptions extends StatelessWidget {
         future: sub.hasAccountConsumers(wallet.address),
         builder: (BuildContext context, AsyncSnapshot<bool> hasConsumers) {
           if (hasConsumers.connectionState != ConnectionState.done ||
-              hasConsumers.hasError) {
+              hasConsumers.hasError ||
+              !hasConsumers.hasData) {
             return const Text('');
           }
           final double balance =

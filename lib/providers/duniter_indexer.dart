@@ -203,7 +203,7 @@ class DuniterIndexer with ChangeNotifier {
       'name': name,
     };
     final result = await _execQuery(isIdtyExistQ, variables);
-    return result.data!['identity']?.isNotEmpty ?? false;
+    return result.data?['identity']?.isNotEmpty ?? false;
   }
 
   Future<DateTime> getBlockStart() async {

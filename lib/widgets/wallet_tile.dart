@@ -151,7 +151,7 @@ class BalanceBuilder extends StatelessWidget {
                     address: address,
                     size: 14,
                     color: isDefault ? Colors.white : Colors.black,
-                    loadingColor: isDefault ? yellowC : orangeC),
+         ),
               )
             ],
           )),

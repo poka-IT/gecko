@@ -5,6 +5,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
+import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 
@@ -28,6 +29,13 @@ class IdentityStatus extends StatelessWidget {
           future: sub.idtyStatus([address]),
           initialData: [walletData.identityStatus],
           builder: (context, AsyncSnapshot<List<IdtyStatus>> snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const Loading(size: 18);
+            } else if (snapshot.hasError || snapshot.data == null) {
+              log.e(snapshot.error);
+              return const Icon(Icons.close, color: Colors.red);
+            }
+
             final resStatus = snapshot.data!.first;
             walletData.identityStatus = resStatus;
             walletBox.put(address, walletData);
@@ -51,7 +59,7 @@ class IdentityStatus extends StatelessWidget {
             }
 
             final Map<IdtyStatus, String> statusText = {
-              IdtyStatus.none: 'noIdentity'.tr(),
+              IdtyStatus.none: '',
               IdtyStatus.created: 'identityCreated'.tr(),
               IdtyStatus.confirmed: 'identityConfirmed'.tr(),
               IdtyStatus.validated: 'memberValidated'.tr(),

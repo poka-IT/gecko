@@ -51,7 +51,7 @@ class CertificationsScreen extends StatelessWidget {
                     CertsCounter(address: address)
                   ]),
                   content: CertsList(
-                      address: address, direction: CertDirection.sent),
+                      address: address, direction: CertDirection.received),
                   contentHorizontalPadding: 0,
                   contentBorderWidth: 1,
                 ),

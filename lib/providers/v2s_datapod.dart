@@ -5,26 +5,20 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_datapod.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 class V2sDatapodProvider with ChangeNotifier {
+  late GraphQLClient datapodClient;
+
   Future<QueryResult> _execQuery(
       String query, Map<String, dynamic> variables) async {
-    final httpLink = HttpLink('$datapodEndpoint/v1/graphql');
-
-    final GraphQLClient client = GraphQLClient(
-      cache: GraphQLCache(),
-      link: httpLink,
-    );
-
     final QueryOptions options =
         QueryOptions(document: gql(query), variables: variables);
 
-    return await client.query(options);
+    return await datapodClient.query(options);
   }
 
   Future<bool> updateProfile(
@@ -36,9 +30,6 @@ class V2sDatapodProvider with ChangeNotifier {
       List<Map<String, String>>? socials,
       Map<String, double>? geoloc}) async {
     final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-    final myWallets =
-        Provider.of<MyWalletsProvider>(homeContext, listen: false);
-    final walletData = myWallets.getWalletDataByAddress(address);
 
     final messageToSign = jsonEncode({
       'address': address,
@@ -70,9 +61,6 @@ class V2sDatapodProvider with ChangeNotifier {
       return false;
     }
     log.d(result.data!['updateProfile']['message']);
-    walletData!.profileUpdatedTime = DateTime.now();
-    walletBox.put(address, walletData);
-
     return true;
   }
 
@@ -145,8 +133,8 @@ class V2sDatapodProvider with ChangeNotifier {
     return profileDate;
   }
 
-  Future<Image> getAvatar(String address,
-      {double size = 20, bool saveOnDisk = false, String? uuid}) async {
+  Future<Image> getRemoteAvatar(String address,
+      {double size = 20, String? uuid}) async {
     final variables = <String, dynamic>{
       'address': address,
     };
@@ -164,12 +152,8 @@ class V2sDatapodProvider with ChangeNotifier {
     final sanitizedAvatar64 =
         avatar64.replaceAll('\n', '').replaceAll('\r', '').replaceAll(' ', '');
 
-    if (saveOnDisk) {
-      log.d('We save avatar for $address');
-      await saveAvatar(address, sanitizedAvatar64, uuid);
-    } else {
-      await cacheAvatar(address, sanitizedAvatar64);
-    }
+    log.d('We save avatar for $address');
+    await saveAvatar(address, sanitizedAvatar64, uuid);
 
     return Image.memory(
       base64.decode(sanitizedAvatar64),
@@ -185,16 +169,26 @@ class V2sDatapodProvider with ChangeNotifier {
   }
 
   Future<File> cacheAvatar(String address, String data) async {
-    final file = File('${avatarsCacheDirectory.path}/$address');
-    return await file.writeAsBytes(base64.decode(data));
+    final uuid = const Uuid().v4();
+    final tempFile = File('${avatarsCacheDirectory.path}/$uuid$address');
+    final targetFile = File('${avatarsCacheDirectory.path}/$address');
+
+    try {
+      // Write to a temporary file first to prevent data race
+      await tempFile.writeAsBytes(base64.decode(data));
+      log.d('Caching avatar of $address');
+      return await tempFile.rename(targetFile.path);
+    } catch (e) {
+      log.e("An error occurred while caching avatar: $e");
+      rethrow;
+    }
   }
 
-  Image getAvatarLocal(String address, double size) {
+  Image getAvatarLocal(String address) {
     final avatarFile = File('${avatarsCacheDirectory.path}/$address');
     return Image.file(
       avatarFile,
-      height: size,
-      fit: BoxFit.fitWidth,
+      fit: BoxFit.cover,
     );
   }
 
@@ -207,12 +201,11 @@ class V2sDatapodProvider with ChangeNotifier {
     }
   }
 
-    Future deleteAvatarsDirectory() async {
+  Future deleteAvatarsDirectory() async {
     if (await avatarsDirectory.exists()) {
       await avatarsDirectory.delete(recursive: true);
     }
   }
-
 
   reload() {
     notifyListeners();

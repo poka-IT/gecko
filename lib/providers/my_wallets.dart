@@ -119,6 +119,7 @@ class MyWalletsProvider with ChangeNotifier {
         final avatarFolder = Directory('${directory.path}/avatars/');
         if (await avatarFolder.exists()) {
           await avatarFolder.delete(recursive: true);
+          await avatarFolder.create();
         }
 
         myWalletProvider.pinCode = '';

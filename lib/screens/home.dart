@@ -20,6 +20,7 @@ import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
 import 'package:gecko/widgets/drawer.dart';
 import 'package:gecko/widgets/buttons/home_buttons.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -76,7 +77,25 @@ class _HomeScreenState extends State<HomeScreen> {
         homeProvider.isWalletBoxInit = true;
         myWalletProvider.reload();
 
-        duniterIndexer.getValidIndexerEndpoint();
+        duniterIndexer.getValidIndexerEndpoint().then((validIndexerEndpoint) {
+          final wsLinkIndexer = WebSocketLink(
+            'wss://$validIndexerEndpoint/v1/graphql',
+          );
+
+          final wsLinkDatapod = WebSocketLink(
+            'wss://$datapodEndpoint/v1/graphql',
+          );
+
+          duniterIndexer.indexerClient = GraphQLClient(
+            cache: GraphQLCache(),
+            link: wsLinkIndexer,
+          );
+
+          datapod.datapodClient = GraphQLClient(
+            cache: GraphQLCache(),
+            link: wsLinkDatapod,
+          );
+        });
 
         await homeProvider.getValidEndpoints();
         if (configBox.get('isCacheChecked') == null) {
@@ -101,7 +120,6 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         });
       }
-      // _duniterIndexer.checkIndexerEndpointBackground();
     });
     super.initState();
   }

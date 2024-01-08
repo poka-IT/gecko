@@ -35,8 +35,8 @@ class DebugScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   SizedBox(
-                    height: 60,
-                    width: 250,
+                    height: 50,
+                    width: 210,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
@@ -47,7 +47,7 @@ class DebugScreen extends StatelessWidget {
                       child: const Text(
                         'Spawn a bloc',
                         style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.w600),
+                            fontSize: 17, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),

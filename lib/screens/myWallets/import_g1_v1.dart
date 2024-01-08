@@ -91,9 +91,10 @@ class ImportG1v1 extends StatelessWidget {
                       keyboardType: TextInputType.text,
                       controller: sub.csSalt,
                       obscureText: !sub.isCesiumIDVisible,
-                      style: scaledTextStyle(fontSize: 16),
+                      style: scaledTextStyle(fontSize: 14),
                       decoration: InputDecoration(
                         hintText: 'enterCesiumId'.tr(),
+                        hintStyle: scaledTextStyle(fontSize: 14),
                         suffixIcon: IconButton(
                           key: keyCesiumIdVisible,
                           icon: Icon(
@@ -132,9 +133,10 @@ class ImportG1v1 extends StatelessWidget {
                       keyboardType: TextInputType.text,
                       controller: sub.csPassword,
                       obscureText: !sub.isCesiumIDVisible,
-                      style: scaledTextStyle(fontSize: 16),
+                      style: scaledTextStyle(fontSize: 14),
                       decoration: InputDecoration(
                         hintText: 'enterCesiumPassword'.tr(),
+                        hintStyle: scaledTextStyle(fontSize: 14),
                         suffixIcon: IconButton(
                           icon: Icon(
                             sub.isCesiumIDVisible
@@ -167,7 +169,7 @@ class ImportG1v1 extends StatelessWidget {
                                 child: Text(
                                   'v1: ${getShortPubkey(sub.g1V1OldPubkey)}',
                                   style: scaledTextStyle(
-                                      fontSize: 17,
+                                      fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                       fontFamily: 'Monospace'),
                                 ),
@@ -183,7 +185,7 @@ class ImportG1v1 extends StatelessWidget {
                                 child: Text(
                                   'v2: ${getShortPubkey(sub.g1V1NewAddress)}',
                                   style: scaledTextStyle(
-                                      fontSize: 17,
+                                      fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                       fontFamily: 'Monospace'),
                                 ),
@@ -212,7 +214,7 @@ class ImportG1v1 extends StatelessWidget {
                     ScaledSizedBox(height: 20),
                     Text(
                       'migrateToThisWallet'.tr(),
-                      style: scaledTextStyle(fontSize: 17),
+                      style: scaledTextStyle(fontSize: 16),
                     ),
                     ScaledSizedBox(height: 5),
                     DropdownButtonHideUnderline(
@@ -226,7 +228,7 @@ class ImportG1v1 extends StatelessWidget {
                             value: wallet,
                             child: Text(
                               wallet.name!,
-                              style: scaledTextStyle(fontSize: 17),
+                              style: scaledTextStyle(fontSize: 16),
                             ),
                           );
                         }).toList(),
@@ -292,7 +294,7 @@ class ImportG1v1 extends StatelessWidget {
                         child: Text(
                           'migrateAccount'.tr(),
                           style: scaledTextStyle(
-                              fontSize: 20, fontWeight: FontWeight.w600),
+                              fontSize: 19, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
@@ -301,7 +303,7 @@ class ImportG1v1 extends StatelessWidget {
                       statusData.validationStatus,
                       textAlign: TextAlign.center,
                       style: scaledTextStyle(
-                          fontSize: 14, color: Colors.grey[600]),
+                          fontSize: 12, color: Colors.grey[600]),
                     )
                   ]);
                 });

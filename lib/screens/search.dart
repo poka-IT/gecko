@@ -32,7 +32,7 @@ class _SearchScreenState extends State<SearchScreen> {
     final searchProvider = Provider.of<SearchProvider>(context, listen: false);
     final clipboard = await Clipboard.getData('text/plain');
     pastedAddress = clipboard?.text ?? '';
-    canPasteAddress = isAddress(pastedAddress);
+    canPasteAddress = await isAddress(pastedAddress);
     searchProvider.reload();
   }
 

@@ -18,7 +18,7 @@ query ($name: String!) {
 }
 ''';
 
-const String getHistoryByAddressQ = r'''
+const String getHistoryByAddressRelayQ = r'''
 query ($address: String!, $number: Int!, $cursor: String) {
   transaction_connection(where: 
   {_or: [
@@ -56,9 +56,36 @@ query ($address: String!, $number: Int!, $cursor: String) {
 }
 ''';
 
+const String getHistoryByAddressQ = r'''
+query ($address: String!, $number: Int!, $offset: Int!) {
+  transaction_aggregate(where: {_or: [{issuer_pubkey: {_eq: $address}}, {receiver_pubkey: {_eq: $address}}]}) {
+    aggregate {
+      count
+    }
+  }
+  transaction(where: {_or: [{issuer_pubkey: {_eq: $address}}, {receiver_pubkey: {_eq: $address}}]}, order_by: {created_at: desc}, limit: $number, offset: $offset) {
+    amount
+    comment
+    created_at
+    issuer {
+      pubkey
+      identity {
+        name
+      }
+    }
+    receiver {
+      pubkey
+      identity {
+        name
+      }
+    }
+  }
+}
+''';
+
 const String getCertsReceived = r'''
 query ($address: String!) {
-  certification(where: {receiver: {pubkey: {_eq: $address}}}) {
+  certification(where: {receiver: {pubkey: {_eq: $address}}}, order_by: {created_at: desc}) {
     issuer {
       pubkey
       name
@@ -70,7 +97,7 @@ query ($address: String!) {
 
 const String getCertsSent = r'''
 query ($address: String!) {
-  certification(where: {issuer: {pubkey: {_eq: $address}}}) {
+  certification(where: {issuer: {pubkey: {_eq: $address}}}, order_by: {created_at: desc}) {
     receiver {
       pubkey
       name
@@ -93,6 +120,18 @@ query {
   block(limit: 1) {
     created_at
     number
+  }
+}
+''';
+
+const String subscribeHistoryIssuedQ = r'''
+subscription ($address: String!) {
+  account_by_pk(pubkey: $address) {
+    transactions_issued(limit: 1, order_by: {created_at: desc}) {
+      receiver_pubkey
+      amount
+      created_at
+    }
   }
 }
 ''';

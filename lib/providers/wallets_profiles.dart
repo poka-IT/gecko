@@ -6,10 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
+import 'package:provider/provider.dart';
 
 class WalletsProfilesProvider with ChangeNotifier {
   WalletsProfilesProvider(this.address);
@@ -35,7 +37,7 @@ class WalletsProfilesProvider with ChangeNotifier {
       log.e("BarcodeScanner ERR: $e");
       return 'false';
     }
-    if (isAddress(barcode.rawContent)) {
+    if (await isAddress(barcode.rawContent)) {
       address = barcode.rawContent;
       Navigator.popUntil(
         context,
@@ -93,24 +95,30 @@ class WalletsProfilesProvider with ChangeNotifier {
   }
 }
 
-bool isAddress(address) {
-  final RegExp regExp = RegExp(
-    r'^[a-zA-Z0-9]+$',
-    caseSensitive: false,
-    multiLine: false,
-  );
+// bool isAddress(address) {
+//   final RegExp regExp = RegExp(
+//     r'^[a-zA-Z0-9]+$',
+//     caseSensitive: false,
+//     multiLine: false,
+//   );
 
-  if (regExp.hasMatch(address) == true &&
-      address.length > 45 &&
-      address.length < 52) {
-    return true;
-  } else {
-    return false;
-  }
+//   if (regExp.hasMatch(address) == true &&
+//       address.length > 45 &&
+//       address.length < 52) {
+//     return true;
+//   } else {
+//     return false;
+//   }
+// }
+
+Future<bool> isAddress(String address) async {
+  final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
+  return await sub.sdk.api.account.checkAddressFormat(address, sub.initSs58) ??
+      false;
 }
 
 snackMessage(context,
-    {required String message, int duration = 2, double fontSize = 16}) {
+    {required String message, int duration = 2, double fontSize = 14}) {
   final snackBar = SnackBar(
       backgroundColor: Colors.grey[900],
       padding: EdgeInsets.all(scaleSize(19)),
@@ -124,7 +132,7 @@ snackCopyKey(context) {
       backgroundColor: Colors.grey[900],
       padding: EdgeInsets.all(scaleSize(19)),
       content: Text("thisAddressHasBeenCopiedToClipboard".tr(),
-          style: scaledTextStyle(fontSize: 16)),
+          style: scaledTextStyle(fontSize: 14)),
       duration: const Duration(seconds: 2));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
@@ -134,7 +142,7 @@ snackCopySeed(context) {
       backgroundColor: Colors.grey[900],
       padding: EdgeInsets.all(scaleSize(19)),
       content: Text("thisMnemonicHasBeenCopiedToClipboard".tr(),
-          style: scaledTextStyle(fontSize: 16)),
+          style: scaledTextStyle(fontSize: 14)),
       duration: const Duration(seconds: 4));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }

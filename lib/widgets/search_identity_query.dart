@@ -29,19 +29,8 @@ class SearchIdentityQuery extends StatelessWidget {
       return Text('noResult'.tr());
     }
 
-    final httpLink = HttpLink(
-      '$indexerEndpoint/v1/graphql',
-    );
-
-    final client = ValueNotifier(
-      GraphQLClient(
-        cache: GraphQLCache(
-            store: HiveStore()), // GraphQLCache(store: HiveStore())
-        link: httpLink,
-      ),
-    );
     return GraphQLProvider(
-      client: client,
+      client: ValueNotifier(duniterIndexer.indexerClient),
       child: Query(
           options: QueryOptions(
             document: gql(searchAddressByNameQ),
@@ -74,7 +63,7 @@ class SearchIdentityQuery extends StatelessWidget {
 
             searchProvider.resultLenght = identities.length;
 
-            final avatarSize = scaleSize(45);
+            const double avatarSize = 45;
             return Expanded(
               child: ListView(children: <Widget>[
                 for (Map profile in identities)

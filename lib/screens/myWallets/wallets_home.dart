@@ -44,7 +44,7 @@ class _WalletsHomeState extends State<WalletsHome> {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        elevation: 1,
+        backgroundColor: yellowC,
         toolbarHeight: scaleSize(57),
         title: Row(
           children: [
@@ -62,7 +62,6 @@ class _WalletsHomeState extends State<WalletsHome> {
             ),
           ],
         ),
-        backgroundColor: const Color(0xffFFD58D),
       ),
       bottomNavigationBar:
           Consumer<MyWalletsProvider>(builder: (context, _, __) {
@@ -161,7 +160,7 @@ class _WalletsHomeState extends State<WalletsHome> {
                   'explainDraggableWallet'.tr(),
                   textAlign: TextAlign.center,
                   style: scaledTextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w500),
+                      fontSize: 17, fontWeight: FontWeight.w500),
                 ),
               ],
             ))

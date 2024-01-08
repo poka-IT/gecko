@@ -11,11 +11,12 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 
 class DuniterIndexer with ChangeNotifier {
   Map<String, String?> walletNameIndexer = {};
-  String? fetchMoreCursor;
-  Map? pageInfo;
   List? transBC;
   List listIndexerEndpoints = [];
   bool isLoadingIndexer = false;
+  bool hasNextPage = false;
+  Future<QueryResult<Object?>?> Function()? refetch;
+  late GraphQLClient indexerClient;
 
   void reload() {
     notifyListeners();
@@ -27,10 +28,11 @@ class DuniterIndexer with ChangeNotifier {
     final client = HttpClient();
     client.connectionTimeout = const Duration(milliseconds: 4000);
     try {
-      final request = await client.postUrl(Uri.parse('$endpoint/v1/graphql'));
+      final request =
+          await client.postUrl(Uri.parse('https://$endpoint/v1/graphql'));
       final response = await request.close();
       if (response.statusCode != 200) {
-        log.w('INDEXER IS OFFLINE');
+        log.w('Indexer $endpoint is offline');
         indexerEndpoint = '';
         isLoadingIndexer = false;
         notifyListeners();
@@ -46,7 +48,7 @@ class DuniterIndexer with ChangeNotifier {
         return true;
       }
     } catch (e) {
-      log.w('INDEXER IS OFFLINE');
+      log.w('Indexer $endpoint is offline');
       indexerEndpoint = '';
       isLoadingIndexer = false;
       notifyListeners();
@@ -96,7 +98,7 @@ class DuniterIndexer with ChangeNotifier {
       }
 
       try {
-        final endpointPath = '${listIndexerEndpoints[i]}/v1/graphql';
+        final endpointPath = 'https://${listIndexerEndpoints[i]}/v1/graphql';
 
         final request = await client.postUrl(Uri.parse(endpointPath));
         final response = await request.close();
@@ -128,14 +130,13 @@ class DuniterIndexer with ChangeNotifier {
     return indexerEndpoint;
   }
 
-  List parseHistory(blockchainTX, pubkey) {
+  List parseHistory(List blockchainTX, String address) {
     List transBC = [];
     int i = 0;
 
-    for (final trans in blockchainTX) {
-      final transaction = trans['node'];
+    for (final transaction in blockchainTX) {
       final direction =
-          transaction['issuer_pubkey'] != pubkey ? 'RECEIVED' : 'SENT';
+          transaction['issuer']['pubkey'] != address ? 'RECEIVED' : 'SENT';
 
       transBC.add(i);
       transBC[i] = [];
@@ -143,10 +144,10 @@ class DuniterIndexer with ChangeNotifier {
       final amountBrut = transaction['amount'];
       final amount = removeDecimalZero(amountBrut / 100);
       if (direction == "RECEIVED") {
-        transBC[i].add(transaction['issuer_pubkey']);
+        transBC[i].add(transaction['issuer']['pubkey']);
         transBC[i].add(transaction['issuer']['identity']?['name'] ?? '');
       } else if (direction == "SENT") {
-        transBC[i].add(transaction['receiver_pubkey']);
+        transBC[i].add(transaction['receiver']['pubkey']);
         transBC[i].add(transaction['receiver']['identity']?['name'] ?? '');
       }
       transBC[i].add(amount);
@@ -157,38 +158,35 @@ class DuniterIndexer with ChangeNotifier {
     return transBC;
   }
 
-  FetchMoreOptions? mergeQueryResult(result, opts, pubkey, nRepositories) {
-    final List<dynamic>? blockchainTX =
-        (result.data['transaction_connection']['edges'] as List<dynamic>?);
+  FetchMoreOptions? mergeQueryResult(
+      {required List transactions,
+      required FetchMoreOptions? opts,
+      required String address,
+      required int nRepositories,
+      required int offset}) {
+    // pageInfo = result.data!['transaction_connection']['pageInfo'];
+    // fetchMoreCursor = pageInfo!['endCursor'];
+    // final hasNextPage = pageInfo!['hasNextPage'];
+    // final hasPreviousPage = pageInfo!['hasPreviousPage'];
+    // log.d('endCursor: $fetchMoreCursor $hasNextPage $hasPreviousPage');
 
-    pageInfo = result.data['transaction_connection']['pageInfo'];
-    fetchMoreCursor = pageInfo!['endCursor'];
-    final hasNextPage = pageInfo!['hasNextPage'];
-    final hasPreviousPage = pageInfo!['hasPreviousPage'];
-    log.d('endCursor: $fetchMoreCursor $hasNextPage $hasPreviousPage');
+    // if (fetchMoreCursor != null) {
+    opts = FetchMoreOptions(
+      variables: {'offset': offset, 'number': nRepositories},
+      updateQuery: (previousResultData, fetchMoreResultData) {
+        final List<dynamic> repos = [
+          ...previousResultData!['transaction'] as List<dynamic>,
+          ...fetchMoreResultData!['transaction'] as List<dynamic>
+        ];
 
-    if (fetchMoreCursor != null) {
-      opts = FetchMoreOptions(
-        variables: {'cursor': fetchMoreCursor, 'number': nRepositories},
-        updateQuery: (previousResultData, fetchMoreResultData) {
-          final List<dynamic> repos = [
-            ...previousResultData!['transaction_connection']['edges']
-                as List<dynamic>,
-            ...fetchMoreResultData!['transaction_connection']['edges']
-                as List<dynamic>
-          ];
-
-          fetchMoreResultData['transaction_connection']['edges'] = repos;
-          return fetchMoreResultData;
-        },
-      );
-    }
-
-    if (fetchMoreCursor != null) {
-      transBC = parseHistory(blockchainTX, pubkey);
-    } else {
-      log.d("Activity start of $pubkey");
-    }
+        fetchMoreResultData['transaction'] = repos;
+        return fetchMoreResultData;
+      },
+    );
+    transBC = parseHistory(transactions, address);
+    // } else {
+    //   log.d("Activity start of $address");
+    // }
 
     return opts;
   }
@@ -197,113 +195,119 @@ class DuniterIndexer with ChangeNotifier {
     String result = n.toStringAsFixed(n.truncateToDouble() == n ? 0 : 2);
     return double.parse(result);
   }
-}
 
 //// Manuals queries
 
-Future<bool> isIdtyExist(String name) async {
-  final variables = <String, dynamic>{
-    'name': name,
-  };
-  final result = await _execQuery(isIdtyExistQ, variables);
-  return result.data!['identity']?.isNotEmpty ?? false;
-}
-
-Future<DateTime> getBlockStart() async {
-  final result = await _execQuery(getBlockchainStartQ, {});
-  if (!result.hasException) {
-    startBlockchainTime =
-        DateTime.parse(result.data!['block'][0]['created_at']);
-    startBlockchainInitialized = true;
-    return startBlockchainTime;
-  }
-  return DateTime(0, 0, 0, 0, 0);
-}
-
-Future<QueryResult> _execQuery(
-    String query, Map<String, dynamic> variables) async {
-  final httpLink = HttpLink(
-    '$indexerEndpoint/v1/graphql',
-  );
-
-  final GraphQLClient client = GraphQLClient(
-    cache: GraphQLCache(),
-    link: httpLink,
-  );
-
-  final QueryOptions options =
-      QueryOptions(document: gql(query), variables: variables);
-
-  return await client.query(options);
-}
-
-Map computeHistoryView(repository, String address) {
-  final bool isUdUnit = configBox.get('isUdUnit') ?? false;
-  late double amount;
-  late String finalAmount;
-  final DateTime date = repository[0];
-
-  final dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, {
-        1,
-        2,
-        7,
-        9
-      }.contains(date.month) ? 4 : 3)}";
-
-  DateTime normalizeDate(DateTime inputDate) {
-    return DateTime(inputDate.year, inputDate.month, inputDate.day);
+  Future<bool> isIdtyExist(String name) async {
+    final variables = <String, dynamic>{
+      'name': name,
+    };
+    final result = await _execQuery(isIdtyExistQ, variables);
+    return result.data!['identity']?.isNotEmpty ?? false;
   }
 
-  String getDateDelimiter() {
-    DateTime now = DateTime.now();
-    final transactionDate = normalizeDate(date.toLocal());
-    final todayDate = normalizeDate(now);
-    final yesterdayDate = normalizeDate(now.subtract(const Duration(days: 1)));
-    final isSameWeek = weekNumber(transactionDate) == weekNumber(now) &&
-        transactionDate.year == now.year;
-    final isTodayOrYesterday =
-        transactionDate == todayDate || transactionDate == yesterdayDate;
-
-    if (transactionDate == todayDate) {
-      return "today".tr();
-    } else if (transactionDate == yesterdayDate) {
-      return "yesterday".tr();
-    } else if (isSameWeek && !isTodayOrYesterday) {
-      return "thisWeek".tr();
-    } else if (!isSameWeek && !isTodayOrYesterday) {
-      if (transactionDate.year == now.year) {
-        return monthsInYear[transactionDate.month]!;
-      } else {
-        return "${monthsInYear[transactionDate.month]} ${transactionDate.year}";
-      }
-    } else {
-      return '';
+  Future<DateTime> getBlockStart() async {
+    final result = await _execQuery(getBlockchainStartQ, {});
+    if (!result.hasException) {
+      startBlockchainTime =
+          DateTime.parse(result.data!['block'][0]['created_at']);
+      startBlockchainInitialized = true;
+      return startBlockchainTime;
     }
+    return DateTime(0, 0, 0, 0, 0);
   }
 
-  final dateDelimiter = getDateDelimiter();
+  Future<QueryResult> _execQuery(
+      String query, Map<String, dynamic> variables) async {
+    final options = QueryOptions(document: gql(query), variables: variables);
 
-  amount = repository[4] == 'RECEIVED' ? repository[3] : repository[3] * -1;
+    // 5GMyvKsTNk9wDBy9jwKaX6mhSzmFFtpdK9KNnmrLoSTSuJHv
 
-  if (isUdUnit) {
-    amount = round(amount / balanceRatio);
-    finalAmount = 'ud'.tr(args: ['$amount ']);
-  } else {
-    finalAmount = '$amount $currencyName';
+    return await indexerClient.query(options);
   }
 
-  bool isMigrationTime =
-      startBlockchainInitialized && date.compareTo(startBlockchainTime) < 0;
+  Stream<QueryResult> subscribeHistoryIssued(String address) {
+    final variables = <String, dynamic>{
+      'address': address,
+    };
 
-  return {
-    'finalAmount': finalAmount,
-    'isMigrationTime': isMigrationTime,
-    'dateDelimiter': dateDelimiter,
-    'dateForm': dateForm,
-  };
-}
+    final options = SubscriptionOptions(
+      document: gql(subscribeHistoryIssuedQ),
+      variables: variables,
+    );
 
-int weekNumber(DateTime date) {
-  int dayOfYear = int.parse(DateFormat("D").format(date));
-  return ((dayOfYear - date.weekday + 10) / 7).floor();
+    return indexerClient.subscribe(options);
+  }
+
+  Map computeHistoryView(repository, String address) {
+    final bool isUdUnit = configBox.get('isUdUnit') ?? false;
+    late double amount;
+    late String finalAmount;
+    final DateTime date = repository[0];
+
+    final dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, {
+          1,
+          2,
+          7,
+          9
+        }.contains(date.month) ? 4 : 3)}";
+
+    DateTime normalizeDate(DateTime inputDate) {
+      return DateTime(inputDate.year, inputDate.month, inputDate.day);
+    }
+
+    String getDateDelimiter() {
+      DateTime now = DateTime.now();
+      final transactionDate = normalizeDate(date.toLocal());
+      final todayDate = normalizeDate(now);
+      final yesterdayDate =
+          normalizeDate(now.subtract(const Duration(days: 1)));
+      final isSameWeek = weekNumber(transactionDate) == weekNumber(now) &&
+          transactionDate.year == now.year;
+      final isTodayOrYesterday =
+          transactionDate == todayDate || transactionDate == yesterdayDate;
+
+      if (transactionDate == todayDate) {
+        return "today".tr();
+      } else if (transactionDate == yesterdayDate) {
+        return "yesterday".tr();
+      } else if (isSameWeek && !isTodayOrYesterday) {
+        return "thisWeek".tr();
+      } else if (!isSameWeek && !isTodayOrYesterday) {
+        if (transactionDate.year == now.year) {
+          return monthsInYear[transactionDate.month]!;
+        } else {
+          return "${monthsInYear[transactionDate.month]} ${transactionDate.year}";
+        }
+      } else {
+        return '';
+      }
+    }
+
+    final dateDelimiter = getDateDelimiter();
+
+    amount = repository[4] == 'RECEIVED' ? repository[3] : repository[3] * -1;
+
+    if (isUdUnit) {
+      amount = round(amount / balanceRatio);
+      finalAmount = 'ud'.tr(args: ['$amount ']);
+    } else {
+      finalAmount = '$amount $currencyName';
+    }
+
+    bool isMigrationTime =
+        startBlockchainInitialized && date.compareTo(startBlockchainTime) < 0;
+
+    return {
+      'finalAmount': finalAmount,
+      'isMigrationTime': isMigrationTime,
+      'dateDelimiter': dateDelimiter,
+      'dateForm': dateForm,
+    };
+  }
+
+  int weekNumber(DateTime date) {
+    int dayOfYear = int.parse(DateFormat("D").format(date));
+    return ((dayOfYear - date.weekday + 10) / 7).floor();
+  }
 }

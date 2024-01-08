@@ -5,6 +5,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:gecko/widgets/transaction_tile.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -34,13 +35,14 @@ class HistoryView extends StatelessWidget {
             ScaledSizedBox(height: 50),
             Text(
               "noTransactionToDisplay".tr(),
-              style: scaledTextStyle(fontSize: 18),
+              style: scaledTextStyle(fontSize: 17),
             )
           ])
         : Column(children: <Widget>[
             Column(
                 children: duniterIndexer.transBC!.map((repository) {
-              final answer = computeHistoryView(repository, address);
+              final answer =
+                  duniterIndexer.computeHistoryView(repository, address);
               pastDelimiters.add(answer['dateDelimiter']);
 
               bool isMigrationTime = false;
@@ -52,23 +54,24 @@ class HistoryView extends StatelessWidget {
               return Column(children: <Widget>[
                 if (isMigrationTime)
                   Padding(
-                    padding: EdgeInsets.symmetric(vertical: scaleSize(23)),
+                    padding: EdgeInsets.only(
+                        top: scaleSize(25), bottom: scaleSize(15)),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Image(
                             image: const AssetImage('assets/party.png'),
-                            height: scaleSize(32)),
+                            height: scaleSize(31)),
                         Text(
                           'blockchainStart'.tr(),
                           style: scaledTextStyle(
                               fontSize: 20,
                               color: Colors.blueAccent,
-                              fontWeight: FontWeight.w500),
+                              fontWeight: FontWeight.w400),
                         ),
                         Image(
                             image: const AssetImage('assets/party.png'),
-                            height: scaleSize(32)),
+                            height: scaleSize(31)),
                       ],
                     ),
                   ),
@@ -96,14 +99,14 @@ class HistoryView extends StatelessWidget {
                     context: context),
               ]);
             }).toList()),
-            if (result.isLoading && duniterIndexer.pageInfo!['hasPreviousPage'])
+            if (result.isLoading && duniterIndexer.hasNextPage)
               const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  CircularProgressIndicator(),
+                  Loading(size: 30, stroke: 3),
                 ],
               ),
-            if (!duniterIndexer.pageInfo!['hasNextPage'] &&
+            if (!duniterIndexer.hasNextPage &&
                 sub.oldOwnerKeys[address]?[0] != null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 30),
@@ -127,7 +130,7 @@ class HistoryView extends StatelessWidget {
                       ),
                       Column(children: [
                         Text(
-                          'Identité migré:'.tr(),
+                          'identityMigrated'.tr(),
                           style: scaledTextStyle(
                               fontSize: 20,
                               color: Colors.green[700],
@@ -149,14 +152,22 @@ class HistoryView extends StatelessWidget {
                   ),
                 ),
               ),
-            if (!duniterIndexer.pageInfo!['hasNextPage'])
+            if (!duniterIndexer.hasNextPage)
               Column(
                 children: <Widget>[
                   ScaledSizedBox(height: 15),
-                  Text("historyStart".tr(),
-                      textAlign: TextAlign.center,
-                      style: scaledTextStyle(fontSize: 20)),
-                  ScaledSizedBox(height: 15)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Icon(Icons.blur_on_outlined, size: scaleSize(31)),
+                      Text("historyStart".tr(),
+                          textAlign: TextAlign.center,
+                          style: scaledTextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w300)),
+                      Icon(Icons.blur_on_outlined, size: scaleSize(31)),
+                    ],
+                  ),
+                  ScaledSizedBox(height: 30)
                 ],
               )
           ]);

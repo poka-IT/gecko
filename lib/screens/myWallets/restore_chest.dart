@@ -108,7 +108,7 @@ class RestoreChest extends StatelessWidget {
                       child: Text(
                         'restoreThisChest'.tr(),
                         style: scaledTextStyle(
-                            fontSize: 20,
+                            fontSize: 19,
                             fontWeight: FontWeight.w600,
                             color: Colors.white),
                       ),

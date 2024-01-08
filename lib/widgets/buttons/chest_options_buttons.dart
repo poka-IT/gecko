@@ -79,7 +79,7 @@ class ChestOptionsButtons extends StatelessWidget {
           ],
         ),
       ),
-      ScaledSizedBox(height: 20),
+      // ScaledSizedBox(height: 20),
       // InkWell(
       //   key: keyChangeChest,
       //   onTap: () {

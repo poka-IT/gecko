@@ -6,7 +6,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_datapod.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/v2s_datapod.dart';
-import 'package:gecko/widgets/commons/loading.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -24,27 +23,17 @@ class DatapodAvatar extends StatelessWidget {
     if (cachedImage.existsSync()) {
       return ScaledSizedBox(
         width: size,
+        height: size,
         child: ClipOval(
-          child: datapod.getAvatarLocal(address, size),
+          child: datapod.getAvatarLocal(address),
         ),
       );
     }
 
-    final httpLink = HttpLink(
-      '$datapodEndpoint/v1/graphql',
-    );
-
-    final client = ValueNotifier(
-      GraphQLClient(
-        cache: GraphQLCache(store: HiveStore()),
-        link: httpLink,
-      ),
-    );
-
     return ScaledSizedBox(
       width: size,
       child: GraphQLProvider(
-        client: client,
+        client: ValueNotifier(datapod.datapodClient),
         child: Query(
             options: QueryOptions(
               document: gql(getAvatarQ),
@@ -53,9 +42,9 @@ class DatapodAvatar extends StatelessWidget {
               },
             ),
             builder: (QueryResult result, {fetchMore, refetch}) {
-              if (result.isLoading) {
-                return const Center(
-                  child: Loading(),
+              if (result.isLoading || result.data == null) {
+                return Center(
+                  child: ClipOval(child: datapod.defaultAvatar(size)),
                 );
               }
               final String? avatar64 =
@@ -75,8 +64,7 @@ class DatapodAvatar extends StatelessWidget {
               return ClipOval(
                 child: Image.memory(
                   base64.decode(sanitizedAvatar64),
-                  height: size,
-                  fit: BoxFit.fitWidth,
+                  fit: BoxFit.cover,
                 ),
               );
             }),

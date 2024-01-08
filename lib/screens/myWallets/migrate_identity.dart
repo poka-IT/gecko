@@ -9,12 +9,15 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
+import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:provider/provider.dart';
 
 class MigrateIdentityScreen extends StatelessWidget {
@@ -22,190 +25,251 @@ class MigrateIdentityScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final _homeProvider = Provider.of<HomeProvider>(context);
     final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
     final myWalletProvider =
         Provider.of<MyWalletsProvider>(context, listen: false);
+    final generatedWalletsProvider =
+        Provider.of<GenerateWalletsProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     final fromAddress = walletOptions.address.text;
-    final defaultWallet = myWalletProvider.getDefaultWallet();
-    final walletsList = myWalletProvider.listWallets.toList();
-    late WalletData selectedWallet;
-
-    if (fromAddress == defaultWallet.address) {
-      selectedWallet =
-          walletsList[fromAddress == walletsList[0].address ? 1 : 0];
-    } else {
-      selectedWallet = defaultWallet;
-    }
+    final newMnemonicSentence = TextEditingController();
+    final newWalletAddress = TextEditingController();
 
     final mdStyle = MarkdownStyleSheet(
-      p: scaledTextStyle(fontSize: 17, color: Colors.black, letterSpacing: 0.3),
+      p: scaledTextStyle(fontSize: 16, color: Colors.black, letterSpacing: 0.3),
       textAlign: WrapAlignment.center,
     );
+    final bool isUdUnit = configBox.get('isUdUnit') ?? false;
+    final unit = isUdUnit ? 'ud'.tr(args: ['']) : currencyName;
 
-    if (walletsList.length < 2) {
-      return Column(
-        children: [
-          ScaledSizedBox(height: 80),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Vous devez avoir au moins 2 portefeuilles\npour effecter cette opération',
-                style: scaledTextStyle(fontSize: 17),
-              )
-            ],
-          )
-        ],
+    var statusData = const MigrateWalletChecks.defaultValues();
+    var mnemonicIsValid = false;
+    int? matchDerivationNbr;
+    String matchInfo = '';
+
+    Future scanDerivations() async {
+      if (!await isAddress(newWalletAddress.text) ||
+          !await sub.isMnemonicValid(newMnemonicSentence.text) ||
+          !statusData.canValidate) {
+        mnemonicIsValid = false;
+        matchInfo = '';
+        walletOptions.reload();
+        return;
+      }
+      log.d('Scan derivations to find a match');
+
+      //Scan root wallet
+      final addressData = await sub.sdk.api.keyring.addressFromMnemonic(
+        sub.currencyParameters['ss58']!,
+        cryptoType: CryptoType.sr25519,
+        mnemonic: newMnemonicSentence.text,
       );
+
+      if (addressData.address == newWalletAddress.text) {
+        matchDerivationNbr = -1;
+        mnemonicIsValid = true;
+        walletOptions.reload();
+        return;
+      }
+
+      //Scan derivations
+      for (int derivationNbr in [
+        for (var i = 0; i < generatedWalletsProvider.numberScan; i += 1) i
+      ]) {
+        final addressData = await sub.sdk.api.keyring.addressFromMnemonic(
+            sub.currencyParameters['ss58']!,
+            cryptoType: CryptoType.sr25519,
+            mnemonic: newMnemonicSentence.text,
+            derivePath: '//$derivationNbr');
+
+        if (addressData.address == newWalletAddress.text) {
+          matchDerivationNbr = derivationNbr;
+          mnemonicIsValid = true;
+          matchInfo = "youCanMigrateThisIdentity".tr();
+          break;
+        } else {
+          mnemonicIsValid = false;
+        }
+      }
+
+      if (!mnemonicIsValid) {
+        matchInfo = "addressNotBelongToMnemonic".tr();
+      }
+      walletOptions.reload();
     }
 
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: GeckoAppBar('migrateIdentity'.tr()),
       body: SafeArea(
-        child: Consumer<SubstrateSdk>(builder: (context, sub, _) {
-          return FutureBuilder(
-              future: sub.getBalanceAndIdtyStatus(
-                  fromAddress, selectedWallet.address),
-              builder: (BuildContext context,
-                  AsyncSnapshot<MigrateWalletChecks> status) {
-                if (status.data == null) {
-                  return Column(children: [
-                    ScaledSizedBox(height: 80),
-                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      ScaledSizedBox(
-                        height: scaleSize(32),
-                        width: scaleSize(32),
-                        child: CircularProgressIndicator(
-                          color: orangeC,
-                          strokeWidth: scaleSize(4),
-                        ),
-                      ),
-                    ]),
-                  ]);
+        child: Column(children: <Widget>[
+          const Row(children: []),
+          ScaledSizedBox(height: 18),
+          ScaledSizedBox(
+            width: 320,
+            child: MarkdownBody(
+                data: 'areYouSureMigrateIdentity'.tr(args: [
+                  duniterIndexer.walletNameIndexer[fromAddress] ?? '???',
+                  '${walletOptions.balanceCache[fromAddress]} $unit'
+                ]),
+                styleSheet: mdStyle),
+          ),
+          ScaledSizedBox(height: 55),
+          Text('migrateToThisWallet'.tr(),
+              style: scaledTextStyle(fontSize: 16)),
+          ScaledSizedBox(height: 5),
+          ScaledSizedBox(
+            width: 320,
+            child: TextField(
+              controller: newMnemonicSentence,
+              autofocus: true,
+              minLines: 2,
+              maxLines: 2,
+              style: scaledTextStyle(fontSize: 14),
+              decoration: InputDecoration(
+                icon: Image.asset(
+                  'assets/onBoarding/phrase_de_restauration_flou.png',
+                  width: scaleSize(30),
+                ),
+                hintText: 'enterYourNewMnemonic'.tr(),
+                hintStyle: scaledTextStyle(fontSize: 14),
+                focusedBorder: const UnderlineInputBorder(
+                  borderSide: BorderSide(color: orangeC),
+                ),
+              ),
+              onChanged: (newMnemonic) async {
+                await scanDerivations();
+              },
+            ),
+          ),
+          ScaledSizedBox(height: 5),
+          ScaledSizedBox(
+            width: 320,
+            child: TextField(
+              controller: newWalletAddress,
+              style: scaledTextStyle(fontSize: 14),
+              decoration: InputDecoration(
+                icon: Image.asset(
+                  'assets/walletOptions/key.png',
+                  height: scaleSize(30),
+                ),
+                hintText: 'enterYourNewAddress'.tr(args: [currencyName]),
+                hintStyle: scaledTextStyle(fontSize: 14),
+                focusedBorder: const UnderlineInputBorder(
+                  borderSide: BorderSide(color: orangeC),
+                ),
+              ),
+              onChanged: (newAddress) async {
+                if (await isAddress(newAddress)) {
+                  statusData = await sub.getBalanceAndIdtyStatus(
+                      fromAddress, newAddress);
+                  await scanDerivations();
+                } else {
+                  statusData = const MigrateWalletChecks.defaultValues();
+                  matchInfo = '';
+                  walletOptions.reload();
                 }
+              },
+            ),
+          ),
+          const Spacer(flex: 2),
+          Consumer<WalletOptionsProvider>(builder: (context, _, __) {
+            return ScaledSizedBox(
+              width: 320,
+              height: 55,
+              child: ElevatedButton(
+                key: keyConfirm,
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  elevation: 4,
+                  backgroundColor: orangeC,
+                ),
+                onPressed: statusData.canValidate && mnemonicIsValid
+                    ? () async {
+                        WalletData? defaultWallet =
+                            myWalletProvider.getDefaultWallet();
 
-                final statusData = status.data!;
-                final walletsList = myWalletProvider.listWallets.toList();
+                        String? pin;
+                        if (myWalletProvider.pinCode == '') {
+                          pin = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (homeContext) {
+                                return UnlockingWallet(wallet: defaultWallet);
+                              },
+                            ),
+                          );
+                        }
+                        if (myWalletProvider.pinCode == '') return;
 
-                walletsList
-                    .removeWhere((element) => element.address == fromAddress);
+                        await sub.importAccount(
+                            mnemonic: newMnemonicSentence.text,
+                            derivePath: matchDerivationNbr == -1
+                                ? ''
+                                : "//$matchDerivationNbr",
+                            password: 'password');
 
-                final bool isUdUnit = configBox.get('isUdUnit') ?? false;
-                final unit = isUdUnit ? 'ud'.tr(args: ['']) : currencyName;
+                        final transactionId = await sub.migrateIdentity(
+                            fromAddress: fromAddress,
+                            destAddress: newWalletAddress.text,
+                            fromPassword: pin ?? myWalletProvider.pinCode,
+                            destPassword: 'password',
+                            withBalance: true,
+                            fromBalance: statusData.balance);
 
-                return Column(children: <Widget>[
-                  const Row(children: []),
-                  ScaledSizedBox(height: 18),
-                  ScaledSizedBox(
-                    width: 320,
-                    child: MarkdownBody(
-                        data: 'areYouSureMigrateIdentity'.tr(args: [
-                          duniterIndexer.walletNameIndexer[fromAddress] ??
-                              '???',
-                          '${statusData.balance['transferableBalance']} $unit'
-                        ]),
-                        styleSheet: mdStyle),
-                  ),
-                  ScaledSizedBox(height: 55),
-                  Text('migrateToThisWallet'.tr(),
-                      style: scaledTextStyle(fontSize: 17)),
-                  ScaledSizedBox(height: 5),
-                  DropdownButtonHideUnderline(
-                    key: keySelectWallet,
-                    child: DropdownButton(
-                      value: selectedWallet,
-                      icon: const Icon(Icons.keyboard_arrow_down),
-                      items: walletsList.map((wallet) {
-                        return DropdownMenuItem(
-                          key: keySelectThisWallet(wallet.address),
-                          value: wallet,
-                          child: Text(
-                            wallet.name!,
-                            style: scaledTextStyle(fontSize: 17),
-                          ),
+                        sub.deleteAccounts([newWalletAddress.text]);
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) {
+                            return TransactionInProgress(
+                                transactionId: transactionId,
+                                transType: 'identityMigration',
+                                fromAddress: getShortPubkey(fromAddress),
+                                toAddress:
+                                    getShortPubkey(newWalletAddress.text));
+                          }),
                         );
-                      }).toList(),
-                      onChanged: (WalletData? newSelectedWallet) {
-                        selectedWallet = newSelectedWallet!;
-                        sub.reload();
-                      },
-                    ),
-                  ),
-                  const Spacer(flex: 2),
-                  ScaledSizedBox(
-                    width: 320,
-                    height: 55,
-                    child: ElevatedButton(
-                      key: keyConfirm,
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        elevation: 4,
-                        backgroundColor: orangeC,
-                      ),
-                      onPressed: statusData.canValidate
-                          ? () async {
-                              WalletData? defaultWallet =
-                                  myWalletProvider.getDefaultWallet();
-
-                              String? pin;
-                              if (myWalletProvider.pinCode == '') {
-                                pin = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (homeContext) {
-                                      return UnlockingWallet(
-                                          wallet: defaultWallet);
-                                    },
-                                  ),
-                                );
-                              }
-
-                              if (myWalletProvider.pinCode == '') return;
-                              final transactionId = await sub.migrateIdentity(
-                                  fromAddress: fromAddress,
-                                  destAddress: selectedWallet.address,
-                                  fromPassword: pin ?? myWalletProvider.pinCode,
-                                  destPassword: pin ?? myWalletProvider.pinCode,
-                                  withBalance: true,
-                                  fromBalance: statusData.balance);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) {
-                                  return TransactionInProgress(
-                                      transactionId: transactionId,
-                                      transType: 'identityMigration',
-                                      fromAddress: getShortPubkey(fromAddress),
-                                      toAddress: getShortPubkey(
-                                          selectedWallet.address));
-                                }),
-                              );
-                            }
-                          : null,
-                      child: Text(
-                        'migrateIdentity'.tr(),
-                        style: scaledTextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white),
-                      ),
-                    ),
-                  ),
+                      }
+                    : null,
+                child: Text(
+                  'migrateIdentity'.tr(),
+                  style: scaledTextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white),
+                ),
+              ),
+            );
+          }),
+          Consumer<WalletOptionsProvider>(builder: (context, _, __) {
+            return ScaledSizedBox(
+              width: 320,
+              child: Column(
+                children: [
                   ScaledSizedBox(height: 10),
                   Text(
                     statusData.validationStatus,
                     textAlign: TextAlign.center,
                     style:
-                        scaledTextStyle(fontSize: 15, color: Colors.grey[600]),
+                        scaledTextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
-                  const Spacer(),
-                ]);
-              });
-        }),
+                  ScaledSizedBox(height: 5),
+                  Text(
+                    matchInfo,
+                    textAlign: TextAlign.center,
+                    style:
+                        scaledTextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            );
+          }),
+          const Spacer(),
+        ]),
       ),
     );
   }

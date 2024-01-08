@@ -1,6 +1,7 @@
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class TemplateScreen extends StatelessWidget {
   const TemplateScreen({Key? key}) : super(key: key);
@@ -11,13 +12,12 @@ class TemplateScreen extends StatelessWidget {
 
     return Scaffold(
         backgroundColor: backgroundColor,
-        appBar: AppBar(
-            toolbarHeight: scaleSize(57), title: const Text('Template screen')),
-        body: const SafeArea(
+        appBar: const GeckoAppBar('Template screen'),
+        body: SafeArea(
           child: Column(children: <Widget>[
-            SizedBox(height: 20),
-            Text('data'),
-            SizedBox(height: 20),
+            ScaledSizedBox(height: 20),
+            const Text('data'),
+            ScaledSizedBox(height: 20),
           ]),
         ));
   }

@@ -112,7 +112,7 @@ Future<bool?> confirmPopupCertification(BuildContext context, String question1,
                 child: Text(
                   "yes".tr(),
                   style: scaledTextStyle(
-                    fontSize: 20,
+                    fontSize: 19,
                     color: const Color(0xffD80000),
                   ),
                 ),
@@ -124,7 +124,7 @@ Future<bool?> confirmPopupCertification(BuildContext context, String question1,
               TextButton(
                 child: Text(
                   "no".tr(),
-                  style: scaledTextStyle(fontSize: 20),
+                  style: scaledTextStyle(fontSize: 19),
                 ),
                 onPressed: () {
                   Navigator.pop(context, false);

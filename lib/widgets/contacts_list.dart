@@ -48,7 +48,7 @@ class ContactsList extends StatelessWidget {
                           contentPadding: const EdgeInsets.all(5),
                           dense: !isTall,
                           leading: DatapodAvatar(
-                              address: g1Wallet.address, size: scaleSize(50)),
+                              address: g1Wallet.address, size: 47),
                           title: Row(children: <Widget>[
                             Text(getShortPubkey(g1Wallet.address),
                                 style: scaledTextStyle(

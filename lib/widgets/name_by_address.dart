@@ -6,6 +6,7 @@ import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/wallet_name.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
@@ -34,22 +35,8 @@ class NameByAddress extends StatelessWidget {
       return WalletName(wallet: wallet, size: size, color: color);
     }
 
-    // if (g1WalletsBox.get(wallet.address)?.username != null) {
-    //   return Text(g1WalletsBox.get(wallet.address)!.username!);
-    // }
-
-    final httpLink = HttpLink(
-      '$indexerEndpoint/v1/graphql',
-    );
-
-    final client = ValueNotifier(
-      GraphQLClient(
-        cache: GraphQLCache(store: HiveStore()),
-        link: httpLink,
-      ),
-    );
     return GraphQLProvider(
-      client: client,
+      client: ValueNotifier(duniterIndexer.indexerClient),
       child: Query(
           options: QueryOptions(
             document: gql(getNameByAddressQ),
@@ -66,7 +53,7 @@ class NameByAddress extends StatelessWidget {
             }
 
             if (result.isLoading) {
-              return const Text('Loading');
+              return const Loading();
             }
 
             duniterIndexer.walletNameIndexer[wallet.address] =

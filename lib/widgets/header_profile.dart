@@ -28,7 +28,7 @@ class HeaderProfile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final avatarSize = scaleSize(110);
+    const double avatarSize = 110;
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
@@ -79,30 +79,37 @@ class HeaderProfile extends StatelessWidget {
                 ]),
                 ScaledSizedBox(height: 15),
                 Balance(address: address, size: 20),
-                ScaledSizedBox(height: 5),
-                InkWell(
-                  onTap: () => sub.certsCounterCache[address] != null
-                      ? {
-                          Navigator.push(
-                            context,
-                            PageNoTransit(builder: (context) {
-                              return CertificationsScreen(
-                                  address: address,
-                                  username: duniterIndexer
-                                          .walletNameIndexer[address] ??
-                                      '');
-                            }),
-                          ),
-                        }
-                      : null,
+                ScaledSizedBox(
+                  height: 60,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      IdentityStatus(
-                          address: address,
-                          isOwner: false,
-                          color: Colors.black),
-                      Certifications(address: address, size: 18)
+                      ScaledSizedBox(height: 5),
+                      InkWell(
+                        onTap: () => sub.certsCounterCache[address] != null
+                            ? {
+                                Navigator.push(
+                                  context,
+                                  PageNoTransit(builder: (context) {
+                                    return CertificationsScreen(
+                                        address: address,
+                                        username: duniterIndexer
+                                                .walletNameIndexer[address] ??
+                                            '');
+                                  }),
+                                ),
+                              }
+                            : null,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            IdentityStatus(
+                                address: address,
+                                isOwner: false,
+                                color: Colors.black),
+                            Certifications(address: address, size: 18)
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),

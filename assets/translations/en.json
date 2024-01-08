@@ -165,6 +165,7 @@
     "choiceOfSourceWallet": "Choose a source wallet",
     "extrinsicInProgress": "{} in progress",
     "extrinsicValidated": "{} validated !",
+    "extrinsicFinalized": "{} finalized !",
     "fromMinus": "from",
     "toMinus": "to",
     "deleteThisWallet": "Delete this wallet",
@@ -229,5 +230,10 @@
     "gotit": "Got it",
     "moreInfo": "More information",
     "keepThisPaperSafe": "Keep this sheet safe from prying lizards.\nIt will allow you to restore all your wallets at any time.",
-    "fundsUnavailable": "Insufficient funds"
+    "fundsUnavailable": "Insufficient funds",
+    "addressNotBelongToMnemonic": "The address you provided does not belong to this recovery sentence",
+    "enterYourNewMnemonic": "Enter your new recovery sentence",
+    "enterYourNewAddress": "Enter your new address {}",
+    "youCanMigrateThisIdentity": "You can migrate this identity !",
+    "identityMigrated": "Identity migrated"
 }

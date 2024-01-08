@@ -5,7 +5,9 @@ import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/history_view.dart';
+import 'package:gecko/widgets/transaction_in_progress_tile.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -16,11 +18,11 @@ class HistoryQuery extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     final ScrollController scrollController = ScrollController();
     FetchMoreOptions? opts;
 
-    int nPage = 1;
     int nRepositories = 20;
 
     if (indexerEndpoint == '') {
@@ -34,19 +36,8 @@ class HistoryQuery extends StatelessWidget {
       ]);
     }
 
-    final httpLink = HttpLink(
-      '$indexerEndpoint/v1beta1/relay',
-    );
-
-    final client = ValueNotifier(
-      GraphQLClient(
-        cache: GraphQLCache(),
-        link: httpLink,
-      ),
-    );
-
     return GraphQLProvider(
-      client: client,
+      client: ValueNotifier(duniterIndexer.indexerClient),
       child: Expanded(
           child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -57,11 +48,12 @@ class HistoryQuery extends StatelessWidget {
               document: gql(getHistoryByAddressQ),
               variables: <String, dynamic>{
                 'address': address,
-                'number': 20,
-                'cursor': null
+                'number': nRepositories,
+                'offset': 0
               },
             ),
             builder: (QueryResult result, {fetchMore, refetch}) {
+              duniterIndexer.refetch = refetch;
               if (result.isLoading && result.data == null) {
                 return const Center(
                   child: CircularProgressIndicator(
@@ -69,6 +61,7 @@ class HistoryQuery extends StatelessWidget {
                   ),
                 );
               }
+              final List transactions = result.data?["transaction"];
 
               if (result.hasException) {
                 log.e('Error Indexer: ${result.exception}');
@@ -80,8 +73,7 @@ class HistoryQuery extends StatelessWidget {
                     style: scaledTextStyle(fontSize: 18),
                   )
                 ]);
-              } else if (result
-                  .data?['transaction_connection']?['edges'].isEmpty) {
+              } else if (transactions.isEmpty) {
                 return Column(children: <Widget>[
                   ScaledSizedBox(height: 50),
                   Text(
@@ -91,47 +83,57 @@ class HistoryQuery extends StatelessWidget {
                 ]);
               }
 
-              if (result.isNotLoading) {
-                if (duniterIndexer.fetchMoreCursor == null) nPage = 1;
+              final int totalTransactions =
+                  result.data!["transaction_aggregate"]["aggregate"]["count"];
+              duniterIndexer.hasNextPage =
+                  !(transactions.length == totalTransactions);
 
-                if (nPage <= 3) {
-                  nRepositories = 20;
-                } else if (nPage <= 6) {
-                  nRepositories = 40;
-                } else if (nPage <= 12) {
-                  nRepositories = 80;
-                } else {
-                  nRepositories = 120;
+              opts = duniterIndexer.mergeQueryResult(
+                transactions: transactions,
+                opts: opts,
+                address: address,
+                nRepositories: nRepositories,
+                offset: transactions.length,
+              );
+
+              // Get transaction in progress if exist
+              String? transactionId;
+              for (final entry in sub.transactionStatus.entries) {
+                if (entry.value.from == address) {
+                  transactionId = entry.key;
+                  break;
                 }
-                nPage++;
-                opts = duniterIndexer.mergeQueryResult(
-                    result, opts, address, nRepositories);
               }
 
               // Build history list
               return NotificationListener(
                   child: Builder(
                     builder: (context) => Expanded(
-                      child: ListView(
-                        key: keyListTransactions,
-                        controller: scrollController,
-                        children: <Widget>[
-                          HistoryView(
-                            result: result,
-                            address: address,
-                          )
-                        ],
+                      child: RefreshIndicator(
+                        color: orangeC,
+                        onRefresh: () async => refetch!.call(),
+                        child: ListView(
+                          key: keyListTransactions,
+                          controller: scrollController,
+                          children: <Widget>[
+                            if (transactionId != null)
+                              TransactionInProgressTule(
+                                  address: address,
+                                  transactionId: transactionId),
+                            HistoryView(
+                              result: result,
+                              address: address,
+                            )
+                          ],
+                        ),
                       ),
                     ),
                   ),
                   onNotification: (dynamic t) {
-                    if (duniterIndexer.pageInfo == null) {
-                      duniterIndexer.reload();
-                    }
                     if (t is ScrollEndNotification &&
                         scrollController.position.pixels >=
                             scrollController.position.maxScrollExtent * 0.7 &&
-                        duniterIndexer.pageInfo!['hasNextPage'] &&
+                        duniterIndexer.hasNextPage &&
                         result.isNotLoading) {
                       fetchMore!(opts!);
                     }

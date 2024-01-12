@@ -40,6 +40,7 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
     txContent = sub.transactionStatus[widget.transactionId]!;
 
     subscription = stream.listen((result) {
+      if (result.data?['account_by_pk'] == null) return;
       if (result.hasException) {
         log.e(result.exception);
         isVisible = true;
@@ -128,7 +129,7 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
                         statusIcon,
                         ScaledSizedBox(width: 10),
                         ScaledSizedBox(
-                          width: 160,
+                          width: 170,
                           child: Text(
                             humanStatus,
                             style: scaledTextStyle(

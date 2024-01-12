@@ -82,8 +82,10 @@ class _HomeScreenState extends State<HomeScreen> {
             'wss://$validIndexerEndpoint/v1/graphql',
           );
 
+          const headerWebsocket =
+              datapodEndpoint == '10.0.2.2:8080' ? 'ws' : 'wss';
           final wsLinkDatapod = WebSocketLink(
-            'wss://$datapodEndpoint/v1/graphql',
+            '$headerWebsocket://$datapodEndpoint/v1/graphql',
           );
 
           duniterIndexer.indexerClient = GraphQLClient(

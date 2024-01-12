@@ -67,11 +67,14 @@ class WalletOptionsProvider with ChangeNotifier {
             password: myWalletProvider.pinCode);
       }
 
-      await walletBox.delete(wallet.key);
+      await walletBox.delete(wallet.address);
       if (wallet.imageCustomPath != null) {
         final avatarFile = File(wallet.imageCustomPath!);
-        await avatarFile.delete();
+        if (await avatarFile.exists()) {
+          await avatarFile.delete();
+        }
       }
+
       datapod.deleteProfile(address: wallet.address);
       await sub.deleteAccounts([wallet.address]);
 

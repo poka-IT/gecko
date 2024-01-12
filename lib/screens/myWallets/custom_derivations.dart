@@ -122,7 +122,7 @@ class _CustomDerivationState extends State<CustomDerivation> {
                     );
                   }
 
-                  if (myWalletProvider.pinCode != '') return;
+                  if (myWalletProvider.pinCode == '') return;
                   String newDerivationName =
                       '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number! + 2}';
                   if (dropdownValue == 'root') {

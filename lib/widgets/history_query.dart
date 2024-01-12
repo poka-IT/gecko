@@ -63,22 +63,45 @@ class HistoryQuery extends StatelessWidget {
               }
               final List transactions = result.data?["transaction"];
 
+              // Get transaction in progress if exist
+              String? transactionId;
+              for (final entry in sub.transactionStatus.entries) {
+                if (entry.value.from == address) {
+                  transactionId = entry.key;
+                  break;
+                }
+              }
+
               if (result.hasException) {
                 log.e('Error Indexer: ${result.exception}');
                 return Column(children: <Widget>[
-                  ScaledSizedBox(height: 50),
-                  Text(
-                    "noNetworkNoHistory".tr(),
-                    textAlign: TextAlign.center,
-                    style: scaledTextStyle(fontSize: 18),
+                  Column(
+                    children: [
+                      if (transactionId != null)
+                        TransactionInProgressTule(
+                            address: address, transactionId: transactionId),
+                      ScaledSizedBox(height: 50),
+                      Text(
+                        "noNetworkNoHistory".tr(),
+                        textAlign: TextAlign.center,
+                        style: scaledTextStyle(fontSize: 18),
+                      ),
+                    ],
                   )
                 ]);
               } else if (transactions.isEmpty) {
                 return Column(children: <Widget>[
-                  ScaledSizedBox(height: 50),
-                  Text(
-                    "noDataToDisplay".tr(),
-                    style: scaledTextStyle(fontSize: 18),
+                  Column(
+                    children: [
+                      if (transactionId != null)
+                        TransactionInProgressTule(
+                            address: address, transactionId: transactionId),
+                      ScaledSizedBox(height: 50),
+                      Text(
+                        "noDataToDisplay".tr(),
+                        style: scaledTextStyle(fontSize: 18),
+                      ),
+                    ],
                   )
                 ]);
               }
@@ -95,15 +118,6 @@ class HistoryQuery extends StatelessWidget {
                 nRepositories: nRepositories,
                 offset: transactions.length,
               );
-
-              // Get transaction in progress if exist
-              String? transactionId;
-              for (final entry in sub.transactionStatus.entries) {
-                if (entry.value.from == address) {
-                  transactionId = entry.key;
-                  break;
-                }
-              }
 
               // Build history list
               return NotificationListener(

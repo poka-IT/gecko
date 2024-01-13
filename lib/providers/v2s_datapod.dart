@@ -13,6 +13,20 @@ import 'package:uuid/uuid.dart';
 class V2sDatapodProvider with ChangeNotifier {
   late GraphQLClient datapodClient;
 
+  Future<Map<String, dynamic>> _setSignedVariables(
+      String address, Map<String, dynamic> messageToSign) async {
+    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
+    final hashDocBytes = utf8.encode(jsonEncode(messageToSign));
+    final hashDoc = sha256.convert(hashDocBytes).toString().toUpperCase();
+    final signature = await sub.signDatapod(hashDoc, address);
+
+    return <String, dynamic>{
+      ...messageToSign,
+      'hash': hashDoc,
+      'signature': signature
+    };
+  }
+
   Future<QueryResult> _execQuery(
       String query, Map<String, dynamic> variables) async {
     final QueryOptions options =
@@ -29,9 +43,7 @@ class V2sDatapodProvider with ChangeNotifier {
       String? city,
       List<Map<String, String>>? socials,
       Map<String, double>? geoloc}) async {
-    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-
-    final messageToSign = jsonEncode({
+    final messageToSign = {
       'address': address,
       'description': description,
       'avatarBase64': avatar,
@@ -39,22 +51,9 @@ class V2sDatapodProvider with ChangeNotifier {
       'title': title,
       'city': city,
       'socials': socials
-    });
-    final hashDocBytes = utf8.encode(messageToSign);
-    final hashDoc = sha256.convert(hashDocBytes).toString().toUpperCase();
-    final signature = await sub.signDatapod(hashDoc, address);
-
-    final variables = <String, dynamic>{
-      'address': address,
-      'hash': hashDoc,
-      'signature': signature,
-      'title': title,
-      'description': description,
-      'avatar': avatar,
-      'city': city,
-      'socials': socials,
-      'geoloc': geoloc,
     };
+    final variables = await _setSignedVariables(address, messageToSign);
+
     final result = await _execQuery(updateProfileQ, variables);
     if (result.hasException) {
       log.e(result.exception.toString());
@@ -65,18 +64,9 @@ class V2sDatapodProvider with ChangeNotifier {
   }
 
   Future<bool> deleteProfile({required String address}) async {
-    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
+    final messageToSign = {'address': address};
+    final variables = await _setSignedVariables(address, messageToSign);
 
-    final messageToSign = jsonEncode({'address': address});
-    final hashDocBytes = utf8.encode(messageToSign);
-    final hashDoc = sha256.convert(hashDocBytes).toString().toUpperCase();
-    final signature = await sub.signDatapod(hashDoc, address);
-
-    final variables = <String, dynamic>{
-      'address': address,
-      'hash': hashDoc,
-      'signature': signature
-    };
     final result = await _execQuery(deleteProfileQ, variables);
     if (result.hasException) {
       log.e(result.exception.toString());
@@ -88,26 +78,36 @@ class V2sDatapodProvider with ChangeNotifier {
 
   Future<bool> migrateProfile(
       {required String addressOld, required String addressNew}) async {
-    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
+    final messageToSign = {'addressOld': addressOld, 'addressNew': addressNew};
+    final variables = await _setSignedVariables(addressOld, messageToSign);
 
-    final messageToSign =
-        jsonEncode({'addressOld': addressOld, 'addressNew': addressNew});
-    final hashDocBytes = utf8.encode(messageToSign);
-    final hashDoc = sha256.convert(hashDocBytes).toString().toUpperCase();
-    final signature = await sub.signDatapod(hashDoc, addressOld);
-
-    final variables = <String, dynamic>{
-      'addressOld': addressOld,
-      'addressNew': addressNew,
-      'hash': hashDoc,
-      'signature': signature
-    };
     final result = await _execQuery(migrateProfileQ, variables);
     if (result.hasException) {
       log.e(result.exception.toString());
       return false;
     }
     log.d(result.data!['migrateProfile']['message']);
+    return true;
+  }
+
+  Future<bool> addTransactionComment({
+    required String id,
+    required String issuer,
+    required String comment,
+  }) async {
+    final messageToSign = {
+      'id': id,
+      'address': issuer,
+      'comment': comment,
+    };
+    final variables = await _setSignedVariables(issuer, messageToSign);
+
+    final result = await _execQuery(addTransactionCommentQ, variables);
+    if (result.hasException) {
+      log.e(result.exception.toString());
+      return false;
+    }
+    log.d(result.data!['addTransaction']['message']);
     return true;
   }
 

@@ -1,6 +1,6 @@
 const String updateProfileQ = r'''
-mutation ($address: String!, $hash: String!, $signature: String!, $title: String, $description: String, $avatar: String, $geoloc: GeolocInput, $city: String, $socials: [SocialInput!]) {
-  updateProfile(address: $address, hash: $hash, signature: $signature, title: $title, description: $description, avatarBase64: $avatar, geoloc: $geoloc, city: $city, socials: $socials) {
+mutation ($address: String!, $hash: String!, $signature: String!, $title: String, $description: String, $avatarBase64: String, $geoloc: GeolocInput, $city: String, $socials: [SocialInput!]) {
+  updateProfile(address: $address, hash: $hash, signature: $signature, title: $title, description: $description, avatarBase64: $avatarBase64, geoloc: $geoloc, city: $city, socials: $socials) {
     message
     success
   }
@@ -19,6 +19,15 @@ mutation ($address: String!, $hash: String!, $signature: String!) {
 const String migrateProfileQ = r'''
 mutation ($addressOld: String!, $addressNew: String!, $hash: String!, $signature: String!) {
   migrateProfile(addressOld: $addressOld, addressNew: $addressNew, hash: $hash, signature: $signature) {
+    message
+    success
+  }
+}
+''';
+
+const String addTransactionCommentQ = r'''
+mutation ($id: String!, $address: String!, $hash: String!, $signature: String!, $comment: String!) {
+  addTransaction(id: $id, address: $address, hash: $hash, signature: $signature, comment: $comment) {
     message
     success
   }

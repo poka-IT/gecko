@@ -183,12 +183,12 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<String> signDatapod(String document, String address) async {
-    final myWallets =
+    final myWalletProvider =
         Provider.of<MyWalletsProvider>(homeContext, listen: false);
     final messageToSign = Uint8List.fromList(document.codeUnits);
 
     final signatureString =
-        await _signMessage(messageToSign, address, myWallets.pinCode);
+        await _signMessage(messageToSign, address, myWalletProvider.pinCode);
     final signatureInt = HEX.decode(signatureString.substring(2));
     final signature64 = base64Encode(signatureInt);
 

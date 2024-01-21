@@ -4,12 +4,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/search.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:provider/provider.dart';
 
 class GeckoBottomAppBar extends StatelessWidget {
@@ -93,20 +91,8 @@ class GeckoBottomAppBar extends StatelessWidget {
                   onPressed: lockAction
                       ? null
                       : () async {
-                          WalletData? defaultWallet =
-                              myWalletProvider.getDefaultWallet();
-                          if (myWalletProvider.pinCode == '') {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (homeContext) {
-                                  return UnlockingWallet(wallet: defaultWallet);
-                                },
-                              ),
-                            );
-                          }
+                          if (!await myWalletProvider.askPinCode()) return;
 
-                          if (myWalletProvider.pinCode == '') return;
                           Navigator.popUntil(context, ModalRoute.withName('/'));
                           //FIXME: Should not have to wait 300 milliseconds when /mywallets exist in navigator...
                           sleep(const Duration(milliseconds: 300));

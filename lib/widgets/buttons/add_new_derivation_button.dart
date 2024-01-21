@@ -4,10 +4,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:provider/provider.dart';
 
 class AddNewDerivationButton extends StatelessWidget {
@@ -31,19 +29,8 @@ class AddNewDerivationButton extends StatelessWidget {
                 key: keyAddDerivation,
                 onTap: () async {
                   if (!myWalletProvider.isNewDerivationLoading) {
-                    WalletData? defaultWallet =
-                        myWalletProvider.getDefaultWallet();
-                    if (myWalletProvider.pinCode == '') {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (homeContext) {
-                            return UnlockingWallet(wallet: defaultWallet);
-                          },
-                        ),
-                      );
-                    }
-                    if (myWalletProvider.pinCode == '') return;
+                    if (!await myWalletProvider.askPinCode()) return;
+
                     await myWalletProvider.generateNewDerivation(
                         context, newDerivationName);
                   }

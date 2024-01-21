@@ -4,13 +4,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:gecko/screens/myWallets/migrate_identity.dart';
-import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
@@ -113,20 +111,7 @@ class ManageMembership extends StatelessWidget {
             Provider.of<MyWalletsProvider>(context, listen: false);
         final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-        WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
-        String? pin;
-        if (myWalletProvider.pinCode == '') {
-          pin = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (homeContext) {
-                return UnlockingWallet(wallet: defaultWallet);
-              },
-            ),
-          );
-        }
-
-        if (pin == null || myWalletProvider.pinCode == '') return;
+        if (!await myWalletProvider.askPinCode()) return;
 
         final transactionId =
             await sub.revokeIdentity(address, myWalletProvider.pinCode);

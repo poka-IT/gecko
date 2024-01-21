@@ -12,7 +12,6 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/activity.dart';
-import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/name_by_address.dart';
@@ -34,17 +33,8 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
   walletViewProvider.payAmount.text = '';
 
   Future executeTransfert() async {
-    if (myWalletProvider.pinCode == '') {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (homeContext) {
-            return UnlockingWallet(wallet: defaultWallet);
-          },
-        ),
-      );
-    }
-    if (myWalletProvider.pinCode == '') return;
+    if (!await myWalletProvider.askPinCode()) return;
+
     // Payment workflow !
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final acc = sub.getCurrentWallet();

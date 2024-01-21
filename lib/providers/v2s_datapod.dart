@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_datapod.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
@@ -15,9 +16,13 @@ class V2sDatapodProvider with ChangeNotifier {
 
   Future<Map<String, dynamic>> _setSignedVariables(
       String address, Map<String, dynamic> messageToSign) async {
+    final myWalletProvider =
+        Provider.of<MyWalletsProvider>(homeContext, listen: false);
+
     final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
     final hashDocBytes = utf8.encode(jsonEncode(messageToSign));
     final hashDoc = sha256.convert(hashDocBytes).toString().toUpperCase();
+    if (!await myWalletProvider.askPinCode()) return {};
     final signature = await sub.signDatapod(hashDoc, address);
 
     return <String, dynamic>{
@@ -53,6 +58,7 @@ class V2sDatapodProvider with ChangeNotifier {
       'socials': socials
     };
     final variables = await _setSignedVariables(address, messageToSign);
+    if (variables.isEmpty) return false;
 
     final result = await _execQuery(updateProfileQ, variables);
     if (result.hasException) {
@@ -66,6 +72,7 @@ class V2sDatapodProvider with ChangeNotifier {
   Future<bool> deleteProfile({required String address}) async {
     final messageToSign = {'address': address};
     final variables = await _setSignedVariables(address, messageToSign);
+    if (variables.isEmpty) return false;
 
     final result = await _execQuery(deleteProfileQ, variables);
     if (result.hasException) {
@@ -80,6 +87,7 @@ class V2sDatapodProvider with ChangeNotifier {
       {required String addressOld, required String addressNew}) async {
     final messageToSign = {'addressOld': addressOld, 'addressNew': addressNew};
     final variables = await _setSignedVariables(addressOld, messageToSign);
+    if (variables.isEmpty) return false;
 
     final result = await _execQuery(migrateProfileQ, variables);
     if (result.hasException) {
@@ -101,6 +109,7 @@ class V2sDatapodProvider with ChangeNotifier {
       'comment': comment,
     };
     final variables = await _setSignedVariables(issuer, messageToSign);
+    if (variables.isEmpty) return false;
 
     final result = await _execQuery(addTransactionCommentQ, variables);
     if (result.hasException) {

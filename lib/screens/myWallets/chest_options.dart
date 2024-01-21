@@ -5,14 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/myWallets/custom_derivations.dart';
 import 'package:gecko/screens/myWallets/show_seed.dart';
-import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
@@ -44,18 +42,8 @@ class ChestOptions extends StatelessWidget {
                 onTap: () async {
                   final myWalletProvider =
                       Provider.of<MyWalletsProvider>(context, listen: false);
-                  WalletData? defaultWallet =
-                      myWalletProvider.getDefaultWallet();
-                  final String? pin = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (homeContext) {
-                        return UnlockingWallet(wallet: defaultWallet);
-                      },
-                    ),
-                  );
+                  if (!await myWalletProvider.askPinCode()) return;
 
-                  if (pin == null) return;
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) {

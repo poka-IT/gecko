@@ -5,10 +5,8 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/restore_chest.dart';
-import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:gecko/screens/onBoarding/5.dart';
 import 'package:provider/provider.dart';
@@ -110,25 +108,13 @@ class _ChooseChestState extends State<ChooseChest> {
                 onPressed: () async {
                   await configBox.put('currentChest', currentChest);
                   myWalletProvider.pinCode = '';
-                  WalletData? defaultWallet =
-                      myWalletProvider.getDefaultWallet();
-                  myWalletProvider.reload();
+                  if (!await myWalletProvider.askPinCode()) return;
 
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (homeContext) {
-                        return UnlockingWallet(wallet: defaultWallet);
-                      },
-                    ),
-                  );
                   Navigator.popUntil(
                     context,
                     ModalRoute.withName('/'),
                   );
-                  if (myWalletProvider.pinCode != '') {
-                    Navigator.pushNamed(context, '/mywallets');
-                  }
+                  Navigator.pushNamed(context, '/mywallets');
                 },
                 child: Text(
                   'openThisChest'.tr(),

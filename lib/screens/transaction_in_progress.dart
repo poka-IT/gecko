@@ -6,6 +6,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/transaction_status.dart';
 import 'package:gecko/widgets/transaction_status_icon.dart';
 import 'package:provider/provider.dart';
@@ -36,7 +37,7 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
   late String toUsernameFormat;
   late String amount;
   late bool isUdUnit;
-  late TransactionContent txContent;
+  TransactionContent? txContent;
 
   @override
   void initState() {
@@ -59,33 +60,49 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
 
     amount = walletProfiles.payAmount.text;
     isUdUnit = configBox.get('isUdUnit') ?? false;
+    waitForTransactionStatus();
     super.initState();
+  }
+
+  void waitForTransactionStatus() async {
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    while (!sub.transactionStatus.containsKey(widget.transactionId)) {
+      await Future.delayed(const Duration(seconds: 2));
+    }
+
+    setState(() {
+      txContent = sub.transactionStatus[widget.transactionId]!;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final sub = Provider.of<SubstrateSdk>(context, listen: true);
 
+    if (txContent == null) {
+      return const Center(child: Loading());
+    }
+
     if (sub.transactionStatus.containsKey(widget.transactionId)) {
       txContent = sub.transactionStatus[widget.transactionId]!;
     }
 
-    if (txContent.status == TransactionStatus.success) {
+    if (txContent!.status == TransactionStatus.success) {
       resultText = 'extrinsicValidated'
           .tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]);
-    } else if (txContent.status == TransactionStatus.failed) {
-      resultText = errorTransactionMap[txContent.error] ?? txContent.error!;
+    } else if (txContent!.status == TransactionStatus.failed) {
+      resultText = errorTransactionMap[txContent!.error] ?? txContent!.error!;
     } else {
-      resultText = statusStatusMap[txContent.status] ??
-          'Unknown status: ${txContent.status}';
+      resultText = statusStatusMap[txContent!.status] ??
+          'Unknown status: ${txContent!.status}';
     }
 
     Widget buildTransactionStatus() {
       return Column(
         children: [
-          TransactionStatusIcon(txContent.status),
+          TransactionStatusIcon(txContent!.status),
           ScaledSizedBox(height: 7),
-          if (txContent.status != TransactionStatus.none)
+          if (txContent!.status != TransactionStatus.none)
             Text(
               resultText,
               textAlign: TextAlign.center,

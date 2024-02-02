@@ -8,7 +8,9 @@
     "test1": {
       "index": 7,
       "balance": 10000,
+      "revoked": false,
       "membership_expire_on": 2700000000,
+      "membership_revokes_on": 2700000001,
       "next_cert_issuable_on": 0,
       "certs_received": {
         "test2": 2700000000,
@@ -20,7 +22,9 @@
     "test2": {
       "index": 1,
       "balance": 10000,
+      "revoked": false,
       "membership_expire_on": 2700000000,
+      "membership_revokes_on": 2700000001,
       "next_cert_issuable_on": 0,
       "certs_received": {
         "test1": 2700000000,
@@ -32,7 +36,9 @@
     "test3": {
       "index": 2,
       "balance": 10000,
+      "revoked": false,
       "membership_expire_on": 2700000000,
+      "membership_revokes_on": 2700000001,
       "next_cert_issuable_on": 0,
       "certs_received": {
         "test1": 2700000000,
@@ -44,7 +50,9 @@
     "test4": {
       "index": 3,
       "balance": 10000,
+      "revoked": false,
       "membership_expire_on": 2700000000,
+      "membership_revokes_on": 2700000001,
       "next_cert_issuable_on": 0,
       "certs_received": {
         "test1": 2700000000,
@@ -56,7 +64,9 @@
     "test5": {
       "index": 4,
       "balance": 10000,
+      "revoked": false,
       "membership_expire_on": 2700000000,
+      "membership_revokes_on": 2700000001,
       "next_cert_issuable_on": 0,
       "certs_received": {
         "test1": 2700000000,
@@ -68,7 +78,9 @@
     "test6": {
       "index": 5,
       "balance": 10000,
+      "revoked": false,
       "membership_expire_on": 2700000000,
+      "membership_revokes_on": 2700000001,
       "next_cert_issuable_on": 0,
       "certs_received": {
         "test1": 2700000000
@@ -78,7 +90,9 @@
     "testCesium1": {
       "index": 6,
       "balance": 10000,
+      "revoked": false,
       "membership_expire_on": 2700000000,
+      "membership_revokes_on": 2700000001,
       "next_cert_issuable_on": 0,
       "certs_received": {
         "test1": 2700000000,
@@ -90,6 +104,9 @@
     "Alice": {
       "index": 8,
       "balance": 10000,
+      "revoked": false,
+      "membership_expire_on": 2700000000,
+      "membership_revokes_on": 2700000001,
       "certs_received": {
         "test1": 2700000000,
         "test2": 2700000000,
@@ -100,11 +117,10 @@
         "testCesium1": 2700000000
       },
       "owner_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-      "membership_expire_on": 2700000000,
       "next_cert_issuable_on": 0
     }
   },
   "wallets": {
-      "BPKBoTrrLD1XWmpZdRsfDnDT1M6PBBvgzPxAKNdutVV2": 10000
+    "BPKBoTrrLD1XWmpZdRsfDnDT1M6PBBvgzPxAKNdutVV2": 10000
   }
 }

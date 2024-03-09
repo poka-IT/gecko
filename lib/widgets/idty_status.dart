@@ -28,26 +28,25 @@ class IdentityStatus extends StatelessWidget {
           future: sub.idtyStatus([address]),
           initialData: [walletData.identityStatus],
           builder: (context, AsyncSnapshot<List<IdtyStatus>> snapshot) {
-            if (snapshot.hasError || snapshot.data == null) {
-              log.e(snapshot.error);
-              return const Icon(Icons.close, color: Colors.red);
+            if (snapshot.data != null && !snapshot.hasError) {
+              final resStatus = snapshot.data!.first;
+              walletData.identityStatus = resStatus;
+              walletBox.put(address, walletData);
             }
 
-            final resStatus = snapshot.data!.first;
-            walletData.identityStatus = resStatus;
-            walletBox.put(address, walletData);
+            final resStatus = walletData.identityStatus;
 
             if (!isOwner) {
               if (resStatus == IdtyStatus.confirmed) {
                 return NameByAddress(
-                    wallet: WalletData(address: address),
+                    wallet: walletData,
                     size: 18,
                     color: Colors.grey[700]!,
                     fontWeight: FontWeight.w500,
                     fontStyle: FontStyle.italic);
               } else if (resStatus == IdtyStatus.validated) {
                 return NameByAddress(
-                    wallet: WalletData(address: address),
+                    wallet: walletData,
                     size: 20,
                     color: Colors.black,
                     fontWeight: FontWeight.w600,

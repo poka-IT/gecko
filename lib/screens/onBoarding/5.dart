@@ -18,8 +18,6 @@ import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
-AsyncSnapshot<List>? mnemoList;
-
 class OnboardingStepFive extends StatefulWidget {
   const OnboardingStepFive({Key? key, this.skipIntro = false})
       : super(key: key);
@@ -155,35 +153,35 @@ Widget sentanceArray(BuildContext context) {
     padding: EdgeInsets.all(scaleSize(11)),
     child: FutureBuilder(
         future: generateWalletProvider.generateWordList(context),
-        builder: (BuildContext context, AsyncSnapshot<List> data) {
-          if (!data.hasData) {
+        builder: (BuildContext context, AsyncSnapshot<List> mnemoListData) {
+          if (!mnemoListData.hasData) {
             return const Text('');
           } else {
-            mnemoList = data;
+            final mnemoList = mnemoListData.data!;
             return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   Row(children: <Widget>[
-                    arrayCell(data.data![0]),
-                    arrayCell(data.data![1]),
-                    arrayCell(data.data![2]),
-                    arrayCell(data.data![3]),
+                    arrayCell(mnemoList[0]),
+                    arrayCell(mnemoList[1]),
+                    arrayCell(mnemoList[2]),
+                    arrayCell(mnemoList[3]),
                   ]),
                   ScaledSizedBox(height: 12),
                   Row(children: <Widget>[
-                    arrayCell(data.data![4]),
-                    arrayCell(data.data![5]),
-                    arrayCell(data.data![6]),
-                    arrayCell(data.data![7]),
+                    arrayCell(mnemoList[4]),
+                    arrayCell(mnemoList[5]),
+                    arrayCell(mnemoList[6]),
+                    arrayCell(mnemoList[7]),
                   ]),
                   ScaledSizedBox(height: 12),
                   Row(children: <Widget>[
-                    arrayCell(data.data![8]),
-                    arrayCell(data.data![9]),
-                    arrayCell(data.data![10]),
-                    arrayCell(data.data![11]),
+                    arrayCell(mnemoList[8]),
+                    arrayCell(mnemoList[9]),
+                    arrayCell(mnemoList[10]),
+                    arrayCell(mnemoList[11]),
                   ]),
                 ]);
           }

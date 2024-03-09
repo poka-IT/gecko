@@ -6,7 +6,6 @@ import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/migrate_wallet_checks.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/generate_wallets.dart';
@@ -14,7 +13,6 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
@@ -189,21 +187,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                 ),
                 onPressed: statusData.canValidate && mnemonicIsValid
                     ? () async {
-                        WalletData? defaultWallet =
-                            myWalletProvider.getDefaultWallet();
-
-                        String? pin;
-                        if (myWalletProvider.pinCode == '') {
-                          pin = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (homeContext) {
-                                return UnlockingWallet(wallet: defaultWallet);
-                              },
-                            ),
-                          );
-                        }
-                        if (myWalletProvider.pinCode == '') return;
+                        if (!await myWalletProvider.askPinCode()) return;
 
                         await sub.importAccount(
                             mnemonic: newMnemonicSentence.text,
@@ -215,7 +199,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                         final transactionId = await sub.migrateIdentity(
                             fromAddress: fromAddress,
                             destAddress: newWalletAddress.text,
-                            fromPassword: pin ?? myWalletProvider.pinCode,
+                            fromPassword: myWalletProvider.pinCode,
                             destPassword: 'password',
                             withBalance: true,
                             fromBalance: statusData.balance);

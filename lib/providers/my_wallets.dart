@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -74,6 +75,20 @@ class MyWalletsProvider with ChangeNotifier {
     });
 
     return targetedWallet;
+  }
+
+  Future<bool> askPinCode() async {
+    final defaultWallet = getDefaultWallet();
+
+    if (pinCode.isEmpty) {
+      await Navigator.push(
+        homeContext,
+        MaterialPageRoute(
+          builder: (homeContext) => UnlockingWallet(wallet: defaultWallet),
+        ),
+      );
+    }
+    return pinCode.isNotEmpty;
   }
 
   WalletData? getWalletDataByAddress(String address) {

@@ -4,10 +4,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:durt/durt.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
@@ -92,20 +90,9 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
                     backgroundColor: Colors.green[400],
                   ),
                   onPressed: () async {
-                    WalletData defaultWallet =
-                        myWalletProvider.getDefaultWallet();
+                    final defaultWallet = myWalletProvider.getDefaultWallet();
 
-                    if (myWalletProvider.pinCode == '') {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (homeContext) {
-                            return UnlockingWallet(wallet: defaultWallet);
-                          },
-                        ),
-                      );
-                    }
-                    if (myWalletProvider.pinCode == '') return;
+                    if (!await myWalletProvider.askPinCode()) return;
 
                     await sub.changePassword(context, defaultWallet.address,
                         widget.walletProvider.pinCode, newPin.text);

@@ -44,9 +44,9 @@ class DragTuleAction extends StatelessWidget {
         ),
       ),
       child: DragTarget<String>(
-          onAccept: (senderAddress) async {
+          onAcceptWithDetails: (senderAddress) async {
             final walletData =
-                myWalletProvider.getWalletDataByAddress(senderAddress);
+                myWalletProvider.getWalletDataByAddress(senderAddress.data);
             await sub.setCurrentWallet(walletData!);
             sub.reload();
             paymentPopup(context, wallet.address,
@@ -58,7 +58,8 @@ class DragTuleAction extends StatelessWidget {
               myWalletProvider.reload();
             }
           },
-          onWillAccept: (senderAddress) => senderAddress != wallet.address,
+          onWillAcceptWithDetails: (senderAddress) =>
+              senderAddress.data != wallet.address,
           builder: (
             BuildContext context,
             List<dynamic> accepted,

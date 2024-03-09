@@ -10,62 +10,57 @@ class Balance extends StatelessWidget {
       {Key? key,
       required this.address,
       required this.size,
-      this.color = Colors.black,
-      this.loadingColor = const Color(0xffd07316)})
+      this.color = Colors.black})
       : super(key: key);
   final String address;
   final double size;
   final Color color;
-  final Color loadingColor;
 
   @override
   Widget build(BuildContext context) {
     final walletOptions =
         Provider.of<WalletOptionsProvider>(context, listen: false);
     return Consumer<SubstrateSdk>(builder: (context, sdk, _) {
-      return FutureBuilder(
-          future: sdk.getBalance(address),
-          builder: (BuildContext context,
-              AsyncSnapshot<Map<String, double>> globalBalance) {
-            if (globalBalance.connectionState != ConnectionState.done ||
-                globalBalance.hasError) {
-              if (walletOptions.balanceCache[address] != null &&
-                  walletOptions.balanceCache[address] != -1) {
+      return ScaledSizedBox(
+        height: size * 1.4,
+        child: FutureBuilder(
+            future: sdk.getBalance(address),
+            builder: (BuildContext context,
+                AsyncSnapshot<Map<String, double>> globalBalance) {
+              if (globalBalance.connectionState != ConnectionState.done ||
+                  globalBalance.hasError ||
+                  !globalBalance.hasData) {
+                if (walletOptions.balanceCache[address] != null &&
+                    walletOptions.balanceCache[address] != -1) {
+                  return Row(children: [
+                    Text(walletOptions.balanceCache[address]!.toString(),
+                        style: scaledTextStyle(fontSize: size, color: color)),
+                    ScaledSizedBox(width: 5),
+                    UdUnitDisplay(size: scaleSize(size), color: color),
+                  ]);
+                } else {
+                  return const SizedBox.shrink();
+                }
+              }
+              walletOptions.balanceCache[address] =
+                  globalBalance.data!['transferableBalance']!;
+              if (walletOptions.balanceCache[address] != -1) {
                 return Row(children: [
-                  Text(walletOptions.balanceCache[address]!.toString(),
-                      style: scaledTextStyle(fontSize: size, color: color)),
+                  Text(
+                    walletOptions.balanceCache[address]!.toString(),
+                    style: scaledTextStyle(
+                      fontSize: size,
+                      color: color,
+                    ),
+                  ),
                   ScaledSizedBox(width: 5),
                   UdUnitDisplay(size: scaleSize(size), color: color),
                 ]);
               } else {
-                return ScaledSizedBox(
-                  height: 15,
-                  width: 15,
-                  child: CircularProgressIndicator(
-                    color: loadingColor,
-                    strokeWidth: 2,
-                  ),
-                );
+                return const Text('');
               }
-            }
-            walletOptions.balanceCache[address] =
-                globalBalance.data!['transferableBalance']!;
-            if (walletOptions.balanceCache[address] != -1) {
-              return Row(children: [
-                Text(
-                  walletOptions.balanceCache[address]!.toString(),
-                  style: scaledTextStyle(
-                    fontSize: size,
-                    color: color,
-                  ),
-                ),
-                ScaledSizedBox(width: 5),
-                UdUnitDisplay(size: scaleSize(size), color: color),
-              ]);
-            } else {
-              return const Text('');
-            }
-          });
+            }),
+      );
     });
   }
 }

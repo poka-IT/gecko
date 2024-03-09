@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
@@ -109,20 +108,7 @@ class _CustomDerivationState extends State<CustomDerivation> {
                   backgroundColor: orangeC,
                 ),
                 onPressed: () async {
-                  WalletData? defaultWallet =
-                      myWalletProvider.getDefaultWallet();
-                  if (myWalletProvider.pinCode == '') {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (homeContext) {
-                          return UnlockingWallet(wallet: defaultWallet);
-                        },
-                      ),
-                    );
-                  }
-
-                  if (myWalletProvider.pinCode != '') return;
+                  if (!await myWalletProvider.askPinCode()) return;
                   String newDerivationName =
                       '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number! + 2}';
                   if (dropdownValue == 'root') {

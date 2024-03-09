@@ -1,7 +1,15 @@
 {
   "ud": 1000,
-  "first_ud": 6000,
-  "first_ud_reeval": 600000,
+  "first_ud": null,
+  "first_ud_reeval": null,
+  "genesis_parameters": {
+    "genesis_certs_expire_on": 1000,
+    "genesis_certs_min_received": 2,
+    "genesis_memberships_expire_on": 1000,
+    "genesis_smith_certs_expire_on": 1000,
+    "genesis_smith_certs_min_received": 2,
+    "genesis_smith_memberships_expire_on": 100000
+  },
   "parameters": {
     "babe_epoch_duration": 30,
     "cert_period": 15,
@@ -11,6 +19,7 @@
     "idty_confirm_period": 40,
     "idty_creation_period": 50,
     "membership_period": 1000,
+    "membership_renewal_period": 1000,
     "pending_membership_period": 500,
     "ud_creation_period": 10,
     "ud_reeval_period": 50,
@@ -19,6 +28,7 @@
     "smith_cert_min_received_cert_to_issue_cert": 2,
     "smith_cert_validity_period": 1000,
     "smith_membership_period": 1000,
+    "smith_inactivity_max_duration": 1000,
     "smith_pending_membership_period": 500,
     "smith_wot_first_cert_issuable_on": 4,
     "smith_wot_min_cert_for_membership": 3,
@@ -30,7 +40,8 @@
     { "name": "test1" },
     { "name": "test2" },
     { "name": "test3" },
-    { "name": "test4" }
+    { "name": "test4" },
+    { "name": "Alice" }
   ],
   "sudo_key": "5FeggKqw2AbnGZF9Y9WPM2QTgzENS3Hit94Ewgmzdg5a3LNa",
   "treasury_funder_address": "5FeggKqw2AbnGZF9Y9WPM2QTgzENS3Hit94Ewgmzdg5a3LNa",

@@ -13,7 +13,6 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/widgets/commons/common_elements.dart';
-import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -67,11 +66,14 @@ class WalletOptionsProvider with ChangeNotifier {
             password: myWalletProvider.pinCode);
       }
 
-      await walletBox.delete(wallet.key);
+      await walletBox.delete(wallet.address);
       if (wallet.imageCustomPath != null) {
         final avatarFile = File(wallet.imageCustomPath!);
-        await avatarFile.delete();
+        if (await avatarFile.exists()) {
+          await avatarFile.delete();
+        }
       }
+
       datapod.deleteProfile(address: wallet.address);
       await sub.deleteAccounts([wallet.address]);
 
@@ -221,21 +223,7 @@ class WalletOptionsProvider with ChangeNotifier {
                               return;
                             }
 
-                            WalletData? defaultWallet =
-                                myWalletProvider.getDefaultWallet();
-
-                            if (myWalletProvider.pinCode == '') {
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (homeContext) {
-                                    return UnlockingWallet(
-                                        wallet: defaultWallet);
-                                  },
-                                ),
-                              );
-                            }
-                            if (myWalletProvider.pinCode == '') return;
+                            if (!await myWalletProvider.askPinCode()) return;
 
                             final wallet = myWalletProvider
                                 .getWalletDataByAddress(address.text);

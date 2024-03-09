@@ -152,13 +152,14 @@ class WalletViewScreen extends StatelessWidget {
                   future: sub.certState(defaultWallet.address, address),
                   builder: (context, AsyncSnapshot<Map<String, int>> snapshot) {
                     if (snapshot.data == null) return const SizedBox.shrink();
+                    final certStateData = snapshot.data!;
                     String duration = '';
 
-                    if (snapshot.data!['certDelay'] != null ||
-                        snapshot.data!['certRenewable'] != null) {
+                    if (certStateData['certDelay'] != null ||
+                        certStateData['certRenewable'] != null) {
                       final Duration durationSeconds = Duration(
-                          seconds: snapshot.data!['certDelay'] ??
-                              snapshot.data!['certRenewable']!);
+                          seconds: certStateData['certDelay'] ??
+                              certStateData['certRenewable']!);
                       final seconds = durationSeconds.inSeconds;
                       final minutes = durationSeconds.inMinutes;
 
@@ -186,12 +187,12 @@ class WalletViewScreen extends StatelessWidget {
                       }
                     }
 
-                    final toStatus = snapshot.data!['toStatus'];
+                    final toStatus = certStateData['toStatus'];
 
                     return Visibility(
                       visible: (snapshot.data != {}),
                       child: Column(children: <Widget>[
-                        if (snapshot.data!['canCert'] != null ||
+                        if (certStateData['canCert'] != null ||
                             duration == 'seconds'.tr(args: ['0']))
                           Column(children: <Widget>[
                             ScaledSizedBox(
@@ -273,10 +274,10 @@ class WalletViewScreen extends StatelessWidget {
                           ])
                         else if (toStatus == 1)
                           waitToCert('mustConfirmHisIdentity', duration)
-                        else if (snapshot.data!['certRenewable'] != null &&
+                        else if (certStateData['certRenewable'] != null &&
                             duration != 'seconds'.tr(args: ['0']))
                           waitToCert('canRenewCertInX', duration)
-                        else if (snapshot.data!['certDelay'] != null)
+                        else if (certStateData['certDelay'] != null)
                           waitToCert('mustWaitXBeforeCertify', duration)
                       ]),
                     );

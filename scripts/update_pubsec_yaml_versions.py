@@ -28,8 +28,8 @@ def update_dependency_versions(dependencies_section):
         return
 
     for package, details in dependencies_section.items():
-        # Skip if it's an SDK or Git dependency
-        if isinstance(details, dict) and ('sdk' in details or 'git' in details):
+        # Skip if it's an SDK, Git, or path dependency
+        if any(key in details for key in ['sdk', 'git', 'path']):
             continue
         
         # Update version if the package exists in lock_versions

@@ -1,45 +1,55 @@
 const String getNameByAddressQ = r'''
 query ($address: String!) {
-  account_by_pk(pubkey: $address) {
-    identity {
-      name
+  identityConnection(
+    where: { accountId: { _eq: $address } }
+    orderBy: { name: ASC }
+  ) {
+    edges {
+      node {
+        name
+        accountId
+      }
     }
-    pubkey
   }
 }
 ''';
 
 const String searchAddressByNameQ = r'''
 query ($name: String!) {
-  search_identity(args: {name: $name}) {
-    pubkey
-    name
+  identityConnection(
+    where: { name: { _ilike: $name } }
+    orderBy: { name: ASC }
+  ) {
+    edges {
+      node {
+        name
+        accountId
+      }
+    }
   }
 }
 ''';
 
 const String getHistoryByAddressRelayQ = r'''
-query ($address: String!, $number: Int!, $cursor: String) {
-  transaction_connection(where: 
-  {_or: [
-    {issuer_pubkey: {_eq: $address}}, 
-    {receiver_pubkey: {_eq: $address}}
-  ]}, 
-  order_by: {created_at: desc},
-  first: $number,
-  after: $cursor) {
+query ($address: String!, $first: Int!, $after: String) {
+  transferConnection(
+    after: $after
+    first: $first
+    orderBy: { timestamp: DESC }
+    where: { _or: [{ fromId: { _eq: $address } }, { toId: { _eq: $address } }] }
+  ) {
     edges {
       node {
         amount
-        created_at
-        issuer_pubkey
-        receiver_pubkey
-        issuer {
+        timestamp
+        fromId
+        from {
           identity {
             name
           }
         }
-        receiver {
+        toId
+        to {
           identity {
             name
           }
@@ -49,35 +59,6 @@ query ($address: String!, $number: Int!, $cursor: String) {
     pageInfo {
       endCursor
       hasNextPage
-      hasPreviousPage
-      startCursor
-    }
-  }
-}
-''';
-
-const String getHistoryByAddressQ = r'''
-query ($address: String!, $number: Int!, $offset: Int!) {
-  transaction_aggregate(where: {_or: [{issuer_pubkey: {_eq: $address}}, {receiver_pubkey: {_eq: $address}}]}) {
-    aggregate {
-      count
-    }
-  }
-  transaction(where: {_or: [{issuer_pubkey: {_eq: $address}}, {receiver_pubkey: {_eq: $address}}]}, order_by: {created_at: desc}, limit: $number, offset: $offset) {
-    amount
-    comment
-    created_at
-    issuer {
-      pubkey
-      identity {
-        name
-      }
-    }
-    receiver {
-      pubkey
-      identity {
-        name
-      }
     }
   }
 }
@@ -85,52 +66,79 @@ query ($address: String!, $number: Int!, $offset: Int!) {
 
 const String getCertsReceived = r'''
 query ($address: String!) {
-  certification(where: {receiver: {pubkey: {_eq: $address}}}, order_by: {created_at: desc}) {
-    issuer {
-      pubkey
-      name
+  certConnection(
+    where: {receiver: {accountId: {_eq: $address}}}
+  ) {
+    edges {
+      node {
+        createdOn
+        issuer {
+          accountId
+          name
+        }
+      }
     }
-    created_at
   }
 }
 ''';
 
 const String getCertsSent = r'''
 query ($address: String!) {
-  certification(where: {issuer: {pubkey: {_eq: $address}}}, order_by: {created_at: desc}) {
-    receiver {
-      pubkey
-      name
+  certConnection(
+    where: {issuer: {accountId: {_eq: $address}}}
+  ) {
+    edges {
+      node {
+        createdOn
+        receiver {
+          accountId
+          name
+        }
+      }
     }
-    created_at
   }
 }
 ''';
 
 const String isIdtyExistQ = r'''
 query ($name: String!) {
-  identity(where: {name: {_eq: $name}}) {
-    name
+  identityConnection(where: {name: {_eq: ""}}) {
+    edges {
+      node {
+        name
+      }
+    }
   }
 }
 ''';
 
 const String getBlockchainStartQ = r'''
 query {
-  block(limit: 1) {
-    created_at
-    number
+  blockConnection(first: 1) {
+    edges {
+      node {
+        height
+        timestamp
+      }
+    }
   }
 }
 ''';
 
 const String subscribeHistoryIssuedQ = r'''
 subscription ($address: String!) {
-  account_by_pk(pubkey: $address) {
-    transactions_issued(limit: 1, order_by: {created_at: desc}) {
-      receiver_pubkey
-      amount
-      created_at
+  accountConnection(
+    where: {id: {_eq: $address}}
+  ) {
+    edges {
+      node {
+        transfersIssued(limit: 1, orderBy: {timestamp: DESC}) {
+          toId
+          amount
+          timestamp
+          blockNumber
+        }
+      }
     }
   }
 }

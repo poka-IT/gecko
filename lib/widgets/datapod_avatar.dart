@@ -1,12 +1,8 @@
-import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/queries_datapod.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/v2s_datapod.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
 class DatapodAvatar extends StatelessWidget {
@@ -31,44 +27,6 @@ class DatapodAvatar extends StatelessWidget {
     }
 
     return ScaledSizedBox(
-      width: size,
-      child: GraphQLProvider(
-        client: ValueNotifier(datapod.datapodClient),
-        child: Query(
-            options: QueryOptions(
-              document: gql(getAvatarQ),
-              variables: <String, dynamic>{
-                'address': address,
-              },
-            ),
-            builder: (QueryResult result, {fetchMore, refetch}) {
-              if (result.isLoading || result.data == null) {
-                return Center(
-                  child: ClipOval(child: datapod.defaultAvatar(size)),
-                );
-              }
-              final String? avatar64 =
-                  result.data!['profiles_by_pk']?['avatar64'];
-
-              if (avatar64 == null || result.data == null) {
-                return ClipOval(child: datapod.defaultAvatar(size));
-              }
-
-              final sanitizedAvatar64 = avatar64
-                  .replaceAll('\n', '')
-                  .replaceAll('\r', '')
-                  .replaceAll(' ', '');
-
-              datapod.cacheAvatar(address, sanitizedAvatar64);
-
-              return ClipOval(
-                child: Image.memory(
-                  base64.decode(sanitizedAvatar64),
-                  fit: BoxFit.cover,
-                ),
-              );
-            }),
-      ),
-    );
+        width: size, child: ClipOval(child: datapod.defaultAvatar(size)));
   }
 }

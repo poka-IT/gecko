@@ -39,17 +39,21 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
     final stream = duniterIndexer.subscribeHistoryIssued(widget.address);
     txContent = sub.transactionStatus[widget.transactionId]!;
 
+    //TODO: change way to get finliized transaction status
+
     subscription = stream.listen((result) {
-      if (result.data?['account_by_pk'] == null) return;
+      if (result.data?['accountConnection']['edges'] == null) return;
       if (result.hasException) {
         log.e(result.exception);
         isVisible = true;
       } else {
-        final Map transData =
-            result.data?['account_by_pk']['transactions_issued'].first;
-        final String receiver = transData['receiver_pubkey'];
+        final Map transDataNode =
+            result.data?['accountConnection']['edges'].first;
+        if (transDataNode['node']['transfersIssued'].isEmpty) return;
+        final Map transData = transDataNode['node']['transfersIssued'][0];
+        final String receiver = transData['toId'];
         final double amount = transData['amount'] / 100;
-        final createdAt = DateTime.parse(transData['created_at']);
+        final createdAt = DateTime.parse(transData['timestamp']);
         final difference = createdAt.difference(DateTime.now());
 
         if (receiver == txContent.to &&

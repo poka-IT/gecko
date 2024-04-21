@@ -83,14 +83,16 @@ class IdtyStatusAdapter extends TypeAdapter<IdtyStatus> {
       case 0:
         return IdtyStatus.none;
       case 1:
-        return IdtyStatus.created;
+        return IdtyStatus.unconfirmed;
       case 2:
-        return IdtyStatus.confirmed;
+        return IdtyStatus.unvalidated;
       case 3:
-        return IdtyStatus.validated;
+        return IdtyStatus.member;
       case 4:
-        return IdtyStatus.expired;
+        return IdtyStatus.notMember;
       case 5:
+        return IdtyStatus.revoked;
+      case 6:
         return IdtyStatus.unknown;
       default:
         return IdtyStatus.none;
@@ -103,20 +105,23 @@ class IdtyStatusAdapter extends TypeAdapter<IdtyStatus> {
       case IdtyStatus.none:
         writer.writeByte(0);
         break;
-      case IdtyStatus.created:
+      case IdtyStatus.unconfirmed:
         writer.writeByte(1);
         break;
-      case IdtyStatus.confirmed:
+      case IdtyStatus.unvalidated:
         writer.writeByte(2);
         break;
-      case IdtyStatus.validated:
+      case IdtyStatus.member:
         writer.writeByte(3);
         break;
-      case IdtyStatus.expired:
+      case IdtyStatus.notMember:
         writer.writeByte(4);
         break;
-      case IdtyStatus.unknown:
+      case IdtyStatus.revoked:
         writer.writeByte(5);
+        break;
+      case IdtyStatus.unknown:
+        writer.writeByte(6);
         break;
     }
   }

@@ -215,7 +215,8 @@ class SubstrateSdk with ChangeNotifier {
       return [];
     }
     final certsReceiver =
-        await _getStorage('cert.storageIdtyCertMeta($idtyIndex)') ?? [];
+        await _getStorage('certification.storageIdtyCertMeta($idtyIndex)') ??
+            [];
 
     try {
       certsCounterCache.update(
@@ -241,7 +242,7 @@ class SubstrateSdk with ChangeNotifier {
     if (idtyIndexFrom == null || idtyIndexTo == null) return 0;
 
     final List certData =
-        await _getStorage('cert.certsByReceiver($idtyIndexTo)') ?? [];
+        await _getStorage('certification.certsByReceiver($idtyIndexTo)') ?? [];
 
     if (certData.isEmpty) return 0;
     for (List certInfo in certData) {
@@ -395,7 +396,7 @@ class SubstrateSdk with ChangeNotifier {
       } else if (nextIssuableOn > blocNumber) {
         final certDelayDuration = (nextIssuableOn - blocNumber) * 6;
         result.putIfAbsent('certDelay', () => certDelayDuration);
-      } else if (toStatus == IdtyStatus.created) {
+      } else if (toStatus == IdtyStatus.unconfirmed) {
         result.putIfAbsent('toStatus', () => 1);
       } else if (toStatus == IdtyStatus.none) {
         result.putIfAbsent('toStatus', () => 2);
@@ -412,7 +413,8 @@ class SubstrateSdk with ChangeNotifier {
     var idtyIndex = await _getIdentityIndexOf(address);
 
     final certMeta =
-        await _getStorage('cert.storageIdtyCertMeta($idtyIndex)') ?? '';
+        await _getStorage('certification.storageIdtyCertMeta($idtyIndex)') ??
+            '';
 
     return certMeta;
   }
@@ -455,10 +457,11 @@ class SubstrateSdk with ChangeNotifier {
     List<IdtyStatus> resultStatus = [];
     final mapStatus = {
       null: IdtyStatus.none,
-      'Created': IdtyStatus.created,
-      'ConfirmedByOwner': IdtyStatus.confirmed,
-      'Validated': IdtyStatus.validated,
-      'Expired': IdtyStatus.expired,
+      'Unconfirmed': IdtyStatus.unconfirmed,
+      'Unvalidated': IdtyStatus.unvalidated,
+      'Member': IdtyStatus.member,
+      'NotMember': IdtyStatus.notMember,
+      'Revoked': IdtyStatus.revoked,
       'unknown': IdtyStatus.unknown,
     };
 
@@ -1048,7 +1051,7 @@ class SubstrateSdk with ChangeNotifier {
     final fromIndex = idtyIndexList[0];
     final toIndex = idtyIndexList[1];
 
-    if (myIdtyStatus != IdtyStatus.validated) {
+    if (myIdtyStatus != IdtyStatus.member) {
       return 'notMember';
     }
 
@@ -1069,17 +1072,17 @@ class SubstrateSdk with ChangeNotifier {
         sender,
       );
       txOptions = [destAddress];
-    } else if (toIdtyStatus == IdtyStatus.validated ||
-        toIdtyStatus == IdtyStatus.confirmed) {
+    } else if (toIdtyStatus == IdtyStatus.member ||
+        toIdtyStatus == IdtyStatus.unvalidated) {
       if (toCerts[0] >= currencyParameters['minCertForMembership']! - 1 &&
-          toIdtyStatus != IdtyStatus.validated) {
+          toIdtyStatus != IdtyStatus.member) {
         log.d('Batch cert and membership validation');
         txInfo = TxInfoData(
           'utility',
           'batchAll',
           sender,
         );
-        final tx1 = 'api.tx.cert.addCert($fromIndex, $toIndex)';
+        final tx1 = 'api.tx.certification.addCert($fromIndex, $toIndex)';
 
         //TODO: add requestDistanceEvaluation tx when available
 

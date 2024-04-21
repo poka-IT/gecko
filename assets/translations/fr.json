@@ -103,6 +103,7 @@
     "identityCreated": "Identité créée",
     "identityConfirmed": "Identité confirmée",
     "identityExpired": "Identité expirée",
+    "identityRevoked": "Identité révoqué",
     "confirmYourIdentity": "Confirmez votre identité",
     "noResult": "Aucun résultat",
     "noDuniterNodeAvailableTryLater": "Aucun noeud Duniter disponible, veuillez réessayer ultérieurement",

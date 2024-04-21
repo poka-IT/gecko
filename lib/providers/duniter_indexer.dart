@@ -11,10 +11,11 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 
 class DuniterIndexer with ChangeNotifier {
   Map<String, String?> walletNameIndexer = {};
+  String? fetchMoreCursor;
+  Map? pageInfo;
   List? transBC;
   List listIndexerEndpoints = [];
   bool isLoadingIndexer = false;
-  bool hasNextPage = false;
   Future<QueryResult<Object?>?> Function()? refetch;
   late GraphQLClient indexerClient;
 
@@ -29,7 +30,7 @@ class DuniterIndexer with ChangeNotifier {
     client.connectionTimeout = const Duration(milliseconds: 4000);
     try {
       final request =
-          await client.postUrl(Uri.parse('https://$endpoint/v1/graphql'));
+          await client.postUrl(Uri.parse('https://$endpoint/v1beta1/relay'));
       final response = await request.close();
       if (response.statusCode != 200) {
         log.w('Indexer $endpoint is offline');
@@ -98,7 +99,7 @@ class DuniterIndexer with ChangeNotifier {
       }
 
       try {
-        final endpointPath = 'https://${listIndexerEndpoints[i]}/v1/graphql';
+        final endpointPath = 'https://${listIndexerEndpoints[i]}/v1beta1/relay';
 
         final request = await client.postUrl(Uri.parse(endpointPath));
         final response = await request.close();
@@ -134,21 +135,21 @@ class DuniterIndexer with ChangeNotifier {
     List transBC = [];
     int i = 0;
 
-    for (final transaction in blockchainTX) {
-      final direction =
-          transaction['issuer']['pubkey'] != address ? 'RECEIVED' : 'SENT';
+    for (final transactionNode in blockchainTX) {
+      final transaction = transactionNode['node'];
+      final direction = transaction['fromId'] != address ? 'RECEIVED' : 'SENT';
 
       transBC.add(i);
       transBC[i] = [];
-      transBC[i].add(DateTime.parse(transaction['created_at']));
+      transBC[i].add(DateTime.parse(transaction['timestamp']));
       final amountBrut = transaction['amount'];
       final amount = removeDecimalZero(amountBrut / 100);
       if (direction == "RECEIVED") {
-        transBC[i].add(transaction['issuer']['pubkey']);
-        transBC[i].add(transaction['issuer']['identity']?['name'] ?? '');
+        transBC[i].add(transaction['fromId']);
+        transBC[i].add(transaction['from']['identity']?['name'] ?? '');
       } else if (direction == "SENT") {
-        transBC[i].add(transaction['receiver']['pubkey']);
-        transBC[i].add(transaction['receiver']['identity']?['name'] ?? '');
+        transBC[i].add(transaction['toId']);
+        transBC[i].add(transaction['to']['identity']?['name'] ?? '');
       }
       transBC[i].add(amount);
       transBC[i].add(direction);
@@ -158,36 +159,38 @@ class DuniterIndexer with ChangeNotifier {
     return transBC;
   }
 
-  FetchMoreOptions? mergeQueryResult(
-      {required List transactions,
-      required FetchMoreOptions? opts,
-      required String address,
-      required int nRepositories,
-      required int offset}) {
-    // pageInfo = result.data!['transaction_connection']['pageInfo'];
-    // fetchMoreCursor = pageInfo!['endCursor'];
+  FetchMoreOptions? mergeQueryResult(QueryResult result, FetchMoreOptions? opts,
+      String address, int nRepositories) {
+    final List<dynamic> blockchainTX =
+        (result.data!['transferConnection']['edges'] as List<dynamic>);
+
+    pageInfo = result.data!['transferConnection']['pageInfo'];
+    fetchMoreCursor = pageInfo!['endCursor'];
     // final hasNextPage = pageInfo!['hasNextPage'];
-    // final hasPreviousPage = pageInfo!['hasPreviousPage'];
-    // log.d('endCursor: $fetchMoreCursor $hasNextPage $hasPreviousPage');
+    // log.d('endCursor: $fetchMoreCursor $hasNextPage');
 
-    // if (fetchMoreCursor != null) {
-    opts = FetchMoreOptions(
-      variables: {'offset': offset, 'number': nRepositories},
-      updateQuery: (previousResultData, fetchMoreResultData) {
-        final List<dynamic> repos = [
-          ...previousResultData!['transaction'] as List<dynamic>,
-          ...fetchMoreResultData!['transaction'] as List<dynamic>
-        ];
+    if (fetchMoreCursor != null) {
+      opts = FetchMoreOptions(
+        variables: {'after': fetchMoreCursor, 'first': nRepositories},
+        updateQuery: (previousResultData, fetchMoreResultData) {
+          final List<dynamic> repos = [
+            ...previousResultData!['transferConnection']['edges']
+                as List<dynamic>,
+            ...fetchMoreResultData!['transferConnection']['edges']
+                as List<dynamic>
+          ];
 
-        fetchMoreResultData['transaction'] = repos;
-        return fetchMoreResultData;
-      },
-    );
-    transBC = parseHistory(transactions, address);
-    // } else {
-    //   log.d("Activity start of $address");
-    // }
+          fetchMoreResultData['transferConnection']['edges'] = repos;
+          return fetchMoreResultData;
+        },
+      );
+    }
 
+    if (fetchMoreCursor != null) {
+      transBC = parseHistory(blockchainTX, address);
+    } else {
+      log.d("Activity start of $address");
+    }
     return opts;
   }
 
@@ -203,14 +206,15 @@ class DuniterIndexer with ChangeNotifier {
       'name': name,
     };
     final result = await _execQuery(isIdtyExistQ, variables);
+    log.d(result.data);
     return result.data?['identity']?.isNotEmpty ?? false;
   }
 
   Future<DateTime> getBlockStart() async {
     final result = await _execQuery(getBlockchainStartQ, {});
     if (!result.hasException) {
-      startBlockchainTime =
-          DateTime.parse(result.data!['block'][0]['created_at']);
+      startBlockchainTime = DateTime.parse(
+          result.data!['blockConnection']['edges'][0]['node']['timestamp']);
       startBlockchainInitialized = true;
       return startBlockchainTime;
     }

@@ -45,11 +45,11 @@ class HistoryQuery extends StatelessWidget {
         children: <Widget>[
           Query(
             options: QueryOptions(
-              document: gql(getHistoryByAddressQ),
+              document: gql(getHistoryByAddressRelayQ),
               variables: <String, dynamic>{
                 'address': address,
-                'number': nRepositories,
-                'offset': 0
+                'first': nRepositories,
+                'after': null
               },
             ),
             builder: (QueryResult result, {fetchMore, refetch}) {
@@ -61,7 +61,8 @@ class HistoryQuery extends StatelessWidget {
                   ),
                 );
               }
-              final List transactions = result.data?["transaction"];
+              final List transactions =
+                  result.data?["transferConnection"]["edges"];
 
               // Get transaction in progress if exist
               String? transactionId;
@@ -106,18 +107,10 @@ class HistoryQuery extends StatelessWidget {
                 ]);
               }
 
-              final int totalTransactions =
-                  result.data!["transaction_aggregate"]["aggregate"]["count"];
-              duniterIndexer.hasNextPage =
-                  !(transactions.length == totalTransactions);
-
-              opts = duniterIndexer.mergeQueryResult(
-                transactions: transactions,
-                opts: opts,
-                address: address,
-                nRepositories: nRepositories,
-                offset: transactions.length,
-              );
+              if (result.isNotLoading) {
+                opts = duniterIndexer.mergeQueryResult(
+                    result, opts, address, nRepositories);
+              }
 
               // Build history list
               return NotificationListener(
@@ -144,10 +137,14 @@ class HistoryQuery extends StatelessWidget {
                     ),
                   ),
                   onNotification: (dynamic t) {
+                    if (duniterIndexer.pageInfo == null) {
+                      duniterIndexer.reload();
+                    }
+
                     if (t is ScrollEndNotification &&
                         scrollController.position.pixels >=
                             scrollController.position.maxScrollExtent * 0.7 &&
-                        duniterIndexer.hasNextPage &&
+                        duniterIndexer.pageInfo!['hasNextPage'] &&
                         result.isNotLoading) {
                       fetchMore!(opts!);
                     }

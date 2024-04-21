@@ -104,6 +104,7 @@
     "identityCreated": "Identidad creada",
     "identityConfirmed": "Identidad confirmada",
     "identityExpired": "Identidad caducada",
+    "identityRevoked": "Identidad revocada",
     "confirmYourIdentity": "Confirma tu identidad",
     "noResult": "Ningún resultado",
     "noDuniterNodeAvailableTryLater": "No hay ningún nodo Duniter disponible, por favor, inténtalo más tarde",

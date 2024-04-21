@@ -74,13 +74,13 @@ class WalletData extends HiveObject {
   }
 
   bool hasIdentity() {
-    return identityStatus == IdtyStatus.created ||
-        identityStatus == IdtyStatus.confirmed ||
-        identityStatus == IdtyStatus.validated;
+    return identityStatus == IdtyStatus.unconfirmed ||
+        identityStatus == IdtyStatus.unvalidated ||
+        identityStatus == IdtyStatus.member;
   }
 
   bool isMembre() {
-    return identityStatus == IdtyStatus.validated;
+    return identityStatus == IdtyStatus.member;
   }
 
   bool exist() {
@@ -139,17 +139,20 @@ enum IdtyStatus {
   none,
 
   @HiveField(1)
-  created,
+  unconfirmed,
 
   @HiveField(2)
-  confirmed,
+  unvalidated,
 
   @HiveField(3)
-  validated,
+  member,
 
   @HiveField(4)
-  expired,
+  notMember,
 
   @HiveField(5)
+  revoked,
+
+  @HiveField(6)
   unknown
 }

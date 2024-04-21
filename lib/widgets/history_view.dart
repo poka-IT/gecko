@@ -99,14 +99,14 @@ class HistoryView extends StatelessWidget {
                     context: context),
               ]);
             }).toList()),
-            if (result.isLoading && duniterIndexer.hasNextPage)
+            if (result.isLoading && duniterIndexer.pageInfo!['hasNextPage'])
               const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Loading(size: 30, stroke: 3),
                 ],
               ),
-            if (!duniterIndexer.hasNextPage &&
+            if (!duniterIndexer.pageInfo!['hasNextPage'] &&
                 sub.oldOwnerKeys[address]?[0] != null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 30),
@@ -152,7 +152,7 @@ class HistoryView extends StatelessWidget {
                   ),
                 ),
               ),
-            if (!duniterIndexer.hasNextPage)
+            if (!duniterIndexer.pageInfo!['hasNextPage'])
               Column(
                 children: <Widget>[
                   ScaledSizedBox(height: 15),

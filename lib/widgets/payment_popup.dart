@@ -38,8 +38,8 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
     // Payment workflow !
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final acc = sub.getCurrentWallet();
-    log.d(
-        "fromAddress: ${acc.address!},destAddress: $toAddress, amount: ${double.parse(walletViewProvider.payAmount.text)}");
+    // log.d(
+    //     "fromAddress: ${acc.address!},destAddress: $toAddress, amount: ${double.parse(walletViewProvider.payAmount.text)}");
     final transactionId = await sub.pay(
         fromAddress: acc.address!,
         destAddress: toAddress,

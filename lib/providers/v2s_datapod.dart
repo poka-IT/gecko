@@ -32,12 +32,13 @@ class V2sDatapodProvider with ChangeNotifier {
     };
   }
 
-  Future<QueryResult> _execQuery(
+  Future<QueryResult?> _execQuery(
       String query, Map<String, dynamic> variables) async {
-    final QueryOptions options =
-        QueryOptions(document: gql(query), variables: variables);
-
-    return await datapodClient.query(options);
+    //TODO: Switch to IPFS Datapod
+    return null;
+    // final QueryOptions options =
+    //     QueryOptions(document: gql(query), variables: variables);
+    // return await datapodClient.query(options);
   }
 
   Future<bool> updateProfile(
@@ -61,11 +62,11 @@ class V2sDatapodProvider with ChangeNotifier {
     if (variables.isEmpty) return false;
 
     final result = await _execQuery(updateProfileQ, variables);
-    if (result.hasException) {
-      log.e(result.exception.toString());
+    if (result?.hasException ?? true) {
+      log.e(result?.exception.toString());
       return false;
     }
-    log.d(result.data!['updateProfile']['message']);
+    log.d(result!.data!['updateProfile']['message']);
     return true;
   }
 
@@ -75,11 +76,11 @@ class V2sDatapodProvider with ChangeNotifier {
     if (variables.isEmpty) return false;
 
     final result = await _execQuery(deleteProfileQ, variables);
-    if (result.hasException) {
-      log.e(result.exception.toString());
+    if (result?.hasException ?? true) {
+      log.e(result?.exception.toString());
       return false;
     }
-    log.d(result.data!['deleteProfile']['message']);
+    log.d(result!.data!['deleteProfile']['message']);
     return true;
   }
 
@@ -90,11 +91,11 @@ class V2sDatapodProvider with ChangeNotifier {
     if (variables.isEmpty) return false;
 
     final result = await _execQuery(migrateProfileQ, variables);
-    if (result.hasException) {
-      log.e(result.exception.toString());
+    if (result?.hasException ?? true) {
+      log.e(result?.exception.toString());
       return false;
     }
-    log.d(result.data!['migrateProfile']['message']);
+    log.d(result!.data!['migrateProfile']['message']);
     return true;
   }
 
@@ -112,11 +113,11 @@ class V2sDatapodProvider with ChangeNotifier {
     if (variables.isEmpty) return false;
 
     final result = await _execQuery(addTransactionCommentQ, variables);
-    if (result.hasException) {
-      log.e(result.exception.toString());
+    if (result?.hasException ?? true) {
+      log.e(result?.exception.toString());
       return false;
     }
-    log.d(result.data!['addTransaction']['message']);
+    log.d(result!.data!['addTransaction']['message']);
     return true;
   }
 
@@ -131,12 +132,12 @@ class V2sDatapodProvider with ChangeNotifier {
       'address': address,
     };
     final result = await _execQuery(profileEditedAtQ, variables);
-    if (result.hasException) {
-      log.e(result.exception.toString());
+    if (result?.hasException ?? true) {
+      // log.e(result?.exception.toString());
       return null;
     }
     final String? profileDateData =
-        result.data!['profiles_by_pk']?['updated_at'];
+        result!.data!['profiles_by_pk']?['updated_at'];
     final profileDate =
         profileDateData == null ? null : DateTime.tryParse(profileDateData);
     return profileDate;
@@ -148,11 +149,11 @@ class V2sDatapodProvider with ChangeNotifier {
       'address': address,
     };
     final result = await _execQuery(getAvatarQ, variables);
-    if (result.hasException) {
-      log.e(result.exception.toString());
+    if (result?.hasException ?? true) {
+      log.e(result?.exception.toString());
       return defaultAvatar(size);
     }
-    final String? avatar64 = result.data!['profiles_by_pk']?['avatar64'];
+    final String? avatar64 = result!.data!['profiles_by_pk']?['avatar64'];
 
     if (avatar64 == null) {
       return defaultAvatar(size);

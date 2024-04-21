@@ -62,7 +62,7 @@ class CertsList extends StatelessWidget {
                 style: scaledTextStyle(fontSize: 18),
               )
             ]);
-          } else if (result.data?['certification']?.isEmpty) {
+          } else if (result.data?['certConnection']['edges']?.isEmpty) {
             return Column(children: <Widget>[
               ScaledSizedBox(height: 50),
               Text(
@@ -72,12 +72,13 @@ class CertsList extends StatelessWidget {
             ]);
           }
 
-          final List certsData = result.data!['certification'];
+          final List certsData = result.data!['certConnection']['edges'];
           List listCerts = [];
-          for (final cert in certsData) {
-            final String issuerAddress = cert[certFrom]['pubkey'];
+          for (final certNode in certsData) {
+            final cert = certNode['node'];
+            final String issuerAddress = cert[certFrom]['accountId'];
             final String issuerName = cert[certFrom]['name'];
-            final date = DateTime.parse(cert['created_at']);
+            final date = DateTime.parse('2024-02-04T21:20:54.001+00:00');
             final dp = DateTime(date.year, date.month, date.day);
             final dateForm = '${dp.day}-${dp.month}-${dp.year}';
 

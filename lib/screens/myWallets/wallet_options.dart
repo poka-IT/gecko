@@ -151,7 +151,7 @@ class WalletOptions extends StatelessWidget {
                                           size: 24,
                                           color: Colors.black,
                                           fontWeight: wallet.identityStatus ==
-                                                  IdtyStatus.validated
+                                                  IdtyStatus.member
                                               ? FontWeight.w500
                                               : FontWeight.w400,
                                           fontStyle: FontStyle.normal);
@@ -330,7 +330,7 @@ class WalletOptions extends StatelessWidget {
             if (!snapshot.hasData || snapshot.hasError) {
               return const SizedBox.shrink();
             }
-            if (snapshot.data!.first == IdtyStatus.created) {
+            if (snapshot.data!.first == IdtyStatus.unconfirmed) {
               return Column(children: [
                 ScaledSizedBox(
                   width: 310,

@@ -79,24 +79,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
         duniterIndexer.getValidIndexerEndpoint().then((validIndexerEndpoint) {
           final wsLinkIndexer = WebSocketLink(
-            'wss://$validIndexerEndpoint/v1/graphql',
+            'wss://$validIndexerEndpoint/v1beta1/relay',
           );
 
-          const headerWebsocket =
-              datapodEndpoint == '10.0.2.2:8080' ? 'ws' : 'wss';
-          final wsLinkDatapod = WebSocketLink(
-            '$headerWebsocket://$datapodEndpoint/v1/graphql',
-          );
+          // const headerWebsocket =
+          //     datapodEndpoint == '10.0.2.2:8080' ? 'ws' : 'wss';
+          // final wsLinkDatapod = WebSocketLink(
+          //   '$headerWebsocket://$datapodEndpoint/v1/graphql',
+          // );
 
           duniterIndexer.indexerClient = GraphQLClient(
             cache: GraphQLCache(),
             link: wsLinkIndexer,
           );
 
-          datapod.datapodClient = GraphQLClient(
-            cache: GraphQLCache(),
-            link: wsLinkDatapod,
-          );
+          // datapod.datapodClient = GraphQLClient(
+          //   cache: GraphQLCache(),
+          //   link: wsLinkDatapod,
+          // );
         });
 
         await homeProvider.getValidEndpoints();

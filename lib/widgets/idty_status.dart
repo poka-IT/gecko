@@ -37,14 +37,14 @@ class IdentityStatus extends StatelessWidget {
             final resStatus = walletData.identityStatus;
 
             if (!isOwner) {
-              if (resStatus == IdtyStatus.confirmed) {
+              if (resStatus == IdtyStatus.unvalidated) {
                 return NameByAddress(
                     wallet: walletData,
                     size: 18,
                     color: Colors.grey[700]!,
                     fontWeight: FontWeight.w500,
                     fontStyle: FontStyle.italic);
-              } else if (resStatus == IdtyStatus.validated) {
+              } else if (resStatus == IdtyStatus.member) {
                 return NameByAddress(
                     wallet: walletData,
                     size: 20,
@@ -56,16 +56,17 @@ class IdentityStatus extends StatelessWidget {
 
             final Map<IdtyStatus, String> statusText = {
               IdtyStatus.none: '',
-              IdtyStatus.created: 'identityCreated'.tr(),
-              IdtyStatus.confirmed: 'identityConfirmed'.tr(),
-              IdtyStatus.validated: 'memberValidated'.tr(),
-              IdtyStatus.expired: 'identityExpired'.tr(),
+              IdtyStatus.unconfirmed: 'identityCreated'.tr(),
+              IdtyStatus.unvalidated: 'identityConfirmed'.tr(),
+              IdtyStatus.member: 'memberValidated'.tr(),
+              IdtyStatus.notMember: 'identityExpired'.tr(),
+              IdtyStatus.revoked: 'identityRevoked'.tr(),
               IdtyStatus.unknown: ''
             };
 
             return SizedBox(
               child: showText(statusText[resStatus]!,
-                  bold: resStatus == IdtyStatus.validated, size: scaleSize(17)),
+                  bold: resStatus == IdtyStatus.member, size: scaleSize(17)),
             );
           });
     });

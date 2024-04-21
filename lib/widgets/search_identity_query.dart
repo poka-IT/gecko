@@ -35,7 +35,7 @@ class SearchIdentityQuery extends StatelessWidget {
           options: QueryOptions(
             document: gql(searchAddressByNameQ),
             variables: {
-              'name': name,
+              'name': '%$name%',
             },
           ),
           builder: (QueryResult result,
@@ -50,15 +50,16 @@ class SearchIdentityQuery extends StatelessWidget {
               return Text('loading'.tr());
             }
 
-            final List identities = result.data?['search_identity'] ?? [];
+            final List identities =
+                result.data?['identityConnection']['edges'] ?? [];
 
             if (identities.isEmpty) {
               return Text('noResult'.tr());
             }
 
             for (Map profile in identities) {
-              duniterIndexer.walletNameIndexer
-                  .putIfAbsent(profile['pubkey'], () => profile['name']);
+              duniterIndexer.walletNameIndexer.putIfAbsent(
+                  profile['node']['accountId'], () => profile['node']['name']);
             }
 
             searchProvider.resultLenght = identities.length;
@@ -68,13 +69,14 @@ class SearchIdentityQuery extends StatelessWidget {
               child: ListView(children: <Widget>[
                 for (Map profile in identities)
                   ListTile(
-                      key: keySearchResult(profile['pubkey']),
+                      key: keySearchResult(profile['node']['accountId']),
                       horizontalTitleGap: 10,
                       contentPadding: const EdgeInsets.only(right: 2),
                       leading: DatapodAvatar(
-                          address: profile['pubkey'], size: avatarSize),
+                          address: profile['node']['accountId'],
+                          size: avatarSize),
                       title: Row(children: <Widget>[
-                        Text(getShortPubkey(profile['pubkey']),
+                        Text(getShortPubkey(profile['node']['accountId']),
                             style: scaledTextStyle(
                                 fontSize: 16,
                                 fontFamily: 'Monospace',
@@ -90,12 +92,13 @@ class SearchIdentityQuery extends StatelessWidget {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Balance(
-                                        address: profile['pubkey'], size: 15),
+                                        address: profile['node']['accountId'],
+                                        size: 15),
                                   ]),
                             ]),
                       ),
                       subtitle: Row(children: <Widget>[
-                        Text(profile['name'] ?? '',
+                        Text(profile['node']['name'] ?? '',
                             style: scaledTextStyle(
                                 fontSize: 17, fontWeight: FontWeight.w500),
                             textAlign: TextAlign.center),
@@ -107,10 +110,11 @@ class SearchIdentityQuery extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) {
-                            walletsProfiles.address = profile['pubkey'];
+                            walletsProfiles.address =
+                                profile['node']['accountId'];
                             return WalletViewScreen(
-                              address: profile['pubkey'],
-                              username: profile['name'],
+                              address: profile['node']['accountId'],
+                              username: profile['node']['name'],
                             );
                           }),
                         );

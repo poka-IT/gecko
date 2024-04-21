@@ -56,8 +56,12 @@ class NameByAddress extends StatelessWidget {
               return const Loading();
             }
 
-            duniterIndexer.walletNameIndexer[wallet.address] =
-                result.data?['account_by_pk']?['identity']?['name'];
+            final edges = result.data?['identityConnection']['edges'];
+            final name = edges != null && edges.isNotEmpty
+                ? edges[0]['node']['name']
+                : null;
+
+            duniterIndexer.walletNameIndexer[wallet.address] = name;
 
             g1WalletsBox.put(
                 wallet.address,

@@ -8,7 +8,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:logger/logger.dart';
 
 // Version of box data
-const int dataVersion = 8;
+const int dataVersion = 9;
 
 late String appVersion;
 const int pinLength = 5;

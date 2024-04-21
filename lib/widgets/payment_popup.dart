@@ -60,6 +60,40 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
     );
   }
 
+  bool canValidatePayment() {
+    final payAmount = walletViewProvider.payAmount.text;
+    if (payAmount.isEmpty) {
+      return false;
+    }
+    final walletOptions =
+        Provider.of<WalletOptionsProvider>(context, listen: false);
+    final defaultWalletBalance =
+        walletOptions.balanceCache[defaultWallet.address] ?? 0;
+
+    const existentialDeposit = 2;
+    final double payAmountValue = double.parse(payAmount);
+    final double toAddressBalance = walletOptions.balanceCache[toAddress] ?? 0;
+
+    // Prevent sending more than the balance with existential deposit
+    if (payAmountValue / balanceRatio >
+        defaultWalletBalance - existentialDeposit) {
+      return false;
+    }
+
+    // Prevent sending to self
+    if (toAddress == defaultWallet.address) {
+      return false;
+    }
+
+    // Prevent sending to an empty wallet with less than 2 (existential deposit)
+    if (toAddressBalance == 0 &&
+        payAmountValue < existentialDeposit / balanceRatio) {
+      return false;
+    }
+
+    return true;
+  }
+
   myWalletProvider.readAllWallets().then((value) => myWalletProvider.listWallets
       .sort((a, b) => a.derivation!.compareTo(b.derivation!)));
 
@@ -74,27 +108,10 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
       context: context,
       builder: (BuildContext context) {
         final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-        final walletOptions =
-            Provider.of<WalletOptionsProvider>(context, listen: false);
 
         return StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
-          if (walletViewProvider.payAmount.text != '' &&
-              (double.parse(walletViewProvider.payAmount.text) +
-                      2 / balanceRatio) <=
-                  (walletOptions.balanceCache[defaultWallet.address] ?? 0) &&
-              toAddress != defaultWallet.address) {
-            if ((walletOptions.balanceCache[toAddress] == 0 ||
-                    walletOptions.balanceCache[toAddress] == null) &&
-                double.parse(walletViewProvider.payAmount.text) <
-                    5 / balanceRatio) {
-              canValidate = false;
-            } else {
-              canValidate = true;
-            }
-          } else {
-            canValidate = false;
-          }
+          canValidate = canValidatePayment();
           final bool isUdUnit = configBox.get('isUdUnit') ?? false;
           return Padding(
             padding: EdgeInsets.only(

@@ -516,7 +516,6 @@ class SubstrateSdk with ChangeNotifier {
     const currencyParametersNames = {
       'ss58': 'system.ss58Prefix.words',
       'minCertForMembership': 'wot.minCertForMembership.words',
-      'newAccountPrice': 'account.newAccountPrice.words',
       'existentialDeposit': 'balances.existentialDeposit.words',
       'certPeriod': 'cert.certPeriod.words',
       'certMaxByIssuer': 'cert.maxByIssuer.words',

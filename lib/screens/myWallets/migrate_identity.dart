@@ -202,7 +202,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                             fromPassword: myWalletProvider.pinCode,
                             destPassword: 'password',
                             withBalance: true,
-                            fromBalance: statusData.balance);
+                            fromBalance: statusData.fromBalance);
 
                         sub.deleteAccounts([newWalletAddress.text]);
                         Navigator.pop(context);

@@ -1,21 +1,24 @@
 import 'package:gecko/models/wallet_data.dart';
 
 class MigrateWalletChecks {
-  final Map balance;
-  final IdtyStatus idtyStatus;
+  final Map fromBalance;
+  final IdtyStatus fromIdtyStatus;
+  final IdtyStatus toIdtyStatus;
   final String validationStatus;
   final bool canValidate;
 
   const MigrateWalletChecks({
-    required this.balance,
-    required this.idtyStatus,
+    required this.fromBalance,
+    required this.fromIdtyStatus,
+    required this.toIdtyStatus,
     required this.validationStatus,
     required this.canValidate,
   });
 
   const MigrateWalletChecks.defaultValues({
-    this.balance = const {'transferableBalance': 0},
-    this.idtyStatus = IdtyStatus.none,
+    this.fromBalance = const {'transferableBalance': 0},
+    this.fromIdtyStatus = IdtyStatus.none,
+    this.toIdtyStatus = IdtyStatus.none,
     this.validationStatus = '',
     this.canValidate = false,
   });
@@ -23,8 +26,9 @@ class MigrateWalletChecks {
   @override
   String toString() {
     return {
-      'balance': balance,
-      'idtyStatus': idtyStatus,
+      'balance': fromBalance,
+      'fromIdtyStatus': fromIdtyStatus,
+      'toIdtyStatus': toIdtyStatus,
       'validationStatus': validationStatus,
       'canValidate': canValidate,
     }.toString();

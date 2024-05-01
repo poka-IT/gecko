@@ -148,7 +148,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     contentPadding: const EdgeInsets.all(13),
                   ),
                   style: scaledTextStyle(
-                    fontSize: 17,
+                    fontSize: 16,
                     color: Colors.black,
                     fontWeight: FontWeight.w400,
                   ),
@@ -193,7 +193,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             : 'search'.tr(),
                     textAlign: TextAlign.center,
                     style: scaledTextStyle(
-                        fontSize: 17,
+                        fontSize: 16,
                         fontWeight: FontWeight.w500,
                         color: Colors.white),
                   ),

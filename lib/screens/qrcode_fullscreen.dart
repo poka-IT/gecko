@@ -63,7 +63,7 @@ class _QrCodeFullscreenState extends State<QrCodeFullscreen> {
                 }),
             title: Text(
               'QR Code de ${getShortPubkey(widget.address)}',
-              style: scaledTextStyle(color: orangeC, fontSize: 18),
+              style: scaledTextStyle(color: orangeC, fontSize: 17),
             )),
         body: SafeArea(
           child: SizedBox.expand(

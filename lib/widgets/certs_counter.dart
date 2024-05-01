@@ -14,7 +14,7 @@ class CertsCounter extends StatelessWidget {
     return Consumer<SubstrateSdk>(builder: (context, sub, _) {
       return Text(
         '(${sub.certsCounterCache[address]![isSent ? 1 : 0]})',
-        style: scaledTextStyle(fontSize: 17),
+        style: scaledTextStyle(fontSize: 16),
       );
     });
   }

@@ -45,7 +45,7 @@ class CertificationsScreen extends StatelessWidget {
                   header: Row(children: [
                     Text(
                       'received'.tr(),
-                      style: scaledTextStyle(fontSize: 17),
+                      style: scaledTextStyle(fontSize: 16),
                     ),
                     ScaledSizedBox(width: 5),
                     CertsCounter(address: address)
@@ -64,7 +64,7 @@ class CertificationsScreen extends StatelessWidget {
                   header: Row(children: [
                     Text(
                       'sent'.tr(),
-                      style: scaledTextStyle(fontSize: 17),
+                      style: scaledTextStyle(fontSize: 16),
                     ),
                     ScaledSizedBox(width: 5),
                     CertsCounter(address: address, isSent: true)

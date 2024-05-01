@@ -31,7 +31,7 @@ class HistoryQuery extends StatelessWidget {
         Text(
           "noNetworkNoHistory".tr(),
           textAlign: TextAlign.center,
-          style: scaledTextStyle(fontSize: 18),
+          style: scaledTextStyle(fontSize: 17),
         )
       ]);
     }
@@ -85,7 +85,7 @@ class HistoryQuery extends StatelessWidget {
                       Text(
                         "noNetworkNoHistory".tr(),
                         textAlign: TextAlign.center,
-                        style: scaledTextStyle(fontSize: 18),
+                        style: scaledTextStyle(fontSize: 17),
                       ),
                     ],
                   )
@@ -100,7 +100,7 @@ class HistoryQuery extends StatelessWidget {
                       ScaledSizedBox(height: 50),
                       Text(
                         "noDataToDisplay".tr(),
-                        style: scaledTextStyle(fontSize: 18),
+                        style: scaledTextStyle(fontSize: 17),
                       ),
                     ],
                   )

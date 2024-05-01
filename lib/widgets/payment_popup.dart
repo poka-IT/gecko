@@ -143,7 +143,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                             Text(
                               'executeATransfer'.tr(),
                               style: scaledTextStyle(
-                                  fontSize: 19, fontWeight: FontWeight.w700),
+                                  fontSize: 18, fontWeight: FontWeight.w700),
                             ),
                             IconButton(
                               key: keyPopButton,
@@ -158,7 +158,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                       Text(
                         'from'.tr(args: ['']),
                         style: scaledTextStyle(
-                            fontSize: 16,
+                            fontSize: 15,
                             fontWeight: FontWeight.w500,
                             color: Colors.grey[600]),
                       ),
@@ -252,7 +252,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                           Text(
                             'to'.tr(args: ['']),
                             style: scaledTextStyle(
-                                fontSize: 16,
+                                fontSize: 15,
                                 fontWeight: FontWeight.w500,
                                 color: Colors.grey[600]),
                           ),
@@ -260,7 +260,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                           Text(
                             username ?? getShortPubkey(toAddress),
                             style: scaledTextStyle(
-                              fontSize: 18,
+                              fontSize: 17,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -272,7 +272,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                           Text(
                             'amount'.tr(),
                             style: scaledTextStyle(
-                                fontSize: 16,
+                                fontSize: 15,
                                 fontWeight: FontWeight.w500,
                                 color: Colors.grey[600]),
                           ),
@@ -289,7 +289,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                       args: [fees.toString(), currencyName]),
                                   style: scaledTextStyle(
                                     color: orangeC,
-                                    fontSize: 14,
+                                    fontSize: 13,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -349,7 +349,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                             contentPadding: EdgeInsets.all(scaleSize(9)),
                           ),
                           style: scaledTextStyle(
-                            fontSize: 25,
+                            fontSize: 24,
                             color: Colors.black,
                             fontWeight: FontWeight.w600,
                           ),
@@ -375,7 +375,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                           child: Text(
                             'executeTheTransfer'.tr(),
                             style: scaledTextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w600),
+                                fontSize: 17, fontWeight: FontWeight.w600),
                           ),
                         ),
                       ),
@@ -404,13 +404,13 @@ Future<void> infoFeesPopup(BuildContext context) async {
             Text(
               'feesExplanation'.tr(),
               textAlign: TextAlign.center,
-              style: scaledTextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+              style: scaledTextStyle(fontSize: 19, fontWeight: FontWeight.w500),
             ),
             ScaledSizedBox(height: 30),
             Text(
               'feesExplanationDetails'.tr(),
               textAlign: TextAlign.center,
-              style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w300),
+              style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w300),
             ),
             ScaledSizedBox(height: 5),
             InkWell(
@@ -429,7 +429,7 @@ Future<void> infoFeesPopup(BuildContext context) async {
                   'moreInfo'.tr(),
                   textAlign: TextAlign.center,
                   style: scaledTextStyle(
-                    fontSize: 18,
+                    fontSize: 17,
                     fontWeight: FontWeight.w300,
                     color: Colors.blueAccent,
                     // decoration: TextDecoration.underline,
@@ -450,7 +450,7 @@ Future<void> infoFeesPopup(BuildContext context) async {
                   child: Text(
                     'gotit'.tr(),
                     style: scaledTextStyle(
-                      fontSize: 21,
+                      fontSize: 20,
                       color: const Color(0xffD80000),
                     ),
                   ),

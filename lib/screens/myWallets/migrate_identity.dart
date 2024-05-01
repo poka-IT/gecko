@@ -37,7 +37,7 @@ class MigrateIdentityScreen extends StatelessWidget {
     final newWalletAddress = TextEditingController();
 
     final mdStyle = MarkdownStyleSheet(
-      p: scaledTextStyle(fontSize: 16, color: Colors.black, letterSpacing: 0.3),
+      p: scaledTextStyle(fontSize: 15, color: Colors.black, letterSpacing: 0.3),
       textAlign: WrapAlignment.center,
     );
     final bool isUdUnit = configBox.get('isUdUnit') ?? false;
@@ -117,7 +117,7 @@ class MigrateIdentityScreen extends StatelessWidget {
           ),
           ScaledSizedBox(height: 55),
           Text('migrateToThisWallet'.tr(),
-              style: scaledTextStyle(fontSize: 16)),
+              style: scaledTextStyle(fontSize: 15)),
           ScaledSizedBox(height: 5),
           ScaledSizedBox(
             width: 320,
@@ -126,14 +126,14 @@ class MigrateIdentityScreen extends StatelessWidget {
               autofocus: true,
               minLines: 2,
               maxLines: 2,
-              style: scaledTextStyle(fontSize: 14),
+              style: scaledTextStyle(fontSize: 13),
               decoration: InputDecoration(
                 icon: Image.asset(
                   'assets/onBoarding/phrase_de_restauration_flou.png',
                   width: scaleSize(30),
                 ),
                 hintText: 'enterYourNewMnemonic'.tr(),
-                hintStyle: scaledTextStyle(fontSize: 14),
+                hintStyle: scaledTextStyle(fontSize: 13),
                 focusedBorder: const UnderlineInputBorder(
                   borderSide: BorderSide(color: orangeC),
                 ),
@@ -148,14 +148,14 @@ class MigrateIdentityScreen extends StatelessWidget {
             width: 320,
             child: TextField(
               controller: newWalletAddress,
-              style: scaledTextStyle(fontSize: 14),
+              style: scaledTextStyle(fontSize: 13),
               decoration: InputDecoration(
                 icon: Image.asset(
                   'assets/walletOptions/key.png',
                   height: scaleSize(30),
                 ),
                 hintText: 'enterYourNewAddress'.tr(args: [currencyName]),
-                hintStyle: scaledTextStyle(fontSize: 14),
+                hintStyle: scaledTextStyle(fontSize: 13),
                 focusedBorder: const UnderlineInputBorder(
                   borderSide: BorderSide(color: orangeC),
                 ),
@@ -222,7 +222,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                 child: Text(
                   'migrateIdentity'.tr(),
                   style: scaledTextStyle(
-                      fontSize: 19,
+                      fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Colors.white),
                 ),
@@ -239,14 +239,14 @@ class MigrateIdentityScreen extends StatelessWidget {
                     statusData.validationStatus,
                     textAlign: TextAlign.center,
                     style:
-                        scaledTextStyle(fontSize: 12, color: Colors.grey[600]),
+                        scaledTextStyle(fontSize: 11, color: Colors.grey[600]),
                   ),
                   ScaledSizedBox(height: 5),
                   Text(
                     matchInfo,
                     textAlign: TextAlign.center,
                     style:
-                        scaledTextStyle(fontSize: 12, color: Colors.grey[600]),
+                        scaledTextStyle(fontSize: 11, color: Colors.grey[600]),
                   ),
                 ],
               ),

@@ -67,7 +67,7 @@ class OnboardingStepTen extends StatelessWidget {
                     child: Text(
                       "thisIsNotAGoodCode".tr(),
                       style: scaledTextStyle(
-                          fontSize: 16,
+                          fontSize: 15,
                           color: Colors.red,
                           fontWeight: FontWeight.w500),
                     ),
@@ -83,7 +83,7 @@ class OnboardingStepTen extends StatelessWidget {
                               Text(
                                 "youHaveToBeConnectedToValidateChest".tr(),
                                 style: scaledTextStyle(
-                                  fontSize: 17,
+                                  fontSize: 16,
                                   color: Colors.redAccent,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -113,7 +113,7 @@ class OnboardingStepTen extends StatelessWidget {
                             Text(
                               'rememberPassword'.tr(),
                               style: scaledTextStyle(
-                                  fontSize: 15, color: Colors.grey[700]),
+                                  fontSize: 14, color: Colors.grey[700]),
                             ),
                             const Spacer()
                           ]))
@@ -174,7 +174,7 @@ class OnboardingStepTen extends StatelessWidget {
             ),
             showCursor: !kDebugMode,
             cursorColor: Colors.black,
-            textStyle: const TextStyle(fontSize: 25, height: 1.6),
+            textStyle: const TextStyle(fontSize: 24, height: 1.6),
             backgroundColor: const Color(0xffF9F9F1),
             enableActiveFill: false,
             controller: enterPin,

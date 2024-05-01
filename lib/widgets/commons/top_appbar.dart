@@ -13,7 +13,7 @@ class GeckoAppBar extends StatelessWidget implements PreferredSizeWidget {
       titleSpacing: 10,
       title: Text(
         text,
-        style: scaledTextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+        style: scaledTextStyle(fontWeight: FontWeight.w600, fontSize: 17),
       ),
     );
   }

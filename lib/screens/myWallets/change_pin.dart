@@ -52,7 +52,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
                 'choosePassword'.tr(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    fontSize: 17.0,
+                    fontSize: 16.0,
                     color: Colors.grey[600],
                     fontWeight: FontWeight.w400),
               ),
@@ -67,7 +67,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
                       textAlign: TextAlign.center,
                       decoration: const InputDecoration(),
                       style: const TextStyle(
-                          fontSize: 30.0,
+                          fontSize: 29.0,
                           color: Colors.black,
                           fontWeight: FontWeight.bold)),
                   IconButton(
@@ -102,7 +102,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
                   },
                   child: Text(
                     'confirm'.tr(),
-                    style: const TextStyle(fontSize: 28),
+                    style: const TextStyle(fontSize: 27),
                   ),
                 ),
               )

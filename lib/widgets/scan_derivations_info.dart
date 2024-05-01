@@ -25,14 +25,14 @@ class ScanDerivationsInfo extends StatelessWidget {
                 ScanDerivationsStatus.rootScanning)
               Text(
                 'scanRootDerivationInProgress'.tr(),
-                style: scaledTextStyle(fontSize: 16),
+                style: scaledTextStyle(fontSize: 15),
               ),
             if (generateWalletProvider.scanStatus ==
                 ScanDerivationsStatus.scanning)
               Text(
                 'derivationsScanProgress'
                     .tr(args: [generateWalletProvider.numberScan.toString()]),
-                style: scaledTextStyle(fontSize: 16),
+                style: scaledTextStyle(fontSize: 15),
               ),
             if (generateWalletProvider.scanStatus ==
                 ScanDerivationsStatus.import)
@@ -41,7 +41,7 @@ class ScanDerivationsInfo extends StatelessWidget {
                   '${generateWalletProvider.scanedWalletNumber}',
                   '${generateWalletProvider.scanedValidWalletNumber}'
                 ]),
-                style: scaledTextStyle(fontSize: 16),
+                style: scaledTextStyle(fontSize: 15),
               ),
             ScaledSizedBox(width: 10),
             ScaledSizedBox(

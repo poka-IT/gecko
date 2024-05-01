@@ -35,7 +35,7 @@ class NextButton extends StatelessWidget {
         child: Text(
           text,
           style: scaledTextStyle(
-              fontSize: 23, fontWeight: FontWeight.w600, color: Colors.white),
+              fontSize: 22, fontWeight: FontWeight.w600, color: Colors.white),
         ),
       ),
     );

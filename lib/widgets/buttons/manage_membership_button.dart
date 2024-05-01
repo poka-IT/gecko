@@ -36,7 +36,7 @@ class ManageMembershipButton extends StatelessWidget {
             height: scaleSize(42),
           ),
           ScaledSizedBox(width: 20),
-          Text('manageMembership'.tr(), style: scaledTextStyle(fontSize: 18)),
+          Text('manageMembership'.tr(), style: scaledTextStyle(fontSize: 17)),
         ]),
       ),
     );

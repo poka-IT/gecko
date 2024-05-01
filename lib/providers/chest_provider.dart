@@ -59,13 +59,13 @@ class ChestProvider with ChangeNotifier {
         return AlertDialog(
           title: Text(
             'areYouSureToDeleteWallet'.tr(args: [walletName!]),
-            style: scaledTextStyle(fontSize: 17),
+            style: scaledTextStyle(fontSize: 16),
           ),
           actions: <Widget>[
             TextButton(
               child: Text("no".tr(),
                   style:
-                      scaledTextStyle(fontSize: 17, color: Colors.blueAccent),
+                      scaledTextStyle(fontSize: 16, color: Colors.blueAccent),
                   key: keyCancel),
               onPressed: () {
                 Navigator.pop(context, false);
@@ -73,7 +73,7 @@ class ChestProvider with ChangeNotifier {
             ),
             TextButton(
               child: Text("yes".tr(),
-                  style: scaledTextStyle(fontSize: 17, color: Colors.red),
+                  style: scaledTextStyle(fontSize: 16, color: Colors.red),
                   key: keyConfirm),
               onPressed: () {
                 Navigator.pop(context, true);

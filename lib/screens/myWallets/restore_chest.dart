@@ -108,7 +108,7 @@ class RestoreChest extends StatelessWidget {
                       child: Text(
                         'restoreThisChest'.tr(),
                         style: scaledTextStyle(
-                            fontSize: 19,
+                            fontSize: 18,
                             fontWeight: FontWeight.w600,
                             color: Colors.white),
                       ),
@@ -143,7 +143,7 @@ class RestoreChest extends StatelessWidget {
                               'pasteFromClipboard'.tr(),
                               textAlign: TextAlign.center,
                               style: scaledTextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w400),
+                                  fontSize: 15, fontWeight: FontWeight.w400),
                             ),
                           ],
                         )),
@@ -170,7 +170,7 @@ class RestoreChest extends StatelessWidget {
         key: keyBubbleSpeak,
         textAlign: TextAlign.justify,
         style: scaledTextStyle(
-            color: Colors.black, fontSize: 17, fontWeight: FontWeight.w400),
+            color: Colors.black, fontSize: 16, fontWeight: FontWeight.w400),
       ),
     );
   }
@@ -212,7 +212,7 @@ class RestoreChest extends StatelessWidget {
           }
         },
         textAlign: TextAlign.center,
-        style: scaledTextStyle(fontSize: 17),
+        style: scaledTextStyle(fontSize: 16),
       ),
     );
   }

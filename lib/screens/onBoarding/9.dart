@@ -52,7 +52,7 @@ class OnboardingStepNine extends StatelessWidget {
                       decoration: const InputDecoration(),
                       style: scaledTextStyle(
                           letterSpacing: 5,
-                          fontSize: 33,
+                          fontSize: 32,
                           color: Colors.black,
                           fontWeight: FontWeight.bold)),
                   IconButton(
@@ -68,7 +68,7 @@ class OnboardingStepNine extends StatelessWidget {
               Text(
                   'Pendant la phase de test de Ğecko,\nles codes secrets\nsont systématiquement AAAAA.'
                       .tr(),
-                  style: scaledTextStyle(color: Colors.grey[700], fontSize: 14),
+                  style: scaledTextStyle(color: Colors.grey[700], fontSize: 13),
                   textAlign: TextAlign.center),
               Expanded(
                   child: Align(
@@ -89,7 +89,7 @@ class OnboardingStepNine extends StatelessWidget {
                             },
                             child: Text("chooseAnotherPassword".tr(),
                                 style: scaledTextStyle(
-                                    fontSize: 22,
+                                    fontSize: 21,
                                     fontWeight: FontWeight.w600))),
                       ))),
               ScaledSizedBox(height: 20),

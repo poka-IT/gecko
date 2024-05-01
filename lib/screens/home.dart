@@ -189,7 +189,7 @@ Widget geckHome(context) {
             textAlign: TextAlign.center,
             style: scaledTextStyle(
               color: Colors.white,
-              fontSize: 19,
+              fontSize: 18,
               fontWeight: FontWeight.w700,
               shadows: <Shadow>[
                 const Shadow(
@@ -278,7 +278,7 @@ Widget welcomeHome(context) {
             textAlign: TextAlign.center,
             style: scaledTextStyle(
               color: Colors.white,
-              fontSize: 20,
+              fontSize: 19,
               fontWeight: FontWeight.w700,
               shadows: const <Shadow>[
                 Shadow(
@@ -356,7 +356,7 @@ Widget welcomeHome(context) {
                     child: Text(
                       'createWallet'.tr(),
                       style: scaledTextStyle(
-                          fontSize: 21,
+                          fontSize: 20,
                           fontWeight: FontWeight.w600,
                           color: Colors.white),
                     ),
@@ -383,7 +383,7 @@ Widget welcomeHome(context) {
                     child: Text(
                       "restoreWallet".tr(),
                       style: scaledTextStyle(
-                          fontSize: 21,
+                          fontSize: 20,
                           color: orangeC,
                           fontWeight: FontWeight.w600),
                     ),

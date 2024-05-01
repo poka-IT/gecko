@@ -7,7 +7,7 @@ double scaleSize(double size) {
 }
 
 TextStyle scaledTextStyle({
-  double fontSize = 16,
+  double fontSize = 14,
   double? height,
   FontStyle? fontStyle,
   FontWeight? fontWeight,

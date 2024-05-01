@@ -41,7 +41,7 @@ class ChestOptionsButtons extends StatelessWidget {
             label: Text(
               "   ${"manageChest".tr()}",
               style: scaledTextStyle(
-                fontSize: 17,
+                fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xff8a3c0f),
               ),
@@ -72,7 +72,7 @@ class ChestOptionsButtons extends StatelessWidget {
               child: Center(
                   child: Text('importG1v1'.tr(),
                       style: scaledTextStyle(
-                          fontSize: 17,
+                          fontSize: 16,
                           color: Colors.blue[900],
                           fontWeight: FontWeight.w500))),
             ),
@@ -96,7 +96,7 @@ class ChestOptionsButtons extends StatelessWidget {
       //     child: Center(
       //         child: Text('changeChest'.tr(),
       //             style: const scaledTextStyle(
-      //                 fontSize: 20,
+      //                 fontSize: 19,
       //                 color: Colors.grey, //orangeC
       //                 fontWeight: FontWeight.w500))),
       //   ),

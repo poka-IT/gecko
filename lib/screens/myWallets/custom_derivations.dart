@@ -55,7 +55,7 @@ class _CustomDerivationState extends State<CustomDerivation> {
             const Spacer(),
             Text(
               'chooseDerivation'.tr(),
-              style: scaledTextStyle(fontSize: 17),
+              style: scaledTextStyle(fontSize: 16),
             ),
             ScaledSizedBox(height: 20),
             ScaledSizedBox(
@@ -89,7 +89,7 @@ class _CustomDerivationState extends State<CustomDerivation> {
                           Text(
                             value,
                             style: scaledTextStyle(
-                                fontSize: 17, color: Colors.black),
+                                fontSize: 16, color: Colors.black),
                           ),
                           const Spacer(),
                         ]),
@@ -127,7 +127,7 @@ class _CustomDerivationState extends State<CustomDerivation> {
                 child: Text(
                   'validate'.tr(),
                   style: scaledTextStyle(
-                      fontSize: 19,
+                      fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Colors.white),
                 ),

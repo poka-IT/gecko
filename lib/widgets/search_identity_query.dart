@@ -78,7 +78,7 @@ class SearchIdentityQuery extends StatelessWidget {
                       title: Row(children: <Widget>[
                         Text(getShortPubkey(profile['node']['accountId']),
                             style: scaledTextStyle(
-                                fontSize: 16,
+                                fontSize: 15,
                                 fontFamily: 'Monospace',
                                 fontWeight: FontWeight.w500),
                             textAlign: TextAlign.center),
@@ -100,7 +100,7 @@ class SearchIdentityQuery extends StatelessWidget {
                       subtitle: Row(children: <Widget>[
                         Text(profile['node']['name'] ?? '',
                             style: scaledTextStyle(
-                                fontSize: 17, fontWeight: FontWeight.w500),
+                                fontSize: 16, fontWeight: FontWeight.w500),
                             textAlign: TextAlign.center),
                       ]),
                       dense: !isTall,

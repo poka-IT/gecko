@@ -91,7 +91,7 @@ Widget finishButton(BuildContext context) {
       child: Text(
         "accessMyChest".tr(),
         style: scaledTextStyle(
-            fontSize: 21, fontWeight: FontWeight.w600, color: Colors.white),
+            fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
       ),
     ),
   );

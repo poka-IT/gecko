@@ -97,7 +97,7 @@ class UnlockingWallet extends StatelessWidget {
                                   currentChest.name!,
                                   textAlign: TextAlign.center,
                                   style: scaledTextStyle(
-                                      fontSize: 22,
+                                      fontSize: 21,
                                       color: Colors.black,
                                       fontWeight: FontWeight.w700),
                                 )),
@@ -109,7 +109,7 @@ class UnlockingWallet extends StatelessWidget {
                             'toUnlockEnterPassword'.tr(),
                             textAlign: TextAlign.center,
                             style: scaledTextStyle(
-                                fontSize: 16,
+                                fontSize: 15,
                                 color: Colors.black,
                                 fontWeight: FontWeight.w400),
                           )),
@@ -121,7 +121,7 @@ class UnlockingWallet extends StatelessWidget {
                           style: scaledTextStyle(
                               color: Colors.red,
                               fontWeight: FontWeight.w500,
-                              fontSize: 16),
+                              fontSize: 15),
                         ),
                       ScaledSizedBox(height: isTall ? 8 : 0),
                       pinForm(context, pinLenght),
@@ -148,7 +148,7 @@ class UnlockingWallet extends StatelessWidget {
                               Text(
                                 'rememberPassword'.tr(),
                                 style: scaledTextStyle(
-                                    fontSize: 15, color: Colors.grey[700]),
+                                    fontSize: 14, color: Colors.grey[700]),
                               ),
                               const Spacer()
                             ]),
@@ -173,7 +173,7 @@ class UnlockingWallet extends StatelessWidget {
                       //         child: Text(
                       //           'changeChest'.tr(),
                       //           style: const scaledTextStyle(
-                      //               fontSize: 22,
+                      //               fontSize: 21,
                       //               color: Colors.grey, // orangeC
                       //               fontWeight: FontWeight.w600),
                       //         ),
@@ -240,7 +240,7 @@ class UnlockingWallet extends StatelessWidget {
             ),
             showCursor: !kDebugMode,
             cursorColor: Colors.black,
-            textStyle: scaledTextStyle(fontSize: 25, height: 1.6),
+            textStyle: scaledTextStyle(fontSize: 24, height: 1.6),
             backgroundColor: const Color(0xffF9F9F1),
             enableActiveFill: false,
             controller: enterPin,

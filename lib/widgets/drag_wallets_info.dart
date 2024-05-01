@@ -29,7 +29,7 @@ class DragWalletsInfo extends StatelessWidget {
     final toName =
         duniterIndexer.walletNameIndexer[lastFlyBy.address] ?? lastFlyBy.name;
     final mdStyle = MarkdownStyleSheet(
-      p: scaledTextStyle(fontSize: 16, color: Colors.black, letterSpacing: 0.3),
+      p: scaledTextStyle(fontSize: 15, color: Colors.black, letterSpacing: 0.3),
       textAlign: WrapAlignment.spaceBetween,
     );
 
@@ -43,7 +43,7 @@ class DragWalletsInfo extends StatelessWidget {
           ScaledSizedBox(height: 2),
           Text(
             '${'executeATransfer'.tr()}:',
-            style: scaledTextStyle(fontSize: 16),
+            style: scaledTextStyle(fontSize: 15),
           ),
           MarkdownBody(
               data: '${'from'.tr(args: [''])} **$fromName**',
@@ -51,7 +51,7 @@ class DragWalletsInfo extends StatelessWidget {
           if (isSameAddress)
             Text(
               'chooseATargetWallet'.tr(),
-              style: scaledTextStyle(fontSize: 16),
+              style: scaledTextStyle(fontSize: 15),
             ),
           if (!isSameAddress)
             MarkdownBody(

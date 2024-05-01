@@ -60,7 +60,7 @@ class OnboardingStepSix extends StatelessWidget {
                   Text('${generateWalletProvider.nbrWord + 1}',
                       key: keyAskedWord,
                       style: scaledTextStyle(
-                          fontSize: 20,
+                          fontSize: 19,
                           color: orangeC,
                           fontWeight: FontWeight.w500)),
                 if (isTall) ScaledSizedBox(height: 5),
@@ -86,7 +86,7 @@ class OnboardingStepSix extends StatelessWidget {
                         textAlign: TextAlign.center,
                         decoration: InputDecoration(
                           labelStyle: scaledTextStyle(
-                              fontSize: 19,
+                              fontSize: 18,
                               color: Colors.grey[500],
                               fontWeight: FontWeight.w500),
                           labelText: generateWalletProvider.isAskedWordValid
@@ -97,7 +97,7 @@ class OnboardingStepSix extends StatelessWidget {
                           contentPadding: const EdgeInsets.all(10),
                         ),
                         style: scaledTextStyle(
-                            fontSize: 26,
+                            fontSize: 25,
                             color: generateWalletProvider.askedWordColor,
                             fontWeight: FontWeight.w500))),
                 Visibility(
@@ -159,7 +159,7 @@ Widget nextButton(BuildContext context, String text, nextScreen, bool isFast) {
       child: Text(
         text,
         style: scaledTextStyle(
-            fontSize: 22, fontWeight: FontWeight.w600, color: Colors.white),
+            fontSize: 21, fontWeight: FontWeight.w600, color: Colors.white),
       ),
     ),
   );

@@ -35,7 +35,7 @@ class HistoryView extends StatelessWidget {
             ScaledSizedBox(height: 50),
             Text(
               "noTransactionToDisplay".tr(),
-              style: scaledTextStyle(fontSize: 17),
+              style: scaledTextStyle(fontSize: 16),
             )
           ])
         : Column(children: <Widget>[
@@ -65,7 +65,7 @@ class HistoryView extends StatelessWidget {
                         Text(
                           'blockchainStart'.tr(),
                           style: scaledTextStyle(
-                              fontSize: 20,
+                              fontSize: 19,
                               color: Colors.blueAccent,
                               fontWeight: FontWeight.w400),
                         ),
@@ -84,7 +84,7 @@ class HistoryView extends StatelessWidget {
                     child: Text(
                       answer['dateDelimiter'],
                       style: scaledTextStyle(
-                          fontSize: 20,
+                          fontSize: 19,
                           color: orangeC,
                           fontWeight: FontWeight.w300),
                     ),
@@ -132,7 +132,7 @@ class HistoryView extends StatelessWidget {
                         Text(
                           'identityMigrated'.tr(),
                           style: scaledTextStyle(
-                              fontSize: 20,
+                              fontSize: 19,
                               color: Colors.green[700],
                               fontWeight: FontWeight.w500),
                         ),
@@ -140,7 +140,7 @@ class HistoryView extends StatelessWidget {
                           'from'.tr(args: [
                             ' ${getShortPubkey(sub.oldOwnerKeys[address]![0])}'
                           ]),
-                          style: scaledTextStyle(fontSize: 17),
+                          style: scaledTextStyle(fontSize: 16),
                         ),
                       ]),
                       Icon(
@@ -163,7 +163,7 @@ class HistoryView extends StatelessWidget {
                       Text("historyStart".tr(),
                           textAlign: TextAlign.center,
                           style: scaledTextStyle(
-                              fontSize: 20, fontWeight: FontWeight.w300)),
+                              fontSize: 19, fontWeight: FontWeight.w300)),
                       Icon(Icons.blur_on_outlined, size: scaleSize(31)),
                     ],
                   ),

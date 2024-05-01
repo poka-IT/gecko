@@ -171,7 +171,7 @@ class WalletOptionsProvider with ChangeNotifier {
           title: Text(
             'confirmYourIdentity'.tr(),
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
           content: SizedBox(
             height: 100,
@@ -196,7 +196,7 @@ class WalletOptionsProvider with ChangeNotifier {
                 textAlign: TextAlign.center,
                 autofocus: true,
                 controller: idtyName,
-                style: const TextStyle(fontSize: 17),
+                style: const TextStyle(fontSize: 16),
               ),
               const SizedBox(height: 10),
               Consumer<WalletOptionsProvider>(builder: (context, wOptions, _) {
@@ -250,7 +250,7 @@ class WalletOptionsProvider with ChangeNotifier {
                     child: Text(
                       "validate".tr(),
                       style: TextStyle(
-                          fontSize: 21,
+                          fontSize: 20,
                           color: canValidate
                               ? const Color(0xffD80000)
                               : Colors.grey[500]),
@@ -278,7 +278,7 @@ class WalletOptionsProvider with ChangeNotifier {
           title: Text(
             'chooseWalletName'.tr(),
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w500),
           ),
           content: SizedBox(
             height: 100,
@@ -289,7 +289,7 @@ class WalletOptionsProvider with ChangeNotifier {
                 textAlign: TextAlign.center,
                 autofocus: true,
                 controller: walletName,
-                style: const TextStyle(fontSize: 19),
+                style: const TextStyle(fontSize: 18),
               )
             ]),
           ),
@@ -304,7 +304,7 @@ class WalletOptionsProvider with ChangeNotifier {
                     child: Text(
                       "validate".tr(),
                       style: TextStyle(
-                        fontSize: 21,
+                        fontSize: 20,
                         color: canValidateNameBool
                             ? const Color(0xffD80000)
                             : Colors.grey,
@@ -331,7 +331,7 @@ class WalletOptionsProvider with ChangeNotifier {
                   child: Text(
                     "cancel".tr(),
                     style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 17,
                         color: Colors.grey[800],
                         fontWeight: FontWeight.w300),
                   ),

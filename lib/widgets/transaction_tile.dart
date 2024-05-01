@@ -43,21 +43,21 @@ class TransactionTile extends StatelessWidget {
           title: Padding(
             padding: const EdgeInsets.only(bottom: 5),
             child: Text(getShortPubkey(repository[1]),
-                style: scaledTextStyle(fontSize: 17, fontFamily: 'Monospace')),
+                style: scaledTextStyle(fontSize: 16, fontFamily: 'Monospace')),
           ),
           subtitle: RichText(
             text: TextSpan(
               style: scaledTextStyle(
-                fontSize: 17,
+                fontSize: 16,
                 color: Colors.grey[700],
               ),
               children: <TextSpan>[
-                TextSpan(text: dateForm, style: scaledTextStyle(fontSize: 16)),
+                TextSpan(text: dateForm, style: scaledTextStyle(fontSize: 15)),
                 if (username != null)
                   TextSpan(
                     text: '  ·  ',
                     style: scaledTextStyle(
-                      fontSize: 21,
+                      fontSize: 20,
                       color: Colors.grey[550],
                     ),
                   ),
@@ -66,14 +66,14 @@ class TransactionTile extends StatelessWidget {
                   style: scaledTextStyle(
                       fontStyle: FontStyle.italic,
                       color: Colors.grey[600],
-                      fontSize: 16),
+                      fontSize: 15),
                 ),
               ],
             ),
           ),
           trailing: Text(finalAmount,
               style: scaledTextStyle(
-                  fontSize: 17,
+                  fontSize: 16,
                   fontWeight: FontWeight.w500,
                   color: repository[4] == 'RECEIVED'
                       ? Colors.green[700]

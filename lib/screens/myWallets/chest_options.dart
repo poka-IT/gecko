@@ -68,7 +68,7 @@ class ChestOptions extends StatelessWidget {
                       child: Text(
                         'displayMnemonic'.tr(),
                         style: scaledTextStyle(
-                          fontSize: 17,
+                          fontSize: 16,
                           color: orangeC,
                         ),
                       ),
@@ -113,7 +113,7 @@ class ChestOptions extends StatelessWidget {
                         Text(
                           'changePassword'.tr(),
                           style: scaledTextStyle(
-                              fontSize: 17,
+                              fontSize: 16,
                               color: sub.nodeConnected
                                   ? Colors.grey[500]
                                   : Colors.grey[500]),
@@ -149,7 +149,7 @@ class ChestOptions extends StatelessWidget {
                       Text(
                         'createDerivation'.tr(),
                         style: scaledTextStyle(
-                            fontSize: 17,
+                            fontSize: 16,
                             color: sub.nodeConnected
                                 ? Colors.black
                                 : Colors.grey[500]),
@@ -176,7 +176,7 @@ class ChestOptions extends StatelessWidget {
                     Text(
                       'deleteChest'.tr(),
                       style: scaledTextStyle(
-                        fontSize: 17,
+                        fontSize: 16,
                         color: const Color(0xffD80000),
                       ),
                     ),

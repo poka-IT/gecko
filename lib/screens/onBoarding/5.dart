@@ -78,7 +78,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
                       Text(
                         'copy'.tr(),
                         style: scaledTextStyle(
-                            fontSize: 15, color: Colors.grey[50]),
+                            fontSize: 14, color: Colors.grey[50]),
                       ),
                       const Spacer(),
                     ]),
@@ -122,7 +122,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
                       child: Text("chooseAnotherMnemonic".tr(),
                           textAlign: TextAlign.center,
                           style: scaledTextStyle(
-                              fontSize: 22, fontWeight: FontWeight.w600))),
+                              fontSize: 21, fontWeight: FontWeight.w600))),
                 ),
               ),
             ),
@@ -195,12 +195,12 @@ Widget arrayCell(dataWord) {
     child: Column(children: <Widget>[
       Text(
         dataWord.split(':')[0],
-        style: scaledTextStyle(fontSize: 12, color: const Color(0xff6b6b52)),
+        style: scaledTextStyle(fontSize: 11, color: const Color(0xff6b6b52)),
       ),
       Text(
         dataWord.split(':')[1],
         key: keyMnemonicWord(dataWord.split(':')[0]),
-        style: scaledTextStyle(fontSize: 16, color: Colors.black),
+        style: scaledTextStyle(fontSize: 15, color: Colors.black),
       ),
     ]),
   );
@@ -240,7 +240,7 @@ Widget nextButton(
       child: Text(
         text,
         style: scaledTextStyle(
-            fontSize: 22, fontWeight: FontWeight.w600, color: Colors.white),
+            fontSize: 21, fontWeight: FontWeight.w600, color: Colors.white),
       ),
     ),
   );

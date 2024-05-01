@@ -24,14 +24,14 @@ class DebugScreen extends StatelessWidget {
                 children: [
                   Text(
                     'node: ${sub.getConnectedEndpoint()}',
-                    style: TextStyle(fontSize: 15, color: Colors.grey[700]),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                   ),
                   const SizedBox(height: 15),
                   Text(
                     'blockN'.tr(args: [
                       sub.blocNumber.toString()
                     ]), //'bloc N°${sub.blocNumber}',
-                    style: TextStyle(fontSize: 15, color: Colors.grey[700]),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                   ),
                   const SizedBox(height: 20),
                   SizedBox(
@@ -47,7 +47,7 @@ class DebugScreen extends StatelessWidget {
                       child: const Text(
                         'Spawn a bloc',
                         style: TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.w600),
+                            fontSize: 16, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),

@@ -52,7 +52,7 @@ class ContactsList extends StatelessWidget {
                           title: Row(children: <Widget>[
                             Text(getShortPubkey(g1Wallet.address),
                                 style: scaledTextStyle(
-                                    fontSize: 16,
+                                    fontSize: 15,
                                     fontFamily: 'Monospace',
                                     fontWeight: FontWeight.w500),
                                 textAlign: TextAlign.center),

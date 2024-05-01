@@ -41,12 +41,12 @@ class SearchResultScreen extends StatelessWidget {
                         Text(
                           "resultsFor".tr(),
                           style: scaledTextStyle(
-                              color: Colors.grey[600], fontSize: 16),
+                              color: Colors.grey[600], fontSize: 15),
                         ),
                         Text(
                           '"${searchProvider.searchController.text}"',
                           style: scaledTextStyle(
-                              fontStyle: FontStyle.italic, fontSize: 18),
+                              fontStyle: FontStyle.italic, fontSize: 17),
                         )
                       ],
                     ),
@@ -54,7 +54,7 @@ class SearchResultScreen extends StatelessWidget {
                   // ScaledSizedBox(height: 40),
                   // Text(
                   //   'Dans mes contacts'.tr(args: [currencyName]),
-                  //   style: scaledTextStyle(fontSize: 20),
+                  //   style: scaledTextStyle(fontSize: 19),
                   // ),
                   // ContactsList(
                   //     myContacts: myContacts,
@@ -64,7 +64,7 @@ class SearchResultScreen extends StatelessWidget {
                   ScaledSizedBox(height: 22),
                   Text(
                     'inBlockchainResult'.tr(args: [currencyName]),
-                    style: scaledTextStyle(fontSize: 16),
+                    style: scaledTextStyle(fontSize: 15),
                   ),
                   ScaledSizedBox(height: 13),
                   SearchResult(

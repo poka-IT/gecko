@@ -113,7 +113,7 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
                 Text(
                   'Transaction en cours',
                   style: scaledTextStyle(
-                      fontSize: 20,
+                      fontSize: 19,
                       color: Colors.blueAccent,
                       fontWeight: FontWeight.w400),
                 ),
@@ -126,7 +126,7 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
                       padding: const EdgeInsets.only(bottom: 5),
                       child: Text(getShortPubkey(txContent.to),
                           style: scaledTextStyle(
-                              fontSize: 17, fontFamily: 'Monospace')),
+                              fontSize: 16, fontFamily: 'Monospace')),
                     ),
                     subtitle: Row(
                       children: [
@@ -142,14 +142,14 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
                                     .textTheme
                                     .titleLarge!
                                     .color,
-                                fontSize: 14),
+                                fontSize: 13),
                           ),
                         ),
                       ],
                     ),
                     trailing: Text("$finalAmount $currencyName",
                         style: scaledTextStyle(
-                            fontSize: 16,
+                            fontSize: 15,
                             fontWeight: FontWeight.w500,
                             color: Colors.blue[700]),
                         textAlign: TextAlign.justify),

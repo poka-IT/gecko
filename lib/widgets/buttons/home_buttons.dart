@@ -65,7 +65,7 @@ class HomeButtons extends StatelessWidget {
             textAlign: TextAlign.center,
             style: scaledTextStyle(
                 color: Colors.white,
-                fontSize: 13.5,
+                fontSize: 12.5,
                 fontWeight: FontWeight.w500),
           )
         ]),
@@ -120,7 +120,7 @@ class HomeButtons extends StatelessWidget {
             textAlign: TextAlign.center,
             style: scaledTextStyle(
                 color: Colors.white,
-                fontSize: 13.5,
+                fontSize: 12.5,
                 fontWeight: FontWeight.w500),
           )
         ])
@@ -160,7 +160,7 @@ class HomeButtons extends StatelessWidget {
               textAlign: TextAlign.center,
               style: scaledTextStyle(
                   color: Colors.white,
-                  fontSize: 13.5,
+                  fontSize: 12.5,
                   fontWeight: FontWeight.w500),
             )
           ])

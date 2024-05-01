@@ -104,7 +104,7 @@ class WalletViewScreen extends StatelessWidget {
                     duniterIndexer.walletNameIndexer[walletProfile.address] ??
                         '?'
                   ]),
-            style: scaledTextStyle(fontSize: 18),
+            style: scaledTextStyle(fontSize: 17),
           ),
         ),
         bottomNavigationBar: const GeckoBottomAppBar(),

@@ -18,14 +18,14 @@ class GeckoStyles {
 
   TextStyle error500(List<String> pars) {
     return const TextStyle(
-      fontSize: 20,
+      fontSize: 19,
       color: Colors.redAccent,
       fontWeight: FontWeight.w500,
     );
   }
 
   TextStyle error() {
-    return const TextStyle(fontSize: 20, color: Colors.redAccent);
+    return const TextStyle(fontSize: 19, color: Colors.redAccent);
   }
 
   TextStyle builder(Map<String, dynamic> pars) {

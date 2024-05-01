@@ -52,7 +52,7 @@ class AddNewDerivationButton extends StatelessWidget {
                           : Text(
                               '+',
                               style: scaledTextStyle(
-                                  fontSize: 110,
+                                  fontSize: 100,
                                   fontWeight: FontWeight.w700,
                                   color: const Color(0xFFFCB437)),
                             )),

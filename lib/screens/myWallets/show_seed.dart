@@ -92,7 +92,7 @@ class ShowSeed extends StatelessWidget {
                                     Text(
                                       'copy'.tr(),
                                       style: scaledTextStyle(
-                                          fontSize: 14, color: Colors.grey[50]),
+                                          fontSize: 13, color: Colors.grey[50]),
                                     )
                                   ]),
                                 ),
@@ -133,7 +133,7 @@ class ShowSeed extends StatelessWidget {
                 child: Text(
                   'close'.tr(),
                   style: scaledTextStyle(
-                      fontSize: 19,
+                      fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Colors.white),
                 ),
@@ -188,12 +188,12 @@ class ShowSeed extends StatelessWidget {
       child: Column(children: <Widget>[
         Text(
           nbr.toString(),
-          style: scaledTextStyle(fontSize: 11, color: const Color(0xff6b6b52)),
+          style: scaledTextStyle(fontSize: 10, color: const Color(0xff6b6b52)),
         ),
         Text(
           dataWord,
           key: keyMnemonicWord(dataWord),
-          style: scaledTextStyle(fontSize: 16, color: Colors.black),
+          style: scaledTextStyle(fontSize: 15, color: Colors.black),
         ),
       ]),
     );
@@ -251,12 +251,12 @@ class PrintWallet extends StatelessWidget {
           pw.Text(
             number.toString(),
             style: pw.TextStyle(
-                fontSize: 15, color: const PdfColor(0.5, 0, 0), font: ttf),
+                fontSize: 14, color: const PdfColor(0.5, 0, 0), font: ttf),
           ),
           pw.Text(
             dataWord,
             style: pw.TextStyle(
-                fontSize: 20, color: const PdfColor(0, 0, 0), font: ttf),
+                fontSize: 19, color: const PdfColor(0, 0, 0), font: ttf),
           ),
           pw.SizedBox(height: 10)
         ]),
@@ -300,7 +300,7 @@ class PrintWallet extends StatelessWidget {
                 pw.Text(
                   "keepThisPaperSafe".tr(),
                   textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(fontSize: 15, font: ttf),
+                  style: pw.TextStyle(fontSize: 14, font: ttf),
                 )
               ],
             )

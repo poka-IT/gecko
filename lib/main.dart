@@ -157,12 +157,12 @@ class Gecko extends StatelessWidget {
           scaffoldBackgroundColor: backgroundColor,
           canvasColor: backgroundColor,
           dialogBackgroundColor: backgroundColor,
-          textTheme: const TextTheme(
-            bodyLarge: TextStyle(fontSize: 16),
-            bodyMedium: TextStyle(fontSize: 18),
-          ).apply(
-            bodyColor: const Color(0xFF000000),
-          ),
+          // textTheme: const TextTheme(
+          //   bodyLarge: TextStyle(fontSize: 13),
+          //   bodyMedium: TextStyle(fontSize: 15),
+          // ).apply(
+          //   bodyColor: const Color(0xFF000000),
+          // ),
           colorScheme:
               ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]),
         ),

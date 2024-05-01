@@ -57,12 +57,12 @@ class ManageMembership extends StatelessWidget {
                                 children: [
                                   Text('revokeMyIdentity'.tr(),
                                       style: scaledTextStyle(
-                                          fontSize: 18,
+                                          fontSize: 17,
                                           color: Colors.grey[500])),
                                   ScaledSizedBox(height: 2),
                                   Text("youCannotRevokeThisIdentity".tr(),
                                       style: scaledTextStyle(
-                                          fontSize: 13,
+                                          fontSize: 12,
                                           color: Colors.grey[500])),
                                 ]),
                           ],
@@ -92,7 +92,7 @@ class ManageMembership extends StatelessWidget {
           ScaledSizedBox(width: 16),
           Icon(Icons.change_circle_outlined, size: scaleSize(32)),
           ScaledSizedBox(width: 11.5),
-          Text('Migrer mon identité', style: scaledTextStyle(fontSize: 18)),
+          Text('Migrer mon identité', style: scaledTextStyle(fontSize: 17)),
         ]),
       ),
     );
@@ -138,7 +138,7 @@ class ManageMembership extends StatelessWidget {
             height: scaleSize(28),
           ),
           ScaledSizedBox(width: 16),
-          Text('Révoquer mon adhésion', style: scaledTextStyle(fontSize: 18)),
+          Text('Révoquer mon adhésion', style: scaledTextStyle(fontSize: 17)),
         ]),
       ),
     );

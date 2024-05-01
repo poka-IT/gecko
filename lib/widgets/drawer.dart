@@ -20,7 +20,7 @@ class MainDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final listStyle = scaledTextStyle(fontSize: 15);
+    final listStyle = scaledTextStyle(fontSize: 14);
 
     return SizedBox(
       width: MediaQuery.of(context).size.width * 0.67,
@@ -36,7 +36,7 @@ class MainDrawer extends StatelessWidget {
                 child: Column(children: <Widget>[
                   Image(
                       image: const AssetImage('assets/icon/gecko_final.png'),
-                      height: scaleSize(125)),
+                      height: scaleSize(118)),
                 ]),
               ),
               ScaledSizedBox(height: scaleSize(10)),
@@ -121,7 +121,7 @@ class MainDrawer extends StatelessWidget {
                     child: Opacity(
                       opacity: 0.8,
                       child: Text('Ğecko v$appVersion',
-                          style: scaledTextStyle(fontSize: 13)),
+                          style: scaledTextStyle(fontSize: 12)),
                     ),
                   ),
                   onTap: () {

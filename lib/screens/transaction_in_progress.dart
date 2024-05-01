@@ -112,7 +112,7 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
             Text(
               resultText,
               textAlign: TextAlign.center,
-              style: scaledTextStyle(fontSize: 17),
+              style: scaledTextStyle(fontSize: 16),
             )
         ],
       );
@@ -132,7 +132,7 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
                     'extrinsicInProgress'.tr(args: [
                       actionMap[widget.transType] ?? 'strangeTransaction'.tr()
                     ]),
-                    style: scaledTextStyle(fontSize: 20),
+                    style: scaledTextStyle(fontSize: 19),
                   )
                 ])),
         body: SafeArea(
@@ -159,19 +159,19 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
                           : '$amount $currencyName',
                       textAlign: TextAlign.center,
                       style: scaledTextStyle(
-                          fontSize: 17, fontWeight: FontWeight.w500),
+                          fontSize: 16, fontWeight: FontWeight.w500),
                     ),
                   if (widget.transType == 'pay') ScaledSizedBox(height: 10),
                   Text(
                     'fromMinus'.tr(),
                     textAlign: TextAlign.center,
-                    style: scaledTextStyle(fontSize: 16),
+                    style: scaledTextStyle(fontSize: 15),
                   ),
                   Text(
                     fromAddressFormat,
                     textAlign: TextAlign.center,
                     style: scaledTextStyle(
-                        fontSize: 17, fontWeight: FontWeight.w500),
+                        fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                   Visibility(
                     visible: fromAddressFormat != toAddressFormat,
@@ -181,13 +181,13 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
                         Text(
                           'toMinus'.tr(),
                           textAlign: TextAlign.center,
-                          style: scaledTextStyle(fontSize: 16),
+                          style: scaledTextStyle(fontSize: 15),
                         ),
                         Text(
                           toUsernameFormat,
                           textAlign: TextAlign.center,
                           style: scaledTextStyle(
-                              fontSize: 17, fontWeight: FontWeight.w500),
+                              fontSize: 16, fontWeight: FontWeight.w500),
                         ),
                       ],
                     ),
@@ -217,7 +217,7 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
                       child: Text(
                         'close'.tr(),
                         style: scaledTextStyle(
-                            fontSize: 19, fontWeight: FontWeight.w600),
+                            fontSize: 18, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),

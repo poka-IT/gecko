@@ -65,7 +65,7 @@ class SearchResult extends StatelessWidget {
         title: Row(children: <Widget>[
           Text(getShortPubkey(g1Wallet.address),
               style: scaledTextStyle(
-                  fontSize: 18,
+                  fontSize: 17,
                   fontFamily: 'Monospace',
                   fontWeight: FontWeight.w500),
               textAlign: TextAlign.center),

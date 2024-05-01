@@ -59,7 +59,7 @@ class CertsList extends StatelessWidget {
               Text(
                 "noNetworkNoHistory".tr(),
                 textAlign: TextAlign.center,
-                style: scaledTextStyle(fontSize: 18),
+                style: scaledTextStyle(fontSize: 17),
               )
             ]);
           } else if (result.data?['certConnection']['edges']?.isEmpty) {
@@ -67,7 +67,7 @@ class CertsList extends StatelessWidget {
               ScaledSizedBox(height: 50),
               Text(
                 "noDataToDisplay".tr(),
-                style: scaledTextStyle(fontSize: 18),
+                style: scaledTextStyle(fontSize: 17),
               )
             ]);
           }
@@ -106,7 +106,7 @@ class CertsList extends StatelessWidget {
                           ScaledSizedBox(height: 50),
                           Text(
                             "noTransactionToDisplay".tr(),
-                            style: scaledTextStyle(fontSize: 18),
+                            style: scaledTextStyle(fontSize: 17),
                           )
                         ])
                       : Column(children: <Widget>[

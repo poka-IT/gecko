@@ -1339,7 +1339,7 @@ void snackNode(bool isConnected) {
   final snackBar = SnackBar(
       backgroundColor: Colors.grey[900],
       padding: const EdgeInsets.all(20),
-      content: Text(message, style: scaledTextStyle(fontSize: 14)),
+      content: Text(message, style: scaledTextStyle(fontSize: 13)),
       duration: const Duration(seconds: 4));
   ScaffoldMessenger.of(homeContext).showSnackBar(snackBar);
 }

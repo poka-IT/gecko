@@ -70,7 +70,7 @@ class HeaderProfile extends StatelessWidget {
                     child: Text(
                       getShortPubkey(address),
                       style: scaledTextStyle(
-                        fontSize: 23,
+                        fontSize: 22,
                         fontFamily: 'Monospace',
                         fontWeight: FontWeight.w900,
                       ),

@@ -135,7 +135,7 @@ snackCopyKey(context) {
       backgroundColor: Colors.grey[900],
       padding: EdgeInsets.all(scaleSize(19)),
       content: Text("thisAddressHasBeenCopiedToClipboard".tr(),
-          style: scaledTextStyle(fontSize: 14)),
+          style: scaledTextStyle(fontSize: 13)),
       duration: const Duration(seconds: 2));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
@@ -145,7 +145,7 @@ snackCopySeed(context) {
       backgroundColor: Colors.grey[900],
       padding: EdgeInsets.all(scaleSize(19)),
       content: Text("thisMnemonicHasBeenCopiedToClipboard".tr(),
-          style: scaledTextStyle(fontSize: 14)),
+          style: scaledTextStyle(fontSize: 13)),
       duration: const Duration(seconds: 4));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }

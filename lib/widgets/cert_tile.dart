@@ -34,25 +34,25 @@ class CertTile extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 2),
                 child: Text(
                   repository['name'],
-                  style: scaledTextStyle(fontSize: 16),
+                  style: scaledTextStyle(fontSize: 15),
                 ),
               ),
               subtitle: RichText(
                 text: TextSpan(
                   style: scaledTextStyle(
-                    fontSize: 15,
+                    fontSize: 14,
                     color: Colors.grey[700],
                   ),
                   children: <TextSpan>[
                     TextSpan(
                       text: repository['date'],
-                      style: scaledTextStyle(fontSize: 15),
+                      style: scaledTextStyle(fontSize: 14),
                     ),
                     if (repository[2] != '')
                       TextSpan(
                         text: '  ·  ',
                         style: scaledTextStyle(
-                          fontSize: 19,
+                          fontSize: 18,
                           color: Colors.grey[550],
                         ),
                       ),
@@ -62,7 +62,7 @@ class CertTile extends StatelessWidget {
                           fontStyle: FontStyle.italic,
                           fontFamily: 'Monospace',
                           color: Colors.grey[600],
-                          fontSize: 15),
+                          fontSize: 14),
                     ),
                   ],
                 ),

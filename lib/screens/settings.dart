@@ -27,7 +27,7 @@ class SettingsScreen extends StatelessWidget {
         ScaledSizedBox(height: 30),
         Text(
           'networkSettings'.tr(),
-          style: scaledTextStyle(color: Colors.grey[500]!, fontSize: 19),
+          style: scaledTextStyle(color: Colors.grey[500]!, fontSize: 18),
         ),
         ScaledSizedBox(height: 20),
         duniterEndpointSelection(context),
@@ -36,7 +36,7 @@ class SettingsScreen extends StatelessWidget {
         ScaledSizedBox(height: 35),
         Text(
           'displaySettings'.tr(),
-          style: scaledTextStyle(color: Colors.grey[500]!, fontSize: 19),
+          style: scaledTextStyle(color: Colors.grey[500]!, fontSize: 18),
         ),
         ScaledSizedBox(height: 20),
         chooseCurrencyUnit(context),
@@ -56,7 +56,7 @@ class SettingsScreen extends StatelessWidget {
                 child: Text(
                   'forgetAllMyChests'.tr(),
                   style: scaledTextStyle(
-                    fontSize: 17,
+                    fontSize: 16,
                     color: const Color(0xffD80000),
                     fontWeight: FontWeight.w600,
                   ),
@@ -83,7 +83,7 @@ class SettingsScreen extends StatelessWidget {
         child: Row(
           children: [
             ScaledSizedBox(width: 12),
-            Text('showUdAmounts'.tr(), style: scaledTextStyle(fontSize: 15)),
+            Text('showUdAmounts'.tr(), style: scaledTextStyle(fontSize: 14)),
             const Spacer(),
             Consumer<HomeProvider>(builder: (context, homeProvider, _) {
               final bool isUdUnit = configBox.get('isUdUnit') ?? false;
@@ -141,7 +141,7 @@ class SettingsScreen extends StatelessWidget {
                 width: 55,
                 child: Text(
                   'currencyNode'.tr(),
-                  style: scaledTextStyle(fontSize: 15),
+                  style: scaledTextStyle(fontSize: 14),
                 ),
               ),
               const Spacer(),
@@ -161,7 +161,7 @@ class SettingsScreen extends StatelessWidget {
                   return DropdownButtonHideUnderline(
                     key: keySelectDuniterNodeDropDown,
                     child: DropdownButton(
-                      style: scaledTextStyle(fontSize: 15, color: Colors.black),
+                      style: scaledTextStyle(fontSize: 14, color: Colors.black),
                       value: selectedDuniterEndpoint,
                       icon: const Icon(Icons.keyboard_arrow_down),
                       items: duniterBootstrapNodes
@@ -229,7 +229,7 @@ class SettingsScreen extends StatelessWidget {
               key: keyCustomDuniterEndpoint,
               controller: endpointController,
               autocorrect: false,
-              style: scaledTextStyle(fontSize: 15),
+              style: scaledTextStyle(fontSize: 14),
             ),
           ),
         );
@@ -247,7 +247,7 @@ class SettingsScreen extends StatelessWidget {
                   child: Text(
                     sub.getConnectedEndpoint() ?? "anAutoNodeChoosed".tr(),
                     style: scaledTextStyle(
-                        fontSize: 15,
+                        fontSize: 14,
                         fontStyle: FontStyle.italic,
                         color: Colors.grey[700]!),
                   ),
@@ -258,7 +258,7 @@ class SettingsScreen extends StatelessWidget {
               'blockN'.tr(args: [
                 sub.blocNumber.toString()
               ]), //'bloc N°${sub.blocNumber}',
-              style: scaledTextStyle(fontSize: 14, color: Colors.grey[700]),
+              style: scaledTextStyle(fontSize: 13, color: Colors.grey[700]),
             )
           ],
         );
@@ -293,7 +293,7 @@ class SettingsScreen extends StatelessWidget {
               ScaledSizedBox(width: 5),
               ScaledSizedBox(
                 width: 55,
-                child: Text('Indexer', style: scaledTextStyle(fontSize: 15)),
+                child: Text('Indexer', style: scaledTextStyle(fontSize: 14)),
               ),
               const Spacer(),
               Icon(indexerEndpoint != '' ? Icons.check : Icons.close),
@@ -303,7 +303,7 @@ class SettingsScreen extends StatelessWidget {
                 child: Consumer<SettingsProvider>(builder: (context, set, _) {
                   return DropdownButtonHideUnderline(
                     child: DropdownButton(
-                      style: scaledTextStyle(fontSize: 15, color: Colors.black),
+                      style: scaledTextStyle(fontSize: 14, color: Colors.black),
                       value: selectedIndexerEndpoint,
                       icon: const Icon(Icons.keyboard_arrow_down),
                       items:
@@ -366,7 +366,7 @@ class SettingsScreen extends StatelessWidget {
             child: TextField(
               controller: indexerEndpointController,
               autocorrect: false,
-              style: scaledTextStyle(fontSize: 15),
+              style: scaledTextStyle(fontSize: 14),
             ),
           ),
         );
@@ -381,7 +381,7 @@ class SettingsScreen extends StatelessWidget {
               child: Text(
                 sub.getConnectedEndpoint() ?? "anAutoNodeChoosed".tr(),
                 style: scaledTextStyle(
-                    fontSize: 15,
+                    fontSize: 14,
                     fontStyle: FontStyle.italic,
                     color: Colors.grey[700]),
               ),

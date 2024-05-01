@@ -57,7 +57,7 @@ class _WalletsHomeState extends State<WalletsHome> {
               currentChest.name!,
               style: scaledTextStyle(
                   color: Colors.grey[850],
-                  fontSize: 17,
+                  fontSize: 16,
                   fontWeight: FontWeight.w500),
             ),
           ],
@@ -114,7 +114,7 @@ class _WalletsHomeState extends State<WalletsHome> {
         Center(
             child: Text(
           'Veuillez générer votre premier portefeuille',
-          style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w500),
+          style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         )),
       ]));
     }
@@ -160,7 +160,7 @@ class _WalletsHomeState extends State<WalletsHome> {
                   'explainDraggableWallet'.tr(),
                   textAlign: TextAlign.center,
                   style: scaledTextStyle(
-                      fontSize: 17, fontWeight: FontWeight.w500),
+                      fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               ],
             ))

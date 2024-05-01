@@ -86,7 +86,7 @@ class WalletOptions extends StatelessWidget {
                   ? duniterIndexer
                       .walletNameIndexer[walletOptions.address.text]!
                   : wallet.name!,
-              style: scaledTextStyle(fontSize: 19),
+              style: scaledTextStyle(fontSize: 18),
             );
           }),
           actions: [
@@ -348,7 +348,7 @@ class WalletOptions extends StatelessWidget {
                     child: Text(
                       'confirmMyIdentity'.tr(),
                       style: scaledTextStyle(
-                          fontSize: 21, fontWeight: FontWeight.w600),
+                          fontSize: 20, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -356,7 +356,7 @@ class WalletOptions extends StatelessWidget {
                 Text(
                   "someoneCreatedYourIdentity".tr(args: [currencyName]),
                   style: scaledTextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     color: Colors.grey[600],
                     fontStyle: FontStyle.italic,
                   ),
@@ -389,7 +389,7 @@ class WalletOptions extends StatelessWidget {
           ScaledSizedBox(width: 19),
           Text(shortPubkey,
               style: scaledTextStyle(
-                  fontSize: 19,
+                  fontSize: 18,
                   fontWeight: FontWeight.w800,
                   fontFamily: 'Monospace',
                   color: Colors.black)),
@@ -447,7 +447,7 @@ class WalletOptions extends StatelessWidget {
             height: scaleSize(42),
           ),
           ScaledSizedBox(width: 20),
-          Text("displayActivity".tr(), style: scaledTextStyle(fontSize: 18)),
+          Text("displayActivity".tr(), style: scaledTextStyle(fontSize: 17)),
         ]),
       ),
     );
@@ -492,7 +492,7 @@ class WalletOptions extends StatelessWidget {
                       ? 'thisWalletIsDefault'.tr()
                       : 'defineWalletAsDefault'.tr(),
                   style: scaledTextStyle(
-                      fontSize: 18,
+                      fontSize: 17,
                       color: walletProvider.isDefaultWallet
                           ? Colors.grey[500]
                           : Colors.black)),
@@ -561,7 +561,7 @@ class WalletOptions extends StatelessWidget {
                     ScaledSizedBox(width: 19),
                     Text('deleteThisWallet'.tr(),
                         style: scaledTextStyle(
-                            fontSize: 18, color: const Color(0xffD80000))),
+                            fontSize: 17, color: const Color(0xffD80000))),
                   ])
                 : ScaledSizedBox(width: 30),
           );

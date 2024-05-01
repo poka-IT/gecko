@@ -18,6 +18,10 @@ class CertsList extends StatelessWidget {
   final String address;
   final CertDirection direction;
 
+  String formatNumber(int number) {
+    return number < 10 ? '0$number' : '$number';
+  }
+
   @override
   Widget build(BuildContext context) {
     final indexerProvider = Provider.of<DuniterIndexer>(context, listen: false);
@@ -81,9 +85,12 @@ class CertsList extends StatelessWidget {
             }
             final String issuerAddress = cert[certFrom]['accountId'];
             final String issuerName = cert[certFrom]['name'];
-            final date = DateTime.parse('2024-02-04T21:20:54.001+00:00');
+            final date =
+                DateTime.parse(cert['updatedIn']['block']['timestamp']);
             final dp = DateTime(date.year, date.month, date.day);
-            final dateForm = '${dp.day}-${dp.month}-${dp.year}';
+
+            final dateForm =
+                '${formatNumber(dp.day)}-${formatNumber(dp.month)}-${dp.year}';
 
             // Check if we have a more recent certification, we skip
             if (!listCerts.any((cert) => cert['address'] == issuerAddress)) {

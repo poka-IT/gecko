@@ -68,11 +68,16 @@ const String getCertsReceived = r'''
 query ($address: String!) {
   certConnection(
     where: {receiver: {accountId: {_eq: $address}}}
+    orderBy: {updatedOn: DESC}
   ) {
     edges {
       node {
         isActive
-        createdOn
+        updatedIn {
+          block {
+            timestamp
+          }
+        }
         issuer {
           accountId
           name
@@ -87,11 +92,16 @@ const String getCertsSent = r'''
 query ($address: String!) {
   certConnection(
     where: {issuer: {accountId: {_eq: $address}}}
+    orderBy: {updatedOn: DESC}
   ) {
     edges {
       node {
         isActive
-        createdOn
+        updatedIn {
+          block {
+            timestamp
+          }
+        }
         receiver {
           accountId
           name

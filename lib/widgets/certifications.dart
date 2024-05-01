@@ -22,7 +22,7 @@ class Certifications extends StatelessWidget {
       FutureBuilder(
           future: sub.getCertsCounter(address),
           builder: (BuildContext context, AsyncSnapshot<List<int>?> certs) {
-            if ((certs.data != null && certs.data!.isEmpty) ||
+            if ((certs.data == null || certs.data!.isEmpty) ||
                 sub.certsCounterCache[address] == null) {
               return const SizedBox.shrink();
             }

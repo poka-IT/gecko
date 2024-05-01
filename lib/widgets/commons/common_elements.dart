@@ -62,43 +62,43 @@ Future<bool?> confirmPopupCertification(BuildContext context, String question1,
       return AlertDialog(
         backgroundColor: backgroundColor,
         content: ScaledSizedBox(
-          height: 230,
+          height: 220,
           child: Column(
             children: [
-              ScaledSizedBox(height: 15),
+              ScaledSizedBox(height: 10),
               Text(
                 question1,
                 textAlign: TextAlign.center,
                 style:
-                    scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w400),
+                    scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w400),
               ),
-              ScaledSizedBox(height: 20),
+              ScaledSizedBox(height: 15),
               Text(
                 username,
                 textAlign: TextAlign.center,
                 style:
-                    scaledTextStyle(fontSize: 21, fontWeight: FontWeight.w500),
+                    scaledTextStyle(fontSize: 19, fontWeight: FontWeight.w500),
               ),
-              ScaledSizedBox(height: 20),
+              ScaledSizedBox(height: 15),
               Text(
                 question2,
                 textAlign: TextAlign.center,
                 style:
-                    scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w400),
+                    scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w400),
               ),
-              ScaledSizedBox(height: 20),
+              ScaledSizedBox(height: 15),
               Text(
                 address,
                 textAlign: TextAlign.center,
                 style:
-                    scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                    scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
-              ScaledSizedBox(height: 20),
+              ScaledSizedBox(height: 15),
               Text(
                 '?',
                 textAlign: TextAlign.center,
                 style:
-                    scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w400),
+                    scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w400),
               ),
             ],
           ),

@@ -71,6 +71,7 @@ query ($address: String!) {
   ) {
     edges {
       node {
+        isActive
         createdOn
         issuer {
           accountId
@@ -89,6 +90,7 @@ query ($address: String!) {
   ) {
     edges {
       node {
+        isActive
         createdOn
         receiver {
           accountId

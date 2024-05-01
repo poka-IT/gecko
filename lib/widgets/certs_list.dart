@@ -76,6 +76,9 @@ class CertsList extends StatelessWidget {
           List listCerts = [];
           for (final certNode in certsData) {
             final cert = certNode['node'];
+            if (!cert['isActive']) {
+              continue;
+            }
             final String issuerAddress = cert[certFrom]['accountId'];
             final String issuerName = cert[certFrom]['name'];
             final date = DateTime.parse('2024-02-04T21:20:54.001+00:00');

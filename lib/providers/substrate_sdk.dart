@@ -14,6 +14,7 @@ import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/widgets/certify/cert_state.dart';
 import 'package:gecko/widgets/transaction_status.dart';
 import 'package:pinenacl/ed25519.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
@@ -212,8 +213,8 @@ class SubstrateSdk with ChangeNotifier {
   Future<List<int>> getCertsCounter(String address) async {
     final idtyIndex = await _getIdentityIndexOf(address);
     if (idtyIndex == null) {
-      certsCounterCache.update(address, (_) => [0, 0], ifAbsent: () => [0, 0]);
-      return [0, 0];
+      certsCounterCache.update(address, (_) => [], ifAbsent: () => []);
+      return [];
     }
     final certsReceiver =
         await _getStorage('certification.storageIdtyCertMeta($idtyIndex)') ??
@@ -378,36 +379,37 @@ class SubstrateSdk with ChangeNotifier {
     return totalAmount;
   }
 
-  Future<Map<String, int>> certState(String from, String to) async {
-    Map<String, int> result = {};
+  Future<CertState> certState(String from, String to) async {
     final toStatus = (await idtyStatus([to])).first;
-
     final myWallets = MyWalletsProvider();
 
-    if (from != to && myWallets.getWalletDataByAddress(from)!.isMembre()) {
-      final removableOn = await getCertValidityPeriod(from, to);
-      final certMeta = await getCertMeta(from);
-      final int nextIssuableOn = certMeta['nextIssuableOn'] ?? 0;
-      final certRemovableDuration = (removableOn - blocNumber) * 6;
-      const int renewDelay = 2 * 30 * 24 * 3600; // 2 months
-
-      if (certRemovableDuration >= renewDelay) {
-        final certRenewDuration = certRemovableDuration - renewDelay;
-        result.putIfAbsent('certRenewable', () => certRenewDuration);
-      } else if (nextIssuableOn > blocNumber) {
-        final certDelayDuration = (nextIssuableOn - blocNumber) * 6;
-        result.putIfAbsent('certDelay', () => certDelayDuration);
-      } else if (toStatus == IdtyStatus.unconfirmed) {
-        result.putIfAbsent('toStatus', () => 1);
-      } else if (toStatus == IdtyStatus.none) {
-        result.putIfAbsent('toStatus', () => 2);
-        result.putIfAbsent('canCert', () => 0);
-      } else {
-        result.putIfAbsent('canCert', () => 0);
-      }
+    if (from == to || !myWallets.getWalletDataByAddress(from)!.isMembre()) {
+      return CertState(status: CertStatus.none);
     }
 
-    return result;
+    final removableOn = await getCertValidityPeriod(from, to);
+    final certMeta = await getCertMeta(from);
+    final int nextIssuableOn = certMeta['nextIssuableOn'] ?? 0;
+    final certRemovableDuration = (removableOn - blocNumber) * 6;
+    const int renewDelay = 2 * 30 * 24 * 3600; // 2 months
+
+    if (toStatus == IdtyStatus.notMember) {
+      return CertState(status: CertStatus.none);
+    } else if (certRemovableDuration >= renewDelay) {
+      final certRenewDuration = certRemovableDuration - renewDelay;
+      return CertState(
+          status: CertStatus.canRenewIn,
+          duration: Duration(seconds: certRenewDuration));
+    } else if (nextIssuableOn > blocNumber) {
+      final certDelayDuration = (nextIssuableOn - blocNumber) * 6;
+      return CertState(
+          status: CertStatus.mustWaitBeforeCert,
+          duration: Duration(seconds: certDelayDuration));
+    } else if (toStatus == IdtyStatus.unconfirmed) {
+      return CertState(status: CertStatus.mustConfirmIdentity);
+    } else {
+      return CertState(status: CertStatus.canCert);
+    }
   }
 
   Future<Map> getCertMeta(String address) async {
@@ -1057,7 +1059,10 @@ class SubstrateSdk with ChangeNotifier {
     List txOptions = [];
     String? rawParams;
 
-    final toCerts = await getCertsCounter(destAddress);
+    var toCerts = await getCertsCounter(destAddress);
+    if (toCerts.isEmpty) {
+      toCerts = [0, 0];
+    }
     log.d(
         "debug toCert: ${toCerts[0]} --- ${currencyParameters['minCertForMembership']!} --- $toIdtyStatus");
 

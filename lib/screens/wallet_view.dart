@@ -13,10 +13,9 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/activity.dart';
-import 'package:gecko/widgets/commons/common_elements.dart';
+import 'package:gecko/widgets/certify/cert_state.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
-import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/header_profile.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
@@ -150,136 +149,15 @@ class WalletViewScreen extends StatelessWidget {
                 WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
                 return FutureBuilder(
                   future: sub.certState(defaultWallet.address, address),
-                  builder: (context, AsyncSnapshot<Map<String, int>> snapshot) {
-                    if (snapshot.data == null) return const SizedBox.shrink();
-                    final certStateData = snapshot.data!;
-                    String duration = '';
-
-                    if (certStateData['certDelay'] != null ||
-                        certStateData['certRenewable'] != null) {
-                      final Duration durationSeconds = Duration(
-                          seconds: certStateData['certDelay'] ??
-                              certStateData['certRenewable']!);
-                      final seconds = durationSeconds.inSeconds;
-                      final minutes = durationSeconds.inMinutes;
-
-                      if (seconds <= 0) {
-                        duration = 'seconds'.tr(args: ['0']);
-                      } else if (seconds <= 60) {
-                        duration = 'seconds'.tr(args: [seconds.toString()]);
-                      } else if (seconds <= 3600) {
-                        duration = 'minutes'.tr(args: [minutes.toString()]);
-                      } else if (seconds <= 86400) {
-                        final hours = durationSeconds.inHours;
-                        final minutesLeft = minutes - hours * 60;
-                        String showMinutes = '';
-                        if (minutesLeft < 60) {}
-                        showMinutes =
-                            'minutes'.tr(args: [minutesLeft.toString()]);
-                        duration =
-                            'hours'.tr(args: [hours.toString(), showMinutes]);
-                      } else if (seconds <= 2592000) {
-                        final days = durationSeconds.inDays;
-                        duration = 'days'.tr(args: [days.toString()]);
-                      } else {
-                        final months = (durationSeconds.inDays / 30).round();
-                        duration = 'months'.tr(args: [months.toString()]);
-                      }
-                    }
-
-                    final toStatus = certStateData['toStatus'];
-
+                  builder: (context, AsyncSnapshot<CertState> snapshot) {
+                    if (!snapshot.hasData) return const SizedBox.shrink();
+                    final certState = snapshot.data!;
                     return Visibility(
-                      visible: (snapshot.data != {}),
-                      child: Column(children: <Widget>[
-                        if (certStateData['canCert'] != null ||
-                            duration == 'seconds'.tr(args: ['0']))
-                          Column(children: <Widget>[
-                            ScaledSizedBox(
-                              height: buttonSize,
-                              child: ClipOval(
-                                child: Material(
-                                  color: const Color(0xffFFD58D),
-                                  child: InkWell(
-                                      key: keyCertify,
-                                      splashColor: orangeC,
-                                      child: const Padding(
-                                        padding: EdgeInsets.only(bottom: 0),
-                                        child: Image(
-                                            image: AssetImage(
-                                                'assets/gecko_certify.png')),
-                                      ),
-                                      onTap: () async {
-                                        final result =
-                                            await confirmPopupCertification(
-                                                    context,
-                                                    'areYouSureYouWantToCertify1'
-                                                        .tr(),
-                                                    duniterIndexer
-                                                                .walletNameIndexer[
-                                                            address] ??
-                                                        "noIdentity".tr(),
-                                                    'areYouSureYouWantToCertify2'
-                                                        .tr(),
-                                                    getShortPubkey(address)) ??
-                                                false;
-
-                                        if (!result) return;
-                                        if (myWalletProvider.pinCode == '') {
-                                          await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (homeContext) {
-                                                return UnlockingWallet(
-                                                    wallet: defaultWallet);
-                                              },
-                                            ),
-                                          );
-                                        }
-                                        if (myWalletProvider.pinCode == '') {
-                                          return;
-                                        }
-                                        WalletsProfilesProvider
-                                            walletViewProvider = Provider.of<
-                                                    WalletsProfilesProvider>(
-                                                context,
-                                                listen: false);
-                                        final acc = sub.getCurrentWallet();
-                                        final transactionId = await sub.certify(
-                                            acc.address!,
-                                            walletViewProvider.address,
-                                            myWalletProvider.pinCode);
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(builder: (context) {
-                                            return TransactionInProgress(
-                                                transactionId: transactionId,
-                                                transType: 'cert');
-                                          }),
-                                        );
-                                      }),
-                                ),
-                              ),
-                            ),
-                            ScaledSizedBox(height: 6),
-                            Text(
-                              toStatus == null
-                                  ? "certify".tr()
-                                  : "createIdentity".tr(),
-                              textAlign: TextAlign.center,
-                              style: scaledTextStyle(
-                                  fontSize: buttonFontSize,
-                                  fontWeight: FontWeight.w500),
-                            ),
-                          ])
-                        else if (toStatus == 1)
-                          waitToCert('mustConfirmHisIdentity', duration)
-                        else if (certStateData['certRenewable'] != null &&
-                            duration != 'seconds'.tr(args: ['0']))
-                          waitToCert('canRenewCertInX', duration)
-                        else if (certStateData['certDelay'] != null)
-                          waitToCert('mustWaitXBeforeCertify', duration)
-                      ]),
+                      visible: certState.status != CertStatus.none,
+                      child: CertStateWidget(
+                        certState: certState,
+                        address: address,
+                      ),
                     );
                   },
                 );
@@ -376,31 +254,5 @@ class WalletViewScreen extends StatelessWidget {
             ScaledSizedBox(height: isTall ? 50 : 7)
           ]),
         ));
-  }
-
-  Widget waitToCert(String status, String duration) {
-    return Column(children: <Widget>[
-      ScaledSizedBox(
-        height: buttonSize,
-        child: Container(
-          foregroundDecoration: const BoxDecoration(
-            color: Colors.grey,
-            backgroundBlendMode: BlendMode.saturation,
-          ),
-          child: const Opacity(
-            opacity: 0.5,
-            child: Image(image: AssetImage('assets/gecko_certify.png')),
-          ),
-        ),
-      ),
-      Text(
-        status.tr(args: [duration]),
-        textAlign: TextAlign.center,
-        style: scaledTextStyle(
-            fontSize: buttonFontSize - 4,
-            fontWeight: FontWeight.w400,
-            color: Colors.grey[600]),
-      ),
-    ]);
   }
 }

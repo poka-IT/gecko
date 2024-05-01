@@ -33,7 +33,7 @@ class ImportG1v1 extends StatelessWidget {
 
     return PopScope(
       onPopInvoked: (_) {
-        resetScreen(context);
+        resetScreen();
       },
       child: Scaffold(
         backgroundColor: backgroundColor,
@@ -196,7 +196,7 @@ class ImportG1v1 extends StatelessWidget {
                           Column(
                             children: [
                               Text(
-                                '${statusData.balance['transferableBalance']} $unit',
+                                '${statusData.fromBalance['transferableBalance']} $unit',
                                 style: scaledTextStyle(fontSize: 16),
                               ),
                               IdentityStatus(
@@ -268,13 +268,14 @@ class ImportG1v1 extends StatelessWidget {
                                 }
 
                                 final transactionId = await sub.migrateCsToV2(
-                                    sub.csSalt.text,
-                                    sub.csPassword.text,
-                                    selectedWallet.address,
-                                    destPassword:
-                                        pin ?? myWalletProvider.pinCode,
-                                    balance: statusData.balance,
-                                    idtyStatus: statusData.idtyStatus);
+                                  sub.csSalt.text,
+                                  sub.csPassword.text,
+                                  selectedWallet.address,
+                                  destPassword: pin ?? myWalletProvider.pinCode,
+                                  fromBalance: statusData.fromBalance,
+                                  fromIdtyStatus: statusData.fromIdtyStatus,
+                                  toIdtyStatus: statusData.toIdtyStatus,
+                                );
                                 Navigator.pop(context);
                                 await Navigator.push(
                                   context,
@@ -288,7 +289,7 @@ class ImportG1v1 extends StatelessWidget {
                                             selectedWallet.address));
                                   }),
                                 );
-                                resetScreen(context);
+                                resetScreen();
                               }
                             : null,
                         child: Text(
@@ -313,8 +314,8 @@ class ImportG1v1 extends StatelessWidget {
     );
   }
 
-  void resetScreen(BuildContext context) {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
+  void resetScreen() {
+    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
 
     sub.csSalt.text = '';
     sub.csPassword.text = '';

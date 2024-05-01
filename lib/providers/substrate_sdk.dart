@@ -212,7 +212,8 @@ class SubstrateSdk with ChangeNotifier {
   Future<List<int>> getCertsCounter(String address) async {
     final idtyIndex = await _getIdentityIndexOf(address);
     if (idtyIndex == null) {
-      return [];
+      certsCounterCache.update(address, (_) => [0, 0], ifAbsent: () => [0, 0]);
+      return [0, 0];
     }
     final certsReceiver =
         await _getStorage('certification.storageIdtyCertMeta($idtyIndex)') ??
@@ -221,7 +222,7 @@ class SubstrateSdk with ChangeNotifier {
     try {
       certsCounterCache.update(
           address,
-          (value) => [
+          (_) => [
                 certsReceiver['receivedCount'] as int,
                 certsReceiver['issuedCount'] as int
               ],
@@ -479,7 +480,7 @@ class SubstrateSdk with ChangeNotifier {
     var idtyIndex = await _getIdentityIndexOf(address);
     if (idtyIndex == -1) return false;
 
-    final isSmith = await _getStorage('smithMembership.membership($idtyIndex)');
+    final isSmith = await _getStorage('smithMembers.smiths($idtyIndex)');
     return !(isSmith == null);
   }
 
@@ -950,24 +951,24 @@ class SubstrateSdk with ChangeNotifier {
     final isSmithData = await isSmith(fromAddress);
 
     // Check conditions to set 'canValidate' and 'validationStatus'
-    if (transferableBalance != 0 &&
-        !fromHasConsumer &&
-        await isAddress(toAddress)) {
-      canValidate = true;
-    } else if (toIdtyStatus != IdtyStatus.none &&
-        fromIdtyStatus != IdtyStatus.none) {
-      validationStatus = 'youCannotMigrateIdentityToExistingIdentity'.tr();
-    } else if (isSmithData) {
+    if (isSmithData) {
       validationStatus = 'smithCantMigrateIdentity'.tr();
     } else if (fromHasConsumer) {
       validationStatus = 'youMustWaitBeforeCashoutThisAccount'.tr();
     } else if (transferableBalance == 0) {
       validationStatus = 'thisAccountIsEmpty'.tr();
+    } else if (toIdtyStatus != IdtyStatus.none &&
+        fromIdtyStatus != IdtyStatus.none) {
+      validationStatus = 'youCannotMigrateIdentityToExistingIdentity'.tr();
+    } else if (fromIdtyStatus == IdtyStatus.none ||
+        toIdtyStatus == IdtyStatus.none) {
+      canValidate = true;
     }
 
     return MigrateWalletChecks(
-      balance: fromBalance,
-      idtyStatus: toIdtyStatus,
+      fromBalance: fromBalance,
+      fromIdtyStatus: fromIdtyStatus,
+      toIdtyStatus: toIdtyStatus,
       validationStatus: validationStatus,
       canValidate: canValidate,
     );
@@ -1045,10 +1046,7 @@ class SubstrateSdk with ChangeNotifier {
     final myIdtyStatus = statusList[0];
     final toIdtyStatus = statusList[1];
 
-    final idtyIndexList =
-        await _getIdentityIndexOfMulti([fromAddress, destAddress]);
-    final fromIndex = idtyIndexList[0];
-    final toIndex = idtyIndexList[1];
+    final toIndex = await _getIdentityIndexOf(destAddress);
 
     if (myIdtyStatus != IdtyStatus.member) {
       return 'notMember';
@@ -1060,7 +1058,6 @@ class SubstrateSdk with ChangeNotifier {
     String? rawParams;
 
     final toCerts = await getCertsCounter(destAddress);
-
     log.d(
         "debug toCert: ${toCerts[0]} --- ${currencyParameters['minCertForMembership']!} --- $toIdtyStatus");
 
@@ -1081,30 +1078,27 @@ class SubstrateSdk with ChangeNotifier {
           'batchAll',
           sender,
         );
-        final tx1 = 'api.tx.certification.addCert($fromIndex, $toIndex)';
+        final tx1 = 'api.tx.certification.addCert($toIndex)';
+        final tx2 = 'api.tx.distance.requestDistanceEvaluationFor($toIndex)';
 
-        //TODO: add requestDistanceEvaluation tx when available
-
-        // final tx2 = 'api.tx.distance.requestDistanceEvaluation($toIndex)';
-        // final tx2 = 'api.tx.identity.validateIdentity($toIndex)';
-
-        rawParams = '[[$tx1]]';
+        rawParams = '[[$tx1, $tx2]]';
       } else {
         txInfo = TxInfoData(
-          'cert',
+          'certification',
           'addCert',
           sender,
         );
-        txOptions = [fromIndex, toIndex];
+        txOptions = [toIndex];
       }
     } else {
+      log.e('cantBeCert: $toIdtyStatus');
       return 'cantBeCert';
     }
 
-    log.d('Cert action: ${txInfo.call!}');
+    log.d('Cert action: ${txInfo.module!}.${txInfo.call!}');
     final transactionId = const Uuid().v4();
     final transactionContent = TransactionContent(
-      transactionId: const Uuid().v4(),
+      transactionId: transactionId,
       status: TransactionStatus.sending,
       from: fromAddress,
       to: destAddress,
@@ -1127,7 +1121,7 @@ class SubstrateSdk with ChangeNotifier {
 
     final transactionId = const Uuid().v4();
     final transactionContent = TransactionContent(
-      transactionId: const Uuid().v4(),
+      transactionId: transactionId,
       status: TransactionStatus.sending,
       from: fromAddress,
       to: fromAddress,
@@ -1204,7 +1198,7 @@ newKeySig: $newKeySigType""");
 
     final transactionId = const Uuid().v4();
     final transactionContent = TransactionContent(
-      transactionId: const Uuid().v4(),
+      transactionId: transactionId,
       status: TransactionStatus.sending,
       from: fromAddress,
       to: fromAddress,
@@ -1238,7 +1232,7 @@ newKeySig: $newKeySigType""");
     final txOptions = [idtyIndex, address, revocationSigTyped];
     final transactionId = const Uuid().v4();
     final transactionContent = TransactionContent(
-      transactionId: const Uuid().v4(),
+      transactionId: transactionId,
       status: TransactionStatus.sending,
       from: address,
       to: address,
@@ -1248,10 +1242,15 @@ newKeySig: $newKeySigType""");
     return transactionId;
   }
 
-  Future<String> migrateCsToV2(String salt, String password, String destAddress,
-      {required destPassword,
-      required Map balance,
-      IdtyStatus idtyStatus = IdtyStatus.none}) async {
+  Future<String> migrateCsToV2(
+    String salt,
+    String password,
+    String destAddress, {
+    required destPassword,
+    required Map fromBalance,
+    IdtyStatus fromIdtyStatus = IdtyStatus.none,
+    IdtyStatus toIdtyStatus = IdtyStatus.none,
+  }) async {
     final scrypt = pc.KeyDerivator('scrypt');
 
     scrypt.init(
@@ -1266,13 +1265,15 @@ newKeySig: $newKeySigType""");
     final rawSeed = scrypt.process(Uint8List.fromList(password.codeUnits));
     final rawSeedHex = '0x${HEX.encode(rawSeed)}';
 
-    final json = await sdk.api.keyring.importAccount(keyring,
-        keyType: KeyType.rawSeed,
-        key: rawSeedHex,
-        name: 'test',
-        password: 'password',
-        derivePath: '',
-        cryptoType: CryptoType.ed25519);
+    final json = await sdk.api.keyring.importAccount(
+      keyring,
+      keyType: KeyType.rawSeed,
+      key: rawSeedHex,
+      name: 'test',
+      password: 'password',
+      derivePath: '',
+      cryptoType: CryptoType.ed25519,
+    );
 
     final keypair = await sdk.api.keyring.addAccount(
       keyring,
@@ -1283,20 +1284,20 @@ newKeySig: $newKeySigType""");
 
     late String transactionId;
 
-    if (idtyStatus != IdtyStatus.none) {
+    if (fromIdtyStatus == IdtyStatus.none) {
+      transactionId = await pay(
+          fromAddress: keypair.address!,
+          destAddress: destAddress,
+          amount: -1,
+          password: 'password');
+    } else if (fromBalance['transferableBalance'] != 0) {
       transactionId = await migrateIdentity(
           fromAddress: keypair.address!,
           destAddress: destAddress,
           fromPassword: 'password',
           destPassword: destPassword,
           withBalance: true,
-          fromBalance: balance);
-    } else if (balance['transferableBalance'] != 0) {
-      transactionId = await pay(
-          fromAddress: keypair.address!,
-          destAddress: destAddress,
-          amount: -1,
-          password: 'password');
+          fromBalance: fromBalance);
     } else {
       transactionId = '';
     }

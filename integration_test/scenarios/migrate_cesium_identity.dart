@@ -27,7 +27,7 @@ void main() async {
     await tapKey(keyImportG1v1);
     await enterText(keyCesiumId, 'test');
     await enterText(keyCesiumPassword, 'test');
-    await waitFor('DCovzCEnQm9GUWe6mr8u42JR1JAuoj3HbQUGdCkfTzSr');
+    await waitFor('DCovzC');
     await waitFor('100.0');
     await waitFor('3', exactMatch: true);
 

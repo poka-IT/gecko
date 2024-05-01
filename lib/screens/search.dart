@@ -35,9 +35,11 @@ class _SearchScreenState extends State<SearchScreen> {
     // Function to check clipboard and update if necessary
     Future<void> checkAndUpdateClipboard() async {
       final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
-      if (clipboardData?.text != null && clipboardData!.text != pastedAddress) {
-        pastedAddress = clipboardData.text ?? '';
-        canPasteAddress = await isAddress(pastedAddress);
+      if (clipboardData?.text?.isEmpty ?? true) return;
+      if (clipboardData!.text != pastedAddress) {
+        canPasteAddress = await isAddress(clipboardData.text!);
+        if (!canPasteAddress) return;
+        pastedAddress = clipboardData.text!;
         searchProvider.reload();
       }
     }

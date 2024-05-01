@@ -67,7 +67,7 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
   void waitForTransactionStatus() async {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     while (!sub.transactionStatus.containsKey(widget.transactionId)) {
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(milliseconds: 200));
     }
 
     setState(() {
@@ -80,7 +80,13 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
     final sub = Provider.of<SubstrateSdk>(context, listen: true);
 
     if (txContent == null) {
-      return const Center(child: Loading());
+      return const Scaffold(
+        body: Center(
+          child: Loading(
+            size: 25,
+          ),
+        ),
+      );
     }
 
     if (sub.transactionStatus.containsKey(widget.transactionId)) {

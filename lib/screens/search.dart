@@ -48,8 +48,7 @@ class _SearchScreenState extends State<SearchScreen> {
     checkAndUpdateClipboard();
 
     // Set up the periodic clipboard checking
-    clipboardPollingTimer =
-        Timer.periodic(const Duration(milliseconds: 500), (_) async {
+    clipboardPollingTimer = Timer.periodic(const Duration(milliseconds: 500), (_) async {
       await checkAndUpdateClipboard();
     });
   }
@@ -72,7 +71,7 @@ class _SearchScreenState extends State<SearchScreen> {
     final canValidate = searchProvider.searchController.text.length >= 2;
 
     return PopScope(
-      onPopInvoked: (_) {
+      onPopInvokedWithResult: (_, __) {
         searchProvider.searchController.text = '';
       },
       child: Scaffold(
@@ -136,13 +135,9 @@ class _SearchScreenState extends State<SearchScreen> {
                         height: scaleSize(10),
                       ),
                     ),
-                    border: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Colors.grey[500]!, width: 2),
-                        borderRadius: BorderRadius.circular(8)),
+                    border: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey[500]!, width: 2), borderRadius: BorderRadius.circular(8)),
                     focusedBorder: OutlineInputBorder(
-                      borderSide:
-                          BorderSide(color: Colors.grey[500]!, width: 2.5),
+                      borderSide: BorderSide(color: Colors.grey[500]!, width: 2.5),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     contentPadding: const EdgeInsets.all(13),
@@ -179,8 +174,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) {
-                                  return WalletViewScreen(
-                                      address: pastedAddress, username: null);
+                                  return WalletViewScreen(address: pastedAddress, username: null);
                                 }),
                               );
                             }
@@ -192,10 +186,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             ? 'pasteAddress'.tr()
                             : 'search'.tr(),
                     textAlign: TextAlign.center,
-                    style: scaledTextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white),
+                    style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
                   ),
                 ),
               ),

@@ -46,7 +46,7 @@ class UnlockingWallet extends StatelessWidget {
     // if (enterPin.text == '') myWalletProvider.isPinLoading = true;
 
     return PopScope(
-      onPopInvoked: (_) {
+      onPopInvokedWithResult: (_, __) {
         myWalletProvider.isPinValid = false;
         myWalletProvider.isPinLoading = true;
       },

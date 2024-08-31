@@ -8,8 +8,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 
 class QrCodeFullscreen extends StatefulWidget {
-  const QrCodeFullscreen(this.address, {this.color, Key? key})
-      : super(key: key);
+  const QrCodeFullscreen(this.address, {this.color, Key? key}) : super(key: key);
 
   final String address;
   final Color? color;
@@ -48,7 +47,7 @@ class _QrCodeFullscreenState extends State<QrCodeFullscreen> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      onPopInvoked: (_) {
+      onPopInvokedWithResult: (_, __) {
         resetBrightness();
       },
       child: Scaffold(

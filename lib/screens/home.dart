@@ -37,10 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final homeProvider = Provider.of<HomeProvider>(context, listen: false);
       final sub = Provider.of<SubstrateSdk>(context, listen: false);
-      final duniterIndexer =
-          Provider.of<DuniterIndexer>(context, listen: false);
-      final myWalletProvider =
-          Provider.of<MyWalletsProvider>(context, listen: false);
+      final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+      final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
       final datapod = Provider.of<V2sDatapodProvider>(context, listen: false);
 
       final bool isWalletsExists = myWalletProvider.isWalletsExists();
@@ -104,11 +102,9 @@ class _HomeScreenState extends State<HomeScreen> {
           configBox.put('isCacheChecked', false);
         }
 
-        Connectivity()
-            .onConnectivityChanged
-            .listen((ConnectivityResult result) async {
+        Future<void> updateConnectionStatus(List<ConnectivityResult> result) async {
           log.i('Network changed: $result');
-          if (result == ConnectivityResult.none) {
+          if (result.contains(ConnectivityResult.none)) {
             sub.nodeConnected = false;
             await sub.sdk.api.setting.unsubscribeBestNumber();
             homeProvider.changeMessage("notConnectedToInternet".tr(), 0);
@@ -116,11 +112,13 @@ class _HomeScreenState extends State<HomeScreen> {
           } else {
             // Check if the phone is actually connected to the internet
             var connectivityResult = await (Connectivity().checkConnectivity());
-            if (connectivityResult != ConnectivityResult.none) {
+            if (!connectivityResult.contains(ConnectivityResult.none)) {
               await sub.connectNode();
             }
           }
-        });
+        }
+
+        Connectivity().onConnectivityChanged.listen(updateConnectionStatus);
       }
     });
     super.initState();
@@ -134,9 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Provider.of<ChestProvider>(context);
     final isWalletsExists = myWalletProvider.isWalletsExists();
 
-    isTall = (MediaQuery.of(context).size.height /
-            MediaQuery.of(context).size.width) >
-        1.75;
+    isTall = (MediaQuery.of(context).size.height / MediaQuery.of(context).size.width) > 1.75;
 
     return Scaffold(
         resizeToAvoidBottomInset: false,
@@ -157,8 +153,7 @@ Widget geckHome(context) {
         fit: BoxFit.cover,
       ),
     ),
-    child:
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
       Stack(children: <Widget>[
         Positioned(
           top: statusBarHeight + scaleSize(10),
@@ -176,15 +171,12 @@ Widget geckHome(context) {
           ),
         ),
         Align(
-          child: Image(
-              image: const AssetImage('assets/home/header.png'),
-              height: scaleSize(165)),
+          child: Image(image: const AssetImage('assets/home/header.png'), height: scaleSize(165)),
         ),
       ]),
       Padding(
         padding: const EdgeInsets.only(top: 15),
-        child:
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
           DefaultTextStyle(
             textAlign: TextAlign.center,
             style: scaledTextStyle(
@@ -245,8 +237,7 @@ Widget welcomeHome(context) {
         fit: BoxFit.cover,
       ),
     ),
-    child:
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
       Stack(children: <Widget>[
         Positioned(
           top: statusBarHeight + scaleSize(10),
@@ -264,15 +255,12 @@ Widget welcomeHome(context) {
           ),
         ),
         Align(
-          child: Image(
-              image: const AssetImage('assets/home/header.png'),
-              height: scaleSize(165)),
+          child: Image(image: const AssetImage('assets/home/header.png'), height: scaleSize(165)),
         ),
       ]),
       Padding(
         padding: const EdgeInsets.only(top: 1),
-        child:
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
           Text(
             "fastAppDescription".tr(args: [currencyName]),
             textAlign: TextAlign.center,
@@ -320,8 +308,7 @@ Widget welcomeHome(context) {
                       Padding(
                         padding: EdgeInsets.only(top: scaleSize(55)),
                         child: Image(
-                          image: const AssetImage(
-                              'assets/home/gecko-bienvenue.png'),
+                          image: const AssetImage('assets/home/gecko-bienvenue.png'),
                           height: scaleSize(180),
                         ),
                       ),
@@ -355,10 +342,7 @@ Widget welcomeHome(context) {
                     },
                     child: Text(
                       'createWallet'.tr(),
-                      style: scaledTextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white),
+                      style: scaledTextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
                     ),
                   ),
                 ),
@@ -368,8 +352,7 @@ Widget welcomeHome(context) {
                   height: 60,
                   child: OutlinedButton(
                     key: keyRestoreChest,
-                    style: OutlinedButton.styleFrom(
-                        side: BorderSide(width: scaleSize(4), color: orangeC)),
+                    style: OutlinedButton.styleFrom(side: BorderSide(width: scaleSize(4), color: orangeC)),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -382,10 +365,7 @@ Widget welcomeHome(context) {
                     },
                     child: Text(
                       "restoreWallet".tr(),
-                      style: scaledTextStyle(
-                          fontSize: 20,
-                          color: orangeC,
-                          fontWeight: FontWeight.w600),
+                      style: scaledTextStyle(fontSize: 20, color: orangeC, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),

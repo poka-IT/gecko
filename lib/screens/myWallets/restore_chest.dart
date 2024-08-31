@@ -32,7 +32,7 @@ class RestoreChest extends StatelessWidget {
     }
 
     return PopScope(
-      onPopInvoked: (_) {
+      onPopInvokedWithResult: (_, __) {
         genW.resetImportView();
       },
       child: Scaffold(

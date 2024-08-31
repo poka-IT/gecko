@@ -23,8 +23,7 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 
 class OnboardingStepTen extends StatelessWidget {
-  OnboardingStepTen({Key? validationKey, this.scanDerivation = false})
-      : super(key: validationKey);
+  OnboardingStepTen({Key? validationKey, this.scanDerivation = false}) : super(key: validationKey);
 
   final bool scanDerivation;
   final formKey = GlobalKey<FormState>();
@@ -35,16 +34,14 @@ class OnboardingStepTen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final generateWalletProvider =
-        Provider.of<GenerateWalletsProvider>(context);
+    final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context);
     final walletOptions = Provider.of<WalletOptionsProvider>(context);
     final sub = Provider.of<SubstrateSdk>(context);
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
     final pinLenght = generateWalletProvider.pin.text.length;
 
     return PopScope(
-      onPopInvoked: (_) {
+      onPopInvokedWithResult: (_, __) {
         myWalletProvider.isPinValid = false;
         myWalletProvider.isPinLoading = true;
       },
@@ -62,14 +59,10 @@ class OnboardingStepTen extends StatelessWidget {
                 const ScanDerivationsInfo(),
                 Consumer<MyWalletsProvider>(builder: (context, mw, _) {
                   return Visibility(
-                    visible: !myWalletProvider.isPinValid &&
-                        !myWalletProvider.isPinLoading,
+                    visible: !myWalletProvider.isPinValid && !myWalletProvider.isPinLoading,
                     child: Text(
                       "thisIsNotAGoodCode".tr(),
-                      style: scaledTextStyle(
-                          fontSize: 15,
-                          color: Colors.red,
-                          fontWeight: FontWeight.w500),
+                      style: scaledTextStyle(fontSize: 15, color: Colors.red, fontWeight: FontWeight.w500),
                     ),
                   );
                 }),
@@ -77,22 +70,19 @@ class OnboardingStepTen extends StatelessWidget {
                 Consumer<SubstrateSdk>(builder: (context, sub, _) {
                   return sub.nodeConnected
                       ? pinForm(context, walletOptions, pinLenght, 1, 2)
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                              Text(
-                                "youHaveToBeConnectedToValidateChest".tr(),
-                                style: scaledTextStyle(
-                                  fontSize: 16,
-                                  color: Colors.redAccent,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ]);
+                      : Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                          Text(
+                            "youHaveToBeConnectedToValidateChest".tr(),
+                            style: scaledTextStyle(
+                              fontSize: 16,
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ]);
                 }),
-                Consumer<WalletOptionsProvider>(
-                    builder: (context, walletOptions, _) {
+                Consumer<WalletOptionsProvider>(builder: (context, walletOptions, _) {
                   return sub.nodeConnected
                       ? InkWell(
                           key: keyCachePassword,
@@ -103,17 +93,14 @@ class OnboardingStepTen extends StatelessWidget {
                             ScaledSizedBox(height: isTall ? 30 : 0),
                             const Spacer(),
                             Icon(
-                              configBox.get('isCacheChecked') ?? false
-                                  ? Icons.check_box
-                                  : Icons.check_box_outline_blank,
+                              configBox.get('isCacheChecked') ?? false ? Icons.check_box : Icons.check_box_outline_blank,
                               color: orangeC,
                               size: scaleSize(22),
                             ),
                             ScaledSizedBox(width: 8),
                             Text(
                               'rememberPassword'.tr(),
-                              style: scaledTextStyle(
-                                  fontSize: 14, color: Colors.grey[700]),
+                              style: scaledTextStyle(fontSize: 14, color: Colors.grey[700]),
                             ),
                             const Spacer()
                           ]))
@@ -126,11 +113,9 @@ class OnboardingStepTen extends StatelessWidget {
     );
   }
 
-  Widget pinForm(
-      context, final walletOptions, pinLenght, int walletNbr, int derivation) {
+  Widget pinForm(context, final walletOptions, pinLenght, int walletNbr, int derivation) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
-    final generateWalletProvider =
-        Provider.of<GenerateWalletsProvider>(context);
+    final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context);
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     final currentChest = myWalletProvider.getCurrentChest();
@@ -197,14 +182,11 @@ class OnboardingStepTen extends StatelessWidget {
                 await generateWalletProvider.storeHDWChest(context);
                 bool isAlive = false;
                 if (scanDerivation) {
-                  isAlive =
-                      await generateWalletProvider.scanDerivations(context);
+                  isAlive = await generateWalletProvider.scanDerivations(context);
                 }
                 if (!isAlive) {
                   final address = await sub.importAccount(
-                      mnemonic: generateWalletProvider.generatedMnemonic!,
-                      derivePath: '//2',
-                      password: generateWalletProvider.pin.text);
+                      mnemonic: generateWalletProvider.generatedMnemonic!, derivePath: '//2', password: generateWalletProvider.pin.text);
                   WalletData myWallet = WalletData(
                       chest: configBox.get('currentChest'),
                       address: address,
@@ -222,8 +204,7 @@ class OnboardingStepTen extends StatelessWidget {
                 myWalletProvider.debounceResetPinCode();
                 Navigator.push(
                   context,
-                  FaderTransition(
-                      page: const OnboardingStepEleven(), isFast: false),
+                  FaderTransition(page: const OnboardingStepEleven(), isFast: false),
                 );
               } else {
                 hasError = true;

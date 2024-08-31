@@ -10,11 +10,7 @@ import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
 class ChangePinScreen extends StatefulWidget with ChangeNotifier {
-  ChangePinScreen(
-      {Key? keyMyWallets,
-      required this.walletName,
-      required this.walletProvider})
-      : super(key: keyMyWallets);
+  ChangePinScreen({Key? keyMyWallets, required this.walletName, required this.walletProvider}) : super(key: keyMyWallets);
   final String? walletName;
   final MyWalletsProvider walletProvider;
 
@@ -34,11 +30,10 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
   @override
   Widget build(BuildContext context) {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
     return PopScope(
-      onPopInvoked: (_) {
+      onPopInvokedWithResult: (_, __) {
         newPin.text = '';
       },
       child: Scaffold(
@@ -51,10 +46,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
               Text(
                 'choosePassword'.tr(),
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w400),
+                style: TextStyle(fontSize: 16.0, color: Colors.grey[600], fontWeight: FontWeight.w400),
               ),
               const SizedBox(height: 30),
               Stack(
@@ -66,10 +58,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
                       maxLines: 1,
                       textAlign: TextAlign.center,
                       decoration: const InputDecoration(),
-                      style: const TextStyle(
-                          fontSize: 29.0,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold)),
+                      style: const TextStyle(fontSize: 29.0, color: Colors.black, fontWeight: FontWeight.bold)),
                   IconButton(
                     icon: const Icon(Icons.replay),
                     color: orangeC,
@@ -94,8 +83,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
 
                     if (!await myWalletProvider.askPinCode()) return;
 
-                    await sub.changePassword(context, defaultWallet.address,
-                        widget.walletProvider.pinCode, newPin.text);
+                    await sub.changePassword(context, defaultWallet.address, widget.walletProvider.pinCode, newPin.text);
                     widget.walletProvider.pinCode = newPin.text;
                     newPin.text = '';
                     Navigator.pop(context);

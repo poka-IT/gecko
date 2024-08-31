@@ -11,7 +11,7 @@ import 'package:logger/logger.dart';
 const int dataVersion = 9;
 
 late String appVersion;
-const int pinLength = 5;
+const int pinLength = 4;
 const int maxWalletsInSafe = 30;
 const String appLang = 'english';
 

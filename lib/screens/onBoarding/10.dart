@@ -1,9 +1,9 @@
 // ignore_for_file: file_names
-// ignore_for_file: must_be_immutable
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -22,23 +22,40 @@ import 'package:gecko/widgets/scan_derivations_info.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 
-class OnboardingStepTen extends StatelessWidget {
-  OnboardingStepTen({Key? validationKey, this.scanDerivation = false}) : super(key: validationKey);
+class OnboardingStepTen extends StatefulWidget {
+  const OnboardingStepTen({
+    Key? validationKey,
+    this.scanDerivation = false,
+    required this.pinCode,
+  }) : super(key: validationKey);
 
   final bool scanDerivation;
+  final String pinCode;
+
+  @override
+  State<OnboardingStepTen> createState() => _OnboardingStepTenState();
+}
+
+class _OnboardingStepTenState extends State<OnboardingStepTen> {
   final formKey = GlobalKey<FormState>();
   Color? pinColor = const Color(0xFFA4B600);
   bool hasError = false;
-  final enterPin = TextEditingController();
-  FocusNode pinFocus = FocusNode(debugLabel: 'pinFocusNode');
+  late final FocusNode pinFocus;
+  late final TextEditingController enterPin;
+
+  @override
+  void initState() {
+    super.initState();
+    pinFocus = FocusNode(debugLabel: 'pinFocusNode10');
+    enterPin = TextEditingController();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context);
     final walletOptions = Provider.of<WalletOptionsProvider>(context);
     final sub = Provider.of<SubstrateSdk>(context);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-    final pinLenght = generateWalletProvider.pin.text.length;
+    final pinLenght = widget.pinCode.length;
 
     return PopScope(
       onPopInvokedWithResult: (_, __) {
@@ -123,7 +140,7 @@ class OnboardingStepTen extends StatelessWidget {
     return Form(
       key: formKey,
       child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 40),
           child: PinCodeTextField(
             key: keyPinForm,
             textCapitalization: TextCapitalization.characters,
@@ -163,7 +180,11 @@ class OnboardingStepTen extends StatelessWidget {
             backgroundColor: const Color(0xffF9F9F1),
             enableActiveFill: false,
             controller: enterPin,
-            keyboardType: TextInputType.visiblePassword,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            beforeTextPaste: (text) {
+              return text != null && text.contains(RegExp(r'^[0-9]+$'));
+            },
             boxShadows: const [
               BoxShadow(
                 offset: Offset(0, 1),
@@ -174,19 +195,18 @@ class OnboardingStepTen extends StatelessWidget {
             onCompleted: (pin) async {
               myWalletProvider.pinCode = pin.toUpperCase();
               myWalletProvider.pinLenght = pinLenght;
-              if (pin.toUpperCase() == generateWalletProvider.pin.text) {
+              if (pin.toUpperCase() == widget.pinCode) {
                 pinColor = Colors.green[500];
                 myWalletProvider.isPinLoading = false;
                 myWalletProvider.isPinValid = true;
 
                 await generateWalletProvider.storeHDWChest(context);
                 bool isAlive = false;
-                if (scanDerivation) {
-                  isAlive = await generateWalletProvider.scanDerivations(context);
+                if (widget.scanDerivation) {
+                  isAlive = await generateWalletProvider.scanDerivations(context, widget.pinCode);
                 }
                 if (!isAlive) {
-                  final address = await sub.importAccount(
-                      mnemonic: generateWalletProvider.generatedMnemonic!, derivePath: '//2', password: generateWalletProvider.pin.text);
+                  final address = await sub.importAccount(mnemonic: generateWalletProvider.generatedMnemonic!, derivePath: '//2', password: widget.pinCode);
                   WalletData myWallet = WalletData(
                       chest: configBox.get('currentChest'),
                       address: address,

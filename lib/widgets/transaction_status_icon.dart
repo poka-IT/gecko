@@ -5,8 +5,7 @@ import 'package:gecko/widgets/transaction_status.dart';
 
 class TransactionStatusIcon extends StatelessWidget {
   const TransactionStatusIcon(this.status,
-      {Key? key, this.size = 32, this.stroke = 3})
-      : super(key: key);
+      {super.key, this.size = 32, this.stroke = 3});
   final TransactionStatus status;
   final double size;
   final double stroke;

@@ -4,8 +4,7 @@ import 'package:provider/provider.dart';
 
 class TemplateWidget extends StatelessWidget {
   const TemplateWidget(
-      {Key? key, required this.address, this.color = Colors.black})
-      : super(key: key);
+      {super.key, required this.address, this.color = Colors.black});
   final String address;
   final Color color;
 

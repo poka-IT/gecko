@@ -12,7 +12,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
 class HistoryQuery extends StatelessWidget {
-  const HistoryQuery({Key? key, required this.address}) : super(key: key);
+  const HistoryQuery({super.key, required this.address});
   final String address;
 
   @override

@@ -2,10 +2,10 @@ name: gecko
 description: Pay with G1.
 publish_to: "none"
 
-version: 0.1.7+78
+version: 0.1.8+79
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ^3.5.3
 
 dependencies:
   flutter:
@@ -23,7 +23,7 @@ dependencies:
   pin_code_fields: ^8.0.1
   printing: ^5.12.0
   provider: ^6.1.2
-  barcode_scan2: ^4.3.0
+  barcode_scan2: ^4.3.3
   qr_flutter: ^4.1.0
   responsive_framework: ^1.4.0
   sentry_flutter: ^8.2.0
@@ -31,14 +31,15 @@ dependencies:
   unorm_dart: ^0.3.0
   dio: ^5.4.3+1
   durt: ^0.1.9
-  package_info_plus: ^8.0.0
+  package_info_plus: ^8.0.2
   polkawallet_sdk: #^0.5.2
-    git:
-      # url: https://github.com/polkawallet-io/sdk.git
-      # ref: develop
-      url: https://github.com/poka-IT/sdk.git
-      # ref: gecko-fixes-3
-      ref: fcfdb5e9f214c99c8d3a97d3aea38a67ea1fa6a5
+    path: ../substrate_sdk
+    # git:
+    #   # url: https://github.com/polkawallet-io/sdk.git
+    #   # ref: develop
+    #   url: https://github.com/poka-IT/sdk.git
+    #   # ref: gecko-fixes-3
+    #   ref: 31c741d092852cf8bad0478eadd5d897f25dc7d6
   dots_indicator: ^3.0.0
   connectivity_plus: ^6.0.5
   image_cropper: ^8.0.2
@@ -66,7 +67,7 @@ dependency_overrides:
   intl: ^0.19.0
 
 dev_dependencies:
-  icons_launcher: ^2.1.7
+  icons_launcher: ^3.0.0
   build_runner: ^2.4.9
   hive_generator: ^2.0.1
   flutter_lints: ^4.0.0

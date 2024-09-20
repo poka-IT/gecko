@@ -8,7 +8,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 
 class QrCodeFullscreen extends StatefulWidget {
-  const QrCodeFullscreen(this.address, {this.color, Key? key}) : super(key: key);
+  const QrCodeFullscreen(this.address, {this.color, super.key});
 
   final String address;
   final Color? color;

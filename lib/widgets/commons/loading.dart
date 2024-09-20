@@ -4,10 +4,10 @@ import 'package:gecko/models/scale_functions.dart';
 
 class Loading extends StatelessWidget {
   const Loading({
-    Key? key,
+    super.key,
     this.size = 15,
     this.stroke = 2,
-  }) : super(key: key);
+  });
 
   final double size;
   final double stroke;

@@ -4,11 +4,11 @@ import 'package:gecko/models/scale_functions.dart';
 
 class BuildImage extends StatelessWidget {
   const BuildImage({
-    Key? key,
+    super.key,
     required this.assetName,
     required this.boxHeight,
     required this.imageWidth,
-  }) : super(key: key);
+  });
 
   final String assetName;
   final double boxHeight;

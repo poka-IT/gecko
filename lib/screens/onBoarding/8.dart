@@ -9,8 +9,7 @@ import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class OnboardingStepEight extends StatelessWidget {
-  const OnboardingStepEight({Key? key, this.scanDerivation = false})
-      : super(key: key);
+  const OnboardingStepEight({super.key, this.scanDerivation = false});
   final bool scanDerivation;
 
   @override

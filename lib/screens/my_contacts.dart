@@ -9,7 +9,7 @@ import 'package:gecko/widgets/contacts_list.dart';
 import 'package:provider/provider.dart';
 
 class ContactsScreen extends StatelessWidget {
-  const ContactsScreen({Key? key}) : super(key: key);
+  const ContactsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

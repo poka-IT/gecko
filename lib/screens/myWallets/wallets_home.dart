@@ -21,7 +21,7 @@ import 'package:provider/provider.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
 class WalletsHome extends StatefulWidget {
-  const WalletsHome({Key? key}) : super(key: key);
+  const WalletsHome({super.key});
 
   @override
   State<WalletsHome> createState() => _WalletsHomeState();

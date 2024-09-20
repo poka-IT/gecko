@@ -18,13 +18,13 @@ class TransactionInProgress extends StatefulWidget {
   final String? fromAddress, toAddress, toUsername;
 
   const TransactionInProgress({
-    Key? key,
+    super.key,
     required this.transactionId,
     this.transType = 'pay',
     this.fromAddress,
     this.toAddress,
     this.toUsername,
-  }) : super(key: key);
+  });
 
   @override
   State<TransactionInProgress> createState() => _TransactionInProgressState();

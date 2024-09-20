@@ -20,7 +20,7 @@ import 'package:gecko/widgets/idty_status.dart';
 import 'package:provider/provider.dart';
 
 class ImportG1v1 extends StatelessWidget {
-  const ImportG1v1({Key? key}) : super(key: key);
+  const ImportG1v1({super.key});
   static const int debouneTime = 600;
 
   @override

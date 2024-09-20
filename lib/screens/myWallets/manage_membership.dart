@@ -21,7 +21,7 @@ import 'package:provider/provider.dart';
 // import 'package:provider/provider.dart';
 
 class ManageMembership extends StatelessWidget {
-  const ManageMembership({Key? key, required this.address}) : super(key: key);
+  const ManageMembership({super.key, required this.address});
   final String address;
 
   @override

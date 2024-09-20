@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 
 class GeckoAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const GeckoAppBar(this.text, {Key? key}) : super(key: key);
+  const GeckoAppBar(this.text, {super.key});
 
   final String text;
 

@@ -8,7 +8,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:logger/logger.dart';
 
 // Version of box data
-const int dataVersion = 9;
+const int dataVersion = 10;
 
 late String appVersion;
 const int pinLength = 4;
@@ -48,7 +48,7 @@ const Color backgroundColor = Color(0xFFF5F5F5);
 const String currencyName = 'ĞD';
 
 // Debug
-const debugPin = true;
+const debugPin = false;
 
 String indexerEndpoint = '';
 late double balanceRatio;

@@ -8,7 +8,7 @@ import 'package:gecko/widgets/commons/next_button.dart';
 
 class InfoIntro extends StatelessWidget {
   const InfoIntro({
-    Key? key,
+    super.key,
     required this.text,
     required this.assetName,
     required this.buttonText,
@@ -19,7 +19,7 @@ class InfoIntro extends StatelessWidget {
     this.boxHeight = 340,
     this.imageWidth = 350,
     this.textSize = 17,
-  }) : super(key: key);
+  });
 
   final String text;
   final String assetName;

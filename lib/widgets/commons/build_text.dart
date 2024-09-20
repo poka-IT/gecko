@@ -5,11 +5,11 @@ import 'package:gecko/models/scale_functions.dart';
 
 class BuildText extends StatelessWidget {
   const BuildText({
-    Key? key,
+    super.key,
     required this.text,
     this.size = 17,
     this.isMd = true,
-  }) : super(key: key);
+  });
 
   final String text;
   final double size;

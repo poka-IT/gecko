@@ -16,7 +16,7 @@ import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:provider/provider.dart';
 
 class CertifyButton extends StatelessWidget {
-  const CertifyButton(this.address, {Key? key}) : super(key: key);
+  const CertifyButton(this.address, {super.key});
   final String address;
 
   @override

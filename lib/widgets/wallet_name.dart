@@ -5,11 +5,10 @@ import 'package:truncate/truncate.dart';
 
 class WalletName extends StatelessWidget {
   const WalletName(
-      {Key? key,
+      {super.key,
       required this.wallet,
       this.size = 20,
-      this.color = Colors.black})
-      : super(key: key);
+      this.color = Colors.black});
   final WalletData wallet;
   final double size;
   final Color color;

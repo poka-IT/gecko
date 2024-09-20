@@ -59,7 +59,7 @@
     "yourMnemonic": "tu frase de restauración",
     "gecko_also_can_forget.png": "gecko_also_can_forget_es.png",
     "didYouNoteMnemonicToBeSureTypeWord": "¿Anotaste bien tu frase de restauración? Para asegurarnos, escriba la **palabra #{}** de tu frase de restauración en el cuadro de abajo:",
-    "GeckoWillGenerateAPassword": "Ahora Ğecko te generará una contraseña corta que te permitirá acceder rápidamente a tus monederos, sin tener que escribir cada vez tu frase de recuperación.",
+    "GeckoWillGenerateAPassword": "Ahora se le pedirá que establezca un código PIN que le permitirá acceder rápidamente a sus billeteras sin tener que escribir su frase de recuperación cada vez.",
     "myPassword": "Mi contraseña",
     "thisPasswordProtectsYourWalletsInASecureChest": "Esta contraseña protege tus monederos en un cofre **del que sólo tú tienes acceso**, para que tus monederos no puedan ser utilizados por otros.",
     "hereIsThePasswordKeepIt": "¡Elija su contraseña!\n\nMemorízala o anótala, porque Ğecko te la pedirá **cada vez** que quieras hacer un pago en este dispositivo.",

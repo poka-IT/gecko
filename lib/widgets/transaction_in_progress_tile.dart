@@ -16,8 +16,7 @@ import 'package:fade_and_translate/fade_and_translate.dart';
 
 class TransactionInProgressTule extends StatefulWidget {
   const TransactionInProgressTule(
-      {Key? key, required this.address, this.transactionId})
-      : super(key: key);
+      {super.key, required this.address, this.transactionId});
 
   final String address;
   final String? transactionId;

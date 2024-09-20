@@ -5,11 +5,10 @@ import 'package:provider/provider.dart';
 
 class Certifications extends StatelessWidget {
   const Certifications(
-      {Key? key,
+      {super.key,
       required this.address,
       required this.size,
-      this.color = Colors.black})
-      : super(key: key);
+      this.color = Colors.black});
   final String address;
   final double size;
   final Color color;

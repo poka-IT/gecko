@@ -16,12 +16,12 @@ import 'package:gecko/widgets/search_identity_query.dart';
 
 class SearchResult extends StatelessWidget {
   const SearchResult({
-    Key? key,
+    super.key,
     required this.searchProvider,
     required this.duniterIndexer,
     required this.avatarSize,
     required this.walletsProfilesClass,
-  }) : super(key: key);
+  });
 
   final SearchProvider searchProvider;
   final DuniterIndexer duniterIndexer;

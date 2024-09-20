@@ -12,7 +12,7 @@ import 'package:gecko/screens/onBoarding/5.dart';
 import 'package:provider/provider.dart';
 
 class ChooseChest extends StatefulWidget {
-  const ChooseChest({Key? key}) : super(key: key);
+  const ChooseChest({super.key});
 
   @override
   State<StatefulWidget> createState() {

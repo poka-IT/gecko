@@ -18,7 +18,7 @@ import 'package:provider/provider.dart';
 // import 'package:provider/provider.dart';
 
 class RestoreChest extends StatelessWidget {
-  const RestoreChest({Key? key, this.skipIntro = false}) : super(key: key);
+  const RestoreChest({super.key, this.skipIntro = false});
   final bool skipIntro;
 
   @override

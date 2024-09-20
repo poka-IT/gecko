@@ -5,9 +5,9 @@ import 'package:gecko/models/scale_functions.dart';
 
 class BuildProgressBar extends StatelessWidget {
   const BuildProgressBar({
-    Key? key,
+    super.key,
     required this.pagePosition,
-  }) : super(key: key);
+  });
 
   final int pagePosition;
 

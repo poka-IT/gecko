@@ -4,10 +4,10 @@ import 'package:gecko/globals.dart';
 
 class UdUnitDisplay extends StatelessWidget {
   const UdUnitDisplay({
-    Key? key,
+    super.key,
     required this.size,
     required this.color,
-  }) : super(key: key);
+  });
 
   final double size;
   final Color color;

@@ -16,7 +16,7 @@ import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class OnboardingStepNine extends StatefulWidget {
-  const OnboardingStepNine({Key? key, this.scanDerivation = false}) : super(key: key);
+  const OnboardingStepNine({super.key, this.scanDerivation = false});
   final bool scanDerivation;
 
   @override
@@ -135,7 +135,7 @@ class _OnboardingStepNineState extends State<OnboardingStepNine> {
 
 bool isPinComplex(String pin) {
   // Debug mode
-  if (debugPin) return true;
+  if (kDebugMode && debugPin) return true;
 
   // Check if PIN is 4 digits
   if (pin.length != pinLength) return false;

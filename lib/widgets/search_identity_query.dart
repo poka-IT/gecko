@@ -16,7 +16,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
 class SearchIdentityQuery extends StatelessWidget {
-  const SearchIdentityQuery({Key? key, required this.name}) : super(key: key);
+  const SearchIdentityQuery({super.key, required this.name});
   final String name;
 
   @override

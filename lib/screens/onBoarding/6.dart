@@ -17,7 +17,7 @@ import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
 class OnboardingStepSix extends StatelessWidget {
-  OnboardingStepSix({Key? key, required this.skipIntro, required this.generatedMnemonic}) : super(key: key);
+  OnboardingStepSix({super.key, required this.skipIntro, required this.generatedMnemonic});
 
   final bool skipIntro;
   String? generatedMnemonic;

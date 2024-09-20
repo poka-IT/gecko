@@ -28,8 +28,7 @@ const double buttonFontSize = 14;
 
 class WalletViewScreen extends StatelessWidget {
   const WalletViewScreen(
-      {required this.address, required this.username, Key? key})
-      : super(key: key);
+      {required this.address, required this.username, super.key});
   final String address;
   final String? username;
 

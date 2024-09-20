@@ -6,7 +6,7 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:provider/provider.dart';
 
 class DebugScreen extends StatelessWidget {
-  const DebugScreen({Key? key}) : super(key: key);
+  const DebugScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

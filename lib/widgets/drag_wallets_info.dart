@@ -9,8 +9,7 @@ import 'package:provider/provider.dart';
 
 class DragWalletsInfo extends StatelessWidget {
   const DragWalletsInfo(
-      {Key? key, required this.dragAddress, required this.lastFlyBy})
-      : super(key: key);
+      {super.key, required this.dragAddress, required this.lastFlyBy});
 
   final WalletData dragAddress;
   final WalletData lastFlyBy;

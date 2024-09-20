@@ -5,8 +5,7 @@ import 'package:gecko/widgets/certify/wait_to_cert.dart';
 
 class CertStateWidget extends StatelessWidget {
   const CertStateWidget(
-      {Key? key, required this.certState, required this.address})
-      : super(key: key);
+      {super.key, required this.certState, required this.address});
 
   final CertState certState;
   final String address;

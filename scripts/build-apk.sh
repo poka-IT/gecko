@@ -20,6 +20,7 @@ echo "Nom du build final: ${APPNAME}-${VERSION}+${BUILD}.apk"
 # cargo br
 
 flutter clean
+flutter pub get
 if [[ $1 == "bundle" ]]; then
 	flutter build appbundle --release --build-name $VERSION --build-number $BUILD
 	exit 0

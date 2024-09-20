@@ -9,7 +9,7 @@ import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class OnboardingStepTwo extends StatelessWidget {
-  const OnboardingStepTwo({Key? key}) : super(key: key);
+  const OnboardingStepTwo({super.key});
 
   @override
   Widget build(BuildContext context) {

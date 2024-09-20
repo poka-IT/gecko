@@ -4,7 +4,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class TemplateScreen extends StatelessWidget {
-  const TemplateScreen({Key? key}) : super(key: key);
+  const TemplateScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

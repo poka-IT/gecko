@@ -10,7 +10,7 @@ import 'package:gecko/widgets/page_route_no_transition.dart';
 
 class TransactionTile extends StatelessWidget {
   const TransactionTile({
-    Key? key,
+    super.key,
     required this.keyID,
     required this.avatarSize,
     required this.repository,
@@ -18,7 +18,7 @@ class TransactionTile extends StatelessWidget {
     required this.finalAmount,
     required this.duniterIndexer,
     required this.context,
-  }) : super(key: key);
+  });
 
   final int keyID;
   final double avatarSize;

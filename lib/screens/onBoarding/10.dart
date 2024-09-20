@@ -54,7 +54,8 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
   Widget build(BuildContext context) {
     final walletOptions = Provider.of<WalletOptionsProvider>(context);
     final sub = Provider.of<SubstrateSdk>(context);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
     final pinLenght = widget.pinCode.length;
 
     return PopScope(
@@ -76,10 +77,14 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                 const ScanDerivationsInfo(),
                 Consumer<MyWalletsProvider>(builder: (context, mw, _) {
                   return Visibility(
-                    visible: !myWalletProvider.isPinValid && !myWalletProvider.isPinLoading,
+                    visible: !myWalletProvider.isPinValid &&
+                        !myWalletProvider.isPinLoading,
                     child: Text(
                       "thisIsNotAGoodCode".tr(),
-                      style: scaledTextStyle(fontSize: 15, color: Colors.red, fontWeight: FontWeight.w500),
+                      style: scaledTextStyle(
+                          fontSize: 15,
+                          color: Colors.red,
+                          fontWeight: FontWeight.w500),
                     ),
                   );
                 }),
@@ -87,19 +92,22 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                 Consumer<SubstrateSdk>(builder: (context, sub, _) {
                   return sub.nodeConnected
                       ? pinForm(context, walletOptions, pinLenght, 1, 2)
-                      : Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                          Text(
-                            "youHaveToBeConnectedToValidateChest".tr(),
-                            style: scaledTextStyle(
-                              fontSize: 16,
-                              color: Colors.redAccent,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ]);
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                              Text(
+                                "youHaveToBeConnectedToValidateChest".tr(),
+                                style: scaledTextStyle(
+                                  fontSize: 16,
+                                  color: Colors.redAccent,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ]);
                 }),
-                Consumer<WalletOptionsProvider>(builder: (context, walletOptions, _) {
+                Consumer<WalletOptionsProvider>(
+                    builder: (context, walletOptions, _) {
                   return sub.nodeConnected
                       ? InkWell(
                           key: keyCachePassword,
@@ -110,14 +118,17 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                             ScaledSizedBox(height: isTall ? 30 : 0),
                             const Spacer(),
                             Icon(
-                              configBox.get('isCacheChecked') ?? false ? Icons.check_box : Icons.check_box_outline_blank,
+                              configBox.get('isCacheChecked') ?? false
+                                  ? Icons.check_box
+                                  : Icons.check_box_outline_blank,
                               color: orangeC,
                               size: scaleSize(22),
                             ),
                             ScaledSizedBox(width: 8),
                             Text(
                               'rememberPassword'.tr(),
-                              style: scaledTextStyle(fontSize: 14, color: Colors.grey[700]),
+                              style: scaledTextStyle(
+                                  fontSize: 14, color: Colors.grey[700]),
                             ),
                             const Spacer()
                           ]))
@@ -130,9 +141,11 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
     );
   }
 
-  Widget pinForm(context, final walletOptions, pinLenght, int walletNbr, int derivation) {
+  Widget pinForm(
+      context, final walletOptions, pinLenght, int walletNbr, int derivation) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
-    final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context);
+    final generateWalletProvider =
+        Provider.of<GenerateWalletsProvider>(context);
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     final currentChest = myWalletProvider.getCurrentChest();
@@ -203,10 +216,14 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                 await generateWalletProvider.storeHDWChest(context);
                 bool isAlive = false;
                 if (widget.scanDerivation) {
-                  isAlive = await generateWalletProvider.scanDerivations(context, widget.pinCode);
+                  isAlive = await generateWalletProvider.scanDerivations(
+                      context, widget.pinCode);
                 }
                 if (!isAlive) {
-                  final address = await sub.importAccount(mnemonic: generateWalletProvider.generatedMnemonic!, derivePath: '//2', password: widget.pinCode);
+                  final address = await sub.importAccount(
+                      mnemonic: generateWalletProvider.generatedMnemonic!,
+                      derivePath: '//2',
+                      password: widget.pinCode);
                   WalletData myWallet = WalletData(
                       chest: configBox.get('currentChest'),
                       address: address,
@@ -224,7 +241,8 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                 myWalletProvider.debounceResetPinCode();
                 Navigator.push(
                   context,
-                  FaderTransition(page: const OnboardingStepEleven(), isFast: false),
+                  FaderTransition(
+                      page: const OnboardingStepEleven(), isFast: false),
                 );
               } else {
                 hasError = true;

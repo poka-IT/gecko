@@ -31,7 +31,8 @@ class _ChooseChestState extends State<ChooseChest> {
 
     return Scaffold(
         backgroundColor: backgroundColor,
-        appBar: AppBar(toolbarHeight: scaleSize(57), title: Text('selectMyChest'.tr())),
+        appBar: AppBar(
+            toolbarHeight: scaleSize(57), title: Text('selectMyChest'.tr())),
         body: SafeArea(
           child: Column(children: <Widget>[
             const SizedBox(height: 160),
@@ -76,15 +77,21 @@ class _ChooseChestState extends State<ChooseChest> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: chestBox.toMap().entries.map((entry) {
                   return GestureDetector(
-                    onTap: () => buttonCarouselController.animateToPage(entry.key),
+                    onTap: () =>
+                        buttonCarouselController.animateToPage(entry.key),
                     child: Container(
                       width: 12.0,
                       height: 12.0,
-                      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 4.0),
                       decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black)
-                              .withOpacity(currentChest == entry.key ? 0.9 : 0.4)),
+                          color:
+                              (Theme.of(context).brightness == Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black)
+                                  .withOpacity(
+                                      currentChest == entry.key ? 0.9 : 0.4)),
                     ),
                   );
                 }).toList(),
@@ -111,7 +118,10 @@ class _ChooseChestState extends State<ChooseChest> {
                 },
                 child: Text(
                   'openThisChest'.tr(),
-                  style: const TextStyle(fontSize: 21, color: backgroundColor, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                      fontSize: 21,
+                      color: backgroundColor,
+                      fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -132,7 +142,12 @@ class _ChooseChestState extends State<ChooseChest> {
                   child: SizedBox(
                     width: 400,
                     height: 50,
-                    child: Center(child: Text('createChest'.tr(), style: const TextStyle(fontSize: 21, color: orangeC, fontWeight: FontWeight.w600))),
+                    child: Center(
+                        child: Text('createChest'.tr(),
+                            style: const TextStyle(
+                                fontSize: 21,
+                                color: orangeC,
+                                fontWeight: FontWeight.w600))),
                   ),
                 ),
               ),
@@ -150,7 +165,12 @@ class _ChooseChestState extends State<ChooseChest> {
                 child: SizedBox(
                   width: 400,
                   height: 50,
-                  child: Center(child: Text('importChest'.tr(), style: const TextStyle(fontSize: 21, color: orangeC, fontWeight: FontWeight.w600))),
+                  child: Center(
+                      child: Text('importChest'.tr(),
+                          style: const TextStyle(
+                              fontSize: 21,
+                              color: orangeC,
+                              fontWeight: FontWeight.w600))),
                 )),
             const SizedBox(height: 20),
           ]),

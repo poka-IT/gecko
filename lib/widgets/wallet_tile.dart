@@ -148,10 +148,10 @@ class BalanceBuilder extends StatelessWidget {
               Opacity(
                 opacity: 0.7,
                 child: Balance(
-                    address: address,
-                    size: 14,
-                    color: isDefault ? Colors.white : Colors.black,
-         ),
+                  address: address,
+                  size: 14,
+                  color: isDefault ? Colors.white : Colors.black,
+                ),
               )
             ],
           )),

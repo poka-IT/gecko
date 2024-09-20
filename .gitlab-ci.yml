@@ -5,7 +5,7 @@ stages:
   - package
 
 .env:
-  image: axiomteam/gecko-ci:v0.0.11
+  image: ghcr.io/cirruslabs/flutter:3.24.3
   tags:
     - docker
 
@@ -18,7 +18,7 @@ format:
     - when: manual
   stage: format
   script:
-    - flutter format --set-exit-if-changed lib
+    - dart format --set-exit-if-changed lib
 
 build_and_test:
   extends: .env

@@ -33,13 +33,13 @@ dependencies:
   durt: ^0.1.9
   package_info_plus: ^8.0.2
   polkawallet_sdk: #^0.5.2
-    path: ../substrate_sdk
-    # git:
+    # path: ../substrate_sdk
+    git:
     #   # url: https://github.com/polkawallet-io/sdk.git
     #   # ref: develop
-    #   url: https://github.com/poka-IT/sdk.git
+      url: https://github.com/poka-IT/sdk.git
     #   # ref: gecko-fixes-3
-    #   ref: 31c741d092852cf8bad0478eadd5d897f25dc7d6
+      ref: 31c741d092852cf8bad0478eadd5d897f25dc7d6
   dots_indicator: ^3.0.0
   connectivity_plus: ^6.0.5
   image_cropper: ^8.0.2

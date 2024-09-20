@@ -36,7 +36,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
     return PopScope(
       onPopInvokedWithResult: (_, __) {
-            duniterIndexer.refetch = duniterIndexer.transBC = null;
+        duniterIndexer.refetch = duniterIndexer.transBC = null;
       },
       child: Scaffold(
           appBar: AppBar(

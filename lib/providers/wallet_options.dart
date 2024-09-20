@@ -36,7 +36,8 @@ class WalletOptionsProvider with ChangeNotifier {
     return pinLength;
   }
 
-  void _renameWallet(List<int?> walletID, String newName, {required bool isCesium}) async {
+  void _renameWallet(List<int?> walletID, String newName,
+      {required bool isCesium}) async {
     MyWalletsProvider myWalletClass = MyWalletsProvider();
 
     WalletData walletTarget = myWalletClass.getWalletDataById(walletID)!;
@@ -49,14 +50,20 @@ class WalletOptionsProvider with ChangeNotifier {
   Future<int> deleteWallet(context, WalletData wallet) async {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final datapod = Provider.of<V2sDatapodProvider>(context, listen: false);
-    final bool? answer = await (confirmPopup(context, 'areYouSureToForgetWallet'.tr(args: [wallet.name!])));
+    final bool? answer = await (confirmPopup(
+        context, 'areYouSureToForgetWallet'.tr(args: [wallet.name!])));
 
     if (answer ?? false) {
       //Check if balance is null
       if (balanceCache[wallet.address] != 0) {
-        final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+        final myWalletProvider =
+            Provider.of<MyWalletsProvider>(context, listen: false);
         final defaultWallet = myWalletProvider.getDefaultWallet();
-        sub.pay(fromAddress: wallet.address, destAddress: defaultWallet.address, amount: -1, password: myWalletProvider.pinCode);
+        sub.pay(
+            fromAddress: wallet.address,
+            destAddress: defaultWallet.address,
+            amount: -1,
+            password: myWalletProvider.pinCode);
       }
 
       await walletBox.delete(wallet.address);
@@ -125,7 +132,8 @@ class WalletOptionsProvider with ChangeNotifier {
 
       await File(croppedFile.path).rename(newPath);
 
-      final walletData = MyWalletsProvider().getWalletDataByAddress(address.text);
+      final walletData =
+          MyWalletsProvider().getWalletDataByAddress(address.text);
 
       if (walletData!.imageCustomPath != null) {
         final avatarFile = File(walletData.imageCustomPath!);
@@ -149,8 +157,10 @@ class WalletOptionsProvider with ChangeNotifier {
   Future<String?> confirmIdentityPopup(BuildContext context) async {
     final idtyName = TextEditingController();
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final walletOptions =
+        Provider.of<WalletOptionsProvider>(context, listen: false);
+    final myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     bool canValidate = false;
@@ -174,7 +184,10 @@ class WalletOptionsProvider with ChangeNotifier {
                 key: keyEnterIdentityUsername,
                 onChanged: (_) async {
                   idtyExist = await duniterIndexer.isIdtyExist(idtyName.text);
-                  canValidate = !idtyExist && !await duniterIndexer.isIdtyExist(idtyName.text) && idtyName.text.length >= 2 && idtyName.text.length <= 32;
+                  canValidate = !idtyExist &&
+                      !await duniterIndexer.isIdtyExist(idtyName.text) &&
+                      idtyName.text.length >= 2 &&
+                      idtyName.text.length <= 32;
 
                   notifyListeners();
                 },
@@ -190,7 +203,8 @@ class WalletOptionsProvider with ChangeNotifier {
               ),
               const SizedBox(height: 10),
               Consumer<WalletOptionsProvider>(builder: (context, wOptions, _) {
-                return Text(idtyExist ? "thisIdentityAlreadyExist".tr() : '', style: TextStyle(color: Colors.red[500]));
+                return Text(idtyExist ? "thisIdentityAlreadyExist".tr() : '',
+                    style: TextStyle(color: Colors.red[500]));
               })
             ]),
           ),
@@ -198,22 +212,29 @@ class WalletOptionsProvider with ChangeNotifier {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Consumer<WalletOptionsProvider>(builder: (context, wOptions, _) {
+                Consumer<WalletOptionsProvider>(
+                    builder: (context, wOptions, _) {
                   return TextButton(
                     key: keyConfirm,
                     onPressed: canValidate
                         ? () async {
-                            idtyName.text = idtyName.text.trim().replaceAll('  ', '');
+                            idtyName.text =
+                                idtyName.text.trim().replaceAll('  ', '');
 
-                            if (idtyName.text.length.clamp(3, 32) != idtyName.text.length) {
+                            if (idtyName.text.length.clamp(3, 32) !=
+                                idtyName.text.length) {
                               return;
                             }
 
                             if (!await myWalletProvider.askPinCode()) return;
 
-                            final wallet = myWalletProvider.getWalletDataByAddress(address.text);
+                            final wallet = myWalletProvider
+                                .getWalletDataByAddress(address.text);
                             await sub.setCurrentWallet(wallet!);
-                            final transactionId = await sub.confirmIdentity(walletOptions.address.text, idtyName.text, myWalletProvider.pinCode);
+                            final transactionId = await sub.confirmIdentity(
+                                walletOptions.address.text,
+                                idtyName.text,
+                                myWalletProvider.pinCode);
                             Navigator.pop(context);
 
                             Navigator.push(
@@ -231,7 +252,11 @@ class WalletOptionsProvider with ChangeNotifier {
                         : null,
                     child: Text(
                       "validate".tr(),
-                      style: TextStyle(fontSize: 20, color: canValidate ? const Color(0xffD80000) : Colors.grey[500]),
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: canValidate
+                              ? const Color(0xffD80000)
+                              : Colors.grey[500]),
                     ),
                   );
                 })
@@ -275,14 +300,17 @@ class WalletOptionsProvider with ChangeNotifier {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Consumer<WalletOptionsProvider>(builder: (context, wOptions, _) {
+                Consumer<WalletOptionsProvider>(
+                    builder: (context, wOptions, _) {
                   return TextButton(
                     key: keyInfoPopup,
                     child: Text(
                       "validate".tr(),
                       style: TextStyle(
                         fontSize: 20,
-                        color: canValidateNameBool ? const Color(0xffD80000) : Colors.grey,
+                        color: canValidateNameBool
+                            ? const Color(0xffD80000)
+                            : Colors.grey,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -305,7 +333,10 @@ class WalletOptionsProvider with ChangeNotifier {
                   key: keyCancel,
                   child: Text(
                     "cancel".tr(),
-                    style: TextStyle(fontSize: 17, color: Colors.grey[800], fontWeight: FontWeight.w300),
+                    style: TextStyle(
+                        fontSize: 17,
+                        color: Colors.grey[800],
+                        fontWeight: FontWeight.w300),
                   ),
                   onPressed: () async {
                     Navigator.pop(context);
@@ -321,9 +352,12 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   bool canValidateName(BuildContext context, final walletName) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
 
-    bool isNameValid = walletName.text.length >= 2 && !walletName.text.contains(':') && walletName.text.length <= 39;
+    bool isNameValid = walletName.text.length >= 2 &&
+        !walletName.text.contains(':') &&
+        walletName.text.length <= 39;
 
     if (isNameValid) {
       for (var wallet in myWalletProvider.listWallets) {

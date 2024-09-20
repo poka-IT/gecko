@@ -8,7 +8,7 @@ fi
 APPNAME="gecko"
 VERSION=$(awk -F '+' '{ print $1 }' <<<${1})
 BUILD=$(awk -F '+' '{ print $2 }' <<<${1})
-ORI_APP="app-release.apk"
+ORI_APP="app-arm64-v8a-release.apk"
 APK_FILENAME="${APPNAME}-${VERSION}+${BUILD}.apk"
 
 echo "artifact name: ${APK_FILENAME}"

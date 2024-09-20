@@ -27,14 +27,18 @@ import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class WalletOptions extends StatelessWidget {
-  const WalletOptions({Key? keyMyWallets, required this.wallet}) : super(key: keyMyWallets);
+  const WalletOptions({Key? keyMyWallets, required this.wallet})
+      : super(key: keyMyWallets);
   final WalletData wallet;
 
   @override
   Widget build(BuildContext context) {
-    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
-    WalletsProfilesProvider historyProvider = Provider.of<WalletsProfilesProvider>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final walletOptions =
+        Provider.of<WalletOptionsProvider>(context, listen: false);
+    WalletsProfilesProvider historyProvider =
+        Provider.of<WalletsProfilesProvider>(context, listen: false);
+    final myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
@@ -42,7 +46,8 @@ class WalletOptions extends StatelessWidget {
     walletOptions.address.text = wallet.address;
 
     final currentChest = myWalletProvider.getCurrentChest();
-    final isWalletNameIndexed = duniterIndexer.walletNameIndexer[walletOptions.address.text] != null;
+    final isWalletNameIndexed =
+        duniterIndexer.walletNameIndexer[walletOptions.address.text] != null;
 
     // StreamSubscription<QueryResult>? subscription;
     // final stream = duniterIndexer.subscribeHistoryIssued(wallet.address);
@@ -74,9 +79,13 @@ class WalletOptions extends StatelessWidget {
         appBar: AppBar(
           toolbarHeight: scaleSize(57),
           elevation: 0,
-          title: Consumer<WalletOptionsProvider>(builder: (context, walletProvider, _) {
+          title: Consumer<WalletOptionsProvider>(
+              builder: (context, walletProvider, _) {
             return Text(
-              isWalletNameIndexed ? duniterIndexer.walletNameIndexer[walletOptions.address.text]! : wallet.name!,
+              isWalletNameIndexed
+                  ? duniterIndexer
+                      .walletNameIndexer[walletOptions.address.text]!
+                  : wallet.name!,
               style: scaledTextStyle(fontSize: 18),
             );
           }),
@@ -109,7 +118,8 @@ class WalletOptions extends StatelessWidget {
                   height: 5,
                   color: yellowC,
                 ),
-                Consumer<WalletOptionsProvider>(builder: (context, walletProvider, _) {
+                Consumer<WalletOptionsProvider>(
+                    builder: (context, walletProvider, _) {
                   return Container(
                     decoration: const BoxDecoration(
                         gradient: LinearGradient(
@@ -125,89 +135,135 @@ class WalletOptions extends StatelessWidget {
                       ScaledSizedBox(width: 15),
                       avatar(walletProvider),
                       const Spacer(flex: 1),
-                      Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                        Stack(children: [
-                          ScaledSizedBox(
-                            width: 230,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Consumer<WalletOptionsProvider>(builder: (context, walletProvider, _) {
-                                  return NameByAddress(
-                                      wallet: wallet,
-                                      size: 24,
-                                      color: Colors.black,
-                                      fontWeight: wallet.identityStatus == IdtyStatus.member ? FontWeight.w500 : FontWeight.w400,
-                                      fontStyle: FontStyle.normal);
-                                })
-                              ],
-                            ),
-                          ),
-                          ScaledSizedBox(width: 10),
-                          if (duniterIndexer.walletNameIndexer[wallet.address] == null)
-                            Positioned(
-                              right: 0,
-                              child: InkWell(
-                                key: keyRenameWallet,
-                                onTap: () async {
-                                  await walletOptions.editWalletName(context, wallet.id());
-                                  await Future.delayed(const Duration(milliseconds: 30));
-                                },
-                                child: ClipRRect(
-                                  child: Image.asset(walletOptions.isEditing ? 'assets/walletOptions/android-checkmark.png' : 'assets/walletOptions/edit.png',
-                                      width: scaleSize(23), height: scaleSize(23)),
+                      Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Stack(children: [
+                              ScaledSizedBox(
+                                width: 230,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Consumer<WalletOptionsProvider>(
+                                        builder: (context, walletProvider, _) {
+                                      return NameByAddress(
+                                          wallet: wallet,
+                                          size: 24,
+                                          color: Colors.black,
+                                          fontWeight: wallet.identityStatus ==
+                                                  IdtyStatus.member
+                                              ? FontWeight.w500
+                                              : FontWeight.w400,
+                                          fontStyle: FontStyle.normal);
+                                    })
+                                  ],
                                 ),
                               ),
-                            ),
-                        ]),
-                        ScaledSizedBox(height: 5),
-                        Balance(address: walletProvider.address.text, size: 20),
-                        ScaledSizedBox(width: 30),
-                        InkWell(
-                          onTap: () => sub.certsCounterCache[walletProvider.address.text] != null
-                              ? {
-                                  Navigator.push(
-                                    context,
-                                    PageNoTransit(builder: (context) {
-                                      return CertificationsScreen(
-                                          address: walletProvider.address.text, username: duniterIndexer.walletNameIndexer[walletProvider.address.text] ?? '');
-                                    }),
+                              ScaledSizedBox(width: 10),
+                              if (duniterIndexer
+                                      .walletNameIndexer[wallet.address] ==
+                                  null)
+                                Positioned(
+                                  right: 0,
+                                  child: InkWell(
+                                    key: keyRenameWallet,
+                                    onTap: () async {
+                                      await walletOptions.editWalletName(
+                                          context, wallet.id());
+                                      await Future.delayed(
+                                          const Duration(milliseconds: 30));
+                                    },
+                                    child: ClipRRect(
+                                      child: Image.asset(
+                                          walletOptions.isEditing
+                                              ? 'assets/walletOptions/android-checkmark.png'
+                                              : 'assets/walletOptions/edit.png',
+                                          width: scaleSize(23),
+                                          height: scaleSize(23)),
+                                    ),
                                   ),
-                                }
-                              : null,
-                          child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-                            IdentityStatus(address: walletOptions.address.text, isOwner: true, color: orangeC),
-                            Certifications(address: walletProvider.address.text, size: 17)
+                                ),
+                            ]),
+                            ScaledSizedBox(height: 5),
+                            Balance(
+                                address: walletProvider.address.text, size: 20),
+                            ScaledSizedBox(width: 30),
+                            InkWell(
+                              onTap: () => sub.certsCounterCache[
+                                          walletProvider.address.text] !=
+                                      null
+                                  ? {
+                                      Navigator.push(
+                                        context,
+                                        PageNoTransit(builder: (context) {
+                                          return CertificationsScreen(
+                                              address:
+                                                  walletProvider.address.text,
+                                              username: duniterIndexer
+                                                          .walletNameIndexer[
+                                                      walletProvider
+                                                          .address.text] ??
+                                                  '');
+                                        }),
+                                      ),
+                                    }
+                                  : null,
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    IdentityStatus(
+                                        address: walletOptions.address.text,
+                                        isOwner: true,
+                                        color: orangeC),
+                                    Certifications(
+                                        address: walletProvider.address.text,
+                                        size: 17)
+                                  ]),
+                            ),
+                            ScaledSizedBox(height: 10),
                           ]),
-                        ),
-                        ScaledSizedBox(height: 10),
-                      ]),
                       const Spacer(flex: 2),
                     ]),
                   );
                 }),
                 Expanded(
                   child: SingleChildScrollView(
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                      ScaledSizedBox(height: 25),
-                      Consumer<WalletOptionsProvider>(builder: (context, walletProvider, _) {
-                        final defaultWallet = myWalletProvider.getDefaultWallet();
-                        walletProvider.isDefaultWallet = walletOptions.address.text == defaultWallet.address;
-                        return Column(children: [
-                          confirmIdentityButton(walletProvider),
-                          pubkeyWidget(walletProvider, ctx),
-                          ScaledSizedBox(height: 11),
-                          activityWidget(context, historyProvider, walletProvider),
-                          ScaledSizedBox(height: 11),
-                          setDefaultWalletWidget(context, walletProvider, myWalletProvider, walletOptions, currentChest),
-                          ScaledSizedBox(height: 11),
-                          Column(children: [
-                            if (!walletProvider.isDefaultWallet && !wallet.isMembre()) deleteWallet(context, walletProvider, currentChest),
-                            if (wallet.isMembre()) const ManageMembershipButton()
-                          ])
-                        ]);
-                      }),
-                    ]),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          ScaledSizedBox(height: 25),
+                          Consumer<WalletOptionsProvider>(
+                              builder: (context, walletProvider, _) {
+                            final defaultWallet =
+                                myWalletProvider.getDefaultWallet();
+                            walletProvider.isDefaultWallet =
+                                walletOptions.address.text ==
+                                    defaultWallet.address;
+                            return Column(children: [
+                              confirmIdentityButton(walletProvider),
+                              pubkeyWidget(walletProvider, ctx),
+                              ScaledSizedBox(height: 11),
+                              activityWidget(
+                                  context, historyProvider, walletProvider),
+                              ScaledSizedBox(height: 11),
+                              setDefaultWalletWidget(
+                                  context,
+                                  walletProvider,
+                                  myWalletProvider,
+                                  walletOptions,
+                                  currentChest),
+                              ScaledSizedBox(height: 11),
+                              Column(children: [
+                                if (!walletProvider.isDefaultWallet &&
+                                    !wallet.isMembre())
+                                  deleteWallet(
+                                      context, walletProvider, currentChest),
+                                if (wallet.isMembre())
+                                  const ManageMembershipButton()
+                              ])
+                            ]);
+                          }),
+                        ]),
                   ),
                 ),
               ]),
@@ -269,7 +325,8 @@ class WalletOptions extends StatelessWidget {
       return FutureBuilder(
           future: sub.idtyStatus([walletProvider.address.text]),
           initialData: const [IdtyStatus.unknown],
-          builder: (BuildContext context, AsyncSnapshot<List<IdtyStatus>> snapshot) {
+          builder:
+              (BuildContext context, AsyncSnapshot<List<IdtyStatus>> snapshot) {
             if (!snapshot.hasData || snapshot.hasError) {
               return const SizedBox.shrink();
             }
@@ -290,7 +347,8 @@ class WalletOptions extends StatelessWidget {
                     },
                     child: Text(
                       'confirmMyIdentity'.tr(),
-                      style: scaledTextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                      style: scaledTextStyle(
+                          fontSize: 20, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -329,7 +387,12 @@ class WalletOptions extends StatelessWidget {
             height: scaleSize(42),
           ),
           ScaledSizedBox(width: 19),
-          Text(shortPubkey, style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w800, fontFamily: 'Monospace', color: Colors.black)),
+          Text(shortPubkey,
+              style: scaledTextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  fontFamily: 'Monospace',
+                  color: Colors.black)),
           const Spacer(),
           ScaledSizedBox(
             height: 35,
@@ -343,7 +406,8 @@ class WalletOptions extends StatelessWidget {
                 elevation: 1,
               ),
               onPressed: () {
-                Clipboard.setData(ClipboardData(text: walletProvider.address.text));
+                Clipboard.setData(
+                    ClipboardData(text: walletProvider.address.text));
                 snackCopyKey(ctx);
               },
               child: Row(children: <Widget>[
@@ -360,7 +424,10 @@ class WalletOptions extends StatelessWidget {
     );
   }
 
-  Widget activityWidget(BuildContext context, WalletsProfilesProvider historyProvider, WalletOptionsProvider walletProvider) {
+  Widget activityWidget(
+      BuildContext context,
+      WalletsProfilesProvider historyProvider,
+      WalletOptionsProvider walletProvider) {
     return InkWell(
       key: keyOpenActivity,
       onTap: () {
@@ -386,7 +453,12 @@ class WalletOptions extends StatelessWidget {
     );
   }
 
-  Widget setDefaultWalletWidget(BuildContext context, WalletOptionsProvider walletProvider, final myWalletProvider, final walletOptions, int currentChest) {
+  Widget setDefaultWalletWidget(
+      BuildContext context,
+      WalletOptionsProvider walletProvider,
+      final myWalletProvider,
+      final walletOptions,
+      int currentChest) {
     return Consumer<MyWalletsProvider>(builder: (context, myWalletProvider, _) {
       WalletData defaultWallet = myWalletProvider.getDefaultWallet();
       walletOptions.isDefaultWallet = (defaultWallet.number == wallet.id()[1]);
@@ -404,7 +476,8 @@ class WalletOptions extends StatelessWidget {
             ScaledSizedBox(
               height: 42,
               child: CircleAvatar(
-                backgroundColor: Colors.grey[walletProvider.isDefaultWallet ? 300 : 500],
+                backgroundColor:
+                    Colors.grey[walletProvider.isDefaultWallet ? 300 : 500],
                 child: Image.asset(
                   'assets/walletOptions/android-checkmark.png',
                   height: scaleSize(23),
@@ -414,8 +487,15 @@ class WalletOptions extends StatelessWidget {
             ScaledSizedBox(width: isTall ? 21 : 18),
             ScaledSizedBox(
               width: 250,
-              child: Text(walletProvider.isDefaultWallet ? 'thisWalletIsDefault'.tr() : 'defineWalletAsDefault'.tr(),
-                  style: scaledTextStyle(fontSize: 17, color: walletProvider.isDefaultWallet ? Colors.grey[500] : Colors.black)),
+              child: Text(
+                  walletProvider.isDefaultWallet
+                      ? 'thisWalletIsDefault'.tr()
+                      : 'defineWalletAsDefault'.tr(),
+                  style: scaledTextStyle(
+                      fontSize: 17,
+                      color: walletProvider.isDefaultWallet
+                          ? Colors.grey[500]
+                          : Colors.black)),
             ),
           ]),
         ),
@@ -425,8 +505,10 @@ class WalletOptions extends StatelessWidget {
 
   Future setDefaultWallet(BuildContext context, int currentChest) async {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
+    final myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
+    final walletOptions =
+        Provider.of<WalletOptionsProvider>(context, listen: false);
 
     await sub.setCurrentWallet(wallet);
     await myWalletProvider.readAllWallets(currentChest);
@@ -434,27 +516,37 @@ class WalletOptions extends StatelessWidget {
     walletOptions.reload();
   }
 
-  Widget deleteWallet(BuildContext context, WalletOptionsProvider walletOptions, int currentChest) {
+  Widget deleteWallet(BuildContext context, WalletOptionsProvider walletOptions,
+      int currentChest) {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
 
     final defaultWallet = myWalletProvider.getDefaultWallet();
-    final bool isDefaultWallet = walletOptions.address.text == defaultWallet.address;
+    final bool isDefaultWallet =
+        walletOptions.address.text == defaultWallet.address;
     return FutureBuilder(
         future: sub.hasAccountConsumers(wallet.address),
         builder: (BuildContext context, AsyncSnapshot<bool> hasConsumers) {
-          if (hasConsumers.connectionState != ConnectionState.done || hasConsumers.hasError || !hasConsumers.hasData) {
+          if (hasConsumers.connectionState != ConnectionState.done ||
+              hasConsumers.hasError ||
+              !hasConsumers.hasData) {
             return const Text('');
           }
-          final double balance = walletOptions.balanceCache[walletOptions.address.text] ?? -1;
-          final bool canDelete = !isDefaultWallet && !hasConsumers.data! && (balance > 2 || balance == 0) && !wallet.hasIdentity();
+          final double balance =
+              walletOptions.balanceCache[walletOptions.address.text] ?? -1;
+          final bool canDelete = !isDefaultWallet &&
+              !hasConsumers.data! &&
+              (balance > 2 || balance == 0) &&
+              !wallet.hasIdentity();
           return InkWell(
             key: keyDeleteWallet,
             onTap: canDelete
                 ? () async {
                     await walletOptions.deleteWallet(context, wallet);
                     WidgetsBinding.instance.addPostFrameCallback((_) async {
-                      myWalletProvider.listWallets = await myWalletProvider.readAllWallets(currentChest);
+                      myWalletProvider.listWallets =
+                          await myWalletProvider.readAllWallets(currentChest);
                       myWalletProvider.reload();
                     });
                   }
@@ -467,7 +559,9 @@ class WalletOptions extends StatelessWidget {
                       height: scaleSize(42),
                     ),
                     ScaledSizedBox(width: 19),
-                    Text('deleteThisWallet'.tr(), style: scaledTextStyle(fontSize: 17, color: const Color(0xffD80000))),
+                    Text('deleteThisWallet'.tr(),
+                        style: scaledTextStyle(
+                            fontSize: 17, color: const Color(0xffD80000))),
                   ])
                 : ScaledSizedBox(width: 30),
           );

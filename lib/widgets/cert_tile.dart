@@ -29,7 +29,7 @@ class CertTile extends StatelessWidget {
               contentPadding: EdgeInsets.only(
                   left: 10, right: 0, top: scaleSize(3), bottom: scaleSize(3)),
               leading: DatapodAvatar(
-                              address: repository['address'], size: avatarSize),
+                  address: repository['address'], size: avatarSize),
               title: Padding(
                 padding: const EdgeInsets.only(bottom: 2),
                 child: Text(

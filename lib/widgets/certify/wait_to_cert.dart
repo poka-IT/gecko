@@ -8,8 +8,7 @@ class WaitToCertWidget extends StatelessWidget {
   final String duration;
 
   const WaitToCertWidget(
-      {Key? key, required this.messageKey, required this.duration})
-      : super(key: key);
+      {super.key, required this.messageKey, required this.duration});
 
   @override
   Widget build(BuildContext context) {

@@ -11,8 +11,8 @@ import 'package:provider/provider.dart';
 
 class ChestOptionsButtons extends StatelessWidget {
   const ChestOptionsButtons({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

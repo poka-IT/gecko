@@ -13,10 +13,10 @@ import 'package:provider/provider.dart';
 
 class HistoryView extends StatelessWidget {
   const HistoryView({
-    Key? key,
+    super.key,
     required this.result,
     required this.address,
-  }) : super(key: key);
+  });
   final QueryResult result;
   final String address;
 

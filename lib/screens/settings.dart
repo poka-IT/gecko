@@ -16,7 +16,7 @@ import 'package:provider/provider.dart';
 class SettingsScreen extends StatelessWidget {
   final MyWalletsProvider _myWallets = MyWalletsProvider();
 
-  SettingsScreen({Key? key}) : super(key: key);
+  SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

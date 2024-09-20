@@ -12,7 +12,7 @@ import 'package:gecko/widgets/search_result_list.dart';
 import 'package:provider/provider.dart';
 
 class SearchResultScreen extends StatelessWidget {
-  const SearchResultScreen({Key? key}) : super(key: key);
+  const SearchResultScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -8,9 +8,9 @@ import 'package:gecko/widgets/datapod_avatar.dart';
 
 class CertTile extends StatelessWidget {
   const CertTile({
-    Key? key,
+    super.key,
     required this.listCerts,
-  }) : super(key: key);
+  });
 
   final List listCerts;
 

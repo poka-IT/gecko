@@ -10,11 +10,10 @@ import 'package:provider/provider.dart';
 
 class IdentityStatus extends StatelessWidget {
   const IdentityStatus(
-      {Key? key,
+      {super.key,
       required this.address,
       this.isOwner = false,
-      this.color = Colors.black})
-      : super(key: key);
+      this.color = Colors.black});
   final String address;
   final bool isOwner;
   final Color color;

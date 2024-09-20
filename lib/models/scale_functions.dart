@@ -30,14 +30,12 @@ TextStyle scaledTextStyle({
 
 class ScaledSizedBox extends SizedBox {
   ScaledSizedBox({
-    Key? key,
+    super.key,
     double? width,
     double? height,
-    Widget? child,
+    super.child,
   }) : super(
-          key: key,
           width: width != null ? scaleSize(width) : null,
           height: height != null ? scaleSize(height) : null,
-          child: child,
         );
 }

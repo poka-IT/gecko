@@ -10,8 +10,7 @@ import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class CertificationsScreen extends StatelessWidget {
   const CertificationsScreen(
-      {Key? key, required this.address, required this.username})
-      : super(key: key);
+      {super.key, required this.address, required this.username});
   final String address;
   final String username;
 

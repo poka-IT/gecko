@@ -19,8 +19,7 @@ import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
 class OnboardingStepFive extends StatefulWidget {
-  const OnboardingStepFive({Key? key, this.skipIntro = false})
-      : super(key: key);
+  const OnboardingStepFive({super.key, this.skipIntro = false});
   final bool skipIntro;
 
   @override

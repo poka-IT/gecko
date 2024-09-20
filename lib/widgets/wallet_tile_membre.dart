@@ -14,8 +14,7 @@ import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 
 class WalletTileMembre extends StatelessWidget {
-  const WalletTileMembre({Key? key, required this.repository})
-      : super(key: key);
+  const WalletTileMembre({super.key, required this.repository});
 
   final WalletData repository;
 
@@ -149,10 +148,10 @@ class WalletTileMembre extends StatelessWidget {
 
 class BalanceBuilder extends StatelessWidget {
   const BalanceBuilder({
-    Key? key,
+    super.key,
     required this.address,
     required this.isDefault,
-  }) : super(key: key);
+  });
 
   final String address;
   final bool isDefault;
@@ -188,11 +187,11 @@ class ClipOvalShadow extends StatelessWidget {
   final Widget child;
 
   const ClipOvalShadow({
-    Key? key,
+    super.key,
     required this.shadow,
     required this.clipper,
     required this.child,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

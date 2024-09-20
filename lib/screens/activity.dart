@@ -35,7 +35,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: true);
 
     return PopScope(
-      onPopInvoked: (_) {
+      onPopInvokedWithResult: (_, __) {
             duniterIndexer.refetch = duniterIndexer.transBC = null;
       },
       child: Scaffold(

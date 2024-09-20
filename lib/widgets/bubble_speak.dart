@@ -9,8 +9,8 @@ class BubbleSpeak extends StatelessWidget {
     this.long,
     this.fontSize = 18,
     this.textKey,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final String text;
   final double? long;
@@ -43,8 +43,8 @@ class BubbleSpeakWithTail extends StatelessWidget {
     this.long,
     this.fontSize = 18,
     this.textKey,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final String text;
   final double? long;

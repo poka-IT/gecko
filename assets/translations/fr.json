@@ -59,10 +59,10 @@
     "yourMnemonic": "Votre phrase de restauration",
     "gecko_also_can_forget.png": "gecko_also_can_forget_fr.png",
     "didYouNoteMnemonicToBeSureTypeWord": "Avez-vous bien noté votre phrase de restauration ?\n\nPour en être sûr, veuillez taper dans le champ ci-dessous le **{}ème mot** de votre phrase de restauration :",
-    "geckoWillGenerateAPassword": "Gecko va maintenant générer pour vous un code secret court qui vous permettra d’accéder rapidement à vos portefeuilles, sans avoir à taper votre phrase de restauration à chaque fois.",
+    "geckoWillGenerateAPassword": "Vous allez maintenant être invité à définir un code PIN qui vous permettra d’accéder rapidement à vos portefeuilles, sans avoir à taper votre phrase de restauration à chaque fois.",
     "myPassword": "Mon code secret",
     "thisPasswordProtectsYourWalletsInASecureChest": "Ce code secret protège vos portefeuilles dans un coffre-fort **dont vous seul possédez le code**, de sorte que vos portefeuilles seront inutilisables par d’autres.",
-    "hereIsThePasswordKeepIt": "Et voilà votre code secret !\n\nMémorisez-le ou notez-le, car il vous sera demandé **à chaque fois** que vous voudrez effectuer un paiement sur cet appareil.",
+    "hereIsThePasswordKeepIt": "Choisissez votre code secret !\n\nMémorisez-le ou notez-le, car il vous sera demandé **à chaque fois** que vous voudrez effectuer un paiement sur cet appareil.",
     "chooseAnotherPassword": "Choisir un autre code secret",
     "iNotedMyPassword": "J'ai noté mon code secret",
     "geckoWillCheckPassword": "Gecko va vérifier avec vous si vous avez bien mémorisé votre code secret.\n\nTapez votre code secret dans le champ ci-dessous pour vérifier que vous l’avez bien noté.",
@@ -236,5 +236,6 @@
     "enterYourNewMnemonic": "Entrez votre nouvelle phrase de restauration",
     "enterYourNewAddress": "Entrez votre nouvelle adresse {}",
     "youCanMigrateThisIdentity": "Vous pouvez migrer vers cette identité !",
-    "identityMigrated": "Identité migré"
+    "identityMigrated": "Identité migré",
+    "passwordTooSimple": "Votre code secret est trop simple"
 }

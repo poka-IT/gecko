@@ -14,9 +14,9 @@ import 'package:provider/provider.dart';
 
 class WalletTile extends StatelessWidget {
   const WalletTile({
-    Key? key,
+    super.key,
     required this.repository,
-  }) : super(key: key);
+  });
 
   final WalletData repository;
 
@@ -126,10 +126,10 @@ class WalletTile extends StatelessWidget {
 
 class BalanceBuilder extends StatelessWidget {
   const BalanceBuilder({
-    Key? key,
+    super.key,
     required this.address,
     required this.isDefault,
-  }) : super(key: key);
+  });
 
   final String address;
   final bool isDefault;
@@ -165,11 +165,11 @@ class ClipOvalShadow extends StatelessWidget {
   final Widget child;
 
   const ClipOvalShadow({
-    Key? key,
+    super.key,
     required this.shadow,
     required this.clipper,
     required this.child,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

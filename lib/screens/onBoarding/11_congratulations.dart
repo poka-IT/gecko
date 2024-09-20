@@ -11,7 +11,7 @@ import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class OnboardingStepEleven extends StatelessWidget {
-  const OnboardingStepEleven({Key? key}) : super(key: key);
+  const OnboardingStepEleven({super.key});
 
   @override
   Widget build(BuildContext context) {

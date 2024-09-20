@@ -6,11 +6,11 @@ import 'package:gecko/widgets/commons/fader_transition.dart';
 
 class NextButton extends StatelessWidget {
   const NextButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.nextScreen,
     required this.isFast,
-  }) : super(key: key);
+  });
 
   final String text;
   final Widget nextScreen;

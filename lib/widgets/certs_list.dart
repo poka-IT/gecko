@@ -11,10 +11,9 @@ import 'package:provider/provider.dart';
 
 class CertsList extends StatelessWidget {
   const CertsList(
-      {Key? key,
+      {super.key,
       required this.address,
-      this.direction = CertDirection.received})
-      : super(key: key);
+      this.direction = CertDirection.received});
   final String address;
   final CertDirection direction;
 

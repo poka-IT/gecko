@@ -59,10 +59,10 @@
     "yourMnemonic": "Your mnemonic",
     "gecko_also_can_forget.png": "gecko_also_can_forget_en.png",
     "didYouNoteMnemonicToBeSureTypeWord": "Did you write down your menmonic?\n\n To be sure, please type the **{}th word** of your restoration phrase in the field below:",
-    "geckoWillGenerateAPassword": "Gecko will now generate for you a short password that will allow you to quickly access your wallets, without having to type your recovery sentence every time.",
+    "geckoWillGenerateAPassword": "You will now be prompted to set a PIN code that will allow you to quickly access your wallets without having to type your recovery phrase each time.",
     "myPassword": "My password",
     "thisPasswordProtectsYourWalletsInASecureChest": "This secret code protects your wallets in a safe **which only you have the code for**, so that your wallets cannot be used by others.",
-    "hereIsThePasswordKeepIt": "And here is your password!\n\nMemorize it or write it down, because you will be asked **every time** you want to make a payment on this device.",
+    "hereIsThePasswordKeepIt": "Choose your password!\n\nMemorize it or write it down, because you will be asked **every time** you want to make a payment on this device.",
     "chooseAnotherPassword": "Choose an other password",
     "iNotedMyPassword": "I noted my password",
     "geckoWillCheckPassword": "Gecko will check with you if you have remembered your secret code.\n\n Type your secret code in the field below to check that you have written it down correctly.",
@@ -236,5 +236,6 @@
     "enterYourNewMnemonic": "Enter your new recovery sentence",
     "enterYourNewAddress": "Enter your new address {}",
     "youCanMigrateThisIdentity": "You can migrate this identity !",
-    "identityMigrated": "Identity migrated"
+    "identityMigrated": "Identity migrated",
+    "passwordTooSimple": "Your password is to simple"
 }

@@ -9,6 +9,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/search.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/screens/my_contacts.dart';
 import 'package:gecko/screens/search_result.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
@@ -16,7 +17,7 @@ import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({Key? key}) : super(key: key);
+  const SearchScreen({super.key});
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -48,8 +49,7 @@ class _SearchScreenState extends State<SearchScreen> {
     checkAndUpdateClipboard();
 
     // Set up the periodic clipboard checking
-    clipboardPollingTimer =
-        Timer.periodic(const Duration(milliseconds: 500), (_) async {
+    clipboardPollingTimer = Timer.periodic(const Duration(milliseconds: 500), (_) async {
       await checkAndUpdateClipboard();
     });
   }
@@ -72,7 +72,7 @@ class _SearchScreenState extends State<SearchScreen> {
     final canValidate = searchProvider.searchController.text.length >= 2;
 
     return PopScope(
-      onPopInvoked: (_) {
+      onPopInvokedWithResult: (_, __) {
         searchProvider.searchController.text = '';
       },
       child: Scaffold(
@@ -81,7 +81,9 @@ class _SearchScreenState extends State<SearchScreen> {
         body: SafeArea(
           child: Stack(children: [
             Column(children: <Widget>[
-              ScaledSizedBox(height: isTall ? 165 : 60),
+              const Spacer(),
+              _myContactsButton(),
+              const Spacer(),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 17),
                 child: TextField(
@@ -136,13 +138,9 @@ class _SearchScreenState extends State<SearchScreen> {
                         height: scaleSize(10),
                       ),
                     ),
-                    border: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Colors.grey[500]!, width: 2),
-                        borderRadius: BorderRadius.circular(8)),
+                    border: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey[500]!, width: 2), borderRadius: BorderRadius.circular(8)),
                     focusedBorder: OutlineInputBorder(
-                      borderSide:
-                          BorderSide(color: Colors.grey[500]!, width: 2.5),
+                      borderSide: BorderSide(color: Colors.grey[500]!, width: 2.5),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     contentPadding: const EdgeInsets.all(13),
@@ -179,8 +177,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) {
-                                  return WalletViewScreen(
-                                      address: pastedAddress, username: null);
+                                  return WalletViewScreen(address: pastedAddress, username: null);
                                 }),
                               );
                             }
@@ -192,10 +189,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             ? 'pasteAddress'.tr()
                             : 'search'.tr(),
                     textAlign: TextAlign.center,
-                    style: scaledTextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white),
+                    style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
                   ),
                 ),
               ),
@@ -205,6 +199,52 @@ class _SearchScreenState extends State<SearchScreen> {
           ]),
         ),
       ),
+    );
+  }
+
+  Widget _myContactsButton() {
+    return InkWell(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) {
+          return const ContactsScreen();
+        }),
+      ),
+      child: Column(children: <Widget>[
+        Container(
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey,
+                blurRadius: 1,
+                offset: Offset(1.5, 1.5),
+                spreadRadius: 0.2,
+              )
+            ],
+          ),
+          child: ClipOval(
+            key: keyOpenWalletsHomme,
+            child: Material(
+              color: yellowC,
+              child: Padding(
+                padding: EdgeInsets.all(scaleSize(14.5)),
+                child: Icon(
+                  Icons.contacts_rounded,
+                  size: scaleSize(25),
+                  // color: backgroundColor,
+                ),
+              ),
+            ),
+          ),
+        ),
+        ScaledSizedBox(height: 7),
+        Text(
+          'contactsManagement'.tr(),
+          textAlign: TextAlign.center,
+          style: scaledTextStyle(fontSize: 14),
+        )
+      ]),
     );
   }
 }

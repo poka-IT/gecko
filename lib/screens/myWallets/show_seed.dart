@@ -201,7 +201,7 @@ class ShowSeed extends StatelessWidget {
 }
 
 class PrintWallet extends StatelessWidget {
-  const PrintWallet(this.sentence, {Key? key}) : super(key: key);
+  const PrintWallet(this.sentence, {super.key});
 
   final String? sentence;
 

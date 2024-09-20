@@ -12,9 +12,9 @@ import 'package:gecko/screens/settings.dart';
 
 class MainDrawer extends StatelessWidget {
   const MainDrawer({
-    Key? key,
+    super.key,
     required this.isWalletsExists,
-  }) : super(key: key);
+  });
 
   final bool isWalletsExists;
 

@@ -8,8 +8,8 @@ import 'package:provider/provider.dart';
 
 class ManageMembershipButton extends StatelessWidget {
   const ManageMembershipButton({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

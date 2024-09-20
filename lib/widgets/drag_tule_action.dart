@@ -10,8 +10,7 @@ import 'package:gecko/widgets/payment_popup.dart';
 import 'package:provider/provider.dart';
 
 class DragTuleAction extends StatelessWidget {
-  const DragTuleAction({Key? key, required this.wallet, required this.child})
-      : super(key: key);
+  const DragTuleAction({super.key, required this.wallet, required this.child});
 
   final WalletData wallet;
   final Widget child;

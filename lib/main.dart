@@ -76,18 +76,11 @@ Future<void> main() async {
 
   if (kReleaseMode && enableSentry) {
     await SentryFlutter.init((options) {
-      options.dsn =
-          'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
+      options.dsn = 'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
     },
-        appRunner: () => SystemChrome.setPreferredOrientations(
-                [DeviceOrientation.portraitUp]).then((_) {
+        appRunner: () => SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
               runApp(EasyLocalization(
-                supportedLocales: const [
-                  Locale('en'),
-                  Locale('fr'),
-                  Locale('es'),
-                  Locale('it')
-                ],
+                supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
                 path: 'assets/translations',
                 fallbackLocale: const Locale('en'),
                 child: const Gecko(),
@@ -96,16 +89,10 @@ Future<void> main() async {
   } else {
     log.i('Debug mode enabled: No sentry alert');
 
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
-        .then((_) {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
       runApp(EasyLocalization(
         // test, force locale :: startLocale: Locale.fromSubtags(languageCode: 'it'),
-        supportedLocales: const [
-          Locale('en'),
-          Locale('fr'),
-          Locale('es'),
-          Locale('it')
-        ],
+        supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
         path: 'assets/translations',
         fallbackLocale: const Locale('en'),
         child: const Gecko(),
@@ -115,7 +102,7 @@ Future<void> main() async {
 }
 
 class Gecko extends StatelessWidget {
-  const Gecko({Key? key}) : super(key: key);
+  const Gecko({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -163,8 +150,7 @@ class Gecko extends StatelessWidget {
           // ).apply(
           //   bodyColor: const Color(0xFF000000),
           // ),
-          colorScheme:
-              ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]),
+          colorScheme: ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]),
         ),
         initialRoute: "/",
         routes: {
@@ -182,8 +168,6 @@ class Gecko extends StatelessWidget {
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
+    return super.createHttpClient(context)..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
   }
 }

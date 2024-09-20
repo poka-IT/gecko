@@ -6,8 +6,8 @@ import 'package:provider/provider.dart';
 
 class OfflineInfo extends StatelessWidget {
   const OfflineInfo({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

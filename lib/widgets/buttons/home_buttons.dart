@@ -15,8 +15,8 @@ import 'package:provider/provider.dart';
 
 class HomeButtons extends StatelessWidget {
   const HomeButtons({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

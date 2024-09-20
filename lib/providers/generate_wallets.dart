@@ -32,7 +32,6 @@ class GenerateWalletsProvider with ChangeNotifier {
   bool walletIsGenerated = true;
 
   final mnemonicController = TextEditingController();
-  final pin = TextEditingController();
 
   // Import wallet
   final cesiumID = TextEditingController();
@@ -85,8 +84,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     final expectedWord = mnemo.split(' ')[nbrWord];
     final normInputWord = unorm.nfkd(inputWord);
 
-    if (expectedWord == normInputWord ||
-        (kDebugMode && inputWord == 'triche')) {
+    if (expectedWord == normInputWord || (kDebugMode && inputWord == 'triche')) {
       isAskedWordValid = true;
       askedWordColor = Colors.green[600];
       notifyListeners();
@@ -96,10 +94,8 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   String removeDiacritics(String str) {
-    var withDia =
-        'ÀÁÂÃÄÅàáâãäåÒÓÔÕÕÖØòóôõöøÈÉÊËèéêëðÇçÐÌÍÎÏìíîïÙÚÛÜùúûüÑñŠšŸÿýŽž';
-    var withoutDia =
-        'AAAAAAaaaaaaOOOOOOOooooooEEEEeeeeeCcDIIIIiiiiUUUUuuuuNnSsYyyZz';
+    var withDia = 'ÀÁÂÃÄÅàáâãäåÒÓÔÕÕÖØòóôõöøÈÉÊËèéêëðÇçÐÌÍÎÏìíîïÙÚÛÜùúûüÑñŠšŸÿýŽž';
+    var withoutDia = 'AAAAAAaaaaaaOOOOOOOooooooEEEEeeeeeCcDIIIIiiiiUUUUuuuuNnSsYyyZz';
 
     for (int i = 0; i < withDia.length; i++) {
       str = str.replaceAll(withDia[i], withoutDia[i]);
@@ -137,16 +133,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  String changePinCode({required bool reload}) {
-    pin.text = durt.randomSecretCode(pinLength);
-    if (reload) {
-      notifyListeners();
-    }
-    return pin.text;
-  }
-
-  Future<void> generateCesiumWalletPubkey(
-      String cesiumID, String cesiumPWD) async {
+  Future<void> generateCesiumWalletPubkey(String cesiumID, String cesiumPWD) async {
     cesiumWallet = durt.CesiumWallet(cesiumID, cesiumPWD);
     String walletPubkey = cesiumWallet.pubkey;
 
@@ -160,12 +147,6 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   void cesiumPWDisVisible() {
     isCesiumPWDVisible = !isCesiumPWDVisible;
-    notifyListeners();
-  }
-
-  void resetCesiumImportView() {
-    cesiumID.text = cesiumPWD.text = cesiumPubkey.text = pin.text = '';
-    canImport = isCesiumIDVisible = isCesiumPWDVisible = false;
     notifyListeners();
   }
 
@@ -220,11 +201,8 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   void resetImportView() {
-    cellController0.text = cellController1.text = cellController2.text =
-        cellController3.text = cellController4.text = cellController5.text =
-            cellController6.text = cellController7.text = cellController8.text =
-                cellController9.text =
-                    cellController10.text = cellController11.text = '';
+    cellController0.text = cellController1.text = cellController2.text = cellController3.text = cellController4.text = cellController5.text =
+        cellController6.text = cellController7.text = cellController8.text = cellController9.text = cellController10.text = cellController11.text = '';
     isFirstTimeSentenceComplete = true;
     notifyListeners();
   }
@@ -289,7 +267,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> scanDerivations(BuildContext context) async {
+  Future<bool> scanDerivations(BuildContext context, String pinCode) async {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final currentChestNumber = configBox.get('currentChest');
     bool isAlive = false;
@@ -302,7 +280,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     }
 
     scanStatus = ScanDerivationsStatus.rootScanning;
-    final hasRoot = await scanRootBalance(sub, currentChestNumber);
+    final hasRoot = await scanRootBalance(sub, currentChestNumber, pinCode);
     notifyListeners();
     if (hasRoot) {
       isAlive = true;
@@ -310,19 +288,15 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     scanStatus = ScanDerivationsStatus.scanning;
     for (int derivationNbr in [for (var i = 0; i < numberScan; i += 1) i]) {
-      final addressData = await sub.sdk.api.keyring.addressFromMnemonic(
-          sub.currencyParameters['ss58']!,
-          cryptoType: CryptoType.sr25519,
-          mnemonic: generatedMnemonic!,
-          derivePath: '//$derivationNbr');
+      final addressData = await sub.sdk.api.keyring
+          .addressFromMnemonic(sub.currencyParameters['ss58']!, cryptoType: CryptoType.sr25519, mnemonic: generatedMnemonic!, derivePath: '//$derivationNbr');
       addressToScan.putIfAbsent(addressData.address!, () => derivationNbr);
     }
 
-    final balanceList =
-        await sub.getBalanceMulti(addressToScan.keys.toList()).timeout(
-              const Duration(seconds: 20),
-              onTimeout: () => {},
-            );
+    final balanceList = await sub.getBalanceMulti(addressToScan.keys.toList()).timeout(
+          const Duration(seconds: 20),
+          onTimeout: () => {},
+        );
 
     // Remove unused wallets
     balanceList.removeWhere((key, value) => value['transferableBalance'] == 0);
@@ -331,13 +305,8 @@ class GenerateWalletsProvider with ChangeNotifier {
     scanStatus = ScanDerivationsStatus.import;
     for (String scannedWallet in balanceList.keys) {
       isAlive = true;
-      String walletName = scanedWalletNumber == 0
-          ? 'currentWallet'.tr()
-          : '${'wallet'.tr()} ${scanedWalletNumber + 1}';
-      await sub.importAccount(
-          mnemonic: generatedMnemonic!,
-          derivePath: "//${addressToScan[scannedWallet]}",
-          password: pin.text);
+      String walletName = scanedWalletNumber == 0 ? 'currentWallet'.tr() : '${'wallet'.tr()} ${scanedWalletNumber + 1}';
+      await sub.importAccount(mnemonic: generatedMnemonic!, derivePath: "//${addressToScan[scannedWallet]}", password: pinCode);
 
       WalletData myWallet = WalletData(
           chest: currentChestNumber,
@@ -358,11 +327,9 @@ class GenerateWalletsProvider with ChangeNotifier {
     return isAlive;
   }
 
-  Future<bool> scanRootBalance(SubstrateSdk sub, int currentChestNumber) async {
-    final addressData = await sub.sdk.api.keyring.addressFromMnemonic(
-        sub.currencyParameters['ss58']!,
-        cryptoType: CryptoType.sr25519,
-        mnemonic: generatedMnemonic!);
+  Future<bool> scanRootBalance(SubstrateSdk sub, int currentChestNumber, String pinCode) async {
+    final addressData =
+        await sub.sdk.api.keyring.addressFromMnemonic(sub.currencyParameters['ss58']!, cryptoType: CryptoType.sr25519, mnemonic: generatedMnemonic!);
 
     final balance = await sub.getBalance(addressData.address!).timeout(
           const Duration(seconds: 1),
@@ -371,16 +338,10 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     if (balance['transferableBalance'] != 0) {
       String walletName = 'myRootWallet'.tr();
-      await sub.importAccount(mnemonic: generatedMnemonic!, password: pin.text);
+      await sub.importAccount(mnemonic: generatedMnemonic!, password: pinCode);
 
       WalletData myWallet = WalletData(
-          chest: currentChestNumber,
-          address: addressData.address!,
-          number: 0,
-          name: walletName,
-          derivation: -1,
-          imageDefaultPath: '0.png',
-          isOwned: true);
+          chest: currentChestNumber, address: addressData.address!, number: 0, name: walletName, derivation: -1, imageDefaultPath: '0.png', isOwned: true);
       await walletBox.put(myWallet.address, myWallet);
       scanedWalletNumber++;
       return true;

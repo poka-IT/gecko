@@ -18,10 +18,10 @@ import 'package:provider/provider.dart';
 
 class HeaderProfile extends StatelessWidget {
   const HeaderProfile({
-    Key? key,
+    super.key,
     required this.address,
     required this.username,
-  }) : super(key: key);
+  });
 
   final String address;
   final String? username;

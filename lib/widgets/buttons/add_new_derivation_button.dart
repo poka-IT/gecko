@@ -10,8 +10,8 @@ import 'package:provider/provider.dart';
 
 class AddNewDerivationButton extends StatelessWidget {
   const AddNewDerivationButton({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

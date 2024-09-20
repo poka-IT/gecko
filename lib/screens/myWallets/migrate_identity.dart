@@ -19,7 +19,7 @@ import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:provider/provider.dart';
 
 class MigrateIdentityScreen extends StatelessWidget {
-  const MigrateIdentityScreen({Key? key}) : super(key: key);
+  const MigrateIdentityScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

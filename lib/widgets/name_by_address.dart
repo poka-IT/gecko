@@ -14,13 +14,12 @@ import 'package:truncate/truncate.dart';
 
 class NameByAddress extends StatelessWidget {
   const NameByAddress(
-      {Key? key,
+      {super.key,
       required this.wallet,
       this.size = 20,
       this.color = Colors.black,
       this.fontWeight = FontWeight.w400,
-      this.fontStyle = FontStyle.italic})
-      : super(key: key);
+      this.fontStyle = FontStyle.italic});
   final WalletData wallet;
   final Color color;
   final double size;

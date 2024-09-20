@@ -11,7 +11,7 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:provider/provider.dart';
 
 class GeckoBottomAppBar extends StatelessWidget {
-  const GeckoBottomAppBar({Key? key, this.actualRoute = ''}) : super(key: key);
+  const GeckoBottomAppBar({super.key, this.actualRoute = ''});
   final String actualRoute;
 
   @override

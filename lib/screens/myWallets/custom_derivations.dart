@@ -10,7 +10,7 @@ import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
 class CustomDerivation extends StatefulWidget {
-  const CustomDerivation({Key? key}) : super(key: key);
+  const CustomDerivation({super.key});
 
   @override
   State<CustomDerivation> createState() => _CustomDerivationState();

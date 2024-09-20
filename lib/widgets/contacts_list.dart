@@ -16,9 +16,9 @@ import 'package:provider/provider.dart';
 
 class ContactsList extends StatelessWidget {
   const ContactsList({
-    Key? key,
+    super.key,
     required this.myContacts,
-  }) : super(key: key);
+  });
 
   final List<G1WalletsList> myContacts;
 

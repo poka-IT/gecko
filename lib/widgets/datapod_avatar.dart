@@ -6,8 +6,7 @@ import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:provider/provider.dart';
 
 class DatapodAvatar extends StatelessWidget {
-  const DatapodAvatar({Key? key, required this.address, this.size = 15})
-      : super(key: key);
+  const DatapodAvatar({super.key, required this.address, this.size = 15});
   final String address;
   final double size;
 

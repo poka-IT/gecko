@@ -4,8 +4,7 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:provider/provider.dart';
 
 class CertsCounter extends StatelessWidget {
-  const CertsCounter({Key? key, required this.address, this.isSent = false})
-      : super(key: key);
+  const CertsCounter({super.key, required this.address, this.isSent = false});
   final String address;
   final bool isSent;
 

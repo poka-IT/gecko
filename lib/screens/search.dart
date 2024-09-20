@@ -9,6 +9,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/search.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/screens/my_contacts.dart';
 import 'package:gecko/screens/search_result.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
@@ -80,7 +81,9 @@ class _SearchScreenState extends State<SearchScreen> {
         body: SafeArea(
           child: Stack(children: [
             Column(children: <Widget>[
-              ScaledSizedBox(height: isTall ? 165 : 60),
+              const Spacer(),
+              _myContactsButton(),
+              const Spacer(),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 17),
                 child: TextField(
@@ -196,6 +199,52 @@ class _SearchScreenState extends State<SearchScreen> {
           ]),
         ),
       ),
+    );
+  }
+
+  Widget _myContactsButton() {
+    return InkWell(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) {
+          return const ContactsScreen();
+        }),
+      ),
+      child: Column(children: <Widget>[
+        Container(
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey,
+                blurRadius: 1,
+                offset: Offset(1.5, 1.5),
+                spreadRadius: 0.2,
+              )
+            ],
+          ),
+          child: ClipOval(
+            key: keyOpenWalletsHomme,
+            child: Material(
+              color: yellowC,
+              child: Padding(
+                padding: EdgeInsets.all(scaleSize(14.5)),
+                child: Icon(
+                  Icons.contacts_rounded,
+                  size: scaleSize(25),
+                  // color: backgroundColor,
+                ),
+              ),
+            ),
+          ),
+        ),
+        ScaledSizedBox(height: 7),
+        Text(
+          'contactsManagement'.tr(),
+          textAlign: TextAlign.center,
+          style: scaledTextStyle(fontSize: 14),
+        )
+      ]),
     );
   }
 }

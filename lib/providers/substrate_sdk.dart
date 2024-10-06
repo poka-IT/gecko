@@ -604,7 +604,7 @@ class SubstrateSdk with ChangeNotifier {
     final homeProvider = Provider.of<HomeProvider>(homeContext, listen: false);
     final myWalletProvider = Provider.of<MyWalletsProvider>(homeContext, listen: false);
 
-    homeProvider.changeMessage("connectionPending".tr(), 0);
+    homeProvider.changeMessage("connectionPending".tr());
 
     // configBox.delete('customEndpoint');
     final List<NetworkParams> listEndpoints = configBox.containsKey('customEndpoint') ? [getDuniterCustomEndpoint()] : getDuniterBootstrap();
@@ -631,7 +631,7 @@ class SubstrateSdk with ChangeNotifier {
         blocNumber = int.parse(res.toString());
         if (sdk.api.connectedNode?.endpoint == null) {
           nodeConnected = false;
-          homeProvider.changeMessage("networkLost".tr(), 0);
+          homeProvider.changeMessage("networkLost".tr());
         } else {
           nodeConnected = true;
         }
@@ -644,11 +644,11 @@ class SubstrateSdk with ChangeNotifier {
       await initCurrencyParameters();
 
       notifyListeners();
-      homeProvider.changeMessage("wellConnectedToNode".tr(args: [getConnectedEndpoint()!.split('/')[2]]), 0);
+      homeProvider.changeMessage("wellConnectedToNode".tr(args: [getConnectedEndpoint()!.split('/')[2]]));
     } else {
       nodeConnected = false;
       notifyListeners();
-      homeProvider.changeMessage("noDuniterEndointAvailable".tr(), 0);
+      homeProvider.changeMessage("noDuniterEndointAvailable".tr());
       if (!myWalletProvider.isWalletsExists()) snackNode(false);
     }
 

@@ -20,7 +20,6 @@ import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
 import 'package:gecko/widgets/drawer.dart';
 import 'package:gecko/widgets/buttons/home_buttons.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -85,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
           if (result.contains(ConnectivityResult.none)) {
             sub.nodeConnected = false;
             await sub.sdk.api.setting.unsubscribeBestNumber();
-            homeProvider.changeMessage("notConnectedToInternet".tr(), 0);
+            homeProvider.changeMessage("notConnectedToInternet".tr());
             sub.reload();
           } else {
             // Check if the phone is actually connected to the internet
@@ -94,20 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
               await sub.connectNode();
 
               //Connect to Indexer
-              final validIndexerEndpoint = await duniterIndexer.getValidIndexerEndpoint();
-              final wsLinkIndexer = WebSocketLink(
-                'wss://$validIndexerEndpoint/v1beta1/relay',
-              );
-
-              duniterIndexer.indexerClient = GraphQLClient(
-                cache: GraphQLCache(),
-                link: wsLinkIndexer,
-              );
-
-              // Indexer Blockchain start
-              duniterIndexer.getBlockStart();
-
-              homeProvider.changeMessage("Node and indexer synced !".tr(), 5);
+              await duniterIndexer.getValidIndexerEndpoint();
             }
           }
         }
@@ -193,7 +179,7 @@ Widget geckHome(context) {
             child: Consumer<HomeProvider>(builder: (context, homeP, _) {
               return AnimatedFadeOutIn<String>(
                 data: homeP.homeMessage,
-                duration: const Duration(milliseconds: 100),
+                duration: const Duration(milliseconds: 200),
                 builder: (value) => Text(value),
               );
             }),

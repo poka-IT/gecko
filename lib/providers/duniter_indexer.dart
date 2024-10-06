@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
+import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
@@ -64,6 +65,8 @@ class DuniterIndexer with ChangeNotifier {
   }
 
   Future<String> getValidIndexerEndpoint() async {
+    final homeProvider = Provider.of<HomeProvider>(homeContext, listen: false);
+
     // await configBox.delete('indexerEndpoint');
 
     listIndexerEndpoints = await rootBundle.loadString('config/indexer_endpoints.json').then((jsonStr) => jsonDecode(jsonStr));
@@ -72,12 +75,16 @@ class DuniterIndexer with ChangeNotifier {
     listIndexerEndpoints.add('Personnalisé');
 
     if (configBox.containsKey('customIndexer')) {
-      return configBox.get('customIndexer');
+      if (await checkIndexerEndpoint(configBox.get('customIndexer'))) {
+        succesConnection(indexerEndpoint);
+        return indexerEndpoint;
+      }
     }
 
     if (configBox.containsKey('indexerEndpoint') && listIndexerEndpoints.contains(configBox.get('indexerEndpoint'))) {
       if (await checkIndexerEndpoint(configBox.get('indexerEndpoint'))) {
-        return configBox.get('indexerEndpoint');
+        succesConnection(indexerEndpoint);
+        return indexerEndpoint;
       }
     }
 
@@ -139,8 +146,33 @@ class DuniterIndexer with ChangeNotifier {
       }
     } while (statusCode != 200);
 
-    log.i('Indexer: $indexerEndpoint');
+    if (indexerEndpoint == '') {
+      log.e('NO VALID INDEXER ENDPOINT FOUND');
+      homeProvider.changeMessage("No valid indexer found =(".tr());
+      return '';
+    }
+    succesConnection(indexerEndpoint);
+
     return indexerEndpoint;
+  }
+
+  void succesConnection(String endpoint) {
+    final homeProvider = Provider.of<HomeProvider>(homeContext, listen: false);
+
+    final wsLinkIndexer = WebSocketLink(
+      'wss://$endpoint/v1beta1/relay',
+    );
+
+    indexerClient = GraphQLClient(
+      cache: GraphQLCache(),
+      link: wsLinkIndexer,
+    );
+
+    // Indexer Blockchain start
+    getBlockStart();
+
+    homeProvider.changeMessage("Node and indexer synced !".tr(), true);
+    log.i('Indexer: $indexerEndpoint');
   }
 
   Future<bool> isIndexerSynced(String endpoint) async {

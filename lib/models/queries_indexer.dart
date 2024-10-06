@@ -1,4 +1,4 @@
-const String getNameByAddressQ = r'''
+const getNameByAddressQ = r'''
 query ($address: String!) {
   identityConnection(
     where: { accountId: { _eq: $address } }
@@ -14,7 +14,7 @@ query ($address: String!) {
 }
 ''';
 
-const String searchAddressByNameQ = r'''
+const searchAddressByNameQ = r'''
 query ($name: String!) {
   identityConnection(
     where: { name: { _ilike: $name } }
@@ -30,7 +30,7 @@ query ($name: String!) {
 }
 ''';
 
-const String getHistoryByAddressRelayQ = r'''
+const getHistoryByAddressRelayQ = r'''
 query ($address: String!, $first: Int!, $after: String) {
   transferConnection(
     after: $after
@@ -64,7 +64,7 @@ query ($address: String!, $first: Int!, $after: String) {
 }
 ''';
 
-const String getCertsReceived = r'''
+const getCertsReceived = r'''
 query ($address: String!) {
   certConnection(
     where: {receiver: {accountId: {_eq: $address}}}
@@ -88,7 +88,7 @@ query ($address: String!) {
 }
 ''';
 
-const String getCertsSent = r'''
+const getCertsSent = r'''
 query ($address: String!) {
   certConnection(
     where: {issuer: {accountId: {_eq: $address}}}
@@ -112,7 +112,7 @@ query ($address: String!) {
 }
 ''';
 
-const String isIdtyExistQ = r'''
+const isIdtyExistQ = r'''
 query ($name: String!) {
   identityConnection(where: {name: {_eq: ""}}) {
     edges {
@@ -124,7 +124,7 @@ query ($name: String!) {
 }
 ''';
 
-const String getBlockchainStartQ = r'''
+const getBlockchainStartQ = r'''
 query {
   blockConnection(first: 1) {
     edges {
@@ -137,7 +137,7 @@ query {
 }
 ''';
 
-const String subscribeHistoryIssuedQ = r'''
+const subscribeHistoryIssuedQ = r'''
 subscription ($address: String!) {
   accountConnection(
     where: {id: {_eq: $address}}
@@ -152,6 +152,14 @@ subscription ($address: String!) {
         }
       }
     }
+  }
+}
+''';
+
+const getBlockByHash = r'''
+query ($hash: bytea!) {
+  block(where: {hash: {_eq: $hash}}) {
+    height
   }
 }
 ''';

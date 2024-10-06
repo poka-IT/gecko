@@ -6,6 +6,8 @@ class SearchProvider with ChangeNotifier {
   final searchController = TextEditingController();
   List searchResult = [];
   int resultLenght = 0;
+  bool canPasteAddress = false;
+  String pastedAddress = '';
 
   void reload() {
     notifyListeners();

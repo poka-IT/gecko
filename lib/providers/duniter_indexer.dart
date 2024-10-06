@@ -8,6 +8,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:provider/provider.dart';
 
 class DuniterIndexer with ChangeNotifier {
   Map<String, String?> walletNameIndexer = {};
@@ -29,8 +30,7 @@ class DuniterIndexer with ChangeNotifier {
     final client = HttpClient();
     client.connectionTimeout = const Duration(milliseconds: 4000);
     try {
-      final request =
-          await client.postUrl(Uri.parse('https://$endpoint/v1beta1/relay'));
+      final request = await client.postUrl(Uri.parse('https://$endpoint/v1beta1/relay'));
       final response = await request.close();
       if (response.statusCode != 200) {
         log.w('Indexer $endpoint is offline');
@@ -39,6 +39,12 @@ class DuniterIndexer with ChangeNotifier {
         notifyListeners();
         return false;
       } else {
+        final isSynced = await isIndexerSynced('https://$endpoint/v1/graphql');
+        if (!isSynced) {
+          log.e('This endpoint is not synced, next');
+          return false;
+        }
+
         indexerEndpoint = endpoint;
         await configBox.put('indexerEndpoint', endpoint);
         // await configBox.put('customEndpoint', endpoint);
@@ -60,9 +66,7 @@ class DuniterIndexer with ChangeNotifier {
   Future<String> getValidIndexerEndpoint() async {
     // await configBox.delete('indexerEndpoint');
 
-    listIndexerEndpoints = await rootBundle
-        .loadString('config/indexer_endpoints.json')
-        .then((jsonStr) => jsonDecode(jsonStr));
+    listIndexerEndpoints = await rootBundle.loadString('config/indexer_endpoints.json').then((jsonStr) => jsonDecode(jsonStr));
     // _listEndpoints.shuffle();
 
     listIndexerEndpoints.add('Personnalisé');
@@ -71,8 +75,7 @@ class DuniterIndexer with ChangeNotifier {
       return configBox.get('customIndexer');
     }
 
-    if (configBox.containsKey('indexerEndpoint') &&
-        listIndexerEndpoints.contains(configBox.get('indexerEndpoint'))) {
+    if (configBox.containsKey('indexerEndpoint') && listIndexerEndpoints.contains(configBox.get('indexerEndpoint'))) {
       if (await checkIndexerEndpoint(configBox.get('indexerEndpoint'))) {
         return configBox.get('indexerEndpoint');
       }
@@ -104,6 +107,15 @@ class DuniterIndexer with ChangeNotifier {
         final request = await client.postUrl(Uri.parse(endpointPath));
         final response = await request.close();
 
+        final isSynced = await isIndexerSynced('https://${listIndexerEndpoints[i]}/v1/graphql');
+
+        if (!isSynced) {
+          log.e('This endpoint is not synced, next');
+          statusCode = 40;
+          i++;
+          continue;
+        }
+
         indexerEndpoint = listIndexerEndpoints[i];
         await configBox.put('indexerEndpoint', listIndexerEndpoints[i]);
 
@@ -129,6 +141,37 @@ class DuniterIndexer with ChangeNotifier {
 
     log.i('Indexer: $indexerEndpoint');
     return indexerEndpoint;
+  }
+
+  Future<bool> isIndexerSynced(String endpoint) async {
+    try {
+      final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
+      var duniterFinilizedHash = await sub.getLastFinilizedHash();
+      final duniterFinilizedNumber = await sub.getBlockNumberByHash(duniterFinilizedHash);
+      duniterFinilizedHash = "\\x${duniterFinilizedHash.substring(2)}";
+
+      final indexerLink = HttpLink(endpoint);
+      final iClient = GraphQLClient(
+        cache: GraphQLCache(),
+        link: indexerLink,
+      );
+      final result = await iClient.query(QueryOptions(document: gql(getBlockByHash), variables: <String, dynamic>{'hash': duniterFinilizedHash}));
+
+      if (result.hasException || result.data == null || result.data!['block'].isEmpty) {
+        log.e('Indexer is not synced: ${result.exception} -- ${result.data}');
+        return false;
+      }
+
+      final indexerFinilizedNumber = result.data!['block'][0]['height'] as int;
+      if (duniterFinilizedNumber != indexerFinilizedNumber) {
+        log.e('Indexer is not synced');
+        return false;
+      }
+      return true;
+    } catch (e) {
+      log.e('An error occured while checking indexer sync: $e');
+      return false;
+    }
   }
 
   List parseHistory(List blockchainTX, String address) {
@@ -159,10 +202,8 @@ class DuniterIndexer with ChangeNotifier {
     return transBC;
   }
 
-  FetchMoreOptions? mergeQueryResult(QueryResult result, FetchMoreOptions? opts,
-      String address, int nRepositories) {
-    final List<dynamic> blockchainTX =
-        (result.data!['transferConnection']['edges'] as List<dynamic>);
+  FetchMoreOptions? mergeQueryResult(QueryResult result, FetchMoreOptions? opts, String address, int nRepositories) {
+    final List<dynamic> blockchainTX = (result.data!['transferConnection']['edges'] as List<dynamic>);
 
     pageInfo = result.data!['transferConnection']['pageInfo'];
     fetchMoreCursor = pageInfo!['endCursor'];
@@ -174,10 +215,8 @@ class DuniterIndexer with ChangeNotifier {
         variables: {'after': fetchMoreCursor, 'first': nRepositories},
         updateQuery: (previousResultData, fetchMoreResultData) {
           final List<dynamic> repos = [
-            ...previousResultData!['transferConnection']['edges']
-                as List<dynamic>,
-            ...fetchMoreResultData!['transferConnection']['edges']
-                as List<dynamic>
+            ...previousResultData!['transferConnection']['edges'] as List<dynamic>,
+            ...fetchMoreResultData!['transferConnection']['edges'] as List<dynamic>
           ];
 
           fetchMoreResultData['transferConnection']['edges'] = repos;
@@ -213,16 +252,14 @@ class DuniterIndexer with ChangeNotifier {
   Future<DateTime> getBlockStart() async {
     final result = await _execQuery(getBlockchainStartQ, {});
     if (!result.hasException) {
-      startBlockchainTime = DateTime.parse(
-          result.data!['blockConnection']['edges'][0]['node']['timestamp']);
+      startBlockchainTime = DateTime.parse(result.data!['blockConnection']['edges'][0]['node']['timestamp']);
       startBlockchainInitialized = true;
       return startBlockchainTime;
     }
     return DateTime(0, 0, 0, 0, 0);
   }
 
-  Future<QueryResult> _execQuery(
-      String query, Map<String, dynamic> variables) async {
+  Future<QueryResult> _execQuery(String query, Map<String, dynamic> variables) async {
     final options = QueryOptions(document: gql(query), variables: variables);
 
     // 5GMyvKsTNk9wDBy9jwKaX6mhSzmFFtpdK9KNnmrLoSTSuJHv
@@ -249,12 +286,7 @@ class DuniterIndexer with ChangeNotifier {
     late String finalAmount;
     final DateTime date = repository[0];
 
-    final dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, {
-          1,
-          2,
-          7,
-          9
-        }.contains(date.month) ? 4 : 3)}";
+    final dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, {1, 2, 7, 9}.contains(date.month) ? 4 : 3)}";
 
     DateTime normalizeDate(DateTime inputDate) {
       return DateTime(inputDate.year, inputDate.month, inputDate.day);
@@ -264,12 +296,9 @@ class DuniterIndexer with ChangeNotifier {
       DateTime now = DateTime.now();
       final transactionDate = normalizeDate(date.toLocal());
       final todayDate = normalizeDate(now);
-      final yesterdayDate =
-          normalizeDate(now.subtract(const Duration(days: 1)));
-      final isSameWeek = weekNumber(transactionDate) == weekNumber(now) &&
-          transactionDate.year == now.year;
-      final isTodayOrYesterday =
-          transactionDate == todayDate || transactionDate == yesterdayDate;
+      final yesterdayDate = normalizeDate(now.subtract(const Duration(days: 1)));
+      final isSameWeek = weekNumber(transactionDate) == weekNumber(now) && transactionDate.year == now.year;
+      final isTodayOrYesterday = transactionDate == todayDate || transactionDate == yesterdayDate;
 
       if (transactionDate == todayDate) {
         return "today".tr();
@@ -299,8 +328,7 @@ class DuniterIndexer with ChangeNotifier {
       finalAmount = '$amount $currencyName';
     }
 
-    bool isMigrationTime =
-        startBlockchainInitialized && date.compareTo(startBlockchainTime) < 0;
+    bool isMigrationTime = startBlockchainInitialized && date.compareTo(startBlockchainTime) < 0;
 
     return {
       'finalAmount': finalAmount,

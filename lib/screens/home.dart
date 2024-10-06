@@ -20,7 +20,6 @@ import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
 import 'package:gecko/widgets/drawer.dart';
 import 'package:gecko/widgets/buttons/home_buttons.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -37,10 +36,8 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final homeProvider = Provider.of<HomeProvider>(context, listen: false);
       final sub = Provider.of<SubstrateSdk>(context, listen: false);
-      final duniterIndexer =
-          Provider.of<DuniterIndexer>(context, listen: false);
-      final myWalletProvider =
-          Provider.of<MyWalletsProvider>(context, listen: false);
+      final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+      final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
       final datapod = Provider.of<V2sDatapodProvider>(context, listen: false);
 
       final bool isWalletsExists = myWalletProvider.isWalletsExists();
@@ -77,46 +74,26 @@ class _HomeScreenState extends State<HomeScreen> {
         homeProvider.isWalletBoxInit = true;
         myWalletProvider.reload();
 
-        duniterIndexer.getValidIndexerEndpoint().then((validIndexerEndpoint) {
-          final wsLinkIndexer = WebSocketLink(
-            'wss://$validIndexerEndpoint/v1beta1/relay',
-          );
-
-          // const headerWebsocket =
-          //     datapodEndpoint == '10.0.2.2:8080' ? 'ws' : 'wss';
-          // final wsLinkDatapod = WebSocketLink(
-          //   '$headerWebsocket://$datapodEndpoint/v1/graphql',
-          // );
-
-          duniterIndexer.indexerClient = GraphQLClient(
-            cache: GraphQLCache(),
-            link: wsLinkIndexer,
-          );
-
-          // datapod.datapodClient = GraphQLClient(
-          //   cache: GraphQLCache(),
-          //   link: wsLinkDatapod,
-          // );
-        });
-
         await homeProvider.getValidEndpoints();
         if (configBox.get('isCacheChecked') == null) {
           configBox.put('isCacheChecked', false);
         }
 
-        Future<void> updateConnectionStatus(
-            List<ConnectivityResult> result) async {
+        Future<void> updateConnectionStatus(List<ConnectivityResult> result) async {
           log.i('Network changed: $result');
           if (result.contains(ConnectivityResult.none)) {
             sub.nodeConnected = false;
             await sub.sdk.api.setting.unsubscribeBestNumber();
-            homeProvider.changeMessage("notConnectedToInternet".tr(), 0);
+            homeProvider.changeMessage("notConnectedToInternet".tr());
             sub.reload();
           } else {
             // Check if the phone is actually connected to the internet
             var connectivityResult = await (Connectivity().checkConnectivity());
             if (!connectivityResult.contains(ConnectivityResult.none)) {
               await sub.connectNode();
+
+              //Connect to Indexer
+              await duniterIndexer.getValidIndexerEndpoint();
             }
           }
         }
@@ -135,9 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Provider.of<ChestProvider>(context);
     final isWalletsExists = myWalletProvider.isWalletsExists();
 
-    isTall = (MediaQuery.of(context).size.height /
-            MediaQuery.of(context).size.width) >
-        1.75;
+    isTall = (MediaQuery.of(context).size.height / MediaQuery.of(context).size.width) > 1.75;
 
     return Scaffold(
         resizeToAvoidBottomInset: false,
@@ -158,8 +133,7 @@ Widget geckHome(context) {
         fit: BoxFit.cover,
       ),
     ),
-    child:
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
       Stack(children: <Widget>[
         Positioned(
           top: statusBarHeight + scaleSize(10),
@@ -177,15 +151,12 @@ Widget geckHome(context) {
           ),
         ),
         Align(
-          child: Image(
-              image: const AssetImage('assets/home/header.png'),
-              height: scaleSize(165)),
+          child: Image(image: const AssetImage('assets/home/header.png'), height: scaleSize(165)),
         ),
       ]),
       Padding(
         padding: const EdgeInsets.only(top: 15),
-        child:
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
           DefaultTextStyle(
             textAlign: TextAlign.center,
             style: scaledTextStyle(
@@ -208,7 +179,7 @@ Widget geckHome(context) {
             child: Consumer<HomeProvider>(builder: (context, homeP, _) {
               return AnimatedFadeOutIn<String>(
                 data: homeP.homeMessage,
-                duration: const Duration(milliseconds: 100),
+                duration: const Duration(milliseconds: 200),
                 builder: (value) => Text(value),
               );
             }),
@@ -246,8 +217,7 @@ Widget welcomeHome(context) {
         fit: BoxFit.cover,
       ),
     ),
-    child:
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
       Stack(children: <Widget>[
         Positioned(
           top: statusBarHeight + scaleSize(10),
@@ -265,15 +235,12 @@ Widget welcomeHome(context) {
           ),
         ),
         Align(
-          child: Image(
-              image: const AssetImage('assets/home/header.png'),
-              height: scaleSize(165)),
+          child: Image(image: const AssetImage('assets/home/header.png'), height: scaleSize(165)),
         ),
       ]),
       Padding(
         padding: const EdgeInsets.only(top: 1),
-        child:
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
           Text(
             "fastAppDescription".tr(args: [currencyName]),
             textAlign: TextAlign.center,
@@ -321,8 +288,7 @@ Widget welcomeHome(context) {
                       Padding(
                         padding: EdgeInsets.only(top: scaleSize(55)),
                         child: Image(
-                          image: const AssetImage(
-                              'assets/home/gecko-bienvenue.png'),
+                          image: const AssetImage('assets/home/gecko-bienvenue.png'),
                           height: scaleSize(180),
                         ),
                       ),
@@ -356,10 +322,7 @@ Widget welcomeHome(context) {
                     },
                     child: Text(
                       'createWallet'.tr(),
-                      style: scaledTextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white),
+                      style: scaledTextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
                     ),
                   ),
                 ),
@@ -369,8 +332,7 @@ Widget welcomeHome(context) {
                   height: 60,
                   child: OutlinedButton(
                     key: keyRestoreChest,
-                    style: OutlinedButton.styleFrom(
-                        side: BorderSide(width: scaleSize(4), color: orangeC)),
+                    style: OutlinedButton.styleFrom(side: BorderSide(width: scaleSize(4), color: orangeC)),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -383,10 +345,7 @@ Widget welcomeHome(context) {
                     },
                     child: Text(
                       "restoreWallet".tr(),
-                      style: scaledTextStyle(
-                          fontSize: 20,
-                          color: orangeC,
-                          fontWeight: FontWeight.w600),
+                      style: scaledTextStyle(fontSize: 20, color: orangeC, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),

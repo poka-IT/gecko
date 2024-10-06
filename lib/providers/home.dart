@@ -21,6 +21,7 @@ class HomeProvider with ChangeNotifier {
   final searchQuery = TextEditingController();
   Widget appBarTitle = Text('Ğecko', style: TextStyle(color: Colors.grey[850]));
   String homeMessage = "loading".tr();
+  final homeMessages = ["loading".tr()]; // 3D message log, not used
   String defaultMessage = "noLizard".tr();
   bool isWalletBoxInit = false;
 
@@ -58,8 +59,7 @@ class HomeProvider with ChangeNotifier {
 
   Future changeCurrencyUnit(BuildContext context) async {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final walletOptions =
-        Provider.of<WalletOptionsProvider>(context, listen: false);
+    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
     final bool isUdUnit = configBox.get('isUdUnit') ?? false;
     await configBox.put('isUdUnit', !isUdUnit);
     walletOptions.balanceCache = {};
@@ -72,20 +72,21 @@ class HomeProvider with ChangeNotifier {
     String buildNumber;
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     version = packageInfo.version;
-    buildNumber = kDebugMode
-        ? packageInfo.buildNumber
-        : (int.parse(packageInfo.buildNumber) - 1000).toString();
+    buildNumber = kDebugMode ? packageInfo.buildNumber : (int.parse(packageInfo.buildNumber) - 1000).toString();
 
     notifyListeners();
     return '$version+$buildNumber';
   }
 
-  Future changeMessage(String newMessage, int seconds) async {
+  Future changeMessage(String newMessage, [bool reset = false]) async {
     homeMessage = newMessage;
     notifyListeners();
-    await Future.delayed(Duration(seconds: seconds));
-    if (seconds != 0) homeMessage = defaultMessage;
-    notifyListeners();
+    if (reset) {
+      await Future.delayed(const Duration(seconds: 5), () {
+        homeMessage = "noLizard".tr();
+        notifyListeners();
+      });
+    }
   }
 
   Future<List?> getValidEndpoints() async {
@@ -95,12 +96,8 @@ class HomeProvider with ChangeNotifier {
     }
 
     List listEndpoints = [];
-    if (!configBox.containsKey('endpoint') ||
-        configBox.get('endpoint') == [] ||
-        configBox.get('endpoint') == '') {
-      listEndpoints = await rootBundle
-          .loadString('config/gdev_endpoints.json')
-          .then((jsonStr) => jsonDecode(jsonStr));
+    if (!configBox.containsKey('endpoint') || configBox.get('endpoint') == [] || configBox.get('endpoint') == '') {
+      listEndpoints = await rootBundle.loadString('config/gdev_endpoints.json').then((jsonStr) => jsonDecode(jsonStr));
       listEndpoints.shuffle();
       configBox.put('endpoint', listEndpoints);
     }

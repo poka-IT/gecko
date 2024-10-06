@@ -2,16 +2,15 @@
 
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/search.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/my_contacts.dart';
 import 'package:gecko/screens/search_result.dart';
 import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/widgets/clipboard_monitor.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
@@ -26,45 +25,11 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   Timer? debounce;
   final int debouneTime = 50;
-  bool canPasteAddress = false;
-  String pastedAddress = '';
-  Timer? clipboardPollingTimer;
-
-  void getClipBoard() {
-    final searchProvider = Provider.of<SearchProvider>(context, listen: false);
-
-    // Function to check clipboard and update if necessary
-    Future<void> checkAndUpdateClipboard() async {
-      final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
-      if (clipboardData?.text?.isEmpty ?? true) return;
-      if (clipboardData!.text != pastedAddress) {
-        canPasteAddress = await isAddress(clipboardData.text!);
-        if (!canPasteAddress) return;
-        pastedAddress = clipboardData.text!;
-        searchProvider.reload();
-      }
-    }
-
-    // Check clipboard immediately
-    checkAndUpdateClipboard();
-
-    // Set up the periodic clipboard checking
-    clipboardPollingTimer =
-        Timer.periodic(const Duration(milliseconds: 500), (_) async {
-      await checkAndUpdateClipboard();
-    });
-  }
 
   @override
   void initState() {
-    getClipBoard();
+    ClipboardMonitor().startMonitoring();
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    clipboardPollingTimer?.cancel();
-    super.dispose();
   }
 
   @override
@@ -139,13 +104,9 @@ class _SearchScreenState extends State<SearchScreen> {
                         height: scaleSize(10),
                       ),
                     ),
-                    border: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Colors.grey[500]!, width: 2),
-                        borderRadius: BorderRadius.circular(8)),
+                    border: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey[500]!, width: 2), borderRadius: BorderRadius.circular(8)),
                     focusedBorder: OutlineInputBorder(
-                      borderSide:
-                          BorderSide(color: Colors.grey[500]!, width: 2.5),
+                      borderSide: BorderSide(color: Colors.grey[500]!, width: 2.5),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     contentPadding: const EdgeInsets.all(13),
@@ -177,13 +138,12 @@ class _SearchScreenState extends State<SearchScreen> {
                             }),
                           );
                         }
-                      : canPasteAddress
+                      : searchProvider.canPasteAddress
                           ? () async {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) {
-                                  return WalletViewScreen(
-                                      address: pastedAddress, username: null);
+                                  return WalletViewScreen(address: searchProvider.pastedAddress, username: null);
                                 }),
                               );
                             }
@@ -191,14 +151,11 @@ class _SearchScreenState extends State<SearchScreen> {
                   child: Text(
                     canValidate
                         ? 'search'.tr()
-                        : canPasteAddress
+                        : searchProvider.canPasteAddress
                             ? 'pasteAddress'.tr()
                             : 'search'.tr(),
                     textAlign: TextAlign.center,
-                    style: scaledTextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white),
+                    style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
                   ),
                 ),
               ),

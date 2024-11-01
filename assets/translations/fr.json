@@ -12,6 +12,7 @@
     "warningForgotPassword": "Dans une blockchain, pas de procédure de récupération par mail. Seule votre phrase de restauration peut vous permettre de récupérer vos Ğ1 à tout moment.",
     "fastAppDescription": "L’application de paiement {}\nplus rapide qu’un reptile du Vietnam",
     "createWallet": "Créer un portefeuille",
+    "createNewWallet": "Créer un nouveau portefeuille",
     "restoreWallet": "Restaurer mes portefeuilles",
     "parameters": "Paramètres",
     "chooseAnotherMnemonic": "Choisir une autre phrase",

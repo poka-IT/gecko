@@ -12,6 +12,7 @@
     "warningForgotPassword": "In a blockchain, there is no email recovery procedure. Only your recovery phrase can allow you to recover your Ğ1 at any time.",
     "fastAppDescription": "The {} app payment\nfaster than a reptile of Vietnam",
     "createWallet": "Create a wallet",
+    "createNewWallet": "Create a new wallet",
     "restoreWallet": "Restore my wallets",
     "parameters": "Parameters",
     "chooseAnotherMnemonic": "Choose an other\nmnemonic sentence",

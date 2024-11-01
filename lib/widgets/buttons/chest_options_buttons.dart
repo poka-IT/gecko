@@ -4,10 +4,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/chest_options.dart';
 import 'package:gecko/screens/myWallets/import_g1_v1.dart';
-import 'package:provider/provider.dart';
 
 class ChestOptionsButtons extends StatelessWidget {
   const ChestOptionsButtons({
@@ -16,7 +14,6 @@ class ChestOptionsButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
     return Column(children: [
       ScaledSizedBox(height: 50),
       ScaledSizedBox(
@@ -35,7 +32,7 @@ class ChestOptionsButtons extends StatelessWidget {
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (context) {
-                return ChestOptions(walletProvider: myWalletProvider);
+                return ChestOptions();
               }),
             ),
             label: Text(

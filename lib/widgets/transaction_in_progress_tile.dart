@@ -15,15 +15,13 @@ import 'package:provider/provider.dart';
 import 'package:fade_and_translate/fade_and_translate.dart';
 
 class TransactionInProgressTule extends StatefulWidget {
-  const TransactionInProgressTule(
-      {super.key, required this.address, this.transactionId});
+  const TransactionInProgressTule({super.key, required this.address, this.transactionId});
 
   final String address;
   final String? transactionId;
 
   @override
-  State<TransactionInProgressTule> createState() =>
-      _TransactionInProgressTuleState();
+  State<TransactionInProgressTule> createState() => _TransactionInProgressTuleState();
 }
 
 class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
@@ -38,7 +36,7 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
     final stream = duniterIndexer.subscribeHistoryIssued(widget.address);
     txContent = sub.transactionStatus[widget.transactionId]!;
 
-    //TODO: change way to get finliized transaction status
+    //TODO: change way to get finalized transaction status
 
     subscription = stream.listen((result) {
       if (result.data?['accountConnection']['edges'] == null) return;
@@ -46,8 +44,7 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
         log.e(result.exception);
         isVisible = true;
       } else {
-        final Map transDataNode =
-            result.data?['accountConnection']['edges'].first;
+        final Map transDataNode = result.data?['accountConnection']['edges'].first;
         if (transDataNode['node']['transfersIssued'].isEmpty) return;
         final Map transData = transDataNode['node']['transfersIssued'][0];
         final String receiver = transData['toId'];
@@ -55,9 +52,7 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
         final createdAt = DateTime.parse(transData['timestamp']);
         final difference = createdAt.difference(DateTime.now());
 
-        if (receiver == txContent.to &&
-            amount == txContent.amount &&
-            difference.inSeconds.abs() < 30) {
+        if (receiver == txContent.to && amount == txContent.amount && difference.inSeconds.abs() < 30) {
           isVisible = false;
           txContent.status = TransactionStatus.finalized;
           sub.reload();
@@ -75,8 +70,7 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
   Widget build(BuildContext context) {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     return Consumer<SubstrateSdk>(builder: (context, sub, _) {
-      final statusIcon =
-          TransactionStatusIcon(txContent.status, size: 21, stroke: 2);
+      final statusIcon = TransactionStatusIcon(txContent.status, size: 21, stroke: 2);
       String humanStatus = '';
       final finalAmount = txContent.amount * -1;
 
@@ -85,8 +79,7 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
       } else if (txContent.status == TransactionStatus.failed) {
         humanStatus = errorTransactionMap[txContent.error] ?? txContent.error!;
       } else {
-        humanStatus = statusStatusMap[txContent.status] ??
-            'Unknown status: ${txContent.status}';
+        humanStatus = statusStatusMap[txContent.status] ?? 'Unknown status: ${txContent.status}';
       }
 
       return FadeAndTranslate(
@@ -111,21 +104,15 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
                 const SizedBox(height: 10),
                 Text(
                   'Transaction en cours',
-                  style: scaledTextStyle(
-                      fontSize: 19,
-                      color: Colors.blueAccent,
-                      fontWeight: FontWeight.w400),
+                  style: scaledTextStyle(fontSize: 19, color: Colors.blueAccent, fontWeight: FontWeight.w400),
                 ),
                 ListTile(
                     key: const Key('transactionInProgress'),
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 5, vertical: 15),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 15),
                     leading: DatapodAvatar(address: txContent.to, size: 50),
                     title: Padding(
                       padding: const EdgeInsets.only(bottom: 5),
-                      child: Text(getShortPubkey(txContent.to),
-                          style: scaledTextStyle(
-                              fontSize: 16, fontFamily: 'Monospace')),
+                      child: Text(getShortPubkey(txContent.to), style: scaledTextStyle(fontSize: 16, fontFamily: 'Monospace')),
                     ),
                     subtitle: Row(
                       children: [
@@ -135,23 +122,13 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
                           width: 170,
                           child: Text(
                             humanStatus,
-                            style: scaledTextStyle(
-                                fontStyle: FontStyle.italic,
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .titleLarge!
-                                    .color,
-                                fontSize: 13),
+                            style: scaledTextStyle(fontStyle: FontStyle.italic, color: Theme.of(context).textTheme.titleLarge!.color, fontSize: 13),
                           ),
                         ),
                       ],
                     ),
                     trailing: Text("$finalAmount $currencyName",
-                        style: scaledTextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.blue[700]),
-                        textAlign: TextAlign.justify),
+                        style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.blue[700]), textAlign: TextAlign.justify),
                     dense: !isTall,
                     isThreeLine: false),
               ],

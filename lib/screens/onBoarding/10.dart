@@ -214,6 +214,7 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                       chest: configBox.get('currentChest'),
                       address: address,
                       number: 0,
+                      derivation: -1,
                       name: 'currentWallet'.tr(),
                       imageDefaultPath: '0.png',
                       isOwned: true);

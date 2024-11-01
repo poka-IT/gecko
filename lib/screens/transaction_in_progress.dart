@@ -41,22 +41,16 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
 
   @override
   void initState() {
-    final walletProfiles =
-        Provider.of<WalletsProfilesProvider>(homeContext, listen: false);
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(homeContext, listen: false);
+    final walletProfiles = Provider.of<WalletsProfilesProvider>(homeContext, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(homeContext, listen: false);
 
     String defaultWalletAddress = myWalletProvider.getDefaultWallet().address;
     String defaultWalletName = myWalletProvider.getDefaultWallet().name!;
-    String? walletDataName =
-        myWalletProvider.getWalletDataByAddress(widget.toAddress ?? '')?.name;
+    String? walletDataName = myWalletProvider.getWalletDataByAddress(widget.toAddress ?? '')?.name;
 
-    fromAddressFormat = widget.fromAddress ??
-        g1WalletsBox.get(defaultWalletAddress)?.username ??
-        defaultWalletName;
+    fromAddressFormat = widget.fromAddress ?? g1WalletsBox.get(defaultWalletAddress)?.username ?? defaultWalletName;
     toAddressFormat = widget.toAddress ?? walletProfiles.address;
-    toUsernameFormat =
-        widget.toUsername ?? walletDataName ?? getShortPubkey(toAddressFormat);
+    toUsernameFormat = widget.toUsername ?? walletDataName ?? getShortPubkey(toAddressFormat);
 
     amount = walletProfiles.payAmount.text;
     isUdUnit = configBox.get('isUdUnit') ?? false;
@@ -94,13 +88,11 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
     }
 
     if (txContent!.status == TransactionStatus.success) {
-      resultText = 'extrinsicValidated'
-          .tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]);
+      resultText = 'extrinsicValidated'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]);
     } else if (txContent!.status == TransactionStatus.failed) {
       resultText = errorTransactionMap[txContent!.error] ?? txContent!.error!;
     } else {
-      resultText = statusStatusMap[txContent!.status] ??
-          'Unknown status: ${txContent!.status}';
+      resultText = statusStatusMap[txContent!.status] ?? 'Unknown status: ${txContent!.status}';
     }
 
     Widget buildTransactionStatus() {
@@ -125,16 +117,12 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
             toolbarHeight: scaleSize(57),
             elevation: 0,
             automaticallyImplyLeading: false,
-            title: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                    'extrinsicInProgress'.tr(args: [
-                      actionMap[widget.transType] ?? 'strangeTransaction'.tr()
-                    ]),
-                    style: scaledTextStyle(fontSize: 19),
-                  )
-                ])),
+            title: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+              Text(
+                'extrinsicInProgress'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]),
+                style: scaledTextStyle(fontSize: 19),
+              )
+            ])),
         body: SafeArea(
           child: Align(
             alignment: FractionalOffset.bottomCenter,
@@ -154,12 +142,9 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
                   ScaledSizedBox(height: 10),
                   if (widget.transType == 'pay')
                     Text(
-                      isUdUnit
-                          ? 'ud'.tr(args: ['$amount '])
-                          : '$amount $currencyName',
+                      isUdUnit ? 'ud'.tr(args: ['$amount ']) : '$amount $currencyName',
                       textAlign: TextAlign.center,
-                      style: scaledTextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w500),
+                      style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                     ),
                   if (widget.transType == 'pay') ScaledSizedBox(height: 10),
                   Text(
@@ -170,8 +155,7 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
                   Text(
                     fromAddressFormat,
                     textAlign: TextAlign.center,
-                    style: scaledTextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w500),
+                    style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                   Visibility(
                     visible: fromAddressFormat != toAddressFormat,
@@ -186,8 +170,7 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
                         Text(
                           toUsernameFormat,
                           textAlign: TextAlign.center,
-                          style: scaledTextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w500),
+                          style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                         ),
                       ],
                     ),
@@ -216,8 +199,7 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
                       },
                       child: Text(
                         'close'.tr(),
-                        style: scaledTextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w600),
+                        style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),

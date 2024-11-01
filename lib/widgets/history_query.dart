@@ -20,7 +20,7 @@ class HistoryQuery extends StatelessWidget {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    final ScrollController scrollController = ScrollController();
+    final scrollController = ScrollController();
     FetchMoreOptions? opts;
 
     int nRepositories = 20;
@@ -46,11 +46,7 @@ class HistoryQuery extends StatelessWidget {
           Query(
             options: QueryOptions(
               document: gql(getHistoryByAddressRelayQ),
-              variables: <String, dynamic>{
-                'address': address,
-                'first': nRepositories,
-                'after': null
-              },
+              variables: <String, dynamic>{'address': address, 'first': nRepositories, 'after': null},
             ),
             builder: (QueryResult result, {fetchMore, refetch}) {
               duniterIndexer.refetch = refetch;
@@ -61,8 +57,7 @@ class HistoryQuery extends StatelessWidget {
                   ),
                 );
               }
-              final List transactions =
-                  result.data?["transferConnection"]["edges"];
+              final List transactions = result.data?["transferConnection"]["edges"];
 
               // Get transaction in progress if exist
               String? transactionId;
@@ -78,9 +73,7 @@ class HistoryQuery extends StatelessWidget {
                 return Column(children: <Widget>[
                   Column(
                     children: [
-                      if (transactionId != null)
-                        TransactionInProgressTule(
-                            address: address, transactionId: transactionId),
+                      if (transactionId != null) TransactionInProgressTule(address: address, transactionId: transactionId),
                       ScaledSizedBox(height: 50),
                       Text(
                         "noNetworkNoHistory".tr(),
@@ -94,9 +87,7 @@ class HistoryQuery extends StatelessWidget {
                 return Column(children: <Widget>[
                   Column(
                     children: [
-                      if (transactionId != null)
-                        TransactionInProgressTule(
-                            address: address, transactionId: transactionId),
+                      if (transactionId != null) TransactionInProgressTule(address: address, transactionId: transactionId),
                       ScaledSizedBox(height: 50),
                       Text(
                         "noDataToDisplay".tr(),
@@ -108,8 +99,7 @@ class HistoryQuery extends StatelessWidget {
               }
 
               if (result.isNotLoading) {
-                opts = duniterIndexer.mergeQueryResult(
-                    result, opts, address, nRepositories);
+                opts = duniterIndexer.mergeQueryResult(result, opts, address, nRepositories);
               }
 
               // Build history list
@@ -123,10 +113,7 @@ class HistoryQuery extends StatelessWidget {
                           key: keyListTransactions,
                           controller: scrollController,
                           children: <Widget>[
-                            if (transactionId != null)
-                              TransactionInProgressTule(
-                                  address: address,
-                                  transactionId: transactionId),
+                            if (transactionId != null) TransactionInProgressTule(address: address, transactionId: transactionId),
                             HistoryView(
                               result: result,
                               address: address,
@@ -142,8 +129,7 @@ class HistoryQuery extends StatelessWidget {
                     }
 
                     if (t is ScrollEndNotification &&
-                        scrollController.position.pixels >=
-                            scrollController.position.maxScrollExtent * 0.7 &&
+                        scrollController.position.pixels >= scrollController.position.maxScrollExtent * 0.7 &&
                         duniterIndexer.pageInfo!['hasNextPage'] &&
                         result.isNotLoading) {
                       fetchMore!(opts!);

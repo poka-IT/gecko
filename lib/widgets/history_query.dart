@@ -6,25 +6,20 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/history_view.dart';
 import 'package:gecko/widgets/transaction_in_progress_tile.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 
 class HistoryQuery extends StatelessWidget {
-  const HistoryQuery({super.key, required this.address});
+  const HistoryQuery({super.key, required this.address, this.transactionId});
   final String address;
+  final String? transactionId;
 
   @override
   Widget build(BuildContext context) {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-
-    final scrollController = ScrollController();
-    FetchMoreOptions? opts;
-
-    int nRepositories = 20;
-
     if (indexerEndpoint == '') {
       return Column(children: <Widget>[
         ScaledSizedBox(height: 50),
@@ -36,6 +31,47 @@ class HistoryQuery extends StatelessWidget {
       ]);
     }
 
+    return FutureBuilder<bool>(
+      future: _waitForTransaction(transactionId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Loading();
+        }
+        if (snapshot.hasError) {
+          return Text('Erreur: ${snapshot.error}');
+        }
+        return _buildTransactionContent();
+      },
+    );
+  }
+
+  Future<bool> _waitForTransaction(String? transactionId) async {
+    if (transactionId == null) return false;
+    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
+    final completer = Completer<bool>();
+
+    final timer = Timer.periodic(const Duration(milliseconds: 5), (timer) {
+      if (sub.transactionStatus.containsKey(transactionId)) {
+        timer.cancel();
+        completer.complete(true);
+      }
+    });
+
+    return completer.future.timeout(
+      const Duration(seconds: 5),
+      onTimeout: () {
+        timer.cancel();
+        completer.complete(false);
+        throw TimeoutException('The transaction has not been found after 5 seconds');
+      },
+    );
+  }
+
+  Widget _buildTransactionContent() {
+    final duniterIndexer = Provider.of<DuniterIndexer>(homeContext, listen: false);
+    final scrollController = ScrollController();
+    FetchMoreOptions? opts;
+    int nRepositories = 20;
     return GraphQLProvider(
       client: ValueNotifier(duniterIndexer.indexerClient),
       child: Expanded(
@@ -58,15 +94,6 @@ class HistoryQuery extends StatelessWidget {
                 );
               }
               final List transactions = result.data?["transferConnection"]["edges"];
-
-              // Get transaction in progress if exist
-              String? transactionId;
-              for (final entry in sub.transactionStatus.entries) {
-                if (entry.value.from == address) {
-                  transactionId = entry.key;
-                  break;
-                }
-              }
 
               if (result.hasException) {
                 log.e('Error Indexer: ${result.exception}');

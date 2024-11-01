@@ -13,11 +13,11 @@ import 'package:gecko/widgets/history_query.dart';
 import 'package:provider/provider.dart';
 
 class ActivityScreen extends StatefulWidget {
-  const ActivityScreen({required this.address, this.username})
+  const ActivityScreen({required this.address, this.username, this.transactionId})
       : super(key: keyActivityScreen);
   final String address;
   final String? username;
-
+  final String? transactionId;
   @override
   State<ActivityScreen> createState() => _ActivityScreenState();
 }
@@ -50,7 +50,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
           bottomNavigationBar: const GeckoBottomAppBar(),
           body: Column(children: <Widget>[
             HeaderProfile(address: widget.address, username: widget.username),
-            HistoryQuery(address: widget.address),
+            HistoryQuery(address: widget.address, transactionId: widget.transactionId),
           ])),
     );
   }

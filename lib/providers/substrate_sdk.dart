@@ -127,7 +127,7 @@ class SubstrateSdk with ChangeNotifier {
       );
       notifyListeners();
     }
-    transactionStatus.remove(currentTransactionId);
+    // transactionStatus.remove(currentTransactionId);
   }
 
   Future _getStorage(String call) async {
@@ -895,7 +895,8 @@ class SubstrateSdk with ChangeNotifier {
   ///////// 5: CALLS EXECUTION /////////
   //////////////////////////////////////
 
-  Future<String> pay({required String fromAddress, required String destAddress, required double amount, required String password}) async {
+  Future<void> pay(
+      {required String fromAddress, required String destAddress, required double amount, required String password, required String transactionId}) async {
     final sender = await _setSender(fromAddress);
 
     final globalBalance = await getBalance(fromAddress);
@@ -941,7 +942,6 @@ class SubstrateSdk with ChangeNotifier {
       rawParams = '[[$tx1, $tx2]]';
     }
 
-    final transactionId = const Uuid().v4();
     final transactionContent = TransactionContent(
       transactionId: transactionId,
       status: TransactionStatus.sending,
@@ -950,7 +950,6 @@ class SubstrateSdk with ChangeNotifier {
       amount: amount,
     );
     _executeCall(transactionContent, txInfo, txOptions, password, rawParams);
-    return transactionId;
   }
 
   Future<String> certify(String fromAddress, String destAddress, String password) async {
@@ -1185,12 +1184,12 @@ newKeySig: $newKeySigType""");
       password: password,
     );
 
-    late String transactionId;
+    var transactionId = const Uuid().v4();
 
     if (fromIdtyStatus == IdtyStatus.none) {
-      transactionId = await pay(fromAddress: keypair.address!, destAddress: destAddress, amount: -1, password: 'password');
+      await pay(fromAddress: keypair.address!, destAddress: destAddress, amount: -1, password: 'password', transactionId: transactionId);
     } else if (fromBalance['transferableBalance'] != 0) {
-      transactionId = await migrateIdentity(
+      await migrateIdentity(
           fromAddress: keypair.address!,
           destAddress: destAddress,
           fromPassword: 'password',

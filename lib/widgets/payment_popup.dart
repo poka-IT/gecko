@@ -16,6 +16,7 @@ import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:uuid/uuid.dart';
 
 void paymentPopup(BuildContext context, String toAddress, String? username) {
   final walletViewProvider = Provider.of<WalletsProfilesProvider>(context, listen: false);
@@ -36,12 +37,19 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final acc = sub.getCurrentWallet();
 
-    sub.pay(fromAddress: acc.address!, destAddress: toAddress, amount: double.parse(walletViewProvider.payAmount.text), password: myWalletProvider.pinCode);
+    final transactionId = const Uuid().v4();
+
+    sub.pay(
+        fromAddress: acc.address!,
+        destAddress: toAddress,
+        amount: double.parse(walletViewProvider.payAmount.text),
+        password: myWalletProvider.pinCode,
+        transactionId: transactionId);
 
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) {
-        return ActivityScreen(address: acc.address!);
+        return ActivityScreen(address: acc.address!, transactionId: transactionId);
       }),
     );
   }
@@ -221,23 +229,24 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                         style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.grey[600]),
                       ),
                       const Spacer(),
-                      InkWell(
-                        onTap: () => infoFeesPopup(context),
-                        child: Row(
-                          children: [
-                            Icon(Icons.info_outlined, color: orangeC, size: scaleSize(21)),
-                            ScaledSizedBox(width: 5),
-                            Text(
-                              'fees'.tr(args: [fees.toString(), currencyName]),
-                              style: scaledTextStyle(
-                                color: orangeC,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
+                      if (fees > 0)
+                        InkWell(
+                          onTap: () => infoFeesPopup(context),
+                          child: Row(
+                            children: [
+                              Icon(Icons.info_outlined, color: orangeC, size: scaleSize(21)),
+                              ScaledSizedBox(width: 5),
+                              Text(
+                                'fees'.tr(args: [fees.toString(), currencyName]),
+                                style: scaledTextStyle(
+                                  color: orangeC,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
                       ScaledSizedBox(width: 10),
                     ],
                   ),

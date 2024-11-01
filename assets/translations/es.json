@@ -228,7 +228,7 @@
     "explainDraggableWallet": "Drag and drop a tile onto another to make a transaction, by holding down the tile.",
     "skip": "Skip",
     "fees": "fees: {} {}",
-    "feesExplanation": "To ensure network security, an execution fee is charged on each transaction.",
+    "feesExplanation": "To ensure network security, an execution fee can be charged on transactions.",
     "feesExplanationDetails": "These fees are transferred to the common treasury account.",
     "gotit": "Got it",
     "moreInfo": "More information",

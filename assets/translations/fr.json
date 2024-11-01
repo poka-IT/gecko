@@ -227,7 +227,7 @@
     "explainDraggableWallet": "Faites glisser et déposez une tuile sur une autre pour effectuer une transaction, avec un appui long.",
     "skip": "Passer",
     "fees": "frais: {} {}",
-    "feesExplanation": "Pour garantir la sécurité du réseau, des frais d'exécution sont prélevés sur chaque transaction.",
+    "feesExplanation": "Pour garantir la sécurité du réseau, des frais d'exécution peuvent être prélevés sur les transactions.",
     "feesExplanationDetails": "Ces frais sont transférés vers le compte de trésorerie commune.",
     "gotit": "J'ai compris",
     "moreInfo": "Plus d'info",

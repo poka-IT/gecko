@@ -68,6 +68,8 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
 
   @override
   Widget build(BuildContext context) {
+    if (txContent.status == TransactionStatus.finalized) return const SizedBox.shrink();
+
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     return Consumer<SubstrateSdk>(builder: (context, sub, _) {
       final statusIcon = TransactionStatusIcon(txContent.status, size: 21, stroke: 2);

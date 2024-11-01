@@ -110,20 +110,17 @@ class MyWalletsProvider with ChangeNotifier {
     } else {
       chest ??= getCurrentChest();
       int? defaultWalletNumber = chestBox.get(chest)!.defaultWallet;
-      return getWalletDataById([chest, defaultWalletNumber]) ??
-          WalletData(address: '', chest: chest, number: 0, isOwned: true);
+      return getWalletDataById([chest, defaultWalletNumber]) ?? WalletData(address: '', chest: chest, number: 0, isOwned: true);
     }
   }
 
   Future<int> deleteAllWallet(context) async {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
     try {
       log.w('DELETE ALL WALLETS ?');
 
-      final bool? answer =
-          await (confirmPopup(context, 'areYouSureForgetAllChests'.tr()));
+      final bool? answer = await (confirmPopup(context, 'areYouSureForgetAllChests'.tr()));
       if (answer!) {
         await walletBox.clear();
         await chestBox.clear();
@@ -139,8 +136,7 @@ class MyWalletsProvider with ChangeNotifier {
 
         myWalletProvider.pinCode = '';
 
-        await Navigator.of(context)
-            .pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
+        await Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
       }
       return 0;
     } catch (e) {
@@ -148,8 +144,7 @@ class MyWalletsProvider with ChangeNotifier {
     }
   }
 
-  Future<void> generateNewDerivation(context, String name,
-      [int? number]) async {
+  Future<void> generateNewDerivation(context, String name, [int? number]) async {
     isNewDerivationLoading = true;
     notifyListeners();
 
@@ -163,8 +158,7 @@ class MyWalletsProvider with ChangeNotifier {
 
     WalletData defaultWallet = getDefaultWallet();
 
-    final address = await sub.derive(
-        context, defaultWallet.address, newDerivationNbr, pinCode);
+    final address = await sub.derive(context, defaultWallet.address, newDerivationNbr, pinCode);
 
     WalletData newWallet = WalletData(
         chest: chest,
@@ -183,8 +177,7 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   Future<void> generateRootWallet(context, String name) async {
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
     isNewDerivationLoading = true;
     notifyListeners();
@@ -205,17 +198,10 @@ class MyWalletsProvider with ChangeNotifier {
 
     WalletData defaultWallet = myWalletProvider.getDefaultWallet();
 
-    final address =
-        await sub.generateRootKeypair(defaultWallet.address, pinCode);
+    final address = await sub.generateRootKeypair(defaultWallet.address, pinCode);
 
     WalletData newWallet = WalletData(
-        chest: chest,
-        address: address,
-        number: newWalletNbr,
-        name: name,
-        derivation: -1,
-        imageDefaultPath: '${newWalletNbr % 4}.png',
-        isOwned: true);
+        chest: chest, address: address, number: newWalletNbr, name: name, derivation: -1, imageDefaultPath: '${newWalletNbr % 4}.png', isOwned: true);
 
     await walletBox.put(newWallet.address, newWallet);
     await readAllWallets();
@@ -224,31 +210,20 @@ class MyWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<int>> getNextWalletNumberAndDerivation(
-      {int? chestNumber, bool isOneshoot = false}) async {
-    int newDerivationNbr = 0;
-    int newWalletNbr = 0;
-
+  Future<List<int>> getNextWalletNumberAndDerivation({int? chestNumber}) async {
     chestNumber ??= getCurrentChest();
 
-    listWallets.sort((p1, p2) {
-      return Comparable.compare(p1.number!, p2.number!);
-    });
+    listWallets.sort((p1, p2) => p1.number!.compareTo(p2.number!));
 
     if (listWallets.isEmpty) {
-      newDerivationNbr = 2;
-    } else {
-      final lastWallet = listWallets.reduce(
-          (curr, next) => curr.derivation! > next.derivation! ? curr : next);
-
-      if (lastWallet.derivation == -1) {
-        newDerivationNbr = 2;
-      } else {
-        newDerivationNbr = lastWallet.derivation! + (isOneshoot ? 1 : 2);
-      }
-
-      newWalletNbr = listWallets.last.number! + 1;
+      return [0, 0];
     }
+
+    final maxDerivation = listWallets.map((w) => w.derivation ?? -1).reduce((max, value) => value > max ? value : max);
+
+    final newDerivationNbr = maxDerivation == -1 ? 0 : maxDerivation + 1;
+
+    final newWalletNbr = listWallets.last.number! + 1;
 
     return [newWalletNbr, newDerivationNbr];
   }
@@ -257,8 +232,7 @@ class MyWalletsProvider with ChangeNotifier {
   Future debounceResetPinCode([int minutes = 15]) async {
     lockPin++;
     final actualLock = lockPin;
-    await Future.delayed(
-        Duration(seconds: configBox.get('isCacheChecked') ? minutes * 60 : 1));
+    await Future.delayed(Duration(seconds: configBox.get('isCacheChecked') ? minutes * 60 : 1));
     log.i('reset pin code, lock $actualLock ...');
     if (actualLock == lockPin) pinCode = '';
   }

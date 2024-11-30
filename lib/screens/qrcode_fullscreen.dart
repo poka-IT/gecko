@@ -22,7 +22,7 @@ class _QrCodeFullscreenState extends State<QrCodeFullscreen> {
 
   Future<void> setBrightness(double brightness) async {
     try {
-      await ScreenBrightness().setScreenBrightness(brightness);
+      await ScreenBrightness().setApplicationScreenBrightness(brightness);
     } catch (e) {
       log.e(e.toString());
       throw 'Failed to set brightness';
@@ -31,7 +31,7 @@ class _QrCodeFullscreenState extends State<QrCodeFullscreen> {
 
   Future<void> resetBrightness() async {
     try {
-      await ScreenBrightness().resetScreenBrightness();
+      await ScreenBrightness().resetApplicationScreenBrightness();
     } catch (e) {
       log.e(e.toString());
       throw 'Failed to reset brightness';

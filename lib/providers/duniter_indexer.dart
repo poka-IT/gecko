@@ -8,6 +8,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/utils.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 

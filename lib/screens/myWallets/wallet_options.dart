@@ -20,6 +20,7 @@ import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/myWallets/chest_options.dart';
 import 'package:gecko/screens/myWallets/import_g1_v1.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
+import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/buttons/manage_membership_button.dart';

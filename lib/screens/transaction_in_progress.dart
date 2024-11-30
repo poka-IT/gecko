@@ -6,6 +6,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/transaction_status.dart';
 import 'package:gecko/widgets/transaction_status_icon.dart';

@@ -12,6 +12,7 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/screens/wallet_view.dart' show buttonSize, buttonFontSize;
+import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:provider/provider.dart';
 

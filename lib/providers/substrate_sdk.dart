@@ -6,13 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/migrate_wallet_checks.dart';
-import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/transaction_content.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/certify/cert_state.dart';
 import 'package:gecko/widgets/transaction_status.dart';
 import 'package:pinenacl/ed25519.dart';
@@ -24,7 +24,6 @@ import 'package:polkawallet_sdk/storage/keyring.dart';
 import 'package:polkawallet_sdk/storage/types/keyPairData.dart';
 import 'package:polkawallet_sdk/webviewWithExtension/types/signExtrinsicParam.dart';
 import 'package:provider/provider.dart';
-import 'package:truncate/truncate.dart';
 import 'package:pointycastle/pointycastle.dart' as pc;
 import "package:hex/hex.dart";
 import 'package:uuid/uuid.dart' show Uuid;
@@ -1058,7 +1057,7 @@ class SubstrateSdk with ChangeNotifier {
     final prefix = 'icok'.codeUnits;
     final genesisHashString = await getGenesisHash();
     final genesisHash = HEX.decode(genesisHashString.substring(2)) as Uint8List;
-    final idtyIndex = _int32bytes((await _getIdentityIndexOf(fromAddress))!);
+    final idtyIndex = int32bytes((await _getIdentityIndexOf(fromAddress))!);
     final oldPubkey = await addressToPubkey(fromAddress);
     final messageToSign = Uint8List.fromList(prefix + genesisHash + idtyIndex + oldPubkey);
     final messageToSignHex = HEX.encode(messageToSign);
@@ -1120,7 +1119,7 @@ newKeySig: $newKeySigType""");
     final prefix = 'revo'.codeUnits;
     final genesisHashString = await getGenesisHash();
     final genesisHash = HEX.decode(genesisHashString.substring(2)) as Uint8List;
-    final idtyIndexBytes = _int32bytes(idtyIndex!);
+    final idtyIndexBytes = int32bytes(idtyIndex!);
     final messageToSign = Uint8List.fromList(prefix + genesisHash + idtyIndexBytes);
     final revocationSig = (await _signMessage(messageToSign, address, password)).substring(2);
     final revocationSigTyped = '0x01$revocationSig';
@@ -1217,37 +1216,4 @@ newKeySig: $newKeySigType""");
   void reload() {
     notifyListeners();
   }
-}
-
-////////////////////////////////////////////
-/////// 6: UI ELEMENTS (off class) /////////
-////////////////////////////////////////////
-
-void snackNode(bool isConnected) {
-  String message;
-  if (!isConnected) {
-    message = "noDuniterNodeAvailableTryLater".tr();
-  } else {
-    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-
-    message = "${"youAreConnectedToNode".tr()}\n${sub.getConnectedEndpoint()!.split('//')[1]}";
-  }
-  final snackBar = SnackBar(
-      backgroundColor: Colors.grey[900],
-      padding: const EdgeInsets.all(20),
-      content: Text(message, style: scaledTextStyle(fontSize: 13)),
-      duration: const Duration(seconds: 4));
-  ScaffoldMessenger.of(homeContext).showSnackBar(snackBar);
-}
-
-String getShortPubkey(String pubkey) {
-  String pubkeyShort = truncate(pubkey, 7, omission: String.fromCharCode(0x2026), position: TruncatePosition.end) +
-      truncate(pubkey, 6, omission: "", position: TruncatePosition.start);
-  return pubkeyShort;
-}
-
-Uint8List _int32bytes(int value) => Uint8List(4)..buffer.asInt32List()[0] = value;
-
-double round(double number, [int decimal = 2]) {
-  return double.parse((number.toStringAsFixed(decimal)));
 }

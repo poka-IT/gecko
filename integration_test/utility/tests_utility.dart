@@ -7,6 +7,7 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/utils.dart';
 import 'package:provider/provider.dart';
 import 'dart:io' as io;
 import 'package:gecko/main.dart' as app;

@@ -7,6 +7,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/transaction_content.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/transaction_status.dart';
 import 'package:gecko/widgets/transaction_status_icon.dart';

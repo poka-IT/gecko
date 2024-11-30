@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 
 class CertTile extends StatelessWidget {

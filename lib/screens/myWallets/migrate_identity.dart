@@ -14,6 +14,7 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:provider/provider.dart';

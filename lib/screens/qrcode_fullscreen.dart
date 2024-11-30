@@ -3,7 +3,7 @@
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/utils.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 

@@ -105,7 +105,8 @@ const keyDropdownWallets = Key('keyDropdownKey');
 Key keyTransaction(int keyId) => Key('keyTransaction$keyId');
 Key keyMnemonicWord(String word) => Key('keyMnemonicWord$word');
 Key keySearchResult(String address) => Key('keySearchResult$address');
-Key keySelectDuniterNode(String endpoint) =>
-    Key('keySelectDuniterNode$endpoint');
+Key keySelectDuniterNode(String endpoint) => Key('keySelectDuniterNode$endpoint');
 Key keyOpenWallet(String address) => Key('keyOpenWallet$address');
 Key keySelectThisWallet(String address) => Key('keySelectThisWallet$address');
+
+const keyRenewMembership = Key('renewMembership');

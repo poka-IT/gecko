@@ -213,6 +213,20 @@ class SubstrateSdk with ChangeNotifier {
     return certsCounterCache[address]!;
   }
 
+  Future<DateTime?> membershipExpireIn(String address) async {
+    final idtyIndex = await _getIdentityIndexOf(address);
+    if (idtyIndex == null) return null;
+
+    final expireOnMap = await _getStorage('membership.membership($idtyIndex)') ?? {};
+    final expireOn = expireOnMap['expireOn'] as int;
+
+    // Calculate time difference from current block (6 seconds per block)
+    final blockDifference = expireOn - blocNumber;
+
+    // Returns expiration date by adding (or subtracting if expired) time from now
+    return DateTime.now().add(Duration(seconds: blockDifference * 6));
+  }
+
   Future<int> getCertValidityPeriod(String from, String to) async {
     final idtyIndexFrom = await _getIdentityIndexOf(from);
     final idtyIndexTo = await _getIdentityIndexOf(to);
@@ -1215,5 +1229,26 @@ newKeySig: $newKeySigType""");
 
   void reload() {
     notifyListeners();
+  }
+
+  Future<String> renewMembership(String address, String password) async {
+    final sender = await _setSender(address);
+
+    final txInfo = TxInfoData(
+      'distance',
+      'requestDistanceEvaluation',
+      sender,
+    );
+
+    final transactionId = const Uuid().v4();
+    final transactionContent = TransactionContent(
+      transactionId: transactionId,
+      status: TransactionStatus.sending,
+      from: address,
+      to: address,
+      amount: -1,
+    );
+    _executeCall(transactionContent, txInfo, [], password);
+    return transactionId;
   }
 }

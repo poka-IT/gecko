@@ -238,5 +238,11 @@
     "enterYourNewAddress": "Enter your new address {}",
     "youCanMigrateThisIdentity": "You can migrate this identity !",
     "identityMigrated": "Identity migrated",
-    "passwordTooSimple": "Your password is to simple"
+    "passwordTooSimple": "Your password is to simple",
+    "renewMembership": "Renew my membership",
+    "areYouSureYouWantToRenewMembership": "Are you sure you want to renew your membership ?",
+    "membershipExpiredOn": "Membership expired on {}",
+    "membershipExpiresOn": "Membership expires on {}",
+    "renewingMembership": "Renewing membership",
+    "membershipRenewalConfirmed": "Your membership renewal request has been registered and will be effective within a few minutes"
 }

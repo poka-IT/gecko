@@ -238,5 +238,11 @@
     "enterYourNewAddress": "Entrez votre nouvelle adresse {}",
     "youCanMigrateThisIdentity": "Vous pouvez migrer vers cette identité !",
     "identityMigrated": "Identité migré",
-    "passwordTooSimple": "Votre code secret est trop simple"
+    "passwordTooSimple": "Votre code secret est trop simple",
+    "renewMembership": "Renouveler mon adhésion",
+    "areYouSureYouWantToRenewMembership": "Êtes-vous sûr de vouloir renouveler votre adhésion ?",
+    "membershipExpiredOn": "Adhésion expirée le {}",
+    "membershipExpiresOn": "Adhésion expire le {}",
+    "renewingMembership": "Renouvellement d'adhésion",
+    "membershipRenewalConfirmed": "Votre demande de renouvellement d'adhésion a bien été prise en compte et sera effective d'ici quelques minutes"
 }

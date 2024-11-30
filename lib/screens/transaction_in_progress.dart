@@ -89,7 +89,11 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
     }
 
     if (txContent!.status == TransactionStatus.success) {
-      resultText = 'extrinsicValidated'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]);
+      if (widget.transType == 'renewMembership') {
+        resultText = 'membershipRenewalConfirmed'.tr();
+      } else {
+        resultText = 'extrinsicValidated'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]);
+      }
     } else if (txContent!.status == TransactionStatus.failed) {
       resultText = errorTransactionMap[txContent!.error] ?? txContent!.error!;
     } else {

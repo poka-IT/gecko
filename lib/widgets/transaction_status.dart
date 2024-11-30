@@ -17,6 +17,7 @@ Map<String, String> actionMap = {
   'comfirmIdty': 'identityConfirm'.tr(),
   'revokeIdty': 'revokeAdhesion'.tr(),
   'identityMigration': 'identityMigration'.tr(),
+  'renewMembership': 'renewingMembership'.tr(),
 };
 
 Map<TransactionStatus, String> statusStatusMap = {

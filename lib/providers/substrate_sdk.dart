@@ -365,9 +365,7 @@ class SubstrateSdk with ChangeNotifier {
     final certRemovableDuration = (removableOn - blocNumber) * 6;
     const int renewDelay = 2 * 30 * 24 * 3600; // 2 months
 
-    if (toStatus == IdtyStatus.notMember) {
-      return CertState(status: CertStatus.none);
-    } else if (certRemovableDuration >= renewDelay) {
+    if (certRemovableDuration >= renewDelay) {
       final certRenewDuration = certRemovableDuration - renewDelay;
       return CertState(status: CertStatus.canRenewIn, duration: Duration(seconds: certRenewDuration));
     } else if (nextIssuableOn > blocNumber) {

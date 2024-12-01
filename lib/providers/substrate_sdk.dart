@@ -917,6 +917,7 @@ class SubstrateSdk with ChangeNotifier {
 
   Future<void> pay(
       {required String fromAddress, required String destAddress, required double amount, required String password, required String transactionId}) async {
+    final walletOptions = Provider.of<WalletOptionsProvider>(homeContext, listen: false);
     final sender = await _setSender(fromAddress);
 
     final globalBalance = await getBalance(fromAddress);
@@ -928,7 +929,9 @@ class SubstrateSdk with ChangeNotifier {
     late String call;
     late String tx2;
 
-    if (amount == -1) {
+    final defaultWalletBalance = walletOptions.balanceCache[fromAddress] ?? 0;
+
+    if (amount == -1 || amount == defaultWalletBalance) {
       palette = 'balances';
       call = 'transferAll';
       txOptions = [destAddress, false];

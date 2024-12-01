@@ -68,7 +68,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
     final double toAddressBalance = walletOptions.balanceCache[toAddress] ?? 0;
 
     // Prevent sending more than the balance with existential deposit
-    if (payAmountValue / balanceRatio > defaultWalletBalance - existentialDeposit) {
+    if (payAmountValue / balanceRatio > defaultWalletBalance - existentialDeposit && defaultWalletBalance != payAmountValue) {
       return false;
     }
 

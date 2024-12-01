@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
+import 'package:gecko/models/membership_status.dart';
 import 'package:gecko/models/migrate_wallet_checks.dart';
 import 'package:gecko/models/transaction_content.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -139,10 +140,13 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
-  Future<int> _getStorageConst(String call) async {
-    final result = (await sdk.webView!.evalJavascript('api.consts.$call', wrapPromise: false) ?? [null])[0];
+  Future<List<int>> _getStorageConst(List<String> calls) async {
+    final result = await sdk.webView!.evalJavascript(
+      'Object.values(Object.fromEntries([${calls.map((call) => '["$call", api.consts.$call[0]]').join(',')}]))',
+      wrapPromise: false,
+    );
 
-    return checkInt(result) ?? 0;
+    return (result as List).map((dynamic value) => checkInt(value) ?? 0).toList();
   }
 
   int? checkInt(dynamic value) {
@@ -486,14 +490,19 @@ class SubstrateSdk with ChangeNotifier {
       'certPeriod': 'certification.certPeriod.words',
       'certMaxByIssuer': 'certification.maxByIssuer.words',
       'certValidityPeriod': 'certification.validityPeriod.words',
+      'membershipRenewalPeriod': 'membership.membershipRenewalPeriod.words',
     };
 
-    for (final param in currencyParametersNames.keys) {
-      try {
-        currencyParameters[param] = await _getStorageConst(currencyParametersNames[param]!);
-      } catch (e) {
-        log.e('error while getting param $param :: $e');
+    try {
+      final values = await _getStorageConst(currencyParametersNames.values.toList());
+
+      int i = 0;
+      for (final param in currencyParametersNames.keys) {
+        currencyParameters[param] = values[i];
+        i++;
       }
+    } catch (e) {
+      log.e('error while getting currency parameters: $e');
     }
     log.i('currencyParameters: $currencyParameters');
   }
@@ -1248,5 +1257,27 @@ newKeySig: $newKeySigType""");
     );
     _executeCall(transactionContent, txInfo, [], password);
     return transactionId;
+  }
+
+  Future<MembershipStatus> getMembershipStatus(String address) async {
+    final idtyIndex = await _getIdentityIndexOf(address);
+    if (idtyIndex == null) return MembershipStatus(expireDate: null, hasPendingRenewal: false);
+
+    // Vérifier si une évaluation est en cours
+    final hasPendingRenewal = await _getStorage('distance.pendingEvaluationRequest($idtyIndex)') != null;
+
+    final expireOnMap = await _getStorage('membership.membership($idtyIndex)') ?? {};
+    final expireOn = expireOnMap['expireOn'] as int;
+
+    // Calculate time difference from current block (6 seconds per block)
+    final blockDifference = expireOn - blocNumber;
+
+    // Returns expiration date by adding (or subtracting if expired) time from now
+    final expireDate = DateTime.now().add(Duration(seconds: blockDifference * 6));
+
+    return MembershipStatus(
+      expireDate: expireDate,
+      hasPendingRenewal: hasPendingRenewal,
+    );
   }
 }

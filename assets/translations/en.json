@@ -242,7 +242,9 @@
     "renewMembership": "Renew my membership",
     "areYouSureYouWantToRenewMembership": "Are you sure you want to renew your membership ?",
     "membershipExpiredOn": "Membership expired on {}",
-    "membershipExpiresOn": "Membership expires on {}",
+    "membershipExpiresOnSimple": "Membership expires on {}",
+    "membershipExpiresOn": "Membership expires on {}, (renewable {} days before)",
     "renewingMembership": "Renewing membership",
-    "membershipRenewalConfirmed": "Your membership renewal request has been registered and will be effective within a few minutes"
+    "membershipRenewalConfirmed": "Your membership renewal request has been registered and will be effective within a few minutes",
+    "membershipRenewalPending": "Membership renewal in progress..."
 }

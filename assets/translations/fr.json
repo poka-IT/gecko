@@ -71,7 +71,7 @@
     "allGood": "C’est tout bon !",
     "areYouSureToDeleteWallet": "Êtes-vous sûr de vouloir supprimer le coffre \"{}\" ?",
     "areYouSureForgetAllChests": "Êtes-vous sûr de vouloir oublier tous vos coffres ?",
-    "areYouSureToForgetWallet": "Êtes-vous sûr de vouloir oublier le portefeuille \"{}\" ?",
+    "areYouSureToForgetWallet": "Êtes-vous sûr de vouloir oublier le portefeuille \"{}\" ?\nLe solde sera transféré vers votre portefeuille par défaut.",
     "areYouSureYouWantToCertify1": "Êtes-vous certain de vouloir certifier l'identité :",
     "areYouSureYouWantToCertify2": "ayant pour adresse :",
     "yes": "Oui",

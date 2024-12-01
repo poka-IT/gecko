@@ -16,10 +16,8 @@ class GeckoBottomAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
-    final historyProvider =
-        Provider.of<WalletsProfilesProvider>(context, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final historyProvider = Provider.of<WalletsProfilesProvider>(context, listen: false);
     final searchProvider = Provider.of<SearchProvider>(context, listen: false);
 
     final size = MediaQuery.of(context).size;
@@ -29,95 +27,99 @@ class GeckoBottomAppBar extends StatelessWidget {
     return Visibility(
       visible: showBottomBar,
       child: Container(
-        color: yellowC,
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFBF2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              offset: const Offset(0, -4),
+              blurRadius: 10,
+            ),
+          ],
+        ),
         width: size.width,
         height: scaleSize(67),
-        child: Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-          const Spacer(),
-          ScaledSizedBox(width: 11),
-          IconButton(
-            key: keyAppBarHome,
-            iconSize: scaleSize(53),
-            icon: const Icon(Icons.home_outlined),
-            onPressed: () {
-              searchProvider.reload();
-              Navigator.popUntil(
-                context,
-                ModalRoute.withName('/'),
-              );
-            },
-          ),
-          ScaledSizedBox(width: 12),
-          const Spacer(),
-          IconButton(
-            key: keyAppBarQrcode,
-            icon: const Image(image: AssetImage('assets/qrcode-scan.png')),
-            onPressed: () async {
-              historyProvider.scan(homeContext);
-            },
-          ),
-          const Spacer(),
-          ScaledSizedBox(width: 15),
-          Stack(
-            alignment: AlignmentDirectional.center,
-            children: [
-              if (lockAction)
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 0),
-                    child: Container(
-                      width: scaleSize(75),
-                      height: scaleSize(75),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border:
-                            Border.all(color: orangeC.withOpacity(0), width: 3),
-                        gradient: RadialGradient(
-                          radius: 0.5,
-                          colors: [
-                            yellowC,
-                            orangeC.withOpacity(0.1),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ScaledSizedBox(
-                height: 53,
-                child: IconButton(
-                  key: keyAppBarChest,
-                  icon: const Image(image: AssetImage('assets/wallet.png')),
-                  onPressed: lockAction
-                      ? null
-                      : () async {
-                          if (!await myWalletProvider.askPinCode()) return;
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildNavItem(
+              key: keyAppBarHome,
+              icon: Icons.home_outlined,
+              isSelected: false,
+              onTap: () {
+                searchProvider.reload();
+                Navigator.popUntil(
+                  context,
+                  ModalRoute.withName('/'),
+                );
+              },
+            ),
+            _buildNavItem(
+              key: keyAppBarQrcode,
+              imagePath: 'assets/qrcode-scan.png',
+              isSelected: actualRoute == 'scan',
+              onTap: () async {
+                historyProvider.scan(homeContext);
+              },
+            ),
+            _buildNavItem(
+              key: keyAppBarChest,
+              imagePath: 'assets/wallet.png',
+              isSelected: actualRoute == 'wallet' || lockAction,
+              isDisabled: lockAction,
+              onTap: lockAction
+                  ? null
+                  : () async {
+                      if (!await myWalletProvider.askPinCode()) return;
 
-                          Navigator.popUntil(context, ModalRoute.withName('/'));
-                          //FIXME: Should not have to wait 300 milliseconds when /mywallets exist in navigator...
-                          sleep(const Duration(milliseconds: 300));
-                          Navigator.pushNamed(context, '/mywallets');
-                          // Navigator.pushNamedAndRemoveUntil(
-                          //     context, '/mywallets', ModalRoute.withName('/'));
-                        },
-                ),
-              ),
-            ],
-          ),
-          const Spacer(),
-        ]),
+                      Navigator.popUntil(context, ModalRoute.withName('/'));
+                      sleep(const Duration(milliseconds: 300));
+                      Navigator.pushNamed(context, '/mywallets');
+                    },
+            ),
+          ],
+        ),
       ),
     );
   }
-}
 
-bool isRoutePresentInNavigator(BuildContext context, String routeName) {
-  bool isPresent = false;
-  Navigator.popUntil(context, (route) {
-    if (route.settings.name == routeName) {
-      isPresent = true;
-    }
-    return true;
-  });
-  return isPresent;
+  Widget _buildNavItem({
+    Key? key,
+    IconData? icon,
+    String? imagePath,
+    required bool isSelected,
+    bool isDisabled = false,
+    required VoidCallback? onTap,
+  }) {
+    final color = isSelected ? orangeC : const Color.fromARGB(255, 80, 69, 61);
+    final size = scaleSize(34);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        key: key,
+        onTap: isDisabled ? null : onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: EdgeInsets.all(scaleSize(12)),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: isSelected ? yellowC.withOpacity(0.5) : Colors.transparent,
+          ),
+          child: icon != null
+              ? Icon(
+                  icon,
+                  size: size,
+                  color: color,
+                )
+              : Image.asset(
+                  imagePath!,
+                  height: size,
+                  width: size,
+                  color: color,
+                ),
+        ),
+      ),
+    );
+  }
 }

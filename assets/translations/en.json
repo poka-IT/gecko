@@ -71,7 +71,7 @@
     "allGood": "That's all good!",
     "areYouSureToDeleteWallet": "Are you sure you want to delete the chest \"{}\"?",
     "areYouSureForgetAllChests": "Are you sure you want to forget all your chests?",
-    "areYouSureToForgetWallet": "Are you sure you wan to forget the wallet \"{}\"?",
+    "areYouSureToForgetWallet": "Are you sure you want to forget the wallet \"{}\"?\nThe balance will be transferred to your default wallet.",
     "areYouSureYouWantToCertify1": "Are you sure you want to certify the identity :",
     "areYouSureYouWantToCertify2": "having the address :",
     "yes": "Yes",

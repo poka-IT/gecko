@@ -20,14 +20,10 @@ class WalletTileMembre extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
-    final defaultWallet = myWalletProvider.getDefaultWallet();
-
     repository.getDatapodAvatar();
 
     return Padding(
-      padding: EdgeInsets.symmetric(
-          horizontal: scaleSize(52), vertical: scaleSize(15)),
+      padding: EdgeInsets.symmetric(horizontal: scaleSize(52), vertical: scaleSize(15)),
       child: GestureDetector(
         key: keyOpenWallet(repository.address),
         onTap: () {
@@ -43,197 +39,124 @@ class WalletTileMembre extends StatelessWidget {
         child: ScaledSizedBox(
           key: repository.number == 1 ? keyDragAndDrop : const Key('nothing'),
           height: 180,
-          child: ClipOvalShadow(
-            shadow: const Shadow(
-              color: Colors.transparent,
-              offset: Offset(0, 0),
-              blurRadius: 5,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            clipper: CustomClipperOval(),
-            child: ClipRRect(
-              borderRadius: const BorderRadius.all(Radius.circular(12)),
-              child: Column(children: <Widget>[
+            child: Column(
+              children: <Widget>[
                 Expanded(
                   child: Stack(
                     children: [
                       Consumer<V2sDatapodProvider>(
-                          builder: (context, datapod, _) {
-                        return Container(
-                          width: double.infinity,
-                          height: double.infinity,
-                          decoration: const BoxDecoration(
-                            gradient: RadialGradient(
-                              radius: 0.8,
-                              colors: [
-                                Color.fromARGB(255, 255, 255, 211),
-                                yellowC,
-                              ],
+                        builder: (context, datapod, _) {
+                          return Container(
+                            width: double.infinity,
+                            height: double.infinity,
+                            decoration: BoxDecoration(
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(12),
+                                topRight: Radius.circular(12),
+                              ),
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  const Color(0xFFFFFFF0),
+                                  yellowC.withOpacity(0.3),
+                                ],
+                              ),
                             ),
-                          ),
-                          child: repository.imageCustomPath == null ||
-                                  repository.imageCustomPath == ''
-                              ? Image.asset(
-                                  'assets/avatars/${repository.imageDefaultPath}',
-                                  alignment: Alignment.bottomCenter,
-                                  scale: 0.5,
-                                )
-                              : Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.transparent,
-                                    image: DecorationImage(
-                                      fit: BoxFit.fitHeight,
-                                      image: FileImage(
-                                        File(repository.imageCustomPath!),
+                            child: repository.imageCustomPath == null || repository.imageCustomPath == ''
+                                ? Padding(
+                                    padding: EdgeInsets.all(scaleSize(16)),
+                                    child: Image.asset(
+                                      'assets/avatars/${repository.imageDefaultPath}',
+                                      alignment: Alignment.bottomCenter,
+                                    ),
+                                  )
+                                : Container(
+                                    margin: EdgeInsets.all(scaleSize(16)),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      image: DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: FileImage(
+                                          File(repository.imageCustomPath!),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                        );
-                      }),
+                          );
+                        },
+                      ),
                       Positioned(
-                        left: 20,
-                        top: 20,
-                        child: Opacity(
-                          opacity: 0.8,
-                          child: Image.asset('assets/medal.png',
-                              color: orangeC, height: scaleSize(33)),
+                        left: scaleSize(16),
+                        top: scaleSize(16),
+                        child: Image.asset(
+                          'assets/medal.png',
+                          color: orangeC.withOpacity(0.8),
+                          height: scaleSize(28),
                         ),
                       ),
                     ],
                   ),
                 ),
-                Stack(children: <Widget>[
-                  BalanceBuilder(
-                      address: repository.address,
-                      isDefault: repository.address == defaultWallet.address),
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Column(children: [
-                      ScaledSizedBox(height: 5),
-                      Opacity(
-                          opacity: 0.7,
-                          child: NameByAddress(
-                            wallet: repository,
-                            size: 18,
-                            color: defaultWallet.address == repository.address
-                                ? Colors.white
-                                : Colors.black,
-                            fontWeight: FontWeight.w600,
-                            fontStyle: FontStyle.normal,
-                          ))
-                    ]),
-                  ]),
-                  Positioned(
-                    right: scaleSize(12),
-                    top: scaleSize(18),
-                    child: Opacity(
-                      opacity: 0.7,
-                      child: Certifications(
-                          address: repository.address,
-                          color: defaultWallet.address == repository.address
-                              ? Colors.white
-                              : Colors.black,
-                          size: 15),
+                Container(
+                  decoration: BoxDecoration(
+                    color: isDefault ? orangeC.withOpacity(0.9) : yellowC.withOpacity(0.9),
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(12),
+                      bottomRight: Radius.circular(12),
                     ),
                   ),
-                ]),
-              ]),
+                  padding: EdgeInsets.symmetric(
+                    vertical: scaleSize(12),
+                    horizontal: scaleSize(16),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          NameByAddress(
+                            wallet: repository,
+                            size: 16,
+                            color: isDefault ? Colors.white : Colors.black87,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          ScaledSizedBox(height: 4),
+                          Balance(
+                            address: repository.address,
+                            size: 14,
+                            color: isDefault ? Colors.white : Colors.black87,
+                          ),
+                        ],
+                      ),
+                      Certifications(
+                        address: repository.address,
+                        color: isDefault ? Colors.white : Colors.black87,
+                        size: 15,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
       ),
     );
   }
-}
 
-class BalanceBuilder extends StatelessWidget {
-  const BalanceBuilder({
-    super.key,
-    required this.address,
-    required this.isDefault,
-  });
-
-  final String address;
-  final bool isDefault;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      color: isDefault ? orangeC : yellowC,
-      child: Padding(
-          padding: EdgeInsets.only(
-              left: 5, right: 5, top: scaleSize(27), bottom: scaleSize(11)),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Opacity(
-                opacity: 0.7,
-                child: Balance(
-                  address: address,
-                  size: 15,
-                  color: isDefault ? Colors.white : Colors.black,
-                ),
-              )
-            ],
-          )),
-    );
-  }
-}
-
-class ClipOvalShadow extends StatelessWidget {
-  final Shadow shadow;
-  final CustomClipper<Rect> clipper;
-  final Widget child;
-
-  const ClipOvalShadow({
-    super.key,
-    required this.shadow,
-    required this.clipper,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _ClipOvalShadowPainter(
-        clipper: clipper,
-        shadow: shadow,
-      ),
-      child: ClipRect(clipper: clipper, child: child),
-    );
-  }
-}
-
-class _ClipOvalShadowPainter extends CustomPainter {
-  final Shadow shadow;
-  final CustomClipper<Rect> clipper;
-
-  _ClipOvalShadowPainter({required this.shadow, required this.clipper});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    var paint = shadow.toPaint();
-    var clipRect = clipper.getClip(size).shift(const Offset(0, 0));
-    canvas.drawOval(clipRect, paint);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return true;
-  }
-}
-
-class CustomClipperOval extends CustomClipper<Rect> {
-  @override
-  Rect getClip(Size size) {
-    return Rect.fromCircle(
-        center: Offset(size.width / 2, size.width / 2),
-        radius: size.width / 2 + 3);
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Rect> oldClipper) {
-    return false;
-  }
+  bool get isDefault => repository.address == Provider.of<MyWalletsProvider>(homeContext, listen: false).getDefaultWallet().address;
 }

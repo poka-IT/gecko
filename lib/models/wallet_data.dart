@@ -69,23 +69,17 @@ class WalletData extends HiveObject {
   }
 
   // creates the ':'-separated string from the WalletData
-  String inLine() {
-    return "$chest:$number:$name:$derivation:$imageDefaultPath:$imageCustomPath:$identityStatus";
-  }
+  String get inLine => "$chest:$number:$name:$derivation:$imageDefaultPath:$imageCustomPath:$identityStatus";
 
-  bool hasIdentity() {
-    return identityStatus == IdtyStatus.unconfirmed ||
-        identityStatus == IdtyStatus.unvalidated ||
-        identityStatus == IdtyStatus.member;
-  }
+  bool get hasIdentity => identityStatus == IdtyStatus.unconfirmed || identityStatus == IdtyStatus.unvalidated || identityStatus == IdtyStatus.member;
 
-  bool isMembre() {
-    return identityStatus == IdtyStatus.member;
-  }
+  bool get isMembre => identityStatus == IdtyStatus.member;
 
-  bool exist() {
-    return balance != 0;
-  }
+  bool get exist => balance != 0;
+
+  bool get hasCustomImage => imageCustomPath != null;
+
+  List<int?> get id => [chest, number];
 
   Future<DateTime?> getUpdatedTime() async {
     final datapod = Provider.of<V2sDatapodProvider>(homeContext, listen: false);
@@ -122,14 +116,6 @@ class WalletData extends HiveObject {
 
     walletBox.put(address, this);
     datapod.reload();
-  }
-
-  bool hasCustomImage() {
-    return imageCustomPath != null;
-  }
-
-  List<int?> id() {
-    return [chest, number];
   }
 }
 

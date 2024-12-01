@@ -141,7 +141,7 @@ class WalletOptions extends StatelessWidget {
                                                   size: scaleSize(18),
                                                 ),
                                                 onPressed: () async {
-                                                  await walletProvider.editWalletName(context, wallet.id());
+                                                  await walletProvider.editWalletName(context, wallet.id);
                                                 },
                                               ),
                                           ],
@@ -149,12 +149,12 @@ class WalletOptions extends StatelessWidget {
                                       },
                                     ),
                                   ),
-                                  if (!wallet.hasIdentity()) const SizedBox(height: 16),
+                                  if (!wallet.hasIdentity) const SizedBox(height: 16),
                                   Balance(
                                     address: walletOptions.address.text,
                                     size: 24,
                                   ),
-                                  if (wallet.hasIdentity()) ...[
+                                  if (wallet.hasIdentity) ...[
                                     SizedBox(height: scaleSize(12)),
                                     InkWell(
                                       onTap: () => sub.certsCounterCache[walletOptions.address.text] != null
@@ -168,19 +168,34 @@ class WalletOptions extends StatelessWidget {
                                               ),
                                             )
                                           : null,
-                                      child: Row(
-                                        children: [
-                                          IdentityStatus(
-                                            address: walletOptions.address.text,
-                                            isOwner: true,
-                                            color: orangeC,
-                                          ),
-                                          SizedBox(width: scaleSize(8)),
-                                          Certifications(
-                                            address: walletOptions.address.text,
-                                            size: 16,
-                                          ),
-                                        ],
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(8),
+                                          color: Colors.transparent,
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IdentityStatus(
+                                              address: walletOptions.address.text,
+                                              isOwner: true,
+                                              color: orangeC,
+                                            ),
+                                            SizedBox(width: scaleSize(8)),
+                                            Certifications(
+                                              address: walletOptions.address.text,
+                                              size: 14,
+                                            ),
+                                            if (sub.certsCounterCache[walletOptions.address.text] != null) ...[
+                                              SizedBox(width: scaleSize(4)),
+                                              Icon(
+                                                Icons.chevron_right,
+                                                size: scaleSize(16),
+                                                color: orangeC.withOpacity(0.8),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -209,7 +224,7 @@ class WalletOptions extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   buildConfirmIdentitySection(walletProvider),
-                                  if (wallet.isMembre()) buildRenewMembershipSection(walletProvider),
+                                  if (wallet.isMembre) buildRenewMembershipSection(walletProvider),
                                   buildOptionsSection(context, walletProvider, historyProvider),
                                   if (!isAlone) buildDefaultWalletSection(context, walletProvider, myWalletProvider, walletOptions, currentChest),
                                   buildDangerZone(context, walletProvider, currentChest),
@@ -388,7 +403,7 @@ class WalletOptions extends StatelessWidget {
             return const SizedBox.shrink();
           }
           final double balance = walletOptions.balanceCache[walletOptions.address.text] ?? -1;
-          final bool canDelete = !isDefaultWallet && !hasConsumers.data! && (balance > 2 || balance == 0) && !wallet.hasIdentity();
+          final bool canDelete = !isDefaultWallet && !hasConsumers.data! && (balance > 2 || balance == 0) && !wallet.hasIdentity;
           return InkWell(
             key: keyDeleteWallet,
             onTap: canDelete
@@ -494,7 +509,7 @@ class WalletOptions extends StatelessWidget {
     return Consumer<MyWalletsProvider>(
       builder: (context, myWalletProvider, _) {
         WalletData defaultWallet = myWalletProvider.getDefaultWallet();
-        walletOptions.isDefaultWallet = (defaultWallet.number == wallet.id()[1]);
+        walletOptions.isDefaultWallet = (defaultWallet.number == wallet.id[1]);
         return InkWell(
           key: keySetDefaultWallet,
           onTap: !walletProvider.isDefaultWallet
@@ -533,8 +548,8 @@ class WalletOptions extends StatelessWidget {
       margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
       child: Column(
         children: [
-          if (!walletProvider.isDefaultWallet && !wallet.hasIdentity()) deleteWallet(context, walletProvider, currentChest),
-          if (wallet.hasIdentity()) const ManageMembershipButton(),
+          if (!walletProvider.isDefaultWallet && !wallet.hasIdentity) deleteWallet(context, walletProvider, currentChest),
+          if (wallet.hasIdentity) const ManageMembershipButton(),
         ],
       ),
     );

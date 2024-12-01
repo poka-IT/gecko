@@ -27,7 +27,7 @@ class WalletsHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-    
+
     return FutureBuilder<List<WalletData>>(
       future: myWalletProvider.readAllWallets(myWalletProvider.getCurrentChest()),
       builder: (context, snapshot) {
@@ -38,7 +38,7 @@ class WalletsHome extends StatelessWidget {
             ),
           );
         }
-        
+
         // If only one wallet, directly show WalletOptions
         if (myWalletProvider.listWallets.length == 1) {
           return WalletOptions(wallet: myWalletProvider.listWallets[0]);
@@ -139,7 +139,7 @@ class _WalletsHomeContent extends StatelessWidget {
 
     // Get first wallet with identity
     final idtyWallet = listWallets.firstWhere(
-      (w) => w.hasIdentity(),
+      (w) => w.hasIdentity,
       orElse: () => WalletData(address: ''),
     );
 

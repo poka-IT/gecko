@@ -71,7 +71,7 @@
     "allGood": "¡Todo bien!",
     "areYouSureToDeleteWallet": "¿Seguro de que quieres eliminar el cofre \"{}\"?",
     "areYouSureForgetAllChests": "¿Seguro de que quieres olvidar todos tus cofres?",
-    "areYouSureToForgetWallet": "¿Seguro de que quieres olvidar el monedero \"{}\"?",
+    "areYouSureToForgetWallet": "¿Seguro de que quieres olvidar el monedero \"{}\"?\nEl saldo será transferido al monedero por defecto.",
     "areYouSureYouWantToCertify": "¿Seguro de que quiere certificar a la dirección\n\n{}?",
     "areYouSureYouWantToCertify1": "¿Seguro de que quiere certificar a la identidad :",
     "areYouSureYouWantToCertify2": " a la dirección :",

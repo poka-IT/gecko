@@ -14,7 +14,7 @@ Future<bool?> confirmPopup(BuildContext context, String title) async {
         content: Text(
           title,
           textAlign: TextAlign.center,
-          style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+          style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         actions: <Widget>[
           Row(
@@ -37,8 +37,7 @@ Future<bool?> confirmPopup(BuildContext context, String title) async {
               TextButton(
                 child: Text(
                   "no".tr(),
-                  style:
-                      scaledTextStyle(fontSize: 18, color: Colors.blueAccent),
+                  style: scaledTextStyle(fontSize: 18, color: Colors.blueAccent),
                 ),
                 onPressed: () {
                   Navigator.pop(context, false);
@@ -53,8 +52,7 @@ Future<bool?> confirmPopup(BuildContext context, String title) async {
   );
 }
 
-Future<bool?> confirmPopupCertification(BuildContext context, String question1,
-    String username, String question2, String address) async {
+Future<bool?> confirmPopupCertification(BuildContext context, String question1, String username, String question2, String address) async {
   return showDialog<bool>(
     context: context,
     barrierDismissible: true,
@@ -69,36 +67,31 @@ Future<bool?> confirmPopupCertification(BuildContext context, String question1,
               Text(
                 question1,
                 textAlign: TextAlign.center,
-                style:
-                    scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w400),
               ),
               ScaledSizedBox(height: 15),
               Text(
                 username,
                 textAlign: TextAlign.center,
-                style:
-                    scaledTextStyle(fontSize: 19, fontWeight: FontWeight.w500),
+                style: scaledTextStyle(fontSize: 19, fontWeight: FontWeight.w500),
               ),
               ScaledSizedBox(height: 15),
               Text(
                 question2,
                 textAlign: TextAlign.center,
-                style:
-                    scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w400),
               ),
               ScaledSizedBox(height: 15),
               Text(
                 address,
                 textAlign: TextAlign.center,
-                style:
-                    scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
               ScaledSizedBox(height: 15),
               Text(
                 '?',
                 textAlign: TextAlign.center,
-                style:
-                    scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w400),
               ),
             ],
           ),

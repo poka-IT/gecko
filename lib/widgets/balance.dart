@@ -11,6 +11,13 @@ class Balance extends StatelessWidget {
   final double size;
   final Color color;
 
+  String formatBalance(double value) {
+    if (value >= 1000000) {
+      return '${(value / 1000000).toStringAsFixed(1)}M';
+    }
+    return value.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
@@ -20,28 +27,34 @@ class Balance extends StatelessWidget {
           builder: (BuildContext context, AsyncSnapshot<Map<String, double>> globalBalance) {
             if (globalBalance.connectionState != ConnectionState.done || globalBalance.hasError || !globalBalance.hasData) {
               if (walletOptions.balanceCache[address] != null && walletOptions.balanceCache[address] != -1) {
-                return Row(mainAxisSize: MainAxisSize.min, children: [
-                  Text(
-                    walletOptions.balanceCache[address]!.toString(),
-                    style: scaledTextStyle(fontSize: size, color: color),
-                  ),
-                  ScaledSizedBox(width: 5),
-                  UdUnitDisplay(size: scaleSize(size), color: color),
-                ]);
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      formatBalance(walletOptions.balanceCache[address]!),
+                      style: scaledTextStyle(fontSize: size, color: color),
+                    ),
+                    ScaledSizedBox(width: 5),
+                    UdUnitDisplay(size: scaleSize(size), color: color),
+                  ],
+                );
               } else {
                 return const SizedBox.shrink();
               }
             }
             walletOptions.balanceCache[address] = globalBalance.data!['transferableBalance']!;
             if (walletOptions.balanceCache[address] != -1) {
-              return Row(mainAxisSize: MainAxisSize.min, children: [
-                Text(
-                  walletOptions.balanceCache[address]!.toString(),
-                  style: scaledTextStyle(fontSize: size, color: color),
-                ),
-                ScaledSizedBox(width: 5),
-                UdUnitDisplay(size: scaleSize(size), color: color),
-              ]);
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    formatBalance(walletOptions.balanceCache[address]!),
+                    style: scaledTextStyle(fontSize: size, color: color),
+                  ),
+                  ScaledSizedBox(width: 5),
+                  UdUnitDisplay(size: scaleSize(size), color: color),
+                ],
+              );
             } else {
               return const Text('');
             }

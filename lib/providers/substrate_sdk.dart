@@ -359,7 +359,7 @@ class SubstrateSdk with ChangeNotifier {
     final toStatus = (await idtyStatus([to])).first;
     final myWallets = MyWalletsProvider();
 
-    if (from == to || !myWallets.getWalletDataByAddress(from)!.isMembre()) {
+    if (from == to || !myWallets.getWalletDataByAddress(from)!.isMembre) {
       return CertState(status: CertStatus.none);
     }
 

@@ -95,7 +95,9 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
         resultText = 'extrinsicValidated'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]);
       }
     } else if (txContent!.status == TransactionStatus.failed) {
-      resultText = errorTransactionMap[txContent!.error] ?? txContent!.error!;
+      final errorParts = txContent!.error?.split('Exception: ');
+      final error = errorParts != null && errorParts.length > 1 ? errorParts[1] : txContent!.error;
+      resultText = errorTransactionMap[error] ?? error!;
     } else {
       resultText = statusStatusMap[txContent!.status] ?? 'Unknown status: ${txContent!.status}';
     }
@@ -106,10 +108,13 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
           TransactionStatusIcon(txContent!.status),
           ScaledSizedBox(height: 7),
           if (txContent!.status != TransactionStatus.none)
-            Text(
-              resultText,
-              textAlign: TextAlign.center,
-              style: scaledTextStyle(fontSize: 16),
+            SizedBox(
+              width: scaleSize(300),
+              child: Text(
+                resultText,
+                textAlign: TextAlign.center,
+                style: scaledTextStyle(fontSize: 16),
+              ),
             )
         ],
       );

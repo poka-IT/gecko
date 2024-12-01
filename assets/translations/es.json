@@ -247,5 +247,6 @@
     "membershipExpiresOn": "Adhésion expira el {}, (renovable {} días antes)",
     "renewingMembership": "Renovando adhésion",
     "membershipRenewalConfirmed": "Su solicitud de renovación de membresía ha sido registrada y será efectiva en unos minutos",
-    "membershipRenewalPending": "Renovación de membresía en curso..."
+    "membershipRenewalPending": "Renovación de membresía en curso...",
+    "membershipRenewalPeriodNotRespected": "Debe esperar el período de renovación antes de poder renovar su membresía"
 }

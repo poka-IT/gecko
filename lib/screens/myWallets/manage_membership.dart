@@ -14,6 +14,7 @@ import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/models/membership_status.dart';
+import 'package:gecko/models/membership_renewal.dart';
 
 class ManageMembership extends StatelessWidget {
   const ManageMembership({super.key, required this.address});
@@ -141,52 +142,25 @@ class ManageMembership extends StatelessWidget {
 
   Widget renewMembership(BuildContext context, MembershipStatus status) {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    if (status.expireDate == null) return const SizedBox.shrink();
+    final info = MembershipRenewal.calculateRenewalInfo(
+      status,
+      sub.currencyParameters['membershipRenewalPeriod']!,
+    );
 
-    final now = DateTime.now();
-    final renewalPeriodInSeconds = (sub.currencyParameters['membershipRenewalPeriod']!) * 6;
-    final renewalDate = status.expireDate!.subtract(Duration(seconds: renewalPeriodInSeconds));
-    final renewalPeriodInDays = (renewalPeriodInSeconds / 86400).truncate();
-
-    final isExpired = status.expireDate!.isBefore(now);
-    final canRenew = now.isAfter(renewalDate) && !status.hasPendingRenewal;
+    if (info.expireDate == null) return const SizedBox.shrink();
 
     return ScaledSizedBox(
       height: 75,
       child: InkWell(
         key: keyRenewMembership,
-        onTap: canRenew
-            ? () async {
-                final answer = await confirmPopup(context, 'areYouSureYouWantToRenewMembership'.tr()) ?? false;
-
-                if (!answer) return;
-
-                final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-
-                if (!await myWalletProvider.askPinCode()) return;
-
-                final transactionId = await sub.renewMembership(address, myWalletProvider.pinCode);
-
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) {
-                    return TransactionInProgress(
-                      transactionId: transactionId,
-                      transType: 'renewMembership',
-                      fromAddress: getShortPubkey(address),
-                      toAddress: getShortPubkey(address),
-                    );
-                  }),
-                );
-              }
-            : null,
+        onTap: info.canRenew ? () => MembershipRenewal.executeRenewal(context, address) : null,
         child: Row(
           children: <Widget>[
             ScaledSizedBox(width: 20),
             Image.asset(
               'assets/medal.png',
               height: scaleSize(28),
-              color: canRenew ? null : Colors.grey[500],
+              color: info.canRenew ? null : Colors.grey[500],
             ),
             ScaledSizedBox(width: 16),
             Column(
@@ -197,25 +171,10 @@ class ManageMembership extends StatelessWidget {
                   'renewMembership'.tr(),
                   style: scaledTextStyle(
                     fontSize: 17,
-                    color: canRenew ? null : Colors.grey[500],
+                    color: info.canRenew ? null : Colors.grey[500],
                   ),
                 ),
-                SizedBox(
-                  width: scaleSize(250),
-                  child: Text(
-                    status.hasPendingRenewal
-                        ? 'membershipRenewalPending'.tr()
-                        : isExpired
-                            ? 'membershipExpiredOn'.tr(args: [DateFormat('dd/MM/yyyy').format(status.expireDate!)])
-                            : canRenew
-                                ? 'membershipExpiresOnSimple'.tr(args: [DateFormat('dd/MM/yyyy').format(status.expireDate!)])
-                                : 'membershipExpiresOn'.tr(args: [DateFormat('dd/MM/yyyy').format(status.expireDate!), renewalPeriodInDays.toString()]),
-                    style: scaledTextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[500],
-                    ),
-                  ),
-                ),
+                MembershipRenewal.buildExpirationText(info),
               ],
             ),
           ],

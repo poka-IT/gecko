@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/membership_status.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
@@ -23,7 +24,6 @@ import 'package:gecko/screens/qrcode_fullscreen.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
-import 'package:gecko/widgets/buttons/manage_membership_button.dart';
 import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/idty_status.dart';
@@ -31,6 +31,8 @@ import 'package:gecko/widgets/name_by_address.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:gecko/widgets/buttons/manage_membership_button.dart';
+import 'package:gecko/models/membership_renewal.dart';
 
 class WalletOptions extends StatelessWidget {
   const WalletOptions({Key? keyMyWallets, required this.wallet}) : super(key: keyMyWallets);
@@ -184,6 +186,7 @@ class WalletOptions extends StatelessWidget {
                       walletProvider.isDefaultWallet = walletOptions.address.text == defaultWallet.address;
                       return Column(children: [
                         confirmIdentityButton(walletProvider),
+                        if (wallet.isMembre()) renewMembershipButton(walletProvider),
                         pubkeyWidget(walletProvider, context),
                         ScaledSizedBox(height: 11),
                         activityWidget(context, historyProvider, walletProvider),
@@ -194,7 +197,7 @@ class WalletOptions extends StatelessWidget {
                         ],
                         Column(children: [
                           if (!walletProvider.isDefaultWallet && !wallet.isMembre()) deleteWallet(context, walletProvider, currentChest),
-                          if (wallet.isMembre()) const ManageMembershipButton()
+                          const ManageMembershipButton(),
                         ]),
                         if (isAlone) aloneWalletOptions()
                       ]);
@@ -267,8 +270,8 @@ class WalletOptions extends StatelessWidget {
             if (snapshot.data!.first == IdtyStatus.unconfirmed) {
               return Column(children: [
                 ScaledSizedBox(
-                  width: 310,
-                  height: 55,
+                  width: 290,
+                  height: 50,
                   child: ElevatedButton(
                     key: keyConfirmIdentity,
                     style: ElevatedButton.styleFrom(
@@ -463,6 +466,48 @@ class WalletOptions extends StatelessWidget {
                 : ScaledSizedBox(width: 30),
           );
         });
+  }
+
+  Widget renewMembershipButton(WalletOptionsProvider walletProvider) {
+    return Consumer<SubstrateSdk>(builder: (context, sub, _) {
+      return FutureBuilder<MembershipStatus>(
+        future: sub.getMembershipStatus(walletProvider.address.text),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData || snapshot.hasError) {
+            return const SizedBox.shrink();
+          }
+
+          final info = MembershipRenewal.calculateRenewalInfo(
+            snapshot.data!,
+            sub.currencyParameters['membershipRenewalPeriod']!,
+          );
+
+          if (!info.canRenew) return const SizedBox.shrink();
+
+          return Column(children: [
+            ScaledSizedBox(
+              width: 290,
+              height: 50,
+              child: ElevatedButton(
+                key: keyRenewMembership,
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: orangeC,
+                ),
+                onPressed: () => MembershipRenewal.executeRenewal(context, walletProvider.address.text),
+                child: Text(
+                  'renewMembership'.tr(),
+                  style: scaledTextStyle(fontSize: 17),
+                ),
+              ),
+            ),
+            ScaledSizedBox(height: 7),
+            MembershipRenewal.buildExpirationText(info, width: 250),
+            ScaledSizedBox(height: 40),
+          ]);
+        },
+      );
+    });
   }
 }
 

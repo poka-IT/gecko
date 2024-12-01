@@ -75,10 +75,11 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
     final sub = Provider.of<SubstrateSdk>(context, listen: true);
 
     if (txContent == null) {
-      return const Scaffold(
+      return Scaffold(
+        backgroundColor: Colors.white,
         body: Center(
           child: Loading(
-            size: 25,
+            size: 30,
           ),
         ),
       );
@@ -102,123 +103,139 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
       resultText = statusStatusMap[txContent!.status] ?? 'Unknown status: ${txContent!.status}';
     }
 
-    Widget buildTransactionStatus() {
-      return Column(
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFFFF3E0),
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        centerTitle: true,
+        title: Text(
+          'extrinsicInProgress'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]),
+          style: scaledTextStyle(
+            fontSize: 16,
+            color: Colors.black87,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+      body: Column(
         children: [
-          TransactionStatusIcon(txContent!.status),
-          ScaledSizedBox(height: 7),
-          if (txContent!.status != TransactionStatus.none)
-            SizedBox(
-              width: scaleSize(300),
-              child: Text(
-                resultText,
-                textAlign: TextAlign.center,
-                style: scaledTextStyle(fontSize: 16),
-              ),
-            )
-        ],
-      );
-    }
-
-    return PopScope(
-      child: Scaffold(
-        backgroundColor: backgroundColor,
-        appBar: AppBar(
-            toolbarHeight: scaleSize(57),
-            elevation: 0,
-            automaticallyImplyLeading: false,
-            title: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-              Text(
-                'extrinsicInProgress'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]),
-                style: scaledTextStyle(fontSize: 19),
-              )
-            ])),
-        body: SafeArea(
-          child: Align(
-            alignment: FractionalOffset.bottomCenter,
-            child: Column(children: <Widget>[
-              Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    yellowC,
-                    backgroundColor,
-                  ],
-                )),
-                child: Column(children: <Widget>[
-                  ScaledSizedBox(height: 10),
-                  if (widget.transType == 'pay')
-                    Text(
-                      isUdUnit ? 'ud'.tr(args: ['$amount ']) : '$amount $currencyName',
+          Container(
+            width: double.infinity,
+            color: const Color(0xFFFFF3E0),
+            padding: EdgeInsets.symmetric(
+              horizontal: scaleSize(24),
+              vertical: scaleSize(16),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'fromMinus'.tr(),
+                  style: scaledTextStyle(
+                    fontSize: 13,
+                    color: Colors.black54,
+                  ),
+                ),
+                ScaledSizedBox(height: 4),
+                Text(
+                  fromAddressFormat,
+                  style: scaledTextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                if (fromAddressFormat != toAddressFormat) ...[
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: scaleSize(8)),
+                    child: Container(
+                      height: 1,
+                      color: Colors.black.withOpacity(0.06),
+                    ),
+                  ),
+                  Text(
+                    'toMinus'.tr(),
+                    style: scaledTextStyle(
+                      fontSize: 13,
+                      color: Colors.black54,
+                    ),
+                  ),
+                  ScaledSizedBox(height: 4),
+                  Text(
+                    toUsernameFormat,
+                    style: scaledTextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: scaleSize(52),
+                  height: scaleSize(52),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.black12,
+                      width: 1,
+                    ),
+                  ),
+                  child: Center(
+                    child: TransactionStatusIcon(txContent!.status),
+                  ),
+                ),
+                if (txContent!.status != TransactionStatus.none) ...[
+                  ScaledSizedBox(height: 24),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: scaleSize(32)),
+                    child: Text(
+                      resultText,
                       textAlign: TextAlign.center,
-                      style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                    ),
-                  if (widget.transType == 'pay') ScaledSizedBox(height: 10),
-                  Text(
-                    'fromMinus'.tr(),
-                    textAlign: TextAlign.center,
-                    style: scaledTextStyle(fontSize: 15),
-                  ),
-                  Text(
-                    fromAddressFormat,
-                    textAlign: TextAlign.center,
-                    style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
-                  Visibility(
-                    visible: fromAddressFormat != toAddressFormat,
-                    child: Column(
-                      children: [
-                        ScaledSizedBox(height: 10),
-                        Text(
-                          'toMinus'.tr(),
-                          textAlign: TextAlign.center,
-                          style: scaledTextStyle(fontSize: 15),
-                        ),
-                        Text(
-                          toUsernameFormat,
-                          textAlign: TextAlign.center,
-                          style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                        ),
-                      ],
-                    ),
-                  ),
-                  ScaledSizedBox(height: 20),
-                ]),
-              ),
-              const Spacer(),
-              buildTransactionStatus(),
-              const Spacer(),
-              Expanded(
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: ScaledSizedBox(
-                    width: 300,
-                    height: 55,
-                    child: ElevatedButton(
-                      key: keyCloseTransactionScreen,
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        elevation: 4,
-                        backgroundColor: orangeC,
-                      ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: Text(
-                        'close'.tr(),
-                        style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                      style: scaledTextStyle(
+                        fontSize: 15,
+                        height: 1.4,
+                        color: Colors.black87,
                       ),
                     ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(scaleSize(24)),
+            child: SizedBox(
+              width: double.infinity,
+              height: scaleSize(48),
+              child: ElevatedButton(
+                key: keyCloseTransactionScreen,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE65100),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'close'.tr(),
+                  style: scaledTextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
-              ScaledSizedBox(height: 80)
-            ]),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

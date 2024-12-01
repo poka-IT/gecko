@@ -482,7 +482,7 @@ class WalletOptions extends StatelessWidget {
             sub.currencyParameters['membershipRenewalPeriod']!,
           );
 
-          if (!info.canRenew) return const SizedBox.shrink();
+          if (info.canRenew) return const SizedBox.shrink();
 
           return Column(children: [
             ScaledSizedBox(

@@ -14,12 +14,7 @@ import 'package:truncate/truncate.dart';
 
 class NameByAddress extends StatelessWidget {
   const NameByAddress(
-      {super.key,
-      required this.wallet,
-      this.size = 20,
-      this.color = Colors.black,
-      this.fontWeight = FontWeight.w400,
-      this.fontStyle = FontStyle.italic});
+      {super.key, required this.wallet, this.size = 20, this.color = Colors.black, this.fontWeight = FontWeight.w400, this.fontStyle = FontStyle.italic});
   final WalletData wallet;
   final Color color;
   final double size;
@@ -43,8 +38,7 @@ class NameByAddress extends StatelessWidget {
               'address': wallet.address,
             },
           ),
-          builder: (QueryResult result,
-              {VoidCallback? refetch, FetchMore? fetchMore}) {
+          builder: (QueryResult result, {VoidCallback? refetch, FetchMore? fetchMore}) {
             if (kDebugMode) {
               if (result.hasException) {
                 return Text(result.exception.toString());
@@ -56,18 +50,11 @@ class NameByAddress extends StatelessWidget {
             }
 
             final edges = result.data?['identityConnection']['edges'];
-            final name = edges != null && edges.isNotEmpty
-                ? edges[0]['node']['name']
-                : null;
+            final name = edges != null && edges.isNotEmpty ? edges[0]['node']['name'] : null;
 
             duniterIndexer.walletNameIndexer[wallet.address] = name;
 
-            g1WalletsBox.put(
-                wallet.address,
-                G1WalletsList(
-                    address: wallet.address,
-                    username:
-                        duniterIndexer.walletNameIndexer[wallet.address]));
+            g1WalletsBox.put(wallet.address, G1WalletsList(address: wallet.address, username: duniterIndexer.walletNameIndexer[wallet.address]));
 
             if (duniterIndexer.walletNameIndexer[wallet.address] == null) {
               return WalletName(wallet: wallet, size: size, color: color);
@@ -76,8 +63,7 @@ class NameByAddress extends StatelessWidget {
             return Text(
               color == Colors.grey[700]!
                   ? '(${duniterIndexer.walletNameIndexer[wallet.address]!})'
-                  : truncate(
-                      duniterIndexer.walletNameIndexer[wallet.address]!, 20),
+                  : truncate(duniterIndexer.walletNameIndexer[wallet.address]!, 19),
               style: scaledTextStyle(
                 fontSize: size,
                 color: color,

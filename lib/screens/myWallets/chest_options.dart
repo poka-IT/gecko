@@ -33,7 +33,10 @@ class ChestOptions extends StatelessWidget {
             child: Column(
               children: [
                 ScaledSizedBox(height: 20),
-                ChestOptionsContent(),
+                Padding(
+                  padding: EdgeInsets.only(left: scaleSize(16)),
+                  child: ChestOptionsContent(),
+                ),
               ],
             ),
           ),
@@ -45,9 +48,7 @@ class ChestOptions extends StatelessWidget {
 }
 
 class ChestOptionsContent extends StatelessWidget {
-  const ChestOptionsContent({
-    super.key,
-  });
+  const ChestOptionsContent({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -56,144 +57,137 @@ class ChestOptionsContent extends StatelessWidget {
     final currentChest = chestBox.get(configBox.get('currentChest'))!;
     final isAlone = myWalletProvider.listWallets.length == 1;
 
-    return Column(children: <Widget>[
-      InkWell(
-        key: keyShowSeed,
-        onTap: () async {
-          if (!await myWalletProvider.askPinCode()) return;
-
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) {
-              return ShowSeed(
-                walletName: currentChest.name,
-                walletProvider: myWalletProvider,
-              );
-            }),
-          );
-        },
-        child: ScaledSizedBox(
-          height: 60,
-          child: Row(children: <Widget>[
-            ScaledSizedBox(width: 20),
-            Image.asset(
-              'assets/onBoarding/phrase_de_restauration_flou.png',
-              width: scaleSize(60),
-            ),
-            ScaledSizedBox(width: 13),
-            ScaledSizedBox(
-              width: 270,
-              child: Text(
-                'displayMnemonic'.tr(),
-                style: scaledTextStyle(
-                  fontSize: 16,
-                  color: orangeC,
-                ),
-              ),
-            ),
-          ]),
-        ),
-      ),
-      ScaledSizedBox(height: 2),
-      Consumer<SubstrateSdk>(builder: (context, sub, _) {
-        return InkWell(
-          key: keyChangePin,
-          onTap: null,
-          //  sub.nodeConnected
-          //     ? () async {
-          //         // await _chestProvider.changePin(context, cesiumWallet);
-          //         String? pinResult = await Navigator.push(
-          //           context,
-          //           MaterialPageRoute(
-          //             builder: (context) {
-          //               return ChangePinScreen(
-          //                 walletName: currentChest.name,
-          //                 walletProvider: walletProvider,
-          //               );
-          //             },
-          //           ),
-          //         );
-
-          //         if (pinResult != null) {
-          //           walletProvider.pinCode = pinResult;
-          //         }
-          //       }
-          //     : null,
-          child: ScaledSizedBox(
-              height: 60,
-              child: Row(children: <Widget>[
-                ScaledSizedBox(width: 30),
-                Image.asset(
-                  'assets/chests/secret_code.png',
-                  height: scaleSize(22),
-                ),
-                ScaledSizedBox(width: 18),
-                Text(
-                  'changePassword'.tr(),
-                  style: scaledTextStyle(fontSize: 16, color: sub.nodeConnected ? Colors.grey[500] : Colors.grey[500]),
-                ),
-              ])),
-        );
-      }),
-      ScaledSizedBox(height: 2),
-      if (!isAlone)
-        Consumer<SubstrateSdk>(builder: (context, sub, _) {
-          return InkWell(
-            key: keycreateRootDerivation,
-            onTap: sub.nodeConnected
-                ? () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return const CustomDerivation();
-                        },
-                      ),
-                    );
-                  }
-                : null,
-            child: ScaledSizedBox(
-              height: 60,
-              child: Row(children: <Widget>[
-                ScaledSizedBox(width: 37),
+    return Column(
+      children: [
+        InkWell(
+          key: keyShowSeed,
+          onTap: () async {
+            if (!await myWalletProvider.askPinCode()) return;
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ShowSeed(
+                        walletName: currentChest.name,
+                        walletProvider: myWalletProvider,
+                      )),
+            );
+          },
+          child: Container(
+            height: scaleSize(48),
+            padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+            child: Row(
+              children: [
                 Icon(
-                  Icons.manage_accounts,
-                  size: scaleSize(31),
+                  Icons.vpn_key_outlined,
+                  size: scaleSize(24),
+                  color: Colors.black87,
                 ),
-                ScaledSizedBox(width: 23),
+                ScaledSizedBox(width: 16),
                 Text(
-                  'createDerivation'.tr(),
-                  style: scaledTextStyle(fontSize: 16, color: sub.nodeConnected ? Colors.black : Colors.grey[500]),
+                  'displayMnemonic'.tr(),
+                  style: scaledTextStyle(
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
                 ),
-              ]),
+              ],
             ),
-          );
-        }),
-      ScaledSizedBox(height: 2),
-      InkWell(
-        key: keyDeleteChest,
-        onTap: () async {
-          await chestProvider.deleteChest(context, currentChest);
-        },
-        child: ScaledSizedBox(
-          height: 60,
-          child: Row(children: <Widget>[
-            ScaledSizedBox(width: 32),
-            Image.asset(
-              'assets/walletOptions/trash.png',
-              height: scaleSize(38),
-            ),
-            ScaledSizedBox(width: 22),
-            Text(
-              'deleteChest'.tr(),
-              style: scaledTextStyle(
-                fontSize: 16,
-                color: const Color(0xffD80000),
-              ),
-            ),
-          ]),
+          ),
         ),
-      ),
-    ]);
+        Consumer<SubstrateSdk>(
+          builder: (context, sub, _) {
+            return InkWell(
+              key: keyChangePin,
+              onTap: null,
+              child: Container(
+                height: scaleSize(48),
+                padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.lock_outline,
+                      size: scaleSize(24),
+                      color: Colors.grey[400],
+                    ),
+                    ScaledSizedBox(width: 16),
+                    Text(
+                      'changePassword'.tr(),
+                      style: scaledTextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+        if (!isAlone)
+          Consumer<SubstrateSdk>(
+            builder: (context, sub, _) {
+              return InkWell(
+                key: keycreateRootDerivation,
+                onTap: sub.nodeConnected
+                    ? () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const CustomDerivation()),
+                        );
+                      }
+                    : null,
+                child: Container(
+                  height: scaleSize(48),
+                  padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.manage_accounts,
+                        size: scaleSize(24),
+                        color: sub.nodeConnected ? Colors.black87 : Colors.grey[400],
+                      ),
+                      ScaledSizedBox(width: 16),
+                      Text(
+                        'createDerivation'.tr(),
+                        style: scaledTextStyle(
+                          fontSize: 16,
+                          color: sub.nodeConnected ? Colors.black87 : Colors.grey[500],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        InkWell(
+          key: keyDeleteChest,
+          onTap: () async {
+            await chestProvider.deleteChest(context, currentChest);
+          },
+          child: Container(
+            height: scaleSize(48),
+            padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+            child: Row(
+              children: [
+                Image.asset(
+                  'assets/walletOptions/trash.png',
+                  height: scaleSize(24),
+                  color: const Color(0xffD80000),
+                ),
+                ScaledSizedBox(width: 16),
+                Text(
+                  'deleteChest'.tr(),
+                  style: scaledTextStyle(
+                    fontSize: 16,
+                    color: const Color(0xffD80000),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

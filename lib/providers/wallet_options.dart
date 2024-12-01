@@ -29,7 +29,7 @@ class WalletOptionsProvider with ChangeNotifier {
   bool isEditing = false;
   bool isBalanceBlur = false;
   final nameController = TextEditingController();
-  late bool isDefaultWallet;
+  bool isDefaultWallet = false;
   bool canValidateNameBool = false;
   Map<String, double> balanceCache = {};
 

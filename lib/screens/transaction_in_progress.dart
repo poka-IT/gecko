@@ -106,7 +106,7 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFFF3E0),
+        backgroundColor: headerColor,
         elevation: 0,
         automaticallyImplyLeading: false,
         centerTitle: true,
@@ -123,7 +123,7 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
         children: [
           Container(
             width: double.infinity,
-            color: const Color(0xFFFFF3E0),
+            color: headerColor,
             padding: EdgeInsets.symmetric(
               horizontal: scaleSize(24),
               vertical: scaleSize(16),

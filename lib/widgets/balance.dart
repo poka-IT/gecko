@@ -6,60 +6,46 @@ import 'package:gecko/widgets/ud_unit_display.dart';
 import 'package:provider/provider.dart';
 
 class Balance extends StatelessWidget {
-  const Balance(
-      {super.key,
-      required this.address,
-      required this.size,
-      this.color = Colors.black});
+  const Balance({super.key, required this.address, required this.size, this.color = Colors.black});
   final String address;
   final double size;
   final Color color;
 
   @override
   Widget build(BuildContext context) {
-    final walletOptions =
-        Provider.of<WalletOptionsProvider>(context, listen: false);
+    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
     return Consumer<SubstrateSdk>(builder: (context, sdk, _) {
-      return ScaledSizedBox(
-        height: size * 1.4,
-        child: FutureBuilder(
-            future: sdk.getBalance(address),
-            builder: (BuildContext context,
-                AsyncSnapshot<Map<String, double>> globalBalance) {
-              if (globalBalance.connectionState != ConnectionState.done ||
-                  globalBalance.hasError ||
-                  !globalBalance.hasData) {
-                if (walletOptions.balanceCache[address] != null &&
-                    walletOptions.balanceCache[address] != -1) {
-                  return Row(children: [
-                    Text(walletOptions.balanceCache[address]!.toString(),
-                        style: scaledTextStyle(fontSize: size, color: color)),
-                    ScaledSizedBox(width: 5),
-                    UdUnitDisplay(size: scaleSize(size), color: color),
-                  ]);
-                } else {
-                  return const SizedBox.shrink();
-                }
-              }
-              walletOptions.balanceCache[address] =
-                  globalBalance.data!['transferableBalance']!;
-              if (walletOptions.balanceCache[address] != -1) {
-                return Row(children: [
+      return FutureBuilder(
+          future: sdk.getBalance(address),
+          builder: (BuildContext context, AsyncSnapshot<Map<String, double>> globalBalance) {
+            if (globalBalance.connectionState != ConnectionState.done || globalBalance.hasError || !globalBalance.hasData) {
+              if (walletOptions.balanceCache[address] != null && walletOptions.balanceCache[address] != -1) {
+                return Row(mainAxisSize: MainAxisSize.min, children: [
                   Text(
                     walletOptions.balanceCache[address]!.toString(),
-                    style: scaledTextStyle(
-                      fontSize: size,
-                      color: color,
-                    ),
+                    style: scaledTextStyle(fontSize: size, color: color),
                   ),
                   ScaledSizedBox(width: 5),
                   UdUnitDisplay(size: scaleSize(size), color: color),
                 ]);
               } else {
-                return const Text('');
+                return const SizedBox.shrink();
               }
-            }),
-      );
+            }
+            walletOptions.balanceCache[address] = globalBalance.data!['transferableBalance']!;
+            if (walletOptions.balanceCache[address] != -1) {
+              return Row(mainAxisSize: MainAxisSize.min, children: [
+                Text(
+                  walletOptions.balanceCache[address]!.toString(),
+                  style: scaledTextStyle(fontSize: size, color: color),
+                ),
+                ScaledSizedBox(width: 5),
+                UdUnitDisplay(size: scaleSize(size), color: color),
+              ]);
+            } else {
+              return const Text('');
+            }
+          });
     });
   }
 }

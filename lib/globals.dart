@@ -43,6 +43,7 @@ const Color orangeC = Color(0xffd07316);
 const Color yellowC = Color(0xffFFD68E);
 const Color floattingYellow = Color(0xffEFEFBF);
 const Color backgroundColor = Color(0xFFF5F5F5);
+const Color headerColor = Color(0xFFFFF3E0);
 
 // Substrate settings
 const String currencyName = 'ĞD';

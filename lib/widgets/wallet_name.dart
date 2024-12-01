@@ -4,11 +4,7 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:truncate/truncate.dart';
 
 class WalletName extends StatelessWidget {
-  const WalletName(
-      {super.key,
-      required this.wallet,
-      this.size = 20,
-      this.color = Colors.black});
+  const WalletName({super.key, required this.wallet, this.size = 20, this.color = Colors.black});
   final WalletData wallet;
   final double size;
   final Color color;
@@ -17,7 +13,7 @@ class WalletName extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
       Text(
-        truncate(wallet.name ?? '', 20),
+        truncate(wallet.name ?? '', 19),
         textAlign: TextAlign.center,
         style: scaledTextStyle(
           fontSize: size,

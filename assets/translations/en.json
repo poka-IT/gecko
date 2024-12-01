@@ -47,7 +47,7 @@
     "copy": "Copy",
     "thisAddressHasBeenCopiedToClipboard": "This address has been copied to clipboard",
     "chooseWalletName": "Choose a new name\nfor your wallet:",
-    "choosePassword": "Choose a random password:",
+    "choosePassword": "Choose your new secret code:",
     "chooseDerivation": "Choose a derivation:",
     "validate": "Validate",
     "confirm": "Confirm",

@@ -1,20 +1,23 @@
-// ignore_for_file: use_build_context_synchronously, must_be_immutable
+// ignore_for_file: use_build_context_synchronously
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:durt/durt.dart';
+import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/screens/myWallets/confirm_change_pin.dart';
+import 'package:gecko/screens/onBoarding/9.dart';
+import 'package:gecko/widgets/commons/fader_transition.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:provider/provider.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
 
-class ChangePinScreen extends StatefulWidget with ChangeNotifier {
-  ChangePinScreen(
-      {Key? keyMyWallets,
-      required this.walletName,
-      required this.walletProvider})
-      : super(key: keyMyWallets);
+class ChangePinScreen extends StatefulWidget {
+  const ChangePinScreen({
+    super.key,
+    required this.walletName,
+    required this.walletProvider,
+  });
+
   final String? walletName;
   final MyWalletsProvider walletProvider;
 
@@ -23,91 +26,123 @@ class ChangePinScreen extends StatefulWidget with ChangeNotifier {
 }
 
 class _ChangePinScreenState extends State<ChangePinScreen> {
-  final newPin = TextEditingController();
+  final formKey = GlobalKey<FormState>();
+  late final FocusNode pinFocus;
+  late final TextEditingController enterPin;
+  Color? pinColor = const Color(0xFFA4B600);
+  bool hasError = false;
 
   @override
   void initState() {
-    newPin.text = randomSecretCode(pinLength);
     super.initState();
+    pinFocus = FocusNode(debugLabel: 'pinFocusNodeChange');
+    enterPin = TextEditingController();
   }
 
   @override
   Widget build(BuildContext context) {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
-
-    return PopScope(
-      onPopInvokedWithResult: (_, __) {
-        newPin.text = '';
-      },
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        appBar: GeckoAppBar(widget.walletName!),
-        body: Center(
-          child: SafeArea(
-            child: Column(children: <Widget>[
-              const SizedBox(height: 80),
-              Text(
-                'choosePassword'.tr(),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w400),
-              ),
-              const SizedBox(height: 30),
-              Stack(
-                alignment: Alignment.centerRight,
-                children: <Widget>[
-                  TextField(
-                      enabled: false,
-                      controller: newPin,
-                      maxLines: 1,
-                      textAlign: TextAlign.center,
-                      decoration: const InputDecoration(),
-                      style: const TextStyle(
-                          fontSize: 29.0,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold)),
-                  IconButton(
-                    icon: const Icon(Icons.replay),
-                    color: orangeC,
-                    onPressed: () async {
-                      newPin.text = randomSecretCode(pinLength);
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 30),
-              SizedBox(
-                width: 200,
-                height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.black,
-                    elevation: 12,
-                    backgroundColor: Colors.green[400],
-                  ),
-                  onPressed: () async {
-                    final defaultWallet = myWalletProvider.getDefaultWallet();
-
-                    if (!await myWalletProvider.askPinCode()) return;
-
-                    await sub.changePassword(context, defaultWallet.address,
-                        widget.walletProvider.pinCode, newPin.text);
-                    widget.walletProvider.pinCode = newPin.text;
-                    newPin.text = '';
-                    Navigator.pop(context);
-                  },
-                  child: Text(
-                    'confirm'.tr(),
-                    style: const TextStyle(fontSize: 27),
-                  ),
-                ),
-              )
-            ]),
+    return Scaffold(
+      backgroundColor: backgroundColor,
+      appBar: GeckoAppBar(widget.walletName!),
+      body: SafeArea(
+        child: Column(children: <Widget>[
+          const SizedBox(height: 80),
+          Text(
+            'choosePassword'.tr(),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16.0,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w400,
+            ),
           ),
+          const SizedBox(height: 30),
+          pinForm(context),
+        ]),
+      ),
+    );
+  }
+
+  Widget pinForm(BuildContext context) {
+    return Form(
+      key: formKey,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 40),
+        child: Column(
+          children: [
+            PinCodeTextField(
+              focusNode: pinFocus,
+              autoFocus: true,
+              appContext: context,
+              length: pinLength,
+              obscureText: true,
+              obscuringCharacter: '*',
+              animationType: AnimationType.fade,
+              validator: (v) {
+                if (v!.isEmpty || v.length == pinLength) {
+                  if (!isPinComplex(v)) {
+                    return "passwordTooSimple".tr();
+                  }
+                }
+                return null;
+              },
+              pinTheme: PinTheme(
+                shape: PinCodeFieldShape.box,
+                borderRadius: BorderRadius.circular(5),
+                fieldHeight: 47,
+                fieldWidth: 47,
+                activeColor: pinColor,
+                errorBorderColor: Colors.red,
+                borderWidth: 4,
+              ),
+              cursorColor: Colors.black,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              controller: enterPin,
+              onCompleted: (pin) async {
+                if (isPinComplex(pin)) {
+                  Navigator.push(
+                    context,
+                    FaderTransition(
+                      page: ConfirmChangePinScreen(
+                        walletName: widget.walletName,
+                        walletProvider: widget.walletProvider,
+                        newPinCode: pin,
+                      ),
+                      isFast: false,
+                    ),
+                  );
+                } else {
+                  setState(() {
+                    hasError = true;
+                    pinColor = Colors.red[600];
+                    enterPin.text = '';
+                    pinFocus.requestFocus();
+                  });
+                }
+              },
+              onChanged: (value) {
+                if (formKey.currentState!.validate()) {
+                  setState(() {
+                    hasError = false;
+                    pinColor = const Color(0xFFA4B600);
+                  });
+                }
+              },
+            ),
+            if (hasError) ...[
+              const SizedBox(height: 20),
+              Text(
+                "passwordTooSimple".tr(),
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ],
         ),
       ),
     );

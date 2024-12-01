@@ -47,7 +47,7 @@
     "copy": "Copiar",
     "thisAddressHasBeenCopiedToClipboard": "Esta dirección se ha copiado al portapapeles",
     "chooseWalletName": "Elige un nuevo nombre\npara tu monedero:",
-    "choosePassword": "Elige una contraseña aleatoria:",
+    "choosePassword": "Elige tu nueva contraseña:",
     "chooseDerivation": "Elige una derivación:",
     "validate": "Validar",
     "confirm": "Confirmar",

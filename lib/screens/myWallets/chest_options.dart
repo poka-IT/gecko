@@ -8,6 +8,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/screens/myWallets/change_pin.dart';
 import 'package:gecko/screens/myWallets/custom_derivations.dart';
 import 'package:gecko/screens/myWallets/show_seed.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
@@ -98,7 +99,17 @@ class ChestOptionsContent extends StatelessWidget {
           builder: (context, sub, _) {
             return InkWell(
               key: keyChangePin,
-              onTap: null,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChangePinScreen(
+                      walletName: currentChest.name,
+                      walletProvider: myWalletProvider,
+                    ),
+                  ),
+                );
+              },
               child: Container(
                 height: scaleSize(48),
                 padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
@@ -107,14 +118,14 @@ class ChestOptionsContent extends StatelessWidget {
                     Icon(
                       Icons.lock_outline,
                       size: scaleSize(24),
-                      color: Colors.grey[400],
+                      color: const Color.fromARGB(255, 255, 142, 142),
                     ),
                     ScaledSizedBox(width: 16),
                     Text(
                       'changePassword'.tr(),
                       style: scaledTextStyle(
                         fontSize: 16,
-                        color: Colors.grey[500],
+                        color: Colors.black87,
                       ),
                     ),
                   ],

@@ -47,7 +47,7 @@
     "copy": "Copier",
     "thisAddressHasBeenCopiedToClipboard": "Cette adresse a été copié dans votre presse-papier.",
     "chooseWalletName": "Choisissez un nouveau nom\npour votre portefeuille :",
-    "choosePassword": "Choisissez un code secret autogénéré :",
+    "choosePassword": "Choisissez votre nouveau code secret :",
     "chooseDerivation": "Choisissez une dérivation:",
     "validate": "Valider",
     "confirm": "Confirmer",

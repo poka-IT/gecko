@@ -26,7 +26,7 @@ class ManageMembershipButton extends StatelessWidget {
             Icon(
               Icons.workspace_premium_outlined,
               size: scaleSize(24),
-              color: Colors.black87,
+              color: const Color(0xFFFF9800).withOpacity(0.8),
             ),
             ScaledSizedBox(width: 16),
             Text(

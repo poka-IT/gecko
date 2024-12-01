@@ -319,7 +319,7 @@ class WalletOptions extends StatelessWidget {
             icon: Icon(
               Icons.copy,
               size: scaleSize(20),
-              color: Colors.black87,
+              color: orangeC.withOpacity(0.8),
             ),
             onPressed: () {
               Clipboard.setData(ClipboardData(text: walletProvider.address.text));
@@ -348,7 +348,7 @@ class WalletOptions extends StatelessWidget {
             Image.asset(
               'assets/walletOptions/clock.png',
               height: scaleSize(24),
-              color: Colors.black87,
+              color: const Color(0xFF4A90E2).withOpacity(0.8),
             ),
             ScaledSizedBox(width: 16),
             Text(
@@ -510,18 +510,14 @@ class WalletOptions extends StatelessWidget {
                 Icon(
                   Icons.check_circle_outline,
                   size: scaleSize(24),
-                  color: walletProvider.isDefaultWallet
-                      ? Colors.grey[400] // Garde la couleur grise pour l'état désactivé
-                      : Colors.black87, // Plus foncé pour l'état actif
+                  color: walletProvider.isDefaultWallet ? Colors.grey[400] : const Color(0xFF4CAF50).withOpacity(0.8),
                 ),
                 ScaledSizedBox(width: 16),
                 Text(
                   walletProvider.isDefaultWallet ? 'thisWalletIsDefault'.tr() : 'defineWalletAsDefault'.tr(),
                   style: scaledTextStyle(
                     fontSize: 16,
-                    color: walletProvider.isDefaultWallet
-                        ? Colors.grey[500] // Un peu plus foncé pour le texte désactivé
-                        : Colors.black87, // Plus foncé pour le texte actif
+                    color: walletProvider.isDefaultWallet ? Colors.grey[500] : Colors.black87,
                   ),
                 ),
               ],
@@ -617,7 +613,7 @@ Widget aloneWalletOptions() {
                   Icon(
                     Icons.add_circle_outline,
                     size: scaleSize(24),
-                    color: sub.nodeConnected ? Colors.black87 : Colors.grey[400],
+                    color: sub.nodeConnected ? Color(0xFF4CAF50).withOpacity(0.8) : Colors.grey[400],
                   ),
                   ScaledSizedBox(width: 16),
                   Text(

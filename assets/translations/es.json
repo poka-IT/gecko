@@ -244,7 +244,7 @@
     "areYouSureYouWantToRenewMembership": "¿Estás seguro de que quieres renovar tu adhésion?",
     "membershipExpiredOn": "Adhésion expirée el {}",
     "membershipExpiresOnSimple": "Adhésion expira el {}",
-    "membershipExpiresOn": "Adhésion expira el {}, (renovable {} días antes)",
+    "membershipExpiresOn": "Adhésion expira el {} (Renovación posible a partir de {})",
     "renewingMembership": "Renovando adhésion",
     "membershipRenewalConfirmed": "Su solicitud de renovación de membresía ha sido registrada y será efectiva en unos minutos",
     "membershipRenewalPending": "Renovación de membresía en curso...",

@@ -18,17 +18,17 @@ class MembershipRenewal {
     }
 
     final now = DateTime.now();
-    final renewalPeriodInSeconds = renewalPeriodBlocks * 6;
-    final renewalDate = status.expireDate!.subtract(Duration(seconds: renewalPeriodInSeconds));
     final isExpired = status.expireDate!.isBefore(now);
-    final canRenew = now.isAfter(renewalDate) && !status.hasPendingRenewal;
+
+    // On peut renouveler si on est après la date de début de renouvellement
+    final canRenew = !status.hasPendingRenewal && (status.renewalStartDate?.isBefore(now) ?? false);
 
     return RenewalInfo(
       expireDate: status.expireDate,
-      renewalDate: renewalDate,
       isExpired: isExpired,
       canRenew: canRenew,
       hasPendingRenewal: status.hasPendingRenewal,
+      renewalStartDate: status.renewalStartDate,
     );
   }
 
@@ -58,14 +58,18 @@ class MembershipRenewal {
   static Widget buildExpirationText(RenewalInfo info, {double? width}) {
     if (info.expireDate == null) return const SizedBox.shrink();
 
-    final text = info.hasPendingRenewal
-        ? 'membershipRenewalPending'.tr()
-        : info.isExpired
-            ? 'membershipExpiredOn'.tr(args: [DateFormat('dd/MM/yyyy').format(info.expireDate!)])
-            : info.canRenew
-                ? 'membershipExpiresOnSimple'.tr(args: [DateFormat('dd/MM/yyyy').format(info.expireDate!)])
-                : 'membershipExpiresOn'
-                    .tr(args: [DateFormat('dd/MM/yyyy').format(info.expireDate!), ((info.expireDate!.difference(info.renewalDate!)).inDays).toString()]);
+    final isRenewalStartDateInFuture = info.renewalStartDate != null && info.renewalStartDate!.isAfter(DateTime.now());
+
+    String text;
+    if (info.hasPendingRenewal) {
+      text = 'membershipRenewalPending'.tr();
+    } else if (info.isExpired) {
+      text = 'membershipExpiredOn'.tr(args: [DateFormat('dd/MM/yyyy').format(info.expireDate!)]);
+    } else if (!isRenewalStartDateInFuture) {
+      text = 'membershipExpiresOnSimple'.tr(args: [DateFormat('dd/MM/yyyy').format(info.expireDate!)]);
+    } else {
+      text = 'membershipExpiresOn'.tr(args: [DateFormat('dd/MM/yyyy').format(info.expireDate!), DateFormat('dd/MM/yyyy').format(info.renewalStartDate!)]);
+    }
 
     final textWidget = Text(
       text,
@@ -82,16 +86,16 @@ class MembershipRenewal {
 
 class RenewalInfo {
   final DateTime? expireDate;
-  final DateTime? renewalDate;
   final bool isExpired;
   final bool canRenew;
   final bool hasPendingRenewal;
+  final DateTime? renewalStartDate;
 
   RenewalInfo({
     this.expireDate,
-    this.renewalDate,
     this.isExpired = false,
     this.canRenew = false,
     this.hasPendingRenewal = false,
+    this.renewalStartDate,
   });
 }

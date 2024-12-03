@@ -491,6 +491,7 @@ class SubstrateSdk with ChangeNotifier {
       'certMaxByIssuer': 'certification.maxByIssuer.words',
       'certValidityPeriod': 'certification.validityPeriod.words',
       'membershipRenewalPeriod': 'membership.membershipRenewalPeriod.words',
+      'membershipPeriod': 'membership.membershipPeriod.words',
     };
 
     try {
@@ -1264,7 +1265,7 @@ newKeySig: $newKeySigType""");
 
   Future<MembershipStatus> getMembershipStatus(String address) async {
     final idtyIndex = await _getIdentityIndexOf(address);
-    if (idtyIndex == null) return MembershipStatus(expireDate: null, hasPendingRenewal: false);
+    if (idtyIndex == null) return MembershipStatus.empty();
 
     // Vérifier si une évaluation est en cours
     final hasPendingRenewal = await _getStorage('distance.pendingEvaluationRequest($idtyIndex)') != null;
@@ -1278,9 +1279,14 @@ newKeySig: $newKeySigType""");
     // Returns expiration date by adding (or subtracting if expired) time from now
     final expireDate = DateTime.now().add(Duration(seconds: blockDifference * 6));
 
+    final membershipPeriod = currencyParameters['membershipPeriod']!;
+    final membershipRenewalPeriod = currencyParameters['membershipRenewalPeriod']!;
+    final renewalStartDate = expireDate.subtract(Duration(seconds: (membershipPeriod - membershipRenewalPeriod).round() * 6));
+
     return MembershipStatus(
       expireDate: expireDate,
       hasPendingRenewal: hasPendingRenewal,
+      renewalStartDate: renewalStartDate,
     );
   }
 }

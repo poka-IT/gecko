@@ -318,7 +318,14 @@ class SubstrateSdk with ChangeNotifier {
     final List pastReevals = await _getStorage('universalDividend.pastReevals()');
     // Compute amount of claimable UDs
     currentUdIndex = await getCurrentUdIndex();
-    final int unclaimedUds = _computeUnclaimUds(idtyData?['data']?['firstEligibleUd'] ?? 0, pastReevals);
+
+    final idtyStatus = mapStatus[idtyData?['status']] ?? IdtyStatus.none;
+
+    final int unclaimedUds = _computeUnclaimUds(
+      firstEligibleUd: idtyData?['data']?['firstEligibleUd'] ?? 0,
+      pastReevals: pastReevals,
+      idtyStatus: idtyStatus,
+    );
 
     // Calculate transferable and potential balance
     final int transferableBalance = (account['data']['free'] + unclaimedUds);
@@ -331,24 +338,28 @@ class SubstrateSdk with ChangeNotifier {
     };
   }
 
-  int _computeUnclaimUds(int firstEligibleUd, List pastReevals) {
+  int _computeUnclaimUds({
+    required int firstEligibleUd,
+    required List pastReevals,
+    required IdtyStatus idtyStatus,
+  }) {
     int totalAmount = 0;
 
-    if (firstEligibleUd == 0) return 0;
+    if (firstEligibleUd == 0 || idtyStatus != IdtyStatus.member) return 0;
 
     for (final List reval in pastReevals.reversed) {
-      final int revalNbr = reval[0];
-      final int revalValue = reval[1];
+      final int udIndex = reval[0];
+      final int udValue = reval[1];
 
       // Loop each UDs revaluations and sum unclaimed balance
-      if (revalNbr <= firstEligibleUd) {
+      if (udIndex <= firstEligibleUd) {
         final count = currentUdIndex - firstEligibleUd;
-        totalAmount += count * revalValue;
+        totalAmount += count * udValue;
         break;
       } else {
-        final count = currentUdIndex - revalNbr;
-        totalAmount += count * revalValue;
-        currentUdIndex = revalNbr;
+        final count = currentUdIndex - udIndex;
+        totalAmount += count * udValue;
+        currentUdIndex = udIndex;
       }
     }
 
@@ -413,6 +424,16 @@ class SubstrateSdk with ChangeNotifier {
     return startBlockchainTime.add(Duration(seconds: blocNumber * 6));
   }
 
+  final mapStatus = {
+    null: IdtyStatus.none,
+    'Unconfirmed': IdtyStatus.unconfirmed,
+    'Unvalidated': IdtyStatus.unvalidated,
+    'Member': IdtyStatus.member,
+    'NotMember': IdtyStatus.notMember,
+    'Revoked': IdtyStatus.revoked,
+    'unknown': IdtyStatus.unknown,
+  };
+
   Future<List<IdtyStatus>> idtyStatus(List<String> addresses) async {
     // final walletOptions =
     //     Provider.of<WalletOptionsProvider>(homeContext, listen: false);
@@ -425,15 +446,6 @@ class SubstrateSdk with ChangeNotifier {
     final List idtyStatusList = await _getStorage('identity.identities.multi($jsonString)');
 
     List<IdtyStatus> resultStatus = [];
-    final mapStatus = {
-      null: IdtyStatus.none,
-      'Unconfirmed': IdtyStatus.unconfirmed,
-      'Unvalidated': IdtyStatus.unvalidated,
-      'Member': IdtyStatus.member,
-      'NotMember': IdtyStatus.notMember,
-      'Revoked': IdtyStatus.revoked,
-      'unknown': IdtyStatus.unknown,
-    };
 
     for (final idtyStatus in idtyStatusList) {
       if (idtyStatus == null) {

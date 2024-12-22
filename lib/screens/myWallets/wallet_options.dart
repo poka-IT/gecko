@@ -457,8 +457,8 @@ class WalletOptions extends StatelessWidget {
               sub.currencyParameters['membershipRenewalPeriod']!,
             );
 
-            final twoMonthsBeforeExpiration = info.expireDate?.subtract(const Duration(days: 60));
-            final shouldHideButton = !info.canRenew || !(twoMonthsBeforeExpiration?.isBefore(DateTime.now()) ?? false);
+            final twentyDaysBeforeExpiration = info.expireDate?.subtract(const Duration(days: 20));
+            final shouldHideButton = !info.canRenew || !(twentyDaysBeforeExpiration?.isBefore(DateTime.now()) ?? false);
 
             if (shouldHideButton) return const SizedBox.shrink();
 

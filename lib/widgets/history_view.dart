@@ -41,8 +41,8 @@ class HistoryView extends StatelessWidget {
           ])
         : Column(children: <Widget>[
             Column(
-                children: duniterIndexer.transBC!.map((repository) {
-              final answer = duniterIndexer.computeHistoryView(repository, address);
+                children: duniterIndexer.transBC!.map((transaction) {
+              final answer = duniterIndexer.computeHistoryView(transaction, address);
               pastDelimiters.add(answer['dateDelimiter']);
 
               bool isMigrationTime = false;
@@ -78,7 +78,7 @@ class HistoryView extends StatelessWidget {
                 TransactionTile(
                     keyID: keyID,
                     avatarSize: avatarSize,
-                    repository: repository,
+                    transaction: transaction,
                     dateForm: answer['dateForm'],
                     finalAmount: answer['finalAmount'],
                     duniterIndexer: duniterIndexer,

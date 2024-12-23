@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/models/transaction.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/screens/wallet_view.dart';
@@ -12,7 +13,7 @@ class TransactionTile extends StatelessWidget {
     super.key,
     required this.keyID,
     required this.avatarSize,
-    required this.repository,
+    required this.transaction,
     required this.dateForm,
     required this.finalAmount,
     required this.duniterIndexer,
@@ -21,7 +22,7 @@ class TransactionTile extends StatelessWidget {
 
   final int keyID;
   final double avatarSize;
-  final List repository;
+  final Transaction transaction;
   final String dateForm;
   final String finalAmount;
   final DuniterIndexer duniterIndexer;
@@ -30,7 +31,7 @@ class TransactionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final newKey = keyID + 1;
-    final String? username = repository[2] == '' ? null : repository[2];
+    final String? username = transaction.username == '' ? null : transaction.username;
 
     return Container(
       margin: EdgeInsets.symmetric(
@@ -63,7 +64,7 @@ class TransactionTile extends StatelessWidget {
             ),
           ),
           child: DatapodAvatar(
-            address: repository[1],
+            address: transaction.address,
             size: avatarSize,
           ),
         ),
@@ -71,7 +72,7 @@ class TransactionTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              getShortPubkey(repository[1]),
+              getShortPubkey(transaction.address),
               style: scaledTextStyle(
                 fontSize: 15,
                 fontFamily: 'Monospace',
@@ -106,6 +107,19 @@ class TransactionTile extends StatelessWidget {
                 ],
               ),
             ),
+            if (transaction.comment.isNotEmpty) ...[
+              ScaledSizedBox(height: 4),
+              Text(
+                transaction.comment,
+                style: scaledTextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                  fontStyle: FontStyle.italic,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ],
         ),
         trailing: Text(
@@ -113,7 +127,7 @@ class TransactionTile extends StatelessWidget {
           style: scaledTextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w600,
-            color: repository[4] == 'RECEIVED' ? const Color(0xFF4CAF50) : const Color(0xFF2196F3),
+            color: transaction.isReceived ? const Color(0xFF4CAF50) : const Color(0xFF2196F3),
           ),
         ),
         onTap: () {
@@ -121,7 +135,7 @@ class TransactionTile extends StatelessWidget {
             context,
             PageNoTransit(
               builder: (context) => WalletViewScreen(
-                address: repository[1],
+                address: transaction.address,
                 username: username,
               ),
             ),

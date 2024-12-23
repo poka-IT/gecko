@@ -54,6 +54,10 @@ query ($address: String!, $first: Int!, $after: String) {
             name
           }
         }
+        comment {
+          remark
+          type
+        }
       }
     }
     pageInfo {

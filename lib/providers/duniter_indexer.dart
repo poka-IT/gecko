@@ -11,12 +11,13 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/utils.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:gecko/models/transaction.dart';
 
 class DuniterIndexer with ChangeNotifier {
   Map<String, String?> walletNameIndexer = {};
   String? fetchMoreCursor;
   Map? pageInfo;
-  List? transBC;
+  List<Transaction>? transBC;
   List listIndexerEndpoints = [];
   bool isLoadingIndexer = false;
   Future<QueryResult<Object?>?> Function()? refetch;
@@ -207,32 +208,44 @@ class DuniterIndexer with ChangeNotifier {
     }
   }
 
-  List parseHistory(List blockchainTX, String address) {
-    List transBC = [];
-    int i = 0;
+  List<Transaction> parseHistory(List blockchainTX, String address) {
+    // Create a list to store Transaction objects
+    List<Transaction> transactions = [];
 
     for (final transactionNode in blockchainTX) {
       final transaction = transactionNode['node'];
-      final direction = transaction['fromId'] != address ? 'RECEIVED' : 'SENT';
+      final isReceived = transaction['fromId'] != address;
 
-      transBC.add(i);
-      transBC[i] = [];
-      transBC[i].add(DateTime.parse(transaction['timestamp']));
+      // Calculate amount
       final amountBrut = transaction['amount'];
       final amount = removeDecimalZero(amountBrut / 100);
-      if (direction == "RECEIVED") {
-        transBC[i].add(transaction['fromId']);
-        transBC[i].add(transaction['from']['identity']?['name'] ?? '');
-      } else if (direction == "SENT") {
-        transBC[i].add(transaction['toId']);
-        transBC[i].add(transaction['to']['identity']?['name'] ?? '');
-      }
-      transBC[i].add(amount);
-      transBC[i].add(direction);
+      final comment = transaction['comment']?['remark'] ?? '';
+      final commentType = transaction['comment']?['type'] ?? '';
 
-      i++;
+      // Determine counterparty based on direction
+      final String counterPartyId;
+      final String counterPartyName;
+      if (isReceived) {
+        counterPartyId = transaction['fromId'];
+        counterPartyName = transaction['from']['identity']?['name'] ?? '';
+      } else {
+        counterPartyId = transaction['toId'];
+        counterPartyName = transaction['to']['identity']?['name'] ?? '';
+      }
+
+      // Create and add new Transaction object
+      transactions.add(
+        Transaction(
+          timestamp: DateTime.parse(transaction['timestamp']),
+          address: counterPartyId,
+          username: counterPartyName,
+          amount: amount,
+          comment: commentType == 'ASCII' ? comment : '',
+          isReceived: isReceived,
+        ),
+      );
     }
-    return transBC;
+    return transactions;
   }
 
   FetchMoreOptions? mergeQueryResult(QueryResult result, FetchMoreOptions? opts, String address, int nRepositories) {
@@ -313,11 +326,11 @@ class DuniterIndexer with ChangeNotifier {
     return indexerClient.subscribe(options);
   }
 
-  Map computeHistoryView(repository, String address) {
+  Map computeHistoryView(Transaction transaction, String address) {
     final bool isUdUnit = configBox.get('isUdUnit') ?? false;
     late double amount;
     late String finalAmount;
-    final DateTime date = repository[0];
+    final DateTime date = transaction.timestamp;
 
     final dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, {1, 2, 7, 9}.contains(date.month) ? 4 : 3)}";
 
@@ -352,7 +365,7 @@ class DuniterIndexer with ChangeNotifier {
 
     final dateDelimiter = getDateDelimiter();
 
-    amount = repository[4] == 'RECEIVED' ? repository[3] : repository[3] * -1;
+    amount = transaction.isReceived ? transaction.amount : transaction.amount * -1;
 
     if (isUdUnit) {
       amount = round(amount / balanceRatio);

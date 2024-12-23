@@ -435,9 +435,6 @@ class SubstrateSdk with ChangeNotifier {
   };
 
   Future<List<IdtyStatus>> idtyStatus(List<String> addresses) async {
-    // final walletOptions =
-    //     Provider.of<WalletOptionsProvider>(homeContext, listen: false);
-
     final idtyIndexes = await _getIdentityIndexOfMulti(addresses);
 
     //FIXME: should not have to replace null values by 99999999

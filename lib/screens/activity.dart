@@ -2,19 +2,19 @@
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
-import 'package:gecko/widgets/header_profile.dart';
 import 'package:gecko/widgets/history_query.dart';
+import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:provider/provider.dart';
+import 'package:gecko/widgets/wallet_header.dart';
+import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 
 class ActivityScreen extends StatefulWidget {
-  const ActivityScreen({required this.address, this.username, this.transactionId})
-      : super(key: keyActivityScreen);
+  const ActivityScreen({required this.address, this.username, this.transactionId}) : super(key: keyActivityScreen);
   final String address;
   final String? username;
   final String? transactionId;
@@ -39,19 +39,29 @@ class _ActivityScreenState extends State<ActivityScreen> {
         duniterIndexer.refetch = duniterIndexer.transBC = null;
       },
       child: Scaffold(
-          appBar: AppBar(
-            elevation: 0,
-            toolbarHeight: scaleSize(57),
-            title: Text(
-              'accountActivity'.tr(),
-              style: scaledTextStyle(fontSize: 17),
+        backgroundColor: Colors.grey[50],
+        appBar: WalletAppBar(
+          address: widget.address,
+          title: 'accountActivity'.tr(),
+        ),
+        body: Stack(
+          children: [
+            Column(
+              children: <Widget>[
+                WalletHeader(address: widget.address),
+                Expanded(
+                  child: HistoryQuery(
+                    address: widget.address,
+                    transactionId: widget.transactionId,
+                  ),
+                ),
+              ],
             ),
-          ),
-          bottomNavigationBar: const GeckoBottomAppBar(),
-          body: Column(children: <Widget>[
-            HeaderProfile(address: widget.address, username: widget.username),
-            HistoryQuery(address: widget.address, transactionId: widget.transactionId),
-          ])),
+            const OfflineInfo(),
+          ],
+        ),
+        bottomNavigationBar: const GeckoBottomAppBar(),
+      ),
     );
   }
 }

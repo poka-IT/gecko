@@ -42,8 +42,7 @@ class HistoryView extends StatelessWidget {
         : Column(children: <Widget>[
             Column(
                 children: duniterIndexer.transBC!.map((repository) {
-              final answer =
-                  duniterIndexer.computeHistoryView(repository, address);
+              final answer = duniterIndexer.computeHistoryView(repository, address);
               pastDelimiters.add(answer['dateDelimiter']);
 
               bool isMigrationTime = false;
@@ -55,39 +54,25 @@ class HistoryView extends StatelessWidget {
               return Column(children: <Widget>[
                 if (isMigrationTime)
                   Padding(
-                    padding: EdgeInsets.only(
-                        top: scaleSize(25), bottom: scaleSize(15)),
+                    padding: EdgeInsets.only(top: scaleSize(25), bottom: scaleSize(15)),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Image(
-                            image: const AssetImage('assets/party.png'),
-                            height: scaleSize(31)),
+                        Image(image: const AssetImage('assets/party.png'), height: scaleSize(31)),
                         Text(
                           'blockchainStart'.tr(),
-                          style: scaledTextStyle(
-                              fontSize: 19,
-                              color: Colors.blueAccent,
-                              fontWeight: FontWeight.w400),
+                          style: scaledTextStyle(fontSize: 19, color: Colors.blueAccent, fontWeight: FontWeight.w400),
                         ),
-                        Image(
-                            image: const AssetImage('assets/party.png'),
-                            height: scaleSize(31)),
+                        Image(image: const AssetImage('assets/party.png'), height: scaleSize(31)),
                       ],
                     ),
                   ),
-                if (pastDelimiters.length == 1 ||
-                    pastDelimiters.length >= 2 &&
-                        !(pastDelimiters[pastDelimiters.length - 2] ==
-                            answer['dateDelimiter']))
+                if (pastDelimiters.length == 1 || pastDelimiters.length >= 2 && !(pastDelimiters[pastDelimiters.length - 2] == answer['dateDelimiter']))
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 20),
                     child: Text(
                       answer['dateDelimiter'],
-                      style: scaledTextStyle(
-                          fontSize: 19,
-                          color: orangeC,
-                          fontWeight: FontWeight.w300),
+                      style: scaledTextStyle(fontSize: 19, color: orangeC, fontWeight: FontWeight.w300),
                     ),
                   ),
                 TransactionTile(
@@ -107,8 +92,7 @@ class HistoryView extends StatelessWidget {
                   Loading(size: 30, stroke: 3),
                 ],
               ),
-            if (!duniterIndexer.pageInfo!['hasNextPage'] &&
-                sub.oldOwnerKeys[address]?[0] != null)
+            if (!duniterIndexer.pageInfo!['hasNextPage'] && sub.oldOwnerKeys[address]?[0] != null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 30),
                 child: InkWell(
@@ -132,15 +116,10 @@ class HistoryView extends StatelessWidget {
                       Column(children: [
                         Text(
                           'identityMigrated'.tr(),
-                          style: scaledTextStyle(
-                              fontSize: 19,
-                              color: Colors.green[700],
-                              fontWeight: FontWeight.w500),
+                          style: scaledTextStyle(fontSize: 19, color: Colors.green[700], fontWeight: FontWeight.w500),
                         ),
                         Text(
-                          'from'.tr(args: [
-                            ' ${getShortPubkey(sub.oldOwnerKeys[address]![0])}'
-                          ]),
+                          'from'.tr(args: [' ${getShortPubkey(sub.oldOwnerKeys[address]![0])}']),
                           style: scaledTextStyle(fontSize: 16),
                         ),
                       ]),
@@ -161,10 +140,7 @@ class HistoryView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Icon(Icons.blur_on_outlined, size: scaleSize(31)),
-                      Text("historyStart".tr(),
-                          textAlign: TextAlign.center,
-                          style: scaledTextStyle(
-                              fontSize: 19, fontWeight: FontWeight.w300)),
+                      Text("historyStart".tr(), textAlign: TextAlign.center, style: scaledTextStyle(fontSize: 19, fontWeight: FontWeight.w300)),
                       Icon(Icons.blur_on_outlined, size: scaleSize(31)),
                     ],
                   ),

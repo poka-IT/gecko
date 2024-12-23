@@ -16,23 +16,18 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:gecko/screens/certifications.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/myWallets/chest_options.dart';
 import 'package:gecko/screens/myWallets/import_g1_v1.dart';
-import 'package:gecko/screens/qrcode_fullscreen.dart';
 import 'package:gecko/utils.dart';
-import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
-import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
-import 'package:gecko/widgets/idty_status.dart';
-import 'package:gecko/widgets/name_by_address.dart';
+import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:gecko/widgets/buttons/manage_membership_button.dart';
 import 'package:gecko/models/membership_renewal.dart';
+import 'package:gecko/widgets/wallet_header.dart';
 
 class WalletOptions extends StatelessWidget {
   const WalletOptions({Key? keyMyWallets, required this.wallet}) : super(key: keyMyWallets);
@@ -44,8 +39,6 @@ class WalletOptions extends StatelessWidget {
     WalletsProfilesProvider historyProvider = Provider.of<WalletsProfilesProvider>(context, listen: false);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     walletOptions.address.text = wallet.address;
 
@@ -62,153 +55,19 @@ class WalletOptions extends StatelessWidget {
       },
       child: Scaffold(
         backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: headerColor,
-          elevation: 0,
-          title: Consumer<WalletOptionsProvider>(builder: (context, walletProvider, _) {
-            return Text(
-              isWalletNameIndexed ? duniterIndexer.walletNameIndexer[walletOptions.address.text]! : wallet.name!,
-              style: scaledTextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
-              ),
-            );
-          }),
-          actions: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => QrCodeFullscreen(walletOptions.address.text)),
-                  );
-                },
-                child: QrImageView(
-                  data: walletOptions.address.text,
-                  version: QrVersions.auto,
-                  size: scaleSize(45),
-                  backgroundColor: Colors.white,
-                ),
-              ),
-            ),
-          ],
+        appBar: WalletAppBar(
+          address: wallet.address,
+          title: isWalletNameIndexed ? duniterIndexer.walletNameIndexer[walletOptions.address.text]! : wallet.name!,
         ),
         body: Stack(
           children: [
             Column(
               children: [
-                // En-tête avec avatar et informations
-                Container(
-                  color: headerColor,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: scaleSize(16),
-                    vertical: scaleSize(16),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      buildAvatarSection(walletOptions),
-                      SizedBox(width: scaleSize(20)),
-                      Expanded(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(
-                                    height: scaleSize(26),
-                                    child: Consumer<WalletOptionsProvider>(
-                                      builder: (context, walletProvider, _) {
-                                        return Row(
-                                          children: [
-                                            NameByAddress(
-                                              wallet: wallet,
-                                              size: 20,
-                                              color: Colors.black87,
-                                              fontWeight: wallet.identityStatus == IdtyStatus.member ? FontWeight.w600 : FontWeight.w400,
-                                            ),
-                                            if (duniterIndexer.walletNameIndexer[wallet.address] == null)
-                                              IconButton(
-                                                padding: EdgeInsets.zero,
-                                                constraints: const BoxConstraints(),
-                                                icon: Icon(
-                                                  walletProvider.isEditing ? Icons.check : Icons.edit,
-                                                  size: scaleSize(18),
-                                                ),
-                                                onPressed: () async {
-                                                  await walletProvider.editWalletName(context, wallet.id);
-                                                },
-                                              ),
-                                          ],
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                  if (!wallet.hasIdentity) const SizedBox(height: 16),
-                                  Balance(
-                                    address: walletOptions.address.text,
-                                    size: 24,
-                                  ),
-                                  if (wallet.hasIdentity) ...[
-                                    SizedBox(height: scaleSize(12)),
-                                    InkWell(
-                                      onTap: () => sub.certsCounterCache[walletOptions.address.text] != null
-                                          ? Navigator.push(
-                                              context,
-                                              PageNoTransit(
-                                                builder: (context) => CertificationsScreen(
-                                                  address: walletOptions.address.text,
-                                                  username: duniterIndexer.walletNameIndexer[walletOptions.address.text] ?? '',
-                                                ),
-                                              ),
-                                            )
-                                          : null,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(8),
-                                          color: Colors.transparent,
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IdentityStatus(
-                                              address: walletOptions.address.text,
-                                              isOwner: true,
-                                              color: orangeC,
-                                            ),
-                                            SizedBox(width: scaleSize(8)),
-                                            Certifications(
-                                              address: walletOptions.address.text,
-                                              size: 14,
-                                            ),
-                                            if (sub.certsCounterCache[walletOptions.address.text] != null) ...[
-                                              SizedBox(width: scaleSize(4)),
-                                              Icon(
-                                                Icons.chevron_right,
-                                                size: scaleSize(16),
-                                                color: orangeC.withOpacity(0.8),
-                                              ),
-                                            ],
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                WalletHeader(
+                  address: wallet.address,
+                  customImagePath: wallet.imageCustomPath,
+                  defaultImagePath: wallet.imageDefaultPath,
                 ),
-
                 // Corps avec les options
                 Expanded(
                   child: SingleChildScrollView(

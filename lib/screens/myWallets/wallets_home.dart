@@ -61,7 +61,6 @@ class _WalletsHomeContent extends StatelessWidget {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: yellowC,
         toolbarHeight: scaleSize(57),
         title: Row(
           children: [

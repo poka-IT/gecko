@@ -24,80 +24,56 @@ class ContactsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final walletsProfilesClass =
-        Provider.of<WalletsProfilesProvider>(context, listen: false);
+    final walletsProfilesClass = Provider.of<WalletsProfilesProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 5),
-      child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            ScaledSizedBox(height: 10, width: double.infinity),
-            if (myContacts.isEmpty)
-              Text('noContacts'.tr())
-            else
-              Expanded(
-                child: ListView(children: <Widget>[
-                  for (G1WalletsList g1Wallet in myContacts)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 5),
-                      child: ListTile(
-                          key: keySearchResult('keyID++'),
-                          horizontalTitleGap: 7,
-                          contentPadding: const EdgeInsets.all(5),
-                          dense: !isTall,
-                          leading: DatapodAvatar(
-                              address: g1Wallet.address, size: 47),
-                          title: Row(children: <Widget>[
-                            Text(getShortPubkey(g1Wallet.address),
-                                style: scaledTextStyle(
-                                    fontSize: 15,
-                                    fontFamily: 'Monospace',
-                                    fontWeight: FontWeight.w500),
-                                textAlign: TextAlign.center),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+        ScaledSizedBox(height: 10, width: double.infinity),
+        if (myContacts.isEmpty)
+          Text('noContacts'.tr())
+        else
+          Expanded(
+            child: ListView(children: <Widget>[
+              for (G1WalletsList g1Wallet in myContacts)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  child: ListTile(
+                      key: keySearchResult('keyID++'),
+                      horizontalTitleGap: 7,
+                      contentPadding: const EdgeInsets.all(5),
+                      dense: !isTall,
+                      leading: DatapodAvatar(address: g1Wallet.address, size: 47),
+                      title: Row(children: <Widget>[
+                        Text(getShortPubkey(g1Wallet.address),
+                            style: scaledTextStyle(fontSize: 15, fontFamily: 'Monospace', fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+                      ]),
+                      trailing: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                        ScaledSizedBox(
+                          width: 110,
+                          child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                            Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                              Balance(address: g1Wallet.address, size: scaleSize(14)),
+                            ]),
                           ]),
-                          trailing: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                ScaledSizedBox(
-                                  width: 110,
-                                  child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Balance(
-                                                  address: g1Wallet.address,
-                                                  size: scaleSize(14)),
-                                            ]),
-                                      ]),
-                                ),
-                              ]),
-                          subtitle: Row(children: <Widget>[
-                            NameByAddress(
-                                size: scaleSize(17),
-                                wallet: WalletData(address: g1Wallet.address))
-                          ]),
-                          isThreeLine: false,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) {
-                                walletsProfilesClass.address = g1Wallet.address;
-                                return WalletViewScreen(
-                                    address: g1Wallet.address,
-                                    username: duniterIndexer
-                                        .walletNameIndexer[g1Wallet.address]);
-                              }),
-                            );
+                        ),
+                      ]),
+                      subtitle: Row(children: <Widget>[NameByAddress(size: scaleSize(15), wallet: WalletData(address: g1Wallet.address))]),
+                      isThreeLine: false,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) {
+                            walletsProfilesClass.address = g1Wallet.address;
+                            return WalletViewScreen(address: g1Wallet.address, username: duniterIndexer.walletNameIndexer[g1Wallet.address]);
                           }),
-                    ),
-                ]),
-              )
-          ]),
+                        );
+                      }),
+                ),
+            ]),
+          )
+      ]),
     );
   }
 }

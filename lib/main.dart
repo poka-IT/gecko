@@ -150,21 +150,43 @@ class Gecko extends StatelessWidget {
         title: 'Ğecko',
         theme: ThemeData(
           appBarTheme: const AppBarTheme(
-            color: Color(0xffFFD58D),
-            foregroundColor: Color(0xFF000000),
+            elevation: 0,
+            backgroundColor: headerColor,
+            titleTextStyle: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+              fontFamily: 'Roboto',
+            ),
+          ),
+          textTheme: const TextTheme(
+            titleLarge: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+              fontFamily: 'Roboto',
+            ),
+            bodyMedium: TextStyle(
+              fontSize: 14,
+              color: Colors.black87,
+              fontFamily: 'Roboto',
+            ),
+            bodySmall: TextStyle(
+              fontSize: 13,
+              color: Colors.black54,
+              fontFamily: 'Roboto',
+            ),
+            labelMedium: TextStyle(
+              fontSize: 15,
+              fontFamily: 'Monospace',
+              fontWeight: FontWeight.w500,
+            ),
           ),
           primaryColor: const Color(0xffFFD58D),
           scaffoldBackgroundColor: backgroundColor,
           canvasColor: backgroundColor,
           dialogBackgroundColor: backgroundColor,
-          // textTheme: const TextTheme(
-          //   bodyLarge: TextStyle(fontSize: 13),
-          //   bodyMedium: TextStyle(fontSize: 15),
-          // ).apply(
-          //   bodyColor: const Color(0xFF000000),
-          // ),
-          colorScheme:
-              ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]),
+          colorScheme: ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]),
         ),
         initialRoute: "/",
         routes: {

@@ -29,33 +29,45 @@ class HomeButtons extends StatelessWidget {
       Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
         Column(children: <Widget>[
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.black,
+              color: Colors.black.withValues(alpha: 0.1),
               boxShadow: [
                 BoxShadow(
-                    blurRadius: 2, offset: Offset(1, 1.5), spreadRadius: 0.5)
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                  spreadRadius: 0,
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 1,
+                  offset: const Offset(0, 1),
+                ),
               ],
             ),
             child: ClipOval(
               child: Material(
                 color: orangeC,
                 child: InkWell(
-                    key: keyOpenSearch,
-                    child: Padding(
-                      padding: EdgeInsets.all(scaleSize(15)),
-                      child: Image(
-                          image: const AssetImage('assets/home/loupe.png'),
-                          height: scaleSize(58)),
+                  splashColor: Colors.white.withValues(alpha: 0.2),
+                  highlightColor: Colors.white.withValues(alpha: 0.1),
+                  child: Padding(
+                    padding: EdgeInsets.all(scaleSize(15)),
+                    child: Image(
+                      image: const AssetImage('assets/home/loupe.png'),
+                      height: scaleSize(58),
                     ),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) {
-                          return const SearchScreen();
-                        }),
-                      );
-                    }),
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return const SearchScreen();
+                      }),
+                    );
+                  },
+                ),
               ),
             ),
           ),
@@ -64,41 +76,54 @@ class HomeButtons extends StatelessWidget {
             "searchWallet".tr(),
             textAlign: TextAlign.center,
             style: scaledTextStyle(
-                color: Colors.white,
-                fontSize: 12.5,
-                fontWeight: FontWeight.w500),
+              color: Colors.white,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w500,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
           )
         ]),
         ScaledSizedBox(width: 95),
         Column(children: <Widget>[
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.black,
+              color: Colors.black.withValues(alpha: 0.1),
               boxShadow: [
                 BoxShadow(
-                    blurRadius: 2, offset: Offset(1, 1.5), spreadRadius: 0.5)
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                  spreadRadius: 0,
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 1,
+                  offset: const Offset(0, 1),
+                ),
               ],
             ),
             child: ClipOval(
               key: keyOpenWalletsHomme,
               child: Material(
-                color: homeProvider.isWalletBoxInit
-                    ? orangeC
-                    : Colors.grey[500], // button color
+                color: homeProvider.isWalletBoxInit ? orangeC : Colors.grey[500], // button color
                 child: InkWell(
                     onTap: !homeProvider.isWalletBoxInit
                         ? null
                         : () async {
-                            WalletData? defaultWallet =
-                                myWalletProvider.getDefaultWallet();
+                            WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
                             if (myWalletProvider.pinCode == '') {
                               await Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (homeContext) {
-                                    return UnlockingWallet(
-                                        wallet: defaultWallet);
+                                    return UnlockingWallet(wallet: defaultWallet);
                                   },
                                 ),
                               );
@@ -107,10 +132,7 @@ class HomeButtons extends StatelessWidget {
                             Navigator.pushNamed(context, '/mywallets');
                           },
                     child: Padding(
-                        padding: EdgeInsets.all(scaleSize(14.5)),
-                        child: Image(
-                            image: const AssetImage('assets/home/wallet.png'),
-                            height: scaleSize(61)))),
+                        padding: EdgeInsets.all(scaleSize(14.5)), child: Image(image: const AssetImage('assets/home/wallet.png'), height: scaleSize(61)))),
               ),
             ),
           ),
@@ -118,25 +140,30 @@ class HomeButtons extends StatelessWidget {
           Text(
             "manageWallets".tr(),
             textAlign: TextAlign.center,
-            style: scaledTextStyle(
-                color: Colors.white,
-                fontSize: 12.5,
-                fontWeight: FontWeight.w500),
+            style: scaledTextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w500),
           )
         ])
       ]),
       Padding(
         padding: EdgeInsets.only(top: scaleSize(30)),
-        child:
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
           Column(children: <Widget>[
             Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.black,
+                color: Colors.black.withValues(alpha: 0.1),
                 boxShadow: [
                   BoxShadow(
-                      blurRadius: 2, offset: Offset(1, 1.5), spreadRadius: 0.5)
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                    spreadRadius: 0,
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 1,
+                    offset: const Offset(0, 1),
+                  ),
                 ],
               ),
               child: ClipOval(
@@ -144,10 +171,7 @@ class HomeButtons extends StatelessWidget {
                   color: orangeC, // button color
                   child: InkWell(
                       child: Padding(
-                          padding: EdgeInsets.all(scaleSize(14)),
-                          child: Image(
-                              image: const AssetImage('assets/home/qrcode.png'),
-                              height: scaleSize(62))),
+                          padding: EdgeInsets.all(scaleSize(14)), child: Image(image: const AssetImage('assets/home/qrcode.png'), height: scaleSize(62))),
                       onTap: () async {
                         await historyProvider.scan(context);
                       }),
@@ -158,10 +182,7 @@ class HomeButtons extends StatelessWidget {
             Text(
               "scanQRCode".tr(),
               textAlign: TextAlign.center,
-              style: scaledTextStyle(
-                  color: Colors.white,
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w500),
+              style: scaledTextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w500),
             )
           ])
         ]),

@@ -15,8 +15,7 @@ class OnboardingStepEleven extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final conffetiController =
-        ConfettiController(duration: const Duration(milliseconds: 500));
+    final conffetiController = ConfettiController(duration: const Duration(milliseconds: 500));
     conffetiController.play();
     return PopScope(
       canPop: false,
@@ -27,17 +26,14 @@ class OnboardingStepEleven extends StatelessWidget {
             child: Stack(children: [
               Column(children: <Widget>[
                 ScaledSizedBox(height: isTall ? 25 : 5),
-                BuildText(
-                    text: "yourChestAndWalletWereCreatedSuccessfully".tr()),
+                BuildText(text: "yourChestAndWalletWereCreatedSuccessfully".tr()),
                 ScaledSizedBox(height: isTall ? 15 : 5),
                 Image.asset(
                   'assets/onBoarding/gecko-clin.gif',
                   height: scaleSize(isTall ? 330 : 280),
                 ),
                 Expanded(
-                  child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: finishButton(context)),
+                  child: Align(alignment: Alignment.bottomCenter, child: finishButton(context)),
                 ),
                 ScaledSizedBox(height: isTall ? 40 : 5),
               ]),
@@ -45,26 +41,64 @@ class OnboardingStepEleven extends StatelessWidget {
                 alignment: Alignment.topLeft,
                 child: ConfettiWidget(
                   confettiController: conffetiController,
-                  blastDirection: pi * 0.1,
-                  maxBlastForce: 10,
-                  minBlastForce: 1,
-                  emissionFrequency: 0.01,
-                  numberOfParticles: 7,
-                  shouldLoop: false,
-                  gravity: 0.2,
+                  blastDirection: pi * 0.15,
+                  maxBlastForce: 15,
+                  minBlastForce: 3,
+                  emissionFrequency: 0.04,
+                  numberOfParticles: 8,
+                  shouldLoop: true,
+                  gravity: 0.15,
+                  particleDrag: 0.1,
+                  minimumSize: const Size(8, 8),
+                  maximumSize: const Size(12, 12),
                 ),
               ),
               Align(
                 alignment: Alignment.topRight,
                 child: ConfettiWidget(
                   confettiController: conffetiController,
-                  blastDirection: pi * 0.9,
-                  maxBlastForce: 10,
-                  minBlastForce: 1,
-                  emissionFrequency: 0.01,
-                  numberOfParticles: 7,
-                  shouldLoop: false,
-                  gravity: 0.2,
+                  blastDirection: pi * 0.85,
+                  maxBlastForce: 15,
+                  minBlastForce: 3,
+                  emissionFrequency: 0.04,
+                  numberOfParticles: 8,
+                  shouldLoop: true,
+                  gravity: 0.15,
+                  particleDrag: 0.1,
+                  minimumSize: const Size(8, 8),
+                  maximumSize: const Size(12, 12),
+                ),
+              ),
+              Align(
+                alignment: const Alignment(-0.3, -0.2),
+                child: ConfettiWidget(
+                  confettiController: conffetiController,
+                  blastDirection: pi * 0.3,
+                  maxBlastForce: 15,
+                  minBlastForce: 3,
+                  emissionFrequency: 0.04,
+                  numberOfParticles: 6,
+                  shouldLoop: true,
+                  gravity: 0.15,
+                  particleDrag: 0.1,
+                  minimumSize: const Size(8, 8),
+                  maximumSize: const Size(12, 12),
+                ),
+              ),
+              Align(
+                alignment: const Alignment(0.3, -0.2),
+                child: ConfettiWidget(
+                  confettiController: conffetiController,
+                  blastDirection: pi * 0.7,
+                  maxBlastForce: 15,
+                  minBlastForce: 3,
+                  emissionFrequency: 0.04,
+                  numberOfParticles: 6,
+                  shouldLoop: true,
+                  gravity: 0.15,
+                  particleDrag: 0.1,
+                  minimumSize: const Size(8, 8),
+                  maximumSize: const Size(12, 12),
                 ),
               ),
             ]),
@@ -85,13 +119,11 @@ Widget finishButton(BuildContext context) {
         backgroundColor: orangeC,
       ),
       onPressed: () {
-        Navigator.pushNamedAndRemoveUntil(
-            context, '/mywallets', ModalRoute.withName('/'));
+        Navigator.pushNamedAndRemoveUntil(context, '/mywallets', ModalRoute.withName('/'));
       },
       child: Text(
         "accessMyChest".tr(),
-        style: scaledTextStyle(
-            fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
+        style: scaledTextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
       ),
     ),
   );

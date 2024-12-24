@@ -117,9 +117,17 @@ class WalletOptions extends StatelessWidget {
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
+                // Soft ambient shadow
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 8,
+                spreadRadius: 2,
                 offset: const Offset(0, 2),
+              ),
+              BoxShadow(
+                // Sharper direct shadow
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
               ),
             ],
           ),
@@ -178,7 +186,7 @@ class WalletOptions extends StatelessWidget {
             Image.asset(
               'assets/walletOptions/clock.png',
               height: scaleSize(24),
-              color: const Color(0xFF4A90E2).withOpacity(0.8),
+              color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
             ),
             ScaledSizedBox(width: 16),
             Text(
@@ -341,7 +349,7 @@ class WalletOptions extends StatelessWidget {
                 Icon(
                   Icons.check_circle_outline,
                   size: scaleSize(24),
-                  color: walletProvider.isDefaultWallet ? Colors.grey[400] : const Color(0xFF4CAF50).withOpacity(0.8),
+                  color: walletProvider.isDefaultWallet ? Colors.grey[400] : const Color(0xFF4CAF50).withValues(alpha: 0.8),
                 ),
                 ScaledSizedBox(width: 16),
                 Text(
@@ -444,7 +452,7 @@ Widget aloneWalletOptions() {
                   Icon(
                     Icons.add_circle_outline,
                     size: scaleSize(24),
-                    color: sub.nodeConnected ? Color(0xFF4CAF50).withOpacity(0.8) : Colors.grey[400],
+                    color: sub.nodeConnected ? Color(0xFF4CAF50).withValues(alpha: 0.8) : Colors.grey[400],
                   ),
                   ScaledSizedBox(width: 16),
                   Text(

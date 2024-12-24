@@ -17,8 +17,7 @@ class SearchResultScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final searchProvider = Provider.of<SearchProvider>(context, listen: false);
-    final walletsProfilesClass =
-        Provider.of<WalletsProfilesProvider>(context, listen: false);
+    final walletsProfilesClass = Provider.of<WalletsProfilesProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     final avatarSize = scaleSize(37);
@@ -31,48 +30,30 @@ class SearchResultScreen extends StatelessWidget {
         child: Stack(children: [
           Padding(
             padding: const EdgeInsets.only(left: 15, right: 10),
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  ScaledSizedBox(height: 20),
-                  Center(
-                    child: Column(
-                      children: <Widget>[
-                        Text(
-                          "resultsFor".tr(),
-                          style: scaledTextStyle(
-                              color: Colors.grey[600], fontSize: 15),
-                        ),
-                        Text(
-                          '"${searchProvider.searchController.text}"',
-                          style: scaledTextStyle(
-                              fontStyle: FontStyle.italic, fontSize: 17),
-                        )
-                      ],
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+              ScaledSizedBox(height: 20),
+              Center(
+                child: Column(
+                  children: <Widget>[
+                    Text(
+                      "resultsFor".tr(),
+                      style: scaledTextStyle(color: Colors.grey[600], fontSize: 15),
                     ),
-                  ),
-                  // ScaledSizedBox(height: 40),
-                  // Text(
-                  //   'Dans mes contacts'.tr(args: [currencyName]),
-                  //   style: scaledTextStyle(fontSize: 19),
-                  // ),
-                  // ContactsList(
-                  //     myContacts: myContacts,
-                  //     avatarSize: avatarSize,
-                  //     walletsProfilesClass: walletsProfilesClass,
-                  //     duniterIndexer: duniterIndexer),
-                  ScaledSizedBox(height: 22),
-                  Text(
-                    'inBlockchainResult'.tr(args: [currencyName]),
-                    style: scaledTextStyle(fontSize: 15),
-                  ),
-                  ScaledSizedBox(height: 13),
-                  SearchResult(
-                      searchProvider: searchProvider,
-                      duniterIndexer: duniterIndexer,
-                      avatarSize: avatarSize,
-                      walletsProfilesClass: walletsProfilesClass),
-                ]),
+                    Text(
+                      '"${searchProvider.searchController.text}"',
+                      style: scaledTextStyle(fontStyle: FontStyle.italic, fontSize: 17),
+                    )
+                  ],
+                ),
+              ),
+              ScaledSizedBox(height: 22),
+              Text(
+                'inBlockchainResult'.tr(args: [currencyName]),
+                style: scaledTextStyle(fontSize: 15),
+              ),
+              ScaledSizedBox(height: 13),
+              SearchResult(searchProvider: searchProvider, duniterIndexer: duniterIndexer, avatarSize: avatarSize, walletsProfilesClass: walletsProfilesClass),
+            ]),
           ),
           const OfflineInfo(),
         ]),

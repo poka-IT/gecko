@@ -45,7 +45,7 @@ class WalletTileMembre extends StatelessWidget {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
                 ),
@@ -71,7 +71,7 @@ class WalletTileMembre extends StatelessWidget {
                                 end: Alignment.bottomCenter,
                                 colors: [
                                   const Color(0xFFFFFFF0),
-                                  yellowC.withOpacity(0.3),
+                                  yellowC.withValues(alpha: 0.3),
                                 ],
                               ),
                             ),
@@ -103,7 +103,7 @@ class WalletTileMembre extends StatelessWidget {
                         top: scaleSize(16),
                         child: Image.asset(
                           'assets/medal.png',
-                          color: orangeC.withOpacity(0.8),
+                          color: orangeC.withValues(alpha: 0.8),
                           height: scaleSize(28),
                         ),
                       ),
@@ -112,7 +112,7 @@ class WalletTileMembre extends StatelessWidget {
                 ),
                 Container(
                   decoration: BoxDecoration(
-                    color: isDefault ? orangeC.withOpacity(0.9) : yellowC.withOpacity(0.9),
+                    color: isDefault ? orangeC.withValues(alpha: 0.9) : yellowC.withValues(alpha: 0.9),
                     borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(12),
                       bottomRight: Radius.circular(12),

@@ -14,6 +14,7 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/widgets/bubble_speak.dart';
+import 'package:gecko/widgets/buttons/home_settings_button.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:gecko/screens/myWallets/restore_chest.dart';
@@ -138,17 +139,7 @@ Widget geckHome(context) {
         Positioned(
           top: statusBarHeight + scaleSize(10),
           left: scaleSize(15),
-          child: Builder(
-            builder: (context) => IconButton(
-              key: keyDrawerMenu,
-              icon: Icon(
-                Icons.menu,
-                color: Colors.black,
-                size: scaleSize(35),
-              ),
-              onPressed: () => Scaffold.of(context).openDrawer(),
-            ),
-          ),
+          child: IconHomeSettings(),
         ),
         Align(
           child: Image(image: const AssetImage('assets/home/header.png'), height: scaleSize(165)),
@@ -196,7 +187,7 @@ Widget geckHome(context) {
               end: Alignment.bottomCenter,
               colors: [
                 Colors.transparent,
-                Colors.black.withOpacity(0.9),
+                Colors.black.withValues(alpha: 0.9),
               ],
             ),
           ),
@@ -222,17 +213,7 @@ Widget welcomeHome(context) {
         Positioned(
           top: statusBarHeight + scaleSize(10),
           left: scaleSize(15),
-          child: Builder(
-            builder: (context) => IconButton(
-              key: keyDrawerMenu,
-              icon: Icon(
-                Icons.menu,
-                color: Colors.black,
-                size: scaleSize(35),
-              ),
-              onPressed: () => Scaffold.of(context).openDrawer(),
-            ),
-          ),
+          child: IconHomeSettings(),
         ),
         Align(
           child: Image(image: const AssetImage('assets/home/header.png'), height: scaleSize(165)),
@@ -273,7 +254,7 @@ Widget welcomeHome(context) {
               end: Alignment.bottomCenter,
               colors: [
                 Colors.transparent,
-                Colors.black.withOpacity(0.9),
+                Colors.black.withValues(alpha: 0.9),
               ],
             ),
           ),
@@ -307,16 +288,28 @@ Widget welcomeHome(context) {
                     key: keyOnboardingNewChest,
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      elevation: 4,
                       backgroundColor: orangeC,
+                      elevation: 0,
+                      padding: EdgeInsets.symmetric(vertical: scaleSize(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ).copyWith(
+                      elevation: WidgetStateProperty.resolveWith<double>(
+                        (Set<WidgetState> states) {
+                          if (states.contains(WidgetState.pressed)) return 0;
+                          return 8;
+                        },
+                      ),
+                      shadowColor: WidgetStateProperty.all(
+                        Colors.black.withValues(alpha: 0.2),
+                      ),
                     ),
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) {
-                            return const OnboardingStepOne();
-                          },
+                          builder: (context) => const OnboardingStepOne(),
                         ),
                       );
                     },
@@ -332,14 +325,29 @@ Widget welcomeHome(context) {
                   height: 60,
                   child: OutlinedButton(
                     key: keyRestoreChest,
-                    style: OutlinedButton.styleFrom(side: BorderSide(width: scaleSize(4), color: orangeC)),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(width: scaleSize(4), color: orangeC),
+                      padding: EdgeInsets.symmetric(vertical: scaleSize(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      backgroundColor: Colors.white.withValues(alpha: 0.1),
+                    ).copyWith(
+                      elevation: WidgetStateProperty.resolveWith<double>(
+                        (Set<WidgetState> states) {
+                          if (states.contains(WidgetState.pressed)) return 0;
+                          return 4;
+                        },
+                      ),
+                      shadowColor: WidgetStateProperty.all(
+                        Colors.black.withValues(alpha: 0.15),
+                      ),
+                    ),
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) {
-                            return const RestoreChest();
-                          },
+                          builder: (context) => const RestoreChest(),
                         ),
                       );
                     },

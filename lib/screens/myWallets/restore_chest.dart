@@ -45,34 +45,27 @@ class RestoreChest extends StatelessWidget {
               bubbleSpeak('toRestoreEnterMnemonic'.tr()),
               ScaledSizedBox(height: isTall ? 20 : 5),
               Column(children: <Widget>[
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: <Widget>[
-                      arrayCell(context, genW.cellController0),
-                      arrayCell(context, genW.cellController1),
-                      arrayCell(context, genW.cellController2),
-                      arrayCell(context, genW.cellController3),
-                    ]),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
+                  arrayCell(context, genW.cellController0),
+                  arrayCell(context, genW.cellController1),
+                  arrayCell(context, genW.cellController2),
+                  arrayCell(context, genW.cellController3),
+                ]),
                 ScaledSizedBox(height: isTall ? 10 : 3),
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: <Widget>[
-                      arrayCell(context, genW.cellController4),
-                      arrayCell(context, genW.cellController5),
-                      arrayCell(context, genW.cellController6),
-                      arrayCell(context, genW.cellController7),
-                    ]),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
+                  arrayCell(context, genW.cellController4),
+                  arrayCell(context, genW.cellController5),
+                  arrayCell(context, genW.cellController6),
+                  arrayCell(context, genW.cellController7),
+                ]),
                 ScaledSizedBox(height: isTall ? 10 : 3),
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: <Widget>[
-                      arrayCell(context, genW.cellController8),
-                      arrayCell(context, genW.cellController9),
-                      arrayCell(context, genW.cellController10),
-                      arrayCell(context, genW.cellController11),
-                    ]),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
+                  arrayCell(context, genW.cellController8),
+                  arrayCell(context, genW.cellController9),
+                  arrayCell(context, genW.cellController10),
+                  arrayCell(context, genW.cellController11),
+                ]),
               ]),
-              // const Spacer(),
               if (genW.isSentenceComplete(context))
                 Expanded(
                     child: Align(
@@ -84,21 +77,30 @@ class RestoreChest extends StatelessWidget {
                       key: keyGoNext,
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
-                        elevation: 4,
                         backgroundColor: orangeC,
+                        elevation: 0,
+                        padding: EdgeInsets.symmetric(vertical: scaleSize(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ).copyWith(
+                        elevation: WidgetStateProperty.resolveWith<double>(
+                          (Set<WidgetState> states) {
+                            if (states.contains(WidgetState.pressed)) return 0;
+                            return 8;
+                          },
+                        ),
+                        shadowColor: WidgetStateProperty.all(
+                          Colors.black.withValues(alpha: 0.2),
+                        ),
                       ),
                       onPressed: () async {
-                        if (await sub
-                            .isMnemonicValid(genW.generatedMnemonic!)) {
+                        if (await sub.isMnemonicValid(genW.generatedMnemonic!)) {
                           genW.resetImportView();
                           await Navigator.push(
                             context,
                             FaderTransition(
-                                page: skipIntro
-                                    ? const OnboardingStepNine(
-                                        scanDerivation: true)
-                                    : const OnboardingStepSeven(
-                                        scanDerivation: true),
+                                page: skipIntro ? const OnboardingStepNine(scanDerivation: true) : const OnboardingStepSeven(scanDerivation: true),
                                 isFast: true),
                           );
                         } else {
@@ -107,27 +109,40 @@ class RestoreChest extends StatelessWidget {
                       },
                       child: Text(
                         'restoreThisChest'.tr(),
-                        style: scaledTextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white),
+                        style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
                       ),
                     ),
                   ),
-                  // SizedBox(height: isTall ? 80 : 80),
                 ))
               else
                 Column(children: [
                   ScaledSizedBox(height: 20),
                   ScaledSizedBox(
-                    width: 210,
-                    height: 55,
+                    width: 180,
+                    height: 50,
                     child: ElevatedButton(
                         key: keyPastMnemonic,
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Colors.black,
-                          elevation: 4,
                           backgroundColor: yellowC,
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(
+                            vertical: scaleSize(8),
+                            horizontal: scaleSize(16),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ).copyWith(
+                          elevation: WidgetStateProperty.resolveWith<double>(
+                            (Set<WidgetState> states) {
+                              if (states.contains(WidgetState.pressed)) return 0;
+                              return 4;
+                            },
+                          ),
+                          shadowColor: WidgetStateProperty.all(
+                            Colors.black.withValues(alpha: 0.15),
+                          ),
                         ),
                         onPressed: () {
                           genW.pasteMnemonic(context);
@@ -137,13 +152,17 @@ class RestoreChest extends StatelessWidget {
                           children: [
                             Icon(
                               Icons.content_paste_go,
-                              size: scaleSize(28),
+                              size: scaleSize(24),
+                              color: Colors.black.withValues(alpha: 0.7),
                             ),
                             Text(
                               'pasteFromClipboard'.tr(),
                               textAlign: TextAlign.center,
                               style: scaledTextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.w400),
+                                fontSize: 15,
+                                fontWeight: FontWeight.w400,
+                                height: 1.2,
+                              ),
                             ),
                           ],
                         )),
@@ -169,37 +188,33 @@ class RestoreChest extends StatelessWidget {
         text,
         key: keyBubbleSpeak,
         textAlign: TextAlign.justify,
-        style: scaledTextStyle(
-            color: Colors.black, fontSize: 16, fontWeight: FontWeight.w400),
+        style: scaledTextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.w400),
       ),
     );
   }
 
-  Widget arrayCell(BuildContext context, final cellCtl) {
-    final generateWalletProvider =
-        Provider.of<GenerateWalletsProvider>(context);
+  Widget arrayCell(BuildContext context, TextEditingController cellCtl) {
+    final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context);
 
     return Container(
       width: scaleSize(87),
       height: scaleSize(37),
-      // ),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey),
         color: Colors.white,
         borderRadius: BorderRadius.circular(3),
       ),
-      // child: RawKeyboardListener(
-      //   focusNode: FocusNode(), // or FocusNode()
-      //   onKey: (event) {
-      //     if (event.logicalKey == LogicalKeyboardKey.space) {
-      //       FocusScope.of(context).nextFocus();
-      //     }
-      //   },
-
       child: TextField(
         autofocus: true,
         controller: cellCtl,
         textInputAction: TextInputAction.next,
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: orangeC),
+          ),
+          contentPadding: EdgeInsets.zero,
+        ),
         onChanged: (v) {
           if (v.contains(' ')) {
             cellCtl.text = cellCtl.text.replaceAll(' ', '');
@@ -224,8 +239,7 @@ class RestoreChest extends StatelessWidget {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Phrase incorrecte'),
-          content: const Text(
-              'Votre phrase de restauration semble incorrecte, les mots ne sont pas dans le bon ordre.\nVeuillez la corriger.'),
+          content: const Text('Votre phrase de restauration semble incorrecte, les mots ne sont pas dans le bon ordre.\nVeuillez la corriger.'),
           actions: <Widget>[
             TextButton(
               child: const Text("OK"),

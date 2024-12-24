@@ -31,7 +31,7 @@ class GeckoBottomAppBar extends StatelessWidget {
           color: const Color(0xFFFFFBF2),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               offset: const Offset(0, -4),
               blurRadius: 10,
             ),
@@ -104,7 +104,7 @@ class GeckoBottomAppBar extends StatelessWidget {
           padding: EdgeInsets.all(scaleSize(12)),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            color: isSelected ? yellowC.withOpacity(0.5) : Colors.transparent,
+            color: isSelected ? yellowC.withValues(alpha: 0.5) : Colors.transparent,
           ),
           child: icon != null
               ? Icon(

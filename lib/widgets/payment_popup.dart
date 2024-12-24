@@ -379,7 +379,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                 hintText: 'optionalComment'.tr(),
                                 hintStyle: TextStyle(color: Colors.grey[400]),
                                 filled: true,
-                                fillColor: Colors.white.withOpacity(0.5),
+                                fillColor: Colors.white.withValues(alpha: 0.5),
                                 contentPadding: EdgeInsets.symmetric(
                                   horizontal: scaleSize(8),
                                   vertical: scaleSize(4),

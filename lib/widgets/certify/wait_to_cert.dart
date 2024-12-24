@@ -15,11 +15,13 @@ class WaitToCertWidget extends StatelessWidget {
     return Column(children: <Widget>[
       ScaledSizedBox(
         height: buttonSize,
-        child: Image(
-          image: const AssetImage('assets/gecko_certify.png'),
-          color: backgroundColor,
-          colorBlendMode: BlendMode.saturation,
-          opacity: const AlwaysStoppedAnimation<double>(0.5),
+        child: Opacity(
+          opacity: 0.4,
+          child: Image(
+            image: const AssetImage('assets/gecko_certify.png'),
+            color: backgroundColor,
+            colorBlendMode: BlendMode.saturation,
+          ),
         ),
       ),
       Text(

@@ -56,7 +56,7 @@ class WalletHeader extends StatelessWidget {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),
@@ -113,7 +113,7 @@ class WalletHeader extends StatelessWidget {
                         icon: Icon(
                           Icons.copy,
                           size: scaleSize(20),
-                          color: orangeC.withOpacity(0.8),
+                          color: orangeC.withValues(alpha: 0.5),
                         ),
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: address));
@@ -166,7 +166,7 @@ class WalletHeader extends StatelessWidget {
                               Icon(
                                 Icons.chevron_right,
                                 size: scaleSize(15),
-                                color: orangeC.withOpacity(0.8),
+                                color: orangeC.withValues(alpha: 0.5),
                               ),
                             ],
                           ),

@@ -150,7 +150,7 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
                     padding: EdgeInsets.symmetric(vertical: scaleSize(8)),
                     child: Container(
                       height: 1,
-                      color: Colors.black.withOpacity(0.06),
+                      color: Colors.black.withValues(alpha: 0.06),
                     ),
                   ),
                   Text(

@@ -86,12 +86,10 @@ class _ChooseChestState extends State<ChooseChest> {
                           vertical: 8.0, horizontal: 4.0),
                       decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color:
-                              (Theme.of(context).brightness == Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black)
-                                  .withOpacity(
-                                      currentChest == entry.key ? 0.9 : 0.4)),
+                          color: (Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black)
+                              .withValues(alpha: currentChest == entry.key ? 0.9 : 0.4)),
                     ),
                   );
                 }).toList(),

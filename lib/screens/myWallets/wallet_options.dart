@@ -317,7 +317,7 @@ class WalletOptions extends StatelessWidget {
             );
 
             final twentyDaysBeforeExpiration = info.expireDate?.subtract(const Duration(days: 20));
-            final shouldHideButton = !info.canRenew || !(twentyDaysBeforeExpiration?.isBefore(DateTime.now()) ?? false);
+            final shouldHideButton = !info.canRenew || (info.expireDate != null && !(twentyDaysBeforeExpiration?.isBefore(DateTime.now()) ?? false));
 
             if (shouldHideButton) return const SizedBox.shrink();
 

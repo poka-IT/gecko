@@ -243,6 +243,7 @@
     "renewMembership": "Renovar mi adhésion",
     "areYouSureYouWantToRenewMembership": "¿Estás seguro de que quieres renovar tu adhésion?",
     "membershipExpiredOn": "Adhésion expirée el {}",
+    "membershipExpired": "Adhésion expirée",
     "membershipExpiresOnSimple": "Adhésion expira el {}",
     "membershipExpiresOn": "Adhésion expira el {} (Renovación posible a partir de {})",
     "renewingMembership": "Renovando adhésion",

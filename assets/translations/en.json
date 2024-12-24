@@ -242,6 +242,7 @@
     "renewMembership": "Renew my membership",
     "areYouSureYouWantToRenewMembership": "Are you sure you want to renew your membership ?",
     "membershipExpiredOn": "Membership expired on {}",
+    "membershipExpired": "Membership expired",
     "membershipExpiresOnSimple": "Membership expires on {}",
     "membershipExpiresOn": "Membership expires on {} (Renewal possible from {})",
     "renewingMembership": "Renewing membership",

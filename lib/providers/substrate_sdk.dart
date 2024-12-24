@@ -454,6 +454,11 @@ class SubstrateSdk with ChangeNotifier {
     return resultStatus;
   }
 
+  Future<IdtyStatus> idtyStatusByIndex(int idtyIndex) async {
+    final idtyStatus = await _getStorage('identity.identities($idtyIndex)');
+    return mapStatus[idtyStatus['status']] ?? IdtyStatus.unknown;
+  }
+
   Future<bool> isSmith(String address) async {
     var idtyIndex = await _getIdentityIndexOf(address);
     if (idtyIndex == -1) return false;
@@ -1294,13 +1299,26 @@ newKeySig: $newKeySigType""");
   }
 
   Future<MembershipStatus> getMembershipStatus(String address) async {
+    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
     final idtyIndex = await _getIdentityIndexOf(address);
     if (idtyIndex == null) return MembershipStatus.empty();
+
+    final idtyStatus = await sub.idtyStatusByIndex(idtyIndex);
 
     // Vérifier si une évaluation est en cours
     final hasPendingRenewal = await _getStorage('distance.pendingEvaluationRequest($idtyIndex)') != null;
 
-    final expireOnMap = await _getStorage('membership.membership($idtyIndex)') ?? {};
+    final Map<String, dynamic> expireOnMap = await _getStorage('membership.membership($idtyIndex)') ?? {};
+
+    if (expireOnMap.isEmpty && idtyStatus == IdtyStatus.notMember) {
+      return MembershipStatus(
+        expireDate: null,
+        hasPendingRenewal: hasPendingRenewal,
+        renewalStartDate: null,
+        idtyStatus: idtyStatus,
+      );
+    }
+
     final expireOn = expireOnMap['expireOn'] as int;
 
     // Calculate time difference from current block (6 seconds per block)
@@ -1317,6 +1335,7 @@ newKeySig: $newKeySigType""");
       expireDate: expireDate,
       hasPendingRenewal: hasPendingRenewal,
       renewalStartDate: renewalStartDate,
+      idtyStatus: idtyStatus,
     );
   }
 }

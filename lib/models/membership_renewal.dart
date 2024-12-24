@@ -3,6 +3,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
@@ -14,7 +15,13 @@ import 'package:gecko/models/membership_status.dart';
 class MembershipRenewal {
   static RenewalInfo calculateRenewalInfo(MembershipStatus status, int renewalPeriodBlocks) {
     if (status.expireDate == null) {
-      return RenewalInfo(canRenew: false);
+      return status.idtyStatus == IdtyStatus.notMember
+          ? RenewalInfo(
+              canRenew: true,
+              isExpired: true,
+              hasPendingRenewal: status.hasPendingRenewal,
+            )
+          : RenewalInfo(canRenew: false);
     }
 
     final now = DateTime.now();
@@ -56,7 +63,7 @@ class MembershipRenewal {
   }
 
   static Widget buildExpirationText(RenewalInfo info, {double? width}) {
-    if (info.expireDate == null) return const SizedBox.shrink();
+    if (info.expireDate == null && !info.isExpired) return const SizedBox.shrink();
 
     final isRenewalStartDateInFuture = info.renewalStartDate != null && info.renewalStartDate!.isAfter(DateTime.now());
 
@@ -64,7 +71,7 @@ class MembershipRenewal {
     if (info.hasPendingRenewal) {
       text = 'membershipRenewalPending'.tr();
     } else if (info.isExpired) {
-      text = 'membershipExpiredOn'.tr(args: [DateFormat('dd/MM/yyyy').format(info.expireDate!)]);
+      text = info.expireDate != null ? 'membershipExpiredOn'.tr(args: [DateFormat('dd/MM/yyyy').format(info.expireDate!)]) : 'membershipExpired'.tr();
     } else if (!isRenewalStartDateInFuture) {
       text = 'membershipExpiresOnSimple'.tr(args: [DateFormat('dd/MM/yyyy').format(info.expireDate!)]);
     } else {

@@ -14,9 +14,10 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 
 class HistoryQuery extends StatelessWidget {
-  const HistoryQuery({super.key, required this.address, this.transactionId});
+  const HistoryQuery({super.key, required this.address, this.transactionId, this.comment});
   final String address;
   final String? transactionId;
+  final String? comment;
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +101,7 @@ class HistoryQuery extends StatelessWidget {
                 return Column(children: <Widget>[
                   Column(
                     children: [
-                      if (transactionId != null) TransactionInProgressTule(address: address, transactionId: transactionId),
+                      if (transactionId != null) TransactionInProgressTule(address: address, transactionId: transactionId!, comment: comment ?? ''),
                       ScaledSizedBox(height: 50),
                       Text(
                         "noNetworkNoHistory".tr(),
@@ -114,7 +115,7 @@ class HistoryQuery extends StatelessWidget {
                 return Column(children: <Widget>[
                   Column(
                     children: [
-                      if (transactionId != null) TransactionInProgressTule(address: address, transactionId: transactionId),
+                      if (transactionId != null) TransactionInProgressTule(address: address, transactionId: transactionId!, comment: comment ?? ''),
                       ScaledSizedBox(height: 50),
                       Text(
                         "noDataToDisplay".tr(),
@@ -140,7 +141,7 @@ class HistoryQuery extends StatelessWidget {
                           key: keyListTransactions,
                           controller: scrollController,
                           children: <Widget>[
-                            if (transactionId != null) TransactionInProgressTule(address: address, transactionId: transactionId),
+                            if (transactionId != null) TransactionInProgressTule(address: address, transactionId: transactionId!, comment: comment ?? ''),
                             HistoryView(
                               result: result,
                               address: address,

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/models/text_input_formaters.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -24,14 +25,23 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
   final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
   double fees = 0;
-  const double shapeSize = 20;
+  const double shapeSize = 16;
   var defaultWallet = myWalletProvider.getDefaultWallet();
   bool canValidate = false;
   final amountFocus = FocusNode();
+  final commentFocus = FocusNode();
 
-  walletViewProvider.payAmount.text = '';
+  void resetState() {
+    walletViewProvider.payAmount.text = '';
+    walletViewProvider.isCommentVisible = false;
+    walletViewProvider.comment = '';
+    walletViewProvider.payComment.text = '';
+  }
+
+  resetState();
 
   Future executeTransfert() async {
+    Navigator.pop(context);
     if (!await myWalletProvider.askPinCode()) return;
 
     // Payment workflow !
@@ -41,16 +51,18 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
     final transactionId = const Uuid().v4();
 
     sub.pay(
-        fromAddress: acc.address!,
-        destAddress: toAddress,
-        amount: double.parse(walletViewProvider.payAmount.text),
-        password: myWalletProvider.pinCode,
-        transactionId: transactionId);
+      fromAddress: acc.address!,
+      destAddress: toAddress,
+      amount: double.parse(walletViewProvider.payAmount.text),
+      password: myWalletProvider.pinCode,
+      transactionId: transactionId,
+      comment: walletViewProvider.comment,
+    );
 
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) {
-        return ActivityScreen(address: acc.address!, transactionId: transactionId);
+        return ActivityScreen(address: acc.address!, transactionId: transactionId, comment: walletViewProvider.comment);
       }),
     );
   }
@@ -105,7 +117,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
           return Padding(
             padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
             child: Container(
-              height: scaleSize(400),
+              height: scaleSize(380),
               decoration: const ShapeDecoration(
                 color: Color(0xffffeed1),
                 shape: RoundedRectangleBorder(
@@ -116,33 +128,33 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                 ),
               ),
               child: Padding(
-                padding: EdgeInsets.only(top: scaleSize(14), bottom: 0, left: scaleSize(16), right: scaleSize(16)),
+                padding: EdgeInsets.only(top: scaleSize(12), bottom: 0, left: scaleSize(16), right: scaleSize(16)),
                 child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                     Text(
                       'executeATransfer'.tr(),
-                      style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                      style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w700),
                     ),
                     IconButton(
                       key: keyPopButton,
-                      iconSize: scaleSize(32),
+                      iconSize: scaleSize(28),
                       icon: const Icon(Icons.cancel_outlined),
                       onPressed: () {
                         Navigator.pop(context);
                       },
                     ),
                   ]),
-                  ScaledSizedBox(height: 5),
+                  ScaledSizedBox(height: 4),
                   Text(
                     'from'.tr(args: ['']),
-                    style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.grey[600]),
+                    style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[600]),
                   ),
-                  ScaledSizedBox(height: 5),
+                  ScaledSizedBox(height: 4),
                   Consumer<SubstrateSdk>(builder: (context, sub, _) {
                     return Container(
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.blueAccent.shade200, width: 2),
-                        borderRadius: const BorderRadius.all(Radius.circular(10)),
+                        border: Border.all(color: Colors.blueAccent.shade200, width: 1.5),
+                        borderRadius: const BorderRadius.all(Radius.circular(8)),
                       ),
                       alignment: Alignment.center,
                       padding: const EdgeInsets.all(0),
@@ -166,11 +178,11 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                     NameByAddress(
                                       wallet: wallet,
                                       fontStyle: FontStyle.normal,
-                                      size: 18,
+                                      size: 16,
                                     ),
                                     const Spacer(),
                                     // const Text('data')
-                                    Balance(address: wallet.address, size: 18),
+                                    Balance(address: wallet.address, size: 16),
                                   ]),
                                 ),
                               );
@@ -195,10 +207,10 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                   NameByAddress(
                                     wallet: wallet,
                                     fontStyle: FontStyle.normal,
-                                    size: 18,
+                                    size: 16,
                                   ),
                                   const Spacer(),
-                                  Balance(address: wallet.address, size: 18),
+                                  Balance(address: wallet.address, size: 16),
                                 ]),
                               ),
                             );
@@ -254,13 +266,21 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                   ScaledSizedBox(height: 10),
                   Focus(
                     onFocusChange: (focused) {
-                      setState(() {
-                        FocusScope.of(context).requestFocus(amountFocus);
-                      });
+                      if (!commentFocus.hasFocus) {
+                        setState(() {
+                          FocusScope.of(context).requestFocus(amountFocus);
+                        });
+                      }
                     },
                     child: TextField(
                       textInputAction: TextInputAction.done,
-                      onEditingComplete: () async => canValidate ? await executeTransfert() : null,
+                      onEditingComplete: () async {
+                        if (walletViewProvider.isCommentVisible) {
+                          commentFocus.requestFocus();
+                        } else if (canValidate) {
+                          await executeTransfert();
+                        }
+                      },
                       key: keyAmountField,
                       controller: walletViewProvider.payAmount,
                       autofocus: true,
@@ -280,26 +300,131 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                       ],
                       decoration: InputDecoration(
                         hintText: '0.00',
-                        suffix: Text(isUdUnit ? 'ud'.tr(args: ['']) : currencyName),
+                        suffix: Text(
+                          isUdUnit ? 'ud'.tr(args: ['']) : currencyName,
+                          style: const TextStyle(fontSize: 14),
+                        ),
                         filled: true,
                         fillColor: Colors.transparent,
                         focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey[500]!, width: 2),
+                          borderSide: BorderSide(color: Colors.grey[500]!, width: 1.5),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        contentPadding: EdgeInsets.all(scaleSize(9)),
+                        contentPadding: EdgeInsets.all(scaleSize(6)),
                       ),
                       style: scaledTextStyle(
-                        fontSize: 24,
+                        fontSize: 22,
                         color: Colors.black,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
+                  if (walletViewProvider.isCommentVisible) const SizedBox(height: 8),
+                  Consumer<WalletsProfilesProvider>(
+                    builder: (context, provider, _) {
+                      return AnimatedCrossFade(
+                        duration: const Duration(milliseconds: 200),
+                        crossFadeState: provider.isCommentVisible ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                        firstChild: TextButton.icon(
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: scaleSize(4),
+                              vertical: scaleSize(2),
+                            ),
+                          ),
+                          icon: Icon(
+                            Icons.add_comment_outlined,
+                            size: scaleSize(18),
+                            color: Colors.grey[600],
+                          ),
+                          label: Text(
+                            'addComment'.tr(),
+                            style: scaledTextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          onPressed: () {
+                            provider.toggleCommentVisibility();
+                            Future.delayed(const Duration(milliseconds: 250), () {
+                              if (context.mounted) {
+                                amountFocus.unfocus();
+                                commentFocus.requestFocus();
+                              }
+                            });
+                          },
+                        ),
+                        secondChild: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextField(
+                              controller: provider.payComment,
+                              focusNode: commentFocus,
+                              onChanged: (value) => provider.comment = value,
+                              inputFormatters: [
+                                Utf8LengthLimitingTextInputFormatter(146),
+                              ],
+                              textInputAction: TextInputAction.done,
+                              onEditingComplete: () async {
+                                if (canValidate) await executeTransfert();
+                              },
+                              maxLines: 1,
+                              style: scaledTextStyle(
+                                fontSize: 13,
+                                color: Colors.black87,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: 'optionalComment'.tr(),
+                                hintStyle: TextStyle(color: Colors.grey[400]),
+                                filled: true,
+                                fillColor: Colors.white.withOpacity(0.5),
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: scaleSize(8),
+                                  vertical: scaleSize(4),
+                                ),
+                                counterText: '',
+                                suffixIcon: IconButton(
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  icon: Icon(
+                                    Icons.close,
+                                    size: scaleSize(16),
+                                    color: Colors.grey[600],
+                                  ),
+                                  onPressed: () {
+                                    provider.comment = '';
+                                    provider.toggleCommentVisibility();
+                                    commentFocus.unfocus();
+                                    amountFocus.requestFocus();
+                                  },
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey[300]!,
+                                    width: 1,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey[400]!,
+                                    width: 1.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                   const Spacer(),
                   ScaledSizedBox(
                     width: double.infinity,
-                    height: 55,
+                    height: 50,
                     child: ElevatedButton(
                       key: keyConfirmPayment,
                       style: ElevatedButton.styleFrom(
@@ -309,13 +434,12 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                       ),
                       onPressed: canValidate
                           ? () async {
-                              Navigator.pop(context);
                               await executeTransfert();
                             }
                           : null,
                       child: Text(
                         'executeTheTransfer'.tr(),
-                        style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                        style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -327,7 +451,6 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
         });
       });
 }
-//).then((value) => walletViewProvider.payAmount.text = ''
 
 Future<void> infoFeesPopup(BuildContext context) async {
   return showDialog<void>(

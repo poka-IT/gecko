@@ -175,7 +175,14 @@ Future spawnBlock({int number = 1, int duration = 200, int? until}) async {
 // Pay in background
 Future bkPay({required String fromAddress, required String destAddress, required double amount}) async {
   final transactionId = const Uuid().v4();
-  sub.pay(fromAddress: fromAddress, destAddress: destAddress, amount: amount, password: 'AAAAA', transactionId: transactionId);
+  sub.pay(
+    fromAddress: fromAddress,
+    destAddress: destAddress,
+    amount: amount,
+    password: 'AAAAA',
+    transactionId: transactionId,
+    comment: 'test comment',
+  );
   await sleep(500);
   await spawnBlock();
   await sleep(500);

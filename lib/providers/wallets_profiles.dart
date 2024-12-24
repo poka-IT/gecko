@@ -26,6 +26,33 @@ class WalletsProfilesProvider with ChangeNotifier {
   final payComment = TextEditingController();
   num? _balance;
 
+  bool isCommentVisible = false;
+
+  String _comment = '';
+  String get comment => _comment;
+  set comment(String value) {
+    _comment = value;
+    if (value.isEmpty) {
+      payComment.text = '';
+    } else {
+      payComment.value = TextEditingValue(
+        text: value,
+        selection: payComment.selection,
+      );
+    }
+    notifyListeners();
+  }
+
+  void toggleCommentVisibility() {
+    isCommentVisible = !isCommentVisible;
+    if (isCommentVisible) {
+      payComment.text = _comment;
+    } else {
+      payComment.text = '';
+    }
+    notifyListeners();
+  }
+
   Future<String> scan(context) async {
     if (Platform.isAndroid || Platform.isIOS) {
       await Permission.camera.request();
@@ -81,8 +108,7 @@ class WalletsProfilesProvider with ChangeNotifier {
   Future addContact(G1WalletsList profile) async {
     if (isContact(profile.address)) {
       await contactsBox.delete(profile.address);
-      snackMessage(homeContext,
-          message: 'removedFromcontacts'.tr(), duration: 4);
+      snackMessage(homeContext, message: 'removedFromcontacts'.tr(), duration: 4);
     } else {
       await contactsBox.put(profile.address, profile);
       snackMessage(homeContext, message: 'addedToContacts'.tr(), duration: 4);
@@ -113,15 +139,10 @@ class WalletsProfilesProvider with ChangeNotifier {
 
 Future<bool> isAddress(String address) async {
   final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-  return await sub.sdk.api.account
-          .checkAddressFormat(address, sub.initSs58)
-          .timeout(const Duration(milliseconds: 300))
-          .onError((_, __) => false) ??
-      false;
+  return await sub.sdk.api.account.checkAddressFormat(address, sub.initSs58).timeout(const Duration(milliseconds: 300)).onError((_, __) => false) ?? false;
 }
 
-snackMessage(context,
-    {required String message, int duration = 2, double fontSize = 14}) {
+snackMessage(context, {required String message, int duration = 2, double fontSize = 14}) {
   final snackBar = SnackBar(
       backgroundColor: Colors.grey[900],
       padding: EdgeInsets.all(scaleSize(19)),
@@ -134,8 +155,7 @@ snackCopyKey(context) {
   final snackBar = SnackBar(
       backgroundColor: Colors.grey[900],
       padding: EdgeInsets.all(scaleSize(19)),
-      content: Text("thisAddressHasBeenCopiedToClipboard".tr(),
-          style: scaledTextStyle(fontSize: 13)),
+      content: Text("thisAddressHasBeenCopiedToClipboard".tr(), style: scaledTextStyle(fontSize: 13)),
       duration: const Duration(seconds: 2));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
@@ -144,8 +164,7 @@ snackCopySeed(context) {
   final snackBar = SnackBar(
       backgroundColor: Colors.grey[900],
       padding: EdgeInsets.all(scaleSize(19)),
-      content: Text("thisMnemonicHasBeenCopiedToClipboard".tr(),
-          style: scaledTextStyle(fontSize: 13)),
+      content: Text("thisMnemonicHasBeenCopiedToClipboard".tr(), style: scaledTextStyle(fontSize: 13)),
       duration: const Duration(seconds: 4));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }

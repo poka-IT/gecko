@@ -240,7 +240,7 @@ class DuniterIndexer with ChangeNotifier {
           address: counterPartyId,
           username: counterPartyName,
           amount: amount,
-          comment: commentType == 'ASCII' ? comment : '',
+          comment: commentType == 'ASCII' || commentType == 'UNICODE' ? comment : '',
           isReceived: isReceived,
         ),
       );

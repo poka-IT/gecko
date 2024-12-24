@@ -247,5 +247,8 @@
     "renewingMembership": "Renouvellement d'adhésion",
     "membershipRenewalConfirmed": "Votre demande de renouvellement d'adhésion a bien été prise en compte et sera effective d'ici quelques minutes",
     "membershipRenewalPending": "Renouvellement d'adhésion en cours...",
-    "membershipRenewalPeriodNotRespected": "Vous devez attendre la période de renouvellement avant de pouvoir renouveler votre adhésion"
+    "membershipRenewalPeriodNotRespected": "Vous devez attendre la période de renouvellement avant de pouvoir renouveler votre adhésion",
+    "addComment": "Ajouter un commentaire",
+    "comment": "Commentaire",
+    "optionalComment": "Commentaire optionnel"
 }

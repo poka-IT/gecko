@@ -58,7 +58,14 @@ class WalletOptionsProvider with ChangeNotifier {
         final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
         final defaultWallet = myWalletProvider.getDefaultWallet();
         final transactionId = const Uuid().v4();
-        sub.pay(fromAddress: wallet.address, destAddress: defaultWallet.address, amount: -1, password: myWalletProvider.pinCode, transactionId: transactionId);
+        sub.pay(
+          fromAddress: wallet.address,
+          destAddress: defaultWallet.address,
+          amount: -1,
+          password: myWalletProvider.pinCode,
+          transactionId: transactionId,
+          comment: 'ĞECKO:DELETEWALLET',
+        );
       }
 
       await walletBox.delete(wallet.address);

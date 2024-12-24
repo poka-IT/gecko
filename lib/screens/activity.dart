@@ -14,10 +14,11 @@ import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 
 class ActivityScreen extends StatefulWidget {
-  const ActivityScreen({required this.address, this.username, this.transactionId}) : super(key: keyActivityScreen);
+  const ActivityScreen({required this.address, this.username, this.transactionId, this.comment}) : super(key: keyActivityScreen);
   final String address;
   final String? username;
   final String? transactionId;
+  final String? comment;
   @override
   State<ActivityScreen> createState() => _ActivityScreenState();
 }
@@ -53,6 +54,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   child: HistoryQuery(
                     address: widget.address,
                     transactionId: widget.transactionId,
+                    comment: widget.comment,
                   ),
                 ),
               ],

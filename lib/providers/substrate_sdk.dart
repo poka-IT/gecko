@@ -925,12 +925,19 @@ class SubstrateSdk with ChangeNotifier {
   ///////// 5: CALLS EXECUTION /////////
   //////////////////////////////////////
 
-  Future<void> pay(
-      {required String fromAddress, required String destAddress, required double amount, required String password, required String transactionId}) async {
+  Future<void> pay({
+    required String fromAddress,
+    required String destAddress,
+    required double amount,
+    required String password,
+    required String transactionId,
+    required String comment,
+  }) async {
     final walletOptions = Provider.of<WalletOptionsProvider>(homeContext, listen: false);
     final sender = await _setSender(fromAddress);
 
     final globalBalance = await getBalance(fromAddress);
+    final defaultWalletBalance = walletOptions.balanceCache[fromAddress] ?? 0;
     TxInfoData txInfo;
     List txOptions = [];
     String? rawParams;
@@ -938,9 +945,9 @@ class SubstrateSdk with ChangeNotifier {
     late String palette;
     late String call;
     late String tx2;
+    late String tx3;
 
-    final defaultWalletBalance = walletOptions.balanceCache[fromAddress] ?? 0;
-
+    // Préparer la transaction de transfert
     if (amount == -1 || amount == defaultWalletBalance) {
       palette = 'balances';
       call = 'transferAll';
@@ -951,28 +958,34 @@ class SubstrateSdk with ChangeNotifier {
       if (isUdUnit) {
         palette = 'universalDividend';
         call = 'transferUd';
-        // amount is milliUds
         amountUnit = (amount * 1000).toInt();
       } else {
         palette = 'balances';
         call = 'transferKeepAlive';
-        // amount is double at 2 decimals
         amountUnit = (amount * 100).toInt();
       }
       txOptions = [destAddress, amountUnit];
       tx2 = 'api.tx.$palette.$call("$destAddress", $amountUnit)';
     }
 
-    if (globalBalance['unclaimedUds'] == 0) {
-      txInfo = TxInfoData(palette, call, sender);
+    // Si on a un commentaire, on doit utiliser batchAll dans tous les cas
+    final unclaimedUds = (globalBalance['unclaimedUds'] ?? 0) as num;
+    if (comment.isNotEmpty || unclaimedUds > 0) {
+      txInfo = TxInfoData('utility', 'batchAll', sender);
+
+      List<String> txs = [];
+      if (unclaimedUds > 0) {
+        txs.add('api.tx.universalDividend.claimUds()');
+      }
+      txs.add(tx2);
+      if (comment.isNotEmpty) {
+        tx3 = 'api.tx.system.remarkWithEvent("$comment")';
+        txs.add(tx3);
+      }
+      rawParams = '[[${txs.join(', ')}]]';
     } else {
-      txInfo = TxInfoData(
-        'utility',
-        'batchAll',
-        sender,
-      );
-      const tx1 = 'api.tx.universalDividend.claimUds()';
-      rawParams = '[[$tx1, $tx2]]';
+      // Transaction simple sans batch
+      txInfo = TxInfoData(palette, call, sender);
     }
 
     final transactionContent = TransactionContent(
@@ -982,6 +995,7 @@ class SubstrateSdk with ChangeNotifier {
       to: destAddress,
       amount: amount,
     );
+    log.d('txInfoo: ${txInfo.module}.${txInfo.call!} -- $txOptions -- $rawParams');
     _executeCall(transactionContent, txInfo, txOptions, password, rawParams);
   }
 
@@ -1220,7 +1234,14 @@ newKeySig: $newKeySigType""");
     var transactionId = const Uuid().v4();
 
     if (fromIdtyStatus == IdtyStatus.none) {
-      await pay(fromAddress: keypair.address!, destAddress: destAddress, amount: -1, password: 'password', transactionId: transactionId);
+      await pay(
+        fromAddress: keypair.address!,
+        destAddress: destAddress,
+        amount: -1,
+        password: 'password',
+        transactionId: transactionId,
+        comment: 'ĞECKO:CSMIGRATION',
+      );
     } else if (fromBalance['transferableBalance'] != 0) {
       await migrateIdentity(
           fromAddress: keypair.address!,

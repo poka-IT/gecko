@@ -16,10 +16,11 @@ import 'package:provider/provider.dart';
 import 'package:fade_and_translate/fade_and_translate.dart';
 
 class TransactionInProgressTule extends StatefulWidget {
-  const TransactionInProgressTule({super.key, required this.address, this.transactionId});
+  const TransactionInProgressTule({super.key, required this.address, required this.transactionId, required this.comment});
 
   final String address;
-  final String? transactionId;
+  final String transactionId;
+  final String comment;
 
   @override
   State<TransactionInProgressTule> createState() => _TransactionInProgressTuleState();
@@ -117,17 +118,39 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
                       padding: const EdgeInsets.only(bottom: 5),
                       child: Text(getShortPubkey(txContent.to), style: scaledTextStyle(fontSize: 16, fontFamily: 'Monospace')),
                     ),
-                    subtitle: Row(
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        statusIcon,
-                        ScaledSizedBox(width: 10),
-                        ScaledSizedBox(
-                          width: 170,
-                          child: Text(
-                            humanStatus,
-                            style: scaledTextStyle(fontStyle: FontStyle.italic, color: Theme.of(context).textTheme.titleLarge!.color, fontSize: 13),
-                          ),
+                        Row(
+                          children: [
+                            statusIcon,
+                            ScaledSizedBox(width: 10),
+                            ScaledSizedBox(
+                              width: 170,
+                              child: Text(
+                                humanStatus,
+                                style: scaledTextStyle(
+                                  fontStyle: FontStyle.italic,
+                                  color: Theme.of(context).textTheme.titleLarge!.color,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
+                        if (widget.comment.isNotEmpty) ...[
+                          ScaledSizedBox(height: 4),
+                          Text(
+                            widget.comment,
+                            style: scaledTextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                              fontStyle: FontStyle.italic,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ],
                     ),
                     trailing: Text("$finalAmount $currencyName",

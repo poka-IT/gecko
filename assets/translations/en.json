@@ -247,5 +247,8 @@
     "renewingMembership": "Renewing membership",
     "membershipRenewalConfirmed": "Your membership renewal request has been registered and will be effective within a few minutes",
     "membershipRenewalPending": "Membership renewal in progress...",
-    "membershipRenewalPeriodNotRespected": "You must wait for the renewal period before you can renew your membership"
+    "membershipRenewalPeriodNotRespected": "You must wait for the renewal period before you can renew your membership",
+    "addComment": "Add a comment",
+    "comment": "Comment",
+    "optionalComment": "Optional comment"
 }

@@ -367,7 +367,7 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<CertState> certState(String from, String to) async {
-    final toStatus = (await idtyStatus([to])).first;
+    final toStatus = (await idtyStatusMulti([to])).first;
     final myWallets = MyWalletsProvider();
 
     if (from == to || !myWallets.getWalletDataByAddress(from)!.isMembre) {
@@ -434,7 +434,14 @@ class SubstrateSdk with ChangeNotifier {
     'unknown': IdtyStatus.unknown,
   };
 
-  Future<List<IdtyStatus>> idtyStatus(List<String> addresses) async {
+  Future<IdtyStatus> idtyStatus(String address) async {
+    final idtyIndex = await _getIdentityIndexOf(address);
+    if (idtyIndex == null) return IdtyStatus.none;
+    final idtyStatus = await idtyStatusByIndex(idtyIndex);
+    return idtyStatus;
+  }
+
+  Future<List<IdtyStatus>> idtyStatusMulti(List<String> addresses) async {
     final idtyIndexes = await _getIdentityIndexOfMulti(addresses);
 
     //FIXME: should not have to replace null values by 99999999
@@ -898,7 +905,7 @@ class SubstrateSdk with ChangeNotifier {
 
     final transferableBalance = fromBalance['transferableBalance'];
 
-    final statusList = await idtyStatus([fromAddress, toAddress]);
+    final statusList = await idtyStatusMulti([fromAddress, toAddress]);
     final fromIdtyStatus = statusList[0];
     final fromHasConsumer = fromAddress == '' ? false : await hasAccountConsumers(fromAddress);
     final toIdtyStatus = statusList[1];
@@ -1005,7 +1012,7 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<String> certify(String fromAddress, String destAddress, String password) async {
-    final statusList = await idtyStatus([fromAddress, destAddress]);
+    final statusList = await idtyStatusMulti([fromAddress, destAddress]);
     final myIdtyStatus = statusList[0];
     final toIdtyStatus = statusList[1];
 

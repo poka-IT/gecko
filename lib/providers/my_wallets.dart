@@ -51,7 +51,7 @@ class MyWalletsProvider with ChangeNotifier {
 
     // update all idty status in lists
     int n = 0;
-    final idtyStatusList = await sub.idtyStatus(walletsToScan.keys.toList());
+    final idtyStatusList = await sub.idtyStatusMulti(walletsToScan.keys.toList());
     for (final wallet in walletsToScan.values) {
       wallet.identityStatus = idtyStatusList[n];
       walletBox.put(wallet.address, wallet);

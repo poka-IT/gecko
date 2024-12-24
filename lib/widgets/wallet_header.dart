@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/certifications.dart';
 import 'package:gecko/utils.dart';
@@ -31,6 +33,7 @@ class WalletHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     const double avatarSize = 90;
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     return Container(
       color: headerColor,
@@ -109,42 +112,50 @@ class WalletHeader extends StatelessWidget {
 
                 // Certifications section
                 ScaledSizedBox(height: 12),
-                InkWell(
-                  onTap: () => Navigator.push(
-                    context,
-                    PageNoTransit(
-                      builder: (context) => CertificationsScreen(
-                        address: address,
-                        username: duniterIndexer.walletNameIndexer[address] ?? '',
+                FutureBuilder(
+                  future: sub.idtyStatus(address),
+                  builder: (context, idtyStatus) {
+                    return Visibility(
+                      visible: idtyStatus.data != IdtyStatus.none,
+                      child: InkWell(
+                        onTap: () => Navigator.push(
+                          context,
+                          PageNoTransit(
+                            builder: (context) => CertificationsScreen(
+                              address: address,
+                              username: duniterIndexer.walletNameIndexer[address] ?? '',
+                            ),
+                          ),
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.transparent,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IdentityStatus(
+                                address: address,
+                                isOwner: false,
+                                color: orangeC,
+                              ),
+                              SizedBox(width: scaleSize(8)),
+                              Certifications(
+                                address: address,
+                                size: 13,
+                              ),
+                              Icon(
+                                Icons.chevron_right,
+                                size: scaleSize(15),
+                                color: orangeC.withOpacity(0.8),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: Colors.transparent,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IdentityStatus(
-                          address: address,
-                          isOwner: false,
-                          color: orangeC,
-                        ),
-                        SizedBox(width: scaleSize(8)),
-                        Certifications(
-                          address: address,
-                          size: 13,
-                        ),
-                        Icon(
-                          Icons.chevron_right,
-                          size: scaleSize(15),
-                          color: orangeC.withOpacity(0.8),
-                        ),
-                      ],
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ],
             ),

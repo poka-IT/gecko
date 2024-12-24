@@ -71,7 +71,11 @@ class WalletData extends HiveObject {
   // creates the ':'-separated string from the WalletData
   String get inLine => "$chest:$number:$name:$derivation:$imageDefaultPath:$imageCustomPath:$identityStatus";
 
-  bool get hasIdentity => identityStatus == IdtyStatus.unconfirmed || identityStatus == IdtyStatus.unvalidated || identityStatus == IdtyStatus.member;
+  bool get hasIdentity =>
+      identityStatus == IdtyStatus.unconfirmed ||
+      identityStatus == IdtyStatus.unvalidated ||
+      identityStatus == IdtyStatus.member ||
+      identityStatus == IdtyStatus.notMember;
 
   bool get isMembre => identityStatus == IdtyStatus.member;
 

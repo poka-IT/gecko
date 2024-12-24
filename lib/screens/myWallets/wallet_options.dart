@@ -83,7 +83,7 @@ class WalletOptions extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   buildConfirmIdentitySection(walletProvider),
-                                  if (wallet.isMembre) buildRenewMembershipSection(walletProvider),
+                                  if (wallet.hasIdentity) buildRenewMembershipSection(walletProvider),
                                   buildOptionsSection(context, walletProvider, historyProvider),
                                   if (!isAlone) buildDefaultWalletSection(context, walletProvider, myWalletProvider, walletOptions, currentChest),
                                   buildDangerZone(context, walletProvider, currentChest),

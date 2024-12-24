@@ -31,13 +31,9 @@ class IdentityStatus extends StatelessWidget {
 
             final resStatus = walletData.identityStatus;
 
-            if (!isOwner) {
-              if (resStatus == IdtyStatus.unvalidated) {
-                return NameByAddress(wallet: walletData, size: 16, color: Colors.grey[700]!, fontWeight: FontWeight.w500, fontStyle: FontStyle.italic);
-              } else if (resStatus == IdtyStatus.member) {
-                return NameByAddress(wallet: walletData, size: 18, color: Colors.black, fontWeight: FontWeight.w600, fontStyle: FontStyle.normal);
-              }
-            }
+            final nameByAddress = resStatus == IdtyStatus.member
+                ? NameByAddress(wallet: walletData, size: 18, color: Colors.black, fontWeight: FontWeight.w500, fontStyle: FontStyle.normal)
+                : NameByAddress(wallet: walletData, size: 16, color: Colors.grey[700]!, fontWeight: FontWeight.w500, fontStyle: FontStyle.italic);
 
             final Map<IdtyStatus, String> statusText = {
               IdtyStatus.none: '',
@@ -49,8 +45,12 @@ class IdentityStatus extends StatelessWidget {
               IdtyStatus.unknown: ''
             };
 
-            return SizedBox(
-              child: showText(statusText[resStatus]!, bold: resStatus == IdtyStatus.member, size: scaleSize(15)),
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                nameByAddress,
+                showText(statusText[resStatus]!, bold: resStatus == IdtyStatus.member, size: scaleSize(15)),
+              ],
             );
           });
     });

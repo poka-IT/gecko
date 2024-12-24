@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/membership_status.dart';
@@ -19,7 +18,6 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/myWallets/chest_options.dart';
 import 'package:gecko/screens/myWallets/import_g1_v1.dart';
-import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
@@ -160,48 +158,6 @@ class WalletOptions extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget pubkeyWidget(WalletOptionsProvider walletProvider, BuildContext ctx) {
-    final shortPubkey = getShortPubkey(walletProvider.address.text);
-    return Container(
-      height: scaleSize(48),
-      padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
-      child: Row(
-        children: [
-          Image.asset(
-            'assets/walletOptions/key.png',
-            height: scaleSize(24),
-            color: Colors.black87,
-          ),
-          ScaledSizedBox(width: 16),
-          Expanded(
-            child: Text(
-              shortPubkey,
-              style: scaledTextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                fontFamily: 'Monospace',
-                color: Colors.black87,
-              ),
-            ),
-          ),
-          IconButton(
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            icon: Icon(
-              Icons.copy,
-              size: scaleSize(20),
-              color: orangeC.withOpacity(0.8),
-            ),
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: walletProvider.address.text));
-              snackCopyKey(ctx);
-            },
-          ),
-        ],
-      ),
     );
   }
 
@@ -358,8 +314,6 @@ class WalletOptions extends StatelessWidget {
   Widget buildOptionsSection(BuildContext context, WalletOptionsProvider walletProvider, WalletsProfilesProvider historyProvider) {
     return Column(
       children: [
-        pubkeyWidget(walletProvider, context),
-        ScaledSizedBox(height: 4),
         activityWidget(context, historyProvider, walletProvider),
         ScaledSizedBox(height: 4),
       ],

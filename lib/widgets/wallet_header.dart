@@ -96,16 +96,34 @@ class WalletHeader extends StatelessWidget {
                     Clipboard.setData(ClipboardData(text: address));
                     snackCopyKey(context);
                   },
-                  child: Text(
-                    getShortPubkey(address),
-                    style: scaledTextStyle(
-                      fontSize: 20,
-                      fontFamily: 'Monospace',
-                      fontWeight: FontWeight.w900,
-                    ),
+                  child: Row(
+                    children: [
+                      Text(
+                        getShortPubkey(address),
+                        style: scaledTextStyle(
+                          fontSize: 20,
+                          fontFamily: 'Monospace',
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      SizedBox(width: scaleSize(14)),
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        icon: Icon(
+                          Icons.copy,
+                          size: scaleSize(20),
+                          color: orangeC.withOpacity(0.8),
+                        ),
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(text: address));
+                          snackCopyKey(context);
+                        },
+                      ),
+                    ],
                   ),
                 ),
-                ScaledSizedBox(height: 15),
+                ScaledSizedBox(height: 8),
 
                 // Balance
                 Balance(address: address, size: 18),

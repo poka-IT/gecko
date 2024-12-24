@@ -21,8 +21,7 @@ class SearchIdentityQuery extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    WalletsProfilesProvider walletsProfiles =
-        Provider.of<WalletsProfilesProvider>(context, listen: false);
+    WalletsProfilesProvider walletsProfiles = Provider.of<WalletsProfilesProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     final searchProvider = Provider.of<SearchProvider>(context, listen: false);
     if (indexerEndpoint == '') {
@@ -38,8 +37,7 @@ class SearchIdentityQuery extends StatelessWidget {
               'name': '%$name%',
             },
           ),
-          builder: (QueryResult result,
-              {VoidCallback? refetch, FetchMore? fetchMore}) {
+          builder: (QueryResult result, {VoidCallback? refetch, FetchMore? fetchMore}) {
             if (kDebugMode) {
               if (result.hasException) {
                 return Text(result.exception.toString());
@@ -50,16 +48,16 @@ class SearchIdentityQuery extends StatelessWidget {
               return Text('loading'.tr());
             }
 
-            final List identities =
-                result.data?['identityConnection']['edges'] ?? [];
+            final List identities = result.data?['identityConnection']['edges'] ?? [];
 
             if (identities.isEmpty) {
               return Text('noResult'.tr());
             }
 
             for (Map profile in identities) {
-              duniterIndexer.walletNameIndexer.putIfAbsent(
-                  profile['node']['accountId'], () => profile['node']['name']);
+              if (profile['node']['name'] != null && profile['node']['accountId'] != null) {
+                duniterIndexer.walletNameIndexer.putIfAbsent(profile['node']['accountId'], () => profile['node']['name']);
+              }
             }
 
             searchProvider.resultLenght = identities.length;
@@ -68,57 +66,42 @@ class SearchIdentityQuery extends StatelessWidget {
             return Expanded(
               child: ListView(children: <Widget>[
                 for (Map profile in identities)
-                  ListTile(
-                      key: keySearchResult(profile['node']['accountId']),
-                      horizontalTitleGap: 10,
-                      contentPadding: const EdgeInsets.only(right: 2),
-                      leading: DatapodAvatar(
-                          address: profile['node']['accountId'],
-                          size: avatarSize),
-                      title: Row(children: <Widget>[
-                        Text(getShortPubkey(profile['node']['accountId']),
-                            style: scaledTextStyle(
-                                fontSize: 15,
-                                fontFamily: 'Monospace',
-                                fontWeight: FontWeight.w500),
-                            textAlign: TextAlign.center),
-                      ]),
-                      trailing: ScaledSizedBox(
-                        width: 120,
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Balance(
-                                        address: profile['node']['accountId'],
-                                        size: 15),
-                                  ]),
+                  if (profile['node']['accountId'] != null)
+                    ListTile(
+                        key: keySearchResult(profile['node']['accountId']),
+                        horizontalTitleGap: 10,
+                        contentPadding: const EdgeInsets.only(right: 2),
+                        leading: DatapodAvatar(address: profile['node']['accountId'], size: avatarSize),
+                        title: Row(children: <Widget>[
+                          Text(getShortPubkey(profile['node']['accountId']),
+                              style: scaledTextStyle(fontSize: 15, fontFamily: 'Monospace', fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+                        ]),
+                        trailing: ScaledSizedBox(
+                          width: 120,
+                          child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                            Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                              Balance(address: profile['node']['accountId'], size: 15),
                             ]),
-                      ),
-                      subtitle: Row(children: <Widget>[
-                        Text(profile['node']['name'] ?? '',
-                            style: scaledTextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w500),
-                            textAlign: TextAlign.center),
-                      ]),
-                      dense: !isTall,
-                      isThreeLine: false,
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) {
-                            walletsProfiles.address =
-                                profile['node']['accountId'];
-                            return WalletViewScreen(
-                              address: profile['node']['accountId'],
-                              username: profile['node']['name'],
-                            );
-                          }),
-                        );
-                      }),
+                          ]),
+                        ),
+                        subtitle: Row(children: <Widget>[
+                          Text(profile['node']['name'] ?? '', style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+                        ]),
+                        dense: !isTall,
+                        isThreeLine: false,
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) {
+                              walletsProfiles.address = profile['node']['accountId'];
+                              return WalletViewScreen(
+                                address: profile['node']['accountId'],
+                                username: profile['node']['name'],
+                              );
+                            }),
+                          );
+                        }),
               ]),
             );
           }),

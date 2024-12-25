@@ -26,16 +26,23 @@ class NextButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.white,
           backgroundColor: orangeC,
-          elevation: 4,
+          elevation: 2,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          shadowColor: orangeC.withValues(alpha: 0.3),
         ),
         onPressed: () {
-          Navigator.push(
-              context, FaderTransition(page: nextScreen, isFast: isFast));
+          Navigator.push(context, FaderTransition(page: nextScreen, isFast: isFast));
         },
         child: Text(
           text,
           style: scaledTextStyle(
-              fontSize: 22, fontWeight: FontWeight.w600, color: Colors.white),
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
         ),
       ),
     );

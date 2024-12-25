@@ -35,13 +35,11 @@ class SearchResult extends StatelessWidget {
       builder: (context, AsyncSnapshot<List?> snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.data?.isEmpty ?? true) {
-            return SearchIdentityQuery(
-                name: searchProvider.searchController.text);
+            return SearchIdentityQuery(name: searchProvider.searchController.text);
           } else {
             return Expanded(
               child: ListView(children: <Widget>[
-                for (G1WalletsList g1Wallet in snapshot.data ?? [])
-                  resultTileAddressSearch(g1Wallet, context),
+                for (G1WalletsList g1Wallet in snapshot.data ?? []) resultTileAddressSearch(g1Wallet, context),
               ]),
             );
           }
@@ -64,19 +62,14 @@ class SearchResult extends StatelessWidget {
         leading: DatapodAvatar(address: g1Wallet.address, size: avatarSize),
         title: Row(children: <Widget>[
           Text(getShortPubkey(g1Wallet.address),
-              style: scaledTextStyle(
-                  fontSize: 17,
-                  fontFamily: 'Monospace',
-                  fontWeight: FontWeight.w500),
-              textAlign: TextAlign.center),
+              style: scaledTextStyle(fontSize: 14, fontFamily: 'Monospace', fontWeight: FontWeight.w500), textAlign: TextAlign.center),
         ]),
-        trailing:
-            Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        trailing: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           ScaledSizedBox(
             width: 110,
             child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
               Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Balance(address: g1Wallet.address, size: 15),
+                Balance(address: g1Wallet.address, size: 14),
               ]),
             ]),
           ),
@@ -84,6 +77,7 @@ class SearchResult extends StatelessWidget {
         subtitle: Row(children: <Widget>[
           NameByAddress(
             wallet: WalletData(address: g1Wallet.address),
+            size: 14,
           ),
         ]),
         dense: false,

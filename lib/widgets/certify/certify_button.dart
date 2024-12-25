@@ -24,9 +24,7 @@ class CertifyButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
-    final defaultWallet = myWalletProvider.getDefaultWallet();
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
     return Column(
       children: <Widget>[
@@ -42,20 +40,21 @@ class CertifyButton extends StatelessWidget {
                   final result = await confirmPopupCertification(
                         context,
                         'areYouSureYouWantToCertify1'.tr(),
-                        duniterIndexer.walletNameIndexer[address] ??
-                            "noIdentity".tr(),
+                        duniterIndexer.walletNameIndexer[address] ?? "noIdentity".tr(),
                         'areYouSureYouWantToCertify2'.tr(),
                         getShortPubkey(address),
                       ) ??
                       false;
 
                   if (!result) return;
+                  await sub.setCurrentWallet(myWalletProvider.idtyWallet!);
+
                   if (myWalletProvider.pinCode == '') {
                     await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (homeContext) {
-                          return UnlockingWallet(wallet: defaultWallet);
+                          return UnlockingWallet(wallet: myWalletProvider.idtyWallet!);
                         },
                       ),
                     );
@@ -63,10 +62,8 @@ class CertifyButton extends StatelessWidget {
                   if (myWalletProvider.pinCode == '') {
                     return;
                   }
-                  WalletsProfilesProvider walletViewProvider =
-                      Provider.of<WalletsProfilesProvider>(context,
-                          listen: false);
-                  final acc = sub.getCurrentWallet();
+                  WalletsProfilesProvider walletViewProvider = Provider.of<WalletsProfilesProvider>(context, listen: false);
+                  final acc = sub.getCurrentKeyPair();
                   final transactionId = await sub.certify(
                     acc.address!,
                     walletViewProvider.address,
@@ -94,8 +91,7 @@ class CertifyButton extends StatelessWidget {
         Text(
           "certify".tr(),
           textAlign: TextAlign.center,
-          style: scaledTextStyle(
-              fontSize: buttonFontSize, fontWeight: FontWeight.w500),
+          style: scaledTextStyle(fontSize: buttonFontSize, fontWeight: FontWeight.w500),
         ),
       ],
     );

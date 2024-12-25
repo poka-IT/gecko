@@ -27,13 +27,9 @@ class _CustomDerivationState extends State<CustomDerivation> {
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
-    final derivationList = <String>[
-      'root',
-      for (var i = 0; i < 51; i += 1) i.toString()
-    ];
+    final derivationList = <String>['root', for (var i = 0; i < 51; i += 1) i.toString()];
 
     for (WalletData wallet in myWalletProvider.listWallets) {
       derivationList.remove(wallet.derivation.toString());
@@ -57,6 +53,15 @@ class _CustomDerivationState extends State<CustomDerivation> {
               'chooseDerivation'.tr(),
               style: scaledTextStyle(fontSize: 16),
             ),
+            ScaledSizedBox(height: 8),
+            Text(
+              'advancedFeature'.tr(),
+              style: scaledTextStyle(
+                fontSize: 13,
+                color: Colors.grey[600],
+                fontStyle: FontStyle.italic,
+              ),
+            ),
             ScaledSizedBox(height: 20),
             ScaledSizedBox(
               width: 100,
@@ -78,8 +83,7 @@ class _CustomDerivationState extends State<CustomDerivation> {
                     dropdownValue = newValue!;
                   });
                 },
-                items: derivationList
-                    .map<DropdownMenuItem<String>>((String value) {
+                items: derivationList.map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                       value: value,
                       child: ScaledSizedBox(
@@ -88,8 +92,7 @@ class _CustomDerivationState extends State<CustomDerivation> {
                           const Spacer(),
                           Text(
                             value,
-                            style: scaledTextStyle(
-                                fontSize: 16, color: Colors.black),
+                            style: scaledTextStyle(fontSize: 16, color: Colors.black),
                           ),
                           const Spacer(),
                         ]),
@@ -104,16 +107,19 @@ class _CustomDerivationState extends State<CustomDerivation> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
-                  elevation: 4,
                   backgroundColor: orangeC,
+                  elevation: 2,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  shadowColor: orangeC.withValues(alpha: 0.3),
                 ),
                 onPressed: () async {
                   if (!await myWalletProvider.askPinCode()) return;
-                  String newDerivationName =
-                      '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number! + 2}';
+                  String newDerivationName = '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number! + 2}';
                   if (dropdownValue == 'root') {
-                    await myWalletProvider.generateRootWallet(
-                        context, 'rootWallet'.tr());
+                    await myWalletProvider.generateRootWallet(context, 'rootWallet'.tr());
                   } else {
                     await myWalletProvider.generateNewDerivation(
                       context,
@@ -121,15 +127,15 @@ class _CustomDerivationState extends State<CustomDerivation> {
                       int.parse(dropdownValue!),
                     );
                   }
-                  Navigator.popUntil(
-                      context, ModalRoute.withName('/mywallets'));
+                  Navigator.popUntil(context, ModalRoute.withName('/mywallets'));
                 },
                 child: Text(
                   'validate'.tr(),
                   style: scaledTextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),

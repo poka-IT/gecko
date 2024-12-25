@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -13,6 +14,8 @@ import 'package:provider/provider.dart';
 
 class MyWalletsProvider with ChangeNotifier {
   List<WalletData> listWallets = [];
+  WalletData? idtyWallet;
+  List<WalletData> listWalletsWithoutIdty = [];
   String pinCode = '';
   late String mnemonic;
   int? pinLenght;
@@ -58,6 +61,14 @@ class MyWalletsProvider with ChangeNotifier {
       listWallets.add(wallet);
       n++;
     }
+
+    listWallets.sort((p1, p2) => Comparable.compare(p1.number!, p2.number!));
+
+    idtyWallet = listWallets.firstWhereOrNull((w) => w.hasIdentity);
+
+    listWalletsWithoutIdty = listWallets.toList();
+    listWalletsWithoutIdty.removeWhere((w) => w.address == idtyWallet?.address);
+
     return listWallets;
   }
 

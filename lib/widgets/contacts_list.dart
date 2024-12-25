@@ -22,6 +22,49 @@ class ContactsList extends StatelessWidget {
 
   final List<G1WalletsList> myContacts;
 
+  void _showContactMenu(BuildContext context, G1WalletsList contact) {
+    final walletsProfilesClass = Provider.of<WalletsProfilesProvider>(context, listen: false);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[600],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete_outline, color: Colors.red),
+                title: Text(
+                  'removeContact'.tr(),
+                  style: const TextStyle(color: Colors.red),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  walletsProfilesClass.addContact(contact);
+                },
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final walletsProfilesClass = Provider.of<WalletsProfilesProvider>(context, listen: false);
@@ -47,20 +90,21 @@ class ContactsList extends StatelessWidget {
                       leading: DatapodAvatar(address: g1Wallet.address, size: 47),
                       title: Row(children: <Widget>[
                         Text(getShortPubkey(g1Wallet.address),
-                            style: scaledTextStyle(fontSize: 15, fontFamily: 'Monospace', fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+                            style: scaledTextStyle(fontSize: 14, fontFamily: 'Monospace', fontWeight: FontWeight.w500), textAlign: TextAlign.center),
                       ]),
                       trailing: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                         ScaledSizedBox(
                           width: 110,
                           child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                             Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                              Balance(address: g1Wallet.address, size: scaleSize(14)),
+                              Balance(address: g1Wallet.address, size: scaleSize(13)),
                             ]),
                           ]),
                         ),
                       ]),
-                      subtitle: Row(children: <Widget>[NameByAddress(size: scaleSize(15), wallet: WalletData(address: g1Wallet.address))]),
+                      subtitle: Row(children: <Widget>[NameByAddress(size: scaleSize(14), wallet: WalletData(address: g1Wallet.address))]),
                       isThreeLine: false,
+                      onLongPress: () => _showContactMenu(context, g1Wallet),
                       onTap: () {
                         Navigator.push(
                           context,

@@ -16,18 +16,13 @@ import 'package:provider/provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 class ShowSeed extends StatelessWidget {
-  const ShowSeed(
-      {Key? keyMyWallets,
-      required this.walletName,
-      required this.walletProvider})
-      : super(key: keyMyWallets);
+  const ShowSeed({Key? keyMyWallets, required this.walletName, required this.walletProvider}) : super(key: keyMyWallets);
   final String? walletName;
   final MyWalletsProvider walletProvider;
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     WalletData defaultWallet = myWalletProvider.getDefaultWallet();
@@ -39,11 +34,9 @@ class ShowSeed extends StatelessWidget {
           child: Column(children: <Widget>[
             const Spacer(flex: 1),
             FutureBuilder(
-                future:
-                    sub.getSeed(defaultWallet.address, walletProvider.pinCode),
+                future: sub.getSeed(defaultWallet.address, walletProvider.pinCode),
                 builder: (BuildContext context, AsyncSnapshot<String?> seed) {
-                  if (seed.connectionState != ConnectionState.done ||
-                      seed.hasError) {
+                  if (seed.connectionState != ConnectionState.done || seed.hasError) {
                     return ScaledSizedBox(
                       height: 15,
                       width: 15,
@@ -56,66 +49,61 @@ class ShowSeed extends StatelessWidget {
                     return const Text('');
                   }
 
-                  return Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Column(children: [
-                          BuildText(
-                              text: 'keepYourMnemonicSecret'.tr(), size: 16),
-                          ScaledSizedBox(height: 35),
-                          sentanceArray(context, seed.data!.split(' ')),
-                          ScaledSizedBox(height: 20),
-                          Row(
-                            children: [
-                              ScaledSizedBox(
-                                height: 39,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    foregroundColor: Colors.black,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    backgroundColor: orangeC,
-                                    elevation: 1,
-                                  ),
-                                  onPressed: () {
-                                    Clipboard.setData(
-                                        ClipboardData(text: seed.data!));
-                                    snackCopySeed(context);
-                                  },
-                                  child: Row(children: <Widget>[
-                                    Image.asset(
-                                      'assets/walletOptions/copy-white.png',
-                                      height: scaleSize(24),
-                                    ),
-                                    ScaledSizedBox(width: 7),
-                                    Text(
-                                      'copy'.tr(),
-                                      style: scaledTextStyle(
-                                          fontSize: 13, color: Colors.grey[50]),
-                                    )
-                                  ]),
+                  return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Column(children: [
+                      BuildText(text: 'keepYourMnemonicSecret'.tr(), size: 16),
+                      ScaledSizedBox(height: 35),
+                      sentanceArray(context, seed.data!.split(' ')),
+                      ScaledSizedBox(height: 20),
+                      Row(
+                        children: [
+                          ScaledSizedBox(
+                            height: 39,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
+                                backgroundColor: orangeC,
+                                elevation: 1,
                               ),
-                              ScaledSizedBox(width: 50),
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) {
-                                      return PrintWallet(seed.data);
-                                    }),
-                                  );
-                                },
-                                child: Image.asset(
-                                  'assets/printer.png',
-                                  height: scaleSize(38),
+                              onPressed: () {
+                                Clipboard.setData(ClipboardData(text: seed.data!));
+                                snackCopySeed(context);
+                              },
+                              child: Row(children: <Widget>[
+                                Image.asset(
+                                  'assets/walletOptions/copy-white.png',
+                                  height: scaleSize(24),
                                 ),
-                              ),
-                            ],
+                                ScaledSizedBox(width: 7),
+                                Text(
+                                  'copy'.tr(),
+                                  style: scaledTextStyle(fontSize: 13, color: Colors.grey[50]),
+                                )
+                              ]),
+                            ),
                           ),
-                        ]),
-                      ]);
+                          ScaledSizedBox(width: 50),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) {
+                                  return PrintWallet(seed.data);
+                                }),
+                              );
+                            },
+                            child: Image.asset(
+                              'assets/printer.png',
+                              height: scaleSize(38),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ]),
+                  ]);
                 }),
             const Spacer(flex: 3),
             ScaledSizedBox(
@@ -124,8 +112,13 @@ class ShowSeed extends StatelessWidget {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
-                  elevation: 4,
                   backgroundColor: orangeC,
+                  elevation: 2,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  shadowColor: orangeC.withValues(alpha: 0.3),
                 ),
                 onPressed: () {
                   Navigator.pop(context);
@@ -133,9 +126,10 @@ class ShowSeed extends StatelessWidget {
                 child: Text(
                   'close'.tr(),
                   style: scaledTextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
@@ -233,8 +227,7 @@ class PrintWallet extends StatelessWidget {
   }
 
   Future<Uint8List> printWallet(String seed) async {
-    final ByteData fontData =
-        await rootBundle.load("assets/OpenSans-Regular.ttf");
+    final ByteData fontData = await rootBundle.load("assets/OpenSans-Regular.ttf");
     final pw.Font ttf = pw.Font.ttf(fontData.buffer.asByteData());
     final pdf = pw.Document();
 
@@ -250,13 +243,11 @@ class PrintWallet extends StatelessWidget {
         child: pw.Column(children: <pw.Widget>[
           pw.Text(
             number.toString(),
-            style: pw.TextStyle(
-                fontSize: 14, color: const PdfColor(0.5, 0, 0), font: ttf),
+            style: pw.TextStyle(fontSize: 14, color: const PdfColor(0.5, 0, 0), font: ttf),
           ),
           pw.Text(
             dataWord,
-            style: pw.TextStyle(
-                fontSize: 19, color: const PdfColor(0, 0, 0), font: ttf),
+            style: pw.TextStyle(fontSize: 19, color: const PdfColor(0, 0, 0), font: ttf),
           ),
           pw.SizedBox(height: 10)
         ]),
@@ -288,12 +279,7 @@ class PrintWallet extends StatelessWidget {
                   arrayCell(7, seedList[6]),
                   arrayCell(8, seedList[7]),
                 ]),
-                pw.Row(children: <pw.Widget>[
-                  arrayCell(9, seedList[8]),
-                  arrayCell(10, seedList[9]),
-                  arrayCell(11, seedList[10]),
-                  arrayCell(12, seedList[11])
-                ]),
+                pw.Row(children: <pw.Widget>[arrayCell(9, seedList[8]), arrayCell(10, seedList[9]), arrayCell(11, seedList[10]), arrayCell(12, seedList[11])]),
                 pw.SizedBox(height: 105),
                 pw.Image(geckoLogo, height: 80),
                 pw.SizedBox(height: 205),

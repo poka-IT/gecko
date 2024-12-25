@@ -18,8 +18,7 @@ Future changeNode() async {
   await tapKey(keySelectDuniterNode('Personnalisé'), selectLast: true);
   await enterText(keyCustomDuniterEndpoint, 'ws://$ipAddress:9944');
   await tapKey(keyConnectToEndpoint);
-  await isIconPresent(Icons.add_card_sharp,
-      timeout: const Duration(seconds: 8));
+  await isIconPresent(Icons.add_card_sharp, timeout: const Duration(seconds: 8));
   await goBack();
 }
 
@@ -97,8 +96,7 @@ Future restoreChest() async {
 }
 
 Future onboardingNewChest() async {
-  final generateWalletProvider =
-      Provider.of<GenerateWalletsProvider>(homeContext, listen: false);
+  final generateWalletProvider = Provider.of<GenerateWalletsProvider>(homeContext, listen: false);
   // Open screen create new wallet
   await tapKey(keyOnboardingNewChest);
 
@@ -176,8 +174,7 @@ Future firstOpenChest() async {
 Future skipWalletDragTutorial() async {
   await pump(duration: const Duration(milliseconds: 500), number: 6);
   await pump(duration: const Duration(seconds: 2));
-  if (await isPresent('explainDraggableWallet'.tr().substring(0, 13),
-      timeout: const Duration(seconds: 5), settle: false)) {
+  if (await isPresent('explainDraggableWallet'.tr().substring(0, 13), timeout: const Duration(seconds: 5), settle: false)) {
     await tapKey(keyDragAndDrop, duration: 0);
   }
 }

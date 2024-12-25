@@ -115,15 +115,24 @@ Widget finishButton(BuildContext context) {
       key: keyGoWalletsHome,
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.white,
-        elevation: 4,
         backgroundColor: orangeC,
+        elevation: 2,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        shadowColor: orangeC.withValues(alpha: 0.3),
       ),
       onPressed: () {
         Navigator.pushNamedAndRemoveUntil(context, '/mywallets', ModalRoute.withName('/'));
       },
       child: Text(
         "accessMyChest".tr(),
-        style: scaledTextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
+        style: scaledTextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
       ),
     ),
   );

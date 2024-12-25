@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fast_base58/fast_base58.dart';
@@ -366,11 +368,12 @@ class SubstrateSdk with ChangeNotifier {
     return totalAmount;
   }
 
-  Future<CertState> certState(String from, String to) async {
+  Future<CertState> certState(String to) async {
     final toStatus = (await idtyStatusMulti([to])).first;
-    final myWallets = MyWalletsProvider();
+    final myWallets = Provider.of<MyWalletsProvider>(homeContext, listen: false);
+    final from = myWallets.idtyWallet?.address;
 
-    if (from == to || !myWallets.getWalletDataByAddress(from)!.isMembre) {
+    if (from == null || from == to || !myWallets.getWalletDataByAddress(from)!.isMembre) {
       return CertState(status: CertStatus.none);
     }
 
@@ -830,7 +833,7 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
-  KeyPairData getCurrentWallet() {
+  KeyPairData getCurrentKeyPair() {
     try {
       final acc = keyring.current;
       return acc;

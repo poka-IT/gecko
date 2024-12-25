@@ -8,7 +8,6 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/widgets/certify/cert_state.dart';
@@ -65,9 +64,8 @@ class WalletViewScreen extends StatelessWidget {
                   ),
                 ),
                 Consumer<SubstrateSdk>(builder: (context, sub, _) {
-                  WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
                   return FutureBuilder(
-                    future: sub.certState(defaultWallet.address, address),
+                    future: sub.certState(address),
                     builder: (context, AsyncSnapshot<CertState> snapshot) {
                       if (!snapshot.hasData) return const SizedBox.shrink();
                       final certState = snapshot.data!;

@@ -8,30 +8,82 @@ import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/contacts_list.dart';
 import 'package:provider/provider.dart';
 
-class ContactsScreen extends StatelessWidget {
+class ContactsScreen extends StatefulWidget {
   const ContactsScreen({super.key});
+
+  @override
+  State<ContactsScreen> createState() => _ContactsScreenState();
+}
+
+class _ContactsScreenState extends State<ContactsScreen> {
+  String searchQuery = '';
+  final FocusNode _searchFocus = FocusNode();
+
+  @override
+  void dispose() {
+    _searchFocus.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     Provider.of<WalletsProfilesProvider>(context, listen: true);
-    final myContacts = contactsBox.toMap().values.toList();
+    final allContacts = contactsBox.toMap().values.toList();
 
     // Order contacts by username
-    myContacts.sort((p1, p2) {
-      return Comparable.compare(p1.username?.toLowerCase() ?? 'zz',
-          p2.username?.toLowerCase() ?? 'zz');
+    allContacts.sort((p1, p2) {
+      return Comparable.compare(p1.username?.toLowerCase() ?? 'zz', p2.username?.toLowerCase() ?? 'zz');
     });
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: GeckoAppBar(
-          'contactsManagementWithNbr'.tr(args: ['${myContacts.length}'])),
-      bottomNavigationBar: const GeckoBottomAppBar(),
-      body: SafeArea(
-        child: Stack(children: [
-          ContactsList(myContacts: myContacts),
-          const OfflineInfo(),
-        ]),
+    // Filter contacts based on search query
+    final filteredContacts = searchQuery.isEmpty
+        ? allContacts
+        : allContacts.where((contact) {
+            final username = (contact.username ?? '').toLowerCase();
+            final address = contact.address.toLowerCase();
+            final query = searchQuery.toLowerCase();
+            return username.contains(query) || address.contains(query);
+          }).toList();
+
+    return GestureDetector(
+      onTap: () {
+        // Défocuser le champ de recherche quand on clique en dehors
+        if (_searchFocus.hasFocus) {
+          _searchFocus.unfocus();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: backgroundColor,
+        appBar: GeckoAppBar('contactsManagementWithNbr'.tr(args: ['${allContacts.length}'])),
+        bottomNavigationBar: const GeckoBottomAppBar(),
+        body: SafeArea(
+          child: Stack(children: [
+            Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    focusNode: _searchFocus,
+                    onChanged: (value) => setState(() => searchQuery = value),
+                    decoration: InputDecoration(
+                      hintText: 'searchContacts'.tr(),
+                      prefixIcon: const Icon(Icons.search),
+                      border: const OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: orangeC),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: ContactsList(myContacts: filteredContacts),
+                ),
+              ],
+            ),
+            const OfflineInfo(),
+          ]),
+        ),
       ),
     );
   }

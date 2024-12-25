@@ -93,6 +93,9 @@ class _HomeScreenState extends State<HomeScreen> {
             if (!connectivityResult.contains(ConnectivityResult.none)) {
               await sub.connectNode();
 
+              // Load wallets list
+              myWalletProvider.readAllWallets(myWalletProvider.getCurrentChest());
+
               //Connect to Indexer
               await duniterIndexer.getValidIndexerEndpoint();
             }

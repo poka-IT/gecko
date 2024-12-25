@@ -26,8 +26,13 @@ class ChestOptionsButtons extends StatelessWidget {
             ),
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.black,
-              elevation: 2,
               backgroundColor: floattingYellow,
+              elevation: 2,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              shadowColor: floattingYellow.withValues(alpha: 0.3),
             ),
             onPressed: () => Navigator.push(
               context,
@@ -64,14 +69,9 @@ class ChestOptionsButtons extends StatelessWidget {
               height: scaleSize(40),
             ),
             ScaledSizedBox(
-              width: 275,
+              width: 230,
               height: 60,
-              child: Center(
-                  child: Text('importG1v1'.tr(),
-                      style: scaledTextStyle(
-                          fontSize: 16,
-                          color: Colors.blue[900],
-                          fontWeight: FontWeight.w500))),
+              child: Center(child: Text('importG1v1'.tr(), style: scaledTextStyle(fontSize: 16, color: Colors.blue[900], fontWeight: FontWeight.w500))),
             ),
           ],
         ),

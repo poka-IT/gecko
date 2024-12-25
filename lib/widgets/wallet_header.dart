@@ -42,44 +42,39 @@ class WalletHeader extends StatelessWidget {
         vertical: scaleSize(16),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Avatar section
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                width: scaleSize(90),
-                height: scaleSize(90),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+          Container(
+            width: scaleSize(90),
+            height: scaleSize(90),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
                 ),
-                child: ClipOval(
-                  child: customImagePath == null || customImagePath == ''
-                      ? (defaultImagePath != null
-                          ? Image.asset(
-                              'assets/avatars/$defaultImagePath',
-                              fit: BoxFit.cover,
-                            )
-                          : DatapodAvatar(
-                              address: address,
-                              size: avatarSize,
-                            ))
-                      : Image.file(
-                          File(customImagePath!),
+              ],
+            ),
+            child: ClipOval(
+              child: customImagePath == null || customImagePath == ''
+                  ? (defaultImagePath != null
+                      ? Image.asset(
+                          'assets/avatars/$defaultImagePath',
                           fit: BoxFit.cover,
-                        ),
-                ),
-              ),
-            ],
+                        )
+                      : DatapodAvatar(
+                          address: address,
+                          size: avatarSize,
+                        ))
+                  : Image.file(
+                      File(customImagePath!),
+                      fit: BoxFit.cover,
+                    ),
+            ),
           ),
           SizedBox(width: scaleSize(20)),
 

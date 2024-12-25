@@ -179,7 +179,7 @@
     "contactsManagement": "Mes contacts",
     "noContacts": "Vous n'avez aucun contact",
     "addContact": "Ajouter\naux contacts",
-    "removeContact": "Supprimer\nce contact",
+    "removeContact": "Supprimer ce contact",
     "scanRootDerivationInProgress": "Scan de l'adresse racine",
     "derivationsScanProgress": "Scan des {} premières adresses",
     "importDerivationsInProgress": "Importation de l'adresse {}/{}",
@@ -251,5 +251,7 @@
     "membershipRenewalPeriodNotRespected": "Vous devez attendre la période de renouvellement avant de pouvoir renouveler votre adhésion",
     "addComment": "Ajouter un commentaire",
     "comment": "Commentaire",
-    "optionalComment": "Commentaire optionnel"
+    "optionalComment": "Commentaire optionnel",
+    "searchContacts": "Rechercher des contacts",
+    "advancedFeature": "Fonctionnalité avancée réservée aux utilisateurs expérimentés"
 }

@@ -32,8 +32,7 @@ class OnboardingStepFive extends StatefulWidget {
 class _ChooseChestState extends State<OnboardingStepFive> {
   @override
   Widget build(BuildContext context) {
-    final generateWalletProvider =
-        Provider.of<GenerateWalletsProvider>(context, listen: false);
+    final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context, listen: false);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -64,8 +63,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
                       elevation: 1,
                     ),
                     onPressed: () {
-                      Clipboard.setData(ClipboardData(
-                          text: generateWalletProvider.generatedMnemonic!));
+                      Clipboard.setData(ClipboardData(text: generateWalletProvider.generatedMnemonic!));
                       snackCopySeed(context);
                     },
                     child: Row(children: <Widget>[
@@ -76,8 +74,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
                       const Spacer(),
                       Text(
                         'copy'.tr(),
-                        style: scaledTextStyle(
-                            fontSize: 14, color: Colors.grey[50]),
+                        style: scaledTextStyle(fontSize: 14, color: Colors.grey[50]),
                       ),
                       const Spacer(),
                     ]),
@@ -89,8 +86,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) {
-                        return PrintWallet(
-                            generateWalletProvider.generatedMnemonic!);
+                        return PrintWallet(generateWalletProvider.generatedMnemonic!);
                       }),
                     );
                   },
@@ -112,22 +108,34 @@ class _ChooseChestState extends State<OnboardingStepFive> {
                       key: keyGenerateMnemonic,
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.black,
-                        elevation: 4,
                         backgroundColor: const Color(0xffFFD58D),
+                        elevation: 2,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        shadowColor: const Color(0xffFFD58D).withValues(alpha: 0.3),
                       ),
                       onPressed: () {
                         setState(() {});
                       },
-                      child: Text("chooseAnotherMnemonic".tr(),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          "chooseAnotherMnemonic".tr(),
                           textAlign: TextAlign.center,
                           style: scaledTextStyle(
-                              fontSize: 21, fontWeight: FontWeight.w600))),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                        ),
+                      )),
                 ),
               ),
             ),
             ScaledSizedBox(height: isTall ? 20 : 10),
-            nextButton(
-                context, "iNotedMyMnemonic".tr(), false, widget.skipIntro),
+            nextButton(context, "iNotedMyMnemonic".tr(), false, widget.skipIntro),
             isTall ? const Spacer() : const SizedBox(height: 5),
           ]),
           const OfflineInfo(),
@@ -138,8 +146,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
 }
 
 Widget sentanceArray(BuildContext context) {
-  final generateWalletProvider =
-      Provider.of<GenerateWalletsProvider>(context, listen: false);
+  final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context, listen: false);
 
   return Container(
     constraints: BoxConstraints(maxWidth: scaleSize(isTall ? 355 : 340)),
@@ -205,12 +212,9 @@ Widget arrayCell(dataWord) {
   );
 }
 
-Widget nextButton(
-    BuildContext context, String text, bool isFast, bool skipIntro) {
-  final generateWalletProvider =
-      Provider.of<GenerateWalletsProvider>(context, listen: false);
-  final myWalletProvider =
-      Provider.of<MyWalletsProvider>(context, listen: false);
+Widget nextButton(BuildContext context, String text, bool isFast, bool skipIntro) {
+  final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context, listen: false);
+  final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
   return ScaledSizedBox(
     width: 350,
     height: 55,
@@ -218,28 +222,31 @@ Widget nextButton(
       key: keyGoNext,
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.white,
-        elevation: 4,
         backgroundColor: orangeC,
+        elevation: 2,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        shadowColor: orangeC.withValues(alpha: 0.3),
       ),
       onPressed: () {
         generateWalletProvider.nbrWord = generateWalletProvider.getRandomInt();
-        generateWalletProvider.nbrWordAlpha = generateWalletProvider
-            .intToString(generateWalletProvider.nbrWord + 1);
+        generateWalletProvider.nbrWordAlpha = generateWalletProvider.intToString(generateWalletProvider.nbrWord + 1);
         myWalletProvider.mnemonic = generateWalletProvider.generatedMnemonic!;
 
         Navigator.push(
           context,
-          FaderTransition(
-              page: OnboardingStepSix(
-                  generatedMnemonic: generateWalletProvider.generatedMnemonic,
-                  skipIntro: skipIntro),
-              isFast: true),
+          FaderTransition(page: OnboardingStepSix(generatedMnemonic: generateWalletProvider.generatedMnemonic, skipIntro: skipIntro), isFast: true),
         );
       },
       child: Text(
         text,
         style: scaledTextStyle(
-            fontSize: 21, fontWeight: FontWeight.w600, color: Colors.white),
+          fontSize: 18,
+          fontWeight: FontWeight.w500,
+          color: Colors.white,
+        ),
       ),
     ),
   );

@@ -27,7 +27,6 @@ class WalletOptionsProvider with ChangeNotifier {
   bool ischangedPin = false;
   final newPin = TextEditingController();
   bool isEditing = false;
-  bool isBalanceBlur = false;
   final nameController = TextEditingController();
   bool isDefaultWallet = false;
   bool canValidateNameBool = false;
@@ -82,11 +81,6 @@ class WalletOptionsProvider with ChangeNotifier {
       Navigator.pop(context);
     }
     return 0;
-  }
-
-  void bluringBalance() {
-    isBalanceBlur = !isBalanceBlur;
-    notifyListeners();
   }
 
   Future<String> changeAvatar() async {

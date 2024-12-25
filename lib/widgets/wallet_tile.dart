@@ -39,7 +39,7 @@ class WalletTile extends StatelessWidget {
           );
         },
         child: ScaledSizedBox(
-          key: repository.number == 1 ? keyDragAndDrop : const Key('nothing'),
+          // key: repository.number == 1 ? keyDragAndDrop : const Key('nothing'),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),

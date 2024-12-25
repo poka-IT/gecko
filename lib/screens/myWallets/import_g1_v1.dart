@@ -26,8 +26,7 @@ class ImportG1v1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
     Timer? debounce;
     WalletData selectedWallet = myWalletProvider.getDefaultWallet();
@@ -42,25 +41,21 @@ class ImportG1v1 extends StatelessWidget {
         body: SafeArea(
           child: Consumer<SubstrateSdk>(builder: (context, sub, _) {
             return FutureBuilder(
-                future: sub.getBalanceAndIdtyStatus(
-                    sub.g1V1NewAddress, selectedWallet.address),
-                builder: (BuildContext context,
-                    AsyncSnapshot<MigrateWalletChecks> status) {
+                future: sub.getBalanceAndIdtyStatus(sub.g1V1NewAddress, selectedWallet.address),
+                builder: (BuildContext context, AsyncSnapshot<MigrateWalletChecks> status) {
                   if (status.data == null) {
                     return Column(children: [
                       ScaledSizedBox(height: 80),
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            ScaledSizedBox(
-                              height: 35,
-                              width: 35,
-                              child: const CircularProgressIndicator(
-                                color: orangeC,
-                                strokeWidth: 4,
-                              ),
-                            ),
-                          ]),
+                      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                        ScaledSizedBox(
+                          height: 35,
+                          width: 35,
+                          child: const CircularProgressIndicator(
+                            color: orangeC,
+                            strokeWidth: 4,
+                          ),
+                        ),
+                      ]),
                     ]);
                   }
 
@@ -79,13 +74,10 @@ class ImportG1v1 extends StatelessWidget {
                         if (debounce?.isActive ?? false) {
                           debounce!.cancel();
                         }
-                        debounce = Timer(
-                            const Duration(milliseconds: debouneTime), () {
-                          if (sub.csSalt.text != '' &&
-                              sub.csPassword.text != '') {
+                        debounce = Timer(const Duration(milliseconds: debouneTime), () {
+                          if (sub.csSalt.text != '' && sub.csPassword.text != '') {
                             sub.reload();
-                            sub.csToV2Address(
-                                sub.csSalt.text, sub.csPassword.text);
+                            sub.csToV2Address(sub.csSalt.text, sub.csPassword.text);
                           }
                         });
                       },
@@ -99,9 +91,7 @@ class ImportG1v1 extends StatelessWidget {
                         suffixIcon: IconButton(
                           key: keyCesiumIdVisible,
                           icon: Icon(
-                            sub.isCesiumIDVisible
-                                ? Icons.visibility_off
-                                : Icons.visibility,
+                            sub.isCesiumIDVisible ? Icons.visibility_off : Icons.visibility,
                             color: Colors.black,
                             size: scaleSize(22),
                           ),
@@ -120,14 +110,11 @@ class ImportG1v1 extends StatelessWidget {
                         if (debounce?.isActive ?? false) {
                           debounce!.cancel();
                         }
-                        debounce = Timer(
-                            const Duration(milliseconds: debouneTime), () {
+                        debounce = Timer(const Duration(milliseconds: debouneTime), () {
                           sub.g1V1NewAddress = '';
-                          if (sub.csSalt.text != '' &&
-                              sub.csPassword.text != '') {
+                          if (sub.csSalt.text != '' && sub.csPassword.text != '') {
                             sub.reload();
-                            sub.csToV2Address(
-                                sub.csSalt.text, sub.csPassword.text);
+                            sub.csToV2Address(sub.csSalt.text, sub.csPassword.text);
                           }
                         });
                       },
@@ -140,9 +127,7 @@ class ImportG1v1 extends StatelessWidget {
                         hintStyle: scaledTextStyle(fontSize: 13),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            sub.isCesiumIDVisible
-                                ? Icons.visibility_off
-                                : Icons.visibility,
+                            sub.isCesiumIDVisible ? Icons.visibility_off : Icons.visibility,
                             color: Colors.black,
                             size: scaleSize(22),
                           ),
@@ -163,32 +148,24 @@ class ImportG1v1 extends StatelessWidget {
                               GestureDetector(
                                 key: keyCopyPubkey,
                                 onTap: () {
-                                  Clipboard.setData(
-                                      ClipboardData(text: sub.g1V1OldPubkey));
+                                  Clipboard.setData(ClipboardData(text: sub.g1V1OldPubkey));
                                   snackCopyKey(context);
                                 },
                                 child: Text(
                                   'v1: ${getShortPubkey(sub.g1V1OldPubkey)}',
-                                  style: scaledTextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                      fontFamily: 'Monospace'),
+                                  style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600, fontFamily: 'Monospace'),
                                 ),
                               ),
                               ScaledSizedBox(height: 5),
                               GestureDetector(
                                 key: keyCopyAddress,
                                 onTap: () {
-                                  Clipboard.setData(
-                                      ClipboardData(text: sub.g1V1OldPubkey));
+                                  Clipboard.setData(ClipboardData(text: sub.g1V1OldPubkey));
                                   snackCopyKey(context);
                                 },
                                 child: Text(
                                   'v2: ${getShortPubkey(sub.g1V1NewAddress)}',
-                                  style: scaledTextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                      fontFamily: 'Monospace'),
+                                  style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600, fontFamily: 'Monospace'),
                                 ),
                               ),
                             ],
@@ -200,13 +177,9 @@ class ImportG1v1 extends StatelessWidget {
                                 '${statusData.fromBalance['transferableBalance']} $unit',
                                 style: scaledTextStyle(fontSize: 15),
                               ),
-                              IdentityStatus(
-                                  address: sub.g1V1NewAddress,
-                                  isOwner: false,
-                                  color: Colors.black),
+                              IdentityStatus(address: sub.g1V1NewAddress, isOwner: false, color: Colors.black),
                               ScaledSizedBox(width: 10),
-                              Certifications(
-                                  address: sub.g1V1NewAddress, size: 14)
+                              Certifications(address: sub.g1V1NewAddress, size: 14)
                             ],
                           ),
                         ],
@@ -247,13 +220,17 @@ class ImportG1v1 extends StatelessWidget {
                         key: keyConfirm,
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Colors.white,
-                          elevation: 4,
                           backgroundColor: orangeC,
+                          elevation: 2,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          shadowColor: orangeC.withValues(alpha: 0.3),
                         ),
                         onPressed: statusData.canValidate
                             ? () async {
-                                WalletData? defaultWallet =
-                                    myWalletProvider.getDefaultWallet();
+                                WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
 
                                 String? pin;
                                 if (myWalletProvider.pinCode == '') {
@@ -261,8 +238,7 @@ class ImportG1v1 extends StatelessWidget {
                                     context,
                                     MaterialPageRoute(
                                       builder: (homeContext) {
-                                        return UnlockingWallet(
-                                            wallet: defaultWallet);
+                                        return UnlockingWallet(wallet: defaultWallet);
                                       },
                                     ),
                                   );
@@ -284,10 +260,8 @@ class ImportG1v1 extends StatelessWidget {
                                     return TransactionInProgress(
                                         transactionId: transactionId,
                                         transType: 'identityMigration',
-                                        fromAddress:
-                                            getShortPubkey(sub.g1V1NewAddress),
-                                        toAddress: getShortPubkey(
-                                            selectedWallet.address));
+                                        fromAddress: getShortPubkey(sub.g1V1NewAddress),
+                                        toAddress: getShortPubkey(selectedWallet.address));
                                   }),
                                 );
                                 resetScreen();
@@ -296,7 +270,10 @@ class ImportG1v1 extends StatelessWidget {
                         child: Text(
                           'migrateAccount'.tr(),
                           style: scaledTextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w600),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
@@ -304,8 +281,7 @@ class ImportG1v1 extends StatelessWidget {
                     Text(
                       statusData.validationStatus,
                       textAlign: TextAlign.center,
-                      style: scaledTextStyle(
-                          fontSize: 11, color: Colors.grey[600]),
+                      style: scaledTextStyle(fontSize: 11, color: Colors.grey[600]),
                     )
                   ]);
                 });

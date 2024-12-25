@@ -180,7 +180,7 @@
     "contactsManagement": "Mis contactos",
     "noContacts": "No tienes ningún contacto",
     "addContact": "Añadir\na contactos",
-    "removeContact": "Eliminar\neste contacto",
+    "removeContact": "Eliminar este contacto",
     "scanRootDerivationInProgress": "Scan root address",
     "derivationsScanProgress": "Scan {} firsts addresses",
     "importDerivationsInProgress": "Import address {}/{}",
@@ -252,5 +252,7 @@
     "membershipRenewalPeriodNotRespected": "Debe esperar el período de renovación antes de poder renovar su membresía",
     "addComment": "Añadir un comentario",
     "comment": "Comentario",
-    "optionalComment": "Comentario opcional"
+    "optionalComment": "Comentario opcional",
+    "searchContacts": "Buscar contactos",
+    "advancedFeature": "Función avanzada reservada para usuarios experimentados"
 }

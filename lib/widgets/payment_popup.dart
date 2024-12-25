@@ -46,7 +46,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
 
     // Payment workflow !
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final acc = sub.getCurrentWallet();
+    final acc = sub.getCurrentKeyPair();
 
     final transactionId = const Uuid().v4();
 

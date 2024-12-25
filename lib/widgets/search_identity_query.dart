@@ -74,18 +74,18 @@ class SearchIdentityQuery extends StatelessWidget {
                         leading: DatapodAvatar(address: profile['node']['accountId'], size: avatarSize),
                         title: Row(children: <Widget>[
                           Text(getShortPubkey(profile['node']['accountId']),
-                              style: scaledTextStyle(fontSize: 15, fontFamily: 'Monospace', fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+                              style: scaledTextStyle(fontSize: 14, fontFamily: 'Monospace', fontWeight: FontWeight.w500), textAlign: TextAlign.center),
                         ]),
                         trailing: ScaledSizedBox(
                           width: 120,
                           child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                             Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                              Balance(address: profile['node']['accountId'], size: 15),
+                              Balance(address: profile['node']['accountId'], size: 14),
                             ]),
                           ]),
                         ),
                         subtitle: Row(children: <Widget>[
-                          Text(profile['node']['name'] ?? '', style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+                          Text(profile['node']['name'] ?? '', style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
                         ]),
                         dense: !isTall,
                         isThreeLine: false,

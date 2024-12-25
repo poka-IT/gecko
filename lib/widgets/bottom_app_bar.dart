@@ -1,6 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -72,9 +71,11 @@ class GeckoBottomAppBar extends StatelessWidget {
                   : () async {
                       if (!await myWalletProvider.askPinCode()) return;
 
-                      Navigator.popUntil(context, ModalRoute.withName('/'));
-                      sleep(const Duration(milliseconds: 300));
-                      Navigator.pushNamed(context, '/mywallets');
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/mywallets',
+                        ModalRoute.withName('/'),
+                      );
                     },
             ),
           ],

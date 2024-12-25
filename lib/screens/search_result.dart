@@ -41,7 +41,7 @@ class SearchResultScreen extends StatelessWidget {
                     ),
                     Text(
                       '"${searchProvider.searchController.text}"',
-                      style: scaledTextStyle(fontStyle: FontStyle.italic, fontSize: 17),
+                      style: scaledTextStyle(fontStyle: FontStyle.italic, fontSize: 16),
                     )
                   ],
                 ),

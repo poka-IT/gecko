@@ -48,7 +48,6 @@ class WalletOptions extends StatelessWidget {
     return PopScope(
       onPopInvokedWithResult: (_, __) {
         walletOptions.isEditing = false;
-        walletOptions.isBalanceBlur = false;
         myWalletProvider.reload();
       },
       child: Scaffold(

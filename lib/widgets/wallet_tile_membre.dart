@@ -14,30 +14,30 @@ import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 
 class WalletTileMembre extends StatelessWidget {
-  const WalletTileMembre({super.key, required this.repository});
+  const WalletTileMembre({super.key, required this.wallet});
 
-  final WalletData repository;
+  final WalletData wallet;
 
   @override
   Widget build(BuildContext context) {
-    repository.getDatapodAvatar();
+    wallet.getDatapodAvatar();
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: scaleSize(52), vertical: scaleSize(15)),
       child: GestureDetector(
-        key: keyOpenWallet(repository.address),
+        key: keyOpenWallet(wallet.address),
         onTap: () {
           Navigator.push(
             context,
             SmoothTransition(
               page: WalletOptions(
-                wallet: repository,
+                wallet: wallet,
               ),
             ),
           );
         },
         child: ScaledSizedBox(
-          key: repository.number == 1 ? keyDragAndDrop : const Key('nothing'),
+          // key: wallet.number == 1 ? keyDragAndDrop : const Key('nothing'),
           height: 180,
           child: Container(
             decoration: BoxDecoration(
@@ -75,11 +75,11 @@ class WalletTileMembre extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            child: repository.imageCustomPath == null || repository.imageCustomPath == ''
+                            child: wallet.imageCustomPath == null || wallet.imageCustomPath == ''
                                 ? Padding(
                                     padding: EdgeInsets.all(scaleSize(16)),
                                     child: Image.asset(
-                                      'assets/avatars/${repository.imageDefaultPath}',
+                                      'assets/avatars/${wallet.imageDefaultPath}',
                                       alignment: Alignment.bottomCenter,
                                     ),
                                   )
@@ -90,7 +90,7 @@ class WalletTileMembre extends StatelessWidget {
                                       image: DecorationImage(
                                         fit: BoxFit.cover,
                                         image: FileImage(
-                                          File(repository.imageCustomPath!),
+                                          File(wallet.imageCustomPath!),
                                         ),
                                       ),
                                     ),
@@ -129,21 +129,21 @@ class WalletTileMembre extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           NameByAddress(
-                            wallet: repository,
+                            wallet: wallet,
                             size: 16,
                             color: isDefault ? Colors.white : Colors.black87,
                             fontWeight: FontWeight.w600,
                           ),
                           ScaledSizedBox(height: 4),
                           Balance(
-                            address: repository.address,
+                            address: wallet.address,
                             size: 14,
                             color: isDefault ? Colors.white : Colors.black87,
                           ),
                         ],
                       ),
                       Certifications(
-                        address: repository.address,
+                        address: wallet.address,
                         color: isDefault ? Colors.white : Colors.black87,
                         size: 15,
                       ),
@@ -158,5 +158,5 @@ class WalletTileMembre extends StatelessWidget {
     );
   }
 
-  bool get isDefault => repository.address == Provider.of<MyWalletsProvider>(homeContext, listen: false).getDefaultWallet().address;
+  bool get isDefault => wallet.address == Provider.of<MyWalletsProvider>(homeContext, listen: false).getDefaultWallet().address;
 }

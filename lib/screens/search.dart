@@ -122,40 +122,65 @@ class _SearchScreenState extends State<SearchScreen> {
               ScaledSizedBox(
                 width: 270,
                 height: 70,
-                child: ElevatedButton(
-                  key: keyConfirmSearch,
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    elevation: 4,
-                    backgroundColor: orangeC,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(25),
+                    boxShadow: canValidate || searchProvider.canPasteAddress
+                        ? [
+                            BoxShadow(
+                              color: orangeC.withValues(alpha: 0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
+                              spreadRadius: -2,
+                            ),
+                            BoxShadow(
+                              color: orangeC.withValues(alpha: 0.2),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                              spreadRadius: 0,
+                            ),
+                          ]
+                        : null,
                   ),
-                  onPressed: canValidate
-                      ? () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) {
-                              return const SearchResultScreen();
-                            }),
-                          );
-                        }
-                      : searchProvider.canPasteAddress
-                          ? () async {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) {
-                                  return WalletViewScreen(address: searchProvider.pastedAddress, username: null);
-                                }),
-                              );
-                            }
-                          : null,
-                  child: Text(
-                    canValidate
-                        ? 'search'.tr()
+                  child: ElevatedButton(
+                    key: keyConfirmSearch,
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: orangeC,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                    ),
+                    onPressed: canValidate
+                        ? () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) {
+                                return const SearchResultScreen();
+                              }),
+                            );
+                          }
                         : searchProvider.canPasteAddress
-                            ? 'pasteAddress'.tr()
-                            : 'search'.tr(),
-                    textAlign: TextAlign.center,
-                    style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
+                            ? () async {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) {
+                                    return WalletViewScreen(address: searchProvider.pastedAddress, username: null);
+                                  }),
+                                );
+                              }
+                            : null,
+                    child: Text(
+                      canValidate
+                          ? 'search'.tr()
+                          : searchProvider.canPasteAddress
+                              ? 'pasteAddress'.tr()
+                              : 'search'.tr(),
+                      textAlign: TextAlign.center,
+                      style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
+                    ),
                   ),
                 ),
               ),
@@ -178,15 +203,21 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
       child: Column(children: <Widget>[
         Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.grey,
-                blurRadius: 1,
-                offset: Offset(1.5, 1.5),
-                spreadRadius: 0.2,
-              )
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+                spreadRadius: 0,
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 2,
+                offset: const Offset(0, 1),
+                spreadRadius: 0,
+              ),
             ],
           ),
           child: ClipOval(
@@ -198,7 +229,6 @@ class _SearchScreenState extends State<SearchScreen> {
                 child: Icon(
                   Icons.contacts_rounded,
                   size: scaleSize(25),
-                  // color: backgroundColor,
                 ),
               ),
             ),

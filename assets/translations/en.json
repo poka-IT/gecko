@@ -253,5 +253,6 @@
     "comment": "Comment",
     "optionalComment": "Optional comment",
     "searchContacts": "Search contacts",
-    "advancedFeature": "Advanced feature reserved for experienced users"
+    "advancedFeature": "Advanced feature reserved for experienced users",
+    "editWalletName": "Edit wallet name"
 }

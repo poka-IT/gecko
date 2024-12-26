@@ -6,6 +6,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/certifications.dart';
@@ -16,6 +17,7 @@ import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart';
+import 'package:gecko/providers/wallet_options.dart';
 
 class WalletHeader extends StatelessWidget {
   const WalletHeader({
@@ -34,12 +36,18 @@ class WalletHeader extends StatelessWidget {
     const double avatarSize = 90;
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+
+    final isOwner = myWalletProvider.isOwner(address);
+    bool isPickerOpen = false;
+    String newCustomImagePath = '';
 
     return Container(
       color: headerColor,
-      padding: EdgeInsets.symmetric(
-        horizontal: scaleSize(16),
-        vertical: scaleSize(16),
+      padding: EdgeInsets.only(
+        left: scaleSize(16),
+        right: scaleSize(16),
+        bottom: scaleSize(16),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -59,21 +67,80 @@ class WalletHeader extends StatelessWidget {
                 ),
               ],
             ),
-            child: ClipOval(
-              child: customImagePath == null || customImagePath == ''
-                  ? (defaultImagePath != null
-                      ? Image.asset(
-                          'assets/avatars/$defaultImagePath',
-                          fit: BoxFit.cover,
-                        )
-                      : DatapodAvatar(
-                          address: address,
-                          size: avatarSize,
-                        ))
-                  : Image.file(
-                      File(customImagePath!),
-                      fit: BoxFit.cover,
+            child: Consumer<WalletOptionsProvider>(
+              builder: (context, walletOptionsProvider, child) {
+                if (newCustomImagePath.isEmpty) {
+                  newCustomImagePath = customImagePath ?? '';
+                }
+                return Stack(
+                  children: [
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: isOwner && !isPickerOpen
+                            ? () async {
+                                isPickerOpen = true;
+                                walletOptionsProvider.reload();
+                                newCustomImagePath = await walletOptionsProvider.changeAvatar();
+                                isPickerOpen = false;
+                                walletOptionsProvider.reload();
+                              }
+                            : null,
+                        customBorder: const CircleBorder(),
+                        child: ClipOval(
+                          child: newCustomImagePath.isEmpty
+                              ? (defaultImagePath != null
+                                  ? Image.asset(
+                                      'assets/avatars/$defaultImagePath',
+                                      fit: BoxFit.cover,
+                                    )
+                                  : DatapodAvatar(
+                                      address: address,
+                                      size: avatarSize,
+                                    ))
+                              : Image.file(
+                                  File(newCustomImagePath),
+                                  fit: BoxFit.cover,
+                                ),
+                        ),
+                      ),
                     ),
+                    if (isOwner)
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: avatarSize * 0.35,
+                          height: avatarSize * 0.35,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.black.withValues(alpha: 0.4),
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: !isPickerOpen
+                                  ? () async {
+                                      isPickerOpen = true;
+                                      walletOptionsProvider.reload();
+                                      newCustomImagePath = await walletOptionsProvider.changeAvatar();
+                                      isPickerOpen = false;
+                                      walletOptionsProvider.reload();
+                                    }
+                                  : null,
+                              customBorder: const CircleBorder(),
+                              child: Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                                size: avatarSize * 0.2,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
           ),
           SizedBox(width: scaleSize(20)),
@@ -150,7 +217,6 @@ class WalletHeader extends StatelessWidget {
                             children: [
                               IdentityStatus(
                                 address: address,
-                                isOwner: false,
                                 color: orangeC,
                               ),
                               SizedBox(width: scaleSize(8)),

@@ -25,6 +25,8 @@ class MyWalletsProvider with ChangeNotifier {
   bool isPinValid = false;
   bool isPinLoading = true;
 
+  bool isOwner(String address) => listWallets.any((wallet) => wallet.address == address);
+
   int getCurrentChest() {
     if (configBox.get('currentChest') == null) {
       configBox.put('currentChest', 0);
@@ -88,10 +90,11 @@ class MyWalletsProvider with ChangeNotifier {
     return targetedWallet;
   }
 
-  Future<bool> askPinCode() async {
+  Future<bool> askPinCode({bool force = false}) async {
     final defaultWallet = getDefaultWallet();
 
-    if (pinCode.isEmpty) {
+    if (pinCode.isEmpty || force) {
+      pinCode = '';
       await Navigator.push(
         homeContext,
         MaterialPageRoute(

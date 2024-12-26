@@ -45,6 +45,9 @@ class WalletOptions extends StatelessWidget {
 
     final isAlone = myWalletProvider.listWallets.length == 1;
 
+    final defaultWallet = myWalletProvider.getDefaultWallet();
+    walletOptions.isDefaultWallet = (defaultWallet.number == wallet.id[1]);
+
     return PopScope(
       onPopInvokedWithResult: (_, __) {
         walletOptions.isEditing = false;
@@ -73,17 +76,47 @@ class WalletOptions extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          ScaledSizedBox(height: 24),
+                          // ScaledSizedBox(height: 16),
                           Consumer<WalletOptionsProvider>(
                             builder: (context, walletProvider, _) {
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
+                                spacing: 8,
                                 children: [
                                   buildConfirmIdentitySection(walletProvider),
                                   if (wallet.hasIdentity) buildRenewMembershipSection(walletProvider),
                                   buildOptionsSection(context, walletProvider, historyProvider),
                                   if (!isAlone) buildDefaultWalletSection(context, walletProvider, myWalletProvider, walletOptions, currentChest),
-                                  buildDangerZone(context, walletProvider, currentChest),
+                                  if (!wallet.hasIdentity)
+                                    InkWell(
+                                      key: keyRenameWallet,
+                                      onTap: () async {
+                                        await walletProvider.editWalletName(context, [wallet.id[0], wallet.id[1]]);
+                                      },
+                                      child: Container(
+                                        height: scaleSize(48),
+                                        padding: EdgeInsets.symmetric(horizontal: scaleSize(17)),
+                                        child: Row(
+                                          children: [
+                                            Image.asset(
+                                              'assets/walletOptions/edit.png',
+                                              height: scaleSize(22),
+                                              color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
+                                            ),
+                                            ScaledSizedBox(width: 18),
+                                            Text(
+                                              "editWalletName".tr(),
+                                              style: scaledTextStyle(
+                                                fontSize: 16,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  if (!walletProvider.isDefaultWallet && !wallet.hasIdentity) deleteWallet(context, walletProvider, currentChest),
+                                  if (wallet.hasIdentity) const ManageMembershipButton(),
                                   if (isAlone) aloneWalletOptions(),
                                 ],
                               );
@@ -319,25 +352,19 @@ class WalletOptions extends StatelessWidget {
   }
 
   Widget buildOptionsSection(BuildContext context, WalletOptionsProvider walletProvider, WalletsProfilesProvider historyProvider) {
-    return Column(
-      children: [
-        activityWidget(context, historyProvider, walletProvider),
-        ScaledSizedBox(height: 4),
-      ],
-    );
+    return activityWidget(context, historyProvider, walletProvider);
   }
 
   Widget buildDefaultWalletSection(
       BuildContext context, WalletOptionsProvider walletProvider, MyWalletsProvider myWalletProvider, WalletOptionsProvider walletOptions, int currentChest) {
     return Consumer<MyWalletsProvider>(
       builder: (context, myWalletProvider, _) {
-        WalletData defaultWallet = myWalletProvider.getDefaultWallet();
-        walletOptions.isDefaultWallet = (defaultWallet.number == wallet.id[1]);
         return InkWell(
           key: keySetDefaultWallet,
           onTap: !walletProvider.isDefaultWallet
               ? () async {
                   await setDefaultWallet(context, currentChest);
+                  walletProvider.isDefaultWallet = true;
                 }
               : null,
           child: Container(
@@ -366,29 +393,15 @@ class WalletOptions extends StatelessWidget {
     );
   }
 
-  Widget buildDangerZone(BuildContext context, WalletOptionsProvider walletProvider, int currentChest) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
-      child: Column(
-        children: [
-          if (!walletProvider.isDefaultWallet && !wallet.hasIdentity) deleteWallet(context, walletProvider, currentChest),
-          if (wallet.hasIdentity) const ManageMembershipButton(),
-        ],
-      ),
-    );
-  }
-
   Widget buildConfirmIdentitySection(WalletOptionsProvider walletProvider) {
     return Consumer<SubstrateSdk>(builder: (context, sub, _) {
       return FutureBuilder(
         future: sub.idtyStatusMulti([walletProvider.address.text]),
         initialData: const [IdtyStatus.unknown],
         builder: (BuildContext context, AsyncSnapshot<List<IdtyStatus>> snapshot) {
-          if (!snapshot.hasData || snapshot.hasError) {
-            return const SizedBox.shrink();
-          }
-          if (snapshot.data!.first == IdtyStatus.unconfirmed) {
-            return Column(children: [
+          return Visibility(
+            visible: snapshot.hasData && !snapshot.hasError && snapshot.data!.first == IdtyStatus.unconfirmed,
+            child: Column(children: [
               SizedBox(
                 width: double.infinity,
                 height: scaleSize(50),
@@ -418,9 +431,8 @@ class WalletOptions extends StatelessWidget {
                 ),
               ),
               ScaledSizedBox(height: 24),
-            ]);
-          }
-          return const SizedBox.shrink();
+            ]),
+          );
         },
       );
     });

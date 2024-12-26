@@ -30,6 +30,114 @@ class OnboardingStepFive extends StatefulWidget {
 
 // ignore: unused_element
 class _ChooseChestState extends State<OnboardingStepFive> {
+  List<String>? mnemonicList;
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _generateMnemonicList();
+  }
+
+  Future<void> _generateMnemonicList() async {
+    final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context, listen: false);
+    final list = await generateWalletProvider.generateWordList(context);
+    if (mounted) {
+      setState(() {
+        mnemonicList = list.cast<String>();
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _regenerateMnemonic() async {
+    setState(() {
+      isLoading = true;
+    });
+    await _generateMnemonicList();
+  }
+
+  Widget sentanceArray() {
+    if (mnemonicList == null) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: orangeC,
+          strokeWidth: 2,
+        ),
+      );
+    }
+
+    return Container(
+      constraints: BoxConstraints(maxWidth: scaleSize(360)),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.black),
+        color: const Color(0xffeeeedd),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(10),
+        ),
+      ),
+      padding: EdgeInsets.all(scaleSize(14)),
+      child: Stack(
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Row(children: <Widget>[
+                arrayCell(mnemonicList![0]),
+                arrayCell(mnemonicList![1]),
+                arrayCell(mnemonicList![2]),
+                arrayCell(mnemonicList![3]),
+              ]),
+              ScaledSizedBox(height: 15),
+              Row(children: <Widget>[
+                arrayCell(mnemonicList![4]),
+                arrayCell(mnemonicList![5]),
+                arrayCell(mnemonicList![6]),
+                arrayCell(mnemonicList![7]),
+              ]),
+              ScaledSizedBox(height: 15),
+              Row(children: <Widget>[
+                arrayCell(mnemonicList![8]),
+                arrayCell(mnemonicList![9]),
+                arrayCell(mnemonicList![10]),
+                arrayCell(mnemonicList![11]),
+              ]),
+            ],
+          ),
+          if (isLoading)
+            Container(
+              color: const Color(0xffeeeedd).withValues(alpha: 0.7),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: orangeC,
+                  strokeWidth: 2,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget arrayCell(String dataWord) {
+    return ScaledSizedBox(
+      width: 82,
+      child: Column(children: <Widget>[
+        Text(
+          dataWord.split(':')[0],
+          style: scaledTextStyle(fontSize: 10, color: const Color(0xff6b6b52)),
+        ),
+        Text(
+          dataWord.split(':')[1],
+          key: keyMnemonicWord(dataWord.split(':')[0]),
+          style: scaledTextStyle(fontSize: 15, color: Colors.black),
+        ),
+      ]),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context, listen: false);
@@ -45,7 +153,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
             ScaledSizedBox(height: isTall ? 25 : 5),
             BuildText(text: 'geckoGeneratedYourMnemonicKeepItSecret'.tr()),
             ScaledSizedBox(height: isTall ? 15 : 5),
-            sentanceArray(context),
+            sentanceArray(),
             ScaledSizedBox(height: isTall ? 17 : 5),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -117,7 +225,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
                         shadowColor: const Color(0xffFFD58D).withValues(alpha: 0.3),
                       ),
                       onPressed: () {
-                        setState(() {});
+                        _regenerateMnemonic();
                       },
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
@@ -143,73 +251,6 @@ class _ChooseChestState extends State<OnboardingStepFive> {
       ),
     );
   }
-}
-
-Widget sentanceArray(BuildContext context) {
-  final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context, listen: false);
-
-  return Container(
-    constraints: BoxConstraints(maxWidth: scaleSize(isTall ? 355 : 340)),
-    decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
-        color: const Color(0xffeeeedd),
-        borderRadius: const BorderRadius.all(
-          Radius.circular(10),
-        )),
-    padding: EdgeInsets.all(scaleSize(11)),
-    child: FutureBuilder(
-        future: generateWalletProvider.generateWordList(context),
-        builder: (BuildContext context, AsyncSnapshot<List> mnemoListData) {
-          if (!mnemoListData.hasData) {
-            return const Text('');
-          } else {
-            final mnemoList = mnemoListData.data!;
-            return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Row(children: <Widget>[
-                    arrayCell(mnemoList[0]),
-                    arrayCell(mnemoList[1]),
-                    arrayCell(mnemoList[2]),
-                    arrayCell(mnemoList[3]),
-                  ]),
-                  ScaledSizedBox(height: 12),
-                  Row(children: <Widget>[
-                    arrayCell(mnemoList[4]),
-                    arrayCell(mnemoList[5]),
-                    arrayCell(mnemoList[6]),
-                    arrayCell(mnemoList[7]),
-                  ]),
-                  ScaledSizedBox(height: 12),
-                  Row(children: <Widget>[
-                    arrayCell(mnemoList[8]),
-                    arrayCell(mnemoList[9]),
-                    arrayCell(mnemoList[10]),
-                    arrayCell(mnemoList[11]),
-                  ]),
-                ]);
-          }
-        }),
-  );
-}
-
-Widget arrayCell(dataWord) {
-  return ScaledSizedBox(
-    width: scaleSize(isTall ? 78 : 91),
-    child: Column(children: <Widget>[
-      Text(
-        dataWord.split(':')[0],
-        style: scaledTextStyle(fontSize: 11, color: const Color(0xff6b6b52)),
-      ),
-      Text(
-        dataWord.split(':')[1],
-        key: keyMnemonicWord(dataWord.split(':')[0]),
-        style: scaledTextStyle(fontSize: 15, color: Colors.black),
-      ),
-    ]),
-  );
 }
 
 Widget nextButton(BuildContext context, String text, bool isFast, bool skipIntro) {

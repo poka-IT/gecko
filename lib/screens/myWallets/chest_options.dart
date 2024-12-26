@@ -63,7 +63,7 @@ class ChestOptionsContent extends StatelessWidget {
         InkWell(
           key: keyShowSeed,
           onTap: () async {
-            if (!await myWalletProvider.askPinCode()) return;
+            if (!await myWalletProvider.askPinCode(force: true)) return;
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -99,7 +99,8 @@ class ChestOptionsContent extends StatelessWidget {
           builder: (context, sub, _) {
             return InkWell(
               key: keyChangePin,
-              onTap: () {
+              onTap: () async {
+                if (!await myWalletProvider.askPinCode(force: true)) return;
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -174,6 +175,8 @@ class ChestOptionsContent extends StatelessWidget {
         InkWell(
           key: keyDeleteChest,
           onTap: () async {
+            if (!await myWalletProvider.askPinCode(force: true)) return;
+
             await chestProvider.deleteChest(context, currentChest);
           },
           child: Container(

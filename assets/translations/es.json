@@ -254,5 +254,6 @@
     "comment": "Comentario",
     "optionalComment": "Comentario opcional",
     "searchContacts": "Buscar contactos",
-    "advancedFeature": "Función avanzada reservada para usuarios experimentados"
+    "advancedFeature": "Función avanzada reservada para usuarios experimentados",
+    "editWalletName": "Editar nombre de la cartera"
 }

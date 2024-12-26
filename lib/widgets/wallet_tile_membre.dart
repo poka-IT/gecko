@@ -88,7 +88,7 @@ class WalletTileMembre extends StatelessWidget {
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       image: DecorationImage(
-                                        fit: BoxFit.cover,
+                                        fit: BoxFit.fitHeight,
                                         image: FileImage(
                                           File(wallet.imageCustomPath!),
                                         ),

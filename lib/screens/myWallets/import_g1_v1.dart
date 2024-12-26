@@ -177,7 +177,7 @@ class ImportG1v1 extends StatelessWidget {
                                 '${statusData.fromBalance['transferableBalance']} $unit',
                                 style: scaledTextStyle(fontSize: 15),
                               ),
-                              IdentityStatus(address: sub.g1V1NewAddress, isOwner: false, color: Colors.black),
+                              IdentityStatus(address: sub.g1V1NewAddress, color: Colors.black),
                               ScaledSizedBox(width: 10),
                               Certifications(address: sub.g1V1NewAddress, size: 14)
                             ],

@@ -253,5 +253,6 @@
     "comment": "Commentaire",
     "optionalComment": "Commentaire optionnel",
     "searchContacts": "Rechercher des contacts",
-    "advancedFeature": "Fonctionnalité avancée réservée aux utilisateurs expérimentés"
+    "advancedFeature": "Fonctionnalité avancée réservée aux utilisateurs expérimentés",
+    "editWalletName": "Modifier le nom du portefeuille"
 }

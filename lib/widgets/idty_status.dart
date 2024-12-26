@@ -9,9 +9,8 @@ import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 
 class IdentityStatus extends StatelessWidget {
-  const IdentityStatus({super.key, required this.address, this.isOwner = false, this.color = Colors.black});
+  const IdentityStatus({super.key, required this.address, this.color = Colors.black});
   final String address;
-  final bool isOwner;
   final Color color;
 
   @override

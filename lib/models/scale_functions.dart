@@ -3,7 +3,7 @@ import 'package:gecko/globals.dart';
 
 double scaleSize(double size) {
   final scale = MediaQuery.of(homeContext).size.width / 375;
-  return size * scale;
+  return size * scale.clamp(0.8, 1.3);
 }
 
 TextStyle scaledTextStyle({

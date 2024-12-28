@@ -36,3 +36,8 @@ Uint8List int32bytes(int value) => Uint8List(4)..buffer.asInt32List()[0] = value
 double round(double number, [int decimal = 2]) {
   return double.parse((number.toStringAsFixed(decimal)));
 }
+
+double removeDecimalZero(double n) {
+  String result = n.toStringAsFixed(n.truncateToDouble() == n ? 0 : 3);
+  return double.parse(result);
+}

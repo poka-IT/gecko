@@ -30,7 +30,7 @@ class WalletOptionsProvider with ChangeNotifier {
   final nameController = TextEditingController();
   bool isDefaultWallet = false;
   bool canValidateNameBool = false;
-  Map<String, double> balanceCache = {};
+  Map<String, int> balanceCache = {};
 
   int getPinLenght(walletNbr) {
     return pinLength;

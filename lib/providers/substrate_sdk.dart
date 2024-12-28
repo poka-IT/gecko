@@ -257,18 +257,14 @@ class SubstrateSdk with ChangeNotifier {
     return !(consumers == 0);
   }
 
-  Future<int> getUdValue() async {
-    udValue = int.parse(await _getStorage('universalDividend.currentUd()'));
-    return udValue;
-  }
+  Future<int> getUdValue() async => int.parse(await _getStorage('universalDividend.currentUd()'));
 
-  Future<double> getBalanceRatio() async {
+  Future<int> getBalanceRatio() async {
     udValue = await getUdValue();
-    balanceRatio = (configBox.get('isUdUnit') ?? false) ? round(udValue / 100, 6) : 1;
-    return balanceRatio;
+    return balanceRatio = (configBox.get('isUdUnit') ?? false) ? udValue : 1;
   }
 
-  Future<Map<String, Map<String, double>>> getBalanceMulti(List<String> addresses) async {
+  Future<Map<String, Map<String, int>>> getBalanceMulti(List<String> addresses) async {
     List stringifyAddresses = [];
     for (var element in addresses) {
       stringifyAddresses.add('"$element"');
@@ -288,7 +284,7 @@ class SubstrateSdk with ChangeNotifier {
         .toList();
 
     int nbr = 0;
-    Map<String, Map<String, double>> finalBalancesList = {};
+    Map<String, Map<String, int>> finalBalancesList = {};
     for (Map account in accountMulti) {
       final computedBalance = await _computeBalance(idtyDataList[nbr], account);
       finalBalancesList.putIfAbsent(addresses[nbr], () => computedBalance);
@@ -298,7 +294,7 @@ class SubstrateSdk with ChangeNotifier {
     return finalBalancesList;
   }
 
-  Future<Map<String, double>> getBalance(String address) async {
+  Future<Map<String, int>> getBalance(String address) async {
     if (!nodeConnected) {
       return {
         'transferableBalance': 0,
@@ -316,7 +312,7 @@ class SubstrateSdk with ChangeNotifier {
     return _computeBalance(idtyData, account);
   }
 
-  Future<Map<String, double>> _computeBalance(Map? idtyData, Map account) async {
+  Future<Map<String, int>> _computeBalance(Map? idtyData, Map account) async {
     final List pastReevals = await _getStorage('universalDividend.pastReevals()');
     // Compute amount of claimable UDs
     currentUdIndex = await getCurrentUdIndex();
@@ -333,10 +329,10 @@ class SubstrateSdk with ChangeNotifier {
     final int transferableBalance = (account['data']['free'] + unclaimedUds);
 
     return {
-      'transferableBalance': round((transferableBalance / balanceRatio) / 100),
-      'free': round((account['data']['free'] / balanceRatio) / 100),
-      'unclaimedUds': round((unclaimedUds / balanceRatio) / 100),
-      'reserved': round((account['data']['reserved'] / balanceRatio) / 100),
+      'transferableBalance': transferableBalance,
+      'free': account['data']['free'],
+      'unclaimedUds': unclaimedUds,
+      'reserved': account['data']['reserved'],
     };
   }
 
@@ -541,7 +537,11 @@ class SubstrateSdk with ChangeNotifier {
     if (amount == 0) return 0;
     final sender = await _setSender(fromAddress);
     final txInfo = TxInfoData('balances', 'transferKeepAlive', sender);
-    final amountUnit = (amount * 100).toInt();
+    final bigAmount = BigInt.from(amount * 100);
+    if (bigAmount > BigInt.from(9007199254740991)) {
+      throw Exception('Amount too large for JavaScript safe integer');
+    }
+    final amountUnit = bigAmount.toInt();
 
     final estimateFees = await sdk.api.tx.estimateFees(txInfo, [destAddress, amountUnit]);
 

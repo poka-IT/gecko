@@ -2,7 +2,7 @@ class Transaction {
   final DateTime timestamp;
   final String address;
   final String username;
-  final double amount;
+  final int amount;
   final String comment;
   final bool isReceived;
 

@@ -8,7 +8,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/utils.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/models/transaction.dart';
@@ -217,8 +216,7 @@ class DuniterIndexer with ChangeNotifier {
       final isReceived = transaction['fromId'] != address;
 
       // Calculate amount
-      final amountBrut = transaction['amount'];
-      final amount = removeDecimalZero(amountBrut / 100);
+      final amount = transaction['amount'] as int;
       final comment = transaction['comment']?['remark'] ?? '';
       final commentType = transaction['comment']?['type'] ?? '';
 
@@ -279,11 +277,6 @@ class DuniterIndexer with ChangeNotifier {
     return opts;
   }
 
-  double removeDecimalZero(double n) {
-    String result = n.toStringAsFixed(n.truncateToDouble() == n ? 0 : 2);
-    return double.parse(result);
-  }
-
 //// Manuals queries
 
   Future<bool> isIdtyExist(String name) async {
@@ -327,9 +320,6 @@ class DuniterIndexer with ChangeNotifier {
   }
 
   Map computeHistoryView(Transaction transaction, String address) {
-    final bool isUdUnit = configBox.get('isUdUnit') ?? false;
-    late double amount;
-    late String finalAmount;
     final DateTime date = transaction.timestamp;
 
     final dateForm = "${date.day} ${monthsInYear[date.month]!.substring(0, {1, 2, 7, 9}.contains(date.month) ? 4 : 3)}";
@@ -365,19 +355,12 @@ class DuniterIndexer with ChangeNotifier {
 
     final dateDelimiter = getDateDelimiter();
 
-    amount = transaction.isReceived ? transaction.amount : transaction.amount * -1;
-
-    if (isUdUnit) {
-      amount = round(amount / balanceRatio);
-      finalAmount = 'ud'.tr(args: ['$amount ']);
-    } else {
-      finalAmount = '$amount $currencyName';
-    }
+    final amount = transaction.isReceived ? transaction.amount : transaction.amount * -1;
 
     bool isMigrationTime = startBlockchainInitialized && date.compareTo(startBlockchainTime) < 0;
 
     return {
-      'finalAmount': finalAmount,
+      'finalAmount': amount,
       'isMigrationTime': isMigrationTime,
       'dateDelimiter': dateDelimiter,
       'dateForm': dateForm,

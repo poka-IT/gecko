@@ -28,38 +28,12 @@ class WalletsHome extends StatefulWidget {
 }
 
 class _WalletsHomeState extends State<WalletsHome> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 150),
-      vsync: this,
-    );
-    _animation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeIn,
-    );
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
     return Scaffold(
-      body: FadeTransition(
-        opacity: _animation,
-        child: myWalletProvider.listWallets.length == 1 ? WalletOptions(wallet: myWalletProvider.listWallets[0]) : _WalletsHomeContent(),
-      ),
+      body: myWalletProvider.listWallets.length == 1 ? WalletOptions(wallet: myWalletProvider.listWallets[0]) : _WalletsHomeContent(),
     );
   }
 }

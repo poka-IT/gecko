@@ -5,6 +5,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/utils.dart';
+import 'package:gecko/widgets/balance_display.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 
@@ -24,7 +25,7 @@ class TransactionTile extends StatelessWidget {
   final double avatarSize;
   final Transaction transaction;
   final String dateForm;
-  final String finalAmount;
+  final int finalAmount;
   final DuniterIndexer duniterIndexer;
   final BuildContext context;
 
@@ -130,13 +131,11 @@ class TransactionTile extends StatelessWidget {
             ],
           ],
         ),
-        trailing: Text(
-          finalAmount,
-          style: scaledTextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: transaction.isReceived ? const Color(0xFF4CAF50) : const Color(0xFF2196F3),
-          ),
+        trailing: BalanceDisplay(
+          value: finalAmount,
+          size: scaleSize(15),
+          color: transaction.isReceived ? const Color(0xFF4CAF50) : const Color(0xFF2196F3),
+          fontWeight: FontWeight.w500,
         ),
         onTap: () {
           Navigator.push(

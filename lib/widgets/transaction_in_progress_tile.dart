@@ -11,6 +11,7 @@ import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/transaction_status.dart';
 import 'package:gecko/widgets/transaction_status_icon.dart';
+import 'package:gecko/widgets/ud_unit_display.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:fade_and_translate/fade_and_translate.dart';
@@ -153,8 +154,17 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
                         ],
                       ],
                     ),
-                    trailing: Text("$finalAmount $currencyName",
-                        style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.blue[700]), textAlign: TextAlign.justify),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          finalAmount.toString(),
+                          style: scaledTextStyle(fontSize: 15, color: Colors.blue[700], fontWeight: FontWeight.w500),
+                        ),
+                        ScaledSizedBox(width: 5),
+                        UdUnitDisplay(size: scaleSize(15), color: Colors.blue[700]!, fontWeight: FontWeight.w500),
+                      ],
+                    ),
                     dense: !isTall,
                     isThreeLine: false),
               ],

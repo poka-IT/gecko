@@ -68,33 +68,28 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
   }
 
   bool canValidatePayment() {
+    // Vérification du montant saisi
     final payAmount = walletViewProvider.payAmount.text;
-    if (payAmount.isEmpty) {
-      return false;
-    }
+    if (payAmount.isEmpty) return false;
+
+    // Récupération des soldes
     final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
     final defaultWalletBalance = walletOptions.balanceCache[defaultWallet.address] ?? 0;
+    final toAddressBalance = walletOptions.balanceCache[toAddress] ?? 0;
 
-    const existentialDeposit = 2;
-    final double payAmountValue = double.parse(payAmount);
-    final double toAddressBalance = walletOptions.balanceCache[toAddress] ?? 0;
+    // Conversion du montant en unités de base
+    final int payAmountValue = balanceRatio == 1 ? (double.parse(payAmount) * balanceRatio * 100).round() : (double.parse(payAmount) * balanceRatio).round();
 
-    // Prevent sending more than the balance with existential deposit
-    if (payAmountValue / balanceRatio > defaultWalletBalance - existentialDeposit && defaultWalletBalance != payAmountValue) {
-      return false;
-    }
+    //TODO: get real existential deposit value from Duniter storage
+    const existentialDeposit = 200;
 
-    // Prevent sending to self
-    if (toAddress == defaultWallet.address) {
-      return false;
-    }
+    // Vérifications de validité
+    final bool isAmountValid = payAmountValue > 0;
+    final bool isNotSendingToSelf = toAddress != defaultWallet.address;
+    final bool hasEnoughBalance = payAmountValue <= defaultWalletBalance - existentialDeposit || defaultWalletBalance == payAmountValue;
+    final bool respectsExistentialDeposit = toAddressBalance > 0 || payAmountValue >= existentialDeposit;
 
-    // Prevent sending to an empty wallet with less than 2 (existential deposit)
-    if (toAddressBalance == 0 && payAmountValue < existentialDeposit / balanceRatio) {
-      return false;
-    }
-
-    return true;
+    return isAmountValid && isNotSendingToSelf && hasEnoughBalance && respectsExistentialDeposit;
   }
 
   myWalletProvider.readAllWallets().then((value) => myWalletProvider.listWallets.sort((a, b) => (a.derivation ?? -1).compareTo(b.derivation ?? -1)));

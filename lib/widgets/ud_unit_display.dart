@@ -7,11 +7,12 @@ class UdUnitDisplay extends StatelessWidget {
     super.key,
     required this.size,
     required this.color,
+    this.fontWeight = FontWeight.normal,
   });
 
   final double size;
   final Color color;
-
+  final FontWeight fontWeight;
   @override
   Widget build(BuildContext context) {
     final bool isUdUnit = configBox.get('isUdUnit') ?? false;
@@ -21,22 +22,20 @@ class UdUnitDisplay extends StatelessWidget {
             children: [
               Text(
                 'ud'.tr(args: ['']),
-                style: TextStyle(fontSize: size, color: color),
+                style: TextStyle(fontSize: size, color: color, fontWeight: fontWeight),
               ),
               Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     currencyName,
-                    style: TextStyle(
-                        fontSize: size * 0.7,
-                        fontWeight: FontWeight.w500,
-                        color: color),
+                    style: TextStyle(fontSize: size * 0.65, fontWeight: fontWeight, color: color),
                   ),
                   const SizedBox(height: 15)
                 ],
               )
             ],
           )
-        : Text(currencyName, style: TextStyle(fontSize: size, color: color));
+        : Text(currencyName, style: TextStyle(fontSize: size, color: color, fontWeight: fontWeight));
   }
 }

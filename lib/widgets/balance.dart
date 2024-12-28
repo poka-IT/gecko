@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
-import 'package:gecko/widgets/ud_unit_display.dart';
+import 'package:gecko/widgets/balance_display.dart';
 import 'package:provider/provider.dart';
 
 class Balance extends StatelessWidget {
@@ -11,50 +10,23 @@ class Balance extends StatelessWidget {
   final double size;
   final Color color;
 
-  String formatBalance(double value) {
-    if (value >= 1000000) {
-      return '${(value / 1000000).toStringAsFixed(1)}M';
-    }
-    return value.toString();
-  }
-
   @override
   Widget build(BuildContext context) {
     final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
     return Consumer<SubstrateSdk>(builder: (context, sdk, _) {
       return FutureBuilder(
           future: sdk.getBalance(address),
-          builder: (BuildContext context, AsyncSnapshot<Map<String, double>> globalBalance) {
+          builder: (BuildContext context, AsyncSnapshot<Map<String, int>> globalBalance) {
             if (globalBalance.connectionState != ConnectionState.done || globalBalance.hasError || !globalBalance.hasData) {
               if (walletOptions.balanceCache[address] != null && walletOptions.balanceCache[address] != -1) {
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      formatBalance(walletOptions.balanceCache[address]!),
-                      style: scaledTextStyle(fontSize: size, color: color),
-                    ),
-                    ScaledSizedBox(width: 5),
-                    UdUnitDisplay(size: scaleSize(size), color: color),
-                  ],
-                );
+                return BalanceDisplay(value: walletOptions.balanceCache[address]!, size: size, color: color);
               } else {
                 return const SizedBox.shrink();
               }
             }
             walletOptions.balanceCache[address] = globalBalance.data!['transferableBalance']!;
             if (walletOptions.balanceCache[address] != -1) {
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    formatBalance(walletOptions.balanceCache[address]!),
-                    style: scaledTextStyle(fontSize: size, color: color),
-                  ),
-                  ScaledSizedBox(width: 5),
-                  UdUnitDisplay(size: scaleSize(size), color: color),
-                ],
-              );
+              return BalanceDisplay(value: walletOptions.balanceCache[address]!, size: size, color: color);
             } else {
               return const Text('');
             }

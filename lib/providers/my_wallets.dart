@@ -105,18 +105,7 @@ class MyWalletsProvider with ChangeNotifier {
     return pinCode.isNotEmpty;
   }
 
-  WalletData? getWalletDataByAddress(String address) {
-    WalletData? targetedWallet;
-
-    walletBox.toMap().forEach((key, value) {
-      if (value.address == address) {
-        targetedWallet = value;
-        return;
-      }
-    });
-
-    return targetedWallet;
-  }
+  WalletData? getWalletDataByAddress(String address) => walletBox.toMap().values.firstWhereOrNull((wallet) => wallet.address == address);
 
   WalletData getDefaultWallet([int? chest]) {
     if (chestBox.isEmpty) {

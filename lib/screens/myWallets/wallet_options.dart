@@ -257,7 +257,7 @@ class WalletOptions extends StatelessWidget {
           if (hasConsumers.connectionState != ConnectionState.done || hasConsumers.hasError || !hasConsumers.hasData) {
             return const SizedBox.shrink();
           }
-          final double balance = walletOptions.balanceCache[walletOptions.address.text] ?? -1;
+          final int balance = walletOptions.balanceCache[walletOptions.address.text] ?? -1;
           final bool canDelete = !isDefaultWallet && !hasConsumers.data! && (balance > 2 || balance == 0) && !wallet.hasIdentity;
           return InkWell(
             key: keyDeleteWallet,

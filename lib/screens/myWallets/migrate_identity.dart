@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/migrate_wallet_checks.dart';
@@ -16,6 +15,7 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance_display.dart';
+import 'package:gecko/widgets/commons/text_markdown.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:provider/provider.dart';
@@ -125,22 +125,13 @@ class MigrateIdentityScreen extends StatelessWidget {
                             Wrap(
                               alignment: WrapAlignment.center,
                               children: [
-                                Flexible(
-                                  child: MarkdownBody(
-                                    data: 'areYouSureMigrateIdentity'.tr(args: [duniterIndexer.walletNameIndexer[fromAddress] ?? '???']),
-                                    styleSheet: MarkdownStyleSheet(
-                                      p: scaledTextStyle(
-                                        fontSize: isSmallScreen ? 14 : 15,
-                                        color: Colors.black87,
-                                        height: 1.5,
-                                      ),
-                                      strong: scaledTextStyle(
-                                        fontSize: isSmallScreen ? 14 : 15,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black87,
-                                      ),
-                                      textAlign: WrapAlignment.center,
-                                    ),
+                                TextMarkDown(
+                                  'areYouSureMigrateIdentity'.tr(args: [duniterIndexer.walletNameIndexer[fromAddress] ?? '???']),
+                                  textAlign: WrapAlignment.center,
+                                  style: scaledTextStyle(
+                                    fontSize: isSmallScreen ? 14 : 15,
+                                    color: Colors.black87,
+                                    height: 1.5,
                                   ),
                                 ),
                                 BalanceDisplay(

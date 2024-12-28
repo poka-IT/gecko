@@ -54,6 +54,14 @@ class SubstrateSdk with ChangeNotifier {
   Map<String, List<int>> certsCounterCache = {};
   Map<String, List> oldOwnerKeys = {};
 
+  // Cache pour idtyStatus
+  final Map<String, IdtyStatus> _idtyStatusCache = {};
+
+  // Getter public pour accéder au statut en cache
+  IdtyStatus? getCachedIdtyStatus(String address) {
+    return _idtyStatusCache[address];
+  }
+
   /////////////////////////////////////
   ////////// 1: API METHODS ///////////
   /////////////////////////////////////
@@ -203,20 +211,28 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<List<int>> getCertsCounter(String address) async {
+    // On fait toujours la requête en background
     final idtyIndex = await _getIdentityIndexOf(address);
     if (idtyIndex == null) {
-      certsCounterCache.update(address, (_) => [], ifAbsent: () => []);
-      return [];
+      final emptyList = <int>[];
+      // Si le compteur a changé (était non vide avant), on notifie
+      if (certsCounterCache[address]?.isNotEmpty == true) {
+        certsCounterCache[address] = emptyList;
+        notifyListeners();
+      }
+      return emptyList;
     }
-    final certsReceiver = await _getStorage('certification.storageIdtyCertMeta($idtyIndex)') ?? [];
 
-    try {
-      certsCounterCache.update(address, (_) => [certsReceiver['receivedCount'] as int, certsReceiver['issuedCount'] as int],
-          ifAbsent: () => [certsReceiver['receivedCount'] as int, certsReceiver['issuedCount'] as int]);
-    } catch (e) {
-      log.e(e);
+    final certsReceiver = await _getStorage('certification.storageIdtyCertMeta($idtyIndex)') ?? [];
+    final List<int> newCerts = [certsReceiver['receivedCount'] as int, certsReceiver['issuedCount'] as int];
+
+    // Si le compteur a changé, on met à jour le cache et on notifie
+    if (certsCounterCache[address]?.length != 2 || certsCounterCache[address]![0] != newCerts[0] || certsCounterCache[address]![1] != newCerts[1]) {
+      certsCounterCache[address] = newCerts;
+      notifyListeners();
     }
-    return certsCounterCache[address]!;
+
+    return certsCounterCache[address] ?? newCerts;
   }
 
   Future<DateTime?> membershipExpireIn(String address) async {
@@ -434,6 +450,20 @@ class SubstrateSdk with ChangeNotifier {
   };
 
   Future<IdtyStatus> idtyStatus(String address) async {
+    // On fait toujours la requête en background
+    final status = await _idtyStatus(address);
+
+    // Si le statut a changé, on met à jour le cache et on notifie
+    if (_idtyStatusCache[address] != status) {
+      _idtyStatusCache[address] = status;
+      notifyListeners();
+    }
+
+    // On retourne le statut du cache s'il existe, sinon le nouveau statut
+    return _idtyStatusCache[address] ?? status;
+  }
+
+  Future<IdtyStatus> _idtyStatus(String address) async {
     final idtyIndex = await _getIdentityIndexOf(address);
     if (idtyIndex == null) return IdtyStatus.none;
     final idtyStatus = await idtyStatusByIndex(idtyIndex);
@@ -962,22 +992,22 @@ class SubstrateSdk with ChangeNotifier {
     late String tx2;
     late String tx3;
 
+    // Computed amount in absolute value
+    final int amountUnit = (amount * (isUdUnit ? 1000 : 100)).toInt();
+
     // Préparer la transaction de transfert
-    if (amount == -1 || amount == defaultWalletBalance) {
+    if (amount == -1 || amountUnit == defaultWalletBalance) {
       palette = 'balances';
       call = 'transferAll';
       txOptions = [destAddress, false];
       tx2 = 'api.tx.balances.transferAll("$destAddress", false)';
     } else {
-      late int amountUnit;
       if (isUdUnit) {
         palette = 'universalDividend';
         call = 'transferUd';
-        amountUnit = (amount * 1000).toInt();
       } else {
         palette = 'balances';
         call = 'transferKeepAlive';
-        amountUnit = (amount * 100).toInt();
       }
       txOptions = [destAddress, amountUnit];
       tx2 = 'api.tx.$palette.$call("$destAddress", $amountUnit)';
@@ -1010,7 +1040,7 @@ class SubstrateSdk with ChangeNotifier {
       to: destAddress,
       amount: amount,
     );
-    log.d('txInfoo: ${txInfo.module}.${txInfo.call!} -- $txOptions -- $rawParams');
+    log.d('txInfoo: ${txInfo.module}.${txInfo.call} -- $txOptions -- $rawParams');
     _executeCall(transactionContent, txInfo, txOptions, password, rawParams);
   }
 

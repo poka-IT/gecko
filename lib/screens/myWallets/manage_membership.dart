@@ -9,9 +9,9 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/utils.dart';
-import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:gecko/screens/myWallets/migrate_identity.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/models/membership_status.dart';
@@ -145,7 +145,12 @@ class ManageMembership extends StatelessWidget {
       child: InkWell(
         key: keyRevokeIdty,
         onTap: () async {
-          final answer = await confirmPopup(context, 'areYouSureYouWantToRevokeIdentity'.tr()) ?? false;
+          final answer = await showConfirmationDialog(
+                context: context,
+                message: 'areYouSureYouWantToRevokeIdentity'.tr(),
+                type: ConfirmationDialogType.warning,
+              ) ??
+              false;
 
           if (!answer) return;
           final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);

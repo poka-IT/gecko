@@ -22,10 +22,25 @@ import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 const double buttonSize = 75;
 const double buttonFontSize = 13;
 
-class WalletViewScreen extends StatelessWidget {
+class WalletViewScreen extends StatefulWidget {
   const WalletViewScreen({required this.address, required this.username, super.key});
   final String address;
   final String? username;
+
+  @override
+  State<WalletViewScreen> createState() => _WalletViewScreenState();
+}
+
+class _WalletViewScreenState extends State<WalletViewScreen> {
+  late String address;
+  late String? username;
+
+  @override
+  void initState() {
+    super.initState();
+    address = widget.address;
+    username = widget.username;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +48,6 @@ class WalletViewScreen extends StatelessWidget {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
     final defaultWallet = myWalletProvider.getDefaultWallet();
-    // final wallet = myWalletProvider.getWalletDataByAddress(address)!;
 
     walletProfile.address = address;
     sub.setCurrentWallet(defaultWallet);

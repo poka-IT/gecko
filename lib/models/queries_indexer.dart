@@ -118,7 +118,7 @@ query ($address: String!) {
 
 const isIdtyExistQ = r'''
 query ($name: String!) {
-  identityConnection(where: {name: {_eq: ""}}) {
+  identityConnection(where: {name: {_eq: $name}}) {
     edges {
       node {
         name

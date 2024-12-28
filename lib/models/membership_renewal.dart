@@ -8,7 +8,7 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/utils.dart';
-import 'package:gecko/widgets/commons/common_elements.dart';
+import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/models/membership_status.dart';
 
@@ -40,7 +40,12 @@ class MembershipRenewal {
   }
 
   static Future<void> executeRenewal(BuildContext context, String address) async {
-    final answer = await confirmPopup(context, 'areYouSureYouWantToRenewMembership'.tr()) ?? false;
+    final answer = await showConfirmationDialog(
+          context: context,
+          message: 'areYouSureYouWantToRenewMembership'.tr(),
+          type: ConfirmationDialogType.question,
+        ) ??
+        false;
     if (!answer) return;
 
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);

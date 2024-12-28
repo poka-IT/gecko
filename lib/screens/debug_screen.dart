@@ -3,6 +3,7 @@ import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
 class DebugScreen extends StatelessWidget {
@@ -11,50 +12,145 @@ class DebugScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sub = Provider.of<SubstrateSdk>(context);
+    final screenSize = MediaQuery.of(context).size;
+    final isSmallScreen = screenSize.height < 700;
 
     return Scaffold(
-        backgroundColor: backgroundColor,
-        appBar: AppBar(
-            toolbarHeight: scaleSize(57), title: const Text('Debug screen')),
-        body: SafeArea(
-          child: Column(children: <Widget>[
-            const SizedBox(height: 40),
-            Center(
-              child: Column(
-                children: [
-                  Text(
-                    'node: ${sub.getConnectedEndpoint()}',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                  ),
-                  const SizedBox(height: 15),
-                  Text(
-                    'blockN'.tr(args: [
-                      sub.blocNumber.toString()
-                    ]), //'bloc N°${sub.blocNumber}',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    height: 50,
-                    width: 210,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        elevation: 4,
-                        backgroundColor: orangeC,
+      backgroundColor: backgroundColor,
+      appBar: GeckoAppBar('Debug'),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: scaleSize(24)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ScaledSizedBox(height: isSmallScreen ? 16 : 24),
+
+                // Section Nœud
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
                       ),
-                      onPressed: () async => await sub.spawnBlock(),
-                      child: const Text(
-                        'Spawn a bloc',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w600),
-                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(scaleSize(isSmallScreen ? 12 : 16)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.dns_rounded,
+                              color: orangeC,
+                              size: scaleSize(24),
+                            ),
+                            ScaledSizedBox(width: 12),
+                            Text(
+                              'currencyNode'.tr(),
+                              style: scaledTextStyle(
+                                fontSize: 14,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
+                        ScaledSizedBox(height: 12),
+                        Text(
+                          'node: ${sub.getConnectedEndpoint()}',
+                          style: scaledTextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        ScaledSizedBox(height: 8),
+                        Text(
+                          'blockN'.tr(args: [sub.blocNumber.toString()]),
+                          style: scaledTextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+                ScaledSizedBox(height: isSmallScreen ? 16 : 24),
+
+                // Section Actions
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(scaleSize(isSmallScreen ? 12 : 16)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.build_rounded,
+                              color: orangeC,
+                              size: scaleSize(24),
+                            ),
+                            ScaledSizedBox(width: 12),
+                            Text(
+                              'Actions',
+                              style: scaledTextStyle(
+                                fontSize: 14,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
+                        ScaledSizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: orangeC,
+                              padding: EdgeInsets.symmetric(vertical: scaleSize(12)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            onPressed: () async => await sub.spawnBlock(),
+                            child: Text(
+                              'Spawn a bloc',
+                              style: scaledTextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ]),
-        ));
+          ),
+        ),
+      ),
+    );
   }
 }

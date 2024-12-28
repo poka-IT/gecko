@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -16,8 +17,10 @@ import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/providers/wallet_options.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/models/wallet_header_data.dart';
 
-class WalletHeader extends StatelessWidget {
+class WalletHeader extends StatefulWidget {
   const WalletHeader({
     super.key,
     required this.address,
@@ -30,17 +33,87 @@ class WalletHeader extends StatelessWidget {
   final String? defaultImagePath;
 
   @override
-  Widget build(BuildContext context) {
-    const double avatarSize = 90;
+  State<WalletHeader> createState() => _WalletHeaderState();
+}
+
+class _WalletHeaderState extends State<WalletHeader> {
+  late Future<WalletHeaderData> _loadData;
+  static final Map<String, WalletHeaderData> _cache = {};
+  bool _isPickerOpen = false;
+  String _newCustomImagePath = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData = _initializeData();
+  }
+
+  Future<WalletHeaderData> _initializeData() async {
+    // Vérifie d'abord le cache
+    final cached = _cache[widget.address];
+    if (cached != null) {
+      // Rafraîchit en arrière-plan
+      _refreshData();
+      return cached;
+    }
+
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
-    final walletData = myWalletProvider.getWalletDataByAddress(address);
-    final isOwner = walletData != null;
+    // Charge toutes les données en parallèle
+    final results = await Future.wait([
+      sub.idtyStatus(widget.address),
+      sub.getBalance(widget.address),
+      sub.getCertsCounter(widget.address),
+    ]);
 
-    bool isPickerOpen = false;
-    String newCustomImagePath = '';
+    final data = WalletHeaderData(
+      hasIdentity: results[0] != IdtyStatus.none,
+      isOwner: myWalletProvider.isOwner(widget.address),
+      walletName: duniterIndexer.walletNameIndexer[widget.address],
+      balance: BigInt.from((results[1] as Map<String, int>)['transferableBalance'] ?? 0),
+      certCount: (results[2] as List<int>?) ?? [0, 0],
+    );
 
+    _cache[widget.address] = data;
+    return data;
+  }
+
+  Future<void> _refreshData() async {
+    if (!mounted) return;
+
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+
+    final results = await Future.wait([
+      sub.idtyStatus(widget.address),
+      sub.getBalance(widget.address),
+      sub.getCertsCounter(widget.address),
+    ]);
+
+    final data = WalletHeaderData(
+      hasIdentity: results[0] != IdtyStatus.none,
+      isOwner: myWalletProvider.isOwner(widget.address),
+      walletName: duniterIndexer.walletNameIndexer[widget.address],
+      balance: BigInt.from((results[1] as Map<String, int>)['transferableBalance'] ?? 0),
+      certCount: (results[2] as List<int>?) ?? [0, 0],
+    );
+
+    final existing = _cache[widget.address];
+    if (existing == null || !existing.equals(data)) {
+      _cache[widget.address] = data;
+      if (mounted) {
+        setState(() {
+          _loadData = Future.value(data);
+        });
+      }
+    }
+  }
+
+  Widget _buildContent(BuildContext context, bool hasIdentity, bool isOwner, bool isPickerOpen, String newCustomImagePath, DuniterIndexer duniterIndexer) {
+    const double avatarSize = 90;
     return Container(
       color: headerColor,
       padding: EdgeInsets.only(
@@ -57,7 +130,7 @@ class WalletHeader extends StatelessWidget {
             height: scaleSize(90),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white,
+              color: Colors.white.withValues(alpha: 25),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.1),
@@ -68,37 +141,40 @@ class WalletHeader extends StatelessWidget {
             ),
             child: Consumer<WalletOptionsProvider>(
               builder: (context, walletOptionsProvider, child) {
-                if (newCustomImagePath.isEmpty) {
-                  newCustomImagePath = customImagePath ?? '';
+                if (_newCustomImagePath.isEmpty) {
+                  _newCustomImagePath = widget.customImagePath ?? '';
                 }
                 return Stack(
                   children: [
                     Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: isOwner && !isPickerOpen
+                        onTap: isOwner && !_isPickerOpen
                             ? () async {
-                                isPickerOpen = true;
+                                setState(() => _isPickerOpen = true);
                                 walletOptionsProvider.reload();
-                                newCustomImagePath = await walletOptionsProvider.changeAvatar();
-                                isPickerOpen = false;
+                                final newPath = await walletOptionsProvider.changeAvatar();
+                                setState(() {
+                                  _newCustomImagePath = newPath;
+                                  _isPickerOpen = false;
+                                });
                                 walletOptionsProvider.reload();
                               }
                             : null,
                         customBorder: const CircleBorder(),
                         child: ClipOval(
-                          child: newCustomImagePath.isEmpty
-                              ? (defaultImagePath != null
+                          child: _newCustomImagePath.isEmpty
+                              ? (widget.defaultImagePath != null
                                   ? Image.asset(
-                                      'assets/avatars/$defaultImagePath',
+                                      'assets/avatars/${widget.defaultImagePath}',
                                       fit: BoxFit.cover,
                                     )
                                   : DatapodAvatar(
-                                      address: address,
+                                      address: widget.address,
                                       size: avatarSize,
                                     ))
                               : Image.file(
-                                  File(newCustomImagePath),
+                                  File(_newCustomImagePath),
                                   fit: BoxFit.cover,
                                 ),
                         ),
@@ -118,12 +194,15 @@ class WalletHeader extends StatelessWidget {
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              onTap: !isPickerOpen
+                              onTap: !_isPickerOpen
                                   ? () async {
-                                      isPickerOpen = true;
+                                      setState(() => _isPickerOpen = true);
                                       walletOptionsProvider.reload();
-                                      newCustomImagePath = await walletOptionsProvider.changeAvatar();
-                                      isPickerOpen = false;
+                                      final newPath = await walletOptionsProvider.changeAvatar();
+                                      setState(() {
+                                        _newCustomImagePath = newPath;
+                                        _isPickerOpen = false;
+                                      });
                                       walletOptionsProvider.reload();
                                     }
                                   : null,
@@ -154,13 +233,13 @@ class WalletHeader extends StatelessWidget {
                 GestureDetector(
                   key: keyCopyAddress,
                   onTap: () {
-                    Clipboard.setData(ClipboardData(text: address));
+                    Clipboard.setData(ClipboardData(text: widget.address));
                     snackCopyKey(context);
                   },
                   child: Row(
                     children: [
                       Text(
-                        getShortPubkey(address),
+                        getShortPubkey(widget.address),
                         style: scaledTextStyle(
                           fontSize: 20,
                           fontFamily: 'Monospace',
@@ -177,7 +256,7 @@ class WalletHeader extends StatelessWidget {
                           color: orangeC.withValues(alpha: 0.5),
                         ),
                         onPressed: () {
-                          Clipboard.setData(ClipboardData(text: address));
+                          Clipboard.setData(ClipboardData(text: widget.address));
                           snackCopyKey(context);
                         },
                       ),
@@ -187,19 +266,19 @@ class WalletHeader extends StatelessWidget {
                 ScaledSizedBox(height: 8),
 
                 // Balance
-                Balance(address: address, size: 18),
+                Balance(address: widget.address, size: 18),
 
                 // Certifications section
                 ScaledSizedBox(height: 12),
                 Visibility(
-                  visible: walletData?.hasIdentity ?? false,
+                  visible: hasIdentity,
                   child: InkWell(
                     onTap: () => Navigator.push(
                       context,
                       PageNoTransit(
                         builder: (context) => CertificationsScreen(
-                          address: address,
-                          username: duniterIndexer.walletNameIndexer[address] ?? '',
+                          address: widget.address,
+                          username: duniterIndexer.walletNameIndexer[widget.address] ?? '',
                         ),
                       ),
                     ),
@@ -212,12 +291,12 @@ class WalletHeader extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IdentityStatus(
-                            address: address,
+                            address: widget.address,
                             color: orangeC,
                           ),
                           SizedBox(width: scaleSize(8)),
                           Certifications(
-                            address: address,
+                            address: widget.address,
                             size: 13,
                           ),
                           Icon(
@@ -235,6 +314,158 @@ class WalletHeader extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildLoadingHeader() {
+    const double avatarSize = 90;
+    return Container(
+      color: headerColor,
+      padding: EdgeInsets.only(
+        left: scaleSize(16),
+        right: scaleSize(16),
+        bottom: scaleSize(16),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Avatar placeholder
+          Container(
+            width: scaleSize(avatarSize),
+            height: scaleSize(avatarSize),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: scaleSize(20)),
+
+          // Info section placeholders
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Address placeholder
+                Row(
+                  children: [
+                    Container(
+                      width: scaleSize(150),
+                      height: scaleSize(20),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
+                    ),
+                    SizedBox(width: scaleSize(14)),
+                    Container(
+                      width: scaleSize(20),
+                      height: scaleSize(20),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
+                    ),
+                  ],
+                ),
+                ScaledSizedBox(height: 8),
+
+                // Balance placeholder
+                Container(
+                  width: scaleSize(120),
+                  height: scaleSize(18),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    color: Colors.white.withValues(alpha: 0.1),
+                  ),
+                ),
+
+                // Certifications placeholder
+                ScaledSizedBox(height: 12),
+                Row(
+                  children: [
+                    Container(
+                      width: scaleSize(20),
+                      height: scaleSize(20),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
+                    ),
+                    SizedBox(width: scaleSize(8)),
+                    Container(
+                      width: scaleSize(80),
+                      height: scaleSize(13),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
+                    ),
+                    Container(
+                      width: scaleSize(15),
+                      height: scaleSize(15),
+                      margin: EdgeInsets.only(left: scaleSize(4)),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+
+    // Si les données sont en cache, on les affiche immédiatement
+    final cached = _cache[widget.address];
+    if (cached != null) {
+      return _buildContent(
+        context,
+        cached.hasIdentity,
+        cached.isOwner,
+        _isPickerOpen,
+        _newCustomImagePath,
+        duniterIndexer,
+      );
+    }
+
+    // Sinon on affiche le loading
+    return FutureBuilder<WalletHeaderData>(
+      future: _loadData,
+      builder: (context, AsyncSnapshot<WalletHeaderData> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _buildLoadingHeader();
+        }
+
+        if (snapshot.hasError || !snapshot.hasData) {
+          return const SizedBox.shrink();
+        }
+
+        final data = snapshot.data!;
+        return _buildContent(
+          context,
+          data.hasIdentity,
+          data.isOwner,
+          _isPickerOpen,
+          _newCustomImagePath,
+          duniterIndexer,
+        );
+      },
     );
   }
 }

@@ -8,7 +8,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
-import 'package:gecko/widgets/commons/common_elements.dart';
+import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -123,7 +123,11 @@ class MyWalletsProvider with ChangeNotifier {
     try {
       log.w('DELETE ALL WALLETS ?');
 
-      final bool? answer = await (confirmPopup(context, 'areYouSureForgetAllChests'.tr()));
+      final bool? answer = await showConfirmationDialog(
+        context: context,
+        message: 'areYouSureForgetAllChests'.tr(),
+        type: ConfirmationDialogType.warning,
+      );
       if (answer!) {
         await walletBox.clear();
         await chestBox.clear();

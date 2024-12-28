@@ -18,7 +18,9 @@ import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/idty_status.dart';
+import 'package:gecko/widgets/balance_display.dart';
 import 'package:provider/provider.dart';
+import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 
 class ImportG1v1 extends StatelessWidget {
   const ImportG1v1({super.key});
@@ -61,229 +63,388 @@ class ImportG1v1 extends StatelessWidget {
 
                   final statusData = status.data!;
 
-                  final bool isUdUnit = configBox.get('isUdUnit') ?? false;
-                  final unit = isUdUnit ? 'ud'.tr(args: ['']) : currencyName;
-
-                  return Column(children: <Widget>[
-                    ScaledSizedBox(height: 10),
-                    TextFormField(
-                      key: keyCesiumId,
-                      autofocus: true,
-                      autocorrect: false,
-                      onChanged: (text) {
-                        if (debounce?.isActive ?? false) {
-                          debounce!.cancel();
-                        }
-                        debounce = Timer(const Duration(milliseconds: debouneTime), () {
-                          if (sub.csSalt.text != '' && sub.csPassword.text != '') {
-                            sub.reload();
-                            sub.csToV2Address(sub.csSalt.text, sub.csPassword.text);
-                          }
-                        });
-                      },
-                      keyboardType: TextInputType.text,
-                      controller: sub.csSalt,
-                      obscureText: !sub.isCesiumIDVisible,
-                      style: scaledTextStyle(fontSize: 13),
-                      decoration: InputDecoration(
-                        hintText: 'enterCesiumId'.tr(),
-                        hintStyle: scaledTextStyle(fontSize: 13),
-                        suffixIcon: IconButton(
-                          key: keyCesiumIdVisible,
-                          icon: Icon(
-                            sub.isCesiumIDVisible ? Icons.visibility_off : Icons.visibility,
-                            color: Colors.black,
-                            size: scaleSize(22),
-                          ),
-                          onPressed: () {
-                            sub.cesiumIDisVisible();
-                          },
-                        ),
-                      ),
-                    ),
-                    ScaledSizedBox(height: 7),
-                    TextFormField(
-                      key: keyCesiumPassword,
-                      autofocus: true,
-                      autocorrect: false,
-                      onChanged: (text) {
-                        if (debounce?.isActive ?? false) {
-                          debounce!.cancel();
-                        }
-                        debounce = Timer(const Duration(milliseconds: debouneTime), () {
-                          sub.g1V1NewAddress = '';
-                          if (sub.csSalt.text != '' && sub.csPassword.text != '') {
-                            sub.reload();
-                            sub.csToV2Address(sub.csSalt.text, sub.csPassword.text);
-                          }
-                        });
-                      },
-                      keyboardType: TextInputType.text,
-                      controller: sub.csPassword,
-                      obscureText: !sub.isCesiumIDVisible,
-                      style: scaledTextStyle(fontSize: 13),
-                      decoration: InputDecoration(
-                        hintText: 'enterCesiumPassword'.tr(),
-                        hintStyle: scaledTextStyle(fontSize: 13),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            sub.isCesiumIDVisible ? Icons.visibility_off : Icons.visibility,
-                            color: Colors.black,
-                            size: scaleSize(22),
-                          ),
-                          onPressed: () {
-                            sub.cesiumIDisVisible();
-                          },
-                        ),
-                      ),
-                    ),
-                    ScaledSizedBox(height: 20),
-                    Visibility(
-                      visible: sub.g1V1OldPubkey != '',
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Column(
-                            children: [
-                              GestureDetector(
-                                key: keyCopyPubkey,
-                                onTap: () {
-                                  Clipboard.setData(ClipboardData(text: sub.g1V1OldPubkey));
-                                  snackCopyKey(context);
-                                },
-                                child: Text(
-                                  'v1: ${getShortPubkey(sub.g1V1OldPubkey)}',
-                                  style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600, fontFamily: 'Monospace'),
-                                ),
-                              ),
-                              ScaledSizedBox(height: 5),
-                              GestureDetector(
-                                key: keyCopyAddress,
-                                onTap: () {
-                                  Clipboard.setData(ClipboardData(text: sub.g1V1OldPubkey));
-                                  snackCopyKey(context);
-                                },
-                                child: Text(
-                                  'v2: ${getShortPubkey(sub.g1V1NewAddress)}',
-                                  style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600, fontFamily: 'Monospace'),
-                                ),
-                              ),
-                            ],
-                          ),
-                          ScaledSizedBox(width: 30),
-                          Column(
-                            children: [
-                              Text(
-                                '${statusData.fromBalance['transferableBalance']} $unit',
-                                style: scaledTextStyle(fontSize: 15),
-                              ),
-                              IdentityStatus(address: sub.g1V1NewAddress, color: Colors.black),
-                              ScaledSizedBox(width: 10),
-                              Certifications(address: sub.g1V1NewAddress, size: 14)
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    ScaledSizedBox(height: 20),
-                    Text(
-                      'migrateToThisWallet'.tr(),
-                      style: scaledTextStyle(fontSize: 15),
-                    ),
-                    ScaledSizedBox(height: 5),
-                    DropdownButtonHideUnderline(
-                      key: keySelectWallet,
-                      child: DropdownButton(
-                        value: selectedWallet,
-                        icon: const Icon(Icons.keyboard_arrow_down),
-                        items: myWalletProvider.listWallets.map((wallet) {
-                          return DropdownMenuItem(
-                            key: keySelectThisWallet(wallet.address),
-                            value: wallet,
-                            child: Text(
-                              wallet.name!,
-                              style: scaledTextStyle(fontSize: 15),
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (WalletData? newSelectedWallet) {
-                          selectedWallet = newSelectedWallet!;
-                          sub.reload();
-                        },
-                      ),
-                    ),
-                    ScaledSizedBox(height: 10),
-                    ScaledSizedBox(
-                      width: 320,
-                      height: 50,
-                      child: ElevatedButton(
-                        key: keyConfirm,
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor: orangeC,
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.all(scaleSize(12)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        // Section des identifiants Cesium
+                        Card(
                           elevation: 2,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          shadowColor: orangeC.withValues(alpha: 0.3),
-                        ),
-                        onPressed: statusData.canValidate
-                            ? () async {
-                                WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
-
-                                String? pin;
-                                if (myWalletProvider.pinCode == '') {
-                                  pin = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (homeContext) {
-                                        return UnlockingWallet(wallet: defaultWallet);
+                          child: Padding(
+                            padding: EdgeInsets.all(scaleSize(12)),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'cesiumCredentials'.tr(),
+                                  style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                ),
+                                ScaledSizedBox(height: 8),
+                                TextFormField(
+                                  key: keyCesiumId,
+                                  autofocus: true,
+                                  autocorrect: false,
+                                  onChanged: (text) {
+                                    if (debounce?.isActive ?? false) {
+                                      debounce!.cancel();
+                                    }
+                                    debounce = Timer(const Duration(milliseconds: debouneTime), () {
+                                      if (sub.csSalt.text != '' && sub.csPassword.text != '') {
+                                        sub.reload();
+                                        sub.csToV2Address(sub.csSalt.text, sub.csPassword.text);
+                                      }
+                                    });
+                                  },
+                                  onFieldSubmitted: (text) {
+                                    if (sub.csSalt.text != '' && sub.csPassword.text != '') {
+                                      if (debounce?.isActive ?? false) {
+                                        debounce!.cancel();
+                                      }
+                                      sub.reload();
+                                      sub.csToV2Address(sub.csSalt.text, sub.csPassword.text);
+                                    }
+                                  },
+                                  keyboardType: TextInputType.text,
+                                  textInputAction: TextInputAction.next,
+                                  controller: sub.csSalt,
+                                  obscureText: !sub.isCesiumIDVisible,
+                                  style: scaledTextStyle(fontSize: 13),
+                                  decoration: InputDecoration(
+                                    isDense: true,
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    hintText: 'enterCesiumId'.tr(),
+                                    hintStyle: scaledTextStyle(fontSize: 13),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    suffixIcon: IconButton(
+                                      key: keyCesiumIdVisible,
+                                      padding: EdgeInsets.zero,
+                                      constraints: BoxConstraints(),
+                                      icon: Icon(
+                                        sub.isCesiumIDVisible ? Icons.visibility_off : Icons.visibility,
+                                        color: Colors.black,
+                                        size: scaleSize(18),
+                                      ),
+                                      onPressed: () {
+                                        sub.cesiumIDisVisible();
                                       },
                                     ),
-                                  );
-                                }
-
-                                final transactionId = await sub.migrateCsToV2(
-                                  sub.csSalt.text,
-                                  sub.csPassword.text,
-                                  selectedWallet.address,
-                                  destPassword: pin ?? myWalletProvider.pinCode,
-                                  fromBalance: statusData.fromBalance,
-                                  fromIdtyStatus: statusData.fromIdtyStatus,
-                                  toIdtyStatus: statusData.toIdtyStatus,
-                                );
-                                Navigator.pop(context);
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) {
-                                    return TransactionInProgress(
-                                        transactionId: transactionId,
-                                        transType: 'identityMigration',
-                                        fromAddress: getShortPubkey(sub.g1V1NewAddress),
-                                        toAddress: getShortPubkey(selectedWallet.address));
-                                  }),
-                                );
-                                resetScreen();
-                              }
-                            : null,
-                        child: Text(
-                          'migrateAccount'.tr(),
-                          style: scaledTextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                                  ),
+                                ),
+                                ScaledSizedBox(height: 8),
+                                TextFormField(
+                                  key: keyCesiumPassword,
+                                  autofocus: true,
+                                  autocorrect: false,
+                                  onChanged: (text) {
+                                    if (debounce?.isActive ?? false) {
+                                      debounce!.cancel();
+                                    }
+                                    debounce = Timer(const Duration(milliseconds: debouneTime), () {
+                                      sub.g1V1NewAddress = '';
+                                      if (sub.csSalt.text != '' && sub.csPassword.text != '') {
+                                        sub.reload();
+                                        sub.csToV2Address(sub.csSalt.text, sub.csPassword.text);
+                                      }
+                                    });
+                                  },
+                                  onFieldSubmitted: (text) {
+                                    if (sub.csSalt.text != '' && sub.csPassword.text != '') {
+                                      if (debounce?.isActive ?? false) {
+                                        debounce!.cancel();
+                                      }
+                                      sub.g1V1NewAddress = '';
+                                      sub.reload();
+                                      sub.csToV2Address(sub.csSalt.text, sub.csPassword.text);
+                                    }
+                                  },
+                                  keyboardType: TextInputType.text,
+                                  textInputAction: TextInputAction.done,
+                                  controller: sub.csPassword,
+                                  obscureText: !sub.isCesiumIDVisible,
+                                  style: scaledTextStyle(fontSize: 13),
+                                  decoration: InputDecoration(
+                                    isDense: true,
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    hintText: 'enterCesiumPassword'.tr(),
+                                    hintStyle: scaledTextStyle(fontSize: 13),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    suffixIcon: IconButton(
+                                      padding: EdgeInsets.zero,
+                                      constraints: BoxConstraints(),
+                                      icon: Icon(
+                                        sub.isCesiumIDVisible ? Icons.visibility_off : Icons.visibility,
+                                        color: Colors.black,
+                                        size: scaleSize(18),
+                                      ),
+                                      onPressed: () {
+                                        sub.cesiumIDisVisible();
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
+
+                        // Section des informations du compte
+                        Visibility(
+                          visible: sub.g1V1OldPubkey != '' && sub.csSalt.text != '' && sub.csPassword.text != '',
+                          child: Card(
+                            elevation: 2,
+                            margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.all(scaleSize(12)),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'accountInformation'.tr(),
+                                    style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                  ),
+                                  ScaledSizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            GestureDetector(
+                                              key: keyCopyPubkey,
+                                              onTap: () {
+                                                Clipboard.setData(ClipboardData(text: sub.g1V1OldPubkey));
+                                                snackCopyKey(context);
+                                              },
+                                              child: Row(
+                                                children: [
+                                                  Text(
+                                                    'v1: ',
+                                                    style: scaledTextStyle(fontSize: 13),
+                                                  ),
+                                                  Text(
+                                                    getShortPubkey(sub.g1V1OldPubkey),
+                                                    style: scaledTextStyle(fontSize: 13, fontFamily: 'Monospace'),
+                                                  ),
+                                                  ScaledSizedBox(width: 6),
+                                                  Icon(Icons.copy, size: scaleSize(14), color: Colors.grey),
+                                                ],
+                                              ),
+                                            ),
+                                            ScaledSizedBox(height: 4),
+                                            GestureDetector(
+                                              key: keyCopyAddress,
+                                              onTap: () {
+                                                Clipboard.setData(ClipboardData(text: sub.g1V1NewAddress));
+                                                snackCopyKey(context);
+                                              },
+                                              child: Row(
+                                                children: [
+                                                  Text(
+                                                    'v2: ',
+                                                    style: scaledTextStyle(fontSize: 13),
+                                                  ),
+                                                  Text(
+                                                    getShortPubkey(sub.g1V1NewAddress),
+                                                    style: scaledTextStyle(fontSize: 13, fontFamily: 'Monospace'),
+                                                  ),
+                                                  ScaledSizedBox(width: 6),
+                                                  Icon(Icons.copy, size: scaleSize(14), color: Colors.grey),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        children: [
+                                          BalanceDisplay(
+                                            value: statusData.fromBalance['transferableBalance'],
+                                            size: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          ScaledSizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              IdentityStatus(
+                                                address: sub.g1V1NewAddress,
+                                                color: Colors.black,
+                                              ),
+                                              ScaledSizedBox(width: 4),
+                                              Certifications(
+                                                address: sub.g1V1NewAddress,
+                                                size: 12,
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // Section de sélection du portefeuille
+                        Card(
+                          elevation: 2,
+                          margin: EdgeInsets.only(bottom: scaleSize(8)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.all(scaleSize(12)),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'migrateToThisWallet'.tr(),
+                                  style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                ),
+                                ScaledSizedBox(height: 8),
+                                Container(
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.grey[300]!),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  padding: EdgeInsets.symmetric(horizontal: scaleSize(8)),
+                                  child: DropdownButtonHideUnderline(
+                                    key: keySelectWallet,
+                                    child: DropdownButton(
+                                      isExpanded: true,
+                                      value: selectedWallet,
+                                      icon: const Icon(Icons.keyboard_arrow_down, size: 20),
+                                      items: myWalletProvider.listWallets.map((wallet) {
+                                        return DropdownMenuItem(
+                                          key: keySelectThisWallet(wallet.address),
+                                          value: wallet,
+                                          child: Text(
+                                            wallet.name!,
+                                            style: scaledTextStyle(fontSize: 13),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (WalletData? newSelectedWallet) {
+                                        selectedWallet = newSelectedWallet!;
+                                        sub.reload();
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // Bouton de validation et message de statut
+                        Column(
+                          children: [
+                            ScaledSizedBox(
+                              width: double.infinity,
+                              height: 40,
+                              child: ElevatedButton(
+                                key: keyConfirm,
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: orangeC,
+                                  elevation: 2,
+                                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  shadowColor: orangeC.withValues(alpha: 0.3),
+                                ),
+                                onPressed: statusData.canValidate
+                                    ? () async {
+                                        final addressToMigrate = sub.g1V1NewAddress;
+                                        final hasIdentity = statusData.fromIdtyStatus != IdtyStatus.none;
+                                        final message = hasIdentity
+                                            ? 'migrationConfirmWithIdentity'.tr(args: [currencyName, getShortPubkey(selectedWallet.address)])
+                                            : 'migrationConfirmBalanceOnly'.tr(args: [currencyName, getShortPubkey(selectedWallet.address)]);
+
+                                        // Afficher le popup de confirmation
+                                        bool? confirmed = await showConfirmationDialog(
+                                          context: context,
+                                          title: 'migrationConfirmTitle'.tr(),
+                                          message: message,
+                                          type: ConfirmationDialogType.info,
+                                        );
+
+                                        if (confirmed != true) return;
+
+                                        WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
+
+                                        String? pin;
+                                        if (myWalletProvider.pinCode == '') {
+                                          pin = await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (homeContext) {
+                                                return UnlockingWallet(wallet: defaultWallet);
+                                              },
+                                            ),
+                                          );
+                                        }
+
+                                        final transactionId = await sub.migrateCsToV2(
+                                          sub.csSalt.text,
+                                          sub.csPassword.text,
+                                          selectedWallet.address,
+                                          destPassword: pin ?? myWalletProvider.pinCode,
+                                          fromBalance: statusData.fromBalance,
+                                          fromIdtyStatus: statusData.fromIdtyStatus,
+                                          toIdtyStatus: statusData.toIdtyStatus,
+                                        );
+                                        Navigator.pop(context);
+                                        await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(builder: (context) {
+                                            return TransactionInProgress(
+                                                transactionId: transactionId,
+                                                transType: hasIdentity ? 'identityMigration' : 'accountMigration',
+                                                fromAddress: getShortPubkey(addressToMigrate),
+                                                toAddress: getShortPubkey(selectedWallet.address));
+                                          }),
+                                        );
+                                        resetScreen();
+                                      }
+                                    : null,
+                                child: Text(
+                                  'migrateAccount'.tr(),
+                                  style: scaledTextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            ScaledSizedBox(height: 6),
+                            Text(
+                              statusData.validationStatus,
+                              textAlign: TextAlign.center,
+                              style: scaledTextStyle(fontSize: 11, color: Colors.grey[600]),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    ScaledSizedBox(height: 10),
-                    Text(
-                      statusData.validationStatus,
-                      textAlign: TextAlign.center,
-                      style: scaledTextStyle(fontSize: 11, color: Colors.grey[600]),
-                    )
-                  ]);
+                  );
                 });
           }),
         ),

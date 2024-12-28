@@ -133,7 +133,7 @@ class TransactionTile extends StatelessWidget {
         ),
         trailing: BalanceDisplay(
           value: finalAmount,
-          size: scaleSize(15),
+          size: scaleSize(13),
           color: transaction.isReceived ? const Color(0xFF4CAF50) : const Color(0xFF2196F3),
           fontWeight: FontWeight.w500,
         ),

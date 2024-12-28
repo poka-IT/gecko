@@ -191,7 +191,7 @@
     "migrateAccount": "Migra conto",
     "migrateIdentity": "Migra identitá",
     "identityMigration": "Migrazione dell'identitá",
-    "areYouSureMigrateIdentity": "Sei sicuro che vuoi permanentemente migrare l'identitá **{}** con saldo di **{}**?",
+    "areYouSureMigrateIdentity": "Sei sicuro che vuoi permanentemente migrare l'identitá **{}** con saldo di",
     "someoneCreatedYourIdentity": "Qualcuno ha creato la tua {} identitá !",
     "confirmMyIdentity": "Conferma la mia identitá",
     "revokeMyIdentity": "Revoca la mia identitá",

@@ -13,8 +13,8 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/utils.dart';
-import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -49,7 +49,11 @@ class WalletOptionsProvider with ChangeNotifier {
   Future<int> deleteWallet(context, WalletData wallet) async {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final datapod = Provider.of<V2sDatapodProvider>(context, listen: false);
-    final bool? answer = await (confirmPopup(context, 'areYouSureToForgetWallet'.tr(args: [wallet.name!])));
+    final bool? answer = await showConfirmationDialog(
+      context: context,
+      message: 'areYouSureToForgetWallet'.tr(args: [wallet.name!]),
+      type: ConfirmationDialogType.warning,
+    );
 
     if (answer ?? false) {
       //Check if balance is null

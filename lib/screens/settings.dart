@@ -13,61 +13,246 @@ import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:provider/provider.dart';
 
-class SettingsScreen extends StatelessWidget {
-  final MyWalletsProvider _myWallets = MyWalletsProvider();
+class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({super.key});
 
-  SettingsScreen({super.key});
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  final MyWalletsProvider _myWallets = MyWalletsProvider();
+  final FocusNode _duniterFocusNode = FocusNode();
+  final FocusNode _indexerFocusNode = FocusNode();
+  late TextEditingController _endpointController;
+  late TextEditingController _indexerEndpointController;
+
+  @override
+  void initState() {
+    super.initState();
+    _initControllers();
+  }
+
+  void _initControllers() {
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+
+    _endpointController = TextEditingController(
+      text: configBox.containsKey('customEndpoint') ? configBox.get('customEndpoint') : sub.getConnectedEndpoint() ?? 'wss://',
+    );
+
+    _indexerEndpointController = TextEditingController(
+      text: configBox.containsKey('customIndexer')
+          ? configBox.get('customIndexer')
+          : duniterIndexer.listIndexerEndpoints.isNotEmpty
+              ? duniterIndexer.listIndexerEndpoints[0]
+              : 'https://',
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final sub = Provider.of<SubstrateSdk>(context);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context);
+
+    // Mise à jour du champ node quand le nœud est connecté
+    if (sub.nodeConnected && !configBox.containsKey('customEndpoint')) {
+      final endpoint = sub.getConnectedEndpoint();
+      if (endpoint != null && endpoint != _endpointController.text) {
+        _endpointController.text = endpoint;
+      }
+    }
+
+    // Mise à jour du champ indexer quand il devient disponible
+    if (duniterIndexer.listIndexerEndpoints.isNotEmpty && !configBox.containsKey('customIndexer')) {
+      final indexerEndpoint = duniterIndexer.listIndexerEndpoints[0];
+      if (indexerEndpoint != _indexerEndpointController.text) {
+        _indexerEndpointController.text = indexerEndpoint;
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _duniterFocusNode.dispose();
+    _indexerFocusNode.dispose();
+    _endpointController.dispose();
+    _indexerEndpointController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final isSmallScreen = screenSize.height < 700;
+
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: GeckoAppBar('parameters'.tr()),
-      body: Column(children: <Widget>[
-        ScaledSizedBox(height: 30),
-        Text(
-          'networkSettings'.tr(),
-          style: scaledTextStyle(color: Colors.grey[500]!, fontSize: 18),
-        ),
-        ScaledSizedBox(height: 20),
-        duniterEndpointSelection(context),
-        ScaledSizedBox(height: 30),
-        indexerEndpointSelection(context),
-        ScaledSizedBox(height: 35),
-        Text(
-          'displaySettings'.tr(),
-          style: scaledTextStyle(color: Colors.grey[500]!, fontSize: 18),
-        ),
-        ScaledSizedBox(height: 20),
-        chooseCurrencyUnit(context),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: scaleSize(24)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ScaledSizedBox(height: isSmallScreen ? 16 : 24),
 
-        const Spacer(),
-        Center(
-          child: InkWell(
-            key: keyDeleteAllWallets,
-            onTap: () async {
-              log.w('Oublier tous mes coffres');
-              await _myWallets.deleteAllWallet(context);
-            },
-            child: ScaledSizedBox(
-              height: scaleSize(40),
-              width: 220,
-              child: Center(
-                child: Text(
-                  'forgetAllMyChests'.tr(),
+                // Section Réseau
+                Text(
+                  'networkSettings'.tr(),
                   style: scaledTextStyle(
-                    fontSize: 16,
-                    color: const Color(0xffD80000),
+                    fontSize: isSmallScreen ? 15 : 16,
                     fontWeight: FontWeight.w600,
+                    color: Colors.black87,
                   ),
                 ),
-              ),
+                ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+
+                // Carte Nœud Duniter
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(scaleSize(isSmallScreen ? 12 : 16)),
+                        child: duniterEndpointSelection(context),
+                      ),
+                    ],
+                  ),
+                ),
+                ScaledSizedBox(height: isSmallScreen ? 16 : 24),
+
+                // Carte Indexer
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(scaleSize(isSmallScreen ? 12 : 16)),
+                        child: indexerEndpointSelection(context),
+                      ),
+                    ],
+                  ),
+                ),
+                ScaledSizedBox(height: isSmallScreen ? 24 : 32),
+
+                // Section Affichage
+                Text(
+                  'displaySettings'.tr(),
+                  style: scaledTextStyle(
+                    fontSize: isSmallScreen ? 15 : 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+
+                // Carte Unité de devise
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(scaleSize(isSmallScreen ? 12 : 16)),
+                        child: chooseCurrencyUnit(context),
+                      ),
+                    ],
+                  ),
+                ),
+                ScaledSizedBox(height: isSmallScreen ? 24 : 32),
+
+                // Section Danger
+                Text(
+                  'dangerZone'.tr(),
+                  style: scaledTextStyle(
+                    fontSize: isSmallScreen ? 15 : 16,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xffD80000),
+                  ),
+                ),
+                ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+
+                // Carte Suppression des coffres
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xffD80000).withValues(alpha: 0.1)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: InkWell(
+                    key: keyDeleteAllWallets,
+                    onTap: () async {
+                      log.w('Oublier tous mes coffres');
+                      await _myWallets.deleteAllWallet(context);
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.all(scaleSize(isSmallScreen ? 12 : 16)),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.delete_forever_rounded,
+                            color: const Color(0xffD80000),
+                            size: scaleSize(isSmallScreen ? 20 : 24),
+                          ),
+                          ScaledSizedBox(width: 12),
+                          Text(
+                            'forgetAllMyChests'.tr(),
+                            style: scaledTextStyle(
+                              fontSize: isSmallScreen ? 14 : 15,
+                              color: const Color(0xffD80000),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                ScaledSizedBox(height: isSmallScreen ? 24 : 32),
+              ],
             ),
           ),
         ),
-        // const Spacer(),
-        ScaledSizedBox(height: 70),
-      ]),
+      ),
     );
   }
 
@@ -78,36 +263,119 @@ class SettingsScreen extends StatelessWidget {
       onTap: () async {
         await homeProvider.changeCurrencyUnit(context);
       },
-      child: ScaledSizedBox(
-        height: 50,
-        child: Row(
-          children: [
-            ScaledSizedBox(width: 12),
-            Text('showUdAmounts'.tr(), style: scaledTextStyle(fontSize: 14)),
-            const Spacer(),
-            Consumer<HomeProvider>(builder: (context, homeProvider, _) {
+      child: Row(
+        children: [
+          Icon(
+            Icons.calculate_rounded,
+            color: orangeC,
+            size: scaleSize(24),
+          ),
+          ScaledSizedBox(width: 12),
+          Text(
+            'showUdAmounts'.tr(),
+            style: scaledTextStyle(
+              fontSize: 14,
+              color: Colors.black87,
+            ),
+          ),
+          const Spacer(),
+          Consumer<HomeProvider>(
+            builder: (context, homeProvider, _) {
               final bool isUdUnit = configBox.get('isUdUnit') ?? false;
-              return Icon(
-                isUdUnit ? Icons.check_box : Icons.check_box_outline_blank,
-                color: orangeC,
-                size: scaleSize(27),
+              return Switch(
+                value: isUdUnit,
+                activeColor: orangeC,
+                inactiveThumbColor: Colors.grey[400],
+                inactiveTrackColor: Colors.grey[300],
+                onChanged: (bool value) async {
+                  await homeProvider.changeCurrencyUnit(context);
+                },
               );
-            }),
-            ScaledSizedBox(width: 30),
-          ],
-        ),
+            },
+          ),
+        ],
       ),
     );
+  }
+
+  Future<void> _showNodeSelectionDialog(BuildContext context, List<NetworkParams> nodes, String selectedEndpoint, TextEditingController controller) async {
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final set = Provider.of<SettingsProvider>(context, listen: false);
+
+    String? result = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'selectNode'.tr(),
+            style: scaledTextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: nodes.map((node) {
+                final isSelected = node.endpoint == selectedEndpoint;
+                return InkWell(
+                  onTap: () {
+                    Navigator.of(context).pop(node.endpoint);
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      vertical: scaleSize(12),
+                      horizontal: scaleSize(16),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                          color: isSelected ? orangeC : Colors.grey[400],
+                          size: scaleSize(20),
+                        ),
+                        ScaledSizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            node.endpoint!,
+                            style: scaledTextStyle(
+                              fontSize: 14,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          contentPadding: EdgeInsets.symmetric(vertical: scaleSize(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        );
+      },
+    );
+
+    if (result != null) {
+      controller.text = result;
+      configBox.put('autoEndpoint', false);
+      configBox.put('customEndpoint', result);
+      await sub.connectNode();
+      set.reload();
+    }
   }
 
   Widget duniterEndpointSelection(BuildContext context) {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     String? selectedDuniterEndpoint;
 
-    // List of items in our dropdown menu
     var duniterBootstrapNodes = sub.getDuniterBootstrap();
-    selectedDuniterEndpoint =
-        sub.getConnectedEndpoint() ?? duniterBootstrapNodes.first.endpoint;
+    selectedDuniterEndpoint = sub.getConnectedEndpoint() ?? duniterBootstrapNodes.first.endpoint;
 
     final customEndpoint = NetworkParams();
     customEndpoint.endpoint = 'Personnalisé';
@@ -115,7 +383,6 @@ class SettingsScreen extends StatelessWidget {
     localEndpoint.endpoint = 'ws://10.0.2.2:9944';
     final automaticEndpoint = NetworkParams();
     automaticEndpoint.endpoint = 'Auto';
-    // duniterBootstrapNodes.add(_sub.getDuniterCustomEndpoint());
     duniterBootstrapNodes.insert(0, automaticEndpoint);
     duniterBootstrapNodes.add(localEndpoint);
     duniterBootstrapNodes.add(customEndpoint);
@@ -123,147 +390,333 @@ class SettingsScreen extends StatelessWidget {
     if (configBox.get('autoEndpoint') == true) {
       selectedDuniterEndpoint = automaticEndpoint.endpoint;
     } else if (configBox.containsKey('customEndpoint')) {
-      selectedDuniterEndpoint = customEndpoint.endpoint;
+      selectedDuniterEndpoint = configBox.get('customEndpoint');
     }
 
-    final endpointController = TextEditingController(
-        text: configBox.containsKey('customEndpoint')
-            ? configBox.get('customEndpoint')
-            : 'wss://');
+    final endpointController = _endpointController;
 
-    return Column(children: <Widget>[
-      Row(children: [
-        Consumer<SubstrateSdk>(builder: (context, sub, _) {
-          return Expanded(
-            child: Row(children: [
-              ScaledSizedBox(width: 2),
-              ScaledSizedBox(
-                width: 55,
-                child: Text(
-                  'currencyNode'.tr(),
-                  style: scaledTextStyle(fontSize: 14),
-                ),
-              ),
-              const Spacer(),
-              ScaledSizedBox(
-                width: 30,
-                child: Icon(sub.nodeConnected && !sub.isLoadingEndpoint
-                    ? Icons.check
-                    : Icons.close),
-              ),
-              if (sub.nodeConnected && !sub.isLoadingEndpoint)
-                const Icon(Icons.add_card_sharp, size: 0.01),
-              const Spacer(),
-              ScaledSizedBox(
-                height: 52,
-                width: 230,
-                child: Consumer<SettingsProvider>(builder: (context, set, _) {
-                  return DropdownButtonHideUnderline(
-                    key: keySelectDuniterNodeDropDown,
-                    child: DropdownButton(
-                      style: scaledTextStyle(fontSize: 14, color: Colors.black),
-                      value: selectedDuniterEndpoint,
-                      icon: const Icon(Icons.keyboard_arrow_down),
-                      items: duniterBootstrapNodes
-                          .map((NetworkParams endpointParams) {
-                        return DropdownMenuItem(
-                          key: keySelectDuniterNode(endpointParams.endpoint!),
-                          value: endpointParams.endpoint,
-                          child: Text(endpointParams.endpoint!),
+    String getDisplayMode() {
+      if (configBox.get('autoEndpoint') == true) return 'Auto';
+      if (selectedDuniterEndpoint == 'Personnalisé') return 'Manuel';
+      return 'Manuel';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Consumer<SubstrateSdk>(
+          builder: (context, sub, _) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.dns_rounded,
+                      color: orangeC,
+                      size: scaleSize(24),
+                    ),
+                    ScaledSizedBox(width: 12),
+                    Text(
+                      'currencyNode'.tr(),
+                      style: scaledTextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    ScaledSizedBox(width: 12),
+                    Icon(
+                      sub.nodeConnected && !sub.isLoadingEndpoint ? Icons.check_circle : Icons.error,
+                      color: sub.nodeConnected && !sub.isLoadingEndpoint ? Colors.green : Colors.red,
+                      size: scaleSize(16),
+                    ),
+                    const Spacer(),
+                    Consumer<SettingsProvider>(
+                      builder: (context, set, _) {
+                        return PopupMenuButton<String>(
+                          key: keySelectDuniterNodeDropDown,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: scaleSize(12),
+                              vertical: scaleSize(6),
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  getDisplayMode(),
+                                  style: scaledTextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                ScaledSizedBox(width: 4),
+                                Icon(
+                                  Icons.arrow_drop_down,
+                                  color: Colors.grey[600],
+                                  size: scaleSize(20),
+                                ),
+                              ],
+                            ),
+                          ),
+                          itemBuilder: (context) => [
+                            PopupMenuItem(
+                              key: keySelectDuniterNode('Auto'),
+                              value: 'Auto',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    configBox.get('autoEndpoint') == true ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                                    color: configBox.get('autoEndpoint') == true ? orangeC : Colors.grey[400],
+                                    size: scaleSize(20),
+                                  ),
+                                  ScaledSizedBox(width: 12),
+                                  Text(
+                                    'Auto',
+                                    style: scaledTextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem(
+                              key: keySelectDuniterNode('manual'.tr()),
+                              value: 'manual'.tr(),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    configBox.get('autoEndpoint') != true ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                                    color: configBox.get('autoEndpoint') != true ? orangeC : Colors.grey[400],
+                                    size: scaleSize(20),
+                                  ),
+                                  ScaledSizedBox(width: 12),
+                                  Text(
+                                    'manual'.tr(),
+                                    style: scaledTextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem(
+                              key: keySelectDuniterNode('select'.tr()),
+                              value: 'select'.tr(),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.list_alt,
+                                    color: Colors.grey[400],
+                                    size: scaleSize(20),
+                                  ),
+                                  ScaledSizedBox(width: 12),
+                                  Text(
+                                    'select'.tr(),
+                                    style: scaledTextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                          onSelected: (String value) async {
+                            if (value == 'select'.tr()) {
+                              await _showNodeSelectionDialog(
+                                context,
+                                duniterBootstrapNodes
+                                    .where((node) => node.endpoint != 'Auto' && node.endpoint != 'Personnalisé' && node.endpoint != 'ws://10.0.2.2:9944')
+                                    .toList(),
+                                selectedDuniterEndpoint ?? '',
+                                endpointController,
+                              );
+                            } else if (value == 'Auto') {
+                              configBox.delete('customEndpoint');
+                              configBox.put('autoEndpoint', true);
+                              await sub.connectNode();
+                              set.reload();
+                            } else {
+                              configBox.put('autoEndpoint', false);
+                              if (!configBox.containsKey('customEndpoint')) {
+                                configBox.put('customEndpoint', _endpointController.text);
+                              }
+                              set.reload();
+                              _duniterFocusNode.requestFocus();
+                              _endpointController.selection = TextSelection.fromPosition(
+                                TextPosition(offset: _endpointController.text.length),
+                              );
+                            }
+                          },
                         );
-                      }).toList(),
-                      onChanged: (String? newEndpoint) {
-                        selectedDuniterEndpoint = newEndpoint;
-                        set.reload();
                       },
                     ),
-                  );
-                }),
-              ),
-              const Spacer(flex: 3),
-              sub.isLoadingEndpoint
-                  ? Loading(size: scaleSize(32), stroke: 2.5)
-                  : Consumer<SettingsProvider>(builder: (context, set, _) {
-                      return IconButton(
-                          key: keyConnectToEndpoint,
-                          icon: Icon(
-                            Icons.send,
-                            color: selectedDuniterEndpoint !=
-                                    sub.getConnectedEndpoint()
-                                ? orangeC
-                                : Colors.grey[500],
-                            size: scaleSize(35),
-                          ),
-                          onPressed: selectedDuniterEndpoint !=
-                                  sub.getConnectedEndpoint()
-                              ? () async {
-                                  if (selectedDuniterEndpoint == 'Auto') {
-                                    configBox.delete('customEndpoint');
-                                    configBox.put('autoEndpoint', true);
-                                  } else {
-                                    configBox.put('autoEndpoint', false);
-                                    final finalEndpoint =
-                                        selectedDuniterEndpoint ==
-                                                'Personnalisé'
-                                            ? endpointController.text
-                                            : selectedDuniterEndpoint;
-                                    configBox.put(
-                                        'customEndpoint', finalEndpoint);
-                                  }
-                                  await sub.connectNode();
-                                }
-                              : null);
-                    }),
-              const Spacer(flex: 8),
-            ]),
-          );
-        }),
-      ]),
-      Consumer<SettingsProvider>(builder: (context, set, _) {
-        return Visibility(
-          visible: selectedDuniterEndpoint == 'Personnalisé',
-          child: ScaledSizedBox(
-            width: 200,
-            height: 50,
-            child: TextField(
-              key: keyCustomDuniterEndpoint,
-              controller: endpointController,
-              autocorrect: false,
-              style: scaledTextStyle(fontSize: 14),
-            ),
-          ),
-        );
-      }),
-      Consumer<SubstrateSdk>(builder: (context, sub, _) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Consumer<SettingsProvider>(builder: (context, set, _) {
-              return Visibility(
-                visible: selectedDuniterEndpoint == 'Auto',
-                child: ScaledSizedBox(
-                  width: 250,
-                  height: sub.getConnectedEndpoint() == null ? 60 : 20,
-                  child: Text(
+                  ],
+                ),
+                if (sub.isLoadingEndpoint)
+                  Padding(
+                    padding: EdgeInsets.only(top: scaleSize(16)),
+                    child: Center(child: Loading(size: scaleSize(24), stroke: 2)),
+                  ),
+              ],
+            );
+          },
+        ),
+        Consumer<SettingsProvider>(
+          builder: (context, set, _) {
+            if (configBox.get('autoEndpoint') == true) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ScaledSizedBox(height: 8),
+                  Text(
                     sub.getConnectedEndpoint() ?? "anAutoNodeChoosed".tr(),
                     style: scaledTextStyle(
+                      fontSize: 13,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              );
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ScaledSizedBox(height: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[300]!),
+                  ),
+                  child: TextField(
+                    key: keyCustomDuniterEndpoint,
+                    focusNode: _duniterFocusNode,
+                    controller: endpointController,
+                    autocorrect: false,
+                    style: scaledTextStyle(fontSize: 14),
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: scaleSize(12),
+                        vertical: scaleSize(8),
+                      ),
+                      border: InputBorder.none,
+                      hintText: 'wss://',
+                      hintStyle: scaledTextStyle(
                         fontSize: 14,
-                        fontStyle: FontStyle.italic,
-                        color: Colors.grey[700]!),
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                    onSubmitted: (value) async {
+                      configBox.put('customEndpoint', value);
+                      await sub.connectNode();
+                      set.reload();
+                    },
                   ),
                 ),
-              );
-            }),
-            Text(
-              'blockN'.tr(args: [
-                sub.blocNumber.toString()
-              ]), //'bloc N°${sub.blocNumber}',
-              style: scaledTextStyle(fontSize: 13, color: Colors.grey[700]),
-            )
-          ],
+              ],
+            );
+          },
+        ),
+        Consumer<SubstrateSdk>(
+          builder: (context, sub, _) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ScaledSizedBox(height: 8),
+                Text(
+                  'blockN'.tr(args: [sub.blocNumber.toString()]),
+                  style: scaledTextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Future<void> _showIndexerSelectionDialog(BuildContext context, List<String> indexers, String selectedEndpoint, TextEditingController controller) async {
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final set = Provider.of<SettingsProvider>(context, listen: false);
+
+    String? result = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'selectIndexer'.tr(),
+            style: scaledTextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: indexers.map((endpoint) {
+                final isSelected = endpoint == selectedEndpoint;
+                return InkWell(
+                  onTap: () {
+                    Navigator.of(context).pop(endpoint);
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      vertical: scaleSize(12),
+                      horizontal: scaleSize(16),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                          color: isSelected ? orangeC : Colors.grey[400],
+                          size: scaleSize(20),
+                        ),
+                        ScaledSizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            endpoint,
+                            style: scaledTextStyle(
+                              fontSize: 14,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          contentPadding: EdgeInsets.symmetric(vertical: scaleSize(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         );
-      }),
-    ]);
+      },
+    );
+
+    if (result != null) {
+      controller.text = result;
+      configBox.put('customIndexer', result);
+      await duniterIndexer.checkIndexerEndpoint(result);
+      set.reload();
+    }
   }
 
   Widget indexerEndpointSelection(BuildContext context) {
@@ -271,124 +724,238 @@ class SettingsScreen extends StatelessWidget {
 
     String? selectedIndexerEndpoint;
     if (configBox.containsKey('customIndexer')) {
-      selectedIndexerEndpoint = 'Personnalisé';
+      selectedIndexerEndpoint = configBox.get('customIndexer');
     } else {
-      selectedIndexerEndpoint = indexerEndpoint;
+      selectedIndexerEndpoint = duniterIndexer.listIndexerEndpoints.isNotEmpty ? duniterIndexer.listIndexerEndpoints[0] : 'https://';
     }
 
-    if (selectedIndexerEndpoint == '') {
-      selectedIndexerEndpoint = duniterIndexer.listIndexerEndpoints[0];
+    final indexerEndpointController = _indexerEndpointController;
+
+    String getDisplayMode() {
+      return configBox.containsKey('customIndexer') ? 'Manuel' : 'Auto';
     }
 
-    final indexerEndpointController = TextEditingController(
-        text: configBox.containsKey('customIndexer')
-            ? configBox.get('customIndexer')
-            : 'https://');
-
-    return Column(children: <Widget>[
-      Row(children: [
-        Consumer<DuniterIndexer>(builder: (context, indexer, _) {
-          return Expanded(
-            child: Row(children: [
-              ScaledSizedBox(width: 5),
-              ScaledSizedBox(
-                width: 55,
-                child: Text('Indexer', style: scaledTextStyle(fontSize: 14)),
-              ),
-              const Spacer(),
-              Icon(indexerEndpoint != '' ? Icons.check : Icons.close),
-              const Spacer(),
-              ScaledSizedBox(
-                width: 230,
-                child: Consumer<SettingsProvider>(builder: (context, set, _) {
-                  return DropdownButtonHideUnderline(
-                    child: DropdownButton(
-                      style: scaledTextStyle(fontSize: 14, color: Colors.black),
-                      value: selectedIndexerEndpoint,
-                      icon: const Icon(Icons.keyboard_arrow_down),
-                      items:
-                          indexer.listIndexerEndpoints.map((indexerEndpoint) {
-                        return DropdownMenuItem(
-                          value: indexerEndpoint,
-                          child: Text(indexerEndpoint),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Consumer<DuniterIndexer>(
+          builder: (context, indexer, _) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.storage_rounded,
+                      color: orangeC,
+                      size: scaleSize(24),
+                    ),
+                    ScaledSizedBox(width: 12),
+                    Text(
+                      'Indexer',
+                      style: scaledTextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    ScaledSizedBox(width: 12),
+                    Icon(
+                      indexerEndpoint != '' ? Icons.check_circle : Icons.error,
+                      color: indexerEndpoint != '' ? Colors.green : Colors.red,
+                      size: scaleSize(16),
+                    ),
+                    const Spacer(),
+                    Consumer<SettingsProvider>(
+                      builder: (context, set, _) {
+                        return PopupMenuButton<String>(
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: scaleSize(12),
+                              vertical: scaleSize(6),
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  getDisplayMode(),
+                                  style: scaledTextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                ScaledSizedBox(width: 4),
+                                Icon(
+                                  Icons.arrow_drop_down,
+                                  color: Colors.grey[600],
+                                  size: scaleSize(20),
+                                ),
+                              ],
+                            ),
+                          ),
+                          itemBuilder: (context) => [
+                            PopupMenuItem(
+                              value: 'Auto',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    !configBox.containsKey('customIndexer') ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                                    color: !configBox.containsKey('customIndexer') ? orangeC : Colors.grey[400],
+                                    size: scaleSize(20),
+                                  ),
+                                  ScaledSizedBox(width: 12),
+                                  Text(
+                                    'Auto',
+                                    style: scaledTextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: 'Manuel',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    configBox.containsKey('customIndexer') ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                                    color: configBox.containsKey('customIndexer') ? orangeC : Colors.grey[400],
+                                    size: scaleSize(20),
+                                  ),
+                                  ScaledSizedBox(width: 12),
+                                  Text(
+                                    'Manuel',
+                                    style: scaledTextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: 'Sélectionner',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.list_alt,
+                                    color: Colors.grey[400],
+                                    size: scaleSize(20),
+                                  ),
+                                  ScaledSizedBox(width: 12),
+                                  Text(
+                                    'Sélectionner',
+                                    style: scaledTextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                          onSelected: (String value) async {
+                            if (value == 'Sélectionner') {
+                              await _showIndexerSelectionDialog(
+                                context,
+                                indexer.listIndexerEndpoints.cast<String>(),
+                                selectedIndexerEndpoint ?? '',
+                                indexerEndpointController,
+                              );
+                            } else if (value == 'Auto') {
+                              configBox.delete('customIndexer');
+                              final defaultEndpoint = duniterIndexer.listIndexerEndpoints.isNotEmpty ? duniterIndexer.listIndexerEndpoints[0] : 'https://';
+                              selectedIndexerEndpoint = defaultEndpoint;
+                              indexerEndpointController.text = defaultEndpoint;
+                              await indexer.checkIndexerEndpoint(defaultEndpoint);
+                              set.reload();
+                            } else {
+                              if (!configBox.containsKey('customIndexer')) {
+                                configBox.put('customIndexer', _indexerEndpointController.text);
+                              }
+                              set.reload();
+                              _indexerFocusNode.requestFocus();
+                              _indexerEndpointController.selection = TextSelection.fromPosition(
+                                TextPosition(offset: _indexerEndpointController.text.length),
+                              );
+                            }
+                          },
                         );
-                      }).toList(),
-                      onChanged: (newEndpoint) {
-                        selectedIndexerEndpoint = newEndpoint.toString();
-                        set.reload();
                       },
                     ),
-                  );
-                }),
-              ),
-              const Spacer(flex: 5),
-              indexer.isLoadingIndexer
-                  ? Loading(size: scaleSize(32), stroke: 2.5)
-                  : Consumer<SettingsProvider>(builder: (context, set, _) {
-                      return IconButton(
-                          icon: Icon(
-                            Icons.send,
-                            color: selectedIndexerEndpoint != indexerEndpoint
-                                ? orangeC
-                                : Colors.grey[500],
-                            size: scaleSize(35),
-                          ),
-                          onPressed: selectedIndexerEndpoint != indexerEndpoint
-                              ? () async {
-                                  final finalEndpoint =
-                                      selectedIndexerEndpoint == 'Personnalisé'
-                                          ? indexerEndpointController.text
-                                          : selectedIndexerEndpoint!;
-
-                                  if (selectedIndexerEndpoint ==
-                                      'Personnalisé') {
-                                    configBox.put('customIndexer',
-                                        indexerEndpointController.text);
-                                  } else {
-                                    configBox.delete('customIndexer');
-                                  }
-                                  await indexer
-                                      .checkIndexerEndpoint(finalEndpoint);
-                                }
-                              : null);
-                    }),
-              const Spacer(flex: 8),
-            ]),
-          );
-        }),
-      ]),
-      Consumer<SettingsProvider>(builder: (context, set, _) {
-        return Visibility(
-          visible: selectedIndexerEndpoint == 'Personnalisé',
-          child: ScaledSizedBox(
-            width: 200,
-            height: 50,
-            child: TextField(
-              controller: indexerEndpointController,
-              autocorrect: false,
-              style: scaledTextStyle(fontSize: 14),
-            ),
-          ),
-        );
-      }),
-      Consumer<SubstrateSdk>(builder: (context, sub, _) {
-        return Consumer<SettingsProvider>(builder: (context, set, _) {
-          return Visibility(
-            visible: selectedIndexerEndpoint == 'Auto',
-            child: ScaledSizedBox(
-              width: 250,
-              height: 60,
-              child: Text(
-                sub.getConnectedEndpoint() ?? "anAutoNodeChoosed".tr(),
-                style: scaledTextStyle(
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic,
-                    color: Colors.grey[700]),
-              ),
-            ),
-          );
-        });
-      }),
-    ]);
+                  ],
+                ),
+                if (indexer.isLoadingIndexer)
+                  Padding(
+                    padding: EdgeInsets.only(top: scaleSize(16)),
+                    child: Center(child: Loading(size: scaleSize(24), stroke: 2)),
+                  ),
+              ],
+            );
+          },
+        ),
+        Consumer<SettingsProvider>(
+          builder: (context, set, _) {
+            if (!configBox.containsKey('customIndexer')) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ScaledSizedBox(height: 8),
+                  Text(
+                    selectedIndexerEndpoint ?? '',
+                    style: scaledTextStyle(
+                      fontSize: 13,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              );
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ScaledSizedBox(height: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[300]!),
+                  ),
+                  child: TextField(
+                    focusNode: _indexerFocusNode,
+                    controller: indexerEndpointController,
+                    autocorrect: false,
+                    style: scaledTextStyle(fontSize: 14),
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: scaleSize(12),
+                        vertical: scaleSize(8),
+                      ),
+                      border: InputBorder.none,
+                      hintText: 'https://',
+                      hintStyle: scaledTextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                    onSubmitted: (value) async {
+                      configBox.put('customIndexer', value);
+                      await duniterIndexer.checkIndexerEndpoint(value);
+                      set.reload();
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
   }
 }

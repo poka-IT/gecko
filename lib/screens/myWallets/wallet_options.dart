@@ -26,6 +26,7 @@ import 'package:provider/provider.dart';
 import 'package:gecko/widgets/buttons/manage_membership_button.dart';
 import 'package:gecko/models/membership_renewal.dart';
 import 'package:gecko/widgets/wallet_header.dart';
+import 'package:gecko/screens/identity/confirm_identity.dart';
 
 class WalletOptions extends StatelessWidget {
   const WalletOptions({Key? keyMyWallets, required this.wallet}) : super(key: keyMyWallets);
@@ -402,6 +403,7 @@ class WalletOptions extends StatelessWidget {
           return Visibility(
             visible: snapshot.hasData && !snapshot.hasError && snapshot.data!.first == IdtyStatus.unconfirmed,
             child: Column(children: [
+              ScaledSizedBox(height: 22),
               SizedBox(
                 width: double.infinity,
                 height: scaleSize(50),
@@ -414,7 +416,16 @@ class WalletOptions extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  onPressed: () => walletProvider.confirmIdentityPopup(context),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ConfirmIdentityScreen(
+                          address: walletProvider.address.text,
+                        ),
+                      ),
+                    );
+                  },
                   child: Text(
                     'confirmMyIdentity'.tr(),
                     style: scaledTextStyle(fontSize: 16, color: Colors.white),
@@ -425,7 +436,7 @@ class WalletOptions extends StatelessWidget {
               Text(
                 "someoneCreatedYourIdentity".tr(args: [currencyName]),
                 style: scaledTextStyle(
-                  fontSize: 15,
+                  fontSize: 14,
                   color: Colors.grey[600],
                   fontStyle: FontStyle.italic,
                 ),

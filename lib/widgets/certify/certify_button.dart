@@ -13,7 +13,7 @@ import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/screens/wallet_view.dart' show buttonSize, buttonFontSize;
 import 'package:gecko/utils.dart';
-import 'package:gecko/widgets/commons/common_elements.dart';
+import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:provider/provider.dart';
 
 class CertifyButton extends StatelessWidget {
@@ -37,12 +37,16 @@ class CertifyButton extends StatelessWidget {
                 key: keyCertify,
                 splashColor: orangeC,
                 onTap: () async {
-                  final result = await confirmPopupCertification(
-                        context,
-                        'areYouSureYouWantToCertify1'.tr(),
-                        duniterIndexer.walletNameIndexer[address] ?? "noIdentity".tr(),
-                        'areYouSureYouWantToCertify2'.tr(),
-                        getShortPubkey(address),
+                  final walletName = duniterIndexer.walletNameIndexer[address];
+                  final message = walletName != null
+                      ? '${'areYouSureYouWantToCertify1'.tr()}\n\n**$walletName**\n\n${'areYouSureYouWantToCertify2'.tr()}\n\n**${getShortPubkey(address)}**'
+                      : '${'areYouSureCreateIdentityOnAddress'.tr()}\n\n**${getShortPubkey(address)}**';
+
+                  final result = await showConfirmationDialog(
+                        context: context,
+                        title: walletName != null ? 'certification'.tr() : 'identityCreation'.tr(),
+                        message: message,
+                        type: walletName != null ? ConfirmationDialogType.question : ConfirmationDialogType.info,
                       ) ??
                       false;
 

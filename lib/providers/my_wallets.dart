@@ -14,8 +14,6 @@ import 'package:provider/provider.dart';
 
 class MyWalletsProvider with ChangeNotifier {
   List<WalletData> listWallets = [];
-  WalletData? idtyWallet;
-  List<WalletData> listWalletsWithoutIdty = [];
   String pinCode = '';
   late String mnemonic;
   int? pinLenght;
@@ -36,6 +34,10 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   bool isWalletsExists() => chestBox.isNotEmpty;
+
+  WalletData? get idtyWallet => listWallets.firstWhereOrNull((w) => w.isMembre) ?? listWallets.firstWhereOrNull((w) => w.hasIdentity);
+
+  List<WalletData> get listWalletsWithoutIdty => listWallets.where((w) => !w.hasIdentity).toList();
 
   Future<List<WalletData>> readAllWallets([int? chest]) async {
     final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
@@ -65,11 +67,6 @@ class MyWalletsProvider with ChangeNotifier {
     }
 
     listWallets.sort((p1, p2) => Comparable.compare(p1.number!, p2.number!));
-
-    idtyWallet = listWallets.firstWhereOrNull((w) => w.hasIdentity);
-
-    listWalletsWithoutIdty = listWallets.toList();
-    listWalletsWithoutIdty.removeWhere((w) => w.address == idtyWallet?.address);
 
     return listWallets;
   }

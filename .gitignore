@@ -55,3 +55,6 @@ integration_test/duniter/data/chains/
 # Ignore PC deps
 scripts/pushGecko
 android-old
+
+# FVM Version Cache
+.fvm/

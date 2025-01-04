@@ -41,11 +41,10 @@ class MembershipRenewal {
 
   static Future<void> executeRenewal(BuildContext context, String address) async {
     final answer = await showConfirmationDialog(
-          context: context,
-          message: 'areYouSureYouWantToRenewMembership'.tr(),
-          type: ConfirmationDialogType.question,
-        ) ??
-        false;
+      context: context,
+      message: 'areYouSureYouWantToRenewMembership'.tr(),
+      type: ConfirmationDialogType.question,
+    );
     if (!answer) return;
 
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);

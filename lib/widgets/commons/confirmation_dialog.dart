@@ -31,7 +31,7 @@ extension ConfirmationDialogTypeExtension on ConfirmationDialogType {
       };
 }
 
-Future<bool?> showConfirmationDialog({
+Future<bool> showConfirmationDialog({
   required BuildContext context,
   String? title,
   required String message,
@@ -41,12 +41,12 @@ Future<bool?> showConfirmationDialog({
   ConfirmationDialogType type = ConfirmationDialogType.info,
   IconData? customIcon,
   Color? customIconColor,
-}) {
+}) async {
   final IconData iconToShow = customIcon ?? type.icon;
   final Color iconColorToShow = customIconColor ?? type.iconColor;
   final String dialogTitle = title ?? 'confirmationTitle'.tr();
 
-  return showDialog<bool>(
+  final result = await showDialog<bool>(
     context: context,
     barrierDismissible: barrierDismissible,
     builder: (BuildContext context) {
@@ -166,4 +166,6 @@ Future<bool?> showConfirmationDialog({
       );
     },
   );
+
+  return result ?? false;
 }

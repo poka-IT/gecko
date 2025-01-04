@@ -279,5 +279,10 @@
     "confirmationTitle": "Confirmation",
     "dangerZone": "Danger zone",
     "manual": "Manual",
-    "select": "Select"
+    "select": "Select",
+    "clearCache": "Clear cache",
+    "clearCacheExplanation": "Clear cached data (balances, certifications, etc.)",
+    "generalSettings": "General",
+    "clearCacheConfirmTitle": "Clear Cache Confirmation",
+    "clearCacheConfirmMessage": "Do you really want to clear the cache?\n\nThis includes:\n- Wallet balances\n- Certifications\n- Identity data"
 }

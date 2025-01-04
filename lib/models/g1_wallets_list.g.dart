@@ -48,11 +48,7 @@ class G1WalletsListAdapter extends TypeAdapter<G1WalletsList> {
   int get hashCode => typeId.hashCode;
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is G1WalletsListAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+  bool operator ==(Object other) => identical(this, other) || other is G1WalletsListAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }
 
 class IdAdapter extends TypeAdapter<Id> {
@@ -73,9 +69,5 @@ class IdAdapter extends TypeAdapter<Id> {
   int get hashCode => typeId.hashCode;
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is IdAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+  bool operator ==(Object other) => identical(this, other) || other is IdAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }

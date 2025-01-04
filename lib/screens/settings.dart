@@ -1,7 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:gecko/models/wallet_header_data.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -10,6 +14,8 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
+import 'package:gecko/widgets/commons/confirmation_dialog.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:provider/provider.dart';
 
@@ -93,81 +99,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: scaleSize(24)),
+            padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ScaledSizedBox(height: isSmallScreen ? 16 : 24),
+                ScaledSizedBox(height: isSmallScreen ? 12 : 20),
 
-                // Section Réseau
+                // Section Général
                 Text(
-                  'networkSettings'.tr(),
+                  'generalSettings'.tr(),
                   style: scaledTextStyle(
                     fontSize: isSmallScreen ? 15 : 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
                 ),
-                ScaledSizedBox(height: isSmallScreen ? 12 : 16),
-
-                // Carte Nœud Duniter
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.all(scaleSize(isSmallScreen ? 12 : 16)),
-                        child: duniterEndpointSelection(context),
-                      ),
-                    ],
-                  ),
-                ),
-                ScaledSizedBox(height: isSmallScreen ? 16 : 24),
-
-                // Carte Indexer
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.all(scaleSize(isSmallScreen ? 12 : 16)),
-                        child: indexerEndpointSelection(context),
-                      ),
-                    ],
-                  ),
-                ),
-                ScaledSizedBox(height: isSmallScreen ? 24 : 32),
-
-                // Section Affichage
-                Text(
-                  'displaySettings'.tr(),
-                  style: scaledTextStyle(
-                    fontSize: isSmallScreen ? 15 : 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-                ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+                ScaledSizedBox(height: isSmallScreen ? 8 : 12),
 
                 // Carte Unité de devise
                 Container(
@@ -185,13 +132,136 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: Column(
                     children: [
                       Padding(
-                        padding: EdgeInsets.all(scaleSize(isSmallScreen ? 12 : 16)),
+                        padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
                         child: chooseCurrencyUnit(context),
                       ),
                     ],
                   ),
                 ),
-                ScaledSizedBox(height: isSmallScreen ? 24 : 32),
+                ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+
+                // Carte Nettoyage du cache
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: InkWell(
+                    onTap: () async {
+                      final confirm = await showConfirmationDialog(
+                        context: context,
+                        message: 'clearCacheConfirmMessage'.tr(),
+                        type: ConfirmationDialogType.warning,
+                      );
+
+                      if (confirm) {
+                        // Clear WalletHeaderData cache
+                        final walletHeaderBox = await Hive.openBox<WalletHeaderData>('wallet_header_cache');
+                        await walletHeaderBox.clear();
+
+                        // Clear G1WalletsList cache
+                        final g1WalletsBox = await Hive.openBox<G1WalletsList>('g1_wallets_list');
+                        await g1WalletsBox.clear();
+
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('clearCacheExplanation'.tr()),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.cleaning_services_rounded,
+                            color: orangeC,
+                            size: scaleSize(isSmallScreen ? 20 : 24),
+                          ),
+                          ScaledSizedBox(width: 12),
+                          Text(
+                            'clearCache'.tr(),
+                            style: scaledTextStyle(
+                              fontSize: isSmallScreen ? 14 : 15,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                ScaledSizedBox(height: isSmallScreen ? 20 : 24),
+
+                // Section Réseau
+                Text(
+                  'networkSettings'.tr(),
+                  style: scaledTextStyle(
+                    fontSize: isSmallScreen ? 15 : 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                ScaledSizedBox(height: isSmallScreen ? 8 : 12),
+
+                // Carte Nœud Duniter
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                        child: duniterEndpointSelection(context),
+                      ),
+                    ],
+                  ),
+                ),
+                ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+
+                // Carte Indexer
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                        child: indexerEndpointSelection(context),
+                      ),
+                    ],
+                  ),
+                ),
+                ScaledSizedBox(height: isSmallScreen ? 20 : 24),
 
                 // Section Danger
                 Text(
@@ -202,7 +272,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     color: const Color(0xffD80000),
                   ),
                 ),
-                ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+                ScaledSizedBox(height: isSmallScreen ? 8 : 12),
 
                 // Carte Suppression des coffres
                 Container(
@@ -225,7 +295,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       await _myWallets.deleteAllWallet(context);
                     },
                     child: Padding(
-                      padding: EdgeInsets.all(scaleSize(isSmallScreen ? 12 : 16)),
+                      padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
                       child: Row(
                         children: [
                           Icon(
@@ -247,7 +317,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                 ),
-                ScaledSizedBox(height: isSmallScreen ? 24 : 32),
+                ScaledSizedBox(height: isSmallScreen ? 20 : 24),
               ],
             ),
           ),

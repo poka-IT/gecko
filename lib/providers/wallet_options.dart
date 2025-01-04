@@ -49,13 +49,13 @@ class WalletOptionsProvider with ChangeNotifier {
   Future<int> deleteWallet(context, WalletData wallet) async {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final datapod = Provider.of<V2sDatapodProvider>(context, listen: false);
-    final bool? answer = await showConfirmationDialog(
+    final answer = await showConfirmationDialog(
       context: context,
       message: 'areYouSureToForgetWallet'.tr(args: [wallet.name!]),
       type: ConfirmationDialogType.warning,
     );
 
-    if (answer ?? false) {
+    if (answer) {
       //Check if balance is null
       if (balanceCache[wallet.address] != 0) {
         final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);

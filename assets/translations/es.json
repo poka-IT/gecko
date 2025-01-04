@@ -280,5 +280,10 @@
     "confirmationTitle": "Confirmación",
     "dangerZone": "Zona peligrosa",
     "manual": "Manual",
-    "select": "Seleccionar"
+    "select": "Seleccionar",
+    "clearCache": "Borrar caché",
+    "clearCacheExplanation": "Borrar datos en caché (saldos, certificaciones, etc.)",
+    "generalSettings": "General",
+    "clearCacheConfirmTitle": "Confirmación de borrado de caché",
+    "clearCacheConfirmMessage": "¿Realmente desea borrar el caché?\n\nEsto incluye:\n- Saldos de carteras\n- Certificaciones\n- Datos de identidad"
 }

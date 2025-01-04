@@ -43,12 +43,11 @@ class CertifyButton extends StatelessWidget {
                       : '${'areYouSureCreateIdentityOnAddress'.tr()}\n\n**${getShortPubkey(address)}**';
 
                   final result = await showConfirmationDialog(
-                        context: context,
-                        title: walletName != null ? 'certification'.tr() : 'identityCreation'.tr(),
-                        message: message,
-                        type: walletName != null ? ConfirmationDialogType.question : ConfirmationDialogType.info,
-                      ) ??
-                      false;
+                    context: context,
+                    title: walletName != null ? 'certification'.tr() : 'identityCreation'.tr(),
+                    message: message,
+                    type: walletName != null ? ConfirmationDialogType.question : ConfirmationDialogType.info,
+                  );
 
                   if (!result) return;
                   await sub.setCurrentWallet(myWalletProvider.idtyWallet!);

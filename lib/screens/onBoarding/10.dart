@@ -1,9 +1,10 @@
-// ignore_for_file: file_names
+// ignore_for_file: file_names, use_build_context_synchronously
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -130,7 +131,7 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
     );
   }
 
-  Widget pinForm(context, final walletOptions, pinLenght, int walletNbr, int derivation) {
+  Widget pinForm(BuildContext context, WalletOptionsProvider walletOptions, int pinLenght, int walletNbr, int derivation) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
     final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context);
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
@@ -225,6 +226,14 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
 
                 generateWalletProvider.generatedMnemonic = '';
                 myWalletProvider.debounceResetPinCode();
+
+                // Set default wallet to number 0 of current chest
+                final defaultWallet = myWalletProvider.listWallets.firstWhereOrNull((w) => w.isMembre) ??
+                    myWalletProvider.listWallets.firstWhereOrNull((w) => w.hasIdentity) ??
+                    myWalletProvider.listWallets.firstWhereOrNull((w) => w.number == 0) ??
+                    myWalletProvider.listWallets.first;
+                await sub.setCurrentWallet(defaultWallet);
+
                 Navigator.push(
                   context,
                   FaderTransition(page: const OnboardingStepEleven(), isFast: false),

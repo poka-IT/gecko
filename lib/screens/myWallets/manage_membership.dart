@@ -146,11 +146,10 @@ class ManageMembership extends StatelessWidget {
         key: keyRevokeIdty,
         onTap: () async {
           final answer = await showConfirmationDialog(
-                context: context,
-                message: 'areYouSureYouWantToRevokeIdentity'.tr(),
-                type: ConfirmationDialogType.warning,
-              ) ??
-              false;
+            context: context,
+            message: 'areYouSureYouWantToRevokeIdentity'.tr(),
+            type: ConfirmationDialogType.warning,
+          );
 
           if (!answer) return;
           final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);

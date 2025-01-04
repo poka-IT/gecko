@@ -37,7 +37,7 @@ class MyWalletsProvider with ChangeNotifier {
 
   WalletData? get idtyWallet => listWallets.firstWhereOrNull((w) => w.isMembre) ?? listWallets.firstWhereOrNull((w) => w.hasIdentity);
 
-  List<WalletData> get listWalletsWithoutIdty => listWallets.where((w) => !w.hasIdentity).toList();
+  List<WalletData> get listWalletsWithoutIdty => listWallets.where((w) => w.address != idtyWallet?.address).toList();
 
   Future<List<WalletData>> readAllWallets([int? chest]) async {
     final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
@@ -120,12 +120,12 @@ class MyWalletsProvider with ChangeNotifier {
     try {
       log.w('DELETE ALL WALLETS ?');
 
-      final bool? answer = await showConfirmationDialog(
+      final answer = await showConfirmationDialog(
         context: context,
         message: 'areYouSureForgetAllChests'.tr(),
         type: ConfirmationDialogType.warning,
       );
-      if (answer!) {
+      if (answer) {
         await walletBox.clear();
         await chestBox.clear();
         await configBox.delete('defaultWallet');

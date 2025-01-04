@@ -36,6 +36,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/search_result.dart';
+import 'package:gecko/widgets/wallet_header.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
@@ -43,6 +44,7 @@ import 'package:responsive_framework/responsive_framework.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:gecko/models/wallet_header_data.dart';
 
 const bool enableSentry = true;
 
@@ -63,31 +65,33 @@ Future<void> main() async {
 
   appVersion = await homeProvider.getAppVersion();
 
-  // Configure Hive and open boxes
+  // Initialize Hive
+  await Hive.initFlutter();
+
+  // Register Hive adapters
+  Hive.registerAdapter(WalletHeaderDataAdapter());
+  Hive.registerAdapter(BigIntAdapter());
   Hive.registerAdapter(WalletDataAdapter());
   Hive.registerAdapter(ChestDataAdapter());
   Hive.registerAdapter(G1WalletsListAdapter());
   Hive.registerAdapter(IdAdapter());
   Hive.registerAdapter(IdtyStatusAdapter());
 
+  // Open required boxes synchronously
   chestBox = await Hive.openBox<ChestData>("chestBox");
+
+  // Initialize other boxes asynchronously
+  unawaited(WalletHeader.initializeBox());
 
   HttpOverrides.global = MyHttpOverrides();
 
   if (kReleaseMode && enableSentry) {
     await SentryFlutter.init((options) {
-      options.dsn =
-          'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
+      options.dsn = 'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
     },
-        appRunner: () => SystemChrome.setPreferredOrientations(
-                [DeviceOrientation.portraitUp]).then((_) {
+        appRunner: () => SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
               runApp(EasyLocalization(
-                supportedLocales: const [
-                  Locale('en'),
-                  Locale('fr'),
-                  Locale('es'),
-                  Locale('it')
-                ],
+                supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
                 path: 'assets/translations',
                 fallbackLocale: const Locale('en'),
                 child: const Gecko(),
@@ -96,16 +100,10 @@ Future<void> main() async {
   } else {
     log.i('Debug mode enabled: No sentry alert');
 
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
-        .then((_) {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
       runApp(EasyLocalization(
         // test, force locale :: startLocale: Locale.fromSubtags(languageCode: 'it'),
-        supportedLocales: const [
-          Locale('en'),
-          Locale('fr'),
-          Locale('es'),
-          Locale('it')
-        ],
+        supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
         path: 'assets/translations',
         fallbackLocale: const Locale('en'),
         child: const Gecko(),
@@ -204,8 +202,6 @@ class Gecko extends StatelessWidget {
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
+    return super.createHttpClient(context)..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
   }
 }

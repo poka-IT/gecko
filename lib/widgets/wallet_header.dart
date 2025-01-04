@@ -264,7 +264,7 @@ class _WalletHeaderState extends State<WalletHeader> {
                         style: scaledTextStyle(
                           fontSize: 20,
                           fontFamily: 'Monospace',
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       SizedBox(width: scaleSize(14)),

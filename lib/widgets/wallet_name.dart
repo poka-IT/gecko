@@ -19,7 +19,6 @@ class WalletName extends StatelessWidget {
           fontSize: size,
           color: color,
           fontWeight: FontWeight.w400,
-          fontStyle: FontStyle.italic,
         ),
         softWrap: false,
         overflow: TextOverflow.ellipsis,

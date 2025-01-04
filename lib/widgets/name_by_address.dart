@@ -14,7 +14,7 @@ import 'package:truncate/truncate.dart';
 
 class NameByAddress extends StatelessWidget {
   const NameByAddress(
-      {super.key, required this.wallet, this.size = 20, this.color = Colors.black, this.fontWeight = FontWeight.w400, this.fontStyle = FontStyle.italic});
+      {super.key, required this.wallet, this.size = 20, this.color = Colors.black, this.fontWeight = FontWeight.w400, this.fontStyle = FontStyle.normal});
   final WalletData wallet;
   final Color color;
   final double size;

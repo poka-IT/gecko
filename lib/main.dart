@@ -59,8 +59,6 @@ Future<void> main() async {
 
   appVersion = await homeProvider.getAppVersion();
 
-  HttpOverrides.global = MyHttpOverrides();
-
   if (kReleaseMode && enableSentry) {
     await SentryFlutter.init((options) {
       options.dsn = 'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
@@ -171,13 +169,5 @@ class Gecko extends StatelessWidget {
         },
       ),
     );
-  }
-}
-
-// This http overriding is needed to fix fail certifcat checking for Duniter node on old Android version
-class MyHttpOverrides extends HttpOverrides {
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
   }
 }

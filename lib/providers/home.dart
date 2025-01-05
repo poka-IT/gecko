@@ -14,6 +14,11 @@ import 'package:path_provider/path_provider.dart' as pp;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:gecko/models/chest_data.dart';
+import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/widgets/wallet_header.dart';
+import 'package:gecko/models/wallet_header_data.dart';
 
 class HomeProvider with ChangeNotifier {
   bool? isSearching;
@@ -55,6 +60,22 @@ class HomeProvider with ChangeNotifier {
     if (!await avatarsDirectory.exists()) {
       await avatarsDirectory.create();
     }
+
+    // Register Hive adapters
+    Hive.registerAdapter(WalletHeaderDataAdapter());
+    Hive.registerAdapter(BigIntAdapter());
+    Hive.registerAdapter(WalletDataAdapter());
+    Hive.registerAdapter(ChestDataAdapter());
+    Hive.registerAdapter(G1WalletsListAdapter());
+    Hive.registerAdapter(IdAdapter());
+    Hive.registerAdapter(IdtyStatusAdapter());
+
+    // Open required boxes synchronously
+    chestBox = await Hive.openBox<ChestData>("chestBox");
+    configBox = await Hive.openBox("configBox");
+
+    // Initialize other boxes asynchronously
+    unawaited(WalletHeader.initializeBox());
   }
 
   Future changeCurrencyUnit(BuildContext context) async {

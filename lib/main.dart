@@ -14,12 +14,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/chest_data.dart';
-import 'package:gecko/models/g1_wallets_list.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/generate_wallets.dart';
@@ -36,15 +32,13 @@ import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/search_result.dart';
-import 'package:gecko/widgets/wallet_header.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:gecko/models/wallet_header_data.dart';
 
 const bool enableSentry = true;
 
@@ -59,29 +53,11 @@ Future<void> main() async {
   final homeProvider = HomeProvider();
   // DuniterIndexer _duniterIndexer = DuniterIndexer();
 
+  // Initialize Hive
   await initHiveForFlutter();
   await homeProvider.initHive();
-  configBox = await Hive.openBox("configBox");
 
   appVersion = await homeProvider.getAppVersion();
-
-  // Initialize Hive
-  await Hive.initFlutter();
-
-  // Register Hive adapters
-  Hive.registerAdapter(WalletHeaderDataAdapter());
-  Hive.registerAdapter(BigIntAdapter());
-  Hive.registerAdapter(WalletDataAdapter());
-  Hive.registerAdapter(ChestDataAdapter());
-  Hive.registerAdapter(G1WalletsListAdapter());
-  Hive.registerAdapter(IdAdapter());
-  Hive.registerAdapter(IdtyStatusAdapter());
-
-  // Open required boxes synchronously
-  chestBox = await Hive.openBox<ChestData>("chestBox");
-
-  // Initialize other boxes asynchronously
-  unawaited(WalletHeader.initializeBox());
 
   HttpOverrides.global = MyHttpOverrides();
 

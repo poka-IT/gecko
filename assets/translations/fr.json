@@ -69,7 +69,7 @@
     "geckoWillCheckPassword": "Gecko va vérifier avec vous si vous avez bien mémorisé votre code secret.\n\nTapez votre code secret dans le champ ci-dessous pour vérifier que vous l’avez bien noté.",
     "yourChestAndWalletWereCreatedSuccessfully": "Top !\n\nVotre coffre et votre premier portefeuille ont été créés avec un immense succès.\n\nFélicitations !",
     "allGood": "C’est tout bon !",
-    "areYouSureToDeleteWallet": "Êtes-vous sûr de vouloir supprimer le coffre \"{}\" ?",
+    "areYouSureToForgetSafe": "Êtes-vous sûr de vouloir oublier le coffre \"{}\" ?",
     "areYouSureForgetAllChests": "Êtes-vous sûr de vouloir oublier tous vos coffres ?",
     "areYouSureToForgetWallet": "Êtes-vous sûr de vouloir oublier le portefeuille \"{}\" ?\nLe solde sera transféré vers votre portefeuille par défaut.",
     "areYouSureYouWantToCertify1": "Êtes-vous certain de vouloir certifier l'identité :",

@@ -53,7 +53,7 @@ class ChestProvider with ChangeNotifier {
     return showConfirmationDialog(
       context: context,
       type: ConfirmationDialogType.warning,
-      message: 'areYouSureToDeleteWallet'.tr(args: [walletName!]),
+      message: 'areYouSureToForgetSafe'.tr(args: [walletName!]),
     );
   }
 }

@@ -68,7 +68,7 @@
     "GeckoWillCheckPassword": "Ğecko controllará insieme a te se ti ricordi la password. Scrivi la password per controllare che l'hai appuntata correttamente.",
     "yourChestAndWalletWereCreatedSuccessfully": "Fantastico!\n\nIl tuo scrigno e il primo portafoglio sono stati creati con successo.\n\nCongratulazioni!",
     "allGood": "Tutto bene!",
-    "areYouSureToDeleteWallet": "Sicuro che vuoi eliminare lo scrigno \"{}\"?",
+    "areYouSureToForgetSafe": "Sicuro che vuoi eliminare lo scrigno \"{}\"?",
     "areYouSureForgetAllChests": "Sicuro che vuoi dimenticare tutti i tuoi scrigni?",
     "areYouSureToForgetWallet": "Sicuro che vuoi dimenticare il tuo portafoglio \"{}\"?",
     "areYouSureYouWantToCertify": "Sicuro che vuoi certificare l'indirizzo\n\n{}?",

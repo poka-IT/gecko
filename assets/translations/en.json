@@ -69,7 +69,7 @@
     "geckoWillCheckPassword": "Gecko will check with you if you have remembered your secret code.\n\n Type your secret code in the field below to check that you have written it down correctly.",
     "yourChestAndWalletWereCreatedSuccessfully": "Super!\n\nYour safe and your first portfolio have been created with great success.\n\nCongratulations!",
     "allGood": "That's all good!",
-    "areYouSureToDeleteWallet": "Are you sure you want to delete the safe \"{}\"?",
+    "areYouSureToForgetSafe": "Are you sure you want to forget the safe \"{}\"?",
     "areYouSureForgetAllChests": "Are you sure you want to forget all your safes?",
     "areYouSureToForgetWallet": "Are you sure you want to forget the wallet \"{}\"?\nThe balance will be transferred to your default wallet.",
     "areYouSureYouWantToCertify1": "Are you sure you want to certify the identity :",

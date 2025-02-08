@@ -216,5 +216,6 @@
     "blockN": "blocco N°{}",
     "thisIsNotAGoodCode": "Questo codice non é valido",
     "youHaveToBeConnectedToValidateChest": "Vous devez vous connecter à internet\npour valider votre coffre",
-    "thisIdentityAlreadyExist": "Identitá giá esistente"
+    "thisIdentityAlreadyExist": "Identitá giá esistente",
+    "qrCodeNotAddress": "Questo QR code non é un indirizzo valido"
 }

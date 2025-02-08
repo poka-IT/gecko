@@ -28,6 +28,8 @@ class WalletsProfilesProvider with ChangeNotifier {
 
   bool isCommentVisible = false;
 
+  final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
+
   String _comment = '';
   String get comment => _comment;
   set comment(String value) {
@@ -53,7 +55,7 @@ class WalletsProfilesProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<String> scan(context) async {
+  Future<void> scan(context) async {
     if (Platform.isAndroid || Platform.isIOS) {
       await Permission.camera.request();
     }
@@ -62,10 +64,20 @@ class WalletsProfilesProvider with ChangeNotifier {
       barcode = await BarcodeScanner.scan();
     } catch (e) {
       log.e("BarcodeScanner ERR: $e");
-      return 'false';
+      return;
     }
-    if (await isAddress(barcode.rawContent)) {
-      address = barcode.rawContent;
+
+    final barcodeContent = barcode.rawContent;
+
+    if (barcodeContent == '') return;
+
+    if (await isAddressOrPubkey(barcodeContent)) {
+      if (!(await isAddress(barcodeContent))) {
+        address = await sub.pubkeyV1ToAddress(barcodeContent);
+      } else {
+        address = barcodeContent;
+      }
+
       Navigator.popUntil(
         context,
         ModalRoute.withName('/'),
@@ -74,15 +86,19 @@ class WalletsProfilesProvider with ChangeNotifier {
         context,
         MaterialPageRoute(builder: (context) {
           return WalletViewScreen(
-            address: barcode!.rawContent,
+            address: address,
             username: null,
           );
         }),
       );
     } else {
-      return 'false';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('qrCodeNotAddress'.tr()),
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
-    return barcode.rawContent;
   }
 
   void resetdHistory() {
@@ -121,25 +137,24 @@ class WalletsProfilesProvider with ChangeNotifier {
   }
 }
 
-// bool isAddress(address) {
-//   final RegExp regExp = RegExp(
-//     r'^[a-zA-Z0-9]+$',
-//     caseSensitive: false,
-//     multiLine: false,
-//   );
-
-//   if (regExp.hasMatch(address) == true &&
-//       address.length > 45 &&
-//       address.length < 52) {
-//     return true;
-//   } else {
-//     return false;
-//   }
-// }
+Future<bool> isAddressOrPubkey(String address) async {
+  return await isAddress(address) || isPubkey(address);
+}
 
 Future<bool> isAddress(String address) async {
   final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
   return await sub.sdk.api.account.checkAddressFormat(address, sub.initSs58).timeout(const Duration(milliseconds: 300)).onError((_, __) => false) ?? false;
+}
+
+bool isPubkey(String pubkey) {
+  pubkey = pubkey.split(':')[0];
+  final RegExp regExp = RegExp(
+    r'^[a-zA-Z0-9]+$',
+    caseSensitive: false,
+    multiLine: false,
+  );
+
+  return regExp.hasMatch(pubkey) == true && pubkey.length > 42 && pubkey.length < 45;
 }
 
 snackMessage(context, {required String message, int duration = 2, double fontSize = 14}) {

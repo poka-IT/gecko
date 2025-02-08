@@ -284,5 +284,6 @@
     "clearCacheExplanation": "Effacer les données mises en cache (soldes, certifications, etc.)",
     "generalSettings": "Général",
     "clearCacheConfirmTitle": "Confirmation de suppression du cache",
-    "clearCacheConfirmMessage": "Voulez-vous vraiment effacer le cache ?\n\nCela inclut :\n- Les soldes des portefeuilles\n- Les certifications\n- Les données d'identité"
+    "clearCacheConfirmMessage": "Voulez-vous vraiment effacer le cache ?\n\nCela inclut :\n- Les soldes des portefeuilles\n- Les certifications\n- Les données d'identité",
+    "qrCodeNotAddress": "Ce QR code n'est pas une adresse valide"
 }

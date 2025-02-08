@@ -284,5 +284,6 @@
     "clearCacheExplanation": "Clear cached data (balances, certifications, etc.)",
     "generalSettings": "General",
     "clearCacheConfirmTitle": "Clear Cache Confirmation",
-    "clearCacheConfirmMessage": "Do you really want to clear the cache?\n\nThis includes:\n- Wallet balances\n- Certifications\n- Identity data"
+    "clearCacheConfirmMessage": "Do you really want to clear the cache?\n\nThis includes:\n- Wallet balances\n- Certifications\n- Identity data",
+    "qrCodeNotAddress": "This QR code is not a valid address"
 }

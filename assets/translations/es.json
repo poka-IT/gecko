@@ -285,5 +285,6 @@
     "clearCacheExplanation": "Borrar datos en caché (saldos, certificaciones, etc.)",
     "generalSettings": "General",
     "clearCacheConfirmTitle": "Confirmación de borrado de caché",
-    "clearCacheConfirmMessage": "¿Realmente desea borrar el caché?\n\nEsto incluye:\n- Saldos de carteras\n- Certificaciones\n- Datos de identidad"
+    "clearCacheConfirmMessage": "¿Realmente desea borrar el caché?\n\nEsto incluye:\n- Saldos de carteras\n- Certificaciones\n- Datos de identidad",
+    "qrCodeNotAddress": "Este código QR no es una dirección válida"
 }

@@ -526,10 +526,11 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<String> pubkeyV1ToAddress(String pubkey) async {
+    pubkey = pubkey.split(':')[0];
     final pubkeyByte = Base58Decode(pubkey);
     final String pubkeyHex = '0x${HEX.encode(pubkeyByte)}';
     final address = await sdk.api.account.encodeAddress([pubkeyHex]);
-    return address!.keys.first;
+    return address!.values.first;
   }
 
   Future initCurrencyParameters() async {

@@ -61,54 +61,59 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
         ),
         bottomNavigationBar: const GeckoBottomAppBar(),
         body: SafeArea(
-          child: Column(children: <Widget>[
-            WalletHeader(address: address),
-            ScaledSizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildActionButton(
-                  context: context,
-                  key: keyViewActivity,
-                  icon: 'assets/walletOptions/clock.png',
-                  label: "displayNActivity".tr(),
-                  onTap: () => Navigator.push(
-                    context,
-                    PageNoTransit(builder: (context) => ActivityScreen(address: address)),
-                  ),
-                ),
-                Consumer<SubstrateSdk>(builder: (context, sub, _) {
-                  return FutureBuilder(
-                    future: sub.certState(address),
-                    builder: (context, AsyncSnapshot<CertState> snapshot) {
-                      if (!snapshot.hasData) return const SizedBox.shrink();
-                      final certState = snapshot.data!;
-                      return Visibility(
-                        visible: certState.status != CertStatus.none,
-                        child: CertStateWidget(
-                          certState: certState,
-                          address: address,
-                        ),
+          child: SingleChildScrollView(
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - kBottomNavigationBarHeight,
+              child: Column(children: <Widget>[
+                WalletHeader(address: address),
+                ScaledSizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildActionButton(
+                      context: context,
+                      key: keyViewActivity,
+                      icon: 'assets/walletOptions/clock.png',
+                      label: "displayNActivity".tr(),
+                      onTap: () => Navigator.push(
+                        context,
+                        PageNoTransit(builder: (context) => ActivityScreen(address: address)),
+                      ),
+                    ),
+                    Consumer<SubstrateSdk>(builder: (context, sub, _) {
+                      return FutureBuilder(
+                        future: sub.certState(address),
+                        builder: (context, AsyncSnapshot<CertState> snapshot) {
+                          if (!snapshot.hasData) return const SizedBox.shrink();
+                          final certState = snapshot.data!;
+                          return Visibility(
+                            visible: certState.status != CertStatus.none,
+                            child: CertStateWidget(
+                              certState: certState,
+                              address: address,
+                            ),
+                          );
+                        },
                       );
-                    },
-                  );
-                }),
-                _buildActionButton(
-                  context: context,
-                  key: keyCopyAddress,
-                  icon: 'assets/copy_key.png',
-                  label: "copyAddress".tr(),
-                  onTap: () {
-                    Clipboard.setData(ClipboardData(text: address));
-                    snackCopyKey(context);
-                  },
+                    }),
+                    _buildActionButton(
+                      context: context,
+                      key: keyCopyAddress,
+                      icon: 'assets/copy_key.png',
+                      label: "copyAddress".tr(),
+                      onTap: () {
+                        Clipboard.setData(ClipboardData(text: address));
+                        snackCopyKey(context);
+                      },
+                    ),
+                  ],
                 ),
-              ],
+                const Spacer(),
+                _buildTransferButton(context),
+                ScaledSizedBox(height: isTall ? 40 : 7),
+              ]),
             ),
-            const Spacer(),
-            _buildTransferButton(context),
-            ScaledSizedBox(height: isTall ? 40 : 7),
-          ]),
+          ),
         ));
   }
 

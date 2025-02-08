@@ -55,128 +55,130 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
       child: Scaffold(
         backgroundColor: backgroundColor,
         body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Padding(
-                padding: EdgeInsets.only(left: 8, top: isTall ? 14 : 0),
-                child: IconButton(
-                  key: keyPopButton,
-                  icon: Icon(
-                    Icons.arrow_back,
-                    color: Colors.black,
-                    size: scaleSize(28),
-                  ),
-                  onPressed: () {
-                    myWalletProvider.isPinValid = false;
-                    myWalletProvider.isPinLoading = true;
-                    Navigator.pop(context);
-                  },
-                ),
-              ),
-              ScaledSizedBox(height: isTall ? 12 : 4),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  currentChest.imageFile == null
-                      ? Image.asset(
-                          'assets/chests/${currentChest.imageName}',
-                          width: scaleSize(isTall ? 95 : 75),
-                        )
-                      : Image.file(
-                          currentChest.imageFile!,
-                          width: scaleSize(isTall ? 127 : 95),
-                        ),
-                  ScaledSizedBox(width: 18),
-                  Flexible(
-                    child: Text(
-                      currentChest.name!,
-                      textAlign: TextAlign.center,
-                      style: scaledTextStyle(
-                        fontSize: isTall ? 24 : 20,
-                        color: Colors.black,
-                        fontWeight: FontWeight.w700,
-                      ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.only(left: 8, top: isTall ? 14 : 0),
+                  child: IconButton(
+                    key: keyPopButton,
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: Colors.black,
+                      size: scaleSize(28),
                     ),
+                    onPressed: () {
+                      myWalletProvider.isPinValid = false;
+                      myWalletProvider.isPinLoading = true;
+                      Navigator.pop(context);
+                    },
                   ),
-                ],
-              ),
-              ScaledSizedBox(height: isTall ? 30 : 15),
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                padding: EdgeInsets.all(isTall ? 24 : 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
+                ),
+                ScaledSizedBox(height: isTall ? 12 : 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    currentChest.imageFile == null
+                        ? Image.asset(
+                            'assets/chests/${currentChest.imageName}',
+                            width: scaleSize(isTall ? 95 : 75),
+                          )
+                        : Image.file(
+                            currentChest.imageFile!,
+                            width: scaleSize(isTall ? 127 : 95),
+                          ),
+                    ScaledSizedBox(width: 18),
+                    Flexible(
+                      child: Text(
+                        currentChest.name!,
+                        textAlign: TextAlign.center,
+                        style: scaledTextStyle(
+                          fontSize: isTall ? 24 : 20,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                child: Column(
-                  children: [
-                    Text(
-                      'toUnlockEnterPassword'.tr(),
-                      textAlign: TextAlign.center,
-                      style: scaledTextStyle(
-                        fontSize: isTall ? 16 : 14,
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w500,
+                ScaledSizedBox(height: isTall ? 30 : 15),
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.all(isTall ? 24 : 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
                       ),
-                    ),
-                    ScaledSizedBox(height: isTall ? 24 : 12),
-                    if (!myWalletProvider.isPinValid && !myWalletProvider.isPinLoading)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: Text(
-                          "thisIsNotAGoodCode".tr(),
-                          style: scaledTextStyle(
-                            color: Colors.red[700],
-                            fontWeight: FontWeight.w500,
-                            fontSize: 15,
-                          ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'toUnlockEnterPassword'.tr(),
+                        textAlign: TextAlign.center,
+                        style: scaledTextStyle(
+                          fontSize: isTall ? 16 : 14,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                    pinForm(context, pinLenght),
-                    ScaledSizedBox(height: isTall ? 16 : 8),
-                    if (canUnlock)
-                      Consumer<WalletOptionsProvider>(builder: (context, sub, _) {
-                        return InkWell(
-                          key: keyCachePassword,
-                          onTap: () {
-                            walletOptions.changePinCacheChoice();
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                configBox.get('isCacheChecked') ? Icons.check_box : Icons.check_box_outline_blank,
-                                color: orangeC,
-                                size: scaleSize(20),
-                              ),
-                              ScaledSizedBox(width: 8),
-                              Flexible(
-                                child: Text(
-                                  'rememberPassword'.tr(),
-                                  style: scaledTextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[700],
-                                    fontWeight: FontWeight.w500,
+                      ScaledSizedBox(height: isTall ? 24 : 12),
+                      if (!myWalletProvider.isPinValid && !myWalletProvider.isPinLoading)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Text(
+                            "thisIsNotAGoodCode".tr(),
+                            style: scaledTextStyle(
+                              color: Colors.red[700],
+                              fontWeight: FontWeight.w500,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      pinForm(context, pinLenght),
+                      ScaledSizedBox(height: isTall ? 16 : 8),
+                      if (canUnlock)
+                        Consumer<WalletOptionsProvider>(builder: (context, sub, _) {
+                          return InkWell(
+                            key: keyCachePassword,
+                            onTap: () {
+                              walletOptions.changePinCacheChoice();
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  configBox.get('isCacheChecked') ? Icons.check_box : Icons.check_box_outline_blank,
+                                  color: orangeC,
+                                  size: scaleSize(20),
+                                ),
+                                ScaledSizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    'rememberPassword'.tr(),
+                                    style: scaledTextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey[700],
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
-                  ],
+                              ],
+                            ),
+                          );
+                        }),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

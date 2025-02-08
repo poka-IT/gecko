@@ -225,25 +225,27 @@ Widget welcomeHome(context) {
       Padding(
         padding: const EdgeInsets.only(top: 1),
         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-          Text(
-            "fastAppDescription".tr(args: [currencyName]),
-            textAlign: TextAlign.center,
-            style: scaledTextStyle(
-              color: Colors.white,
-              fontSize: 19,
-              fontWeight: FontWeight.w700,
-              shadows: const <Shadow>[
-                Shadow(
-                  offset: Offset(0, 0),
-                  blurRadius: 20,
-                  color: Colors.black,
-                ),
-                Shadow(
-                  offset: Offset(0, 0),
-                  blurRadius: 20,
-                  color: Colors.black,
-                ),
-              ],
+          Expanded(
+            child: Text(
+              "fastAppDescription".tr(args: [currencyName]),
+              textAlign: TextAlign.center,
+              style: scaledTextStyle(
+                color: Colors.white,
+                fontSize: isTall ? 19 : 17,
+                fontWeight: FontWeight.w700,
+                shadows: const <Shadow>[
+                  Shadow(
+                    offset: Offset(0, 0),
+                    blurRadius: 20,
+                    color: Colors.black,
+                  ),
+                  Shadow(
+                    offset: Offset(0, 0),
+                    blurRadius: 20,
+                    color: Colors.black,
+                  ),
+                ],
+              ),
             ),
           )
         ]),
@@ -270,10 +272,10 @@ Widget welcomeHome(context) {
                   Expanded(
                     child: Stack(children: <Widget>[
                       Padding(
-                        padding: EdgeInsets.only(top: scaleSize(55)),
+                        padding: EdgeInsets.only(top: scaleSize(isTall ? 55 : 0)),
                         child: Image(
                           image: const AssetImage('assets/home/gecko-bienvenue.png'),
-                          height: scaleSize(180),
+                          height: scaleSize(isTall ? 180 : 160),
                         ),
                       ),
                       Positioned(
@@ -293,7 +295,7 @@ Widget welcomeHome(context) {
                       foregroundColor: Colors.white,
                       backgroundColor: orangeC,
                       elevation: 0,
-                      padding: EdgeInsets.symmetric(vertical: scaleSize(12)),
+                      padding: EdgeInsets.symmetric(vertical: scaleSize(8)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -330,7 +332,7 @@ Widget welcomeHome(context) {
                     key: keyRestoreChest,
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(width: scaleSize(4), color: orangeC),
-                      padding: EdgeInsets.symmetric(vertical: scaleSize(12)),
+                      padding: EdgeInsets.symmetric(vertical: scaleSize(8)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

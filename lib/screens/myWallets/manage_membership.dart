@@ -102,7 +102,6 @@ class ManageMembership extends StatelessWidget {
 
   Widget migrateIdentity(BuildContext context) {
     return Container(
-      height: scaleSize(48),
       margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
       child: InkWell(
         key: keyMigrateIdentity,
@@ -115,7 +114,7 @@ class ManageMembership extends StatelessWidget {
           );
         },
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+          padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
           child: Row(
             children: [
               Icon(
@@ -140,7 +139,6 @@ class ManageMembership extends StatelessWidget {
 
   Widget revokeMyIdentity(BuildContext context) {
     return Container(
-      height: scaleSize(48),
       margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
       child: InkWell(
         key: keyRevokeIdty,
@@ -170,7 +168,7 @@ class ManageMembership extends StatelessWidget {
           );
         },
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: scaleSize(19)),
+          padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
           child: Row(
             children: [
               Image.asset(

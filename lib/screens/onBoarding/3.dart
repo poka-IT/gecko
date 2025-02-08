@@ -18,13 +18,15 @@ class OnboardingStepThree extends StatelessWidget {
       appBar: GeckoAppBar('yourMnemonic'.tr()),
       body: SafeArea(
         child: Stack(children: [
-          InfoIntro(
-            text: 'warningForgotPassword'.tr(),
-            assetName: 'forgot_password.png'.tr(),
-            buttonText: '>',
-            nextScreen: const OnboardingStepFor(),
-            pagePosition: 2,
-            boxHeight: 316,
+          SingleChildScrollView(
+            child: InfoIntro(
+              text: 'warningForgotPassword'.tr(),
+              assetName: 'forgot_password.png'.tr(),
+              buttonText: '>',
+              nextScreen: const OnboardingStepFor(),
+              pagePosition: 2,
+              boxHeight: 316,
+            ),
           ),
           const OfflineInfo(),
         ]),

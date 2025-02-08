@@ -95,9 +95,9 @@ class WalletOptions extends StatelessWidget {
                                         await walletProvider.editWalletName(context, [wallet.id[0], wallet.id[1]]);
                                       },
                                       child: Container(
-                                        height: scaleSize(48),
-                                        padding: EdgeInsets.symmetric(horizontal: scaleSize(17)),
+                                        padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
                                         child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
                                           children: [
                                             Image.asset(
                                               'assets/walletOptions/edit.png',
@@ -105,11 +105,14 @@ class WalletOptions extends StatelessWidget {
                                               color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
                                             ),
                                             ScaledSizedBox(width: 18),
-                                            Text(
-                                              "editWalletName".tr(),
-                                              style: scaledTextStyle(
-                                                fontSize: 16,
-                                                color: Colors.black87,
+                                            Expanded(
+                                              child: Text(
+                                                "editWalletName".tr(),
+                                                style: scaledTextStyle(
+                                                  fontSize: 16,
+                                                  color: Colors.black87,
+                                                ),
+                                                softWrap: true,
                                               ),
                                             ),
                                           ],
@@ -212,9 +215,9 @@ class WalletOptions extends StatelessWidget {
         );
       },
       child: Container(
-        height: scaleSize(48),
-        padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+        padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Image.asset(
               'assets/walletOptions/clock.png',
@@ -222,11 +225,14 @@ class WalletOptions extends StatelessWidget {
               color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
             ),
             ScaledSizedBox(width: 16),
-            Text(
-              "displayActivity".tr(),
-              style: scaledTextStyle(
-                fontSize: 16,
-                color: Colors.black87,
+            Expanded(
+              child: Text(
+                "displayActivity".tr(),
+                style: scaledTextStyle(
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
+                softWrap: true,
               ),
             ),
           ],
@@ -273,9 +279,9 @@ class WalletOptions extends StatelessWidget {
                 : null,
             child: canDelete
                 ? Container(
-                    height: scaleSize(48),
-                    padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+                    padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Image.asset(
                           'assets/walletOptions/trash.png',
@@ -283,11 +289,14 @@ class WalletOptions extends StatelessWidget {
                           color: const Color(0xffD80000),
                         ),
                         ScaledSizedBox(width: 16),
-                        Text(
-                          'deleteThisWallet'.tr(),
-                          style: scaledTextStyle(
-                            fontSize: 16,
-                            color: const Color(0xffD80000),
+                        Expanded(
+                          child: Text(
+                            'deleteThisWallet'.tr(),
+                            style: scaledTextStyle(
+                              fontSize: 16,
+                              color: const Color(0xffD80000),
+                            ),
+                            softWrap: true,
                           ),
                         ),
                       ],
@@ -369,9 +378,9 @@ class WalletOptions extends StatelessWidget {
                 }
               : null,
           child: Container(
-            height: scaleSize(48),
-            padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+            padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Icon(
                   Icons.check_circle_outline,
@@ -379,11 +388,14 @@ class WalletOptions extends StatelessWidget {
                   color: walletProvider.isDefaultWallet ? Colors.grey[400] : const Color(0xFF4CAF50).withValues(alpha: 0.8),
                 ),
                 ScaledSizedBox(width: 16),
-                Text(
-                  walletProvider.isDefaultWallet ? 'thisWalletIsDefault'.tr() : 'defineWalletAsDefault'.tr(),
-                  style: scaledTextStyle(
-                    fontSize: 16,
-                    color: walletProvider.isDefaultWallet ? Colors.grey[500] : Colors.black87,
+                Expanded(
+                  child: Text(
+                    walletProvider.isDefaultWallet ? 'thisWalletIsDefault'.tr() : 'defineWalletAsDefault'.tr(),
+                    style: scaledTextStyle(
+                      fontSize: 16,
+                      color: walletProvider.isDefaultWallet ? Colors.grey[500] : Colors.black87,
+                    ),
+                    softWrap: true,
                   ),
                 ),
               ],
@@ -467,9 +479,9 @@ Widget aloneWalletOptions() {
               }
             },
             child: Container(
-              height: scaleSize(48),
-              padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+              padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Icon(
                     Icons.add_circle_outline,
@@ -477,11 +489,14 @@ Widget aloneWalletOptions() {
                     color: sub.nodeConnected ? Color(0xFF4CAF50).withValues(alpha: 0.8) : Colors.grey[400],
                   ),
                   ScaledSizedBox(width: 16),
-                  Text(
-                    'createNewWallet'.tr(),
-                    style: scaledTextStyle(
-                      fontSize: 16,
-                      color: sub.nodeConnected ? Colors.black87 : Colors.grey[500],
+                  Expanded(
+                    child: Text(
+                      'createNewWallet'.tr(),
+                      style: scaledTextStyle(
+                        fontSize: 16,
+                        color: sub.nodeConnected ? Colors.black87 : Colors.grey[500],
+                      ),
+                      softWrap: true,
                     ),
                   ),
                 ],
@@ -498,8 +513,7 @@ Widget aloneWalletOptions() {
           );
         },
         child: Container(
-          height: scaleSize(48),
-          padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+          padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
           child: Row(
             children: [
               SvgPicture.asset(
@@ -507,11 +521,14 @@ Widget aloneWalletOptions() {
                 height: scaleSize(24),
               ),
               ScaledSizedBox(width: 16),
-              Text(
-                'importG1v1'.tr(),
-                style: scaledTextStyle(
-                  fontSize: 16,
-                  color: Colors.black87,
+              Expanded(
+                child: Text(
+                  'importG1v1'.tr(),
+                  style: scaledTextStyle(
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
+                  softWrap: true,
                 ),
               ),
             ],

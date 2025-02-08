@@ -259,12 +259,17 @@ class _WalletHeaderState extends State<WalletHeader> {
                   },
                   child: Row(
                     children: [
-                      Text(
-                        getShortPubkey(widget.address),
-                        style: scaledTextStyle(
-                          fontSize: 20,
-                          fontFamily: 'Monospace',
-                          fontWeight: FontWeight.w600,
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            getShortPubkey(widget.address),
+                            style: scaledTextStyle(
+                              fontSize: 20,
+                              fontFamily: 'Monospace',
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
                       SizedBox(width: scaleSize(14)),
@@ -308,24 +313,27 @@ class _WalletHeaderState extends State<WalletHeader> {
                         borderRadius: BorderRadius.circular(8),
                         color: Colors.transparent,
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IdentityStatus(
-                            address: widget.address,
-                            color: orangeC,
-                          ),
-                          SizedBox(width: scaleSize(8)),
-                          Certifications(
-                            address: widget.address,
-                            size: 13,
-                          ),
-                          Icon(
-                            Icons.chevron_right,
-                            size: scaleSize(15),
-                            color: orangeC.withValues(alpha: 0.5),
-                          ),
-                        ],
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IdentityStatus(
+                              address: widget.address,
+                              color: orangeC,
+                            ),
+                            SizedBox(width: scaleSize(8)),
+                            Certifications(
+                              address: widget.address,
+                              size: 13,
+                            ),
+                            Icon(
+                              Icons.chevron_right,
+                              size: scaleSize(15),
+                              color: orangeC.withValues(alpha: 0.5),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

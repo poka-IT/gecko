@@ -45,20 +45,29 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
       backgroundColor: backgroundColor,
       appBar: GeckoAppBar(widget.walletName!),
       body: SafeArea(
-        child: Column(children: <Widget>[
-          const SizedBox(height: 80),
-          Text(
-            'choosePassword'.tr(),
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16.0,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w400,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                const SizedBox(height: 60),
+                Text(
+                  'choosePassword'.tr(),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                const SizedBox(height: 30),
+                pinForm(context),
+                const SizedBox(height: 40),
+              ],
             ),
           ),
-          const SizedBox(height: 30),
-          pinForm(context),
-        ]),
+        ),
       ),
     );
   }

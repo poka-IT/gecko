@@ -20,18 +20,13 @@ class BubbleSpeak extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Bubble(
-      padding: long == null
-          ? const BubbleEdges.all(18)
-          : BubbleEdges.symmetric(horizontal: long, vertical: 30),
+      padding: long == null ? BubbleEdges.all(isTall ? 18 : 12) : BubbleEdges.symmetric(horizontal: long, vertical: 30),
       elevation: 5,
       color: backgroundColor,
       child: Text(
         text,
         key: textKey,
-        style: scaledTextStyle(
-            color: Colors.black,
-            fontSize: fontSize,
-            fontWeight: FontWeight.w400),
+        style: scaledTextStyle(color: Colors.black, fontSize: isTall ? fontSize : fontSize * 0.9, fontWeight: FontWeight.w400),
       ),
     );
   }
@@ -57,8 +52,7 @@ class BubbleSpeakWithTail extends StatelessWidget {
       alignment: Alignment.bottomRight,
       clipBehavior: Clip.none,
       children: [
-        BubbleSpeak(
-            text: text, fontSize: fontSize, textKey: textKey, long: long),
+        BubbleSpeak(text: text, fontSize: fontSize, textKey: textKey, long: long),
         Positioned(
           left: 15,
           bottom: -scaleSize(28),

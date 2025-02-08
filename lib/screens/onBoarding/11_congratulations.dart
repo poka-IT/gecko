@@ -24,19 +24,29 @@ class OnboardingStepEleven extends StatelessWidget {
           appBar: GeckoAppBar('allGood'.tr()),
           body: SafeArea(
             child: Stack(children: [
-              Column(children: <Widget>[
-                ScaledSizedBox(height: isTall ? 25 : 5),
-                BuildText(text: "yourChestAndWalletWereCreatedSuccessfully".tr()),
-                ScaledSizedBox(height: isTall ? 15 : 5),
-                Image.asset(
-                  'assets/onBoarding/gecko-clin.gif',
-                  height: scaleSize(isTall ? 330 : 280),
+              SingleChildScrollView(
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      ScaledSizedBox(height: isTall ? 25 : 5),
+                      BuildText(text: "yourChestAndWalletWereCreatedSuccessfully".tr()),
+                      ScaledSizedBox(height: isTall ? 15 : 5),
+                      Image.asset(
+                        'assets/onBoarding/gecko-clin.gif',
+                        height: scaleSize(isTall ? 330 : 280),
+                      ),
+                      Container(
+                        padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
+                        child: finishButton(context),
+                      ),
+                      ScaledSizedBox(height: isTall ? 40 : 5),
+                    ],
+                  ),
                 ),
-                Expanded(
-                  child: Align(alignment: Alignment.bottomCenter, child: finishButton(context)),
-                ),
-                ScaledSizedBox(height: isTall ? 40 : 5),
-              ]),
+              ),
               Align(
                 alignment: Alignment.topLeft,
                 child: ConfettiWidget(

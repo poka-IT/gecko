@@ -26,10 +26,8 @@ class CertTile extends StatelessWidget {
           padding: const EdgeInsets.only(right: 0),
           child: ListTile(
               key: keyTransaction(keyID++),
-              contentPadding: EdgeInsets.only(
-                  left: 10, right: 0, top: scaleSize(3), bottom: scaleSize(3)),
-              leading: DatapodAvatar(
-                  address: repository['address'], size: avatarSize),
+              contentPadding: EdgeInsets.only(left: 10, right: 0, top: scaleSize(3), bottom: scaleSize(3)),
+              leading: DatapodAvatar(address: repository['address'] ?? '', size: avatarSize),
               title: Padding(
                 padding: const EdgeInsets.only(bottom: 2),
                 child: Text(
@@ -57,12 +55,8 @@ class CertTile extends StatelessWidget {
                         ),
                       ),
                     TextSpan(
-                      text: getShortPubkey(repository['address']),
-                      style: scaledTextStyle(
-                          fontStyle: FontStyle.italic,
-                          fontFamily: 'Monospace',
-                          color: Colors.grey[600],
-                          fontSize: 14),
+                      text: getShortPubkey(repository['address'] ?? ''),
+                      style: scaledTextStyle(fontStyle: FontStyle.italic, fontFamily: 'Monospace', color: Colors.grey[600], fontSize: 14),
                     ),
                   ],
                 ),

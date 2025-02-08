@@ -10,10 +10,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
 class CertsList extends StatelessWidget {
-  const CertsList(
-      {super.key,
-      required this.address,
-      this.direction = CertDirection.received});
+  const CertsList({super.key, required this.address, this.direction = CertDirection.received});
   final String address;
   final CertDirection direction;
 
@@ -82,22 +79,16 @@ class CertsList extends StatelessWidget {
             if (!cert['isActive']) {
               continue;
             }
-            final String issuerAddress = cert[certFrom]['accountId'];
-            final String issuerName = cert[certFrom]['name'];
-            final date =
-                DateTime.parse(cert['updatedIn']['block']['timestamp']);
+            final String? issuerAddress = cert[certFrom]['accountId'];
+            final String? issuerName = cert[certFrom]['name'];
+            final date = DateTime.parse(cert['updatedIn']['block']['timestamp']);
             final dp = DateTime(date.year, date.month, date.day);
 
-            final dateForm =
-                '${formatNumber(dp.day)}-${formatNumber(dp.month)}-${dp.year}';
+            final dateForm = '${formatNumber(dp.day)}-${formatNumber(dp.month)}-${dp.year}';
 
             // Check if we have a more recent certification, we skip
             if (!listCerts.any((cert) => cert['address'] == issuerAddress)) {
-              listCerts.add({
-                'address': issuerAddress,
-                'name': issuerName,
-                'date': dateForm
-              });
+              listCerts.add({'address': issuerAddress, 'name': issuerName, 'date': dateForm});
             }
           }
 

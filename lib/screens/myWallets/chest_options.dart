@@ -59,6 +59,7 @@ class ChestOptionsContent extends StatelessWidget {
     final isAlone = myWalletProvider.listWallets.length == 1;
 
     return Column(
+      spacing: 5,
       children: [
         InkWell(
           key: keyShowSeed,
@@ -74,8 +75,7 @@ class ChestOptionsContent extends StatelessWidget {
             );
           },
           child: Container(
-            height: scaleSize(48),
-            padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+            padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
             child: Row(
               children: [
                 Icon(
@@ -84,11 +84,14 @@ class ChestOptionsContent extends StatelessWidget {
                   color: Colors.black87,
                 ),
                 ScaledSizedBox(width: 16),
-                Text(
-                  'displayMnemonic'.tr(),
-                  style: scaledTextStyle(
-                    fontSize: 16,
-                    color: Colors.black87,
+                Expanded(
+                  child: Text(
+                    'displayMnemonic'.tr(),
+                    style: scaledTextStyle(
+                      fontSize: 16,
+                      color: Colors.black87,
+                    ),
+                    softWrap: true,
                   ),
                 ),
               ],
@@ -112,8 +115,7 @@ class ChestOptionsContent extends StatelessWidget {
                 );
               },
               child: Container(
-                height: scaleSize(48),
-                padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+                padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
                 child: Row(
                   children: [
                     Icon(
@@ -122,11 +124,14 @@ class ChestOptionsContent extends StatelessWidget {
                       color: const Color.fromARGB(255, 255, 142, 142),
                     ),
                     ScaledSizedBox(width: 16),
-                    Text(
-                      'changePassword'.tr(),
-                      style: scaledTextStyle(
-                        fontSize: 16,
-                        color: Colors.black87,
+                    Expanded(
+                      child: Text(
+                        'changePassword'.tr(),
+                        style: scaledTextStyle(
+                          fontSize: 16,
+                          color: Colors.black87,
+                        ),
+                        softWrap: true,
                       ),
                     ),
                   ],
@@ -149,8 +154,7 @@ class ChestOptionsContent extends StatelessWidget {
                       }
                     : null,
                 child: Container(
-                  height: scaleSize(48),
-                  padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+                  padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
                   child: Row(
                     children: [
                       Icon(
@@ -159,11 +163,14 @@ class ChestOptionsContent extends StatelessWidget {
                         color: sub.nodeConnected ? Colors.black87 : Colors.grey[400],
                       ),
                       ScaledSizedBox(width: 16),
-                      Text(
-                        'createDerivation'.tr(),
-                        style: scaledTextStyle(
-                          fontSize: 16,
-                          color: sub.nodeConnected ? Colors.black87 : Colors.grey[500],
+                      Expanded(
+                        child: Text(
+                          'createDerivation'.tr(),
+                          style: scaledTextStyle(
+                            fontSize: 16,
+                            color: sub.nodeConnected ? Colors.black87 : Colors.grey[500],
+                          ),
+                          softWrap: true,
                         ),
                       ),
                     ],
@@ -180,8 +187,7 @@ class ChestOptionsContent extends StatelessWidget {
             await chestProvider.deleteChest(context, currentChest);
           },
           child: Container(
-            height: scaleSize(48),
-            padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+            padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
             child: Row(
               children: [
                 Image.asset(
@@ -190,11 +196,14 @@ class ChestOptionsContent extends StatelessWidget {
                   color: const Color(0xffD80000),
                 ),
                 ScaledSizedBox(width: 16),
-                Text(
-                  'deleteChest'.tr(),
-                  style: scaledTextStyle(
-                    fontSize: 16,
-                    color: const Color(0xffD80000),
+                Expanded(
+                  child: Text(
+                    'deleteChest'.tr(),
+                    style: scaledTextStyle(
+                      fontSize: 16,
+                      color: const Color(0xffD80000),
+                    ),
+                    softWrap: true,
                   ),
                 ),
               ],

@@ -3,11 +3,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
-import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:provider/provider.dart';
 
 class ChestProvider with ChangeNotifier {
@@ -21,8 +20,7 @@ class ChestProvider with ChangeNotifier {
     if (answer ?? false) {
       await sub.deleteAccounts(getChestWallets(chest));
       await chestBox.delete(chest.key);
-      final myWalletProvider =
-          Provider.of<MyWalletsProvider>(context, listen: false);
+      final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
       myWalletProvider.pinCode = '';
 
@@ -52,36 +50,10 @@ class ChestProvider with ChangeNotifier {
   }
 
   Future<bool?> _confirmDeletingChest(context, String? walletName) async {
-    return showDialog<bool>(
+    return showConfirmationDialog(
       context: context,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            'areYouSureToDeleteWallet'.tr(args: [walletName!]),
-            style: scaledTextStyle(fontSize: 16),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text("no".tr(),
-                  style:
-                      scaledTextStyle(fontSize: 16, color: Colors.blueAccent),
-                  key: keyCancel),
-              onPressed: () {
-                Navigator.pop(context, false);
-              },
-            ),
-            TextButton(
-              child: Text("yes".tr(),
-                  style: scaledTextStyle(fontSize: 16, color: Colors.red),
-                  key: keyConfirm),
-              onPressed: () {
-                Navigator.pop(context, true);
-              },
-            ),
-          ],
-        );
-      },
+      type: ConfirmationDialogType.warning,
+      message: 'areYouSureToDeleteWallet'.tr(args: [walletName!]),
     );
   }
 }

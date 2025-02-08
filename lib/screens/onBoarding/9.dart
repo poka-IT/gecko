@@ -43,14 +43,17 @@ class _OnboardingStepNineState extends State<OnboardingStepNine> {
       appBar: GeckoAppBar('myPassword'.tr()),
       body: SafeArea(
         child: Stack(children: [
-          Column(children: <Widget>[
-            ScaledSizedBox(height: isTall ? 25 : 5),
-            const BuildProgressBar(pagePosition: 8),
-            ScaledSizedBox(height: isTall ? 25 : 5),
-            BuildText(text: "hereIsThePasswordKeepIt".tr()),
-            ScaledSizedBox(height: isTall ? 60 : 10),
-            pinForm(context, 1, 2),
-          ]),
+          SingleChildScrollView(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: Column(children: <Widget>[
+              ScaledSizedBox(height: isTall ? 25 : 5),
+              const BuildProgressBar(pagePosition: 8),
+              ScaledSizedBox(height: isTall ? 25 : 5),
+              BuildText(text: "hereIsThePasswordKeepIt".tr()),
+              ScaledSizedBox(height: isTall ? 60 : 10),
+              pinForm(context, 1, 2),
+            ]),
+          ),
           const OfflineInfo(),
         ]),
       ),
@@ -119,11 +122,7 @@ class _OnboardingStepNineState extends State<OnboardingStepNine> {
               if (isPinComplex(pin)) {
                 Navigator.push(
                   context,
-                  FaderTransition(
-                      page: OnboardingStepTen(
-                          scanDerivation: widget.scanDerivation,
-                          pinCode: enterPin.text),
-                      isFast: false),
+                  FaderTransition(page: OnboardingStepTen(scanDerivation: widget.scanDerivation, pinCode: enterPin.text), isFast: false),
                 );
               } else {
                 hasError = true;
@@ -148,22 +147,7 @@ bool isPinComplex(String pin) {
   if (RegExp(r'^(\d)\1{3}$').hasMatch(pin)) return false;
 
   // Check for common sequences
-  List<String> sequences = [
-    '0123',
-    '1234',
-    '2345',
-    '3456',
-    '4567',
-    '5678',
-    '6789',
-    '9876',
-    '8765',
-    '7654',
-    '6543',
-    '5432',
-    '4321',
-    '3210'
-  ];
+  List<String> sequences = ['0123', '1234', '2345', '3456', '4567', '5678', '6789', '9876', '8765', '7654', '6543', '5432', '4321', '3210'];
   if (sequences.contains(pin)) return false;
 
   // Check if digits are too close to each other

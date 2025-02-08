@@ -62,7 +62,11 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) {
-        return ActivityScreen(address: acc.address!, transactionId: transactionId, comment: walletViewProvider.comment);
+        return ActivityScreen(
+          address: acc.address!,
+          transactionId: transactionId,
+          comment: walletViewProvider.comment,
+        );
       }),
     );
   }
@@ -80,7 +84,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
     // Conversion du montant en unités de base
     final int payAmountValue = balanceRatio == 1 ? (double.parse(payAmount) * balanceRatio * 100).round() : (double.parse(payAmount) * balanceRatio).round();
 
-    //TODO: get real existential deposit value from Duniter storage
+    // TODO: récupérer la valeur réelle de l'existential deposit depuis le storage de Duniter
     const existentialDeposit = 200;
 
     // Vérifications de validité
@@ -95,24 +99,32 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
   myWalletProvider.readAllWallets().then((value) => myWalletProvider.listWallets.sort((a, b) => (a.derivation ?? -1).compareTo(b.derivation ?? -1)));
 
   showModalBottomSheet<void>(
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topRight: Radius.circular(shapeSize),
-          topLeft: Radius.circular(shapeSize),
-        ),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.only(
+        topRight: Radius.circular(shapeSize),
+        topLeft: Radius.circular(shapeSize),
       ),
-      isScrollControlled: true,
-      context: context,
-      builder: (BuildContext context) {
-        final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
+    ),
+    isScrollControlled: true,
+    context: context,
+    builder: (BuildContext context) {
+      // Calcul de la hauteur à utiliser : on se base sur scaleSize(380)
+      // Si l'écran est trop petit, on utilisera 90% de sa hauteur.
+      final screenHeight = MediaQuery.of(context).size.height;
+      final double desiredHeight = scaleSize(380);
+      final double bottomSheetHeight = screenHeight < desiredHeight ? screenHeight * 0.9 : desiredHeight;
 
-        return StatefulBuilder(builder: (BuildContext context, StateSetter setState) {
+      final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
+
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
           canValidate = canValidatePayment();
           final bool isUdUnit = configBox.get('isUdUnit') ?? false;
           return Padding(
             padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
             child: Container(
-              height: scaleSize(380),
+              // On fixe la hauteur maximale du bottom sheet
+              height: bottomSheetHeight,
               decoration: const ShapeDecoration(
                 color: Color(0xffffeed1),
                 shape: RoundedRectangleBorder(
@@ -122,329 +134,347 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                   ),
                 ),
               ),
-              child: Padding(
-                padding: EdgeInsets.only(top: scaleSize(12), bottom: 0, left: scaleSize(16), right: scaleSize(16)),
-                child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Text(
-                      'executeATransfer'.tr(),
-                      style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-                    ),
-                    IconButton(
-                      key: keyPopButton,
-                      iconSize: scaleSize(28),
-                      icon: const Icon(Icons.cancel_outlined),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ]),
-                  ScaledSizedBox(height: 4),
-                  Text(
-                    'from'.tr(args: ['']),
-                    style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[600]),
-                  ),
-                  ScaledSizedBox(height: 4),
-                  Consumer<SubstrateSdk>(builder: (context, sub, _) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.blueAccent.shade200, width: 1.5),
-                        borderRadius: const BorderRadius.all(Radius.circular(8)),
+              // Ce container contient un SingleChildScrollView pour autoriser le scroll
+              // et un ConstrainedBox avec une contrainte minimale égale à la hauteur fixée.
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: bottomSheetHeight),
+                  child: IntrinsicHeight(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        top: scaleSize(12),
+                        bottom: scaleSize(16),
+                        left: scaleSize(16),
+                        right: scaleSize(16),
                       ),
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.all(0),
-                      child: DropdownButton(
-                          dropdownColor: const Color(0xffffeed1),
-                          elevation: 12,
-                          key: keyDropdownWallets,
-                          value: defaultWallet,
-                          menuMaxHeight: scaleSize(270),
-                          onTap: () {
-                            FocusScope.of(context).requestFocus(amountFocus);
-                          },
-                          selectedItemBuilder: (_) {
-                            return myWalletProvider.listWallets.map((WalletData wallet) {
-                              return Container(
-                                width: scaleSize(isTall ? 315 : 310),
-                                padding: EdgeInsets.all(scaleSize(7)),
-                                child: Visibility(
-                                  visible: wallet.address == defaultWallet.address,
-                                  child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                                    NameByAddress(
-                                      wallet: wallet,
-                                      fontStyle: FontStyle.normal,
-                                      size: 16,
-                                    ),
-                                    const Spacer(),
-                                    // const Text('data')
-                                    Balance(address: wallet.address, size: 16),
-                                  ]),
-                                ),
-                              );
-                            }).toList();
-                          },
-                          onChanged: (WalletData? newSelectedWallet) async {
-                            defaultWallet = newSelectedWallet!;
-                            await sub.setCurrentWallet(newSelectedWallet);
-                            sub.reload();
-                            amountFocus.requestFocus();
-                            setState(() {});
-                          },
-                          items: myWalletProvider.listWallets.map((WalletData wallet) {
-                            return DropdownMenuItem(
-                              value: wallet,
-                              key: keySelectThisWallet(wallet.address),
-                              child: Container(
-                                color: const Color(0xffffeed1),
-                                width: scaleSize(isTall ? 315 : 310),
-                                padding: const EdgeInsets.all(10),
-                                child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                                  NameByAddress(
-                                    wallet: wallet,
-                                    fontStyle: FontStyle.normal,
-                                    size: 16,
-                                  ),
-                                  const Spacer(),
-                                  Balance(address: wallet.address, size: 16),
-                                ]),
-                              ),
-                            );
-                          }).toList()),
-                    );
-                  }),
-                  ScaledSizedBox(height: 12),
-                  Row(
-                    children: [
-                      Text(
-                        'to'.tr(args: ['']),
-                        style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.grey[600]),
-                      ),
-                      ScaledSizedBox(width: 10),
-                      Text(
-                        username ?? getShortPubkey(toAddress),
-                        style: scaledTextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  ScaledSizedBox(height: 7),
-                  Row(
-                    children: [
-                      Text(
-                        'amount'.tr(),
-                        style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.grey[600]),
-                      ),
-                      const Spacer(),
-                      if (fees > 0)
-                        InkWell(
-                          onTap: () => infoFeesPopup(context),
-                          child: Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Icon(Icons.info_outlined, color: orangeC, size: scaleSize(21)),
-                              ScaledSizedBox(width: 5),
                               Text(
-                                'fees'.tr(args: [fees.toString(), currencyName]),
-                                style: scaledTextStyle(
-                                  color: orangeC,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                'executeATransfer'.tr(),
+                                style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+                              ),
+                              IconButton(
+                                key: keyPopButton,
+                                iconSize: scaleSize(28),
+                                icon: const Icon(Icons.cancel_outlined),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
                               ),
                             ],
                           ),
-                        ),
-                      ScaledSizedBox(width: 10),
-                    ],
-                  ),
-                  ScaledSizedBox(height: 10),
-                  Focus(
-                    onFocusChange: (focused) {
-                      if (!commentFocus.hasFocus) {
-                        setState(() {
-                          FocusScope.of(context).requestFocus(amountFocus);
-                        });
-                      }
-                    },
-                    child: TextField(
-                      textInputAction: TextInputAction.done,
-                      onEditingComplete: () async {
-                        if (walletViewProvider.isCommentVisible) {
-                          commentFocus.requestFocus();
-                        } else if (canValidate) {
-                          await executeTransfert();
-                        }
-                      },
-                      key: keyAmountField,
-                      controller: walletViewProvider.payAmount,
-                      autofocus: true,
-                      focusNode: amountFocus,
-                      maxLines: 1,
-                      textAlign: TextAlign.center,
-                      autocorrect: false,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      onChanged: (_) async {
-                        fees = await sub.txFees(
-                            defaultWallet.address, toAddress, double.parse(walletViewProvider.payAmount.text == '' ? '0' : walletViewProvider.payAmount.text));
-                        setState(() {});
-                      },
-                      inputFormatters: <TextInputFormatter>[
-                        FilteringTextInputFormatter.deny(',', replacementString: '.'),
-                        FilteringTextInputFormatter.allow(RegExp(r'(^\d+\.?\d{0,2})')),
-                      ],
-                      decoration: InputDecoration(
-                        hintText: '0.00',
-                        suffix: Text(
-                          isUdUnit ? 'ud'.tr(args: ['']) : currencyName,
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                        filled: true,
-                        fillColor: Colors.transparent,
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey[500]!, width: 1.5),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        contentPadding: EdgeInsets.all(scaleSize(6)),
-                      ),
-                      style: scaledTextStyle(
-                        fontSize: 22,
-                        color: Colors.black,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  if (walletViewProvider.isCommentVisible) const SizedBox(height: 8),
-                  Consumer<WalletsProfilesProvider>(
-                    builder: (context, provider, _) {
-                      return AnimatedCrossFade(
-                        duration: const Duration(milliseconds: 200),
-                        crossFadeState: provider.isCommentVisible ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-                        firstChild: TextButton.icon(
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: scaleSize(4),
-                              vertical: scaleSize(2),
-                            ),
+                          ScaledSizedBox(height: 4),
+                          Text(
+                            'from'.tr(args: ['']),
+                            style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[600]),
                           ),
-                          icon: Icon(
-                            Icons.add_comment_outlined,
-                            size: scaleSize(18),
-                            color: Colors.grey[600],
+                          ScaledSizedBox(height: 4),
+                          Consumer<SubstrateSdk>(builder: (context, sub, _) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.blueAccent.shade200, width: 1.5),
+                                borderRadius: const BorderRadius.all(Radius.circular(8)),
+                              ),
+                              alignment: Alignment.center,
+                              padding: const EdgeInsets.all(0),
+                              child: DropdownButton(
+                                dropdownColor: const Color(0xffffeed1),
+                                elevation: 12,
+                                key: keyDropdownWallets,
+                                value: defaultWallet,
+                                menuMaxHeight: scaleSize(270),
+                                onTap: () {
+                                  FocusScope.of(context).requestFocus(amountFocus);
+                                },
+                                selectedItemBuilder: (_) {
+                                  return myWalletProvider.listWallets.map((WalletData wallet) {
+                                    return Container(
+                                      width: scaleSize(isTall ? 315 : 310),
+                                      padding: EdgeInsets.all(scaleSize(7)),
+                                      child: Visibility(
+                                        visible: wallet.address == defaultWallet.address,
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            NameByAddress(
+                                              wallet: wallet,
+                                              fontStyle: FontStyle.normal,
+                                              size: 16,
+                                            ),
+                                            const Spacer(),
+                                            Balance(address: wallet.address, size: 16),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  }).toList();
+                                },
+                                onChanged: (WalletData? newSelectedWallet) async {
+                                  defaultWallet = newSelectedWallet!;
+                                  await sub.setCurrentWallet(newSelectedWallet);
+                                  sub.reload();
+                                  amountFocus.requestFocus();
+                                  setState(() {});
+                                },
+                                items: myWalletProvider.listWallets.map((WalletData wallet) {
+                                  return DropdownMenuItem(
+                                    value: wallet,
+                                    key: keySelectThisWallet(wallet.address),
+                                    child: Container(
+                                      color: const Color(0xffffeed1),
+                                      width: scaleSize(isTall ? 315 : 310),
+                                      padding: const EdgeInsets.all(10),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          NameByAddress(
+                                            wallet: wallet,
+                                            fontStyle: FontStyle.normal,
+                                            size: 16,
+                                          ),
+                                          const Spacer(),
+                                          Balance(address: wallet.address, size: 16),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            );
+                          }),
+                          ScaledSizedBox(height: 12),
+                          Row(
+                            children: [
+                              Text(
+                                'to'.tr(args: ['']),
+                                style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.grey[600]),
+                              ),
+                              ScaledSizedBox(width: 10),
+                              Text(
+                                username ?? getShortPubkey(toAddress),
+                                style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                              ),
+                            ],
                           ),
-                          label: Text(
-                            'addComment'.tr(),
-                            style: scaledTextStyle(
-                              fontSize: 13,
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
-                            ),
+                          ScaledSizedBox(height: 7),
+                          Row(
+                            children: [
+                              Text(
+                                'amount'.tr(),
+                                style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.grey[600]),
+                              ),
+                              const Spacer(),
+                              if (fees > 0)
+                                InkWell(
+                                  onTap: () => infoFeesPopup(context),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.info_outlined, color: orangeC, size: scaleSize(21)),
+                                      ScaledSizedBox(width: 5),
+                                      Text(
+                                        'fees'.tr(args: [fees.toString(), currencyName]),
+                                        style: scaledTextStyle(
+                                          color: orangeC,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ScaledSizedBox(width: 10),
+                            ],
                           ),
-                          onPressed: () {
-                            provider.toggleCommentVisibility();
-                            Future.delayed(const Duration(milliseconds: 250), () {
-                              if (context.mounted) {
-                                amountFocus.unfocus();
-                                commentFocus.requestFocus();
+                          ScaledSizedBox(height: 10),
+                          Focus(
+                            onFocusChange: (focused) {
+                              if (!commentFocus.hasFocus) {
+                                setState(() {
+                                  FocusScope.of(context).requestFocus(amountFocus);
+                                });
                               }
-                            });
-                          },
-                        ),
-                        secondChild: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            TextField(
-                              controller: provider.payComment,
-                              focusNode: commentFocus,
-                              onChanged: (value) => provider.comment = value,
-                              inputFormatters: [
-                                Utf8LengthLimitingTextInputFormatter(146),
-                              ],
+                            },
+                            child: TextField(
                               textInputAction: TextInputAction.done,
                               onEditingComplete: () async {
-                                if (canValidate) await executeTransfert();
+                                if (walletViewProvider.isCommentVisible) {
+                                  commentFocus.requestFocus();
+                                } else if (canValidate) {
+                                  await executeTransfert();
+                                }
                               },
+                              key: keyAmountField,
+                              controller: walletViewProvider.payAmount,
+                              autofocus: true,
+                              focusNode: amountFocus,
                               maxLines: 1,
-                              style: scaledTextStyle(
-                                fontSize: 13,
-                                color: Colors.black87,
-                              ),
+                              textAlign: TextAlign.center,
+                              autocorrect: false,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              onChanged: (_) async {
+                                fees = await sub.txFees(
+                                  defaultWallet.address,
+                                  toAddress,
+                                  double.parse(walletViewProvider.payAmount.text == '' ? '0' : walletViewProvider.payAmount.text),
+                                );
+                                setState(() {});
+                              },
+                              inputFormatters: <TextInputFormatter>[
+                                FilteringTextInputFormatter.deny(',', replacementString: '.'),
+                                FilteringTextInputFormatter.allow(RegExp(r'(^\d+\.?\d{0,2})')),
+                              ],
                               decoration: InputDecoration(
-                                hintText: 'optionalComment'.tr(),
-                                hintStyle: TextStyle(color: Colors.grey[400]),
-                                filled: true,
-                                fillColor: Colors.white.withValues(alpha: 0.5),
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: scaleSize(8),
-                                  vertical: scaleSize(4),
+                                hintText: '0.00',
+                                suffix: Text(
+                                  isUdUnit ? 'ud'.tr(args: ['']) : currencyName,
+                                  style: const TextStyle(fontSize: 14),
                                 ),
-                                counterText: '',
-                                suffixIcon: IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
+                                filled: true,
+                                fillColor: Colors.transparent,
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.grey[500]!, width: 1.5),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                contentPadding: EdgeInsets.all(scaleSize(6)),
+                              ),
+                              style: scaledTextStyle(fontSize: 22, color: Colors.black, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                          if (walletViewProvider.isCommentVisible) const SizedBox(height: 8),
+                          Consumer<WalletsProfilesProvider>(
+                            builder: (context, provider, _) {
+                              return AnimatedCrossFade(
+                                duration: const Duration(milliseconds: 200),
+                                crossFadeState: provider.isCommentVisible ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                                firstChild: TextButton.icon(
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: scaleSize(4),
+                                      vertical: scaleSize(2),
+                                    ),
+                                  ),
                                   icon: Icon(
-                                    Icons.close,
-                                    size: scaleSize(16),
+                                    Icons.add_comment_outlined,
+                                    size: scaleSize(18),
                                     color: Colors.grey[600],
                                   ),
+                                  label: Text(
+                                    'addComment'.tr(),
+                                    style: scaledTextStyle(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500),
+                                  ),
                                   onPressed: () {
-                                    provider.comment = '';
                                     provider.toggleCommentVisibility();
-                                    commentFocus.unfocus();
-                                    amountFocus.requestFocus();
+                                    Future.delayed(const Duration(milliseconds: 250), () {
+                                      if (context.mounted) {
+                                        amountFocus.unfocus();
+                                        commentFocus.requestFocus();
+                                      }
+                                    });
                                   },
                                 ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey[300]!,
-                                    width: 1,
-                                  ),
+                                secondChild: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    TextField(
+                                      controller: provider.payComment,
+                                      focusNode: commentFocus,
+                                      onChanged: (value) => provider.comment = value,
+                                      inputFormatters: [
+                                        Utf8LengthLimitingTextInputFormatter(146),
+                                      ],
+                                      textInputAction: TextInputAction.done,
+                                      onEditingComplete: () async {
+                                        if (canValidate) await executeTransfert();
+                                      },
+                                      maxLines: 1,
+                                      style: scaledTextStyle(fontSize: 13, color: Colors.black87),
+                                      decoration: InputDecoration(
+                                        hintText: 'optionalComment'.tr(),
+                                        hintStyle: TextStyle(color: Colors.grey[400]),
+                                        filled: true,
+                                        fillColor: Colors.white.withAlpha(128),
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: scaleSize(8),
+                                          vertical: scaleSize(4),
+                                        ),
+                                        counterText: '',
+                                        suffixIcon: IconButton(
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                          icon: Icon(
+                                            Icons.close,
+                                            size: scaleSize(16),
+                                            color: Colors.grey[600],
+                                          ),
+                                          onPressed: () {
+                                            provider.comment = '';
+                                            provider.toggleCommentVisibility();
+                                            commentFocus.unfocus();
+                                            amountFocus.requestFocus();
+                                          },
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: BorderSide(
+                                            color: Colors.grey[300]!,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: BorderSide(
+                                            color: Colors.grey[400]!,
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey[400]!,
-                                    width: 1.5,
-                                  ),
-                                ),
+                              );
+                            },
+                          ),
+                          const Spacer(),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: ElevatedButton(
+                              key: keyConfirmPayment,
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                elevation: 4,
+                                backgroundColor: orangeC,
+                              ),
+                              onPressed: canValidate
+                                  ? () async {
+                                      await executeTransfert();
+                                    }
+                                  : null,
+                              child: Text(
+                                'executeTheTransfer'.tr(),
+                                style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                               ),
                             ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                  const Spacer(),
-                  ScaledSizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      key: keyConfirmPayment,
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        elevation: 4,
-                        backgroundColor: orangeC,
-                      ),
-                      onPressed: canValidate
-                          ? () async {
-                              await executeTransfert();
-                            }
-                          : null,
-                      child: Text(
-                        'executeTheTransfer'.tr(),
-                        style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                          const Spacer(),
+                        ],
                       ),
                     ),
                   ),
-                  const Spacer(),
-                ]),
+                ),
               ),
             ),
           );
-        });
-      });
+        },
+      );
+    },
+  );
 }
 
 Future<void> infoFeesPopup(BuildContext context) async {
@@ -474,15 +504,15 @@ Future<void> infoFeesPopup(BuildContext context) async {
             InkWell(
               onTap: () async => await _launchUrl('https://duniter.org'),
               child: Container(
-                padding: const EdgeInsets.only(
-                  bottom: 2,
-                ),
+                padding: const EdgeInsets.only(bottom: 2),
                 decoration: const BoxDecoration(
-                    border: Border(
-                        bottom: BorderSide(
-                  color: Colors.blueAccent,
-                  width: 1,
-                ))),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Colors.blueAccent,
+                      width: 1,
+                    ),
+                  ),
+                ),
                 child: Text(
                   'moreInfo'.tr(),
                   textAlign: TextAlign.center,
@@ -490,7 +520,6 @@ Future<void> infoFeesPopup(BuildContext context) async {
                     fontSize: 17,
                     fontWeight: FontWeight.w300,
                     color: Colors.blueAccent,
-                    // decoration: TextDecoration.underline,
                   ),
                 ),
               ),
@@ -507,10 +536,7 @@ Future<void> infoFeesPopup(BuildContext context) async {
                   padding: const EdgeInsets.all(8),
                   child: Text(
                     'gotit'.tr(),
-                    style: scaledTextStyle(
-                      fontSize: 20,
-                      color: const Color(0xffD80000),
-                    ),
+                    style: scaledTextStyle(fontSize: 20, color: const Color(0xffD80000)),
                   ),
                 ),
                 onPressed: () {

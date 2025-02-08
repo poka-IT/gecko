@@ -17,13 +17,15 @@ class OnboardingStepOne extends StatelessWidget {
       appBar: GeckoAppBar('newWallet'.tr()),
       body: SafeArea(
         child: Stack(children: [
-          InfoIntro(
-            text: 'geckoGenerateYourWalletFromMnemonic'.tr(),
-            assetName: 'fabrication-de-portefeuille.png',
-            buttonText: '>',
-            nextScreen: const OnboardingStepTwo(),
-            pagePosition: 0,
-            isMd: true,
+          SingleChildScrollView(
+            child: InfoIntro(
+              text: 'geckoGenerateYourWalletFromMnemonic'.tr(),
+              assetName: 'fabrication-de-portefeuille.png',
+              buttonText: '>',
+              nextScreen: const OnboardingStepTwo(),
+              pagePosition: 0,
+              isMd: true,
+            ),
           ),
           const OfflineInfo(),
         ]),

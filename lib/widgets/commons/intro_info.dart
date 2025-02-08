@@ -39,13 +39,12 @@ class InfoIntro extends StatelessWidget {
       BuildProgressBar(pagePosition: pagePosition),
       ScaledSizedBox(height: isTall ? 25 : 5),
       BuildText(text: text, size: textSize, isMd: isMd),
-      BuildImage(
-          assetName: assetName, boxHeight: boxHeight, imageWidth: imageWidth),
-      Expanded(
+      BuildImage(assetName: assetName, boxHeight: boxHeight, imageWidth: imageWidth),
+      Container(
+        padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
         child: Align(
           alignment: Alignment.bottomCenter,
-          child: NextButton(
-              text: buttonText, nextScreen: nextScreen, isFast: false),
+          child: NextButton(text: buttonText, nextScreen: nextScreen, isFast: false),
         ),
       ),
       ScaledSizedBox(height: isTall ? 40 : 5),

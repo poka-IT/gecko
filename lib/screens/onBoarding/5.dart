@@ -147,105 +147,106 @@ class _ChooseChestState extends State<OnboardingStepFive> {
       appBar: GeckoAppBar('yourMnemonic'.tr()),
       body: SafeArea(
         child: Stack(children: [
-          Column(children: [
-            ScaledSizedBox(height: isTall ? 25 : 5),
-            const BuildProgressBar(pagePosition: 4),
-            ScaledSizedBox(height: isTall ? 25 : 5),
-            BuildText(text: 'geckoGeneratedYourMnemonicKeepItSecret'.tr()),
-            ScaledSizedBox(height: isTall ? 15 : 5),
-            sentanceArray(),
-            ScaledSizedBox(height: isTall ? 17 : 5),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ScaledSizedBox(
-                  height: 40,
-                  width: 132,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+          SingleChildScrollView(
+            child: Column(children: [
+              ScaledSizedBox(height: isTall ? 25 : 5),
+              const BuildProgressBar(pagePosition: 4),
+              ScaledSizedBox(height: isTall ? 25 : 5),
+              BuildText(text: 'geckoGeneratedYourMnemonicKeepItSecret'.tr()),
+              ScaledSizedBox(height: isTall ? 15 : 5),
+              sentanceArray(),
+              ScaledSizedBox(height: isTall ? 17 : 5),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ScaledSizedBox(
+                    height: 40,
+                    width: 132,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        backgroundColor: orangeC,
+                        elevation: 1,
                       ),
-                      backgroundColor: orangeC,
-                      elevation: 1,
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: generateWalletProvider.generatedMnemonic!));
+                        snackCopySeed(context);
+                      },
+                      child: Row(children: <Widget>[
+                        Image.asset(
+                          'assets/walletOptions/copy-white.png',
+                          height: scaleSize(23),
+                        ),
+                        const Spacer(),
+                        Text(
+                          'copy'.tr(),
+                          style: scaledTextStyle(fontSize: 14, color: Colors.grey[50]),
+                        ),
+                        const Spacer(),
+                      ]),
                     ),
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: generateWalletProvider.generatedMnemonic!));
-                      snackCopySeed(context);
+                  ),
+                  ScaledSizedBox(width: 70),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) {
+                          return PrintWallet(generateWalletProvider.generatedMnemonic!);
+                        }),
+                      );
                     },
-                    child: Row(children: <Widget>[
-                      Image.asset(
-                        'assets/walletOptions/copy-white.png',
-                        height: scaleSize(23),
-                      ),
-                      const Spacer(),
-                      Text(
-                        'copy'.tr(),
-                        style: scaledTextStyle(fontSize: 14, color: Colors.grey[50]),
-                      ),
-                      const Spacer(),
-                    ]),
+                    child: Image.asset(
+                      'assets/printer.png',
+                      height: scaleSize(42),
+                    ),
                   ),
-                ),
-                ScaledSizedBox(width: 70),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return PrintWallet(generateWalletProvider.generatedMnemonic!);
-                      }),
-                    );
-                  },
-                  child: Image.asset(
-                    'assets/printer.png',
-                    height: scaleSize(42),
-                  ),
-                ),
-              ],
-            ),
-            ScaledSizedBox(height: isTall ? 17 : 5),
-            Expanded(
-              child: Align(
-                alignment: Alignment.bottomCenter,
+                ],
+              ),
+              ScaledSizedBox(height: isTall ? 17 : 5),
+              Container(
+                padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
                 child: ScaledSizedBox(
                   width: 350,
                   height: 55,
                   child: ElevatedButton(
-                      key: keyGenerateMnemonic,
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.black,
-                        backgroundColor: const Color(0xffFFD58D),
-                        elevation: 2,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        shadowColor: const Color(0xffFFD58D).withValues(alpha: 0.3),
+                    key: keyGenerateMnemonic,
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.black,
+                      backgroundColor: const Color(0xffFFD58D),
+                      elevation: 2,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                      onPressed: () {
-                        _regenerateMnemonic();
-                      },
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          "chooseAnotherMnemonic".tr(),
-                          textAlign: TextAlign.center,
-                          style: scaledTextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black,
-                          ),
+                      shadowColor: const Color(0xffFFD58D).withValues(alpha: 0.3),
+                    ),
+                    onPressed: () {
+                      _regenerateMnemonic();
+                    },
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        "chooseAnotherMnemonic".tr(),
+                        textAlign: TextAlign.center,
+                        style: scaledTextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
                         ),
-                      )),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-            ScaledSizedBox(height: isTall ? 20 : 10),
-            nextButton(context, "iNotedMyMnemonic".tr(), false, widget.skipIntro),
-            isTall ? const Spacer() : const SizedBox(height: 5),
-          ]),
+              ScaledSizedBox(height: isTall ? 20 : 10),
+              nextButton(context, "iNotedMyMnemonic".tr(), false, widget.skipIntro),
+              ScaledSizedBox(height: isTall ? 40 : 5),
+            ]),
+          ),
           const OfflineInfo(),
         ]),
       ),
@@ -265,7 +266,7 @@ Widget nextButton(BuildContext context, String text, bool isFast, bool skipIntro
         foregroundColor: Colors.white,
         backgroundColor: orangeC,
         elevation: 2,
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),

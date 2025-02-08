@@ -27,7 +27,7 @@ class NextButton extends StatelessWidget {
           foregroundColor: Colors.white,
           backgroundColor: orangeC,
           elevation: 2,
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: 2),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),

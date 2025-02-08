@@ -27,9 +27,12 @@ class BalanceDisplay extends StatelessWidget {
     final isUdUnit = configBox.get('isUdUnit') ?? false;
     final unitRatio = isUdUnit ? 1 : 100;
     final valueRatio = _removeDecimalZero((value / balanceRatio) / unitRatio);
+    final absValueRatio = valueRatio.abs();
 
     late String finalValue;
-    if (valueRatio >= 1000000) {
+    if (absValueRatio >= 1000000000) {
+      finalValue = '${(valueRatio / 1000000000).toStringAsFixed(2)}B';
+    } else if (absValueRatio >= 1000000) {
       finalValue = '${(valueRatio / 1000000).toStringAsFixed(2)}M';
     } else {
       finalValue = valueRatio.toString();

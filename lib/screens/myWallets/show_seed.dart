@@ -31,110 +31,116 @@ class ShowSeed extends StatelessWidget {
         backgroundColor: backgroundColor,
         appBar: GeckoAppBar('myMnemonic'.tr()),
         body: SafeArea(
-          child: Column(children: <Widget>[
-            const Spacer(flex: 1),
-            FutureBuilder(
-                future: sub.getSeed(defaultWallet.address, walletProvider.pinCode),
-                builder: (BuildContext context, AsyncSnapshot<String?> seed) {
-                  if (seed.connectionState != ConnectionState.done || seed.hasError) {
-                    return ScaledSizedBox(
-                      height: 15,
-                      width: 15,
-                      child: const CircularProgressIndicator(
-                        color: orangeC,
-                        strokeWidth: 2,
-                      ),
-                    );
-                  } else if (!seed.hasData) {
-                    return const Text('');
-                  }
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
+              child: Column(
+                children: <Widget>[
+                  FutureBuilder(
+                      future: sub.getSeed(defaultWallet.address, walletProvider.pinCode),
+                      builder: (BuildContext context, AsyncSnapshot<String?> seed) {
+                        if (seed.connectionState != ConnectionState.done || seed.hasError) {
+                          return ScaledSizedBox(
+                            height: 15,
+                            width: 15,
+                            child: const CircularProgressIndicator(
+                              color: orangeC,
+                              strokeWidth: 2,
+                            ),
+                          );
+                        } else if (!seed.hasData) {
+                          return const Text('');
+                        }
 
-                  return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Column(children: [
-                      BuildText(text: 'keepYourMnemonicSecret'.tr(), size: 16),
-                      ScaledSizedBox(height: 35),
-                      sentanceArray(context, seed.data!.split(' ')),
-                      ScaledSizedBox(height: 20),
-                      Row(
-                        children: [
-                          ScaledSizedBox(
-                            height: 39,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.black,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                        return Column(
+                          children: [
+                            BuildText(text: 'keepYourMnemonicSecret'.tr(), size: 16),
+                            ScaledSizedBox(height: 35),
+                            sentanceArray(context, seed.data!.split(' ')),
+                            ScaledSizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                ScaledSizedBox(
+                                  height: 39,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      foregroundColor: Colors.black,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      backgroundColor: orangeC,
+                                      elevation: 1,
+                                    ),
+                                    onPressed: () {
+                                      Clipboard.setData(ClipboardData(text: seed.data!));
+                                      snackCopySeed(context);
+                                    },
+                                    child: Row(children: <Widget>[
+                                      Image.asset(
+                                        'assets/walletOptions/copy-white.png',
+                                        height: scaleSize(24),
+                                      ),
+                                      ScaledSizedBox(width: 7),
+                                      Text(
+                                        'copy'.tr(),
+                                        style: scaledTextStyle(fontSize: 13, color: Colors.grey[50]),
+                                      )
+                                    ]),
+                                  ),
                                 ),
-                                backgroundColor: orangeC,
-                                elevation: 1,
-                              ),
-                              onPressed: () {
-                                Clipboard.setData(ClipboardData(text: seed.data!));
-                                snackCopySeed(context);
-                              },
-                              child: Row(children: <Widget>[
-                                Image.asset(
-                                  'assets/walletOptions/copy-white.png',
-                                  height: scaleSize(24),
+                                ScaledSizedBox(width: 50),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) {
+                                        return PrintWallet(seed.data);
+                                      }),
+                                    );
+                                  },
+                                  child: Image.asset(
+                                    'assets/printer.png',
+                                    height: scaleSize(38),
+                                  ),
                                 ),
-                                ScaledSizedBox(width: 7),
-                                Text(
-                                  'copy'.tr(),
-                                  style: scaledTextStyle(fontSize: 13, color: Colors.grey[50]),
-                                )
-                              ]),
+                              ],
                             ),
-                          ),
-                          ScaledSizedBox(width: 50),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) {
-                                  return PrintWallet(seed.data);
-                                }),
-                              );
-                            },
-                            child: Image.asset(
-                              'assets/printer.png',
-                              height: scaleSize(38),
-                            ),
-                          ),
-                        ],
+                          ],
+                        );
+                      }),
+                  ScaledSizedBox(height: 50),
+                  ScaledSizedBox(
+                    width: 240,
+                    height: 55,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: orangeC,
+                        elevation: 2,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        shadowColor: orangeC.withValues(alpha: 0.3),
                       ),
-                    ]),
-                  ]);
-                }),
-            const Spacer(flex: 3),
-            ScaledSizedBox(
-              width: 240,
-              height: 55,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: orangeC,
-                  elevation: 2,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        'close'.tr(),
+                        style: scaledTextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ),
-                  shadowColor: orangeC.withValues(alpha: 0.3),
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text(
-                  'close'.tr(),
-                  style: scaledTextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
+                ],
               ),
             ),
-            const Spacer(flex: 2),
-          ]),
+          ),
         ));
   }
 

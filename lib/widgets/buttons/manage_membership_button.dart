@@ -19,8 +19,7 @@ class ManageMembershipButton extends StatelessWidget {
         );
       },
       child: Container(
-        height: scaleSize(48),
-        padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+        padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
         child: Row(
           children: [
             Icon(
@@ -29,11 +28,13 @@ class ManageMembershipButton extends StatelessWidget {
               color: const Color(0xFFFF9800).withValues(alpha: 0.8),
             ),
             ScaledSizedBox(width: 16),
-            Text(
-              'manageMembership'.tr(),
-              style: scaledTextStyle(
-                fontSize: 16,
-                color: Colors.black87,
+            Expanded(
+              child: Text(
+                'manageMembership'.tr(),
+                style: scaledTextStyle(
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
               ),
             ),
           ],

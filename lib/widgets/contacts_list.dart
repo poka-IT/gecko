@@ -89,8 +89,14 @@ class ContactsList extends StatelessWidget {
                       dense: !isTall,
                       leading: DatapodAvatar(address: g1Wallet.address, size: 47),
                       title: Row(children: <Widget>[
-                        Text(getShortPubkey(g1Wallet.address),
-                            style: scaledTextStyle(fontSize: 14, fontFamily: 'Monospace', fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+                        Expanded(
+                          child: Text(
+                            getShortPubkey(g1Wallet.address),
+                            style: scaledTextStyle(fontSize: 14, fontFamily: 'Monospace', fontWeight: FontWeight.w500),
+                            textAlign: TextAlign.left,
+                            softWrap: true,
+                          ),
+                        ),
                       ]),
                       trailing: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                         ScaledSizedBox(

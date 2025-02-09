@@ -14,7 +14,7 @@ class ChestProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future deleteChest(context, ChestData chest) async {
+  Future forgetSafe(context, ChestData chest) async {
     final bool? answer = await (_confirmDeletingChest(context, chest.name));
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     if (answer ?? false) {

@@ -30,7 +30,7 @@
     "changePassword": "Change my password",
     "createDerivation": "Create a new derivation",
     "createCustomDerivation": "Create a new custom derivation",
-    "deleteChest": "Delete this safe",
+    "forgetSafe": "Forget this safe",
     "openThisChest": "Open this safe",
     "createChest": "Create a new safe",
     "importChest": "Import a safe",

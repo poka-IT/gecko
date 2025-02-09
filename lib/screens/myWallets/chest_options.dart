@@ -184,7 +184,7 @@ class ChestOptionsContent extends StatelessWidget {
           onTap: () async {
             if (!await myWalletProvider.askPinCode(force: true)) return;
 
-            await chestProvider.deleteChest(context, currentChest);
+            await chestProvider.forgetSafe(context, currentChest);
           },
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
@@ -198,7 +198,7 @@ class ChestOptionsContent extends StatelessWidget {
                 ScaledSizedBox(width: 16),
                 Expanded(
                   child: Text(
-                    'deleteChest'.tr(),
+                    'forgetSafe'.tr(),
                     style: scaledTextStyle(
                       fontSize: 16,
                       color: const Color(0xffD80000),

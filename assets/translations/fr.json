@@ -30,7 +30,7 @@
     "changePassword": "Changer mon code secret",
     "createDerivation": "Créer une autre dérivation",
     "createCustomDerivation": "Créer une dérivation personnalisé",
-    "deleteChest": "Supprimer ce coffre",
+    "forgetSafe": "Oublier ce coffre",
     "openThisChest": "Ouvrir ce coffre",
     "createChest": "Créer un nouveau coffre",
     "importChest": "Importer un coffre",

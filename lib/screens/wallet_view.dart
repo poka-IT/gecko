@@ -53,68 +53,91 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
     sub.setCurrentWallet(defaultWallet);
 
     return Scaffold(
-        backgroundColor: backgroundColor,
-        resizeToAvoidBottomInset: true,
-        appBar: WalletAppBar(
-          address: address,
-          titleBuilder: (username) => username == null ? 'seeAWallet'.tr() : 'memberAccountOf'.tr(args: [username]),
-        ),
-        bottomNavigationBar: const GeckoBottomAppBar(),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - kBottomNavigationBarHeight,
-              child: Column(children: <Widget>[
-                WalletHeader(address: address),
-                ScaledSizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildActionButton(
-                      context: context,
-                      key: keyViewActivity,
-                      icon: 'assets/walletOptions/clock.png',
-                      label: "displayNActivity".tr(),
-                      onTap: () => Navigator.push(
-                        context,
-                        PageNoTransit(builder: (context) => ActivityScreen(address: address)),
-                      ),
-                    ),
-                    Consumer<SubstrateSdk>(builder: (context, sub, _) {
-                      return FutureBuilder(
-                        future: sub.certState(address),
-                        builder: (context, AsyncSnapshot<CertState> snapshot) {
-                          if (!snapshot.hasData) return const SizedBox.shrink();
-                          final certState = snapshot.data!;
-                          return Visibility(
-                            visible: certState.status != CertStatus.none,
-                            child: CertStateWidget(
-                              certState: certState,
-                              address: address,
+      backgroundColor: backgroundColor,
+      resizeToAvoidBottomInset: true,
+      appBar: WalletAppBar(
+        address: address,
+        titleBuilder: (username) => username == null ? 'seeAWallet'.tr() : 'memberAccountOf'.tr(args: [username]),
+      ),
+      bottomNavigationBar: const GeckoBottomAppBar(),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                // On divise le contenu en deux parties afin de pouvoir utiliser mainAxisAlignment.spaceBetween
+                // et ainsi faire remonter le bouton de transfert en bas sur grand écran.
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    // Partie haute
+                    Column(
+                      children: [
+                        WalletHeader(address: address),
+                        ScaledSizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildActionButton(
+                              context: context,
+                              key: keyViewActivity,
+                              icon: 'assets/walletOptions/clock.png',
+                              label: "displayNActivity".tr(),
+                              onTap: () => Navigator.push(
+                                context,
+                                PageNoTransit(
+                                  builder: (context) => ActivityScreen(address: address),
+                                ),
+                              ),
                             ),
-                          );
-                        },
-                      );
-                    }),
-                    _buildActionButton(
-                      context: context,
-                      key: keyCopyAddress,
-                      icon: 'assets/copy_key.png',
-                      label: "copyAddress".tr(),
-                      onTap: () {
-                        Clipboard.setData(ClipboardData(text: address));
-                        snackCopyKey(context);
-                      },
+                            Consumer<SubstrateSdk>(
+                              builder: (context, sub, _) {
+                                return FutureBuilder(
+                                  future: sub.certState(address),
+                                  builder: (context, AsyncSnapshot<CertState> snapshot) {
+                                    if (!snapshot.hasData) return const SizedBox.shrink();
+                                    final certState = snapshot.data!;
+                                    return Visibility(
+                                      visible: certState.status != CertStatus.none,
+                                      child: CertStateWidget(
+                                        certState: certState,
+                                        address: address,
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                            _buildActionButton(
+                              context: context,
+                              key: keyCopyAddress,
+                              icon: 'assets/copy_key.png',
+                              label: "copyAddress".tr(),
+                              onTap: () {
+                                Clipboard.setData(ClipboardData(text: address));
+                                snackCopyKey(context);
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    // Partie basse
+                    Column(
+                      children: [
+                        _buildTransferButton(context),
+                        ScaledSizedBox(height: isTall ? 40 : 7),
+                      ],
                     ),
                   ],
                 ),
-                const Spacer(),
-                _buildTransferButton(context),
-                ScaledSizedBox(height: isTall ? 40 : 7),
-              ]),
-            ),
-          ),
-        ));
+              ),
+            );
+          },
+        ),
+      ),
+    );
   }
 
   Widget _buildActionButton({

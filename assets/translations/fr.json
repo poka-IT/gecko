@@ -184,7 +184,7 @@
     "derivationsScanProgress": "Scan des {} premières adresses",
     "importDerivationsInProgress": "Importation de l'adresse {}/{}",
     "youAreOffline": "Vous êtes hors ligne...",
-    "importG1v1": "Importer un ancien compte G1v1",
+    "importIdPasswordAccount": "Importer un compte Id/Mdp",
     "migrateToThisWallet": "Migrer vers ce portefeuille:",
     "youMustWaitBeforeCashoutThisAccount": "Vous devez attendre quelques minutes\navant de pouvoir migrer ce compte",
     "thisAccountIsEmpty": "Ce compte est vide",

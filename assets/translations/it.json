@@ -180,7 +180,7 @@
     "removeContact": "Elimina\nquesto contatto",
     "derivationsScanProgress": "Scannerizzando l'indirizzo {}/{}",
     "youAreOffline": "Disconnesso...",
-    "importG1v1": "Importa il conto antico da G1v1, versione precedente",
+    "importIdPasswordAccount": "Importare un account Id/Password",
     "migrateToThisWallet": "Seleziona un portafoglio di destinazione:",
     "youMustWaitBeforeCashoutThisAccount": "Devi aspettare qualche minuto prima di migrare questo conto",
     "thisAccountIsEmpty": "Questo conto é vuoto",

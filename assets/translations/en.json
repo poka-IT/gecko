@@ -184,7 +184,7 @@
     "derivationsScanProgress": "Scan {} firsts addresses",
     "importDerivationsInProgress": "Import address {}/{}",
     "youAreOffline": "You are offline...",
-    "importG1v1": "Import old G1v1 account",
+    "importIdPasswordAccount": "Import an Id/Password account",
     "migrateToThisWallet": "Migrate to this wallet:",
     "youMustWaitBeforeCashoutThisAccount": "You have to wait a few moment before migrate this account",
     "thisAccountIsEmpty": "This account is empty",

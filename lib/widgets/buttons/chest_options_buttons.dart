@@ -71,7 +71,8 @@ class ChestOptionsButtons extends StatelessWidget {
             ScaledSizedBox(
               width: 230,
               height: 60,
-              child: Center(child: Text('importG1v1'.tr(), style: scaledTextStyle(fontSize: 16, color: Colors.blue[900], fontWeight: FontWeight.w500))),
+              child: Center(
+                  child: Text('importIdPasswordAccount'.tr(), style: scaledTextStyle(fontSize: 16, color: Colors.blue[900], fontWeight: FontWeight.w500))),
             ),
           ],
         ),

@@ -523,7 +523,7 @@ Widget aloneWalletOptions() {
               ScaledSizedBox(width: 16),
               Expanded(
                 child: Text(
-                  'importG1v1'.tr(),
+                  'importIdPasswordAccount'.tr(),
                   style: scaledTextStyle(
                     fontSize: 16,
                     color: Colors.black87,

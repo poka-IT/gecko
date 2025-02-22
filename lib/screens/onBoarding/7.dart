@@ -9,8 +9,9 @@ import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class OnboardingStepSeven extends StatelessWidget {
-  const OnboardingStepSeven({super.key, this.scanDerivation = false});
+  const OnboardingStepSeven({super.key, this.scanDerivation = false, this.fromRestore = false});
   final bool scanDerivation;
+  final bool fromRestore;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,7 @@ class OnboardingStepSeven extends StatelessWidget {
                 text: 'geckoWillGenerateAPassword'.tr(),
                 assetName: 'coffre-fort-code-secret-dans-telephone.png',
                 buttonText: '>',
-                nextScreen: OnboardingStepEight(scanDerivation: scanDerivation),
+                nextScreen: OnboardingStepEight(scanDerivation: scanDerivation, fromRestore: fromRestore),
                 pagePosition: 6,
                 boxHeight: 320),
           ),

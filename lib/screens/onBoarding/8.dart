@@ -9,8 +9,9 @@ import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class OnboardingStepEight extends StatelessWidget {
-  const OnboardingStepEight({super.key, this.scanDerivation = false});
+  const OnboardingStepEight({super.key, this.scanDerivation = false, this.fromRestore = false});
   final bool scanDerivation;
+  final bool fromRestore;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,7 @@ class OnboardingStepEight extends StatelessWidget {
                 text: 'thisPasswordProtectsYourWalletsInASecureChest'.tr(),
                 assetName: 'coffre-fort-protege-les-portefeuilles.png',
                 buttonText: '>',
-                nextScreen: OnboardingStepNine(scanDerivation: scanDerivation),
+                nextScreen: OnboardingStepNine(scanDerivation: scanDerivation, fromRestore: fromRestore),
                 pagePosition: 7,
                 isMd: true,
                 boxHeight: 320),

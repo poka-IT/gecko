@@ -68,6 +68,7 @@
     "iNotedMyPassword": "He anotado mi contraseña",
     "GeckoWillCheckPassword": "Ğecko comprobará contigo si has recordado tu contraseña. Escribe tu contraseña en el cuadro de abajo para comprobar que lo has apuntado correctamente.",
     "yourChestAndWalletWereCreatedSuccessfully": "¡Genial!\n\nTu cofre y tu primer monedero han sido creados con éxito.\n\n¡Felicidades!",
+    "yourChestAndWalletWereRestoredSuccessfully": "¡Genial!\n\nTu cofre y tus monederos han sido restaurados con éxito.\n\n¡Felicidades!",
     "allGood": "¡Todo bien!",
     "areYouSureToForgetSafe": "¿Seguro de que quieres olvidar el cofre \"{}\"?",
     "areYouSureForgetAllChests": "¿Seguro de que quieres olvidar todos tus cofres?",

@@ -11,7 +11,8 @@ import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class OnboardingStepEleven extends StatelessWidget {
-  const OnboardingStepEleven({super.key});
+  const OnboardingStepEleven({super.key, this.fromRestore = false});
+  final bool fromRestore;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +33,7 @@ class OnboardingStepEleven extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       ScaledSizedBox(height: isTall ? 25 : 5),
-                      BuildText(text: "yourChestAndWalletWereCreatedSuccessfully".tr()),
+                      BuildText(text: fromRestore ? "yourChestAndWalletWereRestoredSuccessfully".tr() : "yourChestAndWalletWereCreatedSuccessfully".tr()),
                       ScaledSizedBox(height: isTall ? 15 : 5),
                       Image.asset(
                         'assets/onBoarding/gecko-clin.gif',

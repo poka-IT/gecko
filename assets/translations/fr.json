@@ -68,6 +68,7 @@
     "iNotedMyPassword": "J'ai noté mon code secret",
     "geckoWillCheckPassword": "Gecko va vérifier avec vous si vous avez bien mémorisé votre code secret.\n\nTapez votre code secret dans le champ ci-dessous pour vérifier que vous l’avez bien noté.",
     "yourChestAndWalletWereCreatedSuccessfully": "Top !\n\nVotre coffre et votre premier portefeuille ont été créés avec un immense succès.\n\nFélicitations !",
+    "yourChestAndWalletWereRestoredSuccessfully": "Top !\n\nVotre coffre et vos portefeuilles ont été restaurés avec succès.\n\nFélicitations !",
     "allGood": "C’est tout bon !",
     "areYouSureToForgetSafe": "Êtes-vous sûr de vouloir oublier le coffre \"{}\" ?",
     "areYouSureForgetAllChests": "Êtes-vous sûr de vouloir oublier tous vos coffres ?",

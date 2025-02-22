@@ -26,13 +26,14 @@ import 'package:provider/provider.dart';
 class OnboardingStepTen extends StatefulWidget {
   const OnboardingStepTen({
     Key? validationKey,
-    this.scanDerivation = false,
     required this.pinCode,
+    this.scanDerivation = false,
+    this.fromRestore = false,
   }) : super(key: validationKey);
 
   final bool scanDerivation;
   final String pinCode;
-
+  final bool fromRestore;
   @override
   State<OnboardingStepTen> createState() => _OnboardingStepTenState();
 }
@@ -241,7 +242,7 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
 
                 Navigator.push(
                   context,
-                  FaderTransition(page: const OnboardingStepEleven(), isFast: false),
+                  FaderTransition(page: OnboardingStepEleven(fromRestore: widget.fromRestore), isFast: false),
                 );
               } else {
                 hasError = true;

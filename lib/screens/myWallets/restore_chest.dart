@@ -102,7 +102,9 @@ class RestoreChest extends StatelessWidget {
                               await Navigator.push(
                                 context,
                                 FaderTransition(
-                                    page: skipIntro ? const OnboardingStepNine(scanDerivation: true) : const OnboardingStepSeven(scanDerivation: true),
+                                    page: skipIntro
+                                        ? const OnboardingStepNine(scanDerivation: true, fromRestore: true)
+                                        : const OnboardingStepSeven(scanDerivation: true, fromRestore: true),
                                     isFast: true),
                               );
                             } else {

@@ -16,8 +16,9 @@ import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class OnboardingStepNine extends StatefulWidget {
-  const OnboardingStepNine({super.key, this.scanDerivation = false});
+  const OnboardingStepNine({super.key, this.scanDerivation = false, this.fromRestore = false});
   final bool scanDerivation;
+  final bool fromRestore;
 
   @override
   State<OnboardingStepNine> createState() => _OnboardingStepNineState();
@@ -122,7 +123,8 @@ class _OnboardingStepNineState extends State<OnboardingStepNine> {
               if (isPinComplex(pin)) {
                 Navigator.push(
                   context,
-                  FaderTransition(page: OnboardingStepTen(scanDerivation: widget.scanDerivation, pinCode: enterPin.text), isFast: false),
+                  FaderTransition(
+                      page: OnboardingStepTen(scanDerivation: widget.scanDerivation, pinCode: enterPin.text, fromRestore: widget.fromRestore), isFast: false),
                 );
               } else {
                 hasError = true;

@@ -149,9 +149,9 @@
     "youHaveToFeedThisAccountBeforeUsing": "Devi incrementare il saldo\ndi questo conto prima di usarlo.",
     "execTimeoutOver": "Tempo di esecuzione terminato",
     "seeAWallet": "Vedi un portafoglio",
-    "mustWaitXBeforeCertify": "Devi aspettare\n{} prima di\ncertificare di nuovo",
-    "mustConfirmHisIdentity": "Questa persona deve confermare\nla sua identitá prima di essere certificata",
-    "canRenewCertInX": "Potrai rinnovare\nla certificazione\nin {}",
+    "mustWaitXBeforeCertify": "Devi aspettare {} prima di certificare di nuovo",
+    "mustConfirmHisIdentity": "Questa persona deve confermare la sua identitá prima di essere certificata",
+    "canRenewCertInX": "Potrai rinnovare la certificazione in {}",
     "executeATransfer": "Esegui una transazione",
     "executeTheTransfer": "Esegui la transazione",
     "doATransfer" : "Esegui una\ntransazione",
@@ -160,7 +160,7 @@
     "hours": "{} ore {}",
     "days": "{} giorni",
     "months": "{} mesi",
-    "certify": "Certifica questa\nidentitá",
+    "certify": "Certifica questa identitá",
     "from": "Da:",
     "to": "A:",
     "amount": "Importo:",
@@ -218,5 +218,6 @@
     "thisIsNotAGoodCode": "Questo codice non é valido",
     "youHaveToBeConnectedToValidateChest": "Vous devez vous connecter à internet\npour valider votre coffre",
     "thisIdentityAlreadyExist": "Identitá giá esistente",
-    "qrCodeNotAddress": "Questo QR code non é un indirizzo valido"
+    "qrCodeNotAddress": "Questo QR code non é un indirizzo valido",
+    "emptyWalletCannotBeCertified": "Un portafoglio vuoto non puó essere certificato"
 }

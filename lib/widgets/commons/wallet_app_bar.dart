@@ -3,7 +3,9 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -23,8 +25,15 @@ class WalletAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final walletOptions = Provider.of<WalletOptionsProvider>(context);
+    Provider.of<SubstrateSdk>(context); //To refresh header color on block changes
+
+    // Récupération du solde
+    final balance = walletOptions.balanceCache[address] ?? 0;
+    final isEmptyWallet = balance == 0;
 
     return AppBar(
+      backgroundColor: isEmptyWallet ? Colors.grey[300] : headerColor,
       titleSpacing: 10,
       title: Text(
         title ?? titleBuilder!(duniterIndexer.walletNameIndexer[address]),

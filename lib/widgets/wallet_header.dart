@@ -135,8 +135,16 @@ class _WalletHeaderState extends State<WalletHeader> {
 
   Widget _buildContent(BuildContext context, bool hasIdentity, bool isOwner, bool isPickerOpen, String newCustomImagePath, DuniterIndexer duniterIndexer) {
     const double avatarSize = 90;
+    final walletOptions = Provider.of<WalletOptionsProvider>(context);
+    Provider.of<SubstrateSdk>(context); //To refresh header color on block changes
+    final balance = walletOptions.balanceCache[widget.address] ?? 0;
+    final isEmptyWallet = balance == 0;
+
     return Container(
-      color: headerColor,
+      decoration: BoxDecoration(
+        color: isEmptyWallet ? Colors.grey[300] : headerColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
       padding: EdgeInsets.only(
         left: scaleSize(16),
         right: scaleSize(16),

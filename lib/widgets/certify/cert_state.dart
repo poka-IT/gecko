@@ -11,14 +11,31 @@ class CertStateWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final duration = certState.duration ?? Duration.zero;
-    return switch (certState.status) {
-      CertStatus.canCert => CertifyButton(address),
-      CertStatus.mustConfirmIdentity => WaitToCertWidget(messageKey: 'mustConfirmHisIdentity', duration: formatDuration(duration)),
-      CertStatus.canRenewIn => WaitToCertWidget(messageKey: 'canRenewCertInX', duration: formatDuration(duration)),
-      CertStatus.mustWaitBeforeCert => WaitToCertWidget(messageKey: 'mustWaitXBeforeCertify', duration: formatDuration(duration)),
-      _ => const SizedBox.shrink(),
-    };
+    String label;
+    bool canCertify = false;
+
+    switch (certState.status) {
+      case CertStatus.canCert:
+        label = 'certify'.tr();
+        canCertify = true;
+        break;
+      case CertStatus.canRenewIn:
+        label = 'canRenewCertInX'.tr(args: [formatDuration(certState.duration!)]);
+        break;
+      case CertStatus.mustWaitBeforeCert:
+        label = 'mustWaitXBeforeCertify'.tr(args: [formatDuration(certState.duration!)]);
+        break;
+      case CertStatus.mustConfirmIdentity:
+        label = 'mustConfirmHisIdentity'.tr();
+        break;
+      case CertStatus.emptyWallet:
+        label = 'emptyWalletCannotBeCertified'.tr();
+        break;
+      case CertStatus.none:
+        return const SizedBox.shrink();
+    }
+
+    return canCertify ? CertifyButton(address) : _buildDisabledButton(label);
   }
 
   String formatDuration(Duration duration) {
@@ -38,14 +55,19 @@ class CertStateWidget extends StatelessWidget {
         }(),
     };
   }
+
+  Widget _buildDisabledButton(String label) {
+    return WaitToCertWidget(messageKey: label, duration: formatDuration(certState.duration ?? Duration.zero));
+  }
 }
 
 enum CertStatus {
+  none,
   canCert,
-  mustConfirmIdentity,
   canRenewIn,
   mustWaitBeforeCert,
-  none,
+  mustConfirmIdentity,
+  emptyWallet,
 }
 
 class CertState {

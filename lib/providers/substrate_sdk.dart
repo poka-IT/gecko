@@ -383,10 +383,17 @@ class SubstrateSdk with ChangeNotifier {
   Future<CertState> certState(String to) async {
     final toStatus = (await idtyStatusMulti([to])).first;
     final myWallets = Provider.of<MyWalletsProvider>(homeContext, listen: false);
+    final walletOptions = Provider.of<WalletOptionsProvider>(homeContext, listen: false);
     final from = myWallets.idtyWallet?.address;
 
     if (from == null || from == to || !myWallets.getWalletDataByAddress(from)!.isMembre) {
       return CertState(status: CertStatus.none);
+    }
+
+    // Vérification du solde
+    final balance = walletOptions.balanceCache[to] ?? 0;
+    if (balance == 0) {
+      return CertState(status: CertStatus.emptyWallet);
     }
 
     final removableOn = await getCertValidityPeriod(from, to);

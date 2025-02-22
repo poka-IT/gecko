@@ -150,9 +150,9 @@
     "youHaveToFeedThisAccountBeforeUsing": "You have to feed this account\nbefore using it.",
     "execTimeoutOver": "Execution timeout is over",
     "seeAWallet": "See a wallet",
-    "mustWaitXBeforeCertify": "You have to wait\n{} before\ncertifying again",
-    "mustConfirmHisIdentity": "This person must confirm\nhis identity before can be\ncertified",
-    "canRenewCertInX": "You can renew\nthis certification\nin {}",
+    "mustWaitXBeforeCertify": "You have to wait {} before certifying again",
+    "mustConfirmHisIdentity": "This person must confirm his identity before can be certified",
+    "canRenewCertInX": "You can renew this certification in {}",
     "executeATransfer": "Execute a transfer",
     "executeTheTransfer": "Execute the transfer",
     "doATransfer": "Execute a\ntransfer",
@@ -161,7 +161,7 @@
     "hours": "{} hours {}",
     "days": "{} days",
     "months": "{} months",
-    "certify": "Certify this\nidentity",
+    "certify": "Certify this identity",
     "from": "From:{}",
     "to": "To:{}",
     "amount": "Amount:",
@@ -286,5 +286,6 @@
     "generalSettings": "General",
     "clearCacheConfirmTitle": "Clear Cache Confirmation",
     "clearCacheConfirmMessage": "Do you really want to clear the cache?\n\nThis includes:\n- Wallet balances\n- Certifications\n- Identity data",
-    "qrCodeNotAddress": "This QR code is not a valid address"
+    "qrCodeNotAddress": "This QR code is not a valid address",
+    "emptyWalletCannotBeCertified": "An empty wallet cannot be certified"
 }

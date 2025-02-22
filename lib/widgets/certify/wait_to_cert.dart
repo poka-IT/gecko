@@ -24,10 +24,13 @@ class WaitToCertWidget extends StatelessWidget {
           ),
         ),
       ),
-      Text(
-        messageKey.tr(args: [duration]),
-        textAlign: TextAlign.center,
-        style: scaledTextStyle(fontSize: buttonFontSize - 4, fontWeight: FontWeight.w400, color: Colors.grey[600]),
+      Container(
+        constraints: BoxConstraints(maxWidth: scaleSize(100)),
+        child: Text(
+          messageKey.tr(args: [duration]),
+          textAlign: TextAlign.center,
+          style: scaledTextStyle(fontSize: buttonFontSize - 4, fontWeight: FontWeight.w400, color: Colors.grey[600]),
+        ),
       ),
     ]);
   }

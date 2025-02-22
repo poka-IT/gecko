@@ -151,9 +151,9 @@
     "youHaveToFeedThisAccountBeforeUsing": "Tienes que nutrir el balance\nde esta cuenta antes de usarla.",
     "execTimeoutOver": "Se ha agotado el tiempo de ejecución",
     "seeAWallet": "Ver un monedero",
-    "mustWaitXBeforeCertify": "Tienes que esperar\n{} antes de\nvolver a certificar",
-    "mustConfirmHisIdentity": "Esta persona debe confirmar\nsu identidad antes de poder ser certificada",
-    "canRenewCertInX": "Podrás renovar\nla certificación\nen {}",
+    "mustWaitXBeforeCertify": "Tienes que esperar {} antes de volver a certificar",
+    "mustConfirmHisIdentity": "Esta persona debe confirmar su identidad antes de poder ser certificada",
+    "canRenewCertInX": "Podrás renovar la certificación en {}",
     "executeATransfer": "Ejecutar una transacción",
     "executeTheTransfer": "Ejecutar la transacción",
     "doATransfer": "Hacer una\ntransacción",
@@ -162,7 +162,7 @@
     "hours": "{} horas {}",
     "days": "{} dias",
     "months": "{} meses",
-    "certify": "Certificar esta\nidentidad",
+    "certify": "Certificar esta identidad",
     "from": "De:{}",
     "to": "A:{}",
     "amount": "Importe:",
@@ -287,5 +287,6 @@
     "generalSettings": "General",
     "clearCacheConfirmTitle": "Confirmación de borrado de caché",
     "clearCacheConfirmMessage": "¿Realmente desea borrar el caché?\n\nEsto incluye:\n- Saldos de carteras\n- Certificaciones\n- Datos de identidad",
-    "qrCodeNotAddress": "Este código QR no es una dirección válida"
+    "qrCodeNotAddress": "Este código QR no es una dirección válida",
+    "emptyWalletCannotBeCertified": "Un monedero vacío no puede ser certificado"
 }

@@ -91,10 +91,13 @@ class CertifyButton extends StatelessWidget {
           ),
         ),
         ScaledSizedBox(height: 6),
-        Text(
-          "certify".tr(),
-          textAlign: TextAlign.center,
-          style: scaledTextStyle(fontSize: buttonFontSize, fontWeight: FontWeight.w500),
+        Container(
+          constraints: BoxConstraints(maxWidth: scaleSize(100)),
+          child: Text(
+            "certify".tr(),
+            textAlign: TextAlign.center,
+            style: scaledTextStyle(fontSize: buttonFontSize, fontWeight: FontWeight.w500),
+          ),
         ),
       ],
     );

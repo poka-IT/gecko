@@ -9,7 +9,7 @@ class BuildProgressBar extends StatelessWidget {
     required this.pagePosition,
   });
 
-  final int pagePosition;
+  final double pagePosition;
 
   @override
   Widget build(BuildContext context) {

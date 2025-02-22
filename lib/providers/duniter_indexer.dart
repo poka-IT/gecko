@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
@@ -11,6 +11,7 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/models/transaction.dart';
+import 'package:gecko/services/network_config_service.dart';
 
 class DuniterIndexer with ChangeNotifier {
   Map<String, String?> walletNameIndexer = {};
@@ -65,14 +66,76 @@ class DuniterIndexer with ChangeNotifier {
     }
   }
 
+  bool _isValidIndexerList(dynamic endpoints) {
+    if (endpoints == null) return false;
+    if (endpoints is! List) return false;
+    if (endpoints.isEmpty) return false;
+    return endpoints.every((e) => e is String);
+  }
+
+  Future<List<String>> _fetchRemoteIndexerEndpoints() async {
+    try {
+      final config = await NetworkConfigService.getNetworkConfig();
+      if (config.squid.isEmpty) throw 'No squid endpoints found';
+
+      // Nettoyer les URLs (retirer 'https://' et '/v1/graphql')
+      return config.squid.map((url) => url.replaceAll('https://', '').replaceAll('/v1/graphql', '')).toList();
+    } catch (e) {
+      log.e('Erreur fetch remote indexer endpoints: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> _updateIndexerEndpointsInBackground(List<String> currentEndpoints) async {
+    try {
+      final remoteEndpoints = await _fetchRemoteIndexerEndpoints();
+
+      // Comparer les listes sans tenir compte de l'ordre
+      final currentSet = Set.from(currentEndpoints);
+      final remoteSet = Set.from(remoteEndpoints);
+
+      if (!setEquals(currentSet, remoteSet)) {
+        listIndexerEndpoints = remoteEndpoints;
+        log.i('Indexer endpoints mis à jour en background');
+      }
+    } catch (e) {
+      log.e('Erreur update background indexer: $e');
+    }
+  }
+
+  Future<List<String>> _getBootstrapIndexerEndpoints() async {
+    // 1. Vérification rapide de la configBox
+    final existingEndpoints = configBox.get('squidNodes');
+    if (_isValidIndexerList(existingEndpoints)) {
+      // Lancer la mise à jour en background
+      unawaited(_updateIndexerEndpointsInBackground(List<String>.from(existingEndpoints)));
+      return List<String>.from(existingEndpoints);
+    }
+
+    try {
+      // 2. Tentative de fetch distant
+      final endpoints = await _fetchRemoteIndexerEndpoints();
+      await configBox.put('squidNodes', endpoints);
+      return endpoints;
+    } catch (e) {
+      // 3. Fallback sur le fichier local
+      try {
+        final localEndpoints = await rootBundle.loadString('config/indexer_endpoints.json').then((jsonStr) => List<String>.from(jsonDecode(jsonStr)));
+
+        await configBox.put('squidNodes', localEndpoints);
+        return localEndpoints;
+      } catch (e) {
+        log.e('Erreur critique indexer endpoints: $e');
+        return configBox.get('squidNodes') ?? [];
+      }
+    }
+  }
+
   Future<String> getValidIndexerEndpoint() async {
     final homeProvider = Provider.of<HomeProvider>(homeContext, listen: false);
 
-    // await configBox.delete('indexerEndpoint');
-
-    listIndexerEndpoints = await rootBundle.loadString('config/indexer_endpoints.json').then((jsonStr) => jsonDecode(jsonStr));
-    // _listEndpoints.shuffle();
-
+    // Récupérer la liste des endpoints bootstrap
+    listIndexerEndpoints = await _getBootstrapIndexerEndpoints();
     listIndexerEndpoints.add('Personnalisé');
 
     if (configBox.containsKey('customIndexer')) {

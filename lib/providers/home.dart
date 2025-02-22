@@ -9,7 +9,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb, setEquals;
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -19,6 +19,7 @@ import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/models/wallet_header_data.dart';
+import 'package:gecko/services/network_config_service.dart';
 
 class HomeProvider with ChangeNotifier {
   bool? isSearching;
@@ -110,20 +111,75 @@ class HomeProvider with ChangeNotifier {
     }
   }
 
-  Future<List?> getValidEndpoints() async {
-    await configBox.delete('endpoint');
+  bool _isValidEndpointsList(dynamic endpoints) {
+    if (endpoints == null) return false;
+    if (endpoints is! List) return false;
+    if (endpoints.isEmpty) return false;
+    return endpoints.every((e) => e is String && e.startsWith('ws'));
+  }
+
+  Future<List<String>> _fetchRemoteEndpoints() async {
+    try {
+      final config = await NetworkConfigService.getNetworkConfig();
+      if (config.rpc.isEmpty) throw 'No RPC endpoints found';
+      return config.rpc;
+    } catch (e) {
+      log.e('Erreur fetch remote endpoints: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> _updateEndpointsInBackground(List<String> currentEndpoints) async {
+    try {
+      final remoteEndpoints = await _fetchRemoteEndpoints();
+
+      // Comparer les listes sans tenir compte de l'ordre
+      final currentSet = Set.from(currentEndpoints);
+      final remoteSet = Set.from(remoteEndpoints);
+
+      if (!setEquals(currentSet, remoteSet)) {
+        remoteEndpoints.shuffle();
+        await configBox.put('endpoint', remoteEndpoints);
+        log.i('Endpoints mis à jour en background');
+      }
+    } catch (e) {
+      log.e('Erreur update background: $e');
+    }
+  }
+
+  Future<List<String>> getValidEndpoints() async {
+    // 0. Set automode if not set
     if (!configBox.containsKey('autoEndpoint')) {
       configBox.put('autoEndpoint', true);
     }
 
-    List listEndpoints = [];
-    if (!configBox.containsKey('endpoint') || configBox.get('endpoint') == [] || configBox.get('endpoint') == '') {
-      listEndpoints = await rootBundle.loadString('config/gdev_endpoints.json').then((jsonStr) => jsonDecode(jsonStr));
-      listEndpoints.shuffle();
-      configBox.put('endpoint', listEndpoints);
+    // 1. Vérification rapide de la configBox
+    final existingEndpoints = configBox.get('endpoint');
+    if (_isValidEndpointsList(existingEndpoints)) {
+      // Lancer la mise à jour en background
+      unawaited(_updateEndpointsInBackground(List<String>.from(existingEndpoints)));
+      return List<String>.from(existingEndpoints);
     }
 
-    return listEndpoints;
+    try {
+      // 2. Tentative de fetch distant
+      final endpoints = await _fetchRemoteEndpoints();
+      endpoints.shuffle();
+      await configBox.put('endpoint', endpoints);
+      return endpoints;
+    } catch (e) {
+      // 3. Fallback sur le fichier local
+      try {
+        final localEndpoints = await rootBundle.loadString('config/gdev_endpoints.json').then((jsonStr) => List<String>.from(jsonDecode(jsonStr)));
+
+        localEndpoints.shuffle();
+        await configBox.put('endpoint', localEndpoints);
+        return localEndpoints;
+      } catch (e) {
+        log.e('Erreur critique endpoints: $e');
+        return configBox.get('endpoint') ?? [];
+      }
+    }
   }
 
   T getRandomElement<T>(List<T> list) {

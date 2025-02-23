@@ -58,3 +58,6 @@ android-old
 
 # FVM Version Cache
 .fvm/
+
+# Environment variables
+.env

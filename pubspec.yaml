@@ -2,7 +2,7 @@ name: gecko
 description: Pay with G1.
 publish_to: "none"
 
-version: 0.1.24+102
+version: 0.1.24+104
 
 environment:
   sdk: ^3.5.3
@@ -60,6 +60,7 @@ dependencies:
   fade_and_translate: ^0.1.3
   markdown: ^7.3.0
   http: ^1.3.0
+  flutter_launcher_icons: ^0.14.3
   # durt2:
   #   path: ../../durt2
     # git:
@@ -85,6 +86,25 @@ icons_launcher:
       enable: true
     ios:
       enable: true
+
+# ... existing code ...
+
+flutter_launcher_icons:
+  ios: true
+  android: true
+  image_path: "assets/icon/gecko_flat_background.png"
+  remove_alpha_ios: true
+  adaptive_icon_background: "transparent"
+  adaptive_icon_foreground: "assets/icon/gecko_flat.png"
+  min_sdk_android: 21
+  web:
+    generate: false
+  windows:
+    generate: false
+  macos:
+    generate: false
+  linux:
+    generate: false
 
 uses-material-design: true
 

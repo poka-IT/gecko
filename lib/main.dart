@@ -32,6 +32,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/search_result.dart';
+import 'package:gecko/services/polkadart.service.dart';
 
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
@@ -115,7 +116,8 @@ class Gecko extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SubstrateSdk()),
         ChangeNotifierProvider(create: (_) => DuniterIndexer()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
-        ChangeNotifierProvider(create: (_) => V2sDatapodProvider())
+        ChangeNotifierProvider(create: (_) => V2sDatapodProvider()),
+        ChangeNotifierProvider(create: (_) => PolkadartService()),
       ],
       child: MaterialApp(
         localizationsDelegates: context.localizationDelegates,

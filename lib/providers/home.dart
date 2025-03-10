@@ -19,7 +19,7 @@ import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/wallet_header_data.dart';
-import 'package:gecko/services/network_config_service.dart';
+import 'package:gecko/services/network_config.service.dart';
 
 class HomeProvider with ChangeNotifier {
   bool? isSearching;

@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/v2s_datapod.dart';
+import 'package:gecko/services/polkadart.service.dart';
 import 'package:gecko/widgets/bubble_speak.dart';
 import 'package:gecko/widgets/buttons/home_settings_button.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
@@ -40,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
       final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
       final datapod = Provider.of<V2sDatapodProvider>(context, listen: false);
+      final polkadartService = Provider.of<PolkadartService>(context, listen: false);
 
       final bool isWalletsExists = myWalletProvider.isWalletsExists();
 
@@ -92,6 +94,19 @@ class _HomeScreenState extends State<HomeScreen> {
             var connectivityResult = await (Connectivity().checkConnectivity());
             if (!connectivityResult.contains(ConnectivityResult.none)) {
               await sub.connectNode();
+
+              // Test de connexion avec PolkadartService
+              try {
+                final isConnected = await polkadartService.connectToNode();
+                if (isConnected) {
+                  log.i('PolkadartService connecté avec succès au nœud: ${polkadartService.connectedEndpoint}');
+                  log.i('Numéro de bloc actuel: ${polkadartService.blocNumber}');
+                } else {
+                  log.e('PolkadartService n\'a pas pu se connecter à un nœud');
+                }
+              } catch (e) {
+                log.e('Erreur lors de la connexion avec PolkadartService: $e');
+              }
 
               // Load wallets list
               myWalletProvider.readAllWallets(myWalletProvider.getCurrentChest());

@@ -11,7 +11,7 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/models/transaction.dart';
-import 'package:gecko/services/network_config_service.dart';
+import 'package:gecko/services/network_config.service.dart';
 
 class DuniterIndexer with ChangeNotifier {
   Map<String, String?> walletNameIndexer = {};

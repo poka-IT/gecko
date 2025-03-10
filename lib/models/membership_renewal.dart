@@ -13,7 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:gecko/models/membership_status.dart';
 
 class MembershipRenewal {
-  static RenewalInfo calculateRenewalInfo(MembershipStatus status, int renewalPeriodBlocks) {
+  static RenewalInfo calculateRenewalInfo(MembershipStatusDeprecated status, int renewalPeriodBlocks) {
     if (status.expireDate == null) {
       return status.idtyStatus == IdtyStatus.notMember
           ? RenewalInfo(

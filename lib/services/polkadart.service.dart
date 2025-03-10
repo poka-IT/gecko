@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:gecko/generated/gdev/gdev.dart';
+import 'package:gecko/generated/gdev/types/tuples.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/balance.dart';
 import 'package:gecko/models/membership_status.dart';
 import 'package:gecko/models/migrate_wallet_checks.dart';
 import 'package:gecko/models/network_config.dart';
@@ -15,6 +17,8 @@ import 'package:gecko/widgets/certify/cert_state.dart';
 import 'package:gecko/widgets/transaction_status.dart';
 import 'package:polkadart/polkadart.dart' as polkadart;
 import 'package:provider/provider.dart';
+import 'package:gecko/generated/gdev/types/pallet_identity/types/idty_status.dart' as generated_idty_status;
+import 'package:ss58/ss58.dart';
 
 /// Service responsable de l'interaction avec la blockchain via Polkadart
 class PolkadartService with ChangeNotifier {
@@ -26,7 +30,6 @@ class PolkadartService with ChangeNotifier {
 
   // Instance de l'API Polkadart
   Gdev? _api;
-  polkadart.Provider? _provider;
 
   // Paramètres de la blockchain
   Map<String, int> currencyParameters = {};
@@ -34,7 +37,7 @@ class PolkadartService with ChangeNotifier {
   int udValue = 0;
 
   // Cache pour les statuts d'identité
-  final Map<String, IdtyStatus> _idtyStatusCache = {};
+  final Map<String, generated_idty_status.IdtyStatus?> _idtyStatusCache = {};
 
   // Cache pour les compteurs de certifications
   Map<String, List<int>> certsCounterCache = {};
@@ -43,36 +46,71 @@ class PolkadartService with ChangeNotifier {
   Map<String, TransactionContent> transactionStatus = {};
 
   // Mapping des statuts de transaction
-  Map<String, TransactionStatus> statusMap = {
+  final Map<String, TransactionStatus> statusMap = {
     'Ready': TransactionStatus.propagation,
     'Broadcast': TransactionStatus.validating,
     'InBlock': TransactionStatus.validating,
     'Finalized': TransactionStatus.finalized
   };
 
-  // Mapping des statuts d'identité
-  final mapStatus = {
-    null: IdtyStatus.none,
-    'Unconfirmed': IdtyStatus.unconfirmed,
-    'Unvalidated': IdtyStatus.unvalidated,
-    'Member': IdtyStatus.member,
-    'NotMember': IdtyStatus.notMember,
-    'Revoked': IdtyStatus.revoked,
-    'unknown': IdtyStatus.unknown,
-  };
-
-  /// Teste la connexion à un nœud
-  Future<bool> testEndPoint(String node, {Duration timeout = const Duration(seconds: 10)}) async {
+  /// Teste la connexion à un nœud de manière approfondie
+  /// Vérifie non seulement si le nœud répond, mais aussi s'il est fonctionnel
+  Future<Map<String, dynamic>> testEndPointThorough(String node, {Duration timeout = const Duration(seconds: 10)}) async {
     try {
       final provider = polkadart.Provider.fromUri(Uri.parse(node));
       final api = Gdev(provider);
 
-      // Récupérer le numéro de bloc pour vérifier la connexion
-      final blockNumber = await api.query.system.number().timeout(timeout);
-      return blockNumber > 0;
+      // Récupérer plusieurs informations pour vérifier la validité du nœud
+      final results = await Future.wait([
+        api.query.system.number().timeout(timeout),
+        api.rpc.system.chain().timeout(timeout),
+        api.rpc.system.name().timeout(timeout),
+        api.rpc.system.version().timeout(timeout),
+      ]);
+
+      final blockNumber = results[0] as int;
+      final chain = results[1] as String;
+      final name = results[2] as String;
+      final version = results[3] as String;
+
+      // Vérifier si le nœud est valide
+      final isValid = blockNumber > 0 && chain.isNotEmpty && name.isNotEmpty && version.isNotEmpty;
+
+      // Calculer un score de qualité pour le nœud
+      // Plus le score est élevé, meilleur est le nœud
+      int qualityScore = 0;
+
+      // Un nœud avec un numéro de bloc élevé est probablement plus à jour
+      qualityScore += blockNumber;
+
+      // Bonus pour les nœuds qui répondent rapidement
+      // Nous allons essayer de faire une deuxième requête pour mesurer la latence
+      final startTime = DateTime.now();
+      try {
+        await api.query.system.number().timeout(const Duration(seconds: 2));
+        final endTime = DateTime.now();
+        final latency = endTime.difference(startTime).inMilliseconds;
+
+        // Moins la latence est élevée, meilleur est le score
+        // Nous inversons la latence pour que les nœuds rapides aient un meilleur score
+        qualityScore += (1000 - latency).clamp(0, 1000);
+      } catch (_) {
+        // Si la requête échoue, nous pénalisons le nœud
+        qualityScore -= 500;
+      }
+
+      return {
+        'isValid': isValid,
+        'blockNumber': blockNumber,
+        'chain': chain,
+        'name': name,
+        'version': version,
+        'qualityScore': qualityScore,
+        'api': api,
+      };
     } catch (e) {
-      log.e("Erreur lors du test du nœud $node: $e");
-      return false;
+      // log.w("Erreur lors du test approfondi du nœud $node: $e");
+      return {'isValid': false};
     }
   }
 
@@ -87,8 +125,8 @@ class PolkadartService with ChangeNotifier {
     }
   }
 
-  /// Se connecte au premier nœud disponible
-  Future<bool> connectToNode() async {
+  /// Se connecte au meilleur nœud disponible en testant tous les nœuds en parallèle
+  Future<bool> connectNode() async {
     final homeProvider = Provider.of<HomeProvider>(homeContext, listen: false);
 
     homeProvider.changeMessage("connectionPending".tr());
@@ -107,47 +145,93 @@ class PolkadartService with ChangeNotifier {
         nodes = await getAvailableNodes();
       }
 
-      // Tester chaque nœud jusqu'à trouver un qui fonctionne
-      for (final node in nodes) {
-        try {
-          final isNodeWorking = await testEndPoint(node);
-
-          if (isNodeWorking) {
-            // Initialiser la connexion
-            _provider = polkadart.Provider.fromUri(Uri.parse(node));
-            _api = Gdev(_provider!);
-
-            // Mettre à jour l'état
-            connectedEndpoint = node;
-            isConnected = true;
-
-            // S'abonner aux mises à jour du numéro de bloc
-            _subscribeToBlockNumber();
-
-            // Initialiser les paramètres de la blockchain
-            await _initCurrencyParameters();
-            await _initUdValue();
-
-            homeProvider.changeMessage("wellConnectedToNode".tr(args: [node.split('/')[2]]));
-
-            isConnecting = false;
-            notifyListeners();
-
-            return true;
-          }
-        } catch (e) {
-          log.e("Erreur lors de la connexion au nœud $node: $e");
-          continue;
-        }
+      if (nodes.isEmpty) {
+        isConnected = false;
+        isConnecting = false;
+        homeProvider.changeMessage("noDuniterEndointAvailable".tr());
+        notifyListeners();
+        return false;
       }
 
-      // Aucun nœud n'a fonctionné
-      isConnected = false;
+      // Créer un completer pour pouvoir retourner dès qu'un nœud valide est trouvé
+      final completer = Completer<Map<String, dynamic>>();
+
+      // Liste pour stocker les résultats des tests
+      final List<Map<String, dynamic>> validNodes = [];
+
+      // Compteur pour suivre le nombre de tests terminés
+      int completedTests = 0;
+
+      // Tester tous les nœuds en parallèle
+      for (final node in nodes) {
+        testEndPointThorough(node).then((result) {
+          completedTests++;
+
+          // Si le nœud est valide, l'ajouter à la liste des nœuds valides
+          if (result['isValid'] == true) {
+            result['node'] = node;
+            validNodes.add(result);
+
+            // Si c'est le premier nœud valide trouvé, compléter le completer
+            if (!completer.isCompleted) {
+              completer.complete(result);
+            }
+          }
+
+          // Si tous les tests sont terminés et qu'aucun nœud valide n'a été trouvé
+          if (completedTests == nodes.length && !completer.isCompleted) {
+            completer.complete({'isValid': false});
+          }
+        }).catchError((e) {
+          completedTests++;
+          log.e("Erreur lors du test du nœud $node: $e");
+
+          // Si tous les tests sont terminés et qu'aucun nœud valide n'a été trouvé
+          if (completedTests == nodes.length && !completer.isCompleted) {
+            completer.complete({'isValid': false});
+          }
+        });
+      }
+
+      // Attendre qu'un nœud valide soit trouvé ou que tous les tests soient terminés
+      final result = await completer.future;
+
+      // Si aucun nœud valide n'a été trouvé
+      if (result['isValid'] != true) {
+        isConnected = false;
+        isConnecting = false;
+        homeProvider.changeMessage("noDuniterEndointAvailable".tr());
+        notifyListeners();
+        return false;
+      }
+
+      // Trier les nœuds valides par score de qualité (du plus élevé au plus bas)
+      validNodes.sort((a, b) => (b['qualityScore'] as int).compareTo(a['qualityScore'] as int));
+
+      // Utiliser le nœud avec le meilleur score
+      final bestNode = validNodes.first;
+      final node = bestNode['node'] as String;
+
+      // Initialiser la connexion avec le meilleur nœud
+      _api = bestNode['api'] as Gdev;
+
+      // Mettre à jour l'état
+      connectedEndpoint = node;
+      isConnected = true;
+
+      // S'abonner aux mises à jour du numéro de bloc
+      _subscribeToBlockNumber();
+
+      // Initialiser les paramètres de la blockchain
+      await _initCurrencyParameters();
+      await _initUdValue();
+
+      homeProvider.changeMessage("wellConnectedToNode".tr(args: [node.split('/')[2]]));
+
       isConnecting = false;
-      homeProvider.changeMessage("noDuniterEndointAvailable".tr());
       notifyListeners();
 
-      return false;
+      return true;
     } catch (e) {
       log.e("Erreur lors de la connexion: $e");
       isConnected = false;
@@ -163,13 +247,12 @@ class PolkadartService with ChangeNotifier {
   void _subscribeToBlockNumber() {
     if (_api == null) return;
 
-    // Utiliser l'API de souscription pour obtenir les mises à jour du numéro de bloc
+    // Récupérer le numéro de bloc initial
     _api!.query.system.number.call().then((value) {
       blocNumber = value;
       notifyListeners();
     });
 
-    // TODO: Implémenter une vraie souscription quand l'API le permettra
     // Pour l'instant, on utilise un Timer pour simuler une souscription
     Timer.periodic(const Duration(seconds: 6), (timer) async {
       if (_api == null || !isConnected) {
@@ -194,20 +277,19 @@ class PolkadartService with ChangeNotifier {
     if (_api == null) return;
 
     try {
-      // Récupérer les paramètres de la blockchain
-      // Note: Les noms des méthodes peuvent varier selon l'API générée
-      currencyParameters = {
-        'ss58': await _api!.query.system.number(), // Temporaire, à remplacer par la bonne méthode
-        'minCertForMembership': 5, // Valeur par défaut, à remplacer
-        'existentialDeposit': 100, // Valeur par défaut, à remplacer
-        'certPeriod': 432000, // Valeur par défaut, à remplacer
-        'certMaxByIssuer': 100, // Valeur par défaut, à remplacer
-        'certValidityPeriod': 15552000, // Valeur par défaut, à remplacer
-        'membershipRenewalPeriod': 5184000, // Valeur par défaut, à remplacer
-        'membershipPeriod': 31536000, // Valeur par défaut, à remplacer
-      };
+      // Récupérer les paramètres de la blockchain depuis le pallet parameters
+      final params = await _api!.query.parameters.parametersStorage();
 
-      // TODO: Remplacer les valeurs par défaut par les vraies valeurs quand l'API sera disponible
+      currencyParameters = {
+        'ss58': await _api!.query.system.number(),
+        'minCertForMembership': params.smithWotMinCertForMembership,
+        'existentialDeposit': 100, // Cette valeur n'est pas dans les paramètres, à vérifier
+        'certPeriod': params.certPeriod,
+        'certMaxByIssuer': params.certMaxByIssuer,
+        'certValidityPeriod': params.certValidityPeriod,
+        'membershipRenewalPeriod': params.membershipRenewalPeriod,
+        'membershipPeriod': params.membershipPeriod,
+      };
 
       log.i('Paramètres de la blockchain initialisés: $currencyParameters');
     } catch (e) {
@@ -220,9 +302,9 @@ class PolkadartService with ChangeNotifier {
     if (_api == null) return;
 
     try {
-      // TODO: Remplacer par les vraies méthodes quand l'API sera disponible
-      udValue = 1000; // Valeur par défaut, à remplacer
-      currentUdIndex = 1; // Valeur par défaut, à remplacer
+      // Récupérer la valeur du UD et l'index depuis le pallet universal_dividend
+      udValue = (await _api!.query.universalDividend.currentUd()).toInt();
+      currentUdIndex = await _api!.query.universalDividend.currentUdIndex();
 
       log.i('Valeur du UD: $udValue, Index du UD: $currentUdIndex');
     } catch (e) {
@@ -231,8 +313,8 @@ class PolkadartService with ChangeNotifier {
   }
 
   /// Récupère le statut d'identité d'une adresse
-  Future<IdtyStatus> idtyStatus(String address) async {
-    if (_api == null || !isConnected) return IdtyStatus.unknown;
+  Future<generated_idty_status.IdtyStatus?> idtyStatus(String address) async {
+    if (_api == null || !isConnected) throw Exception('Not connected');
 
     try {
       // Vérifier si le statut est en cache
@@ -240,28 +322,33 @@ class PolkadartService with ChangeNotifier {
         return _idtyStatusCache[address]!;
       }
 
-      // TODO: Remplacer par les vraies méthodes quand l'API sera disponible
-      // Récupérer l'index de l'identité
-      final idtyIndex = 0; // Valeur par défaut, à remplacer
+      final account = Address.decode(address);
 
-      if (idtyIndex == 0) {
-        _idtyStatusCache[address] = IdtyStatus.none;
-        return IdtyStatus.none;
+      // Récupérer l'index de l'identité
+      final idtyIndex = await _api!.query.identity.identityIndexOf(account.pubkey);
+
+      if (idtyIndex == null) return null;
+
+      // Récupérer les données de l'identité et du membership
+      final idtyData = await _api!.query.identity.identities(idtyIndex);
+      final membershipData = await _api!.query.membership.membership(idtyIndex);
+
+      // Déterminer le statut en fonction des réponses
+      generated_idty_status.IdtyStatus? status;
+      if (idtyData == null) {
+        status = null;
+      } else if (membershipData != null) {
+        status = generated_idty_status.IdtyStatus.member;
+      } else {
+        status = idtyData.status;
       }
 
-      // Récupérer les données de l'identité
-      final idtyData = {'status': 'unknown'}; // Valeur par défaut, à remplacer
-
-      // Mapper le statut
-      final status = mapStatus[idtyData['status']] ?? IdtyStatus.unknown;
-
-      // Mettre en cache
+      // Mettre en cache le statut
       _idtyStatusCache[address] = status;
-
       return status;
     } catch (e) {
       log.e('Erreur lors de la récupération du statut d\'identité: $e');
-      return IdtyStatus.unknown;
+      rethrow;
     }
   }
 
@@ -281,58 +368,86 @@ class PolkadartService with ChangeNotifier {
   }
 
   /// Récupère le solde d'une adresse
-  Future<Map<String, int>> getBalance(String address) async {
+  Future<BalanceData> getBalance(String address) async {
     if (_api == null || !isConnected) {
-      return {
-        'transferableBalance': 0,
-        'free': 0,
-        'unclaimedUds': 0,
-        'reserved': 0,
-      };
+      return BalanceData(
+        transferableBalance: BigInt.zero,
+        free: BigInt.zero,
+        reserved: BigInt.zero,
+        unclaimedUds: BigInt.zero,
+      );
     }
 
     try {
-      // TODO: Implémenter avec les vraies méthodes quand l'API sera disponible
-      return {
-        'transferableBalance': 0,
-        'free': 0,
-        'unclaimedUds': 0,
-        'reserved': 0,
-      };
+      final account = Address.decode(address);
+
+      // Récupérer les données du compte
+      final accountData = await _api!.query.system.account(account.pubkey).timeout(const Duration(seconds: 7));
+
+      // Récupérer les verrous
+      final locks = await _api!.query.balances.locks(account.pubkey);
+
+      // Calculer le montant verrouillé
+      final lockedAmount = locks.fold<BigInt>(
+        BigInt.zero,
+        (sum, lock) => sum + lock.amount,
+      );
+
+      // Récupérer les UDs non réclamés
+      final unclaimedUds = await getUnclaimedUds(address);
+
+      return BalanceData(
+        transferableBalance: accountData.data.free - lockedAmount + unclaimedUds,
+        free: accountData.data.free,
+        reserved: accountData.data.reserved,
+        unclaimedUds: unclaimedUds,
+      );
     } catch (e) {
       log.e('Erreur lors de la récupération du solde: $e');
-      return {
-        'transferableBalance': 0,
-        'free': 0,
-        'unclaimedUds': 0,
-        'reserved': 0,
-      };
+      return BalanceData(
+        transferableBalance: BigInt.zero,
+        free: BigInt.zero,
+        reserved: BigInt.zero,
+        unclaimedUds: BigInt.zero,
+      );
     }
   }
 
+  Future<BigInt> getUnclaimedUds(String address) async {
+    final account = Address.decode(address);
+    final pastReevals = await _api!.query.universalDividend.pastReevals();
+    final idtyIndex = await _api!.query.identity.identityIndexOf(account.pubkey);
+    if (idtyIndex == null) return BigInt.zero;
+
+    final idtyData = await _api!.query.identity.identities(idtyIndex);
+    if (idtyData == null) return BigInt.zero;
+
+    return _computeUnclaimUds(firstEligibleUd: idtyData.data.firstEligibleUd, pastReevals: pastReevals, idtyStatus: idtyData.status);
+  }
+
   /// Calcule les UDs non réclamés
-  int _computeUnclaimUds({
+  BigInt _computeUnclaimUds({
     required int firstEligibleUd,
-    required List pastReevals,
-    required IdtyStatus idtyStatus,
+    required List<Tuple2<int, BigInt>> pastReevals,
+    required generated_idty_status.IdtyStatus idtyStatus,
   }) {
-    int totalAmount = 0;
+    BigInt totalAmount = BigInt.zero;
     int tempCurrentUdIndex = currentUdIndex;
 
-    if (firstEligibleUd == 0 || idtyStatus != IdtyStatus.member) return 0;
+    if (firstEligibleUd == 0 || idtyStatus != generated_idty_status.IdtyStatus.member) return BigInt.zero;
 
-    for (final List reval in pastReevals.reversed) {
-      final int udIndex = reval[0];
-      final int udValue = reval[1];
+    for (final Tuple2<int, BigInt> reval in pastReevals.reversed) {
+      final int udIndex = reval.value0;
+      final BigInt udValue = reval.value1;
 
       // Parcourir chaque réévaluation des UDs et additionner le solde non réclamé
       if (udIndex <= firstEligibleUd) {
         final count = tempCurrentUdIndex - firstEligibleUd;
-        totalAmount += count * udValue;
+        totalAmount += udValue * BigInt.from(count);
         break;
       } else {
         final count = tempCurrentUdIndex - udIndex;
-        totalAmount += count * udValue;
+        totalAmount += udValue * BigInt.from(count);
         tempCurrentUdIndex = udIndex;
       }
     }
@@ -340,16 +455,38 @@ class PolkadartService with ChangeNotifier {
     return totalAmount;
   }
 
-  /// Récupère les compteurs de certifications
+  /// Récupère le nombre de certifications reçues et émises pour une adresse
   Future<List<int>> getCertsCounter(String address) async {
-    if (_api == null || !isConnected) return [];
+    if (_api == null || !isConnected) {
+      return [0, 0];
+    }
 
     try {
-      // TODO: Implémenter avec les vraies méthodes quand l'API sera disponible
-      return [];
+      // Vérifier si le compteur est en cache
+      if (certsCounterCache.containsKey(address)) {
+        return certsCounterCache[address]!;
+      }
+
+      final account = Address.decode(address);
+
+      // Récupérer l'index de l'identité
+      final idtyIndex = await _api!.query.identity.identityIndexOf(account.pubkey);
+
+      if (idtyIndex == null) {
+        certsCounterCache[address] = [0, 0];
+        return [0, 0];
+      }
+
+      // Récupérer les métadonnées de certification
+      final certMeta = await _api!.query.certification.storageIdtyCertMeta(idtyIndex);
+
+      // Mettre en cache et retourner le résultat
+      final result = [certMeta.receivedCount, certMeta.issuedCount];
+      certsCounterCache[address] = result;
+      return result;
     } catch (e) {
-      log.e('Erreur lors de la récupération des compteurs de certifications: $e');
-      return [];
+      log.e('Erreur lors de la récupération du nombre de certifications: $e');
+      return [0, 0];
     }
   }
 
@@ -367,14 +504,73 @@ class PolkadartService with ChangeNotifier {
   }
 
   /// Récupère l'état de certification entre deux adresses
-  Future<CertState> certState(String to) async {
+  Future<CertState> certState(String from, String to) async {
     if (_api == null || !isConnected) {
       return CertState(status: CertStatus.none);
     }
 
     try {
-      // TODO: Implémenter avec les vraies méthodes quand l'API sera disponible
-      return CertState(status: CertStatus.none);
+      // Convertir les adresses en AccountId32 (liste de bytes)
+      final fromAccountId = List<int>.from(from.codeUnits);
+      final toAccountId = List<int>.from(to.codeUnits);
+
+      // Récupérer les index des identités
+      final fromIdtyIndex = await _api!.query.identity.identityIndexOf(fromAccountId);
+      final toIdtyIndex = await _api!.query.identity.identityIndexOf(toAccountId);
+
+      if (fromIdtyIndex == null || toIdtyIndex == null) {
+        return CertState(status: CertStatus.mustConfirmIdentity);
+      }
+
+      // Récupérer les métadonnées de certification de l'émetteur
+      final fromCertMeta = await _api!.query.certification.storageIdtyCertMeta(fromIdtyIndex);
+
+      // Vérifier si l'émetteur a assez de certifications reçues pour certifier
+      if (fromCertMeta.receivedCount < 3) {
+        // minReceivedCertToBeAbleToIssueCert
+        return CertState(status: CertStatus.none);
+      }
+
+      // Vérifier si l'émetteur n'a pas dépassé le nombre maximum de certifications émises
+      if (fromCertMeta.issuedCount >= 100) {
+        // maxByIssuer
+        return CertState(status: CertStatus.none);
+      }
+
+      // Récupérer le numéro de bloc actuel
+      final currentBlock = await _api!.query.system.number();
+
+      // Vérifier si l'émetteur doit attendre avant de pouvoir certifier à nouveau
+      if (fromCertMeta.nextIssuableOn > currentBlock) {
+        final waitBlocks = fromCertMeta.nextIssuableOn - currentBlock;
+        return CertState(
+          status: CertStatus.mustWaitBeforeCert,
+          duration: Duration(seconds: waitBlocks * 6),
+        );
+      }
+
+      // Récupérer les certifications reçues par le destinataire
+      final certsByReceiver = await _api!.query.certification.certsByReceiver(toIdtyIndex);
+
+      // Vérifier si une certification existe déjà entre l'émetteur et le destinataire
+      final existingCert = certsByReceiver.where((cert) => cert.value0 == fromIdtyIndex).firstOrNull;
+
+      if (existingCert != null) {
+        // Calculer le temps restant avant de pouvoir renouveler
+        final validityPeriod = currencyParameters['certValidityPeriod'] ?? 2102400;
+        final renewalBlock = existingCert.value1 + validityPeriod;
+
+        if (currentBlock < renewalBlock) {
+          final waitBlocks = renewalBlock - currentBlock;
+          return CertState(
+            status: CertStatus.canRenewIn,
+            duration: Duration(seconds: waitBlocks * 6),
+          );
+        }
+      }
+
+      // Si toutes les conditions sont remplies, on peut certifier
+      return CertState(status: CertStatus.canCert);
     } catch (e) {
       log.e('Erreur lors de la récupération de l\'état de certification: $e');
       return CertState(status: CertStatus.none);
@@ -414,8 +610,8 @@ class PolkadartService with ChangeNotifier {
     if (_api == null || !isConnected) return 0;
 
     try {
-      // TODO: Implémenter avec les vraies méthodes quand l'API sera disponible
-      return 0;
+      // Utiliser directement la valeur des paramètres de la blockchain
+      return currencyParameters['certValidityPeriod'] ?? 0;
     } catch (e) {
       log.e('Erreur lors de la récupération de la période de validité de la certification: $e');
       return 0;
@@ -427,25 +623,73 @@ class PolkadartService with ChangeNotifier {
     if (_api == null || !isConnected) return {};
 
     try {
-      // TODO: Implémenter avec les vraies méthodes quand l'API sera disponible
-      return {};
+      // Convertir l'adresse en AccountId32 (liste de bytes)
+      final account = Address.decode(address);
+
+      // Récupérer l'index de l'identité
+      final idtyIndex = await _api!.query.identity.identityIndexOf(account.pubkey);
+
+      if (idtyIndex == null) {
+        return {};
+      }
+
+      // Récupérer les métadonnées de certification
+      final certMeta = await _api!.query.certification.storageIdtyCertMeta(idtyIndex);
+
+      return {
+        'receivedCount': certMeta.receivedCount,
+        'issuedCount': certMeta.issuedCount,
+        'nextIssuableOn': certMeta.nextIssuableOn,
+      };
     } catch (e) {
       log.e('Erreur lors de la récupération des métadonnées de certification: $e');
       return {};
     }
   }
 
-  /// Récupère le statut d'adhésion
+  /// Récupère le statut de membre d'une adresse
   Future<MembershipStatus> getMembershipStatus(String address) async {
     if (_api == null || !isConnected) {
       return MembershipStatus.empty();
     }
 
     try {
-      // TODO: Implémenter avec les vraies méthodes quand l'API sera disponible
-      return MembershipStatus.empty();
+      // Convertir l'adresse en AccountId32 (liste de bytes)
+      final account = Address.decode(address);
+
+      // Récupérer l'index de l'identité
+      final idtyIndex = await _api!.query.identity.identityIndexOf(account.pubkey);
+
+      if (idtyIndex == null) {
+        return MembershipStatus.empty();
+      }
+
+      // Récupérer les données du membership
+      final membershipData = await _api!.query.membership.membership(idtyIndex);
+
+      if (membershipData == null) {
+        return MembershipStatus.empty();
+      }
+
+      // Récupérer le numéro de bloc actuel
+      final currentBlock = await _api!.query.system.number();
+
+      // Calculer la date d'expiration
+      final expireDate = DateTime.now().add(
+        Duration(seconds: (membershipData.expireOn - currentBlock) * 6),
+      );
+
+      // Récupérer le statut d'identité
+      final status = await idtyStatus(address);
+
+      return MembershipStatus(
+        expireDate: expireDate,
+        hasPendingRenewal: false, // TODO: Implémenter quand l'API sera disponible
+        renewalStartDate: null, // TODO: Implémenter quand l'API sera disponible
+        idtyStatus: status,
+      );
     } catch (e) {
-      log.e('Erreur lors de la récupération du statut d\'adhésion: $e');
+      log.e('Erreur lors de la récupération du statut de membre: $e');
       return MembershipStatus.empty();
     }
   }

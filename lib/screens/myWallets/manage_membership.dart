@@ -36,7 +36,7 @@ class ManageMembership extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ScaledSizedBox(height: 20),
-                FutureBuilder<MembershipStatus>(
+                FutureBuilder<MembershipStatusDeprecated>(
                   future: sub.getMembershipStatus(address),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
@@ -190,7 +190,7 @@ class ManageMembership extends StatelessWidget {
     );
   }
 
-  Widget renewMembership(BuildContext context, MembershipStatus status) {
+  Widget renewMembership(BuildContext context, MembershipStatusDeprecated status) {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final info = MembershipRenewal.calculateRenewalInfo(
       status,

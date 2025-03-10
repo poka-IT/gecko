@@ -310,7 +310,7 @@ class WalletOptions extends StatelessWidget {
   Widget buildRenewMembershipSection(WalletOptionsProvider walletProvider) {
     return Consumer<SubstrateSdk>(
       builder: (context, sub, _) {
-        return FutureBuilder<MembershipStatus>(
+        return FutureBuilder<MembershipStatusDeprecated>(
           future: sub.getMembershipStatus(walletProvider.address.text),
           builder: (context, snapshot) {
             if (!snapshot.hasData || snapshot.hasError) {

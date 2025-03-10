@@ -1384,10 +1384,10 @@ newKeySig: $newKeySigType""");
     return transactionId;
   }
 
-  Future<MembershipStatus> getMembershipStatus(String address) async {
+  Future<MembershipStatusDeprecated> getMembershipStatus(String address) async {
     final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
     final idtyIndex = await _getIdentityIndexOf(address);
-    if (idtyIndex == null) return MembershipStatus.empty();
+    if (idtyIndex == null) return MembershipStatusDeprecated.empty();
 
     final idtyStatus = await sub.idtyStatusByIndex(idtyIndex);
 
@@ -1397,7 +1397,7 @@ newKeySig: $newKeySigType""");
     final Map<String, dynamic> expireOnMap = await _getStorage('membership.membership($idtyIndex)') ?? {};
 
     if (expireOnMap.isEmpty && idtyStatus == IdtyStatus.notMember) {
-      return MembershipStatus(
+      return MembershipStatusDeprecated(
         expireDate: null,
         hasPendingRenewal: hasPendingRenewal,
         renewalStartDate: null,
@@ -1417,7 +1417,7 @@ newKeySig: $newKeySigType""");
     final membershipRenewalPeriod = currencyParameters['membershipRenewalPeriod']!;
     final renewalStartDate = expireDate.subtract(Duration(seconds: (membershipPeriod - membershipRenewalPeriod).round() * 6));
 
-    return MembershipStatus(
+    return MembershipStatusDeprecated(
       expireDate: expireDate,
       hasPendingRenewal: hasPendingRenewal,
       renewalStartDate: renewalStartDate,

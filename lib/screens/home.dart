@@ -97,13 +97,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
               // Test de connexion avec PolkadartService
               try {
-                final isConnected = await polkadartService.connectToNode();
+                final isConnected = await polkadartService.connectNode();
                 if (isConnected) {
                   log.i('PolkadartService connecté avec succès au nœud: ${polkadartService.connectedEndpoint}');
-                  log.i('Numéro de bloc actuel: ${polkadartService.blocNumber}');
+                  log.i('PolkadartService Numéro de bloc actuel: ${polkadartService.blocNumber}');
                 } else {
                   log.e('PolkadartService n\'a pas pu se connecter à un nœud');
                 }
+
+                //Test de polkadart
+                final balance = await polkadartService.getBalance('5CQ8T4qpbYJq7uVsxGPQ5q2df7x3Wa4aRY6HUWMBYjfLZhnn');
+                log.i('PolkadartService Balance: $balance');
               } catch (e) {
                 log.e('Erreur lors de la connexion avec PolkadartService: $e');
               }

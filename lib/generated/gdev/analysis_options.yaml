@@ -1,0 +1,5 @@
+analyzer:
+  errors:
+    # Ignore warnings about imported packages that aren't dependencies
+    depend_on_referenced_packages: ignore
+    # You can add more rules to ignore here if needed 

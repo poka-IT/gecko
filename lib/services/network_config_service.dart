@@ -20,7 +20,7 @@ class NetworkConfigService {
     }
 
     try {
-      final response = await http.get(Uri.parse(_configUrl)).timeout(const Duration(seconds: 3));
+      final response = await http.get(Uri.parse(_configUrl)).timeout(const Duration(seconds: 10));
 
       if (response.statusCode != 200) {
         throw 'Status code: ${response.statusCode}';

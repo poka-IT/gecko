@@ -52,14 +52,14 @@ const String currencyName = 'ĞD';
 const debugPin = false;
 
 String indexerEndpoint = '';
-late int balanceRatio;
-late int udValue;
+int balanceRatio = 1;
+int udValue = 0;
 
 // Indexer
-late DateTime startBlockchainTime;
+DateTime startBlockchainTime = DateTime(0, 0, 0, 0, 0);
 bool startBlockchainInitialized = false;
 
-late int currentUdIndex;
+int currentUdIndex = 0;
 
 final Map<int, String> monthsInYear = {
   1: "month1".tr(),

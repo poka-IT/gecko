@@ -51,7 +51,6 @@ class SubstrateSdk with ChangeNotifier {
   String g1V1OldPubkey = '';
   bool isCesiumIDVisible = false;
   bool isCesiumAddresLoading = false;
-  late int udValue;
   final Map<String, CertificationData> certsCounterCache = {};
   Map<String, List> oldOwnerKeys = {};
 

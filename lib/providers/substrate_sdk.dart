@@ -30,6 +30,7 @@ import 'package:provider/provider.dart';
 import 'package:pointycastle/pointycastle.dart' as pc;
 import "package:hex/hex.dart";
 import 'package:uuid/uuid.dart' show Uuid;
+import 'package:gecko/widgets/certifications.dart';
 
 class SubstrateSdk with ChangeNotifier {
   final WalletSDK sdk = WalletSDK();
@@ -51,7 +52,7 @@ class SubstrateSdk with ChangeNotifier {
   bool isCesiumIDVisible = false;
   bool isCesiumAddresLoading = false;
   late int udValue;
-  Map<String, List<int>> certsCounterCache = {};
+  final Map<String, CertificationData> certsCounterCache = {};
   Map<String, List> oldOwnerKeys = {};
 
   // Cache pour idtyStatus
@@ -210,13 +211,13 @@ class SubstrateSdk with ChangeNotifier {
     return List<int?>.from(await _getStorage('identity.identityIndexOf.multi($jsonString)'));
   }
 
-  Future<List<int>> getCertsCounter(String address) async {
+  Future<CertificationData> getCertsCounter(String address) async {
     // On fait toujours la requête en background
     final idtyIndex = await _getIdentityIndexOf(address);
     if (idtyIndex == null) {
-      final emptyList = <int>[];
+      final emptyList = CertificationData(receivedCount: 0, sentCount: 0);
       // Si le compteur a changé (était non vide avant), on notifie
-      if (certsCounterCache[address]?.isNotEmpty == true) {
+      if (certsCounterCache[address]?.receivedCount != 0 || certsCounterCache[address]?.sentCount != 0) {
         certsCounterCache[address] = emptyList;
         notifyListeners();
       }
@@ -227,12 +228,12 @@ class SubstrateSdk with ChangeNotifier {
     final List<int> newCerts = [certsReceiver['receivedCount'] as int, certsReceiver['issuedCount'] as int];
 
     // Si le compteur a changé, on met à jour le cache et on notifie
-    if (certsCounterCache[address]?.length != 2 || certsCounterCache[address]![0] != newCerts[0] || certsCounterCache[address]![1] != newCerts[1]) {
-      certsCounterCache[address] = newCerts;
+    if (certsCounterCache[address]?.receivedCount != newCerts[0] || certsCounterCache[address]?.sentCount != newCerts[1]) {
+      certsCounterCache[address] = CertificationData(receivedCount: newCerts[0], sentCount: newCerts[1]);
       notifyListeners();
     }
 
-    return certsCounterCache[address] ?? newCerts;
+    return certsCounterCache[address]!;
   }
 
   Future<DateTime?> membershipExpireIn(String address) async {
@@ -1069,10 +1070,10 @@ class SubstrateSdk with ChangeNotifier {
     String? rawParams;
 
     var toCerts = await getCertsCounter(destAddress);
-    if (toCerts.isEmpty) {
-      toCerts = [0, 0];
+    if (toCerts.receivedCount == 0 && toCerts.sentCount == 0) {
+      toCerts = CertificationData(receivedCount: 0, sentCount: 0);
     }
-    log.d("debug toCert: ${toCerts[0]} --- ${currencyParameters['minCertForMembership']!} --- $toIdtyStatus");
+    log.d("debug toCert: ${toCerts.receivedCount} --- ${currencyParameters['minCertForMembership']!} --- $toIdtyStatus");
 
     if (toIdtyStatus == IdtyStatus.none) {
       txInfo = TxInfoData(
@@ -1082,7 +1083,7 @@ class SubstrateSdk with ChangeNotifier {
       );
       txOptions = [destAddress];
     } else if (toIdtyStatus == IdtyStatus.member || toIdtyStatus == IdtyStatus.unvalidated) {
-      if (toCerts[0] >= currencyParameters['minCertForMembership']! - 1 && toIdtyStatus != IdtyStatus.member) {
+      if (toCerts.receivedCount >= currencyParameters['minCertForMembership']! - 1 && toIdtyStatus != IdtyStatus.member) {
         log.d('Batch cert and membership validation');
         txInfo = TxInfoData(
           'utility',

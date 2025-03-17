@@ -3,6 +3,19 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:provider/provider.dart';
 
+// Add a class to store certification data
+class CertificationData {
+  final int receivedCount;
+  final int sentCount;
+
+  CertificationData({required this.receivedCount, required this.sentCount});
+
+  bool equals(CertificationData? other) {
+    if (other == null) return false;
+    return receivedCount == other.receivedCount && sentCount == other.sentCount;
+  }
+}
+
 class Certifications extends StatefulWidget {
   const Certifications({super.key, required this.address, required this.size, this.color = Colors.black});
   final String address;
@@ -25,7 +38,7 @@ class _CertificationsState extends State<Certifications> {
       if (!mounted) return;
 
       final cachedData = sdk.certsCounterCache[widget.address];
-      if (cachedData == null || cachedData.isEmpty || networkData[0] != cachedData[0] || networkData[1] != cachedData[1]) {
+      if (cachedData == null || !cachedData.equals(networkData)) {
         sdk.certsCounterCache[widget.address] = networkData;
         setState(() {});
       }
@@ -38,21 +51,21 @@ class _CertificationsState extends State<Certifications> {
   Widget build(BuildContext context) {
     return Consumer<SubstrateSdk>(
       builder: (context, sdk, _) {
-        // Afficher les données du cache immédiatement si disponibles
+        // Display cached data immediately if available
         final cachedCerts = sdk.certsCounterCache[widget.address];
 
-        // Vérifier les données réseau en arrière-plan
+        // Check network data in the background
         if (!_isLoading) {
           Future.microtask(() => _checkNetworkData(sdk));
         }
 
-        // Si pas de données en cache, on affiche rien en attendant
-        if (cachedCerts == null || cachedCerts.isEmpty) {
+        // If no cached data, show nothing while waiting
+        if (cachedCerts == null) {
           return const SizedBox.shrink();
         }
 
-        // Afficher les données du cache
-        return _buildContent(cachedCerts[0], cachedCerts[1]);
+        // Display cached data
+        return _buildContent(cachedCerts.receivedCount, cachedCerts.sentCount);
       },
     );
   }

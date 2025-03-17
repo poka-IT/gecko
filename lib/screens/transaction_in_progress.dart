@@ -46,7 +46,7 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
     final myWalletProvider = Provider.of<MyWalletsProvider>(homeContext, listen: false);
 
     String defaultWalletAddress = myWalletProvider.getDefaultWallet().address;
-    String defaultWalletName = myWalletProvider.getDefaultWallet().name!;
+    String defaultWalletName = myWalletProvider.getDefaultWallet().name ?? '';
     String? walletDataName = myWalletProvider.getWalletDataByAddress(widget.toAddress ?? '')?.name;
 
     fromAddressFormat = widget.fromAddress ?? g1WalletsBox.get(defaultWalletAddress)?.username ?? defaultWalletName;

@@ -81,19 +81,19 @@ class _WalletHeaderState extends State<WalletHeader> {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
-    // Load all data in parallel
-    final results = await Future.wait([
+    // Load all data in parallel with proper typing
+    final (idtyStatus, balance, certData) = await (
       sub.idtyStatus(widget.address),
       sub.getBalance(widget.address),
       sub.getCertsCounter(widget.address),
-    ]);
+    ).wait;
 
     final data = WalletHeaderData(
-      hasIdentity: results[0] != IdtyStatus.none,
+      hasIdentity: idtyStatus != IdtyStatus.none,
       isOwner: myWalletProvider.isOwner(widget.address),
       walletName: duniterIndexer.walletNameIndexer[widget.address],
-      balance: BigInt.from((results[1] as Map<String, int>)['transferableBalance'] ?? 0),
-      certCount: (results[2] as List<int>?) ?? [0, 0],
+      balance: BigInt.from(balance['transferableBalance'] ?? 0),
+      certCount: [certData.receivedCount, certData.sentCount],
     );
 
     // Save to Hive cache
@@ -108,18 +108,19 @@ class _WalletHeaderState extends State<WalletHeader> {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
-    final results = await Future.wait([
+    // Load all data in parallel with proper typing
+    final (idtyStatus, balance, certData) = await (
       sub.idtyStatus(widget.address),
       sub.getBalance(widget.address),
       sub.getCertsCounter(widget.address),
-    ]);
+    ).wait;
 
     final data = WalletHeaderData(
-      hasIdentity: results[0] != IdtyStatus.none,
+      hasIdentity: idtyStatus != IdtyStatus.none,
       isOwner: myWalletProvider.isOwner(widget.address),
       walletName: duniterIndexer.walletNameIndexer[widget.address],
-      balance: BigInt.from((results[1] as Map<String, int>)['transferableBalance'] ?? 0),
-      certCount: (results[2] as List<int>?) ?? [0, 0],
+      balance: BigInt.from(balance['transferableBalance'] ?? 0),
+      certCount: [certData.receivedCount, certData.sentCount],
     );
 
     final existing = _cacheBox?.get(widget.address);

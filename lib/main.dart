@@ -62,14 +62,24 @@ Future<void> main() async {
   if (kReleaseMode && enableSentry) {
     await SentryFlutter.init((options) {
       options.dsn = 'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
+      options.experimental.replay.sessionSampleRate = 1.0;
+      options.experimental.replay.onErrorSampleRate = 1.0;
+      // Privacy settings for PII masking
+      //TODO: Set this to false in production for Ğ1
+      options.experimental.privacy.maskAllText = false;
+      options.experimental.privacy.maskAllImages = false;
     },
         appRunner: () => SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
-              runApp(EasyLocalization(
-                supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
-                path: 'assets/translations',
-                fallbackLocale: const Locale('en'),
-                child: const Gecko(),
-              ));
+              runApp(
+                SentryWidget(
+                  child: EasyLocalization(
+                    supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
+                    path: 'assets/translations',
+                    fallbackLocale: const Locale('en'),
+                    child: const Gecko(),
+                  ),
+                ),
+              );
             }));
   } else {
     log.i('Debug mode enabled: No sentry alert');

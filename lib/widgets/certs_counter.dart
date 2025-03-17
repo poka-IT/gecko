@@ -12,7 +12,7 @@ class CertsCounter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<SubstrateSdk>(builder: (context, sub, _) {
       return Text(
-        '(${sub.certsCounterCache[address]![isSent ? 1 : 0]})',
+        '(${isSent ? sub.certsCounterCache[address]!.sentCount : sub.certsCounterCache[address]!.receivedCount})',
         style: scaledTextStyle(fontSize: 16),
       );
     });

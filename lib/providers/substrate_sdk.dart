@@ -681,6 +681,7 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   String? getConnectedEndpoint() {
+    if (!sdkReady) return null;
     return sdk.api.connectedNode?.endpoint;
   }
 

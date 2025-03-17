@@ -32,6 +32,8 @@ class OnboardingStepFive extends StatefulWidget {
 class _ChooseChestState extends State<OnboardingStepFive> {
   List<String>? mnemonicList;
   bool isLoading = false;
+  final generateWalletProvider = Provider.of<GenerateWalletsProvider>(homeContext, listen: false);
+  bool get isMnemonicGenerated => generateWalletProvider.generatedMnemonic != null;
 
   @override
   void initState() {
@@ -40,11 +42,10 @@ class _ChooseChestState extends State<OnboardingStepFive> {
   }
 
   Future<void> _generateMnemonicList() async {
-    final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context, listen: false);
     final list = await generateWalletProvider.generateWordList(context);
     if (mounted) {
       setState(() {
-        mnemonicList = list.cast<String>();
+        mnemonicList = list?.cast<String>();
         isLoading = false;
       });
     }
@@ -140,8 +141,6 @@ class _ChooseChestState extends State<OnboardingStepFive> {
 
   @override
   Widget build(BuildContext context) {
-    final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context, listen: false);
-
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: GeckoAppBar('yourMnemonic'.tr()),
@@ -171,10 +170,12 @@ class _ChooseChestState extends State<OnboardingStepFive> {
                         backgroundColor: orangeC,
                         elevation: 1,
                       ),
-                      onPressed: () {
-                        Clipboard.setData(ClipboardData(text: generateWalletProvider.generatedMnemonic!));
-                        snackCopySeed(context);
-                      },
+                      onPressed: isMnemonicGenerated
+                          ? () {
+                              Clipboard.setData(ClipboardData(text: generateWalletProvider.generatedMnemonic!));
+                              snackCopySeed(context);
+                            }
+                          : null,
                       child: Row(children: <Widget>[
                         Image.asset(
                           'assets/walletOptions/copy-white.png',
@@ -252,44 +253,45 @@ class _ChooseChestState extends State<OnboardingStepFive> {
       ),
     );
   }
-}
 
-Widget nextButton(BuildContext context, String text, bool isFast, bool skipIntro) {
-  final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context, listen: false);
-  final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-  return ScaledSizedBox(
-    width: 350,
-    height: 55,
-    child: ElevatedButton(
-      key: keyGoNext,
-      style: ElevatedButton.styleFrom(
-        foregroundColor: Colors.white,
-        backgroundColor: orangeC,
-        elevation: 2,
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+  Widget nextButton(BuildContext context, String text, bool isFast, bool skipIntro) {
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    return ScaledSizedBox(
+      width: 350,
+      height: 55,
+      child: ElevatedButton(
+        key: keyGoNext,
+        style: ElevatedButton.styleFrom(
+          foregroundColor: Colors.white,
+          backgroundColor: orangeC,
+          elevation: 2,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          shadowColor: orangeC.withValues(alpha: 0.3),
         ),
-        shadowColor: orangeC.withValues(alpha: 0.3),
-      ),
-      onPressed: () {
-        generateWalletProvider.nbrWord = generateWalletProvider.getRandomInt();
-        generateWalletProvider.nbrWordAlpha = generateWalletProvider.intToString(generateWalletProvider.nbrWord + 1);
-        myWalletProvider.mnemonic = generateWalletProvider.generatedMnemonic!;
+        onPressed: isMnemonicGenerated
+            ? () {
+                generateWalletProvider.nbrWord = generateWalletProvider.getRandomInt();
+                generateWalletProvider.nbrWordAlpha = generateWalletProvider.intToString(generateWalletProvider.nbrWord + 1);
+                myWalletProvider.mnemonic = generateWalletProvider.generatedMnemonic!;
 
-        Navigator.push(
-          context,
-          FaderTransition(page: OnboardingStepSix(generatedMnemonic: generateWalletProvider.generatedMnemonic, skipIntro: skipIntro), isFast: true),
-        );
-      },
-      child: Text(
-        text,
-        style: scaledTextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w500,
-          color: Colors.white,
+                Navigator.push(
+                  context,
+                  FaderTransition(page: OnboardingStepSix(generatedMnemonic: generateWalletProvider.generatedMnemonic, skipIntro: skipIntro), isFast: true),
+                );
+              }
+            : null,
+        child: Text(
+          text,
+          style: scaledTextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }

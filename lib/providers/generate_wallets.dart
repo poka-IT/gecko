@@ -150,8 +150,9 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<String>> generateWordList(BuildContext context) async {
+  Future<List<String>?> generateWordList(BuildContext context) async {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    if (!sub.sdkReady) return null;
 
     generatedMnemonic = await sub.generateMnemonic(lang: appLang);
     List<String> wordsList = [];
@@ -328,9 +329,11 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   Future<bool> scanRootBalance(SubstrateSdk sub, int currentChestNumber, String pinCode) async {
+    if (sub.currencyParameters['ss58'] == null || generatedMnemonic == null) return false;
     final addressData =
         await sub.sdk.api.keyring.addressFromMnemonic(sub.currencyParameters['ss58']!, cryptoType: CryptoType.sr25519, mnemonic: generatedMnemonic!);
 
+    if (addressData.address == null) return false;
     final balance = await sub.getBalance(addressData.address!).timeout(
           const Duration(seconds: 1),
           onTimeout: () => {},

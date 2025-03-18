@@ -3,19 +3,6 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:provider/provider.dart';
 
-// Add a class to store certification data
-class CertificationData {
-  final int receivedCount;
-  final int sentCount;
-
-  CertificationData({required this.receivedCount, required this.sentCount});
-
-  bool equals(CertificationData? other) {
-    if (other == null) return false;
-    return receivedCount == other.receivedCount && sentCount == other.sentCount;
-  }
-}
-
 class Certifications extends StatefulWidget {
   const Certifications({super.key, required this.address, required this.size, this.color = Colors.black});
   final String address;

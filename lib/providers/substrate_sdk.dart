@@ -6,6 +6,7 @@ import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/certification_data.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/membership_status.dart';
 import 'package:gecko/models/migrate_wallet_checks.dart';
@@ -30,7 +31,6 @@ import 'package:provider/provider.dart';
 import 'package:pointycastle/pointycastle.dart' as pc;
 import "package:hex/hex.dart";
 import 'package:uuid/uuid.dart' show Uuid;
-import 'package:gecko/widgets/certifications.dart';
 
 class SubstrateSdk with ChangeNotifier {
   final WalletSDK sdk = WalletSDK();

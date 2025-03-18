@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
-import 'package:gecko/models/wallet_header_data.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -163,8 +162,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                       if (confirm) {
                         // Clear WalletHeaderData cache
-                        final walletHeaderBox = await Hive.openBox<WalletHeaderData>('wallet_header_cache');
-                        await walletHeaderBox.clear();
+                        await walletHeaderDataBox.clear();
 
                         // Clear G1WalletsList cache
                         final g1WalletsBox = await Hive.openBox<G1WalletsList>('g1_wallets_list');

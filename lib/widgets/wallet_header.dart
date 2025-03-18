@@ -17,7 +17,6 @@ import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -35,30 +34,14 @@ class WalletHeader extends StatefulWidget {
   final String? customImagePath;
   final String? defaultImagePath;
 
-  static Future<void> initializeBox() => _WalletHeaderState.initializeBox();
-
   @override
   State<WalletHeader> createState() => _WalletHeaderState();
 }
 
 class _WalletHeaderState extends State<WalletHeader> {
   late Future<WalletHeaderData> _loadData;
-  static const String _cacheBoxName = 'wallet_header_cache';
-  static Box<WalletHeaderData>? _cacheBox;
-  static bool _isInitializing = false;
-  static Future<void>? _initFuture;
   bool _isPickerOpen = false;
   String _newCustomImagePath = '';
-
-  static Future<void> initializeBox() async {
-    if (_isInitializing || _cacheBox != null) return _initFuture;
-    _isInitializing = true;
-    _initFuture = Hive.openBox<WalletHeaderData>(_cacheBoxName).then((box) {
-      _cacheBox = box;
-      _isInitializing = false;
-    });
-    return _initFuture!;
-  }
 
   @override
   void initState() {
@@ -67,10 +50,8 @@ class _WalletHeaderState extends State<WalletHeader> {
   }
 
   Future<WalletHeaderData> _initializeData() async {
-    await initializeBox();
-
     // Check cache from Hive
-    final cached = _cacheBox?.get(widget.address);
+    final cached = walletHeaderDataBox.get(widget.address);
     if (cached != null) {
       // Refresh in background
       _refreshData();
@@ -93,11 +74,11 @@ class _WalletHeaderState extends State<WalletHeader> {
       isOwner: myWalletProvider.isOwner(widget.address),
       walletName: duniterIndexer.walletNameIndexer[widget.address],
       balance: BigInt.from(balance['transferableBalance'] ?? 0),
-      certCount: [certData.receivedCount, certData.sentCount],
+      certCount: certData,
     );
 
     // Save to Hive cache
-    await _cacheBox?.put(widget.address, data);
+    await walletHeaderDataBox.put(widget.address, data);
     return data;
   }
 
@@ -120,12 +101,12 @@ class _WalletHeaderState extends State<WalletHeader> {
       isOwner: myWalletProvider.isOwner(widget.address),
       walletName: duniterIndexer.walletNameIndexer[widget.address],
       balance: BigInt.from(balance['transferableBalance'] ?? 0),
-      certCount: [certData.receivedCount, certData.sentCount],
+      certCount: certData,
     );
 
-    final existing = _cacheBox?.get(widget.address);
+    final existing = walletHeaderDataBox.get(widget.address);
     if (existing == null || !existing.equals(data)) {
-      await _cacheBox?.put(widget.address, data);
+      await walletHeaderDataBox.put(widget.address, data);
       if (mounted) {
         setState(() {
           _loadData = Future.value(data);
@@ -470,7 +451,7 @@ class _WalletHeaderState extends State<WalletHeader> {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     // If data is in cache, show it immediately
-    final cached = _cacheBox?.get(widget.address);
+    final cached = walletHeaderDataBox.get(widget.address);
     if (cached != null) {
       return _buildContent(
         context,

@@ -21,7 +21,7 @@ class WalletHeaderDataAdapter extends TypeAdapter<WalletHeaderData> {
       isOwner: fields[1] as bool,
       walletName: fields[2] as String?,
       balance: fields[3] as BigInt,
-      certCount: (fields[4] as List).cast<int>(),
+      certCount: fields[4] as CertificationData,
     );
   }
 

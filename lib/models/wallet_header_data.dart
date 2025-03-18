@@ -1,4 +1,4 @@
-
+import 'package:gecko/models/certification_data.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 part 'wallet_header_data.g.dart';
@@ -33,7 +33,7 @@ class WalletHeaderData {
   final BigInt balance;
 
   @HiveField(4)
-  final List<int> certCount;
+  final CertificationData certCount;
 
   WalletHeaderData({
     required this.hasIdentity,
@@ -52,7 +52,7 @@ class WalletHeaderData {
         isOwner == other.isOwner &&
         walletName == other.walletName &&
         balance == other.balance &&
-        certCount[0] == other.certCount[0] &&
-        certCount[1] == other.certCount[1];
+        certCount.receivedCount == other.certCount.receivedCount &&
+        certCount.sentCount == other.certCount.sentCount;
   }
 }

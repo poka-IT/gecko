@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/models/wallet_header_data.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:logger/logger.dart';
 
 // Version of box data
 const int dataVersion = 10;
+const int walletHeaderDataVersion = 1;
 
 late String appVersion;
 const int pinLength = 4;
@@ -20,6 +22,7 @@ late Box<ChestData> chestBox;
 late Box configBox;
 late Box<G1WalletsList> g1WalletsBox;
 late Box<G1WalletsList> contactsBox;
+late Box<WalletHeaderData> walletHeaderDataBox;
 // late Box keystoreBox;
 late Directory avatarsDirectory;
 late Directory avatarsCacheDirectory;

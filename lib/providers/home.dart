@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/certification_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -17,7 +18,6 @@ import 'package:provider/provider.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/models/wallet_header_data.dart';
 import 'package:gecko/services/network_config_service.dart';
 
@@ -70,13 +70,19 @@ class HomeProvider with ChangeNotifier {
     Hive.registerAdapter(G1WalletsListAdapter());
     Hive.registerAdapter(IdAdapter());
     Hive.registerAdapter(IdtyStatusAdapter());
+    Hive.registerAdapter(CertificationDataAdapter());
 
     // Open required boxes synchronously
     chestBox = await Hive.openBox<ChestData>("chestBox");
     configBox = await Hive.openBox("configBox");
 
-    // Initialize other boxes asynchronously
-    unawaited(WalletHeader.initializeBox());
+    // Check if walletHeaderDataVersion non compatible, drop wallet_header_cache
+    if (configBox.get('walletHeaderDataVersion') == null || configBox.get('walletHeaderDataVersion') < walletHeaderDataVersion) {
+      await Hive.deleteBoxFromDisk('wallet_header_cache');
+      configBox.put('walletHeaderDataVersion', walletHeaderDataVersion);
+    }
+
+    walletHeaderDataBox = await Hive.openBox<WalletHeaderData>("wallet_header_cache");
   }
 
   Future changeCurrencyUnit(BuildContext context) async {

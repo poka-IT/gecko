@@ -73,7 +73,7 @@ class _WalletHeaderState extends State<WalletHeader> {
       hasIdentity: idtyStatus != IdtyStatus.none,
       isOwner: myWalletProvider.isOwner(widget.address),
       walletName: duniterIndexer.walletNameIndexer[widget.address],
-      balance: BigInt.from(balance['transferableBalance'] ?? 0),
+      balance: BigInt.from(balance.transferableBalance),
       certCount: certData,
     );
 
@@ -100,7 +100,7 @@ class _WalletHeaderState extends State<WalletHeader> {
       hasIdentity: idtyStatus != IdtyStatus.none,
       isOwner: myWalletProvider.isOwner(widget.address),
       walletName: duniterIndexer.walletNameIndexer[widget.address],
-      balance: BigInt.from(balance['transferableBalance'] ?? 0),
+      balance: BigInt.from(balance.transferableBalance),
       certCount: certData,
     );
 

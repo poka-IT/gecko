@@ -11,6 +11,7 @@ import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/membership_status.dart';
 import 'package:gecko/models/migrate_wallet_checks.dart';
 import 'package:gecko/models/transaction_content.dart';
+import 'package:gecko/models/wallet_balance.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -273,14 +274,17 @@ class SubstrateSdk with ChangeNotifier {
     return !(consumers == 0);
   }
 
-  Future<int> getUdValue() async => int.parse(await _getStorage('universalDividend.currentUd()'));
+  Future<int> getUdValue() async {
+    final value = await _getStorage('universalDividend.currentUd()');
+    return _convertToInt(value);
+  }
 
   Future<int> getBalanceRatio() async {
     udValue = await getUdValue();
     return balanceRatio = (configBox.get('isUdUnit') ?? false) ? udValue : 1;
   }
 
-  Future<Map<String, Map<String, int>>> getBalanceMulti(List<String> addresses) async {
+  Future<Map<String, WalletBalance>> getBalanceMulti(List<String> addresses) async {
     List stringifyAddresses = [];
     for (var element in addresses) {
       stringifyAddresses.add('"$element"');
@@ -300,24 +304,19 @@ class SubstrateSdk with ChangeNotifier {
         .toList();
 
     int nbr = 0;
-    Map<String, Map<String, int>> finalBalancesList = {};
+    Map<String, WalletBalance> finalBalancesList = {};
     for (Map account in accountMulti) {
       final computedBalance = await _computeBalance(idtyDataList[nbr], account);
-      finalBalancesList.putIfAbsent(addresses[nbr], () => computedBalance);
+      finalBalancesList.putIfAbsent(addresses[nbr], () => WalletBalance.fromMap(computedBalance));
       nbr++;
     }
 
     return finalBalancesList;
   }
 
-  Future<Map<String, int>> getBalance(String address) async {
+  Future<WalletBalance> getBalance(String address) async {
     if (!nodeConnected) {
-      return {
-        'transferableBalance': 0,
-        'free': 0,
-        'unclaimedUds': 0,
-        'reserved': 0,
-      };
+      return WalletBalance.empty();
     }
 
     // Get onchain storage values
@@ -325,7 +324,37 @@ class SubstrateSdk with ChangeNotifier {
     final int? idtyIndex = await _getStorage('identity.identityIndexOf("$address")');
     final Map? idtyData = idtyIndex == null ? null : await _getStorage('identity.identities($idtyIndex)');
 
-    return _computeBalance(idtyData, account);
+    final balanceMap = await _computeBalance(idtyData, account);
+    return WalletBalance.fromMap(balanceMap);
+  }
+
+  // Utility method to convert various data types to int
+  int _convertToInt(dynamic value) {
+    if (value == null) return 0;
+
+    if (value is int) {
+      return value;
+    } else if (value is String && value.startsWith('0x')) {
+      try {
+        // Parse hex value to BigInt and then to int
+        return BigInt.parse(value.substring(2), radix: 16).toInt();
+      } catch (e) {
+        log.e('Error converting hex to int: $e');
+        return 0;
+      }
+    } else if (value is String) {
+      try {
+        return int.parse(value);
+      } catch (e) {
+        log.e('Error converting string to int: $e');
+        return 0;
+      }
+    } else if (value is double) {
+      return value.toInt();
+    }
+
+    log.e('Unable to convert value to int: $value (type: ${value.runtimeType})');
+    return 0;
   }
 
   Future<Map<String, int>> _computeBalance(Map? idtyData, Map account) async {
@@ -336,19 +365,23 @@ class SubstrateSdk with ChangeNotifier {
     final idtyStatus = mapStatus[idtyData?['status']] ?? IdtyStatus.none;
 
     final int unclaimedUds = _computeUnclaimUds(
-      firstEligibleUd: idtyData?['data']?['firstEligibleUd'] ?? 0,
+      firstEligibleUd: _convertToInt(idtyData?['data']?['firstEligibleUd'] ?? 0),
       pastReevals: pastReevals,
       idtyStatus: idtyStatus,
     );
 
+    // Convert values to integers
+    final int freeValue = _convertToInt(account['data']['free']);
+    final int reservedValue = _convertToInt(account['data']['reserved']);
+
     // Calculate transferable and potential balance
-    final int transferableBalance = (account['data']['free'] + unclaimedUds);
+    final int transferableBalance = freeValue + unclaimedUds;
 
     return {
       'transferableBalance': transferableBalance,
-      'free': account['data']['free'],
+      'free': freeValue,
       'unclaimedUds': unclaimedUds,
-      'reserved': account['data']['reserved'],
+      'reserved': reservedValue,
     };
   }
 
@@ -362,8 +395,8 @@ class SubstrateSdk with ChangeNotifier {
     if (firstEligibleUd == 0 || idtyStatus != IdtyStatus.member) return 0;
 
     for (final List reval in pastReevals.reversed) {
-      final int udIndex = reval[0];
-      final int udValue = reval[1];
+      final int udIndex = _convertToInt(reval[0]);
+      final int udValue = _convertToInt(reval[1]);
 
       // Loop each UDs revaluations and sum unclaimed balance
       if (udIndex <= firstEligibleUd) {
@@ -712,7 +745,7 @@ class SubstrateSdk with ChangeNotifier {
 
       // Subscribe bloc number
       sdk.api.setting.subscribeBestNumber((res) {
-        blocNumber = int.parse(res.toString());
+        blocNumber = _convertToInt(res.toString());
         if (sdk.api.connectedNode?.endpoint == null) {
           nodeConnected = false;
           homeProvider.changeMessage("networkLost".tr());
@@ -753,7 +786,8 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<int> getCurrentUdIndex() async {
-    return int.parse(await _getStorage('universalDividend.currentUdIndex()'));
+    final udIndex = await _getStorage('universalDividend.currentUdIndex()');
+    return _convertToInt(udIndex);
   }
 
   NetworkParams getDuniterCustomEndpoint() {
@@ -943,9 +977,9 @@ class SubstrateSdk with ChangeNotifier {
     bool canValidate = false;
     String validationStatus = '';
 
-    final fromBalance = fromAddress == '' ? {'transferableBalance': 0} : await getBalance(fromAddress);
+    final fromBalance = fromAddress == '' ? WalletBalance.empty() : await getBalance(fromAddress);
 
-    final transferableBalance = fromBalance['transferableBalance'];
+    final transferableBalance = fromBalance.transferableBalance;
 
     final statusList = await idtyStatusMulti([fromAddress, toAddress]);
     final fromIdtyStatus = statusList[0];
@@ -966,8 +1000,11 @@ class SubstrateSdk with ChangeNotifier {
       canValidate = true;
     }
 
+    // Convert to map to maintain compatibility with MigrateWalletChecks
+    final fromBalanceMap = fromBalance.toMap();
+
     return MigrateWalletChecks(
-      fromBalance: fromBalance,
+      fromBalance: fromBalanceMap,
       fromIdtyStatus: fromIdtyStatus,
       toIdtyStatus: toIdtyStatus,
       validationStatus: validationStatus,
@@ -1023,7 +1060,7 @@ class SubstrateSdk with ChangeNotifier {
     }
 
     // Si on a un commentaire, on doit utiliser batchAll dans tous les cas
-    final unclaimedUds = (globalBalance['unclaimedUds'] ?? 0) as num;
+    final unclaimedUds = globalBalance.unclaimedUds;
     if (comment.isNotEmpty || unclaimedUds > 0) {
       txInfo = TxInfoData('utility', 'batchAll', sender);
 
@@ -1148,7 +1185,7 @@ class SubstrateSdk with ChangeNotifier {
       required String destAddress,
       required String fromPassword,
       required String destPassword,
-      required Map fromBalance,
+      required Map<String, dynamic> fromBalance,
       bool withBalance = false}) async {
     final sender = await _setSender(fromAddress);
 
@@ -1214,7 +1251,7 @@ newKeySig: $newKeySigType""");
     return transactionId;
   }
 
-  Future revokeIdentity(String address, String password) async {
+  Future<String> revokeIdentity(String address, String password) async {
     final idtyIndex = await _getIdentityIndexOf(address);
     final sender = await _setSender(address);
 
@@ -1250,7 +1287,7 @@ newKeySig: $newKeySigType""");
     String password,
     String destAddress, {
     required destPassword,
-    required Map fromBalance,
+    required Map<String, dynamic> fromBalance,
     IdtyStatus fromIdtyStatus = IdtyStatus.none,
     IdtyStatus toIdtyStatus = IdtyStatus.none,
   }) async {

@@ -90,14 +90,11 @@ class _WalletsHomeContent extends StatelessWidget {
     }
 
     if (myWalletProvider.listWallets.isEmpty) {
-      return Expanded(
-          child: Column(children: <Widget>[
-        Center(
-            child: Text(
-          'Veuillez générer votre premier portefeuille',
-          style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        )),
-      ]));
+      return Center(
+          child: Text(
+        'Veuillez générer votre premier portefeuille',
+        style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+      ));
     }
 
     final screenWidth = MediaQuery.of(context).size.width;

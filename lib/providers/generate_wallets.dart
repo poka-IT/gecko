@@ -8,6 +8,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/bip39_words.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/models/wallet_balance.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/scan_derivations_info.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
@@ -300,7 +301,7 @@ class GenerateWalletsProvider with ChangeNotifier {
         );
 
     // Remove unused wallets
-    balanceList.removeWhere((key, value) => value['transferableBalance'] == 0);
+    balanceList.removeWhere((key, value) => value.transferableBalance == 0);
     scanedValidWalletNumber = balanceList.length + scanedWalletNumber;
 
     scanStatus = ScanDerivationsStatus.import;
@@ -336,10 +337,10 @@ class GenerateWalletsProvider with ChangeNotifier {
     if (addressData.address == null) return false;
     final balance = await sub.getBalance(addressData.address!).timeout(
           const Duration(seconds: 1),
-          onTimeout: () => {},
+          onTimeout: () => WalletBalance.empty(),
         );
 
-    if (balance['transferableBalance'] != 0) {
+    if (balance.transferableBalance != 0) {
       String walletName = 'myRootWallet'.tr();
       await sub.importAccount(mnemonic: generatedMnemonic!, password: pinCode);
 

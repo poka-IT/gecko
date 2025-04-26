@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gecko/models/wallet_balance.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/widgets/balance_display.dart';
@@ -16,7 +17,7 @@ class Balance extends StatelessWidget {
     return Consumer<SubstrateSdk>(builder: (context, sdk, _) {
       return FutureBuilder(
           future: sdk.getBalance(address),
-          builder: (BuildContext context, AsyncSnapshot<Map<String, int>> globalBalance) {
+          builder: (BuildContext context, AsyncSnapshot<WalletBalance> globalBalance) {
             if (globalBalance.connectionState != ConnectionState.done || globalBalance.hasError || !globalBalance.hasData) {
               if (walletOptions.balanceCache[address] != null && walletOptions.balanceCache[address] != -1) {
                 return BalanceDisplay(value: walletOptions.balanceCache[address]!, size: size, color: color);
@@ -24,7 +25,7 @@ class Balance extends StatelessWidget {
                 return const SizedBox.shrink();
               }
             }
-            walletOptions.balanceCache[address] = globalBalance.data!['transferableBalance']!;
+            walletOptions.balanceCache[address] = globalBalance.data!.transferableBalance;
             if (walletOptions.balanceCache[address] != -1) {
               return BalanceDisplay(value: walletOptions.balanceCache[address]!, size: size, color: color);
             } else {

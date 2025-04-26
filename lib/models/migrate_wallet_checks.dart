@@ -1,7 +1,7 @@
 import 'package:gecko/models/wallet_data.dart';
 
 class MigrateWalletChecks {
-  final Map fromBalance;
+  final Map<String, dynamic> fromBalance;
   final IdtyStatus fromIdtyStatus;
   final IdtyStatus toIdtyStatus;
   final String validationStatus;

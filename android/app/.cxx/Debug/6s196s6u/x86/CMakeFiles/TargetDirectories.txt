@@ -1,2 +1,0 @@
-/home/poka/dev/flutter/gecko/android/app/.cxx/Debug/6s196s6u/x86/CMakeFiles/edit_cache.dir
-/home/poka/dev/flutter/gecko/android/app/.cxx/Debug/6s196s6u/x86/CMakeFiles/rebuild_cache.dir

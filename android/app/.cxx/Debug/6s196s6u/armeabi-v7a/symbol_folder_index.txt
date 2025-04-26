@@ -1,1 +1,0 @@
-/home/poka/dev/flutter/gecko/build/app/intermediates/cxx/Debug/6s196s6u/obj/armeabi-v7a

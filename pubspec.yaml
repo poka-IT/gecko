@@ -61,6 +61,7 @@ dependencies:
   markdown: ^7.3.0
   http: ^1.3.0
   flutter_launcher_icons: ^0.14.3
+  gif_view: ^1.0.2
   # durt2:
   #   path: ../../durt2
     # git:

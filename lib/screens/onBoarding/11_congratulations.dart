@@ -9,6 +9,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
+import 'package:gif_view/gif_view.dart';
 
 class OnboardingStepEleven extends StatelessWidget {
   const OnboardingStepEleven({super.key, this.fromRestore = false});
@@ -35,9 +36,14 @@ class OnboardingStepEleven extends StatelessWidget {
                       ScaledSizedBox(height: isTall ? 25 : 5),
                       BuildText(text: fromRestore ? "yourChestAndWalletWereRestoredSuccessfully".tr() : "yourChestAndWalletWereCreatedSuccessfully".tr()),
                       ScaledSizedBox(height: isTall ? 15 : 5),
+                      GifView(
+                        image: AssetImage('assets/onBoarding/gecko-clin.gif'),
+                        height: scaleSize(isTall ? 330 : 280),
+                      ),
+                      // We need this invisible second gif to preload the gif, otherwise it will glitch on loop
                       Image.asset(
                         'assets/onBoarding/gecko-clin.gif',
-                        height: scaleSize(isTall ? 330 : 280),
+                        height: 0,
                       ),
                       Container(
                         padding: EdgeInsets.symmetric(vertical: scaleSize(20)),

@@ -31,7 +31,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace "fr.axiomteam.gecko"
     compileSdk flutter.compileSdkVersion
-    ndkVersion "25.1.8937393" //flutter.ndkVersion
+    ndkVersion "27.2.12479018" //flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17

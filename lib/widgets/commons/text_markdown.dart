@@ -20,7 +20,7 @@ class TextMarkDown extends StatelessWidget {
     this.blockSyntaxes,
     this.inlineSyntaxes,
     this.extensionSet,
-    this.imageBuilder,
+    this.sizedImageBuilder,
     this.checkboxBuilder,
     this.bulletBuilder,
     this.builders = const <String, MarkdownElementBuilder>{},
@@ -46,7 +46,7 @@ class TextMarkDown extends StatelessWidget {
   final List<md.BlockSyntax>? blockSyntaxes;
   final List<md.InlineSyntax>? inlineSyntaxes;
   final md.ExtensionSet? extensionSet;
-  final Widget Function(Uri, String?, String?)? imageBuilder;
+  final Widget Function(MarkdownImageConfig)? sizedImageBuilder;
   final Widget Function(bool)? checkboxBuilder;
   final Widget Function(MarkdownBulletParameters)? bulletBuilder;
   final Map<String, MarkdownElementBuilder> builders;
@@ -88,7 +88,7 @@ class TextMarkDown extends StatelessWidget {
       blockSyntaxes: blockSyntaxes,
       inlineSyntaxes: inlineSyntaxes,
       extensionSet: extensionSet,
-      imageBuilder: imageBuilder,
+      sizedImageBuilder: sizedImageBuilder,
       checkboxBuilder: checkboxBuilder,
       bulletBuilder: bulletBuilder,
       builders: builders,

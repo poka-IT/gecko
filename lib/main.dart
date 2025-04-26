@@ -167,8 +167,7 @@ class Gecko extends StatelessWidget {
           primaryColor: const Color(0xffFFD58D),
           scaffoldBackgroundColor: backgroundColor,
           canvasColor: backgroundColor,
-          dialogBackgroundColor: backgroundColor,
-          colorScheme: ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]),
+          colorScheme: ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]), dialogTheme: DialogThemeData(backgroundColor: backgroundColor),
         ),
         initialRoute: "/",
         routes: {

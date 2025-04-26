@@ -1,0 +1,1 @@
+/home/poka/dev/flutter/gecko/build/app/intermediates/cxx/Debug/3pr4cr4d/obj/x86

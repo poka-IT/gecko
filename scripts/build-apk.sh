@@ -19,15 +19,15 @@ echo "Nom du build final: ${APPNAME}-${VERSION}+${BUILD}.apk"
 ## To build Rust dependancies
 # cargo br
 
-flutter clean
-flutter pub get
+fvm flutter clean
+fvm flutter pub get
 if [[ $1 == "bundle" ]]; then
-	flutter build appbundle --release --build-name $VERSION --build-number $BUILD
+	fvm flutter build appbundle --release --build-name $VERSION --build-number $BUILD
 	exit 0
 else
-#	flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64 --build-name $VERSION --build-number $BUILD
-	flutter build apk --release --split-per-abi --build-name $VERSION --build-number $BUILD
-#	flutter build apk --release --build-name $VERSION --build-number $BUILD
+#	fvm flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64 --build-name $VERSION --build-number $BUILD
+	fvm flutter build apk --release --split-per-abi --build-name $VERSION --build-number $BUILD
+#	fvm flutter build apk --release --build-name $VERSION --build-number $BUILD
 fi
 
 DL="/tmp"

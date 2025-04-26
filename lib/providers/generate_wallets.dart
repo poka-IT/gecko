@@ -11,6 +11,7 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/wallet_balance.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/scan_derivations_info.dart';
+import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:provider/provider.dart';
 import "package:unorm_dart/unorm_dart.dart" as unorm;
@@ -238,6 +239,8 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   Future pasteMnemonic(BuildContext context) async {
     final sentence = await Clipboard.getData('text/plain');
+    if (sentence?.text == null || sentence!.text!.split(' ').length != 12) return;
+
     int nbr = 0;
 
     List cells = [
@@ -254,8 +257,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       cellController10,
       cellController11
     ];
-    if (sentence?.text == null) return;
-    for (var word in sentence!.text!.split(' ')) {
+    for (var word in sentence.text!.split(' ')) {
       bool isValid = isBipWord(word, false);
 
       if (isValid) {
@@ -269,7 +271,49 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> scanDerivations(BuildContext context, String pinCode) async {
+  Future<ScanDerivationsResult> scanDerivations(BuildContext context, String pinCode) async {
+    try {
+      return await _scanDerivations(context, pinCode).timeout(
+        const Duration(seconds: 20),
+        onTimeout: () async {
+          // Remove the current chest
+          final currentChestNumber = configBox.get('currentChest');
+          if (currentChestNumber != null) {
+            final currentChest = chestBox.get(currentChestNumber);
+            if (currentChest != null) {
+              await chestBox.delete(currentChestNumber);
+            }
+          }
+
+          // Display error message to user
+          // ignore: use_build_context_synchronously
+          await infoPopup(context, "timeoutScanDerivations".tr());
+
+          // Pop to home
+          Navigator.popUntil(
+            // ignore: use_build_context_synchronously
+            context,
+            ModalRoute.withName('/'),
+          );
+
+          return ScanDerivationsResult.timeout;
+        },
+      );
+    } catch (e) {
+      // Handle any other errors
+      await infoPopup(context, "errorScanDerivations".tr());
+
+      Navigator.popUntil(
+        // ignore: use_build_context_synchronously
+        context,
+        ModalRoute.withName('/'),
+      );
+
+      return ScanDerivationsResult.error;
+    }
+  }
+
+  Future<ScanDerivationsResult> _scanDerivations(BuildContext context, String pinCode) async {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final currentChestNumber = configBox.get('currentChest');
     bool isAlive = false;
@@ -278,7 +322,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
 
     if (!sub.nodeConnected) {
-      return false;
+      return ScanDerivationsResult.error;
     }
 
     scanStatus = ScanDerivationsStatus.rootScanning;
@@ -326,7 +370,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     scanStatus = ScanDerivationsStatus.none;
     scanedWalletNumber = scanedValidWalletNumber = -1;
     notifyListeners();
-    return isAlive;
+    return isAlive ? ScanDerivationsResult.walletExists : ScanDerivationsResult.walletNotFound;
   }
 
   Future<bool> scanRootBalance(SubstrateSdk sub, int currentChestNumber, String pinCode) async {

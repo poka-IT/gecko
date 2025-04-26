@@ -205,25 +205,34 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                 myWalletProvider.isPinValid = true;
 
                 await generateWalletProvider.storeHDWChest(context);
-                bool isAlive = false;
+                ScanDerivationsResult scanStatus = ScanDerivationsResult.none;
                 if (widget.scanDerivation) {
-                  isAlive = await generateWalletProvider.scanDerivations(context, widget.pinCode);
+                  scanStatus = await generateWalletProvider.scanDerivations(context, widget.pinCode);
                 }
-                if (!isAlive) {
-                  final address = await sub.importAccount(
-                    mnemonic: generateWalletProvider.generatedMnemonic!,
-                    password: widget.pinCode,
-                  );
-                  WalletData myWallet = WalletData(
-                      chest: configBox.get('currentChest'),
-                      address: address,
-                      number: 0,
-                      derivation: -1,
-                      name: 'currentWallet'.tr(),
-                      imageDefaultPath: '0.png',
-                      isOwned: true);
-                  await walletBox.put(myWallet.address, myWallet);
+                switch (scanStatus) {
+                  case ScanDerivationsResult.none:
+                  case ScanDerivationsResult.walletNotFound:
+                    final address = await sub.importAccount(
+                      mnemonic: generateWalletProvider.generatedMnemonic!,
+                      password: widget.pinCode,
+                    );
+                    WalletData myWallet = WalletData(
+                        chest: configBox.get('currentChest'),
+                        address: address,
+                        number: 0,
+                        derivation: -1,
+                        name: 'currentWallet'.tr(),
+                        imageDefaultPath: '0.png',
+                        isOwned: true);
+                    await walletBox.put(myWallet.address, myWallet);
+                    break;
+                  case ScanDerivationsResult.timeout:
+                  case ScanDerivationsResult.error:
+                    return;
+                  default:
+                    break;
                 }
+
                 await myWalletProvider.readAllWallets(currentChest);
                 myWalletProvider.reload();
 
@@ -240,7 +249,7 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                 }
                 if (defaultWallet != null) await sub.setCurrentWallet(defaultWallet);
 
-                Navigator.push(
+                await Navigator.push(
                   context,
                   FaderTransition(page: OnboardingStepEleven(fromRestore: widget.fromRestore), isFast: false),
                 );

@@ -12,8 +12,7 @@ class ScanDerivationsInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final generateWalletProvider =
-        Provider.of<GenerateWalletsProvider>(context);
+    final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context);
     return Visibility(
       visible: generateWalletProvider.scanStatus != ScanDerivationsStatus.none,
       child: Padding(
@@ -21,26 +20,19 @@ class ScanDerivationsInfo extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (generateWalletProvider.scanStatus ==
-                ScanDerivationsStatus.rootScanning)
+            if (generateWalletProvider.scanStatus == ScanDerivationsStatus.rootScanning)
               Text(
                 'scanRootDerivationInProgress'.tr(),
                 style: scaledTextStyle(fontSize: 15),
               ),
-            if (generateWalletProvider.scanStatus ==
-                ScanDerivationsStatus.scanning)
+            if (generateWalletProvider.scanStatus == ScanDerivationsStatus.scanning)
               Text(
-                'derivationsScanProgress'
-                    .tr(args: [generateWalletProvider.numberScan.toString()]),
+                'derivationsScanProgress'.tr(args: [generateWalletProvider.numberScan.toString()]),
                 style: scaledTextStyle(fontSize: 15),
               ),
-            if (generateWalletProvider.scanStatus ==
-                ScanDerivationsStatus.import)
+            if (generateWalletProvider.scanStatus == ScanDerivationsStatus.import)
               Text(
-                "importDerivationsInProgress".tr(args: [
-                  '${generateWalletProvider.scanedWalletNumber}',
-                  '${generateWalletProvider.scanedValidWalletNumber}'
-                ]),
+                "importDerivationsInProgress".tr(args: ['${generateWalletProvider.scanedWalletNumber}', '${generateWalletProvider.scanedValidWalletNumber}']),
                 style: scaledTextStyle(fontSize: 15),
               ),
             ScaledSizedBox(width: 10),
@@ -60,3 +52,5 @@ class ScanDerivationsInfo extends StatelessWidget {
 }
 
 enum ScanDerivationsStatus { none, rootScanning, scanning, import }
+
+enum ScanDerivationsResult { none, error, walletExists, walletNotFound, timeout }

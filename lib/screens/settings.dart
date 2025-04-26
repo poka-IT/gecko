@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -14,7 +13,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:provider/provider.dart';
 
@@ -165,7 +163,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         await walletHeaderDataBox.clear();
 
                         // Clear G1WalletsList cache
-                        final g1WalletsBox = await Hive.openBox<G1WalletsList>('g1_wallets_list');
                         await g1WalletsBox.clear();
 
                         if (mounted) {

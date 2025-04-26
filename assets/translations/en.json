@@ -287,5 +287,7 @@
     "clearCacheConfirmTitle": "Clear Cache Confirmation",
     "clearCacheConfirmMessage": "Do you really want to clear the cache?\n\nThis includes:\n- Wallet balances\n- Certifications\n- Identity data",
     "qrCodeNotAddress": "This QR code is not a valid address",
-    "emptyWalletCannotBeCertified": "An empty wallet cannot be certified"
+    "emptyWalletCannotBeCertified": "An empty wallet cannot be certified",
+    "timeoutScanDerivations": "Scan derivations timed out. Please try again later.",
+    "errorScanDerivations": "An error occurred while scanning derivations. Please try again."
 }

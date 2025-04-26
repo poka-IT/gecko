@@ -288,5 +288,7 @@
     "clearCacheConfirmTitle": "Confirmación de borrado de caché",
     "clearCacheConfirmMessage": "¿Realmente desea borrar el caché?\n\nEsto incluye:\n- Saldos de carteras\n- Certificaciones\n- Datos de identidad",
     "qrCodeNotAddress": "Este código QR no es una dirección válida",
-    "emptyWalletCannotBeCertified": "Un monedero vacío no puede ser certificado"
+    "emptyWalletCannotBeCertified": "Un monedero vacío no puede ser certificado",
+    "timeoutScanDerivations": "Se ha agotado el tiempo de escaneo de derivaciones. Por favor, inténtelo de nuevo más tarde.",
+    "errorScanDerivations": "Se ha producido un error al escanear las derivaciones. Por favor, inténtelo de nuevo."
 }

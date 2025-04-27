@@ -167,6 +167,7 @@ android/app/build/*
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*
 /ios/build
+/ios/Podfile.lock
 
 # macOS
 **/Flutter/ephemeral/

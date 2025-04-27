@@ -55,13 +55,8 @@ integration_test/duniter/data/chains/
 scripts/pushGecko
 android-old
 
-# FVM Version Cache
-.fvm/
-
 # Environment variables
 .env
-
-
 
 # Helios related
 /ios/Flutter/Helios.xcconfig
@@ -195,7 +190,8 @@ coverage/
 .autoenv*
 
 # FVM Version Cache
-.fvm/
+.fvm/flutter_sdk/
+.fvm/versions/
 
 # Exceptions to above rules
 !**/ios/**/default.mode1v3

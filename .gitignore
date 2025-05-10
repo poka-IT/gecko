@@ -203,3 +203,5 @@ coverage/
 
 # Tests related
 integration_test/screenshots/
+
+.fvm/flutter_sdk

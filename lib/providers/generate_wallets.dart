@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:durt/durt.dart' as durt;
+import 'package:durt2/durt2.dart' show DuniterStorageService, Durt, Language, WalletBalance;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -8,16 +9,20 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/bip39_words.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/models/wallet_balance.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/services/wallets.service.dart' show WalletsService;
 import 'package:gecko/widgets/scan_derivations_info.dart';
 import 'package:gecko/widgets/commons/common_elements.dart';
+import 'package:get_it/get_it.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:provider/provider.dart';
 import "package:unorm_dart/unorm_dart.dart" as unorm;
 
 class GenerateWalletsProvider with ChangeNotifier {
   GenerateWalletsProvider();
+
+  final walletService = GetIt.I.get<WalletsService>();
+  final duniterStorage = GetIt.I.get<DuniterStorageService>();
 
   final walletNameFocus = FocusNode();
   Color? askedWordColor = Colors.black;
@@ -59,6 +64,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   final cellController11 = TextEditingController();
   bool isFirstTimeSentenceComplete = true;
 
+  @Deprecated('Use Durt 2 instead')
   Future storeHDWChest(BuildContext context) async {
     int chestNumber = chestBox.isEmpty ? 0 : chestBox.keys.last + 1;
 
@@ -154,19 +160,21 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   Future<List<String>?> generateWordList(BuildContext context) async {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final walletService = GetIt.I.get<WalletsService>();
     if (!sub.sdkReady) return null;
 
-    generatedMnemonic = await sub.generateMnemonic(lang: appLang);
-    List<String> wordsList = [];
-    String word;
-    int nbr = 1;
+    final language = switch (appLang) {
+      'english' => Language.english,
+      'french' => Language.french,
+      'spanish' => Language.spanish,
+      'italian' => Language.italian,
+      _ => Language.english,
+    };
 
-    for (word in generatedMnemonic!.split(' ')) {
-      wordsList.add("$nbr:$word");
-      nbr++;
-    }
+    final generatedMnemonicTyped = walletService.generateMnemonic(language);
 
-    return wordsList;
+    generatedMnemonic = generatedMnemonicTyped.sentence;
+    return generatedMnemonicTyped.words;
   }
 
   bool isBipWord(String word, [bool checkRedondance = true]) {
@@ -276,14 +284,14 @@ class GenerateWalletsProvider with ChangeNotifier {
       return await _scanDerivations(context, pinCode).timeout(
         const Duration(seconds: 20),
         onTimeout: () async {
-          // Remove the current chest
-          final currentChestNumber = configBox.get('currentChest');
-          if (currentChestNumber != null) {
-            final currentChest = chestBox.get(currentChestNumber);
-            if (currentChest != null) {
-              await chestBox.delete(currentChestNumber);
-            }
-          }
+          // // Remove the current chest
+          // final currentChestNumber = configBox.get('currentChest');
+          // if (currentChestNumber != null) {
+          //   final currentChest = chestBox.get(currentChestNumber);
+          //   if (currentChest != null) {
+          //     await chestBox.delete(currentChestNumber);
+          //   }
+          // }
 
           // Display error message to user
           // ignore: use_build_context_synchronously
@@ -314,19 +322,17 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   Future<ScanDerivationsResult> _scanDerivations(BuildContext context, String pinCode) async {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final currentChestNumber = configBox.get('currentChest');
     bool isAlive = false;
     scanedWalletNumber = 0;
     Map<String, int> addressToScan = {};
     notifyListeners();
 
-    if (!sub.nodeConnected) {
+    if (!Durt.instance.isConnected) {
       return ScanDerivationsResult.error;
     }
 
     scanStatus = ScanDerivationsStatus.rootScanning;
-    final hasRoot = await scanRootBalance(sub, currentChestNumber, pinCode);
+    final hasRoot = await scanRootBalance(pinCode);
     notifyListeners();
     if (hasRoot) {
       isAlive = true;
@@ -373,24 +379,33 @@ class GenerateWalletsProvider with ChangeNotifier {
     return isAlive ? ScanDerivationsResult.walletExists : ScanDerivationsResult.walletNotFound;
   }
 
-  Future<bool> scanRootBalance(SubstrateSdk sub, int currentChestNumber, String pinCode) async {
-    if (sub.currencyParameters['ss58'] == null || generatedMnemonic == null) return false;
-    final addressData =
-        await sub.sdk.api.keyring.addressFromMnemonic(sub.currencyParameters['ss58']!, cryptoType: CryptoType.sr25519, mnemonic: generatedMnemonic!);
+  Future<bool> scanRootBalance(String pinCode) async {
+    if (generatedMnemonic == null) return false;
+    // final addressData =
+    //     await sub.sdk.api.keyring.addressFromMnemonic(sub.currencyParameters['ss58']!, cryptoType: CryptoType.sr25519, mnemonic: generatedMnemonic!);
 
-    if (addressData.address == null) return false;
-    final balance = await sub.getBalance(addressData.address!).timeout(
+    final keypair = await walletService.getKeyPairFromMnemonic(generatedMnemonic!);
+    if (keypair == null) return false;
+
+    // if (addressData.address == null) return false;
+    final balance = await duniterStorage.getBalance(keypair.address).timeout(
           const Duration(seconds: 1),
           onTimeout: () => WalletBalance.empty(),
         );
 
-    if (balance.transferableBalance != 0) {
-      String walletName = 'myRootWallet'.tr();
-      await sub.importAccount(mnemonic: generatedMnemonic!, password: pinCode);
+    if (balance.free != BigInt.zero) {
+      // String walletName = 'myRootWallet'.tr();
+      //TODO: Use int pincode directly instead of cast
+      final pinCodeint = int.parse(pinCode);
+      await walletService.createSafe(mnemonic: generatedMnemonic!, pinCode: pinCodeint);
 
-      WalletData myWallet = WalletData(
-          chest: currentChestNumber, address: addressData.address!, number: 0, name: walletName, derivation: -1, imageDefaultPath: '0.png', isOwned: true);
-      await walletBox.put(myWallet.address, myWallet);
+      await walletService.importRootWallet(pinCode: pinCode);
+
+      // await sub.importAccount(mnemonic: generatedMnemonic!, password: pinCode);
+
+      // WalletData myWallet = WalletData(
+      //     chest: currentChestNumber, address: addressData.address!, number: 0, name: walletName, derivation: -1, imageDefaultPath: '0.png', isOwned: true);
+      // await walletBox.put(myWallet.address, myWallet);
       scanedWalletNumber++;
       return true;
     } else {

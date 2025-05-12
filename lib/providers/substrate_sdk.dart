@@ -33,6 +33,7 @@ import 'package:pointycastle/pointycastle.dart' as pc;
 import "package:hex/hex.dart";
 import 'package:uuid/uuid.dart' show Uuid;
 
+@Deprecated('Use Durt 2 instead')
 class SubstrateSdk with ChangeNotifier {
   final WalletSDK sdk = WalletSDK();
   final Keyring keyring = Keyring();
@@ -836,16 +837,19 @@ class SubstrateSdk with ChangeNotifier {
   /////// 4: CRYPTOGRAPHY //////////
   //////////////////////////////////
 
+  @Deprecated('Use Durt 2 instead')
   KeyPairData getKeypair(String address) {
     return keyring.keyPairs.firstWhere((kp) => kp.address == address, orElse: (() => KeyPairData()));
   }
 
+  @Deprecated('Use Durt 2 instead')
   Future<bool> checkPassword(String address, String pass) async {
     final account = getKeypair(address);
 
     return await sdk.api.keyring.checkPassword(account, pass);
   }
 
+  @Deprecated('Use Durt 2 instead')
   Future<String> getSeed(String address, String pin) async {
     final account = getKeypair(address);
     keyring.setCurrent(account);
@@ -862,6 +866,7 @@ class SubstrateSdk with ChangeNotifier {
     return seedText;
   }
 
+  @Deprecated('Use Durt 2 instead')
   Future<KeyPairData?> changePassword(BuildContext context, String address, String passOld, String passNew) async {
     final account = getKeypair(address);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
@@ -871,12 +876,14 @@ class SubstrateSdk with ChangeNotifier {
     return await sdk.api.keyring.changePassword(keyring, passOld, passNew);
   }
 
+  @Deprecated('Use Durt 2 instead')
   Future<void> deleteAllAccounts() async {
     for (var account in keyring.allAccounts) {
       await sdk.api.keyring.deleteAccount(keyring, account);
     }
   }
 
+  @Deprecated('Use Durt 2 instead')
   Future<void> deleteAccounts(List<String> address) async {
     for (var a in address) {
       final account = getKeypair(a);
@@ -884,6 +891,7 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
+  @Deprecated('Use Durt 2 instead')
   Future<String> generateMnemonic({String lang = appLang}) async {
     final gen = await sdk.api.keyring.generateMnemonic(currencyParameters['ss58'] ?? initSs58);
     generatedMnemonic = gen.mnemonic!;
@@ -891,6 +899,7 @@ class SubstrateSdk with ChangeNotifier {
     return gen.mnemonic!;
   }
 
+  @Deprecated('Use Durt 2 instead')
   Future<String> setCurrentWallet(WalletData wallet) async {
     final currentChestNumber = configBox.get('currentChest');
     ChestData newChestData = chestBox.get(currentChestNumber)!;
@@ -906,6 +915,7 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
+  @Deprecated('Use Durt 2 instead')
   KeyPairData getCurrentKeyPair() {
     try {
       final acc = keyring.current;
@@ -915,6 +925,7 @@ class SubstrateSdk with ChangeNotifier {
     }
   }
 
+  @Deprecated('Use Durt 2 instead')
   Future<String> derive(BuildContext context, String address, int number, String password) async {
     final keypair = getKeypair(address);
 
@@ -927,6 +938,7 @@ class SubstrateSdk with ChangeNotifier {
     return await importAccount(mnemonic: generatedMnemonic, derivePath: '//$number', password: password);
   }
 
+  @Deprecated('Use Durt 2 instead')
   Future<String> generateRootKeypair(String address, String password) async {
     final keypair = getKeypair(address);
 
@@ -939,6 +951,7 @@ class SubstrateSdk with ChangeNotifier {
     return await importAccount(password: password);
   }
 
+  @Deprecated('Use Durt 2 instead')
   Future<bool> isMnemonicValid(String mnemonic) async {
     // Needed for bad encoding of UTF-8
     mnemonic = mnemonic.replaceAll('é', 'é');
@@ -947,6 +960,7 @@ class SubstrateSdk with ChangeNotifier {
     return await sdk.api.keyring.checkMnemonicValid(mnemonic);
   }
 
+  @Deprecated('Use Durt 2 instead')
   Future<String> csToV2Address(String salt, String password) async {
     final scrypt = pc.KeyDerivator('scrypt');
 
@@ -973,6 +987,7 @@ class SubstrateSdk with ChangeNotifier {
     return g1V1NewAddress;
   }
 
+  @Deprecated('Use Durt 2 instead')
   Future<MigrateWalletChecks> getBalanceAndIdtyStatus(String fromAddress, String toAddress) async {
     bool canValidate = false;
     String validationStatus = '';

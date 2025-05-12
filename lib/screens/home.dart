@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/v2s_datapod.dart';
+import 'package:gecko/services/durt.service.dart';
 import 'package:gecko/widgets/bubble_speak.dart';
 import 'package:gecko/widgets/buttons/home_settings_button.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
@@ -21,6 +22,7 @@ import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
 import 'package:gecko/widgets/drawer.dart';
 import 'package:gecko/widgets/buttons/home_buttons.dart';
+import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -41,6 +43,9 @@ class _HomeScreenState extends State<HomeScreen> {
       final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
       final datapod = Provider.of<V2sDatapodProvider>(context, listen: false);
 
+      // Init durt 2
+      await GetIt.I.get<DurtService>().init();
+
       final bool isWalletsExists = myWalletProvider.isWalletsExists();
 
       // Check if versionData non compatible, drop everything
@@ -49,6 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       if (isWalletsExists && (configBox.get('dataVersion')) < dataVersion) {
         if (!sub.sdkReady && !sub.sdkLoading) sub.initApi();
+        // ignore: use_build_context_synchronously
         await infoPopup(context, "chestNotCompatibleMustReinstallGecko".tr());
         await Hive.deleteBoxFromDisk('walletBox');
         await Hive.deleteBoxFromDisk('chestBox');

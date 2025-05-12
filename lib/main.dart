@@ -14,6 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'dart:async';
+import 'package:durt2/durt2.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/chest_provider.dart';
@@ -32,6 +33,9 @@ import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/search_result.dart';
+import 'package:gecko/services/durt.service.dart';
+import 'package:gecko/services/wallets.service.dart';
+import 'package:get_it/get_it.dart';
 
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
@@ -57,7 +61,12 @@ Future<void> main() async {
   await initHiveForFlutter();
   await homeProvider.initHive();
 
+
+
   appVersion = await homeProvider.getAppVersion();
+
+  // Register app dependencies
+  await registerDependencies();
 
   if (kReleaseMode && enableSentry) {
     await SentryFlutter.init((options) {
@@ -167,7 +176,8 @@ class Gecko extends StatelessWidget {
           primaryColor: const Color(0xffFFD58D),
           scaffoldBackgroundColor: backgroundColor,
           canvasColor: backgroundColor,
-          colorScheme: ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]), dialogTheme: DialogThemeData(backgroundColor: backgroundColor),
+          colorScheme: ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]),
+          dialogTheme: DialogThemeData(backgroundColor: backgroundColor),
         ),
         initialRoute: "/",
         routes: {
@@ -179,4 +189,13 @@ class Gecko extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> registerDependencies() async {
+  GetIt.I.registerSingleton<WalletsService>(WalletsService());
+  GetIt.I.registerSingleton<DurtService>(DurtService());
+  GetIt.I.registerSingleton<DuniterStorageService>(DuniterStorageService());
+
+  // Wait for all non-lazy repos to be ready
+  await GetIt.I.allReady();
 }

@@ -204,7 +204,7 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                 myWalletProvider.isPinLoading = false;
                 myWalletProvider.isPinValid = true;
 
-                await generateWalletProvider.storeHDWChest(context);
+                // await generateWalletProvider.storeHDWChest(context);
                 ScanDerivationsResult scanStatus = ScanDerivationsResult.none;
                 if (widget.scanDerivation) {
                   scanStatus = await generateWalletProvider.scanDerivations(context, widget.pinCode);

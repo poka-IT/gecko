@@ -1,5 +1,6 @@
 // ignore_for_file: file_names, use_build_context_synchronously
 
+import 'package:durt2/durt2.dart' show Durt, WalletData;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +8,6 @@ import 'package:flutter/services.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -44,18 +44,19 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
   bool hasError = false;
   late final FocusNode pinFocus;
   late final TextEditingController enterPin;
+  final generateWalletProvider = Provider.of<GenerateWalletsProvider>(homeContext);
 
   @override
   void initState() {
     super.initState();
     pinFocus = FocusNode(debugLabel: 'pinFocusNode10');
     enterPin = TextEditingController();
+    generateWalletProvider.scanStatus = ScanDerivationsStatus.none;
   }
 
   @override
   Widget build(BuildContext context) {
     final walletOptions = Provider.of<WalletOptionsProvider>(context);
-    final sub = Provider.of<SubstrateSdk>(context);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
     final pinLenght = widget.pinCode.length;
 
@@ -88,7 +89,7 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                   }),
                   ScaledSizedBox(height: isTall ? 20 : 0),
                   Consumer<SubstrateSdk>(builder: (context, sub, _) {
-                    return sub.nodeConnected
+                    return Durt.i.isConnected
                         ? pinForm(context, walletOptions, pinLenght, 1, 2)
                         : Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                             Text(
@@ -103,7 +104,7 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                           ]);
                   }),
                   Consumer<WalletOptionsProvider>(builder: (context, walletOptions, _) {
-                    return sub.nodeConnected
+                    return Durt.i.isConnected
                         ? InkWell(
                             key: keyCachePassword,
                             onTap: () {
@@ -136,10 +137,8 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
 
   Widget pinForm(BuildContext context, WalletOptionsProvider walletOptions, int pinLenght, int walletNbr, int derivation) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
-    final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context);
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    final currentChest = myWalletProvider.getCurrentChest();
+    final currentChest = myWalletProvider.getCurrentSafe;
 
     return Form(
       key: formKey,
@@ -204,7 +203,10 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                 myWalletProvider.isPinLoading = false;
                 myWalletProvider.isPinValid = true;
 
-                // await generateWalletProvider.storeHDWChest(context);
+                //TODO: Use int pincode directly instead of cast
+                final pinCodeint = int.parse(widget.pinCode);
+                await Durt.i.walletService.createSafe(mnemonic: generateWalletProvider.generatedMnemonic!, pinCode: pinCodeint);
+
                 ScanDerivationsResult scanStatus = ScanDerivationsResult.none;
                 if (widget.scanDerivation) {
                   scanStatus = await generateWalletProvider.scanDerivations(context, widget.pinCode);
@@ -212,19 +214,18 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                 switch (scanStatus) {
                   case ScanDerivationsResult.none:
                   case ScanDerivationsResult.walletNotFound:
-                    final address = await sub.importAccount(
-                      mnemonic: generateWalletProvider.generatedMnemonic!,
-                      password: widget.pinCode,
-                    );
+                    final walletData = await Durt.i.walletService.importRootWallet(pinCode: widget.pinCode);
+                    final address = Durt.i.walletService.getAddress(walletData.address);
+
                     WalletData myWallet = WalletData(
-                        chest: configBox.get('currentChest'),
-                        address: address,
-                        number: 0,
-                        derivation: -1,
-                        name: 'currentWallet'.tr(),
-                        imageDefaultPath: '0.png',
-                        isOwned: true);
-                    await walletBox.put(myWallet.address, myWallet);
+                      safeBoxNumber: configBox.get('currentChest'),
+                      address: address,
+                      number: 0,
+                      derivation: -1,
+                      name: 'currentWallet'.tr(),
+                      isOwned: true,
+                    );
+                    await Durt.i.walletService.walletDataBox.put(myWallet.address, myWallet);
                     break;
                   case ScanDerivationsResult.timeout:
                   case ScanDerivationsResult.error:
@@ -247,7 +248,10 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                 if (defaultWallet == null && myWalletProvider.listWallets.isNotEmpty) {
                   defaultWallet = myWalletProvider.listWallets.first;
                 }
-                if (defaultWallet != null) await sub.setCurrentWallet(defaultWallet);
+                if (defaultWallet != null) {
+                  final address = Durt.i.walletService.getAddress(defaultWallet.address);
+                  await Durt.i.walletService.setDefaultWallet(address);
+                }
 
                 await Navigator.push(
                   context,

@@ -1,9 +1,7 @@
 import 'dart:async';
+import 'package:durt2/durt2.dart' show Durt, SafeBox, WalletData;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/globals.dart';
-import 'package:gecko/models/chest_data.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
@@ -14,21 +12,22 @@ class ChestProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future forgetSafe(context, ChestData chest) async {
-    final bool? answer = await (_confirmDeletingChest(context, chest.name));
+  Future forgetSafe(context, SafeBox safe) async {
+    final bool? answer = await (_confirmDeletingChest(context, safe.name));
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     if (answer ?? false) {
-      await sub.deleteAccounts(getChestWallets(chest));
-      await chestBox.delete(chest.key);
-      final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+      await sub.deleteAccounts(getChestWallets(safe));
+      await Durt.i.walletService.deleteSafe(safe.key);
+      final myWalletProvider =
+          Provider.of<MyWalletsProvider>(context, listen: false);
 
       myWalletProvider.pinCode = '';
 
-      if (chestBox.isEmpty) {
-        await configBox.put('currentChest', 0);
+      if (Durt.i.walletService.safeBox.isEmpty) {
+        await Durt.i.walletService.setDefaultSafeBoxNumber(0);
       } else {
-        int? lastChest = chestBox.toMap().keys.first;
-        await configBox.put('currentChest', lastChest);
+        final int lastSafe = Durt.i.walletService.safeBox.toMap().keys.first;
+        await Durt.i.walletService.setDefaultSafeBoxNumber(lastSafe);
       }
 
       Navigator.popUntil(
@@ -39,10 +38,10 @@ class ChestProvider with ChangeNotifier {
     }
   }
 
-  List<String> getChestWallets(ChestData chest) {
+  List<String> getChestWallets(SafeBox safe) {
     List<String> toDelete = [];
-    walletBox.toMap().forEach((key, WalletData value) {
-      if (value.chest == chest.key) {
+    Durt.i.walletService.walletDataBox.toMap().forEach((key, WalletData value) {
+      if (value.safeBoxNumber == safe.key) {
         toDelete.add(value.address);
       }
     });

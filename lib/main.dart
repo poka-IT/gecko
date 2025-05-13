@@ -14,7 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'dart:async';
-import 'package:durt2/durt2.dart';
+import 'package:durt2/durt2.dart' show Durt, Networks;
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/chest_provider.dart';
@@ -33,10 +33,6 @@ import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/search_result.dart';
-import 'package:gecko/services/durt.service.dart';
-import 'package:gecko/services/wallets.service.dart';
-import 'package:get_it/get_it.dart';
-
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:responsive_framework/responsive_framework.dart';
@@ -61,16 +57,18 @@ Future<void> main() async {
   await initHiveForFlutter();
   await homeProvider.initHive();
 
-
-
   appVersion = await homeProvider.getAppVersion();
 
   // Register app dependencies
-  await registerDependencies();
+  // await registerDependencies();
+
+  //Init durt2
+  await Durt().init(network: Networks.gdev);
 
   if (kReleaseMode && enableSentry) {
     await SentryFlutter.init((options) {
-      options.dsn = 'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
+      options.dsn =
+          'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
       options.experimental.replay.sessionSampleRate = 1.0;
       options.experimental.replay.onErrorSampleRate = 1.0;
       // Privacy settings for PII masking
@@ -78,11 +76,17 @@ Future<void> main() async {
       options.experimental.privacy.maskAllText = false;
       options.experimental.privacy.maskAllImages = false;
     },
-        appRunner: () => SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
+        appRunner: () => SystemChrome.setPreferredOrientations(
+                [DeviceOrientation.portraitUp]).then((_) {
               runApp(
                 SentryWidget(
                   child: EasyLocalization(
-                    supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
+                    supportedLocales: const [
+                      Locale('en'),
+                      Locale('fr'),
+                      Locale('es'),
+                      Locale('it')
+                    ],
                     path: 'assets/translations',
                     fallbackLocale: const Locale('en'),
                     child: const Gecko(),
@@ -93,10 +97,16 @@ Future<void> main() async {
   } else {
     log.i('Debug mode enabled: No sentry alert');
 
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
+        .then((_) {
       runApp(EasyLocalization(
         // test, force locale :: startLocale: Locale.fromSubtags(languageCode: 'it'),
-        supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
+        supportedLocales: const [
+          Locale('en'),
+          Locale('fr'),
+          Locale('es'),
+          Locale('it')
+        ],
         path: 'assets/translations',
         fallbackLocale: const Locale('en'),
         child: const Gecko(),
@@ -176,7 +186,8 @@ class Gecko extends StatelessWidget {
           primaryColor: const Color(0xffFFD58D),
           scaffoldBackgroundColor: backgroundColor,
           canvasColor: backgroundColor,
-          colorScheme: ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]),
+          colorScheme:
+              ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]),
           dialogTheme: DialogThemeData(backgroundColor: backgroundColor),
         ),
         initialRoute: "/",
@@ -191,11 +202,7 @@ class Gecko extends StatelessWidget {
   }
 }
 
-Future<void> registerDependencies() async {
-  GetIt.I.registerSingleton<WalletsService>(WalletsService());
-  GetIt.I.registerSingleton<DurtService>(DurtService());
-  GetIt.I.registerSingleton<DuniterStorageService>(DuniterStorageService());
-
-  // Wait for all non-lazy repos to be ready
-  await GetIt.I.allReady();
-}
+// Future<void> registerDependencies() async {
+//   // Wait for all non-lazy repos to be ready
+//   await GetIt.I.allReady();
+// }

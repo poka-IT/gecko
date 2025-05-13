@@ -1,9 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:durt2/durt2.dart' show IdtyStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
@@ -15,7 +15,7 @@ import 'package:gecko/models/membership_status.dart';
 class MembershipRenewal {
   static RenewalInfo calculateRenewalInfo(MembershipStatus status, int renewalPeriodBlocks) {
     if (status.expireDate == null) {
-      return status.idtyStatus == IdtyStatus.notMember
+      return status.idtyStatus == IdtyStatus.expired
           ? RenewalInfo(
               canRenew: true,
               isExpired: true,

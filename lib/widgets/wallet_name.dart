@@ -1,6 +1,6 @@
+import 'package:durt2/durt2.dart' show WalletData;
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/wallet_data.dart';
 
 class WalletName extends StatelessWidget {
   const WalletName({

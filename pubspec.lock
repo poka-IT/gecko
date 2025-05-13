@@ -346,10 +346,10 @@ packages:
     dependency: transitive
     description:
       name: dart_style
-      sha256: "7306ab8a2359a48d22310ad823521d723acfed60ee1f7e37388e8986853b6820"
+      sha256: "27eb0ae77836989a3bc541ce55595e8ceee0992807f14511552a898ddd0d88ac"
       url: "https://pub.dev"
     source: hosted
-    version: "2.3.8"
+    version: "3.0.1"
   dbus:
     dependency: transitive
     description:
@@ -393,10 +393,10 @@ packages:
   durt2:
     dependency: "direct main"
     description:
-      path: "../../durt2"
+      path: "../durt2"
       relative: true
     source: path
-    version: "0.1.0"
+    version: "0.2.0"
   easy_localization:
     dependency: "direct main"
     description:
@@ -848,10 +848,10 @@ packages:
     dependency: transitive
     description:
       name: graphql
-      sha256: b90f3faa525fed0d8b57f528af913cf1363e1d77f287004d3a15ce699fa866ee
+      sha256: "735bbbaa4db10d38054932e726d291bdd46e46e0575cd482a74b0615b8622e1c"
       url: "https://pub.dev"
     source: hosted
-    version: "5.2.0-beta.9"
+    version: "5.2.1"
   graphql_flutter:
     dependency: "direct main"
     description:
@@ -1445,34 +1445,34 @@ packages:
     dependency: transitive
     description:
       name: polkadart
-      sha256: a3a5d0a3857f1fa4d3413cdeb2cbc3aee8aa8a8860df34236e13350dfe62fe51
+      sha256: b2369eeb33ee155dcdf2a7af18de8961037b9cc28640e200f1475cea497bc3ab
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.1"
+    version: "0.7.1"
   polkadart_cli:
     dependency: transitive
     description:
       name: polkadart_cli
-      sha256: a2aaad2fe19edfc7e2ffc7f27a898b6aef3d2e5a0452f75a8351f54e55779852
+      sha256: "3c2371134031c518b7728e24fd1b5dbcce98a364c97dd5a89518cccfc7222712"
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.1"
+    version: "0.7.1"
   polkadart_keyring:
     dependency: transitive
     description:
       name: polkadart_keyring
-      sha256: "3bb8b0a8053efc5b722a113f3d12842178a832cd3d0733e00bae10c2246c70db"
+      sha256: e99a93c845466dfb53e23bf650bd6ccd772d7cefe7c7ff2c93c6e86d387e5215
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.1"
+    version: "0.7.0"
   polkadart_scale_codec:
     dependency: transitive
     description:
       name: polkadart_scale_codec
-      sha256: "2eec792030deab36e48f035230f235afd3bcf2db4cd4490c9c1f6a51b57594b2"
+      sha256: db0d61adc58d8b395e663558ba6b2aed2ab2291d343733c49c693de62a2498d2
       url: "https://pub.dev"
     source: hosted
-    version: "1.4.2"
+    version: "1.5.0"
   polkawallet_sdk:
     dependency: "direct main"
     description:
@@ -1776,13 +1776,13 @@ packages:
     source: sdk
     version: "0.0.0"
   source_gen:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       name: source_gen
-      sha256: "14658ba5f669685cd3d63701d01b31ea748310f7ab854e471962670abcf57832"
+      sha256: "35c8150ece9e8c8d263337a265153c3329667640850b9304861faea59fc98f6b"
       url: "https://pub.dev"
     source: hosted
-    version: "1.5.0"
+    version: "2.0.0"
   source_helper:
     dependency: transitive
     description:
@@ -1811,10 +1811,10 @@ packages:
     dependency: transitive
     description:
       name: sr25519
-      sha256: e4495d8c86d90610931693565c16277503a3799da9814f3745b7123b5f85659d
+      sha256: "122c930a933da6af018ec4a2ccdb853a7d0eb1a0891bfb03467e366b56f86f12"
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.1"
+    version: "0.7.0"
   ss58:
     dependency: transitive
     description:
@@ -1867,18 +1867,18 @@ packages:
     dependency: transitive
     description:
       name: substrate_bip39
-      sha256: "256f440b45e33a37a374eb2a6a83ff879ecefb67b28a0b15599f09c8d920f6e3"
+      sha256: ba880015808079804f40a0fde8c5bff0315ec6792fe3a4281a704e408f1c6bdb
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.1"
+    version: "0.7.0"
   substrate_metadata:
     dependency: transitive
     description:
       name: substrate_metadata
-      sha256: "22d1909dafa574edf279bb46da3cd8e5ce26f8607fd32e40e1371d66dab66c3a"
+      sha256: "6f9e9e3e1078c0c143dd63824043370b9df582d34c431a759253ce2f9cbb7f13"
       url: "https://pub.dev"
     source: hosted
-    version: "1.4.1"
+    version: "1.5.0"
   sync_http:
     dependency: transitive
     description:
@@ -2111,14 +2111,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.7.3"
+  web_socket:
+    dependency: transitive
+    description:
+      name: web_socket
+      sha256: "34d64019aa8e36bf9842ac014bb5d2f5586ca73df5e4d9bf5c936975cae6982c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   web_socket_channel:
     dependency: transitive
     description:
       name: web_socket_channel
-      sha256: d88238e5eac9a42bb43ca4e721edba3c08c6354d4a53063afaa568516217621b
+      sha256: d645757fb0f4773d602444000a8131ff5d48c9e47adfe9772652dd1a4f2d45c8
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.0"
+    version: "3.0.3"
+  web_socket_client:
+    dependency: transitive
+    description:
+      name: web_socket_client
+      sha256: "22264cb5143e9bb55c943d6b051d207fdd6470ffb77ee45778c9a7a0fda100bc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
   webdriver:
     dependency: transitive
     description:

@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:durt2/durt2.dart' show Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
@@ -43,7 +44,7 @@ class MigrateIdentityScreen extends StatelessWidget {
     String matchInfo = '';
 
     Future scanDerivations() async {
-      if (!await isAddress(newWalletAddress.text) || !await sub.isMnemonicValid(newMnemonicSentence.text) || !statusData.canValidate) {
+      if (!await isAddress(newWalletAddress.text) || !Durt.i.walletService.isMnemonicValid(newMnemonicSentence.text) || !statusData.canValidate) {
         mnemonicIsValid = false;
         matchInfo = '';
         walletOptions.reload();

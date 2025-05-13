@@ -1,3 +1,4 @@
+import 'package:durt2/durt2.dart' show Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -14,7 +15,7 @@ class OfflineInfo extends StatelessWidget {
     final screenWidth = MediaQuery.of(homeContext).size.width;
     return Consumer<SubstrateSdk>(builder: (context, sub, _) {
       return Visibility(
-        visible: !sub.nodeConnected,
+        visible: !Durt.i.isConnected,
         child: Positioned(
           top: 0,
           child: Container(

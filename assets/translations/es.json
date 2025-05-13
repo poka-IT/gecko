@@ -71,7 +71,7 @@
     "yourChestAndWalletWereRestoredSuccessfully": "¡Genial!\n\nTu cofre y tus monederos han sido restaurados con éxito.\n\n¡Felicidades!",
     "allGood": "¡Todo bien!",
     "areYouSureToForgetSafe": "¿Seguro de que quieres olvidar el cofre \"{}\"?",
-    "areYouSureForgetAllChests": "¿Seguro de que quieres olvidar todos tus cofres?",
+    "areYouSureForgetAllSafes": "¿Seguro de que quieres olvidar todos tus cofres?",
     "areYouSureToForgetWallet": "¿Seguro de que quieres olvidar el monedero \"{}\"?\nEl saldo será transferido al monedero por defecto.",
     "areYouSureYouWantToCertify": "¿Seguro de que quiere certificar a la dirección\n\n{}?",
     "areYouSureYouWantToCertify1": "¿Seguro de que quiere certificar a la identidad :",

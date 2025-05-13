@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:io';
+import 'package:durt2/durt2.dart' show Durt, WalletData;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,7 +10,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/utils.dart';
@@ -36,12 +36,14 @@ class WalletOptionsProvider with ChangeNotifier {
     return pinLength;
   }
 
-  void _renameWallet(List<int?> walletID, String newName, {required bool isCesium}) async {
+  void _renameWallet(String address, String newName,
+      {required bool isCesium}) async {
     MyWalletsProvider myWalletClass = MyWalletsProvider();
 
-    WalletData walletTarget = myWalletClass.getWalletDataById(walletID)!;
+    WalletData walletTarget = myWalletClass.getWalletDataByAddress(address)!;
     walletTarget.name = newName;
-    await walletBox.put(walletTarget.key, walletTarget);
+    await Durt.i.walletService.walletDataBox
+        .put(walletTarget.address, walletTarget);
 
     _newWalletName.text = '';
   }
@@ -58,7 +60,8 @@ class WalletOptionsProvider with ChangeNotifier {
     if (answer) {
       //Check if balance is null
       if (balanceCache[wallet.address] != 0) {
-        final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+        final myWalletProvider =
+            Provider.of<MyWalletsProvider>(context, listen: false);
         final defaultWallet = myWalletProvider.getDefaultWallet();
         final transactionId = const Uuid().v4();
         sub.pay(
@@ -71,9 +74,9 @@ class WalletOptionsProvider with ChangeNotifier {
         );
       }
 
-      await walletBox.delete(wallet.address);
-      if (wallet.imageCustomPath != null) {
-        final avatarFile = File(wallet.imageCustomPath!);
+      await Durt.i.walletService.walletDataBox.delete(wallet.address);
+      if (wallet.imagePath != null) {
+        final avatarFile = File(wallet.imagePath!);
         if (await avatarFile.exists()) {
           await avatarFile.delete();
         }
@@ -132,17 +135,17 @@ class WalletOptionsProvider with ChangeNotifier {
 
       await File(croppedFile.path).rename(newPath);
 
-      final walletData = MyWalletsProvider().getWalletDataByAddress(address.text);
+      final walletData =
+          MyWalletsProvider().getWalletDataByAddress(address.text);
 
-      if (walletData!.imageCustomPath != null) {
-        final avatarFile = File(walletData.imageCustomPath!);
+      if (walletData!.imagePath != null) {
+        final avatarFile = File(walletData.imagePath!);
         await avatarFile.delete();
       }
 
-      walletData.profileUpdatedTime = DateTime.now();
-      walletData.imageCustomPath = newPath;
+      walletData.imagePath = newPath;
 
-      await walletBox.put(address.text, walletData);
+      await Durt.i.walletService.walletDataBox.put(address.text, walletData);
       notifyListeners();
       datapod.setAvatar(address.text, newPath);
 
@@ -156,8 +159,10 @@ class WalletOptionsProvider with ChangeNotifier {
   Future<String?> confirmIdentityPopup(BuildContext context) async {
     final idtyName = TextEditingController();
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final walletOptions =
+        Provider.of<WalletOptionsProvider>(context, listen: false);
+    final myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     bool canValidate = false;
@@ -181,7 +186,10 @@ class WalletOptionsProvider with ChangeNotifier {
                 key: keyEnterIdentityUsername,
                 onChanged: (_) async {
                   idtyExist = await duniterIndexer.isIdtyExist(idtyName.text);
-                  canValidate = !idtyExist && !await duniterIndexer.isIdtyExist(idtyName.text) && idtyName.text.length >= 2 && idtyName.text.length <= 32;
+                  canValidate = !idtyExist &&
+                      !await duniterIndexer.isIdtyExist(idtyName.text) &&
+                      idtyName.text.length >= 2 &&
+                      idtyName.text.length <= 32;
 
                   notifyListeners();
                 },
@@ -197,7 +205,8 @@ class WalletOptionsProvider with ChangeNotifier {
               ),
               const SizedBox(height: 10),
               Consumer<WalletOptionsProvider>(builder: (context, wOptions, _) {
-                return Text(idtyExist ? "thisIdentityAlreadyExist".tr() : '', style: TextStyle(color: Colors.red[500]));
+                return Text(idtyExist ? "thisIdentityAlreadyExist".tr() : '',
+                    style: TextStyle(color: Colors.red[500]));
               })
             ]),
           ),
@@ -205,22 +214,30 @@ class WalletOptionsProvider with ChangeNotifier {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Consumer<WalletOptionsProvider>(builder: (context, wOptions, _) {
+                Consumer<WalletOptionsProvider>(
+                    builder: (context, wOptions, _) {
                   return TextButton(
                     key: keyConfirm,
                     onPressed: canValidate
                         ? () async {
-                            idtyName.text = idtyName.text.trim().replaceAll('  ', '');
+                            idtyName.text =
+                                idtyName.text.trim().replaceAll('  ', '');
 
-                            if (idtyName.text.length.clamp(3, 32) != idtyName.text.length) {
+                            if (idtyName.text.length.clamp(3, 32) !=
+                                idtyName.text.length) {
                               return;
                             }
 
                             if (!await myWalletProvider.askPinCode()) return;
 
-                            final wallet = myWalletProvider.getWalletDataByAddress(address.text);
-                            await sub.setCurrentWallet(wallet!);
-                            final transactionId = await sub.confirmIdentity(walletOptions.address.text, idtyName.text, myWalletProvider.pinCode);
+                            final wallet = myWalletProvider
+                                .getWalletDataByAddress(address.text);
+                            await Durt.i.walletService
+                                .setDefaultAddress(wallet!.address);
+                            final transactionId = await sub.confirmIdentity(
+                                walletOptions.address.text,
+                                idtyName.text,
+                                myWalletProvider.pinCode);
                             Navigator.pop(context);
 
                             Navigator.push(
@@ -238,7 +255,11 @@ class WalletOptionsProvider with ChangeNotifier {
                         : null,
                     child: Text(
                       "validate".tr(),
-                      style: TextStyle(fontSize: 20, color: canValidate ? const Color(0xffD80000) : Colors.grey[500]),
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: canValidate
+                              ? const Color(0xffD80000)
+                              : Colors.grey[500]),
                     ),
                   );
                 })
@@ -251,7 +272,7 @@ class WalletOptionsProvider with ChangeNotifier {
     );
   }
 
-  Future<String?> editWalletName(BuildContext context, List<int?> wID) async {
+  Future<String?> editWalletName(BuildContext context, String address) async {
     final walletName = TextEditingController();
     canValidateNameBool = false;
 
@@ -282,21 +303,25 @@ class WalletOptionsProvider with ChangeNotifier {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Consumer<WalletOptionsProvider>(builder: (context, wOptions, _) {
+                Consumer<WalletOptionsProvider>(
+                    builder: (context, wOptions, _) {
                   return TextButton(
                     key: keyInfoPopup,
                     child: Text(
                       "validate".tr(),
                       style: TextStyle(
                         fontSize: 20,
-                        color: canValidateNameBool ? const Color(0xffD80000) : Colors.grey,
+                        color: canValidateNameBool
+                            ? const Color(0xffD80000)
+                            : Colors.grey,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     onPressed: () async {
                       if (canValidateNameBool) {
                         nameController.text = walletName.text;
-                        _renameWallet(wID, walletName.text, isCesium: false);
+                        _renameWallet(address, walletName.text,
+                            isCesium: false);
                         notifyListeners();
                         Navigator.pop(context);
                       }
@@ -312,7 +337,10 @@ class WalletOptionsProvider with ChangeNotifier {
                   key: keyCancel,
                   child: Text(
                     "cancel".tr(),
-                    style: TextStyle(fontSize: 17, color: Colors.grey[800], fontWeight: FontWeight.w300),
+                    style: TextStyle(
+                        fontSize: 17,
+                        color: Colors.grey[800],
+                        fontWeight: FontWeight.w300),
                   ),
                   onPressed: () async {
                     Navigator.pop(context);
@@ -328,9 +356,12 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   bool canValidateName(BuildContext context, final walletName) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
 
-    bool isNameValid = walletName.text.length >= 2 && !walletName.text.contains(':') && walletName.text.length <= 39;
+    bool isNameValid = walletName.text.length >= 2 &&
+        !walletName.text.contains(':') &&
+        walletName.text.length <= 39;
 
     if (isNameValid) {
       for (var wallet in myWalletProvider.listWallets) {

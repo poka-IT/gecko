@@ -1,8 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:durt2/durt2.dart' hide Provider;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -27,13 +27,17 @@ class WalletsHome extends StatefulWidget {
   State<WalletsHome> createState() => _WalletsHomeState();
 }
 
-class _WalletsHomeState extends State<WalletsHome> with SingleTickerProviderStateMixin {
+class _WalletsHomeState extends State<WalletsHome>
+    with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
 
     return Scaffold(
-      body: myWalletProvider.listWallets.length == 1 ? WalletOptions(wallet: myWalletProvider.listWallets[0]) : _WalletsHomeContent(),
+      body: myWalletProvider.listWallets.length == 1
+          ? WalletOptions(wallet: myWalletProvider.listWallets[0])
+          : _WalletsHomeContent(),
     );
   }
 }
@@ -41,9 +45,11 @@ class _WalletsHomeState extends State<WalletsHome> with SingleTickerProviderStat
 class _WalletsHomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-    final currentChestNumber = myWalletProvider.getCurrentChest();
-    final ChestData currentChest = chestBox.get(currentChestNumber)!;
+    final myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
+    final currentChestNumber = myWalletProvider.getCurrentSafe;
+    final SafeBox currentChest =
+        Durt.i.walletService.safeBox.get(currentChestNumber)!;
 
     return Scaffold(
         backgroundColor: backgroundColor,
@@ -52,18 +58,22 @@ class _WalletsHomeContent extends StatelessWidget {
           title: Row(
             children: [
               Image.asset(
-                'assets/chests/${currentChest.imageName}',
+                'assets/chests/${currentChest.number}.png',
                 height: 32,
               ),
               ScaledSizedBox(width: 17),
               Text(
-                currentChest.name!,
-                style: scaledTextStyle(color: Colors.grey[850], fontSize: 16, fontWeight: FontWeight.w500),
+                currentChest.name,
+                style: scaledTextStyle(
+                    color: Colors.grey[850],
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500),
               ),
             ],
           ),
         ),
-        bottomNavigationBar: Consumer<MyWalletsProvider>(builder: (context, _, __) {
+        bottomNavigationBar:
+            Consumer<MyWalletsProvider>(builder: (context, _, __) {
           return myWalletProvider.lastFlyBy == null
               ? const GeckoBottomAppBar(
                   actualRoute: 'safeHome',
@@ -83,7 +93,7 @@ class _WalletsHomeContent extends StatelessWidget {
 
   Widget myWalletsTiles(BuildContext context, int currentChestNumber) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
-    final isWalletsExists = myWalletProvider.isWalletsExists();
+    final isWalletsExists = myWalletProvider.isWalletsExists;
 
     if (!isWalletsExists) {
       return const Text('');
@@ -122,7 +132,8 @@ class _WalletsHomeContent extends StatelessWidget {
                 Text(
                   'explainDraggableWallet'.tr(),
                   textAlign: TextAlign.center,
-                  style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  style: scaledTextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               ],
             ))
@@ -138,7 +149,8 @@ class _WalletsHomeContent extends StatelessWidget {
     );
 
     // configBox.delete('showDraggableTutorial');
-    final bool showDraggableTutorial = configBox.get('showDraggableTutorial') ?? true;
+    final bool showDraggableTutorial =
+        configBox.get('showDraggableTutorial') ?? true;
 
     if (myWalletProvider.listWallets.length > 1 && showDraggableTutorial) {
       tutorialCoachMark.show(context: context);
@@ -156,16 +168,25 @@ class _WalletsHomeContent extends StatelessWidget {
               child: WalletTileMembre(wallet: myWalletProvider.idtyWallet!),
             ),
           ),
-        SliverGrid.count(key: keyListWallets, crossAxisCount: nTule, childAspectRatio: 1, crossAxisSpacing: 0, mainAxisSpacing: 0, children: <Widget>[
-          for (final repository in myWalletProvider.listWalletsWithoutIdty)
-            DragTuleAction(
-              wallet: repository,
-              child: WalletTile(repository: repository),
-            ),
-          Consumer<SubstrateSdk>(builder: (context, sub, _) {
-            return sub.nodeConnected && myWalletProvider.listWallets.length < maxWalletsInSafe ? const AddNewDerivationButton() : const Text('');
-          }),
-        ]),
+        SliverGrid.count(
+            key: keyListWallets,
+            crossAxisCount: nTule,
+            childAspectRatio: 1,
+            crossAxisSpacing: 0,
+            mainAxisSpacing: 0,
+            children: <Widget>[
+              for (final repository in myWalletProvider.listWalletsWithoutIdty)
+                DragTuleAction(
+                  wallet: repository,
+                  child: WalletTile(repository: repository),
+                ),
+              Consumer<SubstrateSdk>(builder: (context, sub, _) {
+                return Durt.i.isConnected &&
+                        myWalletProvider.listWallets.length < maxWalletsInSafe
+                    ? const AddNewDerivationButton()
+                    : const Text('');
+              }),
+            ]),
         const SliverToBoxAdapter(child: ChestOptionsButtons()),
       ]),
     );

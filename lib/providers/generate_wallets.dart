@@ -1,28 +1,18 @@
 import 'dart:math';
 import 'package:durt/durt.dart' as durt;
-import 'package:durt2/durt2.dart' show DuniterStorageService, Durt, Language, WalletBalance;
+import 'package:durt2/durt2.dart' show Durt, Language, WalletBalance, WalletData;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/bip39_words.dart';
-import 'package:gecko/models/chest_data.dart';
-import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/services/wallets.service.dart' show WalletsService;
 import 'package:gecko/widgets/scan_derivations_info.dart';
 import 'package:gecko/widgets/commons/common_elements.dart';
-import 'package:get_it/get_it.dart';
-import 'package:polkawallet_sdk/api/apiKeyring.dart';
-import 'package:provider/provider.dart';
 import "package:unorm_dart/unorm_dart.dart" as unorm;
 
 class GenerateWalletsProvider with ChangeNotifier {
   GenerateWalletsProvider();
-
-  final walletService = GetIt.I.get<WalletsService>();
-  final duniterStorage = GetIt.I.get<DuniterStorageService>();
 
   final walletNameFocus = FocusNode();
   Color? askedWordColor = Colors.black;
@@ -64,29 +54,29 @@ class GenerateWalletsProvider with ChangeNotifier {
   final cellController11 = TextEditingController();
   bool isFirstTimeSentenceComplete = true;
 
-  @Deprecated('Use Durt 2 instead')
-  Future storeHDWChest(BuildContext context) async {
-    int chestNumber = chestBox.isEmpty ? 0 : chestBox.keys.last + 1;
+  // @Deprecated('Use Durt 2 instead')
+  // Future storeHDWChest(BuildContext context) async {
+  //   int chestNumber = chestBox.isEmpty ? 0 : chestBox.keys.last + 1;
 
-    String chestName;
-    if (chestNumber == 0) {
-      chestName = 'geckoChest'.tr();
-    } else {
-      chestName = '${'geckoChest'.tr()}${chestNumber + 1}';
-    }
-    await configBox.put('currentChest', chestNumber);
+  //   String chestName;
+  //   if (chestNumber == 0) {
+  //     chestName = 'geckoChest'.tr();
+  //   } else {
+  //     chestName = '${'geckoChest'.tr()}${chestNumber + 1}';
+  //   }
+  //   await configBox.put('currentChest', chestNumber);
 
-    ChestData thisChest = ChestData(
-      name: chestName,
-      defaultWallet: 0,
-      imageName: '${chestNumber % 8}.png',
-    );
-    await chestBox.add(thisChest);
-    int? chestKey = chestBox.keys.last;
+  //   ChestData thisChest = ChestData(
+  //     name: chestName,
+  //     defaultWallet: 0,
+  //     imageName: '${chestNumber % 8}.png',
+  //   );
+  //   await chestBox.add(thisChest);
+  //   int? chestKey = chestBox.keys.last;
 
-    await configBox.put('currentChest', chestKey);
-    notifyListeners();
-  }
+  //   await configBox.put('currentChest', chestKey);
+  //   notifyListeners();
+  // }
 
   void checkAskedWord(String inputWord, String mnemo) {
     final expectedWord = mnemo.split(' ')[nbrWord];
@@ -159,10 +149,6 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   Future<List<String>?> generateWordList(BuildContext context) async {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final walletService = GetIt.I.get<WalletsService>();
-    if (!sub.sdkReady) return null;
-
     final language = switch (appLang) {
       'english' => Language.english,
       'french' => Language.french,
@@ -171,7 +157,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       _ => Language.english,
     };
 
-    final generatedMnemonicTyped = walletService.generateMnemonic(language);
+    final generatedMnemonicTyped = Durt.i.walletService.generateMnemonic(language: language);
 
     generatedMnemonic = generatedMnemonicTyped.sentence;
     return generatedMnemonicTyped.words;
@@ -247,7 +233,9 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   Future pasteMnemonic(BuildContext context) async {
     final sentence = await Clipboard.getData('text/plain');
-    if (sentence?.text == null || sentence!.text!.split(' ').length != 12) return;
+    if (sentence?.text == null || sentence!.text!.split(' ').length != 12) {
+      return;
+    }
 
     int nbr = 0;
 
@@ -282,16 +270,11 @@ class GenerateWalletsProvider with ChangeNotifier {
   Future<ScanDerivationsResult> scanDerivations(BuildContext context, String pinCode) async {
     try {
       return await _scanDerivations(context, pinCode).timeout(
-        const Duration(seconds: 20),
+        const Duration(seconds: 120),
         onTimeout: () async {
-          // // Remove the current chest
-          // final currentChestNumber = configBox.get('currentChest');
-          // if (currentChestNumber != null) {
-          //   final currentChest = chestBox.get(currentChestNumber);
-          //   if (currentChest != null) {
-          //     await chestBox.delete(currentChestNumber);
-          //   }
-          // }
+          // Remove the current chest
+          final actualSafeNumber = Durt.i.walletService.defaultSafeBoxNumber;
+          await Durt.i.walletService.deleteSafe(actualSafeNumber);
 
           // Display error message to user
           // ignore: use_build_context_synchronously
@@ -308,6 +291,7 @@ class GenerateWalletsProvider with ChangeNotifier {
         },
       );
     } catch (e) {
+      log.e('Error scanning derivations: $e');
       // Handle any other errors
       await infoPopup(context, "errorScanDerivations".tr());
 
@@ -327,48 +311,51 @@ class GenerateWalletsProvider with ChangeNotifier {
     Map<String, int> addressToScan = {};
     notifyListeners();
 
-    if (!Durt.instance.isConnected) {
+    if (!Durt.i.isConnected) {
       return ScanDerivationsResult.error;
     }
 
     scanStatus = ScanDerivationsStatus.rootScanning;
-    final hasRoot = await scanRootBalance(pinCode);
     notifyListeners();
+    final hasRoot = await scanRootBalance(pinCode);
     if (hasRoot) {
       isAlive = true;
     }
 
     scanStatus = ScanDerivationsStatus.scanning;
+    notifyListeners();
     for (int derivationNbr in [for (var i = 0; i < numberScan; i += 1) i]) {
-      final addressData = await sub.sdk.api.keyring
-          .addressFromMnemonic(sub.currencyParameters['ss58']!, cryptoType: CryptoType.sr25519, mnemonic: generatedMnemonic!, derivePath: '//$derivationNbr');
-      addressToScan.putIfAbsent(addressData.address!, () => derivationNbr);
+      if ([28, 29, 30].contains(derivationNbr)) continue;
+      print('derivationNbr: $derivationNbr');
+      final keypair = await Durt.i.walletService.getKeyPairFromMnemonic(generatedMnemonic!, derivation: derivationNbr);
+      addressToScan.putIfAbsent(keypair.address, () => derivationNbr);
     }
 
-    final balanceList = await sub.getBalanceMulti(addressToScan.keys.toList()).timeout(
+    final balanceList = await Durt.i.storage.getBalances(addressToScan.keys.toList()).timeout(
           const Duration(seconds: 20),
           onTimeout: () => {},
         );
 
     // Remove unused wallets
-    balanceList.removeWhere((key, value) => value.transferableBalance == 0);
+    balanceList.removeWhere((key, value) => value.free == BigInt.zero);
     scanedValidWalletNumber = balanceList.length + scanedWalletNumber;
 
     scanStatus = ScanDerivationsStatus.import;
+    notifyListeners();
     for (String scannedWallet in balanceList.keys) {
       isAlive = true;
       String walletName = scanedWalletNumber == 0 ? 'currentWallet'.tr() : '${'wallet'.tr()} ${scanedWalletNumber + 1}';
-      await sub.importAccount(mnemonic: generatedMnemonic!, derivePath: "//${addressToScan[scannedWallet]}", password: pinCode);
+      await Durt.i.walletService.importDerivations(pinCode: pinCode, derivations: [addressToScan[scannedWallet]!]);
+      final actualSafeNumber = Durt.i.walletService.defaultSafeBoxNumber;
 
-      WalletData myWallet = WalletData(
-          chest: currentChestNumber,
+      final myWallet = WalletData(
+          safeBoxNumber: actualSafeNumber,
           address: scannedWallet,
-          number: scanedWalletNumber,
           name: walletName,
           derivation: addressToScan[scannedWallet],
-          imageDefaultPath: '${scanedWalletNumber % 4}.png',
+          imagePath: '${scanedWalletNumber % 4}.png',
           isOwned: true);
-      await walletBox.put(myWallet.address, myWallet);
+      await Durt.i.walletService.walletDataBox.put(myWallet.address, myWallet);
       scanedWalletNumber++;
       notifyListeners();
     }
@@ -381,31 +368,26 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   Future<bool> scanRootBalance(String pinCode) async {
     if (generatedMnemonic == null) return false;
-    // final addressData =
-    //     await sub.sdk.api.keyring.addressFromMnemonic(sub.currencyParameters['ss58']!, cryptoType: CryptoType.sr25519, mnemonic: generatedMnemonic!);
 
-    final keypair = await walletService.getKeyPairFromMnemonic(generatedMnemonic!);
-    if (keypair == null) return false;
+    final keypair = await Durt.i.walletService.getKeyPairFromMnemonic(generatedMnemonic!);
+
+    final address = Durt.i.walletService.getAddress(keypair.address);
 
     // if (addressData.address == null) return false;
-    final balance = await duniterStorage.getBalance(keypair.address).timeout(
+    final balance = await Durt.i.storage.getBalance(address).timeout(
           const Duration(seconds: 1),
           onTimeout: () => WalletBalance.empty(),
         );
 
     if (balance.free != BigInt.zero) {
-      // String walletName = 'myRootWallet'.tr();
-      //TODO: Use int pincode directly instead of cast
-      final pinCodeint = int.parse(pinCode);
-      await walletService.createSafe(mnemonic: generatedMnemonic!, pinCode: pinCodeint);
+      String walletName = 'myRootWallet'.tr();
 
-      await walletService.importRootWallet(pinCode: pinCode);
+      await Durt.i.walletService.importRootWallet(pinCode: pinCode);
 
-      // await sub.importAccount(mnemonic: generatedMnemonic!, password: pinCode);
+      final actualSafeNumber = Durt.i.walletService.defaultSafeBoxNumber;
 
-      // WalletData myWallet = WalletData(
-      //     chest: currentChestNumber, address: addressData.address!, number: 0, name: walletName, derivation: -1, imageDefaultPath: '0.png', isOwned: true);
-      // await walletBox.put(myWallet.address, myWallet);
+      WalletData myWallet = WalletData(safeBoxNumber: actualSafeNumber, address: address, name: walletName, derivation: -1, imagePath: '0.png', isOwned: true);
+      await Durt.i.walletService.walletDataBox.put(myWallet.address, myWallet);
       scanedWalletNumber++;
       return true;
     } else {

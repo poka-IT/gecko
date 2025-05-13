@@ -1,8 +1,8 @@
 import 'dart:io';
+import 'package:durt2/durt2.dart' show WalletData;
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/v2s_datapod.dart';
@@ -20,8 +20,6 @@ class WalletTileMembre extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    wallet.getDatapodAvatar();
-
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: scaleSize(52), vertical: scaleSize(15)),
       child: GestureDetector(
@@ -75,11 +73,11 @@ class WalletTileMembre extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            child: wallet.imageCustomPath == null || wallet.imageCustomPath == ''
+                            child: wallet.imagePath == null || wallet.imagePath == ''
                                 ? Padding(
                                     padding: EdgeInsets.all(scaleSize(16)),
                                     child: Image.asset(
-                                      'assets/avatars/${wallet.imageDefaultPath}',
+                                      'assets/avatars/${wallet.imagePath}',
                                       alignment: Alignment.bottomCenter,
                                     ),
                                   )
@@ -90,7 +88,7 @@ class WalletTileMembre extends StatelessWidget {
                                       image: DecorationImage(
                                         fit: BoxFit.fitHeight,
                                         image: FileImage(
-                                          File(wallet.imageCustomPath!),
+                                          File(wallet.imagePath!),
                                         ),
                                       ),
                                     ),

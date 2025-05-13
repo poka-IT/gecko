@@ -86,24 +86,24 @@ class _ChooseChestState extends State<OnboardingStepFive> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Row(children: <Widget>[
-                arrayCell(mnemonicList![0]),
-                arrayCell(mnemonicList![1]),
-                arrayCell(mnemonicList![2]),
-                arrayCell(mnemonicList![3]),
+                arrayCell(1, mnemonicList![0]),
+                arrayCell(2, mnemonicList![1]),
+                arrayCell(3, mnemonicList![2]),
+                arrayCell(4, mnemonicList![3]),
               ]),
               ScaledSizedBox(height: 15),
               Row(children: <Widget>[
-                arrayCell(mnemonicList![4]),
-                arrayCell(mnemonicList![5]),
-                arrayCell(mnemonicList![6]),
-                arrayCell(mnemonicList![7]),
+                arrayCell(5, mnemonicList![4]),
+                arrayCell(6, mnemonicList![5]),
+                arrayCell(7, mnemonicList![6]),
+                arrayCell(8, mnemonicList![7]),
               ]),
               ScaledSizedBox(height: 15),
               Row(children: <Widget>[
-                arrayCell(mnemonicList![8]),
-                arrayCell(mnemonicList![9]),
-                arrayCell(mnemonicList![10]),
-                arrayCell(mnemonicList![11]),
+                arrayCell(9, mnemonicList![8]),
+                arrayCell(10, mnemonicList![9]),
+                arrayCell(11, mnemonicList![10]),
+                arrayCell(12, mnemonicList![11]),
               ]),
             ],
           ),
@@ -122,17 +122,17 @@ class _ChooseChestState extends State<OnboardingStepFive> {
     );
   }
 
-  Widget arrayCell(String dataWord) {
+  Widget arrayCell(int index, String dataWord) {
     return ScaledSizedBox(
       width: 82,
       child: Column(children: <Widget>[
         Text(
-          dataWord.split(':')[0],
+          index.toString(),
           style: scaledTextStyle(fontSize: 10, color: const Color(0xff6b6b52)),
         ),
         Text(
-          dataWord.split(':')[1],
-          key: keyMnemonicWord(dataWord.split(':')[0]),
+          dataWord,
+          key: keyMnemonicWord(index.toString()),
           style: scaledTextStyle(fontSize: 15, color: Colors.black),
         ),
       ]),

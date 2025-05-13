@@ -1,7 +1,7 @@
+import 'package:durt2/durt2.dart' show WalletData;
 import 'package:flutter/material.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/search.dart';

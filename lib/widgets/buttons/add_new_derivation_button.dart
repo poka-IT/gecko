@@ -17,7 +17,7 @@ class AddNewDerivationButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
 
-    String newDerivationName = '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number! + 2}';
+    String newDerivationName = '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number + 2}';
     return Padding(
       padding: EdgeInsets.all(scaleSize(11)),
       child: Container(

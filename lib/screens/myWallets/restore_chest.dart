@@ -1,13 +1,13 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:bubble/bubble.dart';
+import 'package:durt2/durt2.dart' show Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/onBoarding/7.dart';
 import 'package:gecko/screens/onBoarding/9.dart';
 import 'package:gecko/widgets/commons/fader_transition.dart';
@@ -24,7 +24,6 @@ class RestoreChest extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final genW = Provider.of<GenerateWalletsProvider>(context, listen: false);
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     if (genW.isSentenceComplete(context)) {
       genW.generatedMnemonic =
@@ -97,7 +96,7 @@ class RestoreChest extends StatelessWidget {
                             ),
                           ),
                           onPressed: () async {
-                            if (await sub.isMnemonicValid(genW.generatedMnemonic!)) {
+                            if (Durt.i.walletService.isMnemonicValid(genW.generatedMnemonic!)) {
                               genW.resetImportView();
                               await Navigator.push(
                                 context,

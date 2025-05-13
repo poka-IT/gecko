@@ -1,18 +1,17 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
+import 'package:durt2/durt2.dart' show Durt, IdtyStatus, Networks;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/certification_data.dart';
-import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/membership_status.dart';
 import 'package:gecko/models/migrate_wallet_checks.dart';
 import 'package:gecko/models/transaction_content.dart';
 import 'package:gecko/models/wallet_balance.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
@@ -40,7 +39,7 @@ class SubstrateSdk with ChangeNotifier {
   String generatedMnemonic = '';
   bool sdkReady = false;
   bool sdkLoading = false;
-  bool nodeConnected = false;
+  // bool Durt.i.isConnected = false;
   bool importIsLoading = false;
   int blocNumber = 0;
   bool isLoadingEndpoint = false;
@@ -142,6 +141,7 @@ class SubstrateSdk with ChangeNotifier {
     // transactionStatus.remove(currentTransactionId);
   }
 
+  @Deprecated('Use Durt 2 instead')
   Future _getStorage(String call) async {
     try {
       // log.d(call);
@@ -316,7 +316,7 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<WalletBalance> getBalance(String address) async {
-    if (!nodeConnected) {
+    if (!Durt.i.isConnected) {
       return WalletBalance.empty();
     }
 
@@ -393,7 +393,7 @@ class SubstrateSdk with ChangeNotifier {
   }) {
     int totalAmount = 0;
 
-    if (firstEligibleUd == 0 || idtyStatus != IdtyStatus.member) return 0;
+    if (firstEligibleUd == 0 || idtyStatus != IdtyStatus.validated) return 0;
 
     for (final List reval in pastReevals.reversed) {
       final int udIndex = _convertToInt(reval[0]);
@@ -442,7 +442,7 @@ class SubstrateSdk with ChangeNotifier {
     } else if (nextIssuableOn > blocNumber) {
       final certDelayDuration = (nextIssuableOn - blocNumber) * 6;
       return CertState(status: CertStatus.mustWaitBeforeCert, duration: Duration(seconds: certDelayDuration));
-    } else if (toStatus == IdtyStatus.unconfirmed) {
+    } else if (toStatus == IdtyStatus.created) {
       return CertState(status: CertStatus.mustConfirmIdentity);
     } else {
       return CertState(status: CertStatus.canCert);
@@ -482,10 +482,10 @@ class SubstrateSdk with ChangeNotifier {
 
   final mapStatus = {
     null: IdtyStatus.none,
-    'Unconfirmed': IdtyStatus.unconfirmed,
-    'Unvalidated': IdtyStatus.unvalidated,
-    'Member': IdtyStatus.member,
-    'NotMember': IdtyStatus.notMember,
+    'Unconfirmed': IdtyStatus.created,
+    'Unvalidated': IdtyStatus.confirmed,
+    'Member': IdtyStatus.validated,
+    'NotMember': IdtyStatus.expired,
     'Revoked': IdtyStatus.revoked,
     'unknown': IdtyStatus.unknown,
   };
@@ -742,16 +742,16 @@ class SubstrateSdk with ChangeNotifier {
     isLoadingEndpoint = false;
     notifyListeners();
     if (resNode != null) {
-      nodeConnected = true;
+      // Durt.i.isConnected = true;
 
       // Subscribe bloc number
       sdk.api.setting.subscribeBestNumber((res) {
         blocNumber = _convertToInt(res.toString());
         if (sdk.api.connectedNode?.endpoint == null) {
-          nodeConnected = false;
+          // Durt.i.isConnected = false;
           homeProvider.changeMessage("networkLost".tr());
         } else {
-          nodeConnected = true;
+          // Durt.i.isConnected = true;
         }
         notifyListeners();
       });
@@ -764,10 +764,10 @@ class SubstrateSdk with ChangeNotifier {
       notifyListeners();
       homeProvider.changeMessage("wellConnectedToNode".tr(args: [getConnectedEndpoint()!.split('/')[2]]));
     } else {
-      nodeConnected = false;
+      // Durt.i.isConnected = false;
       notifyListeners();
       homeProvider.changeMessage("noDuniterEndointAvailable".tr());
-      if (!myWalletProvider.isWalletsExists()) snackNode(false);
+      if (!myWalletProvider.isWalletsExists) snackNode(false);
     }
 
     log.i('Connected to node: ${sdk.api.connectedNode?.endpoint}');
@@ -776,7 +776,7 @@ class SubstrateSdk with ChangeNotifier {
   List<NetworkParams> getDuniterBootstrap() {
     List<NetworkParams> node = [];
 
-    for (String endpoint in configBox.get('endpoint')) {
+    for (String endpoint in Networks.listDuniterEndpoints) {
       final n = NetworkParams();
       n.name = currencyName;
       n.endpoint = endpoint;
@@ -900,20 +900,20 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   @Deprecated('Use Durt 2 instead')
-  Future<String> setCurrentWallet(WalletData wallet) async {
-    final currentChestNumber = configBox.get('currentChest');
-    ChestData newChestData = chestBox.get(currentChestNumber)!;
-    newChestData.defaultWallet = wallet.number;
-    await chestBox.put(currentChestNumber, newChestData);
+  // Future<String> setCurrentWallet(WalletData wallet) async {
+  //   final currentChestNumber = configBox.get('currentChest');
+  //   ChestData newChestData = chestBox.get(currentChestNumber)!;
+  //   newChestData.defaultWallet = wallet.number;
+  //   await chestBox.put(currentChestNumber, newChestData);
 
-    try {
-      final acc = getKeypair(wallet.address);
-      keyring.setCurrent(acc);
-      return acc.address!;
-    } catch (e) {
-      return (e.toString());
-    }
-  }
+  //   try {
+  //     final acc = getKeypair(wallet.address);
+  //     keyring.setCurrent(acc);
+  //     return acc.address!;
+  //   } catch (e) {
+  //     return (e.toString());
+  //   }
+  // }
 
   @Deprecated('Use Durt 2 instead')
   KeyPairData getCurrentKeyPair() {
@@ -949,15 +949,6 @@ class SubstrateSdk with ChangeNotifier {
     generatedMnemonic = seedList[0];
 
     return await importAccount(password: password);
-  }
-
-  @Deprecated('Use Durt 2 instead')
-  Future<bool> isMnemonicValid(String mnemonic) async {
-    // Needed for bad encoding of UTF-8
-    mnemonic = mnemonic.replaceAll('é', 'é');
-    mnemonic = mnemonic.replaceAll('è', 'è');
-
-    return await sdk.api.keyring.checkMnemonicValid(mnemonic);
   }
 
   @Deprecated('Use Durt 2 instead')
@@ -1112,7 +1103,7 @@ class SubstrateSdk with ChangeNotifier {
 
     final toIndex = await _getIdentityIndexOf(destAddress);
 
-    if (myIdtyStatus != IdtyStatus.member) {
+    if (myIdtyStatus != IdtyStatus.validated) {
       return 'notMember';
     }
 
@@ -1134,8 +1125,8 @@ class SubstrateSdk with ChangeNotifier {
         sender,
       );
       txOptions = [destAddress];
-    } else if (toIdtyStatus == IdtyStatus.member || toIdtyStatus == IdtyStatus.unvalidated) {
-      if (toCerts.receivedCount >= currencyParameters['minCertForMembership']! - 1 && toIdtyStatus != IdtyStatus.member) {
+    } else if (toIdtyStatus == IdtyStatus.validated || toIdtyStatus == IdtyStatus.confirmed) {
+      if (toCerts.receivedCount >= currencyParameters['minCertForMembership']! - 1 && toIdtyStatus != IdtyStatus.validated) {
         log.d('Batch cert and membership validation');
         txInfo = TxInfoData(
           'utility',
@@ -1411,7 +1402,7 @@ newKeySig: $newKeySigType""");
 
     final Map<String, dynamic> expireOnMap = await _getStorage('membership.membership($idtyIndex)') ?? {};
 
-    if (expireOnMap.isEmpty && idtyStatus == IdtyStatus.notMember) {
+    if (expireOnMap.isEmpty && idtyStatus == IdtyStatus.confirmed) {
       return MembershipStatus(
         expireDate: null,
         hasPendingRenewal: hasPendingRenewal,

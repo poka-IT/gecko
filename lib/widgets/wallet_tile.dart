@@ -1,8 +1,8 @@
 import 'dart:io';
+import 'package:durt2/durt2.dart' show WalletData;
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/v2s_datapod.dart';
@@ -22,8 +22,6 @@ class WalletTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    repository.getDatapodAvatar();
-
     return Padding(
       padding: EdgeInsets.all(scaleSize(11)),
       child: GestureDetector(
@@ -74,11 +72,11 @@ class WalletTile extends StatelessWidget {
                             ],
                           ),
                         ),
-                        child: repository.imageCustomPath == null || repository.imageCustomPath == ''
+                        child: repository.imagePath == null || repository.imagePath == ''
                             ? Padding(
                                 padding: EdgeInsets.all(scaleSize(16)),
                                 child: Image.asset(
-                                  'assets/avatars/${repository.imageDefaultPath}',
+                                  'assets/avatars/${repository.imagePath}',
                                   alignment: Alignment.bottomCenter,
                                 ),
                               )
@@ -89,7 +87,7 @@ class WalletTile extends StatelessWidget {
                                   image: DecorationImage(
                                     fit: BoxFit.fitHeight,
                                     image: FileImage(
-                                      File(repository.imageCustomPath!),
+                                      File(repository.imagePath!),
                                     ),
                                   ),
                                 ),

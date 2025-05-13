@@ -1,9 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:durt2/durt2.dart' show Durt, WalletData;
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/payment_popup.dart';
@@ -22,7 +22,8 @@ class DragTuleAction extends StatelessWidget {
     return LongPressDraggable<String>(
       delay: const Duration(milliseconds: 200),
       data: wallet.address,
-      dragAnchorStrategy: (Draggable<Object> _, BuildContext __, Offset ___) => const Offset(55, 55),
+      dragAnchorStrategy: (Draggable<Object> _, BuildContext __, Offset ___) =>
+          const Offset(55, 55),
       onDragStarted: () => myWalletProvider.dragAddress = wallet,
       onDragEnd: (_) {
         myWalletProvider.lastFlyBy = null;
@@ -43,10 +44,12 @@ class DragTuleAction extends StatelessWidget {
       ),
       child: DragTarget<String>(
           onAcceptWithDetails: (senderAddress) async {
-            final walletData = myWalletProvider.getWalletDataByAddress(senderAddress.data);
-            await sub.setCurrentWallet(walletData!);
+            final walletData =
+                myWalletProvider.getWalletDataByAddress(senderAddress.data);
+            await Durt.i.walletService.setDefaultWallet(walletData!.address);
             sub.reload();
-            paymentPopup(context, wallet.address, g1WalletsBox.get(wallet.address)!.username ?? wallet.name!);
+            paymentPopup(context, wallet.address,
+                g1WalletsBox.get(wallet.address)!.username ?? wallet.name!);
           },
           onMove: (details) {
             if (wallet.address != myWalletProvider.lastFlyBy?.address) {
@@ -54,7 +57,8 @@ class DragTuleAction extends StatelessWidget {
               myWalletProvider.reload();
             }
           },
-          onWillAcceptWithDetails: (senderAddress) => senderAddress.data != wallet.address,
+          onWillAcceptWithDetails: (senderAddress) =>
+              senderAddress.data != wallet.address,
           builder: (
             BuildContext context,
             List<dynamic> accepted,

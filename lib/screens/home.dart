@@ -1,29 +1,18 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/chest_data.dart';
-import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/chest_provider.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/providers/v2s_datapod.dart';
-import 'package:gecko/services/durt.service.dart';
 import 'package:gecko/widgets/bubble_speak.dart';
 import 'package:gecko/widgets/buttons/home_settings_button.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
-import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
 import 'package:gecko/widgets/drawer.dart';
 import 'package:gecko/widgets/buttons/home_buttons.dart';
-import 'package:get_it/get_it.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -36,82 +25,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final homeProvider = Provider.of<HomeProvider>(context, listen: false);
-      final sub = Provider.of<SubstrateSdk>(context, listen: false);
-      final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-      final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-      final datapod = Provider.of<V2sDatapodProvider>(context, listen: false);
-
-      // Init durt 2
-      await GetIt.I.get<DurtService>().init();
-
-      final bool isWalletsExists = myWalletProvider.isWalletsExists();
-
-      // Check if versionData non compatible, drop everything
-      if (configBox.get('dataVersion') == null) {
-        configBox.put('dataVersion', dataVersion);
-      }
-      if (isWalletsExists && (configBox.get('dataVersion')) < dataVersion) {
-        if (!sub.sdkReady && !sub.sdkLoading) sub.initApi();
-        // ignore: use_build_context_synchronously
-        await infoPopup(context, "chestNotCompatibleMustReinstallGecko".tr());
-        await Hive.deleteBoxFromDisk('walletBox');
-        await Hive.deleteBoxFromDisk('chestBox');
-        await datapod.deleteAvatarsDirectory();
-        await avatarsDirectory.create();
-        chestBox = await Hive.openBox<ChestData>("chestBox");
-        await configBox.delete('defaultWallet');
-        if (!sub.sdkReady && !sub.sdkLoading) await sub.initApi();
-        await sub.deleteAllAccounts();
-        configBox.put('dataVersion', dataVersion);
-        myWalletProvider.reload();
-      } else {
-        if (!sub.sdkReady && !sub.sdkLoading) await sub.initApi();
-      }
-
-      if (sub.sdkReady && !sub.nodeConnected) {
-        walletBox = await Hive.openBox<WalletData>("walletBox");
-        await Hive.deleteBoxFromDisk('g1WalletsBox');
-        await datapod.deleteAvatarsCacheDirectory();
-        await avatarsCacheDirectory.create();
-        g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
-        contactsBox = await Hive.openBox<G1WalletsList>("contactsBox");
-
-        homeProvider.isWalletBoxInit = true;
-        myWalletProvider.reload();
-
-        await homeProvider.getValidEndpoints();
-        if (configBox.get('isCacheChecked') == null) {
-          configBox.put('isCacheChecked', false);
-        }
-
-        Future<void> updateConnectionStatus(List<ConnectivityResult> result) async {
-          log.i('Network changed: $result');
-          if (result.contains(ConnectivityResult.none)) {
-            sub.nodeConnected = false;
-            await sub.sdk.api.setting.unsubscribeBestNumber();
-            homeProvider.changeMessage("notConnectedToInternet".tr());
-            sub.reload();
-          } else {
-            // Check if the phone is actually connected to the internet
-            var connectivityResult = await (Connectivity().checkConnectivity());
-            if (!connectivityResult.contains(ConnectivityResult.none)) {
-              await sub.connectNode();
-
-              // Load wallets list
-              myWalletProvider.readAllWallets(myWalletProvider.getCurrentChest());
-
-              //Connect to Indexer
-              await duniterIndexer.getValidIndexerEndpoint();
-            }
-          }
-        }
-
-        Connectivity().onConnectivityChanged.listen(updateConnectionStatus);
-      }
-    });
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Provider.of<HomeProvider>(context, listen: false).initHome(context);
+    });
   }
 
   @override
@@ -120,10 +37,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
     Provider.of<ChestProvider>(context);
-    final isWalletsExists = myWalletProvider.isWalletsExists();
+    final isWalletsExists = myWalletProvider.isWalletsExists;
 
-    isTall = (MediaQuery.of(context).size.height / MediaQuery.of(context).size.width) > 1.75;
-
+    isTall = (MediaQuery.of(context).size.height /
+            MediaQuery.of(context).size.width) >
+        1.75;
     return Scaffold(
         resizeToAvoidBottomInset: false,
         drawer: MainDrawer(isWalletsExists: isWalletsExists),
@@ -143,7 +61,8 @@ Widget geckHome(context) {
         fit: BoxFit.cover,
       ),
     ),
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+    child:
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
       Stack(children: <Widget>[
         Positioned(
           top: statusBarHeight + scaleSize(10),
@@ -151,12 +70,15 @@ Widget geckHome(context) {
           child: IconHomeSettings(),
         ),
         Align(
-          child: Image(image: const AssetImage('assets/home/header.png'), height: scaleSize(165)),
+          child: Image(
+              image: const AssetImage('assets/home/header.png'),
+              height: scaleSize(165)),
         ),
       ]),
       Padding(
         padding: const EdgeInsets.only(top: 15),
-        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+        child:
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
           DefaultTextStyle(
             textAlign: TextAlign.center,
             style: scaledTextStyle(
@@ -217,7 +139,8 @@ Widget welcomeHome(context) {
         fit: BoxFit.cover,
       ),
     ),
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+    child:
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
       Stack(children: <Widget>[
         Positioned(
           top: statusBarHeight + scaleSize(10),
@@ -225,12 +148,15 @@ Widget welcomeHome(context) {
           child: IconHomeSettings(),
         ),
         Align(
-          child: Image(image: const AssetImage('assets/home/header.png'), height: scaleSize(165)),
+          child: Image(
+              image: const AssetImage('assets/home/header.png'),
+              height: scaleSize(165)),
         ),
       ]),
       Padding(
         padding: const EdgeInsets.only(top: 1),
-        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+        child:
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
           Expanded(
             child: Text(
               "fastAppDescription".tr(args: [currencyName]),
@@ -278,9 +204,11 @@ Widget welcomeHome(context) {
                   Expanded(
                     child: Stack(children: <Widget>[
                       Padding(
-                        padding: EdgeInsets.only(top: scaleSize(isTall ? 55 : 0)),
+                        padding:
+                            EdgeInsets.only(top: scaleSize(isTall ? 55 : 0)),
                         child: Image(
-                          image: const AssetImage('assets/home/gecko-bienvenue.png'),
+                          image: const AssetImage(
+                              'assets/home/gecko-bienvenue.png'),
                           height: scaleSize(isTall ? 180 : 160),
                         ),
                       ),
@@ -326,7 +254,10 @@ Widget welcomeHome(context) {
                     },
                     child: Text(
                       'createWallet'.tr(),
-                      style: scaledTextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
+                      style: scaledTextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white),
                     ),
                   ),
                 ),
@@ -364,7 +295,10 @@ Widget welcomeHome(context) {
                     },
                     child: Text(
                       "restoreWallet".tr(),
-                      style: scaledTextStyle(fontSize: 20, color: orangeC, fontWeight: FontWeight.w600),
+                      style: scaledTextStyle(
+                          fontSize: 20,
+                          color: orangeC,
+                          fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),

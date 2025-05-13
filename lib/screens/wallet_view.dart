@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:durt2/durt2.dart' show Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -23,7 +24,8 @@ const double buttonSize = 75;
 const double buttonFontSize = 13;
 
 class WalletViewScreen extends StatefulWidget {
-  const WalletViewScreen({required this.address, required this.username, super.key});
+  const WalletViewScreen(
+      {required this.address, required this.username, super.key});
   final String address;
   final String? username;
 
@@ -44,20 +46,20 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final walletProfile = Provider.of<WalletsProfilesProvider>(context, listen: false);
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-    final defaultWallet = myWalletProvider.getDefaultWallet();
+    final walletProfile =
+        Provider.of<WalletsProfilesProvider>(context, listen: false);
 
     walletProfile.address = address;
-    sub.setCurrentWallet(defaultWallet);
+    Durt.i.walletService.setDefaultWallet(address);
 
     return Scaffold(
       backgroundColor: backgroundColor,
       resizeToAvoidBottomInset: true,
       appBar: WalletAppBar(
         address: address,
-        titleBuilder: (username) => username == null ? 'seeAWallet'.tr() : 'memberAccountOf'.tr(args: [username]),
+        titleBuilder: (username) => username == null
+            ? 'seeAWallet'.tr()
+            : 'memberAccountOf'.tr(args: [username]),
       ),
       bottomNavigationBar: const GeckoBottomAppBar(),
       body: SafeArea(
@@ -87,7 +89,8 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
                               onTap: () => Navigator.push(
                                 context,
                                 PageNoTransit(
-                                  builder: (context) => ActivityScreen(address: address),
+                                  builder: (context) =>
+                                      ActivityScreen(address: address),
                                 ),
                               ),
                             ),
@@ -95,11 +98,15 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
                               builder: (context, sub, _) {
                                 return FutureBuilder(
                                   future: sub.certState(address),
-                                  builder: (context, AsyncSnapshot<CertState> snapshot) {
-                                    if (!snapshot.hasData) return const SizedBox.shrink();
+                                  builder: (context,
+                                      AsyncSnapshot<CertState> snapshot) {
+                                    if (!snapshot.hasData) {
+                                      return const SizedBox.shrink();
+                                    }
                                     final certState = snapshot.data!;
                                     return Visibility(
-                                      visible: certState.status != CertStatus.none,
+                                      visible:
+                                          certState.status != CertStatus.none,
                                       child: CertStateWidget(
                                         certState: certState,
                                         address: address,
@@ -213,13 +220,15 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
               ),
             ),
             child: Opacity(
-              opacity: sub.nodeConnected ? 1 : 0.5,
+              opacity: Durt.i.isConnected ? 1 : 0.5,
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
                   key: keyPay,
                   borderRadius: BorderRadius.circular((buttonSize + 5) / 2),
-                  onTap: sub.nodeConnected ? () => _handleTransfer(context) : null,
+                  onTap: Durt.i.isConnected
+                      ? () => _handleTransfer(context)
+                      : null,
                   child: Padding(
                     padding: EdgeInsets.all(scaleSize(15)),
                     child: Image.asset(
@@ -237,7 +246,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w500,
-                  color: sub.nodeConnected ? Colors.black87 : Colors.grey[500],
+                  color: Durt.i.isConnected ? Colors.black87 : Colors.grey[500],
                 ),
           ),
         ],
@@ -246,7 +255,8 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
   }
 
   Future<void> _handleTransfer(BuildContext context) async {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
     final defaultWallet = myWalletProvider.getDefaultWallet();
 
     if (myWalletProvider.pinCode == '') {

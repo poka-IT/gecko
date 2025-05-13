@@ -71,7 +71,7 @@
     "yourChestAndWalletWereRestoredSuccessfully": "Super!\n\nYour safe and your portfolios have been restored with great success.\n\nCongratulations!",
     "allGood": "That's all good!",
     "areYouSureToForgetSafe": "Are you sure you want to forget the safe \"{}\"?",
-    "areYouSureForgetAllChests": "Are you sure you want to forget all your safes?",
+    "areYouSureForgetAllSafes": "Are you sure you want to forget all your safes?",
     "areYouSureToForgetWallet": "Are you sure you want to forget the wallet \"{}\"?\nThe balance will be transferred to your default wallet.",
     "areYouSureYouWantToCertify1": "Are you sure you want to certify the identity :",
     "areYouSureYouWantToCertify2": "having the address :",

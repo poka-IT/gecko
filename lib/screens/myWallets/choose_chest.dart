@@ -1,5 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:io';
+
+import 'package:durt2/durt2.dart' show Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -23,7 +26,7 @@ class ChooseChest extends StatefulWidget {
 class _ChooseChestState extends State<ChooseChest> {
   final tplController = TextEditingController();
   final buttonCarouselController = CarouselSliderController();
-  int? currentChest = configBox.get('currentChest');
+  int currentChest = Durt.i.walletService.defaultSafeBoxNumber;
 
   @override
   Widget build(BuildContext context) {
@@ -41,30 +44,31 @@ class _ChooseChestState extends State<ChooseChest> {
               options: CarouselOptions(
                 height: 210,
                 onPageChanged: (index, reason) {
-                  currentChest = chestBox.toMap().keys.toList()[index];
+                  currentChest =
+                      Durt.i.walletService.safeBox.toMap().keys.toList()[index];
                   setState(() {});
                 },
                 enableInfiniteScroll: false,
-                initialPage: currentChest!,
+                initialPage: currentChest,
                 enlargeCenterPage: true,
                 viewportFraction: 0.5,
               ),
-              items: chestBox.toMap().entries.map((i) {
+              items: Durt.i.walletService.safeBox.toMap().entries.map((i) {
                 return Builder(
                   builder: (BuildContext context) {
                     return Column(children: <Widget>[
-                      i.value.imageFile == null
+                      i.value.imagePath == null
                           ? Image.asset(
-                              'assets/chests/${i.value.imageName}',
+                              'assets/chests/${i.value.number}.png',
                               height: 150,
                             )
                           : Image.file(
-                              i.value.imageFile!,
+                              File(i.value.imagePath!),
                               height: 150,
                             ),
                       const SizedBox(height: 30),
                       Text(
-                        i.value.name!,
+                        i.value.name,
                         style: const TextStyle(fontSize: 20),
                       ),
                     ]);
@@ -72,10 +76,11 @@ class _ChooseChestState extends State<ChooseChest> {
                 );
               }).toList(),
             ),
-            if (chestBox.values.toList().length > 1)
+            if (Durt.i.walletService.safeBox.values.toList().length > 1)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: chestBox.toMap().entries.map((entry) {
+                children:
+                    Durt.i.walletService.safeBox.values.toList().map((entry) {
                   return GestureDetector(
                     onTap: () =>
                         buttonCarouselController.animateToPage(entry.key),
@@ -86,10 +91,13 @@ class _ChooseChestState extends State<ChooseChest> {
                           vertical: 8.0, horizontal: 4.0),
                       decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: (Theme.of(context).brightness == Brightness.dark
+                          color: (Theme.of(context).brightness ==
+                                      Brightness.dark
                                   ? Colors.white
                                   : Colors.black)
-                              .withValues(alpha: currentChest == entry.key ? 0.9 : 0.4)),
+                              .withValues(
+                                  alpha:
+                                      currentChest == entry.key ? 0.9 : 0.4)),
                     ),
                   );
                 }).toList(),

@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:durt2/durt2.dart' show Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -21,12 +22,12 @@ class ChestOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentChest = chestBox.get(configBox.get('currentChest'))!;
+    final currentSafe = Durt.i.walletService.defaultSafeBox;
 
     return Scaffold(
       backgroundColor: backgroundColor,
       resizeToAvoidBottomInset: false,
-      appBar: GeckoAppBar(currentChest.name!),
+      appBar: GeckoAppBar(currentSafe.name),
       bottomNavigationBar: const GeckoBottomAppBar(),
       body: Stack(children: [
         Builder(
@@ -54,8 +55,9 @@ class ChestOptionsContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chestProvider = Provider.of<ChestProvider>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-    final currentChest = chestBox.get(configBox.get('currentChest'))!;
+    final myWalletProvider =
+        Provider.of<MyWalletsProvider>(context, listen: false);
+    final currentChest = Durt.i.walletService.defaultSafeBox;
     final isAlone = myWalletProvider.listWallets.length == 1;
 
     return Column(
@@ -75,7 +77,8 @@ class ChestOptionsContent extends StatelessWidget {
             );
           },
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
+            padding: EdgeInsets.symmetric(
+                horizontal: scaleSize(16), vertical: scaleSize(12)),
             child: Row(
               children: [
                 Icon(
@@ -115,7 +118,8 @@ class ChestOptionsContent extends StatelessWidget {
                 );
               },
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
+                padding: EdgeInsets.symmetric(
+                    horizontal: scaleSize(16), vertical: scaleSize(12)),
                 child: Row(
                   children: [
                     Icon(
@@ -145,22 +149,26 @@ class ChestOptionsContent extends StatelessWidget {
             builder: (context, sub, _) {
               return InkWell(
                 key: keycreateRootDerivation,
-                onTap: sub.nodeConnected
+                onTap: Durt.i.isConnected
                     ? () async {
                         await Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const CustomDerivation()),
+                          MaterialPageRoute(
+                              builder: (context) => const CustomDerivation()),
                         );
                       }
                     : null,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: scaleSize(16), vertical: scaleSize(12)),
                   child: Row(
                     children: [
                       Icon(
                         Icons.manage_accounts,
                         size: scaleSize(24),
-                        color: sub.nodeConnected ? Colors.black87 : Colors.grey[400],
+                        color: Durt.i.isConnected
+                            ? Colors.black87
+                            : Colors.grey[400],
                       ),
                       ScaledSizedBox(width: 16),
                       Expanded(
@@ -168,7 +176,9 @@ class ChestOptionsContent extends StatelessWidget {
                           'createDerivation'.tr(),
                           style: scaledTextStyle(
                             fontSize: 16,
-                            color: sub.nodeConnected ? Colors.black87 : Colors.grey[500],
+                            color: Durt.i.isConnected
+                                ? Colors.black87
+                                : Colors.grey[500],
                           ),
                           softWrap: true,
                         ),
@@ -187,7 +197,8 @@ class ChestOptionsContent extends StatelessWidget {
             await chestProvider.forgetSafe(context, currentChest);
           },
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
+            padding: EdgeInsets.symmetric(
+                horizontal: scaleSize(16), vertical: scaleSize(12)),
             child: Row(
               children: [
                 Image.asset(

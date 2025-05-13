@@ -71,7 +71,7 @@
     "yourChestAndWalletWereRestoredSuccessfully": "Top !\n\nVotre coffre et vos portefeuilles ont été restaurés avec succès.\n\nFélicitations !",
     "allGood": "C'est tout bon !",
     "areYouSureToForgetSafe": "Êtes-vous sûr de vouloir oublier le coffre \"{}\" ?",
-    "areYouSureForgetAllChests": "Êtes-vous sûr de vouloir oublier tous vos coffres ?",
+    "areYouSureForgetAllSafes": "Êtes-vous sûr de vouloir oublier tous vos coffres ?",
     "areYouSureToForgetWallet": "Êtes-vous sûr de vouloir oublier le portefeuille \"{}\" ?\nLe solde sera transféré vers votre portefeuille par défaut.",
     "areYouSureYouWantToCertify1": "Êtes-vous certain de vouloir certifier l'identité :",
     "areYouSureYouWantToCertify2": "ayant pour adresse :",

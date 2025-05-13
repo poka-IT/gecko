@@ -1,10 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:durt2/durt2.dart' show IdtyStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -196,7 +196,7 @@ class ManageMembership extends StatelessWidget {
       status,
       sub.currencyParameters['membershipRenewalPeriod']!,
     );
-    if (info.expireDate == null && status.idtyStatus != IdtyStatus.notMember) return const SizedBox.shrink();
+    if (info.expireDate == null && status.idtyStatus != IdtyStatus.expired) return const SizedBox.shrink();
 
     return Container(
       height: scaleSize(64),

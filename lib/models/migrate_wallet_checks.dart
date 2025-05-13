@@ -1,4 +1,4 @@
-import 'package:gecko/models/wallet_data.dart';
+import 'package:durt2/durt2.dart' show IdtyStatus;
 
 class MigrateWalletChecks {
   final Map<String, dynamic> fromBalance;

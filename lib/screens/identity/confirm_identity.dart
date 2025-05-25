@@ -7,6 +7,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
@@ -90,6 +91,7 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
   @override
   Widget build(BuildContext context) {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
     final screenSize = MediaQuery.of(context).size;
     final isSmallScreen = screenSize.height < 700;
 
@@ -97,6 +99,7 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
       backgroundColor: Colors.white,
       appBar: WalletAppBar(
         address: widget.address,
+        currentBalance: BigInt.from(walletOptions.balanceCache[widget.address] ?? 0),
         title: 'chooseIdentityName'.tr(),
       ),
       body: Column(

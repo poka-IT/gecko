@@ -12,6 +12,9 @@ import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
+import 'package:gecko/models/wallet_header_data.dart';
+import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/my_wallets.dart';
 
 class ActivityScreen extends StatefulWidget {
   const ActivityScreen({required this.address, this.username, this.transactionId, this.comment}) : super(key: keyActivityScreen);
@@ -24,46 +27,97 @@ class ActivityScreen extends StatefulWidget {
 }
 
 class _ActivityScreenState extends State<ActivityScreen> {
+  late Future<WalletHeaderData> _headerDataFuture;
+
   @override
   void initState() {
+    super.initState();
     final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
     sub.getOldOwnerKey(widget.address);
-    super.initState();
+    _headerDataFuture = _loadWalletData();
+  }
+
+  Future<WalletHeaderData> _loadWalletData() async {
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+
+    final (idtyStatusValue, balanceResult, certData) = await (
+      sub.idtyStatus(widget.address),
+      sub.getBalance(widget.address),
+      sub.getCertsCounter(widget.address),
+    ).wait;
+
+    final data = WalletHeaderData(
+      hasIdentity: idtyStatusValue != IdtyStatus.none,
+      isOwner: myWalletProvider.isOwner(widget.address),
+      walletName: duniterIndexer.walletNameIndexer[widget.address],
+      balance: BigInt.from(balanceResult.transferableBalance),
+      certCount: certData,
+    );
+
+    return data;
   }
 
   @override
   Widget build(BuildContext context) {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: true);
 
-    return PopScope(
-      onPopInvokedWithResult: (_, __) {
-        duniterIndexer.refetch = duniterIndexer.transBC = null;
-      },
-      child: Scaffold(
-        backgroundColor: Colors.grey[50],
-        appBar: WalletAppBar(
-          address: widget.address,
-          title: 'accountActivity'.tr(),
-        ),
-        body: Stack(
-          children: [
-            Column(
-              children: <Widget>[
-                WalletHeader(address: widget.address),
-                Expanded(
-                  child: HistoryQuery(
-                    address: widget.address,
-                    transactionId: widget.transactionId,
-                    comment: widget.comment,
-                  ),
+    return FutureBuilder<WalletHeaderData>(
+      future: _headerDataFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            backgroundColor: Colors.grey[50],
+            appBar: AppBar(title: Text('accountActivity'.tr())),
+            body: const Center(child: CircularProgressIndicator()),
+            bottomNavigationBar: const GeckoBottomAppBar(),
+          );
+        }
+
+        if (snapshot.hasError || !snapshot.hasData) {
+          return Scaffold(
+            backgroundColor: Colors.grey[50],
+            appBar: AppBar(title: Text('accountActivity'.tr())),
+            body: Center(child: Text('errorLoadingWalletData'.tr())),
+            bottomNavigationBar: const GeckoBottomAppBar(),
+          );
+        }
+
+        final walletData = snapshot.data!;
+
+        return PopScope(
+          onPopInvokedWithResult: (_, __) {
+            duniterIndexer.refetch = duniterIndexer.transBC = null;
+          },
+          child: Scaffold(
+            backgroundColor: Colors.grey[50],
+            appBar: WalletAppBar(
+              address: widget.address,
+              currentBalance: walletData.balance,
+              title: 'accountActivity'.tr(),
+            ),
+            body: Stack(
+              children: [
+                Column(
+                  children: <Widget>[
+                    WalletHeader(address: widget.address),
+                    Expanded(
+                      child: HistoryQuery(
+                        address: widget.address,
+                        transactionId: widget.transactionId,
+                        comment: widget.comment,
+                      ),
+                    ),
+                  ],
                 ),
+                const OfflineInfo(),
               ],
             ),
-            const OfflineInfo(),
-          ],
-        ),
-        bottomNavigationBar: const GeckoBottomAppBar(),
-      ),
+            bottomNavigationBar: const GeckoBottomAppBar(),
+          ),
+        );
+      },
     );
   }
 }

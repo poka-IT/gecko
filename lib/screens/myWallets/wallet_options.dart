@@ -58,6 +58,7 @@ class WalletOptions extends StatelessWidget {
         backgroundColor: Colors.white,
         appBar: WalletAppBar(
           address: wallet.address,
+          currentBalance: BigInt.from(walletOptions.balanceCache[wallet.address] ?? 0),
           title: isWalletNameIndexed ? duniterIndexer.walletNameIndexer[walletOptions.address.text]! : wallet.name!,
         ),
         body: Stack(

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -18,6 +19,8 @@ import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:gecko/widgets/payment_popup.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
+import 'package:gecko/models/wallet_header_data.dart';
+import 'package:gecko/providers/duniter_indexer.dart';
 
 const double buttonSize = 75;
 const double buttonFontSize = 13;
@@ -34,12 +37,37 @@ class WalletViewScreen extends StatefulWidget {
 class _WalletViewScreenState extends State<WalletViewScreen> {
   late String address;
   late String? username;
+  late Future<WalletHeaderData> _headerDataFuture;
 
   @override
   void initState() {
     super.initState();
     address = widget.address;
     username = widget.username;
+    _headerDataFuture = _loadWalletData();
+  }
+
+  Future<WalletHeaderData> _loadWalletData() async {
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+
+    final (idtyStatusValue, balanceResult, certData) = await (
+      sub.idtyStatus(address),
+      sub.getBalance(address),
+      sub.getCertsCounter(address),
+    ).wait;
+
+    final data = WalletHeaderData(
+      hasIdentity: idtyStatusValue != IdtyStatus.none,
+      isOwner: myWalletProvider.isOwner(address),
+      walletName: duniterIndexer.walletNameIndexer[address],
+      balance: BigInt.from(balanceResult.transferableBalance),
+      certCount: certData,
+    );
+
+    await walletHeaderDataBox.put(address, data);
+    return data;
   }
 
   @override
@@ -52,91 +80,111 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
     walletProfile.address = address;
     sub.setCurrentWallet(defaultWallet);
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      resizeToAvoidBottomInset: true,
-      appBar: WalletAppBar(
-        address: address,
-        titleBuilder: (username) => username == null ? 'seeAWallet'.tr() : 'memberAccountOf'.tr(args: [username]),
-      ),
-      bottomNavigationBar: const GeckoBottomAppBar(),
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                // On divise le contenu en deux parties afin de pouvoir utiliser mainAxisAlignment.spaceBetween
-                // et ainsi faire remonter le bouton de transfert en bas sur grand écran.
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    // Partie haute
-                    Column(
-                      children: [
-                        WalletHeader(address: address),
-                        ScaledSizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return FutureBuilder<WalletHeaderData>(
+      future: _headerDataFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            backgroundColor: backgroundColor,
+            appBar: AppBar(title: Text(username == null ? 'seeAWallet'.tr() : 'memberAccountOf'.tr(args: [username ?? '']))),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.hasError || !snapshot.hasData) {
+          return Scaffold(
+            backgroundColor: backgroundColor,
+            appBar: AppBar(title: Text(username == null ? 'seeAWallet'.tr() : 'memberAccountOf'.tr(args: [username ?? '']))),
+            body: Center(child: Text('errorLoadingWalletData'.tr())),
+          );
+        }
+
+        final walletData = snapshot.data!;
+
+        return Scaffold(
+          backgroundColor: backgroundColor,
+          resizeToAvoidBottomInset: true,
+          appBar: WalletAppBar(
+            address: address,
+            currentBalance: walletData.balance,
+            titleBuilder: (uname) => uname == null ? 'seeAWallet'.tr() : 'memberAccountOf'.tr(args: [uname]),
+          ),
+          bottomNavigationBar: const GeckoBottomAppBar(),
+          body: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Column(
                           children: [
-                            _buildActionButton(
-                              context: context,
-                              key: keyViewActivity,
-                              icon: 'assets/walletOptions/clock.png',
-                              label: "displayNActivity".tr(),
-                              onTap: () => Navigator.push(
-                                context,
-                                PageNoTransit(
-                                  builder: (context) => ActivityScreen(address: address),
+                            WalletHeader(address: address),
+                            ScaledSizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildActionButton(
+                                  context: context,
+                                  key: keyViewActivity,
+                                  icon: 'assets/walletOptions/clock.png',
+                                  label: "displayNActivity".tr(),
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    PageNoTransit(
+                                      builder: (context) => ActivityScreen(address: address),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                            Consumer<SubstrateSdk>(
-                              builder: (context, sub, _) {
-                                return FutureBuilder(
-                                  future: sub.certState(address),
-                                  builder: (context, AsyncSnapshot<CertState> snapshot) {
-                                    if (!snapshot.hasData) return const SizedBox.shrink();
-                                    final certState = snapshot.data!;
-                                    return Visibility(
-                                      visible: certState.status != CertStatus.none,
-                                      child: CertStateWidget(
-                                        certState: certState,
-                                        address: address,
-                                      ),
+                                Consumer<SubstrateSdk>(
+                                  builder: (context, sub, _) {
+                                    return FutureBuilder(
+                                      future: sub.certState(address),
+                                      builder: (context, AsyncSnapshot<CertState> snapshot) {
+                                        if (!snapshot.hasData) return const SizedBox.shrink();
+                                        final certState = snapshot.data!;
+                                        return Visibility(
+                                          visible: certState.status != CertStatus.none,
+                                          child: CertStateWidget(
+                                            certState: certState,
+                                            address: address,
+                                          ),
+                                        );
+                                      },
                                     );
                                   },
-                                );
-                              },
+                                ),
+                                _buildActionButton(
+                                  context: context,
+                                  key: keyCopyAddress,
+                                  icon: 'assets/copy_key.png',
+                                  label: "copyAddress".tr(),
+                                  onTap: () {
+                                    Clipboard.setData(ClipboardData(text: address));
+                                    snackCopyKey(context);
+                                  },
+                                ),
+                              ],
                             ),
-                            _buildActionButton(
-                              context: context,
-                              key: keyCopyAddress,
-                              icon: 'assets/copy_key.png',
-                              label: "copyAddress".tr(),
-                              onTap: () {
-                                Clipboard.setData(ClipboardData(text: address));
-                                snackCopyKey(context);
-                              },
-                            ),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            _buildTransferButton(context),
+                            ScaledSizedBox(height: isTall ? 40 : 7),
                           ],
                         ),
                       ],
                     ),
-                    // Partie basse
-                    Column(
-                      children: [
-                        _buildTransferButton(context),
-                        ScaledSizedBox(height: isTall ? 40 : 7),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 

@@ -115,12 +115,15 @@ class _WalletHeaderState extends State<WalletHeader> {
     }
   }
 
-  Widget _buildContent(BuildContext context, bool hasIdentity, bool isOwner, bool isPickerOpen, String newCustomImagePath, DuniterIndexer duniterIndexer) {
+  Widget _buildContent(BuildContext context, BigInt currentWalletBalance, bool hasIdentity, bool isOwner, bool isPickerOpen, String newCustomImagePath,
+      DuniterIndexer duniterIndexer) {
     const double avatarSize = 90;
-    final walletOptions = Provider.of<WalletOptionsProvider>(context);
+    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
     Provider.of<SubstrateSdk>(context); //To refresh header color on block changes
-    final balance = walletOptions.balanceCache[widget.address] ?? 0;
-    final isEmptyWallet = balance == 0;
+
+    final balance = walletOptions.balanceCache[widget.address] == null ? currentWalletBalance : BigInt.from(walletOptions.balanceCache[widget.address] ?? 0);
+
+    final isEmptyWallet = balance == BigInt.zero;
 
     return Container(
       decoration: BoxDecoration(
@@ -455,6 +458,7 @@ class _WalletHeaderState extends State<WalletHeader> {
     if (cached != null) {
       return _buildContent(
         context,
+        cached.balance,
         cached.hasIdentity,
         cached.isOwner,
         _isPickerOpen,
@@ -478,6 +482,7 @@ class _WalletHeaderState extends State<WalletHeader> {
         final data = snapshot.data!;
         return _buildContent(
           context,
+          data.balance,
           data.hasIdentity,
           data.isOwner,
           _isPickerOpen,

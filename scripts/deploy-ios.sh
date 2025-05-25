@@ -2,6 +2,15 @@
 
 set -e
 
+# Function to clean up Info.plist
+cleanup() {
+    echo "Cleaning up Info.plist..."
+    git checkout ios/Runner/Info.plist
+}
+
+# Trap ERR and EXIT signals to ensure cleanup
+trap cleanup ERR EXIT
+
 # Load environment variables
 if [ -f .env ]; then
     export $(cat .env | sed 's/#.*//g' | xargs)
@@ -16,6 +25,11 @@ VERSION=$(awk -F '+' '{ print $1 }' <<<$fVersion)
 BUILD=$(awk -F '+' '{ print $2 }' <<<$fVersion)
 
 echo "Building Gecko iOS v${VERSION}+${BUILD}"
+
+# Temporarily replace build name and number in Info.plist
+echo "Updating Info.plist with version ${VERSION} and build number ${BUILD}"
+sed -i '' "s|\$(FLUTTER_BUILD_NAME)|${VERSION}|g" ios/Runner/Info.plist
+sed -i '' "s|\$(FLUTTER_BUILD_NUMBER)|${BUILD}|g" ios/Runner/Info.plist
 
 # get dependencies
 fvm flutter pub get
@@ -41,9 +55,7 @@ xcrun altool --upload-app \
     --file "$IPA_PATH" \
     --username "$APPLE_ID" \
     --password "$APP_SPECIFIC_PASSWORD" \
-    --bundle-id "$BUNDLE_ID" \
-    --bundle-version "$VERSION" \
-    --bundle-short-version-string "$BUILD"
+    --bundle-id "$BUNDLE_ID"
 
 if [ $? -eq 0 ]; then
     echo "Successfully uploaded to App Store"
@@ -52,4 +64,4 @@ else
     exit 1
 fi
 
-exit 0 
+exit 0

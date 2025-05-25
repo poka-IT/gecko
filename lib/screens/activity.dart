@@ -68,7 +68,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
-            backgroundColor: Colors.grey[50],
             appBar: AppBar(title: Text('accountActivity'.tr())),
             body: const Center(child: CircularProgressIndicator()),
             bottomNavigationBar: const GeckoBottomAppBar(),
@@ -77,7 +76,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
         if (snapshot.hasError || !snapshot.hasData) {
           return Scaffold(
-            backgroundColor: Colors.grey[50],
             appBar: AppBar(title: Text('accountActivity'.tr())),
             body: Center(child: Text('errorLoadingWalletData'.tr())),
             bottomNavigationBar: const GeckoBottomAppBar(),
@@ -91,7 +89,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
             duniterIndexer.refetch = duniterIndexer.transBC = null;
           },
           child: Scaffold(
-            backgroundColor: Colors.grey[50],
             appBar: WalletAppBar(
               address: widget.address,
               currentBalance: walletData.balance,

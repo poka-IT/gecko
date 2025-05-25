@@ -55,7 +55,6 @@ class WalletOptions extends StatelessWidget {
         myWalletProvider.reload();
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
         appBar: WalletAppBar(
           address: wallet.address,
           currentBalance: BigInt.from(walletOptions.balanceCache[wallet.address] ?? 0),

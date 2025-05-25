@@ -42,21 +42,10 @@ class TransactionTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            // Soft ambient shadow
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            spreadRadius: 2,
-            offset: const Offset(0, 2),
-          ),
-          BoxShadow(
-            // Sharper direct shadow
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 1,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        // border: Border.all(
+        //   color: Colors.grey.withValues(alpha: 0.2),
+        //   width: 1,
+        // ),
       ),
       child: ListTile(
         key: keyTransaction(newKey),

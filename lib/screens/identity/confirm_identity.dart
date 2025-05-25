@@ -96,7 +96,6 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
     final isSmallScreen = screenSize.height < 700;
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: WalletAppBar(
         address: widget.address,
         currentBalance: BigInt.from(walletOptions.balanceCache[widget.address] ?? 0),

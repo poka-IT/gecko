@@ -76,7 +76,6 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
 
     if (txContent == null) {
       return Scaffold(
-        backgroundColor: Colors.white,
         body: Center(
           child: Loading(
             size: 30,
@@ -104,7 +103,6 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: headerColor,
         elevation: 0,

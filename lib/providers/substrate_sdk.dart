@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:fast_base58/fast_base58.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/exceptions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/certification_data.dart';
 import 'package:gecko/models/chest_data.dart';
@@ -443,6 +444,8 @@ class SubstrateSdk with ChangeNotifier {
       return CertState(status: CertStatus.mustWaitBeforeCert, duration: Duration(seconds: certDelayDuration));
     } else if (toStatus == IdtyStatus.unconfirmed) {
       return CertState(status: CertStatus.mustConfirmIdentity);
+    } else if (toStatus == IdtyStatus.revoked) {
+      return CertState(status: CertStatus.revoked);
     } else {
       return CertState(status: CertStatus.canCert);
     }
@@ -1098,7 +1101,7 @@ class SubstrateSdk with ChangeNotifier {
     final toIndex = await _getIdentityIndexOf(destAddress);
 
     if (myIdtyStatus != IdtyStatus.member) {
-      return 'notMember';
+      throw NotMemberException();
     }
 
     final sender = await _setSender(fromAddress);
@@ -1141,7 +1144,7 @@ class SubstrateSdk with ChangeNotifier {
       }
     } else {
       log.e('cantBeCert: $toIdtyStatus');
-      return 'cantBeCert';
+      throw CantBeCertException(toIdtyStatus.name);
     }
 
     log.d('Cert action: ${txInfo.module!}.${txInfo.call!}');

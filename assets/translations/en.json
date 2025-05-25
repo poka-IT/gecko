@@ -289,5 +289,11 @@
     "qrCodeNotAddress": "This QR code is not a valid address",
     "emptyWalletCannotBeCertified": "An empty wallet cannot be certified",
     "timeoutScanDerivations": "Scan derivations timed out. Please try again later.",
-    "errorScanDerivations": "An error occurred while scanning derivations. Please try again."
+    "errorScanDerivations": "An error occurred while scanning derivations. Please try again.",
+    "revokedAccountCannotBeCertified": "A revoked account cannot be certified",
+    "info": "Information",
+    "warning": "Warning",
+    "success": "Success",
+    "error": "Error",
+    "question": "Question"
 }

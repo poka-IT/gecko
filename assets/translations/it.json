@@ -221,5 +221,11 @@
     "qrCodeNotAddress": "Questo QR code non é un indirizzo valido",
     "emptyWalletCannotBeCertified": "Un portafoglio vuoto non puó essere certificato",
     "timeoutScanDerivations": "Timeout durante la scansione delle derivazioni. Si prega di riprovare più tardi.",
-    "errorScanDerivations": "Si è verificato un errore durante la scansione delle derivazioni. Si prega di riprovare."
+    "errorScanDerivations": "Si è verificato un errore durante la scansione delle derivazioni. Si prega di riprovare.",
+    "revokedAccountCannotBeCertified": "Un conto revocato non puó essere certificato",
+    "info": "Informazione",
+    "warning": "Attenzione",
+    "success": "Successo",
+    "error": "Errore",
+    "question": "Domanda"
 }

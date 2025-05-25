@@ -31,6 +31,9 @@ class CertStateWidget extends StatelessWidget {
       case CertStatus.emptyWallet:
         label = 'emptyWalletCannotBeCertified'.tr();
         break;
+      case CertStatus.revoked:
+        label = 'revokedAccountCannotBeCertified'.tr();
+        break;
       case CertStatus.none:
         return const SizedBox.shrink();
     }
@@ -68,6 +71,7 @@ enum CertStatus {
   mustWaitBeforeCert,
   mustConfirmIdentity,
   emptyWallet,
+  revoked,
 }
 
 class CertState {

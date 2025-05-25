@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -88,9 +89,9 @@ class HistoryQuery extends StatelessWidget {
             builder: (QueryResult result, {fetchMore, refetch}) {
               duniterIndexer.refetch = refetch;
               if (result.isLoading && result.data == null) {
-                return const Center(
+                return Center(
                   child: CircularProgressIndicator(
-                    color: orangeC,
+                    color: homeContext.colorScheme.primary,
                   ),
                 );
               }
@@ -135,7 +136,7 @@ class HistoryQuery extends StatelessWidget {
                   child: Builder(
                     builder: (context) => Expanded(
                       child: RefreshIndicator(
-                        color: orangeC,
+                        color: context.colorScheme.primary,
                         onRefresh: () async => refetch!.call(),
                         child: ListView(
                           key: keyListTransactions,

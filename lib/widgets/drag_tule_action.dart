@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -32,7 +33,7 @@ class DragTuleAction extends StatelessWidget {
       feedback: ElevatedButton(
         onPressed: () {},
         style: ElevatedButton.styleFrom(
-          backgroundColor: orangeC,
+          backgroundColor: context.colorScheme.primary,
           shape: const CircleBorder(),
           padding: EdgeInsets.all(scaleSize(14)),
         ),

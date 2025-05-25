@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -40,7 +41,7 @@ class _OnboardingStepNineState extends State<OnboardingStepNine> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('myPassword'.tr()),
       body: SafeArea(
         child: Stack(children: [
@@ -61,7 +62,7 @@ class _OnboardingStepNineState extends State<OnboardingStepNine> {
     );
   }
 
-  Widget pinForm(context, int walletNbr, int derivation) {
+  Widget pinForm(BuildContext context, int walletNbr, int derivation) {
     Color? pinColor = const Color(0xFFA4B600);
 
     return Form(
@@ -104,7 +105,7 @@ class _OnboardingStepNineState extends State<OnboardingStepNine> {
             showCursor: !kDebugMode,
             cursorColor: Colors.black,
             textStyle: const TextStyle(fontSize: 24, height: 1.6),
-            backgroundColor: const Color(0xffF9F9F1),
+            backgroundColor: homeContext.colorScheme.surface,
             enableActiveFill: false,
             controller: enterPin,
             keyboardType: TextInputType.number,

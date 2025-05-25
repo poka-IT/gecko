@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 
@@ -23,7 +24,7 @@ extension ConfirmationDialogTypeExtension on ConfirmationDialogType {
       };
 
   Color get iconColor => switch (this) {
-        ConfirmationDialogType.info => orangeC,
+        ConfirmationDialogType.info => homeContext.colorScheme.primary,
         ConfirmationDialogType.warning => const Color(0xFFFF9800),
         ConfirmationDialogType.success => const Color(0xFF4CAF50),
         ConfirmationDialogType.error => const Color(0xFFF44336),
@@ -72,11 +73,10 @@ Future<bool> showConfirmationDialog({
           borderRadius: BorderRadius.circular(24),
         ),
         elevation: 0,
-        backgroundColor: Colors.transparent,
         child: Container(
           padding: EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.colorScheme.surface,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(

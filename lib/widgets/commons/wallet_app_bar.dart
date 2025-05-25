@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -35,7 +36,7 @@ class WalletAppBar extends StatelessWidget implements PreferredSizeWidget {
     final isEmptyWallet = balance == BigInt.zero;
 
     return AppBar(
-      backgroundColor: isEmptyWallet ? Colors.grey[300] : headerColor,
+      backgroundColor: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary,
       titleSpacing: 10,
       title: Text(
         title ?? titleBuilder!(duniterIndexer.walletNameIndexer[address]),
@@ -55,6 +56,7 @@ class WalletAppBar extends StatelessWidget implements PreferredSizeWidget {
                 icon: Icon(
                   profile.isContact(address) ? Icons.add_reaction_rounded : Icons.add_reaction_outlined,
                   size: scaleSize(27),
+                  color: context.colorScheme.onSecondaryContainer,
                 ),
               );
             }),
@@ -71,6 +73,12 @@ class WalletAppBar extends StatelessWidget implements PreferredSizeWidget {
                   data: address,
                   version: QrVersions.auto,
                   size: scaleSize(45),
+                  dataModuleStyle: QrDataModuleStyle(
+                    color: context.colorScheme.onSecondaryContainer,
+                  ),
+                  eyeStyle: QrEyeStyle(
+                    color: context.colorScheme.onSecondaryContainer,
+                  ),
                 ),
               ),
             ),

@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -9,13 +10,14 @@ import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 
 class IdentityStatus extends StatelessWidget {
-  const IdentityStatus({super.key, required this.address, this.color = Colors.black});
+  const IdentityStatus({super.key, required this.address, this.color});
   final String address;
-  final Color color;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
     final walletData = walletBox.get(address) ?? WalletData(address: address);
+    final finalColor = color ?? context.colorScheme.onSecondaryContainer;
 
     return Consumer<SubstrateSdk>(builder: (context, sub, _) {
       return FutureBuilder(
@@ -31,8 +33,9 @@ class IdentityStatus extends StatelessWidget {
             final resStatus = walletData.identityStatus;
 
             final nameByAddress = resStatus == IdtyStatus.member
-                ? NameByAddress(wallet: walletData, size: 18, color: Colors.black, fontWeight: FontWeight.w500, fontStyle: FontStyle.normal)
-                : NameByAddress(wallet: walletData, size: 16, color: Colors.grey[700]!, fontWeight: FontWeight.w500, fontStyle: FontStyle.italic);
+                ? NameByAddress(wallet: walletData, size: 18, color: finalColor, fontWeight: FontWeight.w500, fontStyle: FontStyle.normal)
+                : NameByAddress(
+                    wallet: walletData, size: 16, color: homeContext.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w500, fontStyle: FontStyle.italic);
 
             final Map<IdtyStatus, String> statusText = {
               IdtyStatus.none: '',
@@ -48,21 +51,22 @@ class IdentityStatus extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 nameByAddress,
-                showText(statusText[resStatus]!, bold: resStatus == IdtyStatus.member, size: scaleSize(15)),
+                showText(context, statusText[resStatus]!, bold: resStatus == IdtyStatus.member, size: scaleSize(15)),
               ],
             );
           });
     });
   }
 
-  AnimatedFadeOutIn showText(String text, {double size = 18, bool bold = false}) {
+  AnimatedFadeOutIn showText(BuildContext context, String text, {double size = 18, bool bold = false}) {
+    final finalColor = color ?? context.colorScheme.onSecondaryContainer;
     return AnimatedFadeOutIn<String>(
       data: text,
       duration: const Duration(milliseconds: 150),
       builder: (value) => Text(
         value,
         textAlign: TextAlign.center,
-        style: TextStyle(fontSize: size, color: bold ? color : Colors.black, fontWeight: bold ? FontWeight.w500 : FontWeight.w400),
+        style: TextStyle(fontSize: size, color: bold ? finalColor : finalColor, fontWeight: bold ? FontWeight.w500 : FontWeight.w400),
       ),
     );
   }

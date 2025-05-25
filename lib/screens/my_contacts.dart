@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
@@ -53,7 +54,7 @@ class _ContactsScreenState extends State<ContactsScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: backgroundColor,
+        backgroundColor: context.colorScheme.surface,
         appBar: GeckoAppBar('contactsManagementWithNbr'.tr(args: ['${allContacts.length}'])),
         bottomNavigationBar: const GeckoBottomAppBar(),
         body: SafeArea(
@@ -70,7 +71,7 @@ class _ContactsScreenState extends State<ContactsScreen> {
                       prefixIcon: const Icon(Icons.search),
                       border: const OutlineInputBorder(),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: orangeC),
+                        borderSide: BorderSide(color: context.colorScheme.primary),
                       ),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     ),

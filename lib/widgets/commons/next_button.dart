@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gecko/globals.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/widgets/commons/fader_transition.dart';
@@ -25,13 +25,13 @@ class NextButton extends StatelessWidget {
         key: keyGoNext,
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.white,
-          backgroundColor: orangeC,
+          backgroundColor: context.colorScheme.primary,
           elevation: 2,
           padding: const EdgeInsets.symmetric(vertical: 2),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          shadowColor: orangeC.withValues(alpha: 0.3),
+          shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
         ),
         onPressed: () {
           Navigator.push(context, FaderTransition(page: nextScreen, isFast: isFast));

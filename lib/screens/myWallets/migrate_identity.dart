@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:easy_localization/easy_localization.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/migrate_wallet_checks.dart';
@@ -91,7 +92,7 @@ class MigrateIdentityScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('migrateIdentity'.tr()),
       body: SafeArea(
         child: Column(
@@ -112,13 +113,13 @@ class MigrateIdentityScreen extends StatelessWidget {
                               width: scaleSize(isSmallScreen ? 50 : 70),
                               height: scaleSize(isSmallScreen ? 50 : 70),
                               decoration: BoxDecoration(
-                                color: orangeC.withValues(alpha: 0.1),
+                                color: context.colorScheme.primary.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
                                 Icons.swap_horiz_rounded,
                                 size: scaleSize(isSmallScreen ? 25 : 35),
-                                color: orangeC,
+                                color: context.colorScheme.primary,
                               ),
                             ),
                             ScaledSizedBox(height: isSmallScreen ? 16 : 24),
@@ -130,7 +131,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                                   textAlign: WrapAlignment.center,
                                   style: scaledTextStyle(
                                     fontSize: isSmallScreen ? 14 : 15,
-                                    color: Colors.black87,
+                                    color: context.colorScheme.onSurface,
                                     height: 1.5,
                                   ),
                                 ),
@@ -138,9 +139,9 @@ class MigrateIdentityScreen extends StatelessWidget {
                                   value: walletOptions.balanceCache[fromAddress] ?? 0,
                                   size: isSmallScreen ? 14 : 15,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                                  color: context.colorScheme.onSurface,
                                 ),
-                                Text(' ?', style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 15, color: Colors.black87)),
+                                Text(' ?', style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 15, color: context.colorScheme.onSurface)),
                               ],
                             ),
                           ],
@@ -154,7 +155,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                         style: scaledTextStyle(
                           fontSize: isSmallScreen ? 15 : 16,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                          color: context.colorScheme.onSurface,
                         ),
                       ),
                       ScaledSizedBox(height: isSmallScreen ? 12 : 16),
@@ -197,7 +198,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                               maxLines: isSmallScreen ? 2 : 3,
                               style: scaledTextStyle(
                                 fontSize: isSmallScreen ? 14 : 15,
-                                color: Colors.black87,
+                                color: context.colorScheme.onSurface,
                                 height: 1.5,
                               ),
                               decoration: InputDecoration(
@@ -257,7 +258,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                               controller: newWalletAddress,
                               style: scaledTextStyle(
                                 fontSize: isSmallScreen ? 14 : 15,
-                                color: Colors.black87,
+                                color: context.colorScheme.onSurface,
                               ),
                               decoration: InputDecoration(
                                 contentPadding: EdgeInsets.all(scaleSize(isSmallScreen ? 12 : 16)),
@@ -343,7 +344,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                     child: ElevatedButton(
                       key: keyConfirm,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: orangeC,
+                        backgroundColor: context.colorScheme.primary,
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(

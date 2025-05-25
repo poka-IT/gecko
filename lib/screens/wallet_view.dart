@@ -2,6 +2,7 @@
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -85,7 +86,6 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
-            backgroundColor: backgroundColor,
             appBar: AppBar(title: Text(username == null ? 'seeAWallet'.tr() : 'memberAccountOf'.tr(args: [username ?? '']))),
             body: const Center(child: CircularProgressIndicator()),
           );
@@ -93,7 +93,6 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
 
         if (snapshot.hasError || !snapshot.hasData) {
           return Scaffold(
-            backgroundColor: backgroundColor,
             appBar: AppBar(title: Text(username == null ? 'seeAWallet'.tr() : 'memberAccountOf'.tr(args: [username ?? '']))),
             body: Center(child: Text('errorLoadingWalletData'.tr())),
           );
@@ -102,7 +101,6 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
         final walletData = snapshot.data!;
 
         return Scaffold(
-          backgroundColor: backgroundColor,
           resizeToAvoidBottomInset: true,
           appBar: WalletAppBar(
             address: address,
@@ -202,7 +200,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
           height: scaleSize(buttonSize),
           width: scaleSize(buttonSize),
           decoration: BoxDecoration(
-            color: yellowC,
+            color: context.colorScheme.secondary,
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
@@ -220,7 +218,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
               onTap: onTap,
               child: Padding(
                 padding: EdgeInsets.all(scaleSize(15)),
-                child: Image.asset(icon, color: Colors.black87),
+                child: Image.asset(icon, color: context.colorScheme.onSurface),
               ),
             ),
           ),
@@ -246,7 +244,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
             height: scaleSize(buttonSize + 5),
             width: scaleSize(buttonSize + 5),
             decoration: BoxDecoration(
-              color: orangeC,
+              color: context.colorScheme.primary,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
@@ -285,7 +283,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w500,
-                  color: sub.nodeConnected ? Colors.black87 : Colors.grey[500],
+                  color: sub.nodeConnected ? context.colorScheme.onSurface : Colors.grey[500],
                 ),
           ),
         ],

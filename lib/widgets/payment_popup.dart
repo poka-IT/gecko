@@ -3,6 +3,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/text_input_formaters.dart';
@@ -125,8 +126,8 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
             child: Container(
               // On fixe la hauteur maximale du bottom sheet
               height: bottomSheetHeight,
-              decoration: const ShapeDecoration(
-                color: Color(0xffffeed1),
+              decoration: ShapeDecoration(
+                color: context.colorScheme.tertiary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.only(
                     topRight: Radius.circular(shapeSize),
@@ -183,7 +184,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                               alignment: Alignment.center,
                               padding: const EdgeInsets.all(0),
                               child: DropdownButton(
-                                dropdownColor: const Color(0xffffeed1),
+                                dropdownColor: context.colorScheme.tertiary,
                                 elevation: 12,
                                 key: keyDropdownWallets,
                                 value: defaultWallet,
@@ -226,7 +227,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                     value: wallet,
                                     key: keySelectThisWallet(wallet.address),
                                     child: Container(
-                                      color: const Color(0xffffeed1),
+                                      color: context.colorScheme.tertiary,
                                       width: scaleSize(isTall ? 315 : 310),
                                       padding: const EdgeInsets.all(10),
                                       child: Row(
@@ -274,12 +275,12 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                   onTap: () => infoFeesPopup(context),
                                   child: Row(
                                     children: [
-                                      Icon(Icons.info_outlined, color: orangeC, size: scaleSize(21)),
+                                      Icon(Icons.info_outlined, color: context.colorScheme.primary, size: scaleSize(21)),
                                       ScaledSizedBox(width: 5),
                                       Text(
                                         'fees'.tr(args: [fees.toString(), currencyName]),
                                         style: scaledTextStyle(
-                                          color: orangeC,
+                                          color: context.colorScheme.primary,
                                           fontSize: 13,
                                           fontWeight: FontWeight.w500,
                                         ),
@@ -342,7 +343,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                 ),
                                 contentPadding: EdgeInsets.all(scaleSize(6)),
                               ),
-                              style: scaledTextStyle(fontSize: 22, color: Colors.black, fontWeight: FontWeight.w600),
+                              style: scaledTextStyle(fontSize: 22, color: context.colorScheme.onSurface, fontWeight: FontWeight.w600),
                             ),
                           ),
                           if (walletViewProvider.isCommentVisible) const SizedBox(height: 8),
@@ -393,7 +394,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                         if (canValidate) await executeTransfert();
                                       },
                                       maxLines: 1,
-                                      style: scaledTextStyle(fontSize: 13, color: Colors.black87),
+                                      style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSurface),
                                       decoration: InputDecoration(
                                         hintText: 'optionalComment'.tr(),
                                         hintStyle: TextStyle(color: Colors.grey[400]),
@@ -449,7 +450,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                               style: ElevatedButton.styleFrom(
                                 foregroundColor: Colors.white,
                                 elevation: 4,
-                                backgroundColor: orangeC,
+                                backgroundColor: context.colorScheme.primary,
                               ),
                               onPressed: canValidate
                                   ? () async {
@@ -483,11 +484,11 @@ Future<void> infoFeesPopup(BuildContext context) async {
     barrierDismissible: true,
     builder: (BuildContext context) {
       return AlertDialog(
-        backgroundColor: backgroundColor,
+        backgroundColor: context.colorScheme.surface,
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.info_outlined, color: orangeC, size: 40),
+            Icon(Icons.info_outlined, color: context.colorScheme.primary, size: 40),
             ScaledSizedBox(height: 20),
             Text(
               'feesExplanation'.tr(),

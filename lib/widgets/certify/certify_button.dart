@@ -3,7 +3,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/exceptions.dart';
-import 'package:gecko/globals.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
@@ -36,7 +36,7 @@ class CertifyButton extends StatelessWidget {
               color: const Color(0xffFFD58D),
               child: InkWell(
                 key: keyCertify,
-                splashColor: orangeC,
+                splashColor: context.colorScheme.primary,
                 onTap: () async {
                   final walletName = duniterIndexer.walletNameIndexer[address];
                   final message = walletName != null

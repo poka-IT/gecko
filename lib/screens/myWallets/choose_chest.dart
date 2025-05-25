@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:easy_localization/easy_localization.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -30,9 +31,8 @@ class _ChooseChestState extends State<ChooseChest> {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
 
     return Scaffold(
-        backgroundColor: backgroundColor,
-        appBar: AppBar(
-            toolbarHeight: scaleSize(57), title: Text('selectMyChest'.tr())),
+        backgroundColor: context.colorScheme.surface,
+        appBar: AppBar(toolbarHeight: scaleSize(57), title: Text('selectMyChest'.tr())),
         body: SafeArea(
           child: Column(children: <Widget>[
             const SizedBox(height: 160),
@@ -77,18 +77,14 @@ class _ChooseChestState extends State<ChooseChest> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: chestBox.toMap().entries.map((entry) {
                   return GestureDetector(
-                    onTap: () =>
-                        buttonCarouselController.animateToPage(entry.key),
+                    onTap: () => buttonCarouselController.animateToPage(entry.key),
                     child: Container(
                       width: 12.0,
                       height: 12.0,
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 8.0, horizontal: 4.0),
+                      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
                       decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: (Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.white
-                                  : Colors.black)
+                          color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black)
                               .withValues(alpha: currentChest == entry.key ? 0.9 : 0.4)),
                     ),
                   );
@@ -101,7 +97,7 @@ class _ChooseChestState extends State<ChooseChest> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.black,
-                  backgroundColor: orangeC,
+                  backgroundColor: context.colorScheme.primary,
                 ),
                 onPressed: () async {
                   await configBox.put('currentChest', currentChest);
@@ -116,10 +112,7 @@ class _ChooseChestState extends State<ChooseChest> {
                 },
                 child: Text(
                   'openThisChest'.tr(),
-                  style: const TextStyle(
-                      fontSize: 21,
-                      color: backgroundColor,
-                      fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: 21, color: context.colorScheme.surface, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -141,11 +134,7 @@ class _ChooseChestState extends State<ChooseChest> {
                     width: 400,
                     height: 50,
                     child: Center(
-                        child: Text('createChest'.tr(),
-                            style: const TextStyle(
-                                fontSize: 21,
-                                color: orangeC,
-                                fontWeight: FontWeight.w600))),
+                        child: Text('createChest'.tr(), style: TextStyle(fontSize: 21, color: context.colorScheme.primary, fontWeight: FontWeight.w600))),
                   ),
                 ),
               ),
@@ -163,12 +152,8 @@ class _ChooseChestState extends State<ChooseChest> {
                 child: SizedBox(
                   width: 400,
                   height: 50,
-                  child: Center(
-                      child: Text('importChest'.tr(),
-                          style: const TextStyle(
-                              fontSize: 21,
-                              color: orangeC,
-                              fontWeight: FontWeight.w600))),
+                  child:
+                      Center(child: Text('importChest'.tr(), style: TextStyle(fontSize: 21, color: context.colorScheme.primary, fontWeight: FontWeight.w600))),
                 )),
             const SizedBox(height: 20),
           ]),

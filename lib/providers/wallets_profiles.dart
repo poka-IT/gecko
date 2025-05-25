@@ -3,6 +3,7 @@
 import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -157,29 +158,41 @@ bool isPubkey(String pubkey) {
   return regExp.hasMatch(pubkey) == true && pubkey.length > 42 && pubkey.length < 45;
 }
 
-snackMessage(context, {required String message, int duration = 2, double fontSize = 14}) {
+snackMessage(BuildContext context, {required String message, int duration = 4, double fontSize = 14}) {
   final snackBar = SnackBar(
-      backgroundColor: Colors.grey[900],
+      backgroundColor: context.colorScheme.onSurface,
       padding: EdgeInsets.all(scaleSize(19)),
-      content: Text(message, style: scaledTextStyle(fontSize: fontSize)),
+      content: Text(message,
+          style: scaledTextStyle(
+            fontSize: fontSize,
+            color: context.colorScheme.surfaceContainer,
+          )),
       duration: Duration(seconds: duration));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
 
-snackCopyKey(context) {
+snackCopyKey(BuildContext context) {
   final snackBar = SnackBar(
-      backgroundColor: Colors.grey[900],
+      backgroundColor: context.colorScheme.onSurface,
       padding: EdgeInsets.all(scaleSize(19)),
-      content: Text("thisAddressHasBeenCopiedToClipboard".tr(), style: scaledTextStyle(fontSize: 13)),
-      duration: const Duration(seconds: 2));
+      content: Text("thisAddressHasBeenCopiedToClipboard".tr(),
+          style: scaledTextStyle(
+            fontSize: 13,
+            color: context.colorScheme.surfaceContainer,
+          )),
+      duration: const Duration(seconds: 4));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
 
-snackCopySeed(context) {
+snackCopySeed(BuildContext context) {
   final snackBar = SnackBar(
-      backgroundColor: Colors.grey[900],
+      backgroundColor: context.colorScheme.onSurface,
       padding: EdgeInsets.all(scaleSize(19)),
-      content: Text("thisMnemonicHasBeenCopiedToClipboard".tr(), style: scaledTextStyle(fontSize: 13)),
+      content: Text("thisMnemonicHasBeenCopiedToClipboard".tr(),
+          style: scaledTextStyle(
+            fontSize: 13,
+            color: context.colorScheme.surfaceContainer,
+          )),
       duration: const Duration(seconds: 4));
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }

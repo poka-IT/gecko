@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:easy_localization/easy_localization.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -46,9 +47,10 @@ class _WalletsHomeContent extends StatelessWidget {
     final ChestData currentChest = chestBox.get(currentChestNumber)!;
 
     return Scaffold(
-        backgroundColor: backgroundColor,
+        backgroundColor: context.colorScheme.surface,
         appBar: AppBar(
           toolbarHeight: scaleSize(57),
+          backgroundColor: context.colorScheme.tertiary,
           title: Row(
             children: [
               Image.asset(
@@ -58,7 +60,7 @@ class _WalletsHomeContent extends StatelessWidget {
               ScaledSizedBox(width: 17),
               Text(
                 currentChest.name!,
-                style: scaledTextStyle(color: Colors.grey[850], fontSize: 16, fontWeight: FontWeight.w500),
+                style: scaledTextStyle(color: context.colorScheme.onSurface, fontSize: 16, fontWeight: FontWeight.w500),
               ),
             ],
           ),
@@ -131,7 +133,7 @@ class _WalletsHomeContent extends StatelessWidget {
           enableOverlayTab: true,
         ),
       ],
-      colorShadow: orangeC,
+      colorShadow: context.colorScheme.primary,
       textSkip: "skip".tr(),
       paddingFocus: 10,
       opacityShadow: 0.8,

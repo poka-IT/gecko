@@ -2,6 +2,7 @@
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -24,7 +25,7 @@ class ChestOptions extends StatelessWidget {
     final currentChest = chestBox.get(configBox.get('currentChest'))!;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: context.colorScheme.surface,
       resizeToAvoidBottomInset: false,
       appBar: GeckoAppBar(currentChest.name!),
       bottomNavigationBar: const GeckoBottomAppBar(),
@@ -81,7 +82,7 @@ class ChestOptionsContent extends StatelessWidget {
                 Icon(
                   Icons.vpn_key_outlined,
                   size: scaleSize(24),
-                  color: Colors.black87,
+                  color: context.colorScheme.onSurface,
                 ),
                 ScaledSizedBox(width: 16),
                 Expanded(
@@ -89,7 +90,7 @@ class ChestOptionsContent extends StatelessWidget {
                     'displayMnemonic'.tr(),
                     style: scaledTextStyle(
                       fontSize: 16,
-                      color: Colors.black87,
+                      color: context.colorScheme.onSurface,
                     ),
                     softWrap: true,
                   ),
@@ -129,7 +130,7 @@ class ChestOptionsContent extends StatelessWidget {
                         'changePassword'.tr(),
                         style: scaledTextStyle(
                           fontSize: 16,
-                          color: Colors.black87,
+                          color: context.colorScheme.onSurface,
                         ),
                         softWrap: true,
                       ),
@@ -160,7 +161,7 @@ class ChestOptionsContent extends StatelessWidget {
                       Icon(
                         Icons.manage_accounts,
                         size: scaleSize(24),
-                        color: sub.nodeConnected ? Colors.black87 : Colors.grey[400],
+                        color: sub.nodeConnected ? context.colorScheme.onSurface : Colors.grey[400],
                       ),
                       ScaledSizedBox(width: 16),
                       Expanded(
@@ -168,7 +169,7 @@ class ChestOptionsContent extends StatelessWidget {
                           'createDerivation'.tr(),
                           style: scaledTextStyle(
                             fontSize: 16,
-                            color: sub.nodeConnected ? Colors.black87 : Colors.grey[500],
+                            color: sub.nodeConnected ? context.colorScheme.onSurface : Colors.grey[500],
                           ),
                           softWrap: true,
                         ),

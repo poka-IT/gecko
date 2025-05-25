@@ -2,6 +2,7 @@
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -48,7 +49,7 @@ class HomeButtons extends StatelessWidget {
             ),
             child: ClipOval(
               child: Material(
-                color: orangeC,
+                color: context.colorScheme.primary,
                 child: InkWell(
                   splashColor: Colors.white.withValues(alpha: 0.2),
                   highlightColor: Colors.white.withValues(alpha: 0.1),
@@ -112,7 +113,7 @@ class HomeButtons extends StatelessWidget {
             child: ClipOval(
               key: keyOpenWalletsHomme,
               child: Material(
-                color: homeProvider.isWalletBoxInit ? orangeC : Colors.grey[500], // button color
+                color: homeProvider.isWalletBoxInit ? context.colorScheme.primary : Colors.grey[500], // button color
                 child: InkWell(
                     onTap: !homeProvider.isWalletBoxInit
                         ? null
@@ -168,7 +169,7 @@ class HomeButtons extends StatelessWidget {
               ),
               child: ClipOval(
                 child: Material(
-                  color: orangeC, // button color
+                  color: context.colorScheme.primary, // button color
                   child: InkWell(
                       child: Padding(
                           padding: EdgeInsets.all(scaleSize(14)), child: Image(image: const AssetImage('assets/home/qrcode.png'), height: scaleSize(62))),

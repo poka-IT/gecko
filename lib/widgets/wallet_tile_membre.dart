@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -66,14 +67,7 @@ class WalletTileMembre extends StatelessWidget {
                                 topLeft: Radius.circular(12),
                                 topRight: Radius.circular(12),
                               ),
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  const Color(0xFFFFFFF0),
-                                  yellowC.withValues(alpha: 0.3),
-                                ],
-                              ),
+                              color: context.colorScheme.secondary.withValues(alpha: context.isDarkTheme ? 1 : 0.3),
                             ),
                             child: wallet.imageCustomPath == null || wallet.imageCustomPath == ''
                                 ? Padding(
@@ -103,7 +97,7 @@ class WalletTileMembre extends StatelessWidget {
                         top: scaleSize(16),
                         child: Image.asset(
                           'assets/medal.png',
-                          color: orangeC.withValues(alpha: 0.8),
+                          color: context.colorScheme.primary.withValues(alpha: 0.8),
                           height: scaleSize(28),
                         ),
                       ),
@@ -112,7 +106,7 @@ class WalletTileMembre extends StatelessWidget {
                 ),
                 Container(
                   decoration: BoxDecoration(
-                    color: isDefault ? orangeC.withValues(alpha: 0.9) : yellowC.withValues(alpha: 0.9),
+                    color: isDefault ? context.colorScheme.primary.withValues(alpha: 0.9) : context.colorScheme.secondary.withValues(alpha: 0.9),
                     borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(12),
                       bottomRight: Radius.circular(12),
@@ -131,20 +125,20 @@ class WalletTileMembre extends StatelessWidget {
                           NameByAddress(
                             wallet: wallet,
                             size: 16,
-                            color: isDefault ? Colors.white : Colors.black87,
+                            color: isDefault ? Colors.white : context.colorScheme.onSurface,
                             fontWeight: FontWeight.w600,
                           ),
                           ScaledSizedBox(height: 4),
                           Balance(
                             address: wallet.address,
                             size: 14,
-                            color: isDefault ? Colors.white : Colors.black87,
+                            color: isDefault ? Colors.white : context.colorScheme.onSurface,
                           ),
                         ],
                       ),
                       Certifications(
                         address: wallet.address,
-                        color: isDefault ? Colors.white : Colors.black87,
+                        color: isDefault ? Colors.white : context.colorScheme.onSurface,
                         size: 15,
                       ),
                     ],

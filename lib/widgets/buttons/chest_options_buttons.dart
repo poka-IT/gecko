@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:gecko/globals.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/screens/myWallets/chest_options.dart';
@@ -26,13 +26,13 @@ class ChestOptionsButtons extends StatelessWidget {
             ),
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.black,
-              backgroundColor: floattingYellow,
+              backgroundColor: context.colorScheme.surfaceTint,
               elevation: 2,
               padding: const EdgeInsets.symmetric(horizontal: 8),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              shadowColor: floattingYellow.withValues(alpha: 0.3),
+              shadowColor: context.colorScheme.surfaceTint.withValues(alpha: 0.3),
             ),
             onPressed: () => Navigator.push(
               context,
@@ -95,7 +95,7 @@ class ChestOptionsButtons extends StatelessWidget {
       //         child: Text('changeChest'.tr(),
       //             style: const scaledTextStyle(
       //                 fontSize: 19,
-      //                 color: Colors.grey, //orangeC
+      //                 color: Colors.grey, //context.colorScheme.primary
       //                 fontWeight: FontWeight.w500))),
       //   ),
       // ),

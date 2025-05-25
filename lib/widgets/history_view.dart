@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
@@ -72,7 +73,7 @@ class HistoryView extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 20),
                     child: Text(
                       answer['dateDelimiter'],
-                      style: scaledTextStyle(fontSize: 19, color: orangeC, fontWeight: FontWeight.w300),
+                      style: scaledTextStyle(fontSize: 19, color: context.colorScheme.primary, fontWeight: FontWeight.w300),
                     ),
                   ),
                 TransactionTile(

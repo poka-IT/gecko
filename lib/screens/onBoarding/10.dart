@@ -65,7 +65,7 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
         myWalletProvider.isPinLoading = true;
       },
       child: Scaffold(
-          backgroundColor: backgroundColor,
+          backgroundColor: context.colorScheme.surface,
           appBar: GeckoAppBar('myPassword'.tr()),
           body: SafeArea(
             child: Stack(children: [
@@ -114,13 +114,13 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                               const Spacer(),
                               Icon(
                                 configBox.get('isCacheChecked') ?? false ? Icons.check_box : Icons.check_box_outline_blank,
-                                color: orangeC,
+                                color: context.colorScheme.primary,
                                 size: scaleSize(22),
                               ),
                               ScaledSizedBox(width: 8),
                               Text(
                                 'rememberPassword'.tr(),
-                                style: scaledTextStyle(fontSize: 14, color: Colors.grey[700]),
+                                style: scaledTextStyle(fontSize: 14, color: homeContext.colorScheme.onSurfaceVariant),
                               ),
                               const Spacer()
                             ]))
@@ -181,7 +181,7 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
             showCursor: !kDebugMode,
             cursorColor: Colors.black,
             textStyle: const TextStyle(fontSize: 24, height: 1.6),
-            backgroundColor: const Color(0xffF9F9F1),
+            backgroundColor: homeContext.colorScheme.surface,
             enableActiveFill: false,
             controller: enterPin,
             keyboardType: TextInputType.number,

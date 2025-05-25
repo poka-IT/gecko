@@ -1,5 +1,6 @@
 import 'package:bubble/bubble.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 
@@ -22,11 +23,11 @@ class BubbleSpeak extends StatelessWidget {
     return Bubble(
       padding: long == null ? BubbleEdges.all(isTall ? 18 : 12) : BubbleEdges.symmetric(horizontal: long, vertical: 30),
       elevation: 5,
-      color: backgroundColor,
+      color: context.colorScheme.surfaceContainer,
       child: Text(
         text,
         key: textKey,
-        style: scaledTextStyle(color: Colors.black, fontSize: isTall ? fontSize : fontSize * 0.9, fontWeight: FontWeight.w400),
+        style: scaledTextStyle(color: context.colorScheme.onSecondaryContainer, fontSize: isTall ? fontSize : fontSize * 0.9, fontWeight: FontWeight.w400),
       ),
     );
   }
@@ -57,7 +58,7 @@ class BubbleSpeakWithTail extends StatelessWidget {
           left: 15,
           bottom: -scaleSize(28),
           child: Image(
-            image: const AssetImage('assets/home/bout_de_bulle.png'),
+            image: AssetImage(homeContext.isDarkTheme ? 'assets/home/bout_de_bulle_dark.png' : 'assets/home/bout_de_bulle.png'),
             height: scaleSize(30),
           ),
         ),

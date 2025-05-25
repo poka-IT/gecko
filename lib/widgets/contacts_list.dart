@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -31,7 +32,7 @@ class ContactsList extends StatelessWidget {
       builder: (BuildContext context) {
         return Container(
           decoration: BoxDecoration(
-            color: backgroundColor,
+            color: context.colorScheme.surface,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(

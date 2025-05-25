@@ -2,6 +2,7 @@
 
 import 'package:bubble/bubble.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -36,7 +37,7 @@ class RestoreChest extends StatelessWidget {
         genW.resetImportView();
       },
       child: Scaffold(
-        backgroundColor: backgroundColor,
+        backgroundColor: context.colorScheme.surface,
         appBar: GeckoAppBar('restoreAChest'.tr()),
         body: SafeArea(
           child: Stack(children: [
@@ -79,7 +80,7 @@ class RestoreChest extends StatelessWidget {
                           key: keyGoNext,
                           style: ElevatedButton.styleFrom(
                             foregroundColor: Colors.white,
-                            backgroundColor: orangeC,
+                            backgroundColor: context.colorScheme.primary,
                             elevation: 0,
                             padding: EdgeInsets.symmetric(vertical: scaleSize(12)),
                             shape: RoundedRectangleBorder(
@@ -129,7 +130,7 @@ class RestoreChest extends StatelessWidget {
                           key: keyPastMnemonic,
                           style: ElevatedButton.styleFrom(
                             foregroundColor: Colors.black,
-                            backgroundColor: yellowC,
+                            backgroundColor: context.colorScheme.secondary,
                             elevation: 0,
                             padding: EdgeInsets.symmetric(
                               vertical: scaleSize(8),
@@ -189,12 +190,16 @@ class RestoreChest extends StatelessWidget {
       borderWidth: 1,
       borderColor: Colors.black,
       radius: Radius.zero,
-      color: Colors.white,
+      color: homeContext.colorScheme.surfaceContainer,
       child: Text(
         text,
         key: keyBubbleSpeak,
         textAlign: TextAlign.justify,
-        style: scaledTextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.w400),
+        style: scaledTextStyle(
+          color: homeContext.colorScheme.onSecondaryContainer,
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+        ),
       ),
     );
   }
@@ -207,7 +212,7 @@ class RestoreChest extends StatelessWidget {
       height: scaleSize(37),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey),
-        color: Colors.white,
+        color: context.colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(3),
       ),
       child: TextField(
@@ -217,7 +222,7 @@ class RestoreChest extends StatelessWidget {
         decoration: InputDecoration(
           border: InputBorder.none,
           focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: orangeC),
+            borderSide: BorderSide(color: context.colorScheme.primary),
           ),
           contentPadding: EdgeInsets.zero,
         ),
@@ -233,7 +238,7 @@ class RestoreChest extends StatelessWidget {
           }
         },
         textAlign: TextAlign.center,
-        style: scaledTextStyle(fontSize: 16),
+        style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSecondaryContainer),
       ),
     );
   }

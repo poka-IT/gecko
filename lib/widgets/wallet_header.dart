@@ -3,6 +3,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -127,8 +128,7 @@ class _WalletHeaderState extends State<WalletHeader> {
 
     return Container(
       decoration: BoxDecoration(
-        color: isEmptyWallet ? Colors.grey[300] : headerColor,
-        borderRadius: BorderRadius.circular(8),
+        color: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary,
       ),
       padding: EdgeInsets.only(
         left: scaleSize(16),
@@ -261,6 +261,7 @@ class _WalletHeaderState extends State<WalletHeader> {
                               fontSize: 20,
                               fontFamily: 'Monospace',
                               fontWeight: FontWeight.w600,
+                              color: context.colorScheme.onSecondaryContainer,
                             ),
                           ),
                         ),
@@ -272,7 +273,7 @@ class _WalletHeaderState extends State<WalletHeader> {
                         icon: Icon(
                           Icons.copy,
                           size: scaleSize(20),
-                          color: orangeC.withValues(alpha: 0.5),
+                          color: context.colorScheme.primary.withValues(alpha: 0.5),
                         ),
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: widget.address));
@@ -313,7 +314,7 @@ class _WalletHeaderState extends State<WalletHeader> {
                           children: [
                             IdentityStatus(
                               address: widget.address,
-                              color: orangeC,
+                              color: context.colorScheme.primary,
                             ),
                             SizedBox(width: scaleSize(8)),
                             Certifications(
@@ -323,7 +324,7 @@ class _WalletHeaderState extends State<WalletHeader> {
                             Icon(
                               Icons.chevron_right,
                               size: scaleSize(15),
-                              color: orangeC.withValues(alpha: 0.5),
+                              color: context.colorScheme.primary.withValues(alpha: 0.5),
                             ),
                           ],
                         ),
@@ -342,7 +343,7 @@ class _WalletHeaderState extends State<WalletHeader> {
   Widget _buildLoadingHeader() {
     const double avatarSize = 90;
     return Container(
-      color: headerColor,
+      color: context.colorScheme.tertiary,
       padding: EdgeInsets.only(
         left: scaleSize(16),
         right: scaleSize(16),

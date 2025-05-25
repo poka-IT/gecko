@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/transaction_content.dart';
@@ -104,7 +105,7 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: headerColor,
+        backgroundColor: context.colorScheme.tertiary,
         elevation: 0,
         automaticallyImplyLeading: false,
         centerTitle: true,
@@ -112,7 +113,7 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
           'extrinsicInProgress'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]),
           style: scaledTextStyle(
             fontSize: 16,
-            color: Colors.black87,
+            color: context.colorScheme.onSurface,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -121,7 +122,7 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
         children: [
           Container(
             width: double.infinity,
-            color: headerColor,
+            color: context.colorScheme.tertiary,
             padding: EdgeInsets.symmetric(
               horizontal: scaleSize(24),
               vertical: scaleSize(16),
@@ -198,7 +199,7 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
                       style: scaledTextStyle(
                         fontSize: 15,
                         height: 1.4,
-                        color: Colors.black87,
+                        color: context.colorScheme.onSurface,
                       ),
                     ),
                   ),

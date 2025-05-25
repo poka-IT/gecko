@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -32,14 +33,17 @@ class CertTile extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 2),
                 child: Text(
                   repository['name'],
-                  style: scaledTextStyle(fontSize: 15),
+                  style: scaledTextStyle(
+                    fontSize: 15,
+                    color: context.colorScheme.onSecondaryContainer,
+                  ),
                 ),
               ),
               subtitle: RichText(
                 text: TextSpan(
                   style: scaledTextStyle(
                     fontSize: 14,
-                    color: Colors.grey[700],
+                    color: homeContext.colorScheme.onSurfaceVariant,
                   ),
                   children: <TextSpan>[
                     TextSpan(

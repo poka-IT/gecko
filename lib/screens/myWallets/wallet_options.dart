@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/membership_status.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -110,7 +111,7 @@ class WalletOptions extends StatelessWidget {
                                                 "editWalletName".tr(),
                                                 style: scaledTextStyle(
                                                   fontSize: 16,
-                                                  color: Colors.black87,
+                                                  color: context.colorScheme.onSurface,
                                                 ),
                                                 softWrap: true,
                                               ),
@@ -230,7 +231,7 @@ class WalletOptions extends StatelessWidget {
                 "displayActivity".tr(),
                 style: scaledTextStyle(
                   fontSize: 16,
-                  color: Colors.black87,
+                  color: context.colorScheme.onSurface,
                 ),
                 softWrap: true,
               ),
@@ -337,7 +338,7 @@ class WalletOptions extends StatelessWidget {
                     child: ElevatedButton(
                       key: keyRenewMembership,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: orangeC,
+                        backgroundColor: context.colorScheme.primary,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -393,7 +394,7 @@ class WalletOptions extends StatelessWidget {
                     walletProvider.isDefaultWallet ? 'thisWalletIsDefault'.tr() : 'defineWalletAsDefault'.tr(),
                     style: scaledTextStyle(
                       fontSize: 16,
-                      color: walletProvider.isDefaultWallet ? Colors.grey[500] : Colors.black87,
+                      color: walletProvider.isDefaultWallet ? Colors.grey[500] : context.colorScheme.onSurface,
                     ),
                     softWrap: true,
                   ),
@@ -422,7 +423,7 @@ class WalletOptions extends StatelessWidget {
                 child: ElevatedButton(
                   key: keyConfirmIdentity,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: orangeC,
+                    backgroundColor: context.colorScheme.primary,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -494,7 +495,7 @@ Widget aloneWalletOptions() {
                       'createNewWallet'.tr(),
                       style: scaledTextStyle(
                         fontSize: 16,
-                        color: sub.nodeConnected ? Colors.black87 : Colors.grey[500],
+                        color: sub.nodeConnected ? context.colorScheme.onSurface : Colors.grey[500],
                       ),
                       softWrap: true,
                     ),
@@ -526,7 +527,7 @@ Widget aloneWalletOptions() {
                   'importIdPasswordAccount'.tr(),
                   style: scaledTextStyle(
                     fontSize: 16,
-                    color: Colors.black87,
+                    color: homeContext.colorScheme.onSurface,
                   ),
                   softWrap: true,
                 ),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/transaction.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -40,23 +42,12 @@ class TransactionTile extends StatelessWidget {
         vertical: scaleSize(4),
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            // Soft ambient shadow
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            spreadRadius: 2,
-            offset: const Offset(0, 2),
-          ),
-          BoxShadow(
-            // Sharper direct shadow
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 1,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        // border: Border.all(
+        //   color: Colors.grey.withValues(alpha: 0.2),
+        //   width: 1,
+        // ),
       ),
       child: ListTile(
         key: keyTransaction(newKey),
@@ -68,7 +59,7 @@ class TransactionTile extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
-              color: Colors.grey.withValues(alpha: 0.6),
+              color: context.colorScheme.onSecondaryContainer,
               width: 1,
             ),
           ),
@@ -86,6 +77,7 @@ class TransactionTile extends StatelessWidget {
                 fontSize: 15,
                 fontFamily: 'Monospace',
                 fontWeight: FontWeight.w500,
+                color: context.colorScheme.onSecondaryContainer,
               ),
             ),
             ScaledSizedBox(height: 4),
@@ -93,7 +85,7 @@ class TransactionTile extends StatelessWidget {
               text: TextSpan(
                 style: scaledTextStyle(
                   fontSize: 13,
-                  color: Colors.grey[700],
+                  color: homeContext.colorScheme.onSurfaceVariant,
                 ),
                 children: <TextSpan>[
                   TextSpan(text: dateForm),

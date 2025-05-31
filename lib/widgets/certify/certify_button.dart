@@ -3,7 +3,8 @@
 import 'package:durt2/durt2.dart' show Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/globals.dart';
+import 'package:gecko/exceptions.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
@@ -37,7 +38,7 @@ class CertifyButton extends StatelessWidget {
               color: const Color(0xffFFD58D),
               child: InkWell(
                 key: keyCertify,
-                splashColor: orangeC,
+                splashColor: context.colorScheme.primary,
                 onTap: () async {
                   final walletName = duniterIndexer.walletNameIndexer[address];
                   final message = walletName != null
@@ -76,20 +77,28 @@ class CertifyButton extends StatelessWidget {
                       Provider.of<WalletsProfilesProvider>(context,
                           listen: false);
                   final acc = sub.getCurrentKeyPair();
-                  final transactionId = await sub.certify(
-                    acc.address!,
-                    walletViewProvider.address,
-                    myWalletProvider.pinCode,
-                  );
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) {
-                      return TransactionInProgress(
-                        transactionId: transactionId,
-                        transType: 'cert',
-                      );
-                    }),
-                  );
+                  try {
+                    final transactionId = await sub.certify(
+                      acc.address!,
+                      walletViewProvider.address,
+                      myWalletProvider.pinCode,
+                    );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return TransactionInProgress(
+                          transactionId: transactionId,
+                          transType: 'cert',
+                        );
+                      }),
+                    );
+                  } catch (e) {
+                    if (e is NotMemberException) {
+                      showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
+                    } else if (e is CantBeCertException) {
+                      showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
+                    }
+                  }
                 },
                 child: const Padding(
                   padding: EdgeInsets.only(bottom: 0),

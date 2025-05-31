@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/providers/wallet_options.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -14,26 +15,28 @@ class WalletAppBar extends StatelessWidget implements PreferredSizeWidget {
   const WalletAppBar({
     super.key,
     required this.address,
+    required this.currentBalance,
     this.title,
     this.titleBuilder,
   }) : assert(title != null || titleBuilder != null);
 
   final String address;
+  final BigInt currentBalance;
   final String? title;
   final String Function(String? username)? titleBuilder;
 
   @override
   Widget build(BuildContext context) {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final walletOptions = Provider.of<WalletOptionsProvider>(context);
+    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
     Provider.of<SubstrateSdk>(context); //To refresh header color on block changes
 
-    // Récupération du solde
-    final balance = walletOptions.balanceCache[address] ?? 0;
-    final isEmptyWallet = balance == 0;
+    final balance = walletOptions.balanceCache[address] == null ? currentBalance : BigInt.from(walletOptions.balanceCache[address] ?? 0);
+
+    final isEmptyWallet = balance == BigInt.zero;
 
     return AppBar(
-      backgroundColor: isEmptyWallet ? Colors.grey[300] : headerColor,
+      backgroundColor: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary,
       titleSpacing: 10,
       title: Text(
         title ?? titleBuilder!(duniterIndexer.walletNameIndexer[address]),
@@ -53,6 +56,7 @@ class WalletAppBar extends StatelessWidget implements PreferredSizeWidget {
                 icon: Icon(
                   profile.isContact(address) ? Icons.add_reaction_rounded : Icons.add_reaction_outlined,
                   size: scaleSize(27),
+                  color: context.colorScheme.onSecondaryContainer,
                 ),
               );
             }),
@@ -69,6 +73,12 @@ class WalletAppBar extends StatelessWidget implements PreferredSizeWidget {
                   data: address,
                   version: QrVersions.auto,
                   size: scaleSize(45),
+                  dataModuleStyle: QrDataModuleStyle(
+                    color: context.colorScheme.onSecondaryContainer,
+                  ),
+                  eyeStyle: QrEyeStyle(
+                    color: context.colorScheme.onSecondaryContainer,
+                  ),
                 ),
               ),
             ),

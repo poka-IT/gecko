@@ -2,6 +2,7 @@
 
 import 'package:durt2/durt2.dart' show Durt, WalletData;
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -33,7 +34,7 @@ class DragTuleAction extends StatelessWidget {
       feedback: ElevatedButton(
         onPressed: () {},
         style: ElevatedButton.styleFrom(
-          backgroundColor: orangeC,
+          backgroundColor: context.colorScheme.primary,
           shape: const CircleBorder(),
           padding: EdgeInsets.all(scaleSize(14)),
         ),

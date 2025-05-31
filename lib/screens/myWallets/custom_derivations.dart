@@ -2,8 +2,8 @@
 
 import 'package:durt2/durt2.dart' show WalletData;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
@@ -43,7 +43,7 @@ class _CustomDerivationState extends State<CustomDerivation> {
     }
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('createCustomDerivation'.tr()),
       body: Center(
         child: SafeArea(
@@ -73,10 +73,10 @@ class _CustomDerivationState extends State<CustomDerivation> {
                   size: scaleSize(20),
                 ),
                 elevation: 16,
-                style: scaledTextStyle(color: orangeC),
+                style: scaledTextStyle(color: context.colorScheme.primary),
                 underline: Container(
                   height: 2,
-                  color: orangeC,
+                  color: context.colorScheme.primary,
                 ),
                 onChanged: (String? newValue) {
                   setState(() {
@@ -107,13 +107,13 @@ class _CustomDerivationState extends State<CustomDerivation> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
-                  backgroundColor: orangeC,
+                  backgroundColor: context.colorScheme.primary,
                   elevation: 2,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  shadowColor: orangeC.withValues(alpha: 0.3),
+                  shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
                 ),
                 onPressed: () async {
                   if (!await myWalletProvider.askPinCode()) return;

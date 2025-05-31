@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/globals.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:provider/provider.dart';
@@ -40,7 +40,7 @@ class ScanDerivationsInfo extends StatelessWidget {
               height: 22,
               width: 22,
               child: CircularProgressIndicator(
-                color: orangeC,
+                color: context.colorScheme.primary,
                 strokeWidth: scaleSize(3),
               ),
             ),

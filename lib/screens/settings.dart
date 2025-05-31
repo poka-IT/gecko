@@ -3,6 +3,8 @@
 import 'package:durt2/durt2.dart' show Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
@@ -10,7 +12,7 @@ import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/globals.dart';
+import 'package:gecko/providers/theme_provider.dart' as theme_provider;
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
@@ -95,7 +97,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final isSmallScreen = screenSize.height < 700;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: GeckoAppBar('parameters'.tr()),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -112,7 +114,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   style: scaledTextStyle(
                     fontSize: isSmallScreen ? 15 : 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                    color: Theme.of(context).textTheme.titleLarge?.color,
                   ),
                 ),
                 ScaledSizedBox(height: isSmallScreen ? 8 : 12),
@@ -120,7 +122,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // Carte Unité de devise
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: context.colorScheme.surfaceContainer,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
@@ -142,10 +144,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 ScaledSizedBox(height: isSmallScreen ? 12 : 16),
 
+                // Carte Sélection du thème
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: context.colorScheme.surfaceContainer,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                    child: chooseThemeMode(context),
+                  ),
+                ),
+                ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+
                 // Carte Nettoyage du cache
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: context.colorScheme.surfaceContainer,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
@@ -187,7 +210,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         children: [
                           Icon(
                             Icons.cleaning_services_rounded,
-                            color: orangeC,
+                            color: context.colorScheme.primary,
                             size: scaleSize(isSmallScreen ? 20 : 24),
                           ),
                           ScaledSizedBox(width: 12),
@@ -195,7 +218,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             'clearCache'.tr(),
                             style: scaledTextStyle(
                               fontSize: isSmallScreen ? 14 : 15,
-                              color: Colors.black87,
+                              color: Theme.of(context).textTheme.bodyMedium?.color,
                             ),
                           ),
                         ],
@@ -211,7 +234,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   style: scaledTextStyle(
                     fontSize: isSmallScreen ? 15 : 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                    color: Theme.of(context).textTheme.titleLarge?.color,
                   ),
                 ),
                 ScaledSizedBox(height: isSmallScreen ? 8 : 12),
@@ -219,7 +242,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // Carte Nœud Duniter
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: context.colorScheme.surfaceContainer,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
@@ -244,7 +267,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // Carte Indexer
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: context.colorScheme.surfaceContainer,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
@@ -267,23 +290,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ScaledSizedBox(height: isSmallScreen ? 20 : 24),
 
                 // Section Danger
-                Text(
-                  'dangerZone'.tr(),
-                  style: scaledTextStyle(
-                    fontSize: isSmallScreen ? 15 : 16,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xffD80000),
-                  ),
-                ),
                 ScaledSizedBox(height: isSmallScreen ? 8 : 12),
 
                 // Carte Suppression des coffres
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: context.colorScheme.surfaceContainer,
+                    border: Border.all(color: const Color(0xffD80000).withValues(alpha: 0.1)),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: const Color(0xffD80000).withValues(alpha: 0.1)),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.05),
@@ -292,34 +306,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ],
                   ),
-                  child: InkWell(
-                    key: keyDeleteAllWallets,
-                    onTap: () async {
-                      log.w('Oublier tous mes coffres');
-                      await _myWallets.deleteAllWallet(context);
-                    },
-                    child: Padding(
-                      padding:
-                          EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.delete_forever_rounded,
-                            color: const Color(0xffD80000),
-                            size: scaleSize(isSmallScreen ? 20 : 24),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      InkWell(
+                        key: keyDeleteAllWallets,
+                        onTap: () async {
+                          log.w('Oublier tous mes coffres');
+                          await _myWallets.deleteAllWallet(context);
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.delete_forever_rounded,
+                                color: const Color(0xffD80000),
+                                size: scaleSize(isSmallScreen ? 20 : 24),
+                              ),
+                              ScaledSizedBox(width: 12),
+                              Text(
+                                'forgetAllMyChests'.tr(),
+                                style: scaledTextStyle(
+                                  fontSize: isSmallScreen ? 14 : 15,
+                                  color: const Color(0xffD80000),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
-                          ScaledSizedBox(width: 12),
-                          Text(
-                            'forgetAllMyChests'.tr(),
-                            style: scaledTextStyle(
-                              fontSize: isSmallScreen ? 14 : 15,
-                              color: const Color(0xffD80000),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
                 ScaledSizedBox(height: isSmallScreen ? 20 : 24),
@@ -342,7 +360,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           Icon(
             Icons.calculate_rounded,
-            color: orangeC,
+            color: context.colorScheme.primary,
             size: scaleSize(24),
           ),
           ScaledSizedBox(width: 12),
@@ -350,7 +368,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             'showUdAmounts'.tr(),
             style: scaledTextStyle(
               fontSize: 14,
-              color: Colors.black87,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
           ),
           const Spacer(),
@@ -359,7 +377,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               final bool isUdUnit = configBox.get('isUdUnit') ?? false;
               return Switch(
                 value: isUdUnit,
-                activeColor: orangeC,
+                activeColor: context.colorScheme.primary,
                 inactiveThumbColor: Colors.grey[400],
                 inactiveTrackColor: Colors.grey[300],
                 onChanged: (bool value) async {
@@ -390,7 +408,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style: scaledTextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Colors.black87,
+              color: Theme.of(context).textTheme.titleLarge?.color,
             ),
           ),
           content: SingleChildScrollView(
@@ -411,10 +429,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          isSelected
-                              ? Icons.radio_button_checked
-                              : Icons.radio_button_unchecked,
-                          color: isSelected ? orangeC : Colors.grey[400],
+                          isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                          color: isSelected ? context.colorScheme.primary : Colors.grey[400],
                           size: scaleSize(20),
                         ),
                         ScaledSizedBox(width: 12),
@@ -423,7 +439,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             node.endpoint!,
                             style: scaledTextStyle(
                               fontSize: 14,
-                              color: Colors.black87,
+                              color: Theme.of(context).textTheme.bodyMedium?.color,
                             ),
                           ),
                         ),
@@ -495,7 +511,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     Icon(
                       Icons.dns_rounded,
-                      color: orangeC,
+                      color: context.colorScheme.primary,
                       size: scaleSize(24),
                     ),
                     ScaledSizedBox(width: 12),
@@ -503,7 +519,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       'currencyNode'.tr(),
                       style: scaledTextStyle(
                         fontSize: 14,
-                        color: Colors.black87,
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
                       ),
                     ),
                     ScaledSizedBox(width: 12),
@@ -527,7 +543,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               vertical: scaleSize(6),
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.grey[100],
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(color: Colors.grey[300]!),
                             ),
@@ -538,7 +553,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   getDisplayMode(),
                                   style: scaledTextStyle(
                                     fontSize: 14,
-                                    color: Colors.black87,
+                                    color: Theme.of(context).textTheme.bodyMedium?.color,
                                   ),
                                 ),
                                 ScaledSizedBox(width: 4),
@@ -557,12 +572,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               child: Row(
                                 children: [
                                   Icon(
-                                    configBox.get('autoEndpoint') == true
-                                        ? Icons.radio_button_checked
-                                        : Icons.radio_button_unchecked,
-                                    color: configBox.get('autoEndpoint') == true
-                                        ? orangeC
-                                        : Colors.grey[400],
+                                    configBox.get('autoEndpoint') == true ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                                    color: configBox.get('autoEndpoint') == true ? context.colorScheme.primary : Colors.grey[400],
                                     size: scaleSize(20),
                                   ),
                                   ScaledSizedBox(width: 12),
@@ -570,7 +581,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     'Auto',
                                     style: scaledTextStyle(
                                       fontSize: 14,
-                                      color: Colors.black87,
+                                      color: Theme.of(context).textTheme.bodyMedium?.color,
                                     ),
                                   ),
                                 ],
@@ -582,12 +593,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               child: Row(
                                 children: [
                                   Icon(
-                                    configBox.get('autoEndpoint') != true
-                                        ? Icons.radio_button_checked
-                                        : Icons.radio_button_unchecked,
-                                    color: configBox.get('autoEndpoint') != true
-                                        ? orangeC
-                                        : Colors.grey[400],
+                                    configBox.get('autoEndpoint') != true ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                                    color: configBox.get('autoEndpoint') != true ? context.colorScheme.primary : Colors.grey[400],
                                     size: scaleSize(20),
                                   ),
                                   ScaledSizedBox(width: 12),
@@ -595,7 +602,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     'manual'.tr(),
                                     style: scaledTextStyle(
                                       fontSize: 14,
-                                      color: Colors.black87,
+                                      color: Theme.of(context).textTheme.bodyMedium?.color,
                                     ),
                                   ),
                                 ],
@@ -616,7 +623,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     'select'.tr(),
                                     style: scaledTextStyle(
                                       fontSize: 14,
-                                      color: Colors.black87,
+                                      color: Theme.of(context).textTheme.bodyMedium?.color,
                                     ),
                                   ),
                                 ],
@@ -683,7 +690,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: scaledTextStyle(
                       fontSize: 13,
                       fontStyle: FontStyle.italic,
-                      color: Colors.grey[600],
+                      color: Theme.of(context).textTheme.bodySmall?.color,
                     ),
                   ),
                 ],
@@ -695,7 +702,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ScaledSizedBox(height: 12),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.grey[300]!),
                   ),
@@ -704,7 +710,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     focusNode: _duniterFocusNode,
                     controller: endpointController,
                     autocorrect: false,
-                    style: scaledTextStyle(fontSize: 14),
+                    style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
                     decoration: InputDecoration(
                       contentPadding: EdgeInsets.symmetric(
                         horizontal: scaleSize(12),
@@ -738,7 +744,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   'blockN'.tr(args: [sub.blocNumber.toString()]),
                   style: scaledTextStyle(
                     fontSize: 13,
-                    color: Colors.grey[600],
+                    color: Theme.of(context).textTheme.bodySmall?.color,
                   ),
                 ),
               ],
@@ -766,7 +772,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style: scaledTextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Colors.black87,
+              color: Theme.of(context).textTheme.titleLarge?.color,
             ),
           ),
           content: SingleChildScrollView(
@@ -787,10 +793,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          isSelected
-                              ? Icons.radio_button_checked
-                              : Icons.radio_button_unchecked,
-                          color: isSelected ? orangeC : Colors.grey[400],
+                          isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                          color: isSelected ? context.colorScheme.primary : Colors.grey[400],
                           size: scaleSize(20),
                         ),
                         ScaledSizedBox(width: 12),
@@ -799,7 +803,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             endpoint,
                             style: scaledTextStyle(
                               fontSize: 14,
-                              color: Colors.black87,
+                              color: Theme.of(context).textTheme.bodyMedium?.color,
                             ),
                           ),
                         ),
@@ -856,7 +860,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     Icon(
                       Icons.storage_rounded,
-                      color: orangeC,
+                      color: context.colorScheme.primary,
                       size: scaleSize(24),
                     ),
                     ScaledSizedBox(width: 12),
@@ -864,13 +868,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       'Indexer',
                       style: scaledTextStyle(
                         fontSize: 14,
-                        color: Colors.black87,
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
                       ),
                     ),
                     ScaledSizedBox(width: 12),
                     Icon(
-                      indexerEndpoint != '' ? Icons.check_circle : Icons.error,
-                      color: indexerEndpoint != '' ? Colors.green : Colors.red,
+                      _indexerEndpointController.text.isNotEmpty && _indexerEndpointController.text != 'https://' ? Icons.check_circle : Icons.error,
+                      color: _indexerEndpointController.text.isNotEmpty && _indexerEndpointController.text != 'https://' ? Colors.green : Colors.red,
                       size: scaleSize(16),
                     ),
                     const Spacer(),
@@ -883,7 +887,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               vertical: scaleSize(6),
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.grey[100],
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(color: Colors.grey[300]!),
                             ),
@@ -894,7 +897,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   getDisplayMode(),
                                   style: scaledTextStyle(
                                     fontSize: 14,
-                                    color: Colors.black87,
+                                    color: Theme.of(context).textTheme.bodyMedium?.color,
                                   ),
                                 ),
                                 ScaledSizedBox(width: 4),
@@ -912,13 +915,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               child: Row(
                                 children: [
                                   Icon(
-                                    !configBox.containsKey('customIndexer')
-                                        ? Icons.radio_button_checked
-                                        : Icons.radio_button_unchecked,
-                                    color:
-                                        !configBox.containsKey('customIndexer')
-                                            ? orangeC
-                                            : Colors.grey[400],
+                                    !configBox.containsKey('customIndexer') ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                                    color: !configBox.containsKey('customIndexer') ? context.colorScheme.primary : Colors.grey[400],
                                     size: scaleSize(20),
                                   ),
                                   ScaledSizedBox(width: 12),
@@ -926,7 +924,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     'Auto',
                                     style: scaledTextStyle(
                                       fontSize: 14,
-                                      color: Colors.black87,
+                                      color: Theme.of(context).textTheme.bodyMedium?.color,
                                     ),
                                   ),
                                 ],
@@ -937,13 +935,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               child: Row(
                                 children: [
                                   Icon(
-                                    configBox.containsKey('customIndexer')
-                                        ? Icons.radio_button_checked
-                                        : Icons.radio_button_unchecked,
-                                    color:
-                                        configBox.containsKey('customIndexer')
-                                            ? orangeC
-                                            : Colors.grey[400],
+                                    configBox.containsKey('customIndexer') ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                                    color: configBox.containsKey('customIndexer') ? context.colorScheme.primary : Colors.grey[400],
                                     size: scaleSize(20),
                                   ),
                                   ScaledSizedBox(width: 12),
@@ -951,7 +944,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     'Manuel',
                                     style: scaledTextStyle(
                                       fontSize: 14,
-                                      color: Colors.black87,
+                                      color: Theme.of(context).textTheme.bodyMedium?.color,
                                     ),
                                   ),
                                 ],
@@ -971,7 +964,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     'Sélectionner',
                                     style: scaledTextStyle(
                                       fontSize: 14,
-                                      color: Colors.black87,
+                                      color: Theme.of(context).textTheme.bodyMedium?.color,
                                     ),
                                   ),
                                 ],
@@ -1039,7 +1032,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: scaledTextStyle(
                       fontSize: 13,
                       fontStyle: FontStyle.italic,
-                      color: Colors.grey[600],
+                      color: Theme.of(context).textTheme.bodySmall?.color,
                     ),
                   ),
                 ],
@@ -1059,7 +1052,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     focusNode: _indexerFocusNode,
                     controller: indexerEndpointController,
                     autocorrect: false,
-                    style: scaledTextStyle(fontSize: 14),
+                    style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
                     decoration: InputDecoration(
                       contentPadding: EdgeInsets.symmetric(
                         horizontal: scaleSize(12),
@@ -1082,6 +1075,61 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             );
           },
+        ),
+      ],
+    );
+  }
+
+  Widget chooseThemeMode(BuildContext context) {
+    final themeProvider = Provider.of<theme_provider.ThemeProvider>(context, listen: false);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'theme'.tr(),
+          style: scaledTextStyle(
+            fontSize: 14,
+            color: Theme.of(context).textTheme.bodyMedium?.color,
+          ),
+        ),
+        ScaledSizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Consumer<theme_provider.ThemeProvider>(
+              builder: (context, theme, _) {
+                return SegmentedButton<theme_provider.ThemeModeSetting>(
+                  segments: <ButtonSegment<theme_provider.ThemeModeSetting>>[
+                    ButtonSegment(
+                      value: theme_provider.ThemeModeSetting.light,
+                      label: Text('light'.tr()),
+                      icon: const Icon(Icons.light_mode),
+                    ),
+                    ButtonSegment(
+                      value: theme_provider.ThemeModeSetting.system,
+                      label: Text('system'.tr()),
+                      icon: const Icon(Icons.brightness_auto),
+                    ),
+                    ButtonSegment(
+                      value: theme_provider.ThemeModeSetting.dark,
+                      label: Text('dark'.tr()),
+                      icon: const Icon(Icons.dark_mode),
+                    ),
+                  ],
+                  selected: {theme.themeModeSetting},
+                  onSelectionChanged: (Set<theme_provider.ThemeModeSetting> newSelection) {
+                    themeProvider.setThemeMode(newSelection.first);
+                  },
+                  style: SegmentedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
+                    selectedForegroundColor: Theme.of(context).colorScheme.onPrimary,
+                    selectedBackgroundColor: Theme.of(context).colorScheme.primary,
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ],
     );

@@ -2,6 +2,7 @@ import 'package:durt2/durt2.dart' show WalletData;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
@@ -30,7 +31,7 @@ class DragWalletsInfo extends StatelessWidget {
     );
 
     return Container(
-      color: yellowC,
+      color: context.colorScheme.secondary,
       width: screenWidth,
       height: scaleSize(85),
       child: Center(

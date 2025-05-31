@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -23,7 +24,7 @@ class SearchResultScreen extends StatelessWidget {
     final avatarSize = scaleSize(37);
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('researchResults'.tr()),
       bottomNavigationBar: const GeckoBottomAppBar(),
       body: SafeArea(

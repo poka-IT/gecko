@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
@@ -16,7 +16,7 @@ class DebugScreen extends StatelessWidget {
     final isSmallScreen = screenSize.height < 700;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('Debug'),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -30,7 +30,7 @@ class DebugScreen extends StatelessWidget {
                 // Section Nœud
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: context.colorScheme.surfaceContainer,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
@@ -49,7 +49,7 @@ class DebugScreen extends StatelessWidget {
                           children: [
                             Icon(
                               Icons.dns_rounded,
-                              color: orangeC,
+                              color: context.colorScheme.primary,
                               size: scaleSize(24),
                             ),
                             ScaledSizedBox(width: 12),
@@ -57,7 +57,7 @@ class DebugScreen extends StatelessWidget {
                               'currencyNode'.tr(),
                               style: scaledTextStyle(
                                 fontSize: 14,
-                                color: Colors.black87,
+                                color: context.colorScheme.onSecondaryContainer,
                               ),
                             ),
                           ],
@@ -67,7 +67,7 @@ class DebugScreen extends StatelessWidget {
                           'node: ${sub.getConnectedEndpoint()}',
                           style: scaledTextStyle(
                             fontSize: 13,
-                            color: Colors.grey[600],
+                            color: context.colorScheme.onSecondaryContainer,
                           ),
                         ),
                         ScaledSizedBox(height: 8),
@@ -75,7 +75,7 @@ class DebugScreen extends StatelessWidget {
                           'blockN'.tr(args: [sub.blocNumber.toString()]),
                           style: scaledTextStyle(
                             fontSize: 13,
-                            color: Colors.grey[600],
+                            color: context.colorScheme.onSecondaryContainer,
                           ),
                         ),
                       ],
@@ -87,7 +87,7 @@ class DebugScreen extends StatelessWidget {
                 // Section Actions
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: context.colorScheme.surfaceContainer,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
@@ -106,7 +106,7 @@ class DebugScreen extends StatelessWidget {
                           children: [
                             Icon(
                               Icons.build_rounded,
-                              color: orangeC,
+                              color: context.colorScheme.primary,
                               size: scaleSize(24),
                             ),
                             ScaledSizedBox(width: 12),
@@ -114,7 +114,7 @@ class DebugScreen extends StatelessWidget {
                               'Actions',
                               style: scaledTextStyle(
                                 fontSize: 14,
-                                color: Colors.black87,
+                                color: context.colorScheme.onSecondaryContainer,
                               ),
                             ),
                           ],
@@ -125,7 +125,7 @@ class DebugScreen extends StatelessWidget {
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
-                              backgroundColor: orangeC,
+                              backgroundColor: context.colorScheme.primary,
                               padding: EdgeInsets.symmetric(vertical: scaleSize(12)),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),

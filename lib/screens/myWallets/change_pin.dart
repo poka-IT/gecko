@@ -3,6 +3,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/confirm_change_pin.dart';
@@ -42,7 +43,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar(widget.walletName!),
       body: SafeArea(
         child: SingleChildScrollView(

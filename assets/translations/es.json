@@ -290,5 +290,11 @@
     "qrCodeNotAddress": "Este código QR no es una dirección válida",
     "emptyWalletCannotBeCertified": "Un monedero vacío no puede ser certificado",
     "timeoutScanDerivations": "Se ha agotado el tiempo de escaneo de derivaciones. Por favor, inténtelo de nuevo más tarde.",
-    "errorScanDerivations": "Se ha producido un error al escanear las derivaciones. Por favor, inténtelo de nuevo."
+    "errorScanDerivations": "Se ha producido un error al escanear las derivaciones. Por favor, inténtelo de nuevo.",
+    "revokedAccountCannotBeCertified": "Una cuenta revocada no puede ser certificada",
+    "info": "Información",
+    "warning": "Advertencia",
+    "success": "Éxito",
+    "error": "Error",
+    "question": "Pregunta"
 }

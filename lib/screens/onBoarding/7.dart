@@ -2,7 +2,7 @@
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/globals.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/screens/onBoarding/8.dart';
 import 'package:gecko/widgets/commons/intro_info.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
@@ -16,7 +16,7 @@ class OnboardingStepSeven extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('myPassword'.tr()),
       body: SafeArea(
         child: Stack(children: [

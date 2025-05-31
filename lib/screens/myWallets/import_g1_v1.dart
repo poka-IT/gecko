@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:durt2/durt2.dart' show IdtyStatus, WalletData;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/migrate_wallet_checks.dart';
@@ -38,7 +39,7 @@ class ImportG1v1 extends StatelessWidget {
         resetScreen();
       },
       child: Scaffold(
-        backgroundColor: backgroundColor,
+        backgroundColor: context.colorScheme.surface,
         appBar: GeckoAppBar('importOldAccount'.tr()),
         body: SafeArea(
           child: Consumer<SubstrateSdk>(builder: (context, sub, _) {
@@ -52,8 +53,8 @@ class ImportG1v1 extends StatelessWidget {
                         ScaledSizedBox(
                           height: 35,
                           width: 35,
-                          child: const CircularProgressIndicator(
-                            color: orangeC,
+                          child: CircularProgressIndicator(
+                            color: context.colorScheme.primary,
                             strokeWidth: 4,
                           ),
                         ),
@@ -70,6 +71,7 @@ class ImportG1v1 extends StatelessWidget {
                       children: <Widget>[
                         // Section des identifiants Cesium
                         Card(
+                          color: context.colorScheme.surfaceContainer,
                           elevation: 2,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -81,7 +83,11 @@ class ImportG1v1 extends StatelessWidget {
                               children: [
                                 Text(
                                   'cesiumCredentials'.tr(),
-                                  style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                  style: scaledTextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: context.colorScheme.onSecondaryContainer,
+                                  ),
                                 ),
                                 ScaledSizedBox(height: 8),
                                 TextFormField(
@@ -112,7 +118,7 @@ class ImportG1v1 extends StatelessWidget {
                                   textInputAction: TextInputAction.next,
                                   controller: sub.csSalt,
                                   obscureText: !sub.isCesiumIDVisible,
-                                  style: scaledTextStyle(fontSize: 13),
+                                  style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
                                   decoration: InputDecoration(
                                     isDense: true,
                                     contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -167,7 +173,7 @@ class ImportG1v1 extends StatelessWidget {
                                   textInputAction: TextInputAction.done,
                                   controller: sub.csPassword,
                                   obscureText: !sub.isCesiumIDVisible,
-                                  style: scaledTextStyle(fontSize: 13),
+                                  style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
                                   decoration: InputDecoration(
                                     isDense: true,
                                     contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -200,6 +206,7 @@ class ImportG1v1 extends StatelessWidget {
                           visible: sub.g1V1OldPubkey != '' && sub.csSalt.text != '' && sub.csPassword.text != '',
                           child: Card(
                             elevation: 2,
+                            color: context.colorScheme.surfaceContainer,
                             margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -211,7 +218,11 @@ class ImportG1v1 extends StatelessWidget {
                                 children: [
                                   Text(
                                     'accountInformation'.tr(),
-                                    style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                    style: scaledTextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: context.colorScheme.onSecondaryContainer,
+                                    ),
                                   ),
                                   ScaledSizedBox(height: 8),
                                   Row(
@@ -231,11 +242,15 @@ class ImportG1v1 extends StatelessWidget {
                                                 children: [
                                                   Text(
                                                     'v1: ',
-                                                    style: scaledTextStyle(fontSize: 13),
+                                                    style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
                                                   ),
                                                   Text(
                                                     getShortPubkey(sub.g1V1OldPubkey),
-                                                    style: scaledTextStyle(fontSize: 13, fontFamily: 'Monospace'),
+                                                    style: scaledTextStyle(
+                                                      fontSize: 13,
+                                                      fontFamily: 'Monospace',
+                                                      color: context.colorScheme.onSecondaryContainer,
+                                                    ),
                                                   ),
                                                   ScaledSizedBox(width: 6),
                                                   Icon(Icons.copy, size: scaleSize(14), color: Colors.grey),
@@ -253,11 +268,15 @@ class ImportG1v1 extends StatelessWidget {
                                                 children: [
                                                   Text(
                                                     'v2: ',
-                                                    style: scaledTextStyle(fontSize: 13),
+                                                    style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
                                                   ),
                                                   Text(
                                                     getShortPubkey(sub.g1V1NewAddress),
-                                                    style: scaledTextStyle(fontSize: 13, fontFamily: 'Monospace'),
+                                                    style: scaledTextStyle(
+                                                      fontSize: 13,
+                                                      fontFamily: 'Monospace',
+                                                      color: context.colorScheme.onSecondaryContainer,
+                                                    ),
                                                   ),
                                                   ScaledSizedBox(width: 6),
                                                   Icon(Icons.copy, size: scaleSize(14), color: Colors.grey),
@@ -274,6 +293,7 @@ class ImportG1v1 extends StatelessWidget {
                                             value: statusData.fromBalance['transferableBalance'],
                                             size: 14,
                                             fontWeight: FontWeight.w600,
+                                            color: context.colorScheme.onSecondaryContainer,
                                           ),
                                           ScaledSizedBox(height: 4),
                                           Row(
@@ -301,6 +321,7 @@ class ImportG1v1 extends StatelessWidget {
 
                         // Section de sélection du portefeuille
                         Card(
+                          color: context.colorScheme.surfaceContainer,
                           elevation: 2,
                           margin: EdgeInsets.only(bottom: scaleSize(8)),
                           shape: RoundedRectangleBorder(
@@ -313,7 +334,11 @@ class ImportG1v1 extends StatelessWidget {
                               children: [
                                 Text(
                                   'migrateToThisWallet'.tr(),
-                                  style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                  style: scaledTextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: context.colorScheme.onSecondaryContainer,
+                                  ),
                                 ),
                                 ScaledSizedBox(height: 8),
                                 Container(
@@ -361,13 +386,13 @@ class ImportG1v1 extends StatelessWidget {
                                 key: keyConfirm,
                                 style: ElevatedButton.styleFrom(
                                   foregroundColor: Colors.white,
-                                  backgroundColor: orangeC,
+                                  backgroundColor: context.colorScheme.primary,
                                   elevation: 2,
                                   padding: const EdgeInsets.symmetric(horizontal: 8),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  shadowColor: orangeC.withValues(alpha: 0.3),
+                                  shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
                                 ),
                                 onPressed: statusData.canValidate
                                     ? () async {

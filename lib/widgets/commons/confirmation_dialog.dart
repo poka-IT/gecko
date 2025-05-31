@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 
@@ -18,16 +19,32 @@ extension ConfirmationDialogTypeExtension on ConfirmationDialogType {
         ConfirmationDialogType.info => Icons.info_rounded,
         ConfirmationDialogType.warning => Icons.warning_rounded,
         ConfirmationDialogType.success => Icons.task_alt_rounded,
-        ConfirmationDialogType.error => Icons.error_rounded,
+        ConfirmationDialogType.error => Icons.cancel_rounded,
         ConfirmationDialogType.question => Icons.help_rounded,
       };
 
   Color get iconColor => switch (this) {
-        ConfirmationDialogType.info => orangeC,
+        ConfirmationDialogType.info => homeContext.colorScheme.primary,
         ConfirmationDialogType.warning => const Color(0xFFFF9800),
         ConfirmationDialogType.success => const Color(0xFF4CAF50),
         ConfirmationDialogType.error => const Color(0xFFF44336),
         ConfirmationDialogType.question => const Color(0xFF673AB7),
+      };
+
+  String get title => switch (this) {
+        ConfirmationDialogType.info => 'info'.tr(),
+        ConfirmationDialogType.warning => 'warning'.tr(),
+        ConfirmationDialogType.success => 'success'.tr(),
+        ConfirmationDialogType.error => 'error'.tr(),
+        ConfirmationDialogType.question => 'question'.tr(),
+      };
+
+  String get confirmText => switch (this) {
+        ConfirmationDialogType.info => 'confirm'.tr(),
+        ConfirmationDialogType.warning => 'confirm'.tr(),
+        ConfirmationDialogType.success => 'confirm'.tr(),
+        ConfirmationDialogType.error => 'close'.tr(),
+        ConfirmationDialogType.question => 'confirm'.tr(),
       };
 }
 
@@ -44,7 +61,8 @@ Future<bool> showConfirmationDialog({
 }) async {
   final IconData iconToShow = customIcon ?? type.icon;
   final Color iconColorToShow = customIconColor ?? type.iconColor;
-  final String dialogTitle = title ?? 'confirmationTitle'.tr();
+  final String dialogTitle = title ?? type.title;
+  final String confirmTextToShow = confirmText ?? type.confirmText;
 
   final result = await showDialog<bool>(
     context: context,
@@ -55,11 +73,10 @@ Future<bool> showConfirmationDialog({
           borderRadius: BorderRadius.circular(24),
         ),
         elevation: 0,
-        backgroundColor: Colors.transparent,
         child: Container(
           padding: EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.colorScheme.surface,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
@@ -117,26 +134,28 @@ Future<bool> showConfirmationDialog({
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Expanded(
-                    child: TextButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  if (type != ConfirmationDialogType.error) ...[
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
-                      ),
-                      child: Text(
-                        cancelText ?? 'cancel'.tr(),
-                        style: scaledTextStyle(
-                          fontSize: 15,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w600,
+                        child: Text(
+                          cancelText ?? 'cancel'.tr(),
+                          style: scaledTextStyle(
+                            fontSize: 15,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(width: 16),
+                    SizedBox(width: 16),
+                  ],
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () => Navigator.of(context).pop(true),
@@ -150,7 +169,7 @@ Future<bool> showConfirmationDialog({
                         ),
                       ),
                       child: Text(
-                        confirmText ?? 'confirm'.tr(),
+                        confirmTextToShow,
                         style: scaledTextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,

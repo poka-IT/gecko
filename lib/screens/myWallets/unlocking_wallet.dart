@@ -4,6 +4,7 @@ import 'package:durt2/durt2.dart' show Durt, SafeBox, WalletData;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -42,10 +43,8 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
 
   @override
   Widget build(BuildContext context) {
-    final walletOptions =
-        Provider.of<WalletOptionsProvider>(context, listen: false);
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
+    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
     final pinLenght = walletOptions.getPinLenght(widget.wallet.number);
 
@@ -55,7 +54,7 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
         myWalletProvider.isPinLoading = true;
       },
       child: Scaffold(
-        backgroundColor: backgroundColor,
+        backgroundColor: context.colorScheme.surface,
         body: SafeArea(
           child: SingleChildScrollView(
             child: Column(
@@ -97,7 +96,7 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
                         textAlign: TextAlign.center,
                         style: scaledTextStyle(
                           fontSize: isTall ? 24 : 20,
-                          color: Colors.black,
+                          color: context.colorScheme.onSurface,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -109,7 +108,7 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
                   margin: const EdgeInsets.symmetric(horizontal: 16),
                   padding: EdgeInsets.all(isTall ? 24 : 16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: context.colorScheme.surfaceContainer,
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
@@ -126,13 +125,12 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
                         textAlign: TextAlign.center,
                         style: scaledTextStyle(
                           fontSize: isTall ? 16 : 14,
-                          color: Colors.black87,
+                          color: context.colorScheme.onSurface,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       ScaledSizedBox(height: isTall ? 24 : 12),
-                      if (!myWalletProvider.isPinValid &&
-                          !myWalletProvider.isPinLoading)
+                      if (!myWalletProvider.isPinValid && !myWalletProvider.isPinLoading)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 16),
                           child: Text(
@@ -147,8 +145,7 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
                       pinForm(context, pinLenght),
                       ScaledSizedBox(height: isTall ? 16 : 8),
                       if (canUnlock)
-                        Consumer<WalletOptionsProvider>(
-                            builder: (context, sub, _) {
+                        Consumer<WalletOptionsProvider>(builder: (context, sub, _) {
                           return InkWell(
                             key: keyCachePassword,
                             onTap: () {
@@ -159,10 +156,8 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
-                                  configBox.get('isCacheChecked')
-                                      ? Icons.check_box
-                                      : Icons.check_box_outline_blank,
-                                  color: orangeC,
+                                  configBox.get('isCacheChecked') ? Icons.check_box : Icons.check_box_outline_blank,
+                                  color: context.colorScheme.primary,
                                   size: scaleSize(20),
                                 ),
                                 ScaledSizedBox(width: 8),
@@ -171,7 +166,7 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
                                     'rememberPassword'.tr(),
                                     style: scaledTextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey[700],
+                                      color: homeContext.colorScheme.onSurfaceVariant,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -191,7 +186,7 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
     );
   }
 
-  Widget pinForm(context, pinLenght) {
+  Widget pinForm(BuildContext context, int pinLenght) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
@@ -199,8 +194,7 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
 
     return Form(
       child: Padding(
-          padding: EdgeInsets.symmetric(
-              vertical: scaleSize(3), horizontal: scaleSize(isTall ? 30 : 20)),
+          padding: EdgeInsets.symmetric(vertical: scaleSize(3), horizontal: scaleSize(isTall ? 30 : 20)),
           child: PinCodeTextField(
             key: keyPinForm,
             textCapitalization: TextCapitalization.characters,
@@ -229,17 +223,17 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
               borderRadius: BorderRadius.circular(12),
               fieldHeight: scaleSize(50),
               fieldWidth: scaleSize(50),
-              activeFillColor: Colors.white,
-              selectedFillColor: Colors.white,
-              inactiveFillColor: Colors.white,
+              activeFillColor: context.colorScheme.surfaceContainer,
+              selectedFillColor: context.colorScheme.surfaceContainer,
+              inactiveFillColor: context.colorScheme.surfaceContainer,
               activeColor: pinColor,
-              selectedColor: orangeC,
+              selectedColor: context.colorScheme.primary,
               inactiveColor: Colors.grey[300],
               borderWidth: 1.5,
             ),
             enableActiveFill: true,
             showCursor: !kDebugMode,
-            cursorColor: orangeC,
+            cursorColor: context.colorScheme.primary,
             cursorHeight: 25,
             textStyle: scaledTextStyle(
               fontSize: 24,
@@ -253,8 +247,7 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
             onCompleted: (pin) async {
               myWalletProvider.isPinLoading = true;
               myWalletProvider.pinCode = pin.toUpperCase();
-              final isValid = await sub.checkPassword(
-                  defaultWallet.address, pin.toUpperCase());
+              final isValid = await sub.checkPassword(defaultWallet.address, pin.toUpperCase());
               if (!isValid) {
                 await Future.delayed(const Duration(milliseconds: 20));
                 pinColor = Colors.red[600]!;
@@ -268,6 +261,7 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
                 myWalletProvider.isPinLoading = false;
                 pinColor = Colors.green[400]!;
                 myWalletProvider.debounceResetPinCode();
+                // ignore: use_build_context_synchronously
                 Navigator.pop(context, pin.toUpperCase());
               }
             },

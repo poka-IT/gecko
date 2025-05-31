@@ -3,6 +3,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -60,9 +61,9 @@ class _ChooseChestState extends State<OnboardingStepFive> {
 
   Widget sentanceArray() {
     if (mnemonicList == null) {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(
-          color: orangeC,
+          color: context.colorScheme.primary,
           strokeWidth: 2,
         ),
       );
@@ -110,9 +111,9 @@ class _ChooseChestState extends State<OnboardingStepFive> {
           if (isLoading)
             Container(
               color: const Color(0xffeeeedd).withValues(alpha: 0.7),
-              child: const Center(
+              child: Center(
                 child: CircularProgressIndicator(
-                  color: orangeC,
+                  color: context.colorScheme.primary,
                   strokeWidth: 2,
                 ),
               ),
@@ -142,7 +143,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('yourMnemonic'.tr()),
       body: SafeArea(
         child: Stack(children: [
@@ -167,7 +168,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        backgroundColor: orangeC,
+                        backgroundColor: context.colorScheme.primary,
                         elevation: 1,
                       ),
                       onPressed: isMnemonicGenerated
@@ -203,6 +204,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
                     child: Image.asset(
                       'assets/printer.png',
                       height: scaleSize(42),
+                      color: context.colorScheme.onSurface,
                     ),
                   ),
                 ],
@@ -263,13 +265,13 @@ class _ChooseChestState extends State<OnboardingStepFive> {
         key: keyGoNext,
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.white,
-          backgroundColor: orangeC,
+          backgroundColor: context.colorScheme.primary,
           elevation: 2,
           padding: const EdgeInsets.symmetric(vertical: 8),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          shadowColor: orangeC.withValues(alpha: 0.3),
+          shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
         ),
         onPressed: isMnemonicGenerated
             ? () {

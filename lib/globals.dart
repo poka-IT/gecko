@@ -38,11 +38,11 @@ late BuildContext homeContext;
 final log = Logger();
 
 // Colors
-const Color orangeC = Color(0xffd07316);
-const Color yellowC = Color(0xffFFD68E);
-const Color floattingYellow = Color(0xffEFEFBF);
-const Color backgroundColor = Color(0xFFF5F5F5);
-const Color headerColor = Color(0xFFFFF3E0);
+// const Color context.colorScheme.primary = Color(0xffd07316); // Moved to theme_provider.dart
+// const Color yellowC = Color(0xffFFD68E); // Moved to theme_provider.dart
+// const Color floattingYellow = Color(0xffEFEFBF); // Moved to theme_provider.dart
+// const Color backgroundColor = Color(0xFFF5F5F5); // Moved to theme_provider.dart
+// const Color headerColor = Color(0xFFFFF3E0); // Moved to theme_provider.dart
 
 // Substrate settings
 const String currencyName = 'ĞD';

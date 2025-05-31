@@ -39,6 +39,7 @@ import 'package:responsive_framework/responsive_framework.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:gecko/providers/theme_provider.dart';
 
 const bool enableSentry = true;
 
@@ -134,68 +135,35 @@ class Gecko extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SubstrateSdk()),
         ChangeNotifierProvider(create: (_) => DuniterIndexer()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
-        ChangeNotifierProvider(create: (_) => V2sDatapodProvider())
+        ChangeNotifierProvider(create: (_) => V2sDatapodProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
-      child: MaterialApp(
-        localizationsDelegates: context.localizationDelegates,
-        supportedLocales: context.supportedLocales,
-        locale: context.locale,
-        builder: (context, child) => ResponsiveBreakpoints.builder(
-          child: child!,
-          breakpoints: [
-            const Breakpoint(start: 0, end: 450, name: MOBILE),
-            const Breakpoint(start: 451, end: 800, name: TABLET),
-            const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
-          ],
-        ),
-        title: 'Ğecko',
-        theme: ThemeData(
-          appBarTheme: const AppBarTheme(
-            elevation: 0,
-            backgroundColor: headerColor,
-            titleTextStyle: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-              fontFamily: 'Roboto',
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            localizationsDelegates: context.localizationDelegates,
+            supportedLocales: context.supportedLocales,
+            locale: context.locale,
+            theme: lightTheme,
+            darkTheme: darkTheme,
+            themeMode: themeProvider.currentThemeMode,
+            builder: (context, child) => ResponsiveBreakpoints.builder(
+              child: child!,
+              breakpoints: [
+                const Breakpoint(start: 0, end: 450, name: MOBILE),
+                const Breakpoint(start: 451, end: 800, name: TABLET),
+                const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
+              ],
             ),
-          ),
-          textTheme: const TextTheme(
-            titleLarge: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-              fontFamily: 'Roboto',
-            ),
-            bodyMedium: TextStyle(
-              fontSize: 14,
-              color: Colors.black87,
-              fontFamily: 'Roboto',
-            ),
-            bodySmall: TextStyle(
-              fontSize: 13,
-              color: Colors.black54,
-              fontFamily: 'Roboto',
-            ),
-            labelMedium: TextStyle(
-              fontSize: 15,
-              fontFamily: 'Monospace',
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          primaryColor: const Color(0xffFFD58D),
-          scaffoldBackgroundColor: backgroundColor,
-          canvasColor: backgroundColor,
-          colorScheme:
-              ColorScheme.fromSwatch().copyWith(secondary: Colors.grey[850]),
-          dialogTheme: DialogThemeData(backgroundColor: backgroundColor),
-        ),
-        initialRoute: "/",
-        routes: {
-          '/': (context) => const HomeScreen(),
-          '/mywallets': (context) => const WalletsHome(),
-          '/search': (context) => const SearchScreen(),
-          '/searchResult': (context) => const SearchResultScreen(),
+            title: 'Ğecko',
+            initialRoute: "/",
+            routes: {
+              '/': (context) => const HomeScreen(),
+              '/mywallets': (context) => const WalletsHome(),
+              '/search': (context) => const SearchScreen(),
+              '/searchResult': (context) => const SearchResultScreen(),
+            },
+          );
         },
       ),
     );

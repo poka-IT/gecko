@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -45,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
         resizeToAvoidBottomInset: false,
         drawer: MainDrawer(isWalletsExists: isWalletsExists),
-        backgroundColor: yellowC,
+        backgroundColor: context.colorScheme.secondary,
         body: isWalletsExists ? geckHome(context) : welcomeHome(context));
   }
 }
@@ -55,8 +56,13 @@ Widget geckHome(context) {
 
   final statusBarHeight = MediaQuery.of(context).padding.top;
   return Container(
-    decoration: const BoxDecoration(
+    decoration: BoxDecoration(
       image: DecorationImage(
+        opacity: 0.8,
+        colorFilter: ColorFilter.mode(
+          Colors.black.withValues(alpha: homeContext.isDarkTheme ? 0.8 : 0.4),
+          BlendMode.colorDodge,
+        ),
         image: AssetImage("assets/home/background.jpg"),
         fit: BoxFit.cover,
       ),
@@ -227,7 +233,7 @@ Widget welcomeHome(context) {
                     key: keyOnboardingNewChest,
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      backgroundColor: orangeC,
+                      backgroundColor: homeContext.colorScheme.primary,
                       elevation: 0,
                       padding: EdgeInsets.symmetric(vertical: scaleSize(8)),
                       shape: RoundedRectangleBorder(
@@ -268,7 +274,7 @@ Widget welcomeHome(context) {
                   child: OutlinedButton(
                     key: keyRestoreChest,
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(width: scaleSize(4), color: orangeC),
+                      side: BorderSide(width: scaleSize(4), color: homeContext.colorScheme.primary),
                       padding: EdgeInsets.symmetric(vertical: scaleSize(8)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -295,10 +301,7 @@ Widget welcomeHome(context) {
                     },
                     child: Text(
                       "restoreWallet".tr(),
-                      style: scaledTextStyle(
-                          fontSize: 20,
-                          color: orangeC,
-                          fontWeight: FontWeight.w600),
+                      style: scaledTextStyle(fontSize: 20, color: homeContext.colorScheme.primary, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),

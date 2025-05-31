@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:confetti/confetti.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -22,7 +23,7 @@ class OnboardingStepEleven extends StatelessWidget {
     return PopScope(
       canPop: false,
       child: Scaffold(
-          backgroundColor: backgroundColor,
+          backgroundColor: context.colorScheme.surface,
           appBar: GeckoAppBar('allGood'.tr()),
           body: SafeArea(
             child: Stack(children: [
@@ -132,13 +133,13 @@ Widget finishButton(BuildContext context) {
       key: keyGoWalletsHome,
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.white,
-        backgroundColor: orangeC,
+        backgroundColor: context.colorScheme.primary,
         elevation: 2,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        shadowColor: orangeC.withValues(alpha: 0.3),
+        shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
       ),
       onPressed: () {
         Navigator.pushNamedAndRemoveUntil(context, '/mywallets', ModalRoute.withName('/'));

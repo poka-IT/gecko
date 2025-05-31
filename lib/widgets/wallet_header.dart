@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:durt2/durt2.dart' show IdtyStatus;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -115,17 +116,19 @@ class _WalletHeaderState extends State<WalletHeader> {
     }
   }
 
-  Widget _buildContent(BuildContext context, bool hasIdentity, bool isOwner, bool isPickerOpen, String newCustomImagePath, DuniterIndexer duniterIndexer) {
+  Widget _buildContent(BuildContext context, BigInt currentWalletBalance, bool hasIdentity, bool isOwner, bool isPickerOpen, String newCustomImagePath,
+      DuniterIndexer duniterIndexer) {
     const double avatarSize = 90;
-    final walletOptions = Provider.of<WalletOptionsProvider>(context);
+    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
     Provider.of<SubstrateSdk>(context); //To refresh header color on block changes
-    final balance = walletOptions.balanceCache[widget.address] ?? 0;
-    final isEmptyWallet = balance == 0;
+
+    final balance = walletOptions.balanceCache[widget.address] == null ? currentWalletBalance : BigInt.from(walletOptions.balanceCache[widget.address] ?? 0);
+
+    final isEmptyWallet = balance == BigInt.zero;
 
     return Container(
       decoration: BoxDecoration(
-        color: isEmptyWallet ? Colors.grey[300] : headerColor,
-        borderRadius: BorderRadius.circular(8),
+        color: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary,
       ),
       padding: EdgeInsets.only(
         left: scaleSize(16),
@@ -258,6 +261,7 @@ class _WalletHeaderState extends State<WalletHeader> {
                               fontSize: 20,
                               fontFamily: 'Monospace',
                               fontWeight: FontWeight.w600,
+                              color: context.colorScheme.onSecondaryContainer,
                             ),
                           ),
                         ),
@@ -269,7 +273,7 @@ class _WalletHeaderState extends State<WalletHeader> {
                         icon: Icon(
                           Icons.copy,
                           size: scaleSize(20),
-                          color: orangeC.withValues(alpha: 0.5),
+                          color: context.colorScheme.primary.withValues(alpha: 0.5),
                         ),
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: widget.address));
@@ -310,7 +314,7 @@ class _WalletHeaderState extends State<WalletHeader> {
                           children: [
                             IdentityStatus(
                               address: widget.address,
-                              color: orangeC,
+                              color: context.colorScheme.primary,
                             ),
                             SizedBox(width: scaleSize(8)),
                             Certifications(
@@ -320,7 +324,7 @@ class _WalletHeaderState extends State<WalletHeader> {
                             Icon(
                               Icons.chevron_right,
                               size: scaleSize(15),
-                              color: orangeC.withValues(alpha: 0.5),
+                              color: context.colorScheme.primary.withValues(alpha: 0.5),
                             ),
                           ],
                         ),
@@ -339,7 +343,7 @@ class _WalletHeaderState extends State<WalletHeader> {
   Widget _buildLoadingHeader() {
     const double avatarSize = 90;
     return Container(
-      color: headerColor,
+      color: context.colorScheme.tertiary,
       padding: EdgeInsets.only(
         left: scaleSize(16),
         right: scaleSize(16),
@@ -455,6 +459,7 @@ class _WalletHeaderState extends State<WalletHeader> {
     if (cached != null) {
       return _buildContent(
         context,
+        cached.balance,
         cached.hasIdentity,
         cached.isOwner,
         _isPickerOpen,
@@ -478,6 +483,7 @@ class _WalletHeaderState extends State<WalletHeader> {
         final data = snapshot.data!;
         return _buildContent(
           context,
+          data.balance,
           data.hasIdentity,
           data.isOwner,
           _isPickerOpen,

@@ -1,6 +1,7 @@
 // ignore_for_file: must_be_immutable
 
 import 'package:easy_localization/easy_localization.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -57,18 +58,18 @@ class _QrCodeFullscreenState extends State<QrCodeFullscreen> {
             backgroundColor: widget.color ?? Colors.black,
             toolbarHeight: scaleSize(57),
             leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: orangeC),
+                icon: Icon(Icons.arrow_back, color: context.colorScheme.primary),
                 onPressed: () {
                   Navigator.pop(context);
                 }),
             title: Text(
               'QR Code de ${getShortPubkey(widget.address)}',
-              style: scaledTextStyle(color: orangeC, fontSize: 17),
+              style: scaledTextStyle(color: context.colorScheme.primary, fontSize: 17),
             )),
         body: SafeArea(
           child: SizedBox.expand(
             child: Container(
-                color: widget.color ?? backgroundColor,
+                color: widget.color ?? context.colorScheme.surface,
                 child: Column(
                   children: [
                     const Spacer(),
@@ -76,6 +77,12 @@ class _QrCodeFullscreenState extends State<QrCodeFullscreen> {
                       data: widget.address,
                       version: QrVersions.auto,
                       size: scaleSize(320),
+                      dataModuleStyle: QrDataModuleStyle(
+                        color: context.colorScheme.onSecondaryContainer,
+                      ),
+                      eyeStyle: QrEyeStyle(
+                        color: context.colorScheme.onSecondaryContainer,
+                      ),
                     ),
                     const Spacer(),
                     ScaledSizedBox(
@@ -83,8 +90,8 @@ class _QrCodeFullscreenState extends State<QrCodeFullscreen> {
                       height: 55,
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: orangeC,
-                          side: const BorderSide(color: orangeC, width: 1),
+                          foregroundColor: context.colorScheme.primary,
+                          side: BorderSide(color: context.colorScheme.primary, width: 1),
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
@@ -98,7 +105,7 @@ class _QrCodeFullscreenState extends State<QrCodeFullscreen> {
                           style: scaledTextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w500,
-                            color: orangeC,
+                            color: context.colorScheme.primary,
                           ),
                         ),
                       ),

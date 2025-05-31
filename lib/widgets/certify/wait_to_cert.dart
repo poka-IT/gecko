@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/globals.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/screens/wallet_view.dart' show buttonSize, buttonFontSize;
 
@@ -19,7 +19,7 @@ class WaitToCertWidget extends StatelessWidget {
           opacity: 0.4,
           child: Image(
             image: const AssetImage('assets/gecko_certify.png'),
-            color: backgroundColor,
+            color: context.colorScheme.surface,
             colorBlendMode: BlendMode.saturation,
           ),
         ),

@@ -3,7 +3,7 @@
 import 'package:durt2/durt2.dart' show Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/globals.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/chest_provider.dart';
@@ -25,7 +25,7 @@ class ChestOptions extends StatelessWidget {
     final currentSafe = Durt.i.walletService.defaultSafeBox;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: context.colorScheme.surface,
       resizeToAvoidBottomInset: false,
       appBar: GeckoAppBar(currentSafe.name),
       bottomNavigationBar: const GeckoBottomAppBar(),
@@ -55,8 +55,7 @@ class ChestOptionsContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chestProvider = Provider.of<ChestProvider>(context, listen: false);
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
     final currentChest = Durt.i.walletService.defaultSafeBox;
     final isAlone = myWalletProvider.listWallets.length == 1;
 
@@ -77,14 +76,13 @@ class ChestOptionsContent extends StatelessWidget {
             );
           },
           child: Container(
-            padding: EdgeInsets.symmetric(
-                horizontal: scaleSize(16), vertical: scaleSize(12)),
+            padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
             child: Row(
               children: [
                 Icon(
                   Icons.vpn_key_outlined,
                   size: scaleSize(24),
-                  color: Colors.black87,
+                  color: context.colorScheme.onSurface,
                 ),
                 ScaledSizedBox(width: 16),
                 Expanded(
@@ -92,7 +90,7 @@ class ChestOptionsContent extends StatelessWidget {
                     'displayMnemonic'.tr(),
                     style: scaledTextStyle(
                       fontSize: 16,
-                      color: Colors.black87,
+                      color: context.colorScheme.onSurface,
                     ),
                     softWrap: true,
                   ),
@@ -118,8 +116,7 @@ class ChestOptionsContent extends StatelessWidget {
                 );
               },
               child: Container(
-                padding: EdgeInsets.symmetric(
-                    horizontal: scaleSize(16), vertical: scaleSize(12)),
+                padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
                 child: Row(
                   children: [
                     Icon(
@@ -133,7 +130,7 @@ class ChestOptionsContent extends StatelessWidget {
                         'changePassword'.tr(),
                         style: scaledTextStyle(
                           fontSize: 16,
-                          color: Colors.black87,
+                          color: context.colorScheme.onSurface,
                         ),
                         softWrap: true,
                       ),
@@ -153,22 +150,18 @@ class ChestOptionsContent extends StatelessWidget {
                     ? () async {
                         await Navigator.push(
                           context,
-                          MaterialPageRoute(
-                              builder: (context) => const CustomDerivation()),
+                          MaterialPageRoute(builder: (context) => const CustomDerivation()),
                         );
                       }
                     : null,
                 child: Container(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: scaleSize(16), vertical: scaleSize(12)),
+                  padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
                   child: Row(
                     children: [
                       Icon(
                         Icons.manage_accounts,
                         size: scaleSize(24),
-                        color: Durt.i.isConnected
-                            ? Colors.black87
-                            : Colors.grey[400],
+                        color: Durt.i.isConnected ? context.colorScheme.onSurface : Colors.grey[400],
                       ),
                       ScaledSizedBox(width: 16),
                       Expanded(
@@ -176,9 +169,7 @@ class ChestOptionsContent extends StatelessWidget {
                           'createDerivation'.tr(),
                           style: scaledTextStyle(
                             fontSize: 16,
-                            color: Durt.i.isConnected
-                                ? Colors.black87
-                                : Colors.grey[500],
+                            color: Durt.i.isConnected ? context.colorScheme.onSurface : Colors.grey[500],
                           ),
                           softWrap: true,
                         ),
@@ -197,8 +188,7 @@ class ChestOptionsContent extends StatelessWidget {
             await chestProvider.forgetSafe(context, currentChest);
           },
           child: Container(
-            padding: EdgeInsets.symmetric(
-                horizontal: scaleSize(16), vertical: scaleSize(12)),
+            padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
             child: Row(
               children: [
                 Image.asset(

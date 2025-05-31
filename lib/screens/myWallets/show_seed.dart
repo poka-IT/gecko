@@ -1,8 +1,8 @@
 import 'package:durt2/durt2.dart' show WalletData;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
-import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -28,7 +28,7 @@ class ShowSeed extends StatelessWidget {
     WalletData defaultWallet = myWalletProvider.getDefaultWallet();
 
     return Scaffold(
-        backgroundColor: backgroundColor,
+        backgroundColor: context.colorScheme.surface,
         appBar: GeckoAppBar('myMnemonic'.tr()),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -43,8 +43,8 @@ class ShowSeed extends StatelessWidget {
                           return ScaledSizedBox(
                             height: 15,
                             width: 15,
-                            child: const CircularProgressIndicator(
-                              color: orangeC,
+                            child: CircularProgressIndicator(
+                              color: context.colorScheme.primary,
                               strokeWidth: 2,
                             ),
                           );
@@ -69,7 +69,7 @@ class ShowSeed extends StatelessWidget {
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8),
                                       ),
-                                      backgroundColor: orangeC,
+                                      backgroundColor: context.colorScheme.primary,
                                       elevation: 1,
                                     ),
                                     onPressed: () {
@@ -116,13 +116,13 @@ class ShowSeed extends StatelessWidget {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
-                        backgroundColor: orangeC,
+                        backgroundColor: context.colorScheme.primary,
                         elevation: 2,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        shadowColor: orangeC.withValues(alpha: 0.3),
+                        shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
                       ),
                       onPressed: () {
                         Navigator.pop(context);
@@ -215,7 +215,7 @@ class PrintWallet extends StatelessWidget {
               onPressed: () {
                 Navigator.pop(context);
               }),
-          backgroundColor: yellowC,
+          backgroundColor: context.colorScheme.secondary,
           foregroundColor: Colors.black,
           toolbarHeight: scaleSize(57),
           title: Text(

@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/globals.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 
@@ -10,7 +10,7 @@ Future<void> infoPopup(BuildContext context, String title) async {
     barrierDismissible: true,
     builder: (BuildContext context) {
       return AlertDialog(
-        backgroundColor: backgroundColor,
+        backgroundColor: context.colorScheme.surface,
         content: Text(
           title,
           textAlign: TextAlign.center,

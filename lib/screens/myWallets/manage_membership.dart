@@ -2,8 +2,8 @@
 
 import 'package:durt2/durt2.dart' show IdtyStatus;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -26,7 +26,7 @@ class ManageMembership extends StatelessWidget {
     final sub = Provider.of<SubstrateSdk>(context);
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('manageMembership'.tr()),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -120,14 +120,14 @@ class ManageMembership extends StatelessWidget {
               Icon(
                 Icons.change_circle_outlined,
                 size: scaleSize(24),
-                color: Colors.black87,
+                color: context.colorScheme.onSurface,
               ),
               ScaledSizedBox(width: 16),
               Text(
                 'Migrer mon identité',
                 style: scaledTextStyle(
                   fontSize: 16,
-                  color: Colors.black87,
+                  color: context.colorScheme.onSurface,
                 ),
               ),
             ],
@@ -180,7 +180,7 @@ class ManageMembership extends StatelessWidget {
                 'revokeMyIdentity'.tr(),
                 style: scaledTextStyle(
                   fontSize: 16,
-                  color: Colors.black87,
+                  color: context.colorScheme.onSurface,
                 ),
               ),
             ],
@@ -211,7 +211,7 @@ class ManageMembership extends StatelessWidget {
               Image.asset(
                 'assets/medal.png',
                 height: scaleSize(24),
-                color: info.canRenew ? Colors.black87 : Colors.grey[400],
+                color: info.canRenew ? context.colorScheme.onSurface : Colors.grey[400],
               ),
               ScaledSizedBox(width: 16),
               Expanded(
@@ -223,7 +223,7 @@ class ManageMembership extends StatelessWidget {
                       'renewMembership'.tr(),
                       style: scaledTextStyle(
                         fontSize: 16,
-                        color: info.canRenew ? Colors.black87 : Colors.grey[500],
+                        color: info.canRenew ? context.colorScheme.onSurface : Colors.grey[500],
                       ),
                     ),
                     MembershipRenewal.buildExpirationText(info),

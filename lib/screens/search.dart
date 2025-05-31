@@ -2,8 +2,8 @@
 
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/search.dart';
@@ -42,7 +42,7 @@ class _SearchScreenState extends State<SearchScreen> {
         searchProvider.searchController.text = '';
       },
       child: Scaffold(
-        backgroundColor: backgroundColor,
+        backgroundColor: context.colorScheme.surface,
         appBar: GeckoAppBar('search'.tr()),
         body: SafeArea(
           child: Stack(children: [
@@ -128,13 +128,13 @@ class _SearchScreenState extends State<SearchScreen> {
                     boxShadow: canValidate || searchProvider.canPasteAddress
                         ? [
                             BoxShadow(
-                              color: orangeC.withValues(alpha: 0.3),
+                              color: context.colorScheme.primary.withValues(alpha: 0.3),
                               blurRadius: 12,
                               offset: const Offset(0, 6),
                               spreadRadius: -2,
                             ),
                             BoxShadow(
-                              color: orangeC.withValues(alpha: 0.2),
+                              color: context.colorScheme.primary.withValues(alpha: 0.2),
                               blurRadius: 4,
                               offset: const Offset(0, 2),
                               spreadRadius: 0,
@@ -146,7 +146,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     key: keyConfirmSearch,
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      backgroundColor: orangeC,
+                      backgroundColor: context.colorScheme.primary,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
@@ -223,7 +223,7 @@ class _SearchScreenState extends State<SearchScreen> {
           child: ClipOval(
             key: keyOpenWalletsHomme,
             child: Material(
-              color: yellowC,
+              color: context.colorScheme.secondary,
               child: Padding(
                 padding: EdgeInsets.all(scaleSize(14.5)),
                 child: Icon(

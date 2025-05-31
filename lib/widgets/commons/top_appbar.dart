@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 
 class GeckoAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -9,11 +10,16 @@ class GeckoAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   AppBar build(BuildContext context) {
     return AppBar(
+      backgroundColor: context.colorScheme.tertiary,
       toolbarHeight: scaleSize(57),
       titleSpacing: 10,
       title: Text(
         text,
-        style: scaledTextStyle(fontWeight: FontWeight.w600, fontSize: 17),
+        style: scaledTextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 17,
+          color: context.colorScheme.onSecondaryContainer,
+        ),
       ),
     );
   }

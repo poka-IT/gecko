@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gecko/globals.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 
 class Loading extends StatelessWidget {
@@ -18,7 +18,7 @@ class Loading extends StatelessWidget {
       height: size,
       width: size,
       child: CircularProgressIndicator(
-        color: orangeC,
+        color: context.colorScheme.primary,
         strokeWidth: stroke,
       ),
     );

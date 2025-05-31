@@ -1,6 +1,7 @@
 import 'package:durt2/durt2.dart' show WalletData;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/queries_indexer.dart';
@@ -13,10 +14,9 @@ import 'package:provider/provider.dart';
 import 'package:truncate/truncate.dart';
 
 class NameByAddress extends StatelessWidget {
-  const NameByAddress(
-      {super.key, required this.wallet, this.size = 20, this.color = Colors.black, this.fontWeight = FontWeight.w400, this.fontStyle = FontStyle.normal});
+  const NameByAddress({super.key, required this.wallet, this.size = 20, this.color, this.fontWeight = FontWeight.w400, this.fontStyle = FontStyle.normal});
   final WalletData wallet;
-  final Color color;
+  final Color? color;
   final double size;
   final FontWeight fontWeight;
   final FontStyle fontStyle;
@@ -24,9 +24,10 @@ class NameByAddress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final finalColor = color ?? Theme.of(context).colorScheme.onSurface;
 
     if (indexerEndpoint == '') {
-      return WalletName(wallet: wallet, size: size, color: color);
+      return WalletName(wallet: wallet, size: size, color: finalColor);
     }
 
     return GraphQLProvider(
@@ -57,16 +58,16 @@ class NameByAddress extends StatelessWidget {
             g1WalletsBox.put(wallet.address, G1WalletsList(address: wallet.address, username: duniterIndexer.walletNameIndexer[wallet.address]));
 
             if (duniterIndexer.walletNameIndexer[wallet.address] == null) {
-              return WalletName(wallet: wallet, size: size, color: color);
+              return WalletName(wallet: wallet, size: size, color: finalColor);
             }
 
             return Text(
-              color == Colors.grey[700]!
+              finalColor == homeContext.colorScheme.onSurfaceVariant
                   ? '(${duniterIndexer.walletNameIndexer[wallet.address]!})'
                   : truncate(duniterIndexer.walletNameIndexer[wallet.address]!, 19),
               style: scaledTextStyle(
                 fontSize: size,
-                color: color,
+                color: finalColor,
                 fontWeight: fontWeight,
                 fontStyle: fontStyle,
               ),

@@ -2,7 +2,7 @@
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/globals.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -46,7 +46,7 @@ class AddNewDerivationButton extends StatelessWidget {
                 },
                 child: Container(
                   decoration: BoxDecoration(
-                    color: floattingYellow,
+                    color: context.colorScheme.surfaceTint,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
@@ -54,8 +54,8 @@ class AddNewDerivationButton extends StatelessWidget {
                         ? ScaledSizedBox(
                             height: 50,
                             width: 50,
-                            child: const CircularProgressIndicator(
-                              color: orangeC,
+                            child: CircularProgressIndicator(
+                              color: context.colorScheme.primary,
                               strokeWidth: 6,
                             ),
                           )

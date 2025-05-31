@@ -1,12 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
@@ -90,13 +92,14 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
   @override
   Widget build(BuildContext context) {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
     final screenSize = MediaQuery.of(context).size;
     final isSmallScreen = screenSize.height < 700;
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: WalletAppBar(
         address: widget.address,
+        currentBalance: BigInt.from(walletOptions.balanceCache[widget.address] ?? 0),
         title: 'chooseIdentityName'.tr(),
       ),
       body: Column(
@@ -114,13 +117,13 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
                         width: scaleSize(isSmallScreen ? 60 : 80),
                         height: scaleSize(isSmallScreen ? 60 : 80),
                         decoration: BoxDecoration(
-                          color: orangeC.withValues(alpha: 0.1),
+                          color: context.colorScheme.primary.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Icons.person_outline,
                           size: scaleSize(isSmallScreen ? 30 : 40),
-                          color: orangeC,
+                          color: context.colorScheme.primary,
                         ),
                       ),
                     ),
@@ -153,7 +156,7 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
                           padding: EdgeInsets.only(bottom: scaleSize(isSmallScreen ? 8 : 12)),
                           child: Row(
                             children: [
-                              Icon(Icons.check_circle, color: orangeC, size: scaleSize(isSmallScreen ? 16 : 20)),
+                              Icon(Icons.check_circle, color: context.colorScheme.primary, size: scaleSize(isSmallScreen ? 16 : 20)),
                               ScaledSizedBox(width: isSmallScreen ? 8 : 12),
                               Expanded(
                                 child: Text(
@@ -211,7 +214,7 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
                 key: keyConfirm,
                 onPressed: _canValidate ? () => _confirmIdentity(context) : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: orangeC,
+                  backgroundColor: context.colorScheme.primary,
                   disabledBackgroundColor: Colors.grey[300],
                   elevation: 0,
                   shape: RoundedRectangleBorder(

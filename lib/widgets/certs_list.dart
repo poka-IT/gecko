@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -96,7 +97,7 @@ class CertsList extends StatelessWidget {
           return SizedBox(
             height: windowHeight,
             child: RefreshIndicator(
-              color: orangeC,
+              color: context.colorScheme.primary,
               onRefresh: () async => refetch!.call(),
               child: ListView(
                 key: keyListTransactions,

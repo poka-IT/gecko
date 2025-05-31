@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -27,7 +28,7 @@ class GeckoBottomAppBar extends StatelessWidget {
       visible: showBottomBar,
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFFFFBF2),
+          color: context.colorScheme.tertiary,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.08),
@@ -92,7 +93,7 @@ class GeckoBottomAppBar extends StatelessWidget {
     bool isDisabled = false,
     required VoidCallback? onTap,
   }) {
-    final color = isSelected ? orangeC : const Color.fromARGB(255, 80, 69, 61);
+    final color = isSelected ? homeContext.colorScheme.onSurface.withValues(alpha: 0.8) : homeContext.colorScheme.onSecondaryContainer.withValues(alpha: 0.8);
     final size = scaleSize(34);
 
     return Material(
@@ -105,7 +106,7 @@ class GeckoBottomAppBar extends StatelessWidget {
           padding: EdgeInsets.all(scaleSize(12)),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            color: isSelected ? yellowC.withValues(alpha: 0.5) : Colors.transparent,
+            color: isSelected ? homeContext.colorScheme.secondary.withValues(alpha: 0.5) : Colors.transparent,
           ),
           child: icon != null
               ? Icon(

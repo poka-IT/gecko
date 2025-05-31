@@ -1,8 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show Durt;
+import 'package:durt2/durt2.dart' show Durt, IdtyStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -19,13 +20,14 @@ import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:gecko/widgets/payment_popup.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
+import 'package:gecko/models/wallet_header_data.dart';
+import 'package:gecko/providers/duniter_indexer.dart';
 
 const double buttonSize = 75;
 const double buttonFontSize = 13;
 
 class WalletViewScreen extends StatefulWidget {
-  const WalletViewScreen(
-      {required this.address, required this.username, super.key});
+  const WalletViewScreen({required this.address, required this.username, super.key});
   final String address;
   final String? username;
 
@@ -36,114 +38,148 @@ class WalletViewScreen extends StatefulWidget {
 class _WalletViewScreenState extends State<WalletViewScreen> {
   late String address;
   late String? username;
+  late Future<WalletHeaderData> _headerDataFuture;
 
   @override
   void initState() {
     super.initState();
     address = widget.address;
     username = widget.username;
+    _headerDataFuture = _loadWalletData();
+  }
+
+  Future<WalletHeaderData> _loadWalletData() async {
+    final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+
+    final (idtyStatusValue, balanceResult, certData) = await (
+      sub.idtyStatus(address),
+      sub.getBalance(address),
+      sub.getCertsCounter(address),
+    ).wait;
+
+    final data = WalletHeaderData(
+      hasIdentity: idtyStatusValue != IdtyStatus.none,
+      isOwner: myWalletProvider.isOwner(address),
+      walletName: duniterIndexer.walletNameIndexer[address],
+      balance: BigInt.from(balanceResult.transferableBalance),
+      certCount: certData,
+    );
+
+    await walletHeaderDataBox.put(address, data);
+    return data;
   }
 
   @override
   Widget build(BuildContext context) {
-    final walletProfile =
-        Provider.of<WalletsProfilesProvider>(context, listen: false);
+    final walletProfile = Provider.of<WalletsProfilesProvider>(context, listen: false);
 
     walletProfile.address = address;
     Durt.i.walletService.setDefaultWallet(address);
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      resizeToAvoidBottomInset: true,
-      appBar: WalletAppBar(
-        address: address,
-        titleBuilder: (username) => username == null
-            ? 'seeAWallet'.tr()
-            : 'memberAccountOf'.tr(args: [username]),
-      ),
-      bottomNavigationBar: const GeckoBottomAppBar(),
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                // On divise le contenu en deux parties afin de pouvoir utiliser mainAxisAlignment.spaceBetween
-                // et ainsi faire remonter le bouton de transfert en bas sur grand écran.
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    // Partie haute
-                    Column(
-                      children: [
-                        WalletHeader(address: address),
-                        ScaledSizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return FutureBuilder<WalletHeaderData>(
+      future: _headerDataFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            appBar: AppBar(title: Text(username == null ? 'seeAWallet'.tr() : 'memberAccountOf'.tr(args: [username ?? '']))),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.hasError || !snapshot.hasData) {
+          return Scaffold(
+            appBar: AppBar(title: Text(username == null ? 'seeAWallet'.tr() : 'memberAccountOf'.tr(args: [username ?? '']))),
+            body: Center(child: Text('errorLoadingWalletData'.tr())),
+          );
+        }
+
+        final walletData = snapshot.data!;
+
+        return Scaffold(
+          resizeToAvoidBottomInset: true,
+          appBar: WalletAppBar(
+            address: address,
+            currentBalance: walletData.balance,
+            titleBuilder: (uname) => uname == null ? 'seeAWallet'.tr() : 'memberAccountOf'.tr(args: [uname]),
+          ),
+          bottomNavigationBar: const GeckoBottomAppBar(),
+          body: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Column(
                           children: [
-                            _buildActionButton(
-                              context: context,
-                              key: keyViewActivity,
-                              icon: 'assets/walletOptions/clock.png',
-                              label: "displayNActivity".tr(),
-                              onTap: () => Navigator.push(
-                                context,
-                                PageNoTransit(
-                                  builder: (context) =>
-                                      ActivityScreen(address: address),
+                            WalletHeader(address: address),
+                            ScaledSizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildActionButton(
+                                  context: context,
+                                  key: keyViewActivity,
+                                  icon: 'assets/walletOptions/clock.png',
+                                  label: "displayNActivity".tr(),
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    PageNoTransit(
+                                      builder: (context) => ActivityScreen(address: address),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                            Consumer<SubstrateSdk>(
-                              builder: (context, sub, _) {
-                                return FutureBuilder(
-                                  future: sub.certState(address),
-                                  builder: (context,
-                                      AsyncSnapshot<CertState> snapshot) {
-                                    if (!snapshot.hasData) {
-                                      return const SizedBox.shrink();
-                                    }
-                                    final certState = snapshot.data!;
-                                    return Visibility(
-                                      visible:
-                                          certState.status != CertStatus.none,
-                                      child: CertStateWidget(
-                                        certState: certState,
-                                        address: address,
-                                      ),
+                                Consumer<SubstrateSdk>(
+                                  builder: (context, sub, _) {
+                                    return FutureBuilder(
+                                      future: sub.certState(address),
+                                      builder: (context, AsyncSnapshot<CertState> snapshot) {
+                                        if (!snapshot.hasData) return const SizedBox.shrink();
+                                        final certState = snapshot.data!;
+                                        return Visibility(
+                                          visible: certState.status != CertStatus.none,
+                                          child: CertStateWidget(
+                                            certState: certState,
+                                            address: address,
+                                          ),
+                                        );
+                                      },
                                     );
                                   },
-                                );
-                              },
+                                ),
+                                _buildActionButton(
+                                  context: context,
+                                  key: keyCopyAddress,
+                                  icon: 'assets/copy_key.png',
+                                  label: "copyAddress".tr(),
+                                  onTap: () {
+                                    Clipboard.setData(ClipboardData(text: address));
+                                    snackCopyKey(context);
+                                  },
+                                ),
+                              ],
                             ),
-                            _buildActionButton(
-                              context: context,
-                              key: keyCopyAddress,
-                              icon: 'assets/copy_key.png',
-                              label: "copyAddress".tr(),
-                              onTap: () {
-                                Clipboard.setData(ClipboardData(text: address));
-                                snackCopyKey(context);
-                              },
-                            ),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            _buildTransferButton(context),
+                            ScaledSizedBox(height: isTall ? 40 : 7),
                           ],
                         ),
                       ],
                     ),
-                    // Partie basse
-                    Column(
-                      children: [
-                        _buildTransferButton(context),
-                        ScaledSizedBox(height: isTall ? 40 : 7),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -161,7 +197,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
           height: scaleSize(buttonSize),
           width: scaleSize(buttonSize),
           decoration: BoxDecoration(
-            color: yellowC,
+            color: context.colorScheme.secondary,
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
@@ -179,7 +215,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
               onTap: onTap,
               child: Padding(
                 padding: EdgeInsets.all(scaleSize(15)),
-                child: Image.asset(icon, color: Colors.black87),
+                child: Image.asset(icon, color: context.colorScheme.onSurface),
               ),
             ),
           ),
@@ -205,7 +241,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
             height: scaleSize(buttonSize + 5),
             width: scaleSize(buttonSize + 5),
             decoration: BoxDecoration(
-              color: orangeC,
+              color: context.colorScheme.primary,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
@@ -226,9 +262,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
                 child: InkWell(
                   key: keyPay,
                   borderRadius: BorderRadius.circular((buttonSize + 5) / 2),
-                  onTap: Durt.i.isConnected
-                      ? () => _handleTransfer(context)
-                      : null,
+                  onTap: Durt.i.isConnected ? () => _handleTransfer(context) : null,
                   child: Padding(
                     padding: EdgeInsets.all(scaleSize(15)),
                     child: Image.asset(
@@ -246,7 +280,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w500,
-                  color: Durt.i.isConnected ? Colors.black87 : Colors.grey[500],
+                  color: Durt.i.isConnected ? context.colorScheme.onSurface : Colors.grey[500],
                 ),
           ),
         ],
@@ -255,8 +289,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
   }
 
   Future<void> _handleTransfer(BuildContext context) async {
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
     final defaultWallet = myWalletProvider.getDefaultWallet();
 
     if (myWalletProvider.pinCode == '') {

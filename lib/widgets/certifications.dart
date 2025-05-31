@@ -4,10 +4,10 @@ import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:provider/provider.dart';
 
 class Certifications extends StatefulWidget {
-  const Certifications({super.key, required this.address, required this.size, this.color = Colors.black});
+  const Certifications({super.key, required this.address, required this.size, this.color});
   final String address;
   final double size;
-  final Color color;
+  final Color? color;
 
   @override
   State<Certifications> createState() => _CertificationsState();
@@ -58,15 +58,16 @@ class _CertificationsState extends State<Certifications> {
   }
 
   Widget _buildContent(int receivedCount, int sentCount) {
+    final finalColor = widget.color ?? Theme.of(context).colorScheme.onSecondaryContainer;
     return Row(
       children: [
-        Image.asset('assets/medal.png', color: widget.color, height: scaleSize(18)),
+        Image.asset('assets/medal.png', color: finalColor, height: scaleSize(18)),
         ScaledSizedBox(width: 1),
-        Text(receivedCount.toString(), style: scaledTextStyle(fontSize: widget.size, color: widget.color)),
+        Text(receivedCount.toString(), style: scaledTextStyle(fontSize: widget.size, color: finalColor)),
         ScaledSizedBox(width: 5),
         Text(
           "($sentCount)",
-          style: scaledTextStyle(fontSize: widget.size * 0.7, color: widget.color),
+          style: scaledTextStyle(fontSize: widget.size * 0.7, color: finalColor),
         )
       ],
     );

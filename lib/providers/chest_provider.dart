@@ -14,12 +14,14 @@ class ChestProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future forgetSafe(context, ChestData chest) async {
+  Future<void> forgetSafe(BuildContext context, ChestData chest) async {
     final bool? answer = await (_confirmDeletingChest(context, chest.name));
+    // ignore: use_build_context_synchronously
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     if (answer ?? false) {
       await sub.deleteAccounts(getChestWallets(chest));
       await chestBox.delete(chest.key);
+      // ignore: use_build_context_synchronously
       final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
       myWalletProvider.pinCode = '';
@@ -32,6 +34,7 @@ class ChestProvider with ChangeNotifier {
       }
 
       Navigator.popUntil(
+        // ignore: use_build_context_synchronously
         context,
         ModalRoute.withName('/'),
       );
@@ -49,7 +52,7 @@ class ChestProvider with ChangeNotifier {
     return toDelete;
   }
 
-  Future<bool?> _confirmDeletingChest(context, String? walletName) async {
+  Future<bool?> _confirmDeletingChest(BuildContext context, String? walletName) async {
     return showConfirmationDialog(
       context: context,
       type: ConfirmationDialogType.warning,

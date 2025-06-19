@@ -114,7 +114,7 @@ class MyWalletsProvider with ChangeNotifier {
     }
   }
 
-  Future<int> deleteAllWallet(context) async {
+  Future<int> deleteAllWallet(BuildContext context) async {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
     try {
@@ -140,6 +140,7 @@ class MyWalletsProvider with ChangeNotifier {
 
         myWalletProvider.pinCode = '';
 
+        // ignore: use_build_context_synchronously
         await Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
       }
       return 0;
@@ -148,7 +149,7 @@ class MyWalletsProvider with ChangeNotifier {
     }
   }
 
-  Future<void> generateNewDerivation(context, String name, [int? number]) async {
+  Future<void> generateNewDerivation(BuildContext context, String name, [int? number]) async {
     isNewDerivationLoading = true;
     notifyListeners();
 
@@ -158,10 +159,12 @@ class MyWalletsProvider with ChangeNotifier {
 
     int? chest = getCurrentChest();
 
+    // ignore: use_build_context_synchronously
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     WalletData defaultWallet = getDefaultWallet();
 
+    // ignore: use_build_context_synchronously
     final address = await sub.derive(context, defaultWallet.address, newDerivationNbr, pinCode);
 
     WalletData newWallet = WalletData(
@@ -180,7 +183,7 @@ class MyWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> generateRootWallet(context, String name) async {
+  Future<void> generateRootWallet(BuildContext context, String name) async {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
     isNewDerivationLoading = true;
@@ -198,6 +201,7 @@ class MyWalletsProvider with ChangeNotifier {
     } else {
       newWalletNbr = walletConfig.last.number! + 1;
     }
+    // ignore: use_build_context_synchronously
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     WalletData defaultWallet = myWalletProvider.getDefaultWallet();

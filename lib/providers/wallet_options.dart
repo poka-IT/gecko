@@ -32,7 +32,7 @@ class WalletOptionsProvider with ChangeNotifier {
   bool canValidateNameBool = false;
   Map<String, int> balanceCache = {};
 
-  int getPinLenght(walletNbr) {
+  int getPinLenght() {
     return pinLength;
   }
 
@@ -46,7 +46,7 @@ class WalletOptionsProvider with ChangeNotifier {
     _newWalletName.text = '';
   }
 
-  Future<int> deleteWallet(context, WalletData wallet) async {
+  Future<int> deleteWallet(BuildContext context, WalletData wallet) async {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final datapod = Provider.of<V2sDatapodProvider>(context, listen: false);
     final answer = await showConfirmationDialog(

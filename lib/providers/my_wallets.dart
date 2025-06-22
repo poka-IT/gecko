@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
@@ -22,48 +24,65 @@ class MyWalletsProvider with ChangeNotifier {
   WalletData? dragAddress;
   bool isPinValid = false;
   bool isPinLoading = true;
+  final chestProvider = Provider.of<ChestProvider>(homeContext, listen: false);
 
   bool isOwner(String address) => listWallets.any((wallet) => wallet.address == address);
 
-  int getCurrentChest() {
-    if (configBox.get('currentChest') == null) {
-      configBox.put('currentChest', 0);
-    }
-
-    return configBox.get('currentChest');
-  }
-
-  bool isWalletsExists() => chestBox.isNotEmpty;
+  bool get isWalletsExists => chestBox.isNotEmpty;
 
   WalletData? get idtyWallet => listWallets.firstWhereOrNull((w) => w.isMembre) ?? listWallets.firstWhereOrNull((w) => w.hasIdentity);
 
   List<WalletData> get listWalletsWithoutIdty => listWallets.where((w) => w.address != idtyWallet?.address).toList();
 
+  Future<void> clearWallets(ChestData chest) async {
+    // ignore: use_build_context_synchronously
+    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
+    final chestProvider = Provider.of<ChestProvider>(homeContext, listen: false);
+    final wallets = chestProvider.getChestWallets(chest);
+    await sub.deleteAccounts(wallets);
+    await chestBox.delete(chest.key);
+    await walletBox.clear();
+    await configBox.put('currentChest', 0);
+
+    pinCode = '';
+  }
+
   Future<List<WalletData>> readAllWallets([int? chest]) async {
     final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-    chest = chest ?? getCurrentChest();
+    chest = chest ?? chestProvider.getCurrentChestNumber();
     listWallets.clear();
-    final wallets = walletBox.toMap().values.toList();
-    Map<String, WalletData> walletsToScan = {};
-    for (var walletFromBox in wallets) {
-      if (walletFromBox.chest != chest) {
-        continue;
-      }
-      if (walletFromBox.identityStatus == IdtyStatus.unknown) {
-        walletsToScan.putIfAbsent(walletFromBox.address, (() => walletFromBox));
+
+    final walletsInChest = walletBox.values.where((w) => w.chest == chest);
+
+    final Map<String, WalletData> walletsToScan = {};
+
+    for (final wallet in walletsInChest) {
+      if (wallet.identityStatus == IdtyStatus.unknown) {
+        walletsToScan[wallet.address] = wallet;
       } else {
-        listWallets.add(walletFromBox);
+        listWallets.add(wallet);
       }
     }
 
-    // update all idty status in lists
-    int n = 0;
-    final idtyStatusList = await sub.idtyStatusMulti(walletsToScan.keys.toList());
-    for (final wallet in walletsToScan.values) {
-      wallet.identityStatus = idtyStatusList[n];
-      walletBox.put(wallet.address, wallet);
-      listWallets.add(wallet);
-      n++;
+    if (walletsToScan.isNotEmpty) {
+      final addresses = walletsToScan.keys.toList();
+      try {
+        final idtyStatusList = await sub.idtyStatusMulti(addresses);
+
+        if (idtyStatusList.length == addresses.length) {
+          for (var i = 0; i < addresses.length; i++) {
+            final wallet = walletsToScan[addresses[i]]!;
+            wallet.identityStatus = idtyStatusList[i];
+            await walletBox.put(wallet.address, wallet);
+          }
+        } else {
+          log.w('Idty status check returned a list of different size than wallets to scan. Wallets will be displayed with unknown status.');
+        }
+      } catch (e, s) {
+        log.e('Failed to fetch identity statuses', error: e, stackTrace: s);
+      }
+
+      listWallets.addAll(walletsToScan.values);
     }
 
     listWallets.sort((p1, p2) => Comparable.compare(p1.number!, p2.number!));
@@ -108,7 +127,7 @@ class MyWalletsProvider with ChangeNotifier {
     if (chestBox.isEmpty) {
       return WalletData(address: '', chest: 0, number: 0, isOwned: true);
     } else {
-      chest ??= getCurrentChest();
+      chest ??= chestProvider.getCurrentChestNumber();
       int? defaultWalletNumber = chestBox.get(chest)!.defaultWallet;
       return getWalletDataById([chest, defaultWalletNumber]) ?? WalletData(address: '', chest: chest, number: 0, isOwned: true);
     }
@@ -157,7 +176,7 @@ class MyWalletsProvider with ChangeNotifier {
     int newWalletNbr = idList[0];
     int newDerivationNbr = number ?? idList[1];
 
-    int? chest = getCurrentChest();
+    int? chest = chestProvider.getCurrentChestNumber();
 
     // ignore: use_build_context_synchronously
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
@@ -189,7 +208,7 @@ class MyWalletsProvider with ChangeNotifier {
     isNewDerivationLoading = true;
     notifyListeners();
     int newWalletNbr;
-    int? chest = getCurrentChest();
+    int? chest = chestProvider.getCurrentChestNumber();
 
     List<WalletData> walletConfig = await readAllWallets(chest);
     walletConfig.sort((p1, p2) {
@@ -219,7 +238,7 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   Future<List<int>> getNextWalletNumberAndDerivation({int? chestNumber}) async {
-    chestNumber ??= getCurrentChest();
+    chestNumber ??= chestProvider.getCurrentChestNumber();
 
     listWallets.sort((p1, p2) => p1.number!.compareTo(p2.number!));
 

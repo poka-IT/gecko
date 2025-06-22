@@ -5,7 +5,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:provider/provider.dart';
 
@@ -16,25 +15,11 @@ class ChestProvider with ChangeNotifier {
 
   Future<void> forgetSafe(BuildContext context, ChestData chest) async {
     final bool? answer = await (_confirmDeletingChest(context, chest.name));
-    // ignore: use_build_context_synchronously
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    // ignore: use_build_context_synchronously
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+
     if (answer ?? false) {
-      await sub.deleteAccounts(getChestWallets(chest));
-      await chestBox.delete(chest.key);
-      myWalletProvider.listWallets.clear();
-
       // ignore: use_build_context_synchronously
-
-      myWalletProvider.pinCode = '';
-
-      if (chestBox.isEmpty) {
-        await configBox.put('currentChest', 0);
-      } else {
-        int? lastChest = chestBox.toMap().keys.first;
-        await configBox.put('currentChest', lastChest);
-      }
+      final myWallets = Provider.of<MyWalletsProvider>(context, listen: false);
+      await myWallets.clearWallets(chest);
 
       Navigator.popUntil(
         // ignore: use_build_context_synchronously
@@ -45,6 +30,17 @@ class ChestProvider with ChangeNotifier {
     }
   }
 
+  ChestData get currentChestData => getChestData(getCurrentChestNumber());
+
+  int getCurrentChestNumber() {
+    if (configBox.get('currentChest') == null) {
+      configBox.put('currentChest', 0);
+      return 0;
+    }
+
+    return configBox.get('currentChest');
+  }
+
   List<String> getChestWallets(ChestData chest) {
     List<String> toDelete = [];
     walletBox.toMap().forEach((key, WalletData value) {
@@ -53,6 +49,10 @@ class ChestProvider with ChangeNotifier {
       }
     });
     return toDelete;
+  }
+
+  ChestData getChestData(int chestNumber) {
+    return chestBox.get(chestNumber)!;
   }
 
   Future<bool?> _confirmDeletingChest(BuildContext context, String? walletName) async {

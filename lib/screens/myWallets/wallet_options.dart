@@ -10,6 +10,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/membership_status.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -39,10 +40,11 @@ class WalletOptions extends StatelessWidget {
     WalletsProfilesProvider historyProvider = Provider.of<WalletsProfilesProvider>(context, listen: false);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final chestProvider = Provider.of<ChestProvider>(context, listen: false);
 
     walletOptions.address.text = wallet.address;
 
-    final currentChest = myWalletProvider.getCurrentChest();
+    final currentChest = chestProvider.getCurrentChestNumber();
     final isWalletNameIndexed = duniterIndexer.walletNameIndexer[walletOptions.address.text] != null;
 
     final isAlone = myWalletProvider.listWallets.length == 1;

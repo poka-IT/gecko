@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -134,7 +133,7 @@ class _MigrateChestProgressScreenState extends State<MigrateChestProgressScreen>
               ),
             Expanded(
               child: Container(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 child: ListView.builder(
                   itemCount: _logs.length,
                   itemBuilder: (context, index) {
@@ -158,20 +157,12 @@ class _MigrateChestProgressScreenState extends State<MigrateChestProgressScreen>
 
                       _addLog('deletingOldChest'.tr());
 
-                      final sub = Provider.of<SubstrateSdk>(context, listen: false);
                       final myWallets = Provider.of<MyWalletsProvider>(context, listen: false);
-                      final chestProvider = Provider.of<ChestProvider>(context, listen: false);
                       final currentChestNumber = configBox.get('currentChest');
                       final currentChest = chestBox.get(currentChestNumber)!;
 
                       // Manually delete the old chest's contents
-                      await sub.deleteAccounts(chestProvider.getChestWallets(currentChest));
-                      await chestBox.delete(currentChest.key);
-                      myWallets.listWallets.clear();
-
-                      myWallets.pinCode = '';
-
-                      await configBox.put('currentChest', 0);
+                      await myWallets.clearWallets(currentChest);
 
                       _addLog('oldChestDeleted'.tr());
 

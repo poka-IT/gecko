@@ -9,6 +9,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -140,8 +141,8 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
     final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context);
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
-
-    final currentChest = myWalletProvider.getCurrentChest();
+    final chestProvider = Provider.of<ChestProvider>(context, listen: false);
+    final currentChestNumber = chestProvider.getCurrentChestNumber();
 
     return Form(
       key: formKey,
@@ -235,7 +236,7 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                     break;
                 }
 
-                await myWalletProvider.readAllWallets(currentChest);
+                await myWalletProvider.readAllWallets(currentChestNumber);
                 myWalletProvider.reload();
 
                 generateWalletProvider.generatedMnemonic = '';

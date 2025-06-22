@@ -41,8 +41,9 @@ class _HomeScreenState extends State<HomeScreen> {
       final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
       final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
       final datapod = Provider.of<V2sDatapodProvider>(context, listen: false);
+      final chestProvider = Provider.of<ChestProvider>(context, listen: false);
 
-      final bool isWalletsExists = myWalletProvider.isWalletsExists();
+      final bool isWalletsExists = myWalletProvider.isWalletsExists;
 
       // Check if versionData non compatible, drop everything
       if (configBox.get('dataVersion') == null) {
@@ -73,9 +74,6 @@ class _HomeScreenState extends State<HomeScreen> {
         g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
         contactsBox = await Hive.openBox<G1WalletsList>("contactsBox");
 
-        homeProvider.isWalletBoxInit = true;
-        myWalletProvider.reload();
-
         await homeProvider.getValidEndpoints();
         if (configBox.get('isCacheChecked') == null) {
           configBox.put('isCacheChecked', false);
@@ -95,7 +93,9 @@ class _HomeScreenState extends State<HomeScreen> {
               await sub.connectNode();
 
               // Load wallets list
-              myWalletProvider.readAllWallets(myWalletProvider.getCurrentChest());
+              await myWalletProvider.readAllWallets(chestProvider.getCurrentChestNumber());
+              homeProvider.isWalletBoxInit = true;
+              myWalletProvider.reload();
 
               //Connect to Indexer
               await duniterIndexer.getValidIndexerEndpoint();
@@ -113,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
     Provider.of<ChestProvider>(context);
-    final isWalletsExists = myWalletProvider.isWalletsExists();
+    final isWalletsExists = myWalletProvider.isWalletsExists;
 
     isTall = (MediaQuery.of(context).size.height / MediaQuery.of(context).size.width) > 1.75;
 

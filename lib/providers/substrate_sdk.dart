@@ -769,7 +769,7 @@ class SubstrateSdk with ChangeNotifier {
       nodeConnected = false;
       notifyListeners();
       homeProvider.changeMessage("noDuniterEndointAvailable".tr());
-      if (!myWalletProvider.isWalletsExists()) snackNode(false);
+      if (!myWalletProvider.isWalletsExists) snackNode(false);
     }
 
     log.i('Connected to node: ${sdk.api.connectedNode?.endpoint}');

@@ -75,10 +75,9 @@ class GenerateWalletsProvider with ChangeNotifier {
       defaultWallet: 0,
       imageName: '${chestNumber % 8}.png',
     );
-    await chestBox.add(thisChest);
-    int? chestKey = chestBox.keys.last;
+    await chestBox.put(chestNumber, thisChest);
 
-    await configBox.put('currentChest', chestKey);
+    await configBox.put('currentChest', chestNumber);
     notifyListeners();
   }
 

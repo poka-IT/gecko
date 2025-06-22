@@ -6,6 +6,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -43,8 +44,8 @@ class _WalletsHomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-    final currentChestNumber = myWalletProvider.getCurrentChest();
-    final ChestData currentChest = chestBox.get(currentChestNumber)!;
+    final chestProvider = Provider.of<ChestProvider>(context, listen: false);
+    final ChestData currentChest = chestProvider.currentChestData;
 
     return Scaffold(
         backgroundColor: context.colorScheme.surface,
@@ -77,15 +78,15 @@ class _WalletsHomeContent extends StatelessWidget {
         }),
         body: SafeArea(
           child: Stack(children: [
-            myWalletsTiles(context, currentChestNumber),
+            myWalletsTiles(context),
             const OfflineInfo(),
           ]),
         ));
   }
 
-  Widget myWalletsTiles(BuildContext context, int currentChestNumber) {
+  Widget myWalletsTiles(BuildContext context) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
-    final isWalletsExists = myWalletProvider.isWalletsExists();
+    final isWalletsExists = myWalletProvider.isWalletsExists;
 
     if (!isWalletsExists) {
       return const Text('');

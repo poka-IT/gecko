@@ -314,5 +314,11 @@
     "migratingWalletNofM": "Migrando monedero {}/{}",
     "migrationSuccess": "Migración exitosa",
     "migrationFailedTitle": "Migración fallida",
-    "goToChooseChest": "Finalizar"
+    "goToChooseChest": "Finalizar",
+    "setupNewChest": "Configurar nuevo cofre",
+    "deletingOldChest": "Eliminando cofre antiguo...",
+    "oldChestDeleted": "Cofre antiguo eliminado.",
+    "send": "Enviar",
+    "confirmMigrationTitle": "Confirmación de migración",
+    "confirmMigrationMessage": "¿Estás seguro de que quieres migrar todos tus monederos a este nuevo cofre?"
 }

@@ -26,60 +26,62 @@ class GeckoBottomAppBar extends StatelessWidget {
 
     return Visibility(
       visible: showBottomBar,
-      child: Container(
-        decoration: BoxDecoration(
-          color: context.colorScheme.tertiary,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              offset: const Offset(0, -4),
-              blurRadius: 10,
-            ),
-          ],
-        ),
-        width: size.width,
-        height: scaleSize(67),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildNavItem(
-              key: keyAppBarHome,
-              icon: Icons.home_outlined,
-              isSelected: false,
-              onTap: () {
-                searchProvider.reload();
-                Navigator.popUntil(
-                  context,
-                  ModalRoute.withName('/'),
-                );
-              },
-            ),
-            _buildNavItem(
-              key: keyAppBarQrcode,
-              imagePath: 'assets/qrcode-scan.png',
-              isSelected: actualRoute == 'scan',
-              onTap: () async {
-                historyProvider.scan(homeContext);
-              },
-            ),
-            _buildNavItem(
-              key: keyAppBarChest,
-              imagePath: 'assets/wallet.png',
-              isSelected: actualRoute == 'wallet' || lockAction,
-              isDisabled: lockAction,
-              onTap: lockAction
-                  ? null
-                  : () async {
-                      if (!await myWalletProvider.askPinCode()) return;
+      child: SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+            color: context.colorScheme.tertiary,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                offset: const Offset(0, -4),
+                blurRadius: 10,
+              ),
+            ],
+          ),
+          width: size.width,
+          height: scaleSize(67),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildNavItem(
+                key: keyAppBarHome,
+                icon: Icons.home_outlined,
+                isSelected: false,
+                onTap: () {
+                  searchProvider.reload();
+                  Navigator.popUntil(
+                    context,
+                    ModalRoute.withName('/'),
+                  );
+                },
+              ),
+              _buildNavItem(
+                key: keyAppBarQrcode,
+                imagePath: 'assets/qrcode-scan.png',
+                isSelected: actualRoute == 'scan',
+                onTap: () async {
+                  historyProvider.scan(homeContext);
+                },
+              ),
+              _buildNavItem(
+                key: keyAppBarChest,
+                imagePath: 'assets/wallet.png',
+                isSelected: actualRoute == 'wallet' || lockAction,
+                isDisabled: lockAction,
+                onTap: lockAction
+                    ? null
+                    : () async {
+                        if (!await myWalletProvider.askPinCode()) return;
 
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        '/mywallets',
-                        ModalRoute.withName('/'),
-                      );
-                    },
-            ),
-          ],
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          '/mywallets',
+                          ModalRoute.withName('/'),
+                        );
+                      },
+              ),
+            ],
+          ),
         ),
       ),
     );

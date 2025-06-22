@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/main.dart';
 import 'package:gecko/models/chest_data.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_data.dart';
@@ -36,7 +37,7 @@ const datapodEndpoint = 'gdev-datapod.p2p.legal';
 // const datapodEndpoint = '10.0.2.2:8080';
 
 // Contexts
-late BuildContext homeContext;
+BuildContext get homeContext => Gecko.navigatorContext!;
 
 // Logger
 final log = Logger();

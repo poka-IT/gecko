@@ -7,6 +7,7 @@ import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/myWallets/migrate_chest_progress.dart';
+import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:provider/provider.dart';
@@ -243,6 +244,15 @@ class _MigrateChestScreenState extends State<MigrateChestScreen> {
                       ),
                       onPressed: _canMigrate
                           ? () async {
+                              final confirmed = await showConfirmationDialog(
+                                context: context,
+                                type: ConfirmationDialogType.warning,
+                                title: 'confirmMigrationTitle'.tr(),
+                                message: 'confirmMigrationMessage'.tr(),
+                              );
+
+                              if (!confirmed) return;
+                              // ignore: use_build_context_synchronously
                               final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
                               if (!await myWalletProvider.askPinCode()) return;
 

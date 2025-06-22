@@ -5,7 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/chest_provider.dart';
+import 'package:gecko/providers/generate_wallets.dart';
+import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/screens/onBoarding/7.dart';
+import 'package:gecko/widgets/commons/fader_transition.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
@@ -47,8 +51,6 @@ class _MigrateChestProgressScreenState extends State<MigrateChestProgressScreen>
 
   Future<void> _startMigration() async {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final chestProvider = Provider.of<ChestProvider>(context, listen: false);
-    final currentChest = chestBox.get(configBox.get('currentChest'))!;
 
     _addLog('startingMigration'.tr(args: [widget.walletsToMigrate.length.toString()]));
 
@@ -85,13 +87,11 @@ class _MigrateChestProgressScreenState extends State<MigrateChestProgressScreen>
 
     _addLog('---');
     _addLog('migrationSuccessfullyCompleted'.tr());
+
     setState(() {
       _migrationCompleted = true;
       _migrationSuccess = true;
     });
-
-    // Automatically forget the old chest and navigate
-    await chestProvider.forgetSafe(context, currentChest);
   }
 
   @override
@@ -107,7 +107,7 @@ class _MigrateChestProgressScreenState extends State<MigrateChestProgressScreen>
                 child: Column(
                   children: [
                     LinearProgressIndicator(
-                      value: _currentStep / widget.walletsToMigrate.length,
+                      value: _currentStep > 0 ? (_currentStep - 1) / widget.walletsToMigrate.length : 0,
                     ),
                     const SizedBox(height: 16),
                     Text('migratingWalletNofM'.tr(args: [_currentStep.toString(), widget.walletsToMigrate.length.toString()])),
@@ -152,13 +152,39 @@ class _MigrateChestProgressScreenState extends State<MigrateChestProgressScreen>
                 child: ElevatedButton(
                   onPressed: () async {
                     if (_migrationSuccess) {
-                      // Already handled at the end of _startMigration
-                      // The navigation is handled inside forgetSafe
+                      final genW = Provider.of<GenerateWalletsProvider>(context, listen: false);
+                      genW.generatedMnemonic = widget.newMnemonic;
+                      genW.resetImportView(); // Good practice from restore_chest
+
+                      _addLog('deletingOldChest'.tr());
+
+                      final sub = Provider.of<SubstrateSdk>(context, listen: false);
+                      final myWallets = Provider.of<MyWalletsProvider>(context, listen: false);
+                      final chestProvider = Provider.of<ChestProvider>(context, listen: false);
+                      final currentChestNumber = configBox.get('currentChest');
+                      final currentChest = chestBox.get(currentChestNumber)!;
+
+                      // Manually delete the old chest's contents
+                      await sub.deleteAccounts(chestProvider.getChestWallets(currentChest));
+                      await chestBox.delete(currentChest.key);
+                      myWallets.listWallets.clear();
+
+                      myWallets.pinCode = '';
+
+                      await configBox.put('currentChest', 0);
+
+                      _addLog('oldChestDeleted'.tr());
+
+                      await Navigator.pushAndRemoveUntil(
+                        context,
+                        FaderTransition(page: const OnboardingStepSeven(scanDerivation: true, fromRestore: true), isFast: true),
+                        (route) => false,
+                      );
                     } else {
                       Navigator.of(context).pop();
                     }
                   },
-                  child: _migrationSuccess ? Text('goToChooseChest'.tr()) : Text('close'.tr()),
+                  child: Text(_migrationSuccess ? 'setupNewChest'.tr() : 'close'.tr()),
                 ),
               ),
           ],

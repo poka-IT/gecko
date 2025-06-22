@@ -18,11 +18,14 @@ class ChestProvider with ChangeNotifier {
     final bool? answer = await (_confirmDeletingChest(context, chest.name));
     // ignore: use_build_context_synchronously
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    // ignore: use_build_context_synchronously
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
     if (answer ?? false) {
       await sub.deleteAccounts(getChestWallets(chest));
       await chestBox.delete(chest.key);
+      myWalletProvider.listWallets.clear();
+
       // ignore: use_build_context_synchronously
-      final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
       myWalletProvider.pinCode = '';
 

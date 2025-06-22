@@ -20,6 +20,7 @@ import 'package:gecko/widgets/commons/fader_transition.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/scan_derivations_info.dart';
+import 'package:gif_view/gif_view.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 
@@ -58,6 +59,7 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
     final sub = Provider.of<SubstrateSdk>(context);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
     final pinLenght = widget.pinCode.length;
+    GifView.preFetchImage(AssetImage('assets/onBoarding/gecko-clin.gif'));
 
     return PopScope(
       onPopInvokedWithResult: (_, __) {

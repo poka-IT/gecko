@@ -313,5 +313,10 @@
     "migrationSuccess": "Migration réussie",
     "migrationFailedTitle": "La migration a échoué",
     "goToChooseChest": "Terminer",
-    "thisMnemonicIsNotValid": "Cette phrase de restauration n'est pas valide"
+    "thisMnemonicIsNotValid": "Cette phrase de restauration n'est pas valide",
+    "setupNewChest": "Configurer le nouveau coffre",
+    "deletingOldChest": "Suppression de l'ancien coffre...",
+    "oldChestDeleted": "Ancien coffre supprimé.",
+    "confirmMigrationTitle": "Confirmation de la migration",
+    "confirmMigrationMessage": "Voulez-vous vraiment migrer tous vos portefeuilles vers ce nouveau coffre ?"
 }

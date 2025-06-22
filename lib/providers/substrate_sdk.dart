@@ -1431,6 +1431,100 @@ newKeySig: $newKeySigType""");
     return transactionId;
   }
 
+  Future<String> migrateWalletsToNewMnemonic({
+    required List<WalletData> sourceWallets,
+    required String newMnemonic,
+    required String sourcePassword,
+  }) async {
+    if (sourceWallets.isEmpty) {
+      return '';
+    }
+
+    // We use the first wallet as the sender for the batch.
+    // The inner calls will be dispatched from this origin.
+    // This assumes that `changeOwnerKey` and `transferAll` can be called
+    // from a third-party, which is not standard.
+    // This implementation is based on the assumption that the SDK handles this.
+    final senderWallet = sourceWallets.first;
+    final sender = await _setSender(senderWallet.address);
+
+    final List<String> txs = [];
+    final List<String> tempPasswords = [];
+    final List<String> destAddresses = [];
+
+    for (final sourceWallet in sourceWallets) {
+      final fromAddress = sourceWallet.address;
+      final fromBalance = await getBalance(fromAddress);
+      if (fromBalance.total == 0) {
+        continue; // Skip empty wallets
+      }
+
+      final derivePath = sourceWallet.derivation == -1 ? '' : '//${sourceWallet.derivation}';
+      final destAccountData =
+          await sdk.api.keyring.addressFromMnemonic(currencyParameters['ss58']!, cryptoType: CryptoType.sr25519, mnemonic: newMnemonic, derivePath: derivePath);
+      final destAddress = destAccountData.address!;
+      destAddresses.add(destAddress);
+
+      final destPassword = 'temp_password_for_migration_${destAddresses.length}';
+      tempPasswords.add(destPassword);
+      await importAccount(
+        mnemonic: newMnemonic,
+        derivePath: derivePath,
+        password: destPassword,
+        cryptoType: CryptoType.sr25519,
+      );
+
+      final fromIdtyStatus = await idtyStatus(fromAddress);
+
+      if (fromIdtyStatus != IdtyStatus.none && fromIdtyStatus != IdtyStatus.revoked) {
+        if (fromBalance.unclaimedUds > 0) {
+          txs.add('api.tx.universalDividend.claimUds()');
+        }
+
+        final prefix = 'icok'.codeUnits;
+        final genesisHashString = await getGenesisHash();
+        final genesisHash = HEX.decode(genesisHashString.substring(2)) as Uint8List;
+        final idtyIndex = int32bytes((await _getIdentityIndexOf(fromAddress))!);
+        final oldPubkey = await addressToPubkey(fromAddress);
+        final messageToSign = Uint8List.fromList(prefix + genesisHash + idtyIndex + oldPubkey);
+        final newKeySig = await _signMessage(messageToSign, destAddress, destPassword);
+        final newKeySigType = '{"Sr25519": "$newKeySig"}';
+
+        txs.add('api.tx.identity.changeOwnerKey("$destAddress", $newKeySigType)');
+        txs.add('api.tx.balances.transferAll("$destAddress", false)');
+      } else {
+        txs.add('api.tx.balances.transferAll("$destAddress", false)');
+      }
+    }
+
+    if (txs.isEmpty) {
+      // Clean up temporary accounts
+      await deleteAccounts(destAddresses);
+      return '';
+    }
+
+    final txInfo = TxInfoData('utility', 'batchAll', sender);
+    final rawParams = '[[${txs.join(',')}]]';
+
+    final transactionId = const Uuid().v4();
+    final transactionContent = TransactionContent(
+      transactionId: transactionId,
+      status: TransactionStatus.sending,
+      from: senderWallet.address,
+      to: 'Batch Migration',
+      amount: -1,
+    );
+
+    try {
+      await _executeCall(transactionContent, txInfo, [], sourcePassword, rawParams);
+    } finally {
+      // Clean up temporary accounts
+      await deleteAccounts(destAddresses);
+    }
+
+    return transactionId;
+  }
+
   Future<String> renewMembership(String address, String password) async {
     final sender = await _setSender(address);
 

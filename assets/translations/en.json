@@ -293,5 +293,11 @@
     "success": "Success",
     "error": "Error",
     "question": "Question",
-    "thisMnemonicIsNotValid": "This recovery phrase is not valid"
+    "thisMnemonicIsNotValid": "This recovery phrase is not valid",
+    "setupNewChest": "Set up new chest",
+    "deletingOldChest": "Deleting old chest...",
+    "oldChestDeleted": "Old chest deleted.",
+    "send": "Send",
+    "confirmMigrationTitle": "Migration Confirmation",
+    "confirmMigrationMessage": "Are you sure you want to migrate all your wallets to this new safe?"
 }

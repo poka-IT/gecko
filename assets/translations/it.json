@@ -245,5 +245,11 @@
     "migratingWalletNofM": "Migrazione del portafoglio {}/{}",
     "migrationSuccess": "Migrazione completata",
     "migrationFailedTitle": "Migrazione fallita",
-    "goToChooseChest": "Termina"
+    "goToChooseChest": "Termina",
+    "setupNewChest": "Configura nuovo scrigno",
+    "deletingOldChest": "Eliminazione scrigno vecchio...",
+    "oldChestDeleted": "Scrigno vecchio eliminato.",
+    "send": "Invia",
+    "confirmMigrationTitle": "Conferma migrazione",
+    "confirmMigrationMessage": "Sei sicuro di voler migrare tutti i tuoi portafogli a questo nuovo scrigno?"
 }

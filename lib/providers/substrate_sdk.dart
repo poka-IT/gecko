@@ -977,33 +977,37 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<MigrateWalletChecks> getBalanceAndIdtyStatus(String fromAddress, String toAddress) async {
-    bool canValidate = false;
+    // Data fetching in parallel
+    final results = await Future.wait([
+      fromAddress.isEmpty ? Future.value(WalletBalance.empty()) : getBalance(fromAddress),
+      idtyStatusMulti([fromAddress, toAddress]),
+      fromAddress.isEmpty ? Future.value(false) : isSmith(fromAddress),
+      fromAddress.isEmpty ? Future.value(false) : hasAccountConsumers(fromAddress),
+    ]);
+
+    final fromBalance = results[0] as WalletBalance;
+    final statusList = results[1] as List<IdtyStatus>;
+    final isSmithData = results[2] as bool;
+    final fromHasConsumer = results[3] as bool;
+
+    final fromIdtyStatus = statusList[0];
+    final toIdtyStatus = statusList[1];
+
     String validationStatus = '';
 
-    final fromBalance = fromAddress == '' ? WalletBalance.empty() : await getBalance(fromAddress);
-
-    final transferableBalance = fromBalance.transferableBalance;
-
-    final statusList = await idtyStatusMulti([fromAddress, toAddress]);
-    final fromIdtyStatus = statusList[0];
-    final fromHasConsumer = fromAddress == '' ? false : await hasAccountConsumers(fromAddress);
-    final toIdtyStatus = statusList[1];
-    final isSmithData = await isSmith(fromAddress);
-
-    // Check conditions to set 'canValidate' and 'validationStatus'
+    // Validation logic. The order of checks is important.
     if (isSmithData) {
       validationStatus = 'smithCantMigrateIdentity'.tr();
     } else if (fromHasConsumer) {
       validationStatus = 'youMustWaitBeforeCashoutThisAccount'.tr();
-    } else if (transferableBalance == 0) {
+    } else if (fromAddress.isNotEmpty && fromBalance.transferableBalance == 0) {
       validationStatus = 'thisAccountIsEmpty'.tr();
     } else if (toIdtyStatus != IdtyStatus.none && fromIdtyStatus != IdtyStatus.none) {
       validationStatus = 'youCannotMigrateIdentityToExistingIdentity'.tr();
-    } else if (fromIdtyStatus == IdtyStatus.none || toIdtyStatus == IdtyStatus.none) {
-      canValidate = true;
     }
 
-    // Convert to map to maintain compatibility with MigrateWalletChecks
+    // Result
+    final bool canValidate = validationStatus.isEmpty;
     final fromBalanceMap = fromBalance.toMap();
 
     return MigrateWalletChecks(

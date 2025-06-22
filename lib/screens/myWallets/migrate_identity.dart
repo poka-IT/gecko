@@ -21,9 +21,17 @@ import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:provider/provider.dart';
 
-class MigrateIdentityScreen extends StatelessWidget {
-  const MigrateIdentityScreen({super.key});
+class MigrateIdentityScreen extends StatefulWidget {
+  MigrateIdentityScreen({super.key});
 
+  final newMnemonicSentence = TextEditingController();
+  final newWalletAddress = TextEditingController();
+
+  @override
+  State<MigrateIdentityScreen> createState() => _MigrateIdentityScreenState();
+}
+
+class _MigrateIdentityScreenState extends State<MigrateIdentityScreen> {
   @override
   Widget build(BuildContext context) {
     final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
@@ -33,8 +41,6 @@ class MigrateIdentityScreen extends StatelessWidget {
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     final fromAddress = walletOptions.address.text;
-    final newMnemonicSentence = TextEditingController();
-    final newWalletAddress = TextEditingController();
 
     var statusData = const MigrateWalletChecks.defaultValues();
     var mnemonicIsValid = false;
@@ -44,7 +50,7 @@ class MigrateIdentityScreen extends StatelessWidget {
     bool isSmall = !isTall;
 
     Future scanDerivations() async {
-      if (!await isAddress(newWalletAddress.text) || !await sub.isMnemonicValid(newMnemonicSentence.text) || !statusData.canValidate) {
+      if (!await isAddress(widget.newWalletAddress.text) || !await sub.isMnemonicValid(widget.newMnemonicSentence.text) || !statusData.canValidate) {
         mnemonicIsValid = false;
         matchInfo = '';
         walletOptions.reload();
@@ -56,10 +62,10 @@ class MigrateIdentityScreen extends StatelessWidget {
       final addressData = await sub.sdk.api.keyring.addressFromMnemonic(
         sub.currencyParameters['ss58']!,
         cryptoType: CryptoType.sr25519,
-        mnemonic: newMnemonicSentence.text,
+        mnemonic: widget.newMnemonicSentence.text,
       );
 
-      if (addressData.address == newWalletAddress.text) {
+      if (addressData.address == widget.newWalletAddress.text) {
         matchDerivationNbr = -1;
         mnemonicIsValid = true;
         walletOptions.reload();
@@ -71,11 +77,11 @@ class MigrateIdentityScreen extends StatelessWidget {
         final addressData = await sub.sdk.api.keyring.addressFromMnemonic(
           sub.currencyParameters['ss58']!,
           cryptoType: CryptoType.sr25519,
-          mnemonic: newMnemonicSentence.text,
+          mnemonic: widget.newMnemonicSentence.text,
           derivePath: '//$derivationNbr',
         );
 
-        if (addressData.address == newWalletAddress.text) {
+        if (addressData.address == widget.newWalletAddress.text) {
           matchDerivationNbr = derivationNbr;
           mnemonicIsValid = true;
           matchInfo = "youCanMigrateThisIdentity".tr();
@@ -193,7 +199,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                               ),
                             ),
                             TextField(
-                              controller: newMnemonicSentence,
+                              controller: widget.newMnemonicSentence,
                               minLines: isSmall ? 2 : 3,
                               maxLines: isSmall ? 2 : 3,
                               style: scaledTextStyle(
@@ -255,7 +261,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                               ),
                             ),
                             TextField(
-                              controller: newWalletAddress,
+                              controller: widget.newWalletAddress,
                               style: scaledTextStyle(
                                 fontSize: isSmall ? 14 : 15,
                                 color: context.colorScheme.onSurface,
@@ -263,7 +269,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                               decoration: InputDecoration(
                                 contentPadding: EdgeInsets.all(scaleSize(isSmall ? 12 : 16)),
                                 border: InputBorder.none,
-                                hintText: 'D....',
+                                hintText: 'G1....',
                                 hintStyle: scaledTextStyle(
                                   fontSize: isSmall ? 14 : 15,
                                   color: Colors.grey[400],
@@ -287,6 +293,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                           ],
                         ),
                       ),
+                      const SizedBox(height: 24),
                     ],
                   ),
                 ),
@@ -356,21 +363,21 @@ class MigrateIdentityScreen extends StatelessWidget {
                               if (!await myWalletProvider.askPinCode()) return;
 
                               await sub.importAccount(
-                                mnemonic: newMnemonicSentence.text,
+                                mnemonic: widget.newMnemonicSentence.text,
                                 derivePath: matchDerivationNbr == -1 ? '' : "//$matchDerivationNbr",
                                 password: 'password',
                               );
 
                               final transactionId = await sub.migrateIdentity(
                                 fromAddress: fromAddress,
-                                destAddress: newWalletAddress.text,
+                                destAddress: widget.newWalletAddress.text,
                                 fromPassword: myWalletProvider.pinCode,
                                 destPassword: 'password',
                                 withBalance: true,
                                 fromBalance: statusData.fromBalance,
                               );
 
-                              sub.deleteAccounts([newWalletAddress.text]);
+                              sub.deleteAccounts([widget.newWalletAddress.text]);
                               Navigator.pop(context);
                               Navigator.push(
                                 context,
@@ -379,7 +386,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                                     transactionId: transactionId,
                                     transType: 'identityMigration',
                                     fromAddress: getShortPubkey(fromAddress),
-                                    toAddress: getShortPubkey(newWalletAddress.text),
+                                    toAddress: getShortPubkey(widget.newWalletAddress.text),
                                   ),
                                 ),
                               );

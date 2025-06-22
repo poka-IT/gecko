@@ -221,7 +221,7 @@
     "thisIdentityAlreadyExist": "Identitá giá esistente",
     "qrCodeNotAddress": "Questo QR code non é un indirizzo valido",
     "emptyWalletCannotBeCertified": "Un portafoglio vuoto non puó essere certificato",
-    "timeoutScanDerivations": "Timeout durante la scansione delle derivazioni. Si prega di riprovare più tardi.",
+    "timeoutScanDerivations": "Timeout durante la scansione delle derivazioni. Si prega di riprovare piú tardi.",
     "errorScanDerivations": "Si è verificato un errore durante la scansione delle derivazioni. Si prega di riprovare.",
     "revokedAccountCannotBeCertified": "Un conto revocato non puó essere certificato",
     "info": "Informazione",
@@ -251,5 +251,13 @@
     "oldChestDeleted": "Scrigno vecchio eliminato.",
     "send": "Invia",
     "confirmMigrationTitle": "Conferma migrazione",
-    "confirmMigrationMessage": "Sei sicuro di voler migrare tutti i tuoi portafogli a questo nuovo scrigno?"
+    "confirmMigrationMessage": "Sei sicuro di voler migrare tutti i tuoi portafogli a questo nuovo scrigno?",
+    "membershipRenewalPeriodNotRespected": "Devi attendere il periodo di rinnovo prima di poter rinnovare la tua iscrizione",
+    "addComment": "Aggiungi un commento",
+    "migratedWalletsNofM": "Portafogli migrati: {}/{}",
+    "migrationFailedForWallet": "Migrazione fallita per il portafoglio {}: {}",
+    "pending": "In attesa",
+    "migratingStatus": "Migrazione in corso...",
+    "successStatus": "Successo",
+    "failedStatus": "Fallito"
 }

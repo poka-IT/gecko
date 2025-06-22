@@ -248,7 +248,7 @@
     "membershipExpiresOnSimple": "Adhésion expire le {}",
     "membershipExpiresOn": "Adhésion expire le {} (Renouvellement possible à partir du {})",
     "renewingMembership": "Renouvellement d'adhésion",
-    "membershipRenewalConfirmed": "Votre demande de renouvellement d'adhésion a bien été prise en compte et sera effective d'ici quelques minutes",
+    "membershipRenewalConfirmed": "Votre demande de renouvellement d'adhésion a été enregistrée et sera effective d'ici quelques minutes",
     "membershipRenewalPending": "Renouvellement d'adhésion en cours...",
     "membershipRenewalPeriodNotRespected": "Vous devez attendre la période de renouvellement avant de pouvoir renouveler votre adhésion",
     "addComment": "Ajouter un commentaire",
@@ -318,5 +318,11 @@
     "deletingOldChest": "Suppression de l'ancien coffre...",
     "oldChestDeleted": "Ancien coffre supprimé.",
     "confirmMigrationTitle": "Confirmation de la migration",
-    "confirmMigrationMessage": "Voulez-vous vraiment migrer tous vos portefeuilles vers ce nouveau coffre ?"
+    "confirmMigrationMessage": "Voulez-vous vraiment migrer tous vos portefeuilles vers ce nouveau coffre ?",
+    "migratedWalletsNofM": "Portefeuilles migrés : {}/{}",
+    "migrationFailedForWallet": "La migration a échoué pour le portefeuille {} : {}",
+    "pending": "En attente",
+    "migratingStatus": "Migration en cours...",
+    "successStatus": "Succès",
+    "failedStatus": "Échec"
 }

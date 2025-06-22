@@ -251,7 +251,7 @@
     "renewingMembership": "Renovando adhésion",
     "membershipRenewalConfirmed": "Su solicitud de renovación de membresía ha sido registrada y será efectiva en unos minutos",
     "membershipRenewalPending": "Renovación de membresía en curso...",
-    "membershipRenewalPeriodNotRespected": "Debe esperar el período de renovación antes de poder renovar su membresía",
+    "membershipRenewalPeriodNotRespected": "Debes esperar al período de renovación antes de poder renovar tu membresía",
     "addComment": "Añadir un comentario",
     "comment": "Comentario",
     "optionalComment": "Comentario opcional",
@@ -320,5 +320,11 @@
     "oldChestDeleted": "Cofre antiguo eliminado.",
     "send": "Enviar",
     "confirmMigrationTitle": "Confirmación de migración",
-    "confirmMigrationMessage": "¿Estás seguro de que quieres migrar todos tus monederos a este nuevo cofre?"
+    "confirmMigrationMessage": "¿Estás seguro de que quieres migrar todos tus monederos a este nuevo cofre?",
+    "migratedWalletsNofM": "Monederos migrados: {}/{}",
+    "migrationFailedForWallet": "La migración falló para el monedero {}: {}",
+    "pending": "Pendiente",
+    "migratingStatus": "Migrando...",
+    "successStatus": "Éxito",
+    "failedStatus": "Fallido"
 }

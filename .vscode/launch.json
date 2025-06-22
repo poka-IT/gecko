@@ -6,6 +6,7 @@
             "type": "dart",
             "request": "launch",
             "program": "lib/main.dart",
+            "args": ["--no-enable-impeller"],
             "flutterMode": "debug"
         },
         {
@@ -13,6 +14,7 @@
             "type": "dart",
             "request": "launch",
             "program": "lib/main.dart",
+            "args": ["--no-enable-impeller"],
             "flutterMode": "profile"
         },
         {

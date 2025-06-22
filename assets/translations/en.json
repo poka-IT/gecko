@@ -201,6 +201,7 @@
     "confirmMyIdentity": "Confirm my identity",
     "revokeMyIdentity": "Revoke my identity",
     "youCannotRevokeThisIdentity": "You cannot revoke this identity while\nit is member of the blacksmiths web",
+    "youCannotMigrateThisIdentity": "You cannot migrate this identity while\nit is member of the blacksmiths web",
     "showUdAmounts": "Show amounts in UD",
     "ud": "{}UD",
     "chooseATargetWallet": "Choose a target wallet",

@@ -201,6 +201,7 @@
     "confirmMyIdentity": "Confirmer mon identité",
     "revokeMyIdentity": "Révoquer mon identité",
     "youCannotRevokeThisIdentity": "Vous ne pouvez pas révoquer cette identité tant\nqu'elle fait partie de la toile forgerons",
+    "youCannotMigrateThisIdentity": "Vous ne pouvez pas migrer cette identité tant\nqu'elle fait partie de la toile forgerons",
     "showUdAmounts": "Afficher les montants en DU",
     "ud": "{}DU",
     "chooseATargetWallet": "Choisissez un portefeuille cible",

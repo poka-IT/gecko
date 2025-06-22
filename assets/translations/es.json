@@ -202,6 +202,7 @@
     "confirmMyIdentity": "Confirmar mi identidad",
     "revokeMyIdentity": "Revocar mi identidad",
     "youCannotRevokeThisIdentity": "No puedes revocar esta identidad mientras\nseas miembro de la red de forjadores",
+    "youCannotMigrateThisIdentity": "No puedes migrar esta identidad mientras\nseas miembro de la red de forjadores",
     "showUdAmounts": "Mostrar importes en DU",
     "ud": "{}DU",
     "chooseATargetWallet": "Elige un monedero de destino",

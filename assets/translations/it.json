@@ -197,6 +197,7 @@
     "confirmMyIdentity": "Conferma la mia identitá",
     "revokeMyIdentity": "Revoca la mia identitá",
     "youCannotRevokeThisIdentity": "Non puoi revocare questa identitá fintanto che\nappartieni alla rete di forgiatori",
+    "youCannotMigrateThisIdentity": "Non puoi migrare questa identitá fintanto che\nappartieni alla rete di forgiatori",
     "showUdAmounts": "Mostra importi in DU",
     "ud": "{}DU",
     "chooseATargetWallet": "Scegli un portafoglio di destinazione",

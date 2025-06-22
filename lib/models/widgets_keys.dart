@@ -40,6 +40,7 @@ const keyEnterIdentityUsername = Key('keyEnterIdentityUsername');
 
 // Chest options
 const keyShowSeed = Key('keyShowSeed');
+const keyMigrateChest = Key('keyMigrateChest');
 const keyChangePin = Key('keyChangePin');
 const keycreateRootDerivation = Key('keycreateRootDerivation');
 const keyDeleteChest = Key('keyDeleteChest');

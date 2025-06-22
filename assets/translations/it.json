@@ -228,5 +228,22 @@
     "warning": "Attenzione",
     "success": "Successo",
     "error": "Errore",
-    "question": "Domanda"
+    "question": "Domanda",
+    "thisMnemonicIsNotValid": "Questa frase di recupero non é valida",
+    "migrateChest": "Migra scrigno",
+    "migrateChestExplanation": "Se ritieni che la tua frase di recupero sia stata compromessa, questa pagina ti permette di migrare tutti i tuoi portafogli da questo scrigno a una nuova frase di recupero.",
+    "youCanMigrateThisChest": "Questo scrigno puó essere migrato.",
+    "destinationChestIsNotEmpty": "Il scrigno di destinazione non é vuoto. Si prega di usare una frase di recupero per un nuovo scrigno non utilizzato.",
+    "cannotMigrateSmith": "Il portafoglio {} é un forgiatore e non puó essere migrato.",
+    "startingMigration": "Inizio della migrazione di {} portafogli...",
+    "migratingWallet": "Migrazione del portafoglio: {}",
+    "migrationTransactionSent": "Transazione di migrazione inviata: {}",
+    "walletIsEmptyNoMigrationNeeded": "Il portafoglio é vuoto, nessuna migrazione necessaria.",
+    "migrationFailed": "La migrazione ha fallito: {}",
+    "migrationSuccessfullyCompleted": "Migrazione completata con successo!",
+    "migrationInProgress": "Migrazione in corso",
+    "migratingWalletNofM": "Migrazione del portafoglio {}/{}",
+    "migrationSuccess": "Migrazione completata",
+    "migrationFailedTitle": "Migrazione fallita",
+    "goToChooseChest": "Termina"
 }

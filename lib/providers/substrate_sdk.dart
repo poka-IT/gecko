@@ -1370,6 +1370,67 @@ newKeySig: $newKeySigType""");
     notifyListeners();
   }
 
+  Future<String> migrateWalletToNewMnemonic({required WalletData sourceWallet, required String newMnemonic, required String sourcePassword}) async {
+    final fromAddress = sourceWallet.address;
+
+    // 1. Check if source has any balance
+    final fromBalance = await getBalance(fromAddress);
+    if (fromBalance.total == 0) {
+      return ''; // Nothing to migrate
+    }
+
+    // 2. Determine derivation path and get destination address
+    final derivePath = sourceWallet.derivation == -1 ? '' : '//${sourceWallet.derivation}';
+    final destAccountData =
+        await sdk.api.keyring.addressFromMnemonic(currencyParameters['ss58']!, cryptoType: CryptoType.sr25519, mnemonic: newMnemonic, derivePath: derivePath);
+    final destAddress = destAccountData.address!;
+
+    // 3. Temporarily import destination account to sign
+    const destPassword = 'temp_password_for_migration';
+    await importAccount(
+      mnemonic: newMnemonic,
+      derivePath: derivePath,
+      password: destPassword,
+      cryptoType: CryptoType.sr25519,
+    );
+
+    String transactionId;
+
+    try {
+      // 4. Check if we need to migrate identity or just transfer funds
+      final fromIdtyStatus = await idtyStatus(fromAddress);
+
+      if (fromIdtyStatus != IdtyStatus.none && fromIdtyStatus != IdtyStatus.revoked) {
+        // Migrate identity (and balance)
+        transactionId = await migrateIdentity(
+          fromAddress: fromAddress,
+          destAddress: destAddress,
+          fromPassword: sourcePassword,
+          destPassword: destPassword,
+          withBalance: true,
+          fromBalance: fromBalance.toMap(),
+        );
+      } else {
+        // Just transfer balance
+        final txId = const Uuid().v4();
+        await pay(
+          fromAddress: fromAddress,
+          destAddress: destAddress,
+          amount: -1, // transfer all
+          password: sourcePassword,
+          transactionId: txId,
+          comment: 'ĞECKO:SAFEMIGRATION',
+        );
+        transactionId = txId;
+      }
+    } finally {
+      // 5. Clean up: remove temporary account from keyring
+      await deleteAccounts([destAddress]);
+    }
+
+    return transactionId;
+  }
+
   Future<String> renewMembership(String address, String password) async {
     final sender = await _setSender(address);
 

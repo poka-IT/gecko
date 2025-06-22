@@ -296,5 +296,22 @@
     "warning": "Attention",
     "success": "Succès",
     "error": "Erreur",
-    "question": "Question"
+    "question": "Question",
+    "migrateChest": "Migrer le coffre",
+    "migrateChestExplanation": "Si vous pensez que votre phrase de restauration a été compromise, cette page vous permet de migrer l'ensemble des portefeuilles de ce coffre vers une nouvelle phrase de restauration.",
+    "youCanMigrateThisChest": "Ce coffre peut être migré.",
+    "destinationChestIsNotEmpty": "Le coffre de destination n'est pas vide. Veuillez utiliser une phrase de restauration pour un coffre neuf et inutilisé.",
+    "cannotMigrateSmith": "Le portefeuille {} est forgeron et ne peut pas être migré.",
+    "startingMigration": "Démarrage de la migration de {} portefeuilles...",
+    "migratingWallet": "Migration du portefeuille : {}",
+    "migrationTransactionSent": "Transaction de migration envoyée : {}",
+    "walletIsEmptyNoMigrationNeeded": "Le portefeuille est vide, aucune migration nécessaire.",
+    "migrationFailed": "La migration a échoué : {}",
+    "migrationSuccessfullyCompleted": "Migration terminée avec succès !",
+    "migrationInProgress": "Migration en cours",
+    "migratingWalletNofM": "Migration du portefeuille {}/{}",
+    "migrationSuccess": "Migration réussie",
+    "migrationFailedTitle": "La migration a échoué",
+    "goToChooseChest": "Terminer",
+    "thisMnemonicIsNotValid": "Cette phrase de restauration n'est pas valide"
 }

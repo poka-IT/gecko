@@ -49,4 +49,6 @@ class WalletBalance {
       'reserved': reserved,
     };
   }
+
+  int get total => transferableBalance + reserved;
 }

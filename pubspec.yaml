@@ -58,7 +58,6 @@ dependencies:
   fade_and_translate: ^0.1.3
   markdown: ^7.3.0
   http: ^1.3.0
-  flutter_launcher_icons: ^0.14.3
   gif_view: ^1.0.2
   get_it: ^8.0.3
   durt2:
@@ -72,7 +71,7 @@ dependency_overrides:
   source_gen: ^2.0.0
 
 dev_dependencies:
-  icons_launcher: ^3.0.0
+  flutter_launcher_icons: ^0.14.3
   build_runner: ^2.4.15
   hive_generator: ^2.0.1
   flutter_lints: ^6.0.0
@@ -80,16 +79,6 @@ dev_dependencies:
     sdk: flutter
   integration_test:
     sdk: flutter
-
-icons_launcher:
-  image_path: "assets/icon/gecko_flat.png"
-  platforms:
-    android:
-      enable: true
-    ios:
-      enable: true
-
-# ... existing code ...
 
 flutter_launcher_icons:
   ios: true

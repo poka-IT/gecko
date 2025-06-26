@@ -56,7 +56,7 @@ class WalletsProfilesProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> scan(context) async {
+  Future<void> scan(BuildContext context) async {
     if (Platform.isAndroid || Platform.isIOS) {
       await Permission.camera.request();
     }
@@ -158,7 +158,7 @@ bool isPubkey(String pubkey) {
   return regExp.hasMatch(pubkey) == true && pubkey.length > 42 && pubkey.length < 45;
 }
 
-snackMessage(BuildContext context, {required String message, int duration = 4, double fontSize = 14}) {
+void snackMessage(BuildContext context, {required String message, int duration = 4, double fontSize = 14}) {
   final snackBar = SnackBar(
       backgroundColor: context.colorScheme.onSurface,
       padding: EdgeInsets.all(scaleSize(19)),
@@ -171,7 +171,7 @@ snackMessage(BuildContext context, {required String message, int duration = 4, d
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
 
-snackCopyKey(BuildContext context) {
+void snackCopyKey(BuildContext context) {
   final snackBar = SnackBar(
       backgroundColor: context.colorScheme.onSurface,
       padding: EdgeInsets.all(scaleSize(19)),
@@ -184,7 +184,7 @@ snackCopyKey(BuildContext context) {
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
 
-snackCopySeed(BuildContext context) {
+void snackCopySeed(BuildContext context) {
   final snackBar = SnackBar(
       backgroundColor: context.colorScheme.onSurface,
       padding: EdgeInsets.all(scaleSize(19)),

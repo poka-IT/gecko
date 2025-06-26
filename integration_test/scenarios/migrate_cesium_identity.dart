@@ -46,8 +46,7 @@ void main() async {
     spawnBlock(duration: 1000);
     await tester.pump(const Duration(seconds: 2));
     await tester.pump(const Duration(seconds: 1));
-    await waitFor('sending'.tr(),
-        reverse: true, settle: false, timeout: const Duration(seconds: 20));
+    await waitFor('sending'.tr(), reverse: true, settle: false, timeout: const Duration(seconds: 20));
     await tapKey(keyCloseTransactionScreen, duration: 0);
 
     await tapKey(keyOpenWallet(test6.address), duration: 300);
@@ -59,7 +58,7 @@ void main() async {
   }, timeout: testTimeout());
 }
 
-isObscureText([bool isObscure = true]) {
+void isObscureText([bool isObscure = true]) {
   final passwordTextFormField = find.descendant(
     of: find.byKey(keyCesiumId),
     matching: find.byType(EditableText),

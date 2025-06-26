@@ -14,10 +14,8 @@ import 'package:uuid/uuid.dart';
 class V2sDatapodProvider with ChangeNotifier {
   late GraphQLClient datapodClient;
 
-  Future<Map<String, dynamic>> _setSignedVariables(
-      String address, Map<String, dynamic> messageToSign) async {
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(homeContext, listen: false);
+  Future<Map<String, dynamic>> _setSignedVariables(String address, Map<String, dynamic> messageToSign) async {
+    final myWalletProvider = Provider.of<MyWalletsProvider>(homeContext, listen: false);
 
     final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
     final hashDocBytes = utf8.encode(jsonEncode(messageToSign));
@@ -25,15 +23,10 @@ class V2sDatapodProvider with ChangeNotifier {
     if (!await myWalletProvider.askPinCode()) return {};
     final signature = await sub.signDatapod(hashDoc, address);
 
-    return <String, dynamic>{
-      ...messageToSign,
-      'hash': hashDoc,
-      'signature': signature
-    };
+    return <String, dynamic>{...messageToSign, 'hash': hashDoc, 'signature': signature};
   }
 
-  Future<QueryResult?> _execQuery(
-      String query, Map<String, dynamic> variables) async {
+  Future<QueryResult?> _execQuery(String query, Map<String, dynamic> variables) async {
     //TODO: Switch to IPFS Datapod
     return null;
     // final QueryOptions options =
@@ -84,8 +77,7 @@ class V2sDatapodProvider with ChangeNotifier {
     return true;
   }
 
-  Future<bool> migrateProfile(
-      {required String addressOld, required String addressNew}) async {
+  Future<bool> migrateProfile({required String addressOld, required String addressNew}) async {
     final messageToSign = {'addressOld': addressOld, 'addressNew': addressNew};
     final variables = await _setSignedVariables(addressOld, messageToSign);
     if (variables.isEmpty) return false;
@@ -136,15 +128,12 @@ class V2sDatapodProvider with ChangeNotifier {
       // log.e(result?.exception.toString());
       return null;
     }
-    final String? profileDateData =
-        result!.data!['profiles_by_pk']?['updated_at'];
-    final profileDate =
-        profileDateData == null ? null : DateTime.tryParse(profileDateData);
+    final String? profileDateData = result!.data!['profiles_by_pk']?['updated_at'];
+    final profileDate = profileDateData == null ? null : DateTime.tryParse(profileDateData);
     return profileDate;
   }
 
-  Future<Image> getRemoteAvatar(String address,
-      {double size = 20, String? uuid}) async {
+  Future<Image> getRemoteAvatar(String address, {double size = 20, String? uuid}) async {
     final variables = <String, dynamic>{
       'address': address,
     };
@@ -159,8 +148,7 @@ class V2sDatapodProvider with ChangeNotifier {
       return defaultAvatar(size);
     }
 
-    final sanitizedAvatar64 =
-        avatar64.replaceAll('\n', '').replaceAll('\r', '').replaceAll(' ', '');
+    final sanitizedAvatar64 = avatar64.replaceAll('\n', '').replaceAll('\r', '').replaceAll(' ', '');
 
     log.d('We save avatar for $address');
     await saveAvatar(address, sanitizedAvatar64, uuid);
@@ -202,8 +190,7 @@ class V2sDatapodProvider with ChangeNotifier {
     );
   }
 
-  Image defaultAvatar(double size) =>
-      Image.asset(('assets/icon_user.png'), height: scaleSize(size));
+  Image defaultAvatar(double size) => Image.asset(('assets/icon_user.png'), height: scaleSize(size));
 
   Future deleteAvatarsCacheDirectory() async {
     if (await avatarsCacheDirectory.exists()) {
@@ -217,7 +204,7 @@ class V2sDatapodProvider with ChangeNotifier {
     }
   }
 
-  reload() {
+  void reload() {
     notifyListeners();
   }
 }

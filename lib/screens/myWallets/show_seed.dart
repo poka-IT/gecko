@@ -182,7 +182,7 @@ class ShowSeed extends StatelessWidget {
             ]));
   }
 
-  Widget arrayCell(dataWord, int nbr) {
+  Widget arrayCell(String dataWord, int nbr) {
     return ScaledSizedBox(
       width: 82,
       child: Column(children: <Widget>[

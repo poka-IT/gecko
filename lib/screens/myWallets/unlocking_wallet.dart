@@ -46,7 +46,7 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
     final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
-    final pinLenght = walletOptions.getPinLenght(widget.wallet.number);
+    final pinLenght = walletOptions.getPinLenght();
 
     return PopScope(
       onPopInvokedWithResult: (_, __) {

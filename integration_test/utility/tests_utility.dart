@@ -64,8 +64,7 @@ Future pump(
 Future<String> clipPaste() async =>
     (await Clipboard.getData('text/plain'))?.text ?? '';
 
-clipCopy(String text) async =>
-    await Clipboard.setData(ClipboardData(text: text));
+Future<void> clipCopy(String text) async => await Clipboard.setData(ClipboardData(text: text));
 
 Future humanRead([int time = 1, bool force = false]) async {
   if (isHumanReading || force) io.sleep(Duration(seconds: time));
@@ -363,6 +362,6 @@ class TestWallet {
 
   TestWallet(this.address, this.name);
 
-  endAddress() => address.substring(address.length - 6);
-  shortAddress() => getShortPubkey(address);
+  String endAddress() => address.substring(address.length - 6);
+  String shortAddress() => getShortPubkey(address);
 }

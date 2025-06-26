@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-Widget geckHome(context) {
+Widget geckHome(BuildContext context) {
   Provider.of<ChestProvider>(context);
 
   final statusBarHeight = MediaQuery.of(context).padding.top;
@@ -135,7 +135,7 @@ Widget geckHome(context) {
   );
 }
 
-Widget welcomeHome(context) {
+Widget welcomeHome(BuildContext context) {
   final statusBarHeight = MediaQuery.of(context).padding.top;
 
   return Container(

@@ -12,13 +12,15 @@ class ChestProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future forgetSafe(context, SafeBox safe) async {
+  Future forgetSafe(BuildContext context, SafeBox safe) async {
     final bool? answer = await (_confirmDeletingChest(context, safe.name));
+    // ignore: use_build_context_synchronously
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
     if (answer ?? false) {
       await sub.deleteAccounts(getChestWallets(safe));
       await Durt.i.walletService.deleteSafe(safe.key);
       final myWalletProvider =
+          // ignore: use_build_context_synchronously
           Provider.of<MyWalletsProvider>(context, listen: false);
 
       myWalletProvider.pinCode = '';
@@ -31,6 +33,7 @@ class ChestProvider with ChangeNotifier {
       }
 
       Navigator.popUntil(
+        // ignore: use_build_context_synchronously
         context,
         ModalRoute.withName('/'),
       );
@@ -48,7 +51,7 @@ class ChestProvider with ChangeNotifier {
     return toDelete;
   }
 
-  Future<bool?> _confirmDeletingChest(context, String? walletName) async {
+  Future<bool?> _confirmDeletingChest(BuildContext context, String? walletName) async {
     return showConfirmationDialog(
       context: context,
       type: ConfirmationDialogType.warning,

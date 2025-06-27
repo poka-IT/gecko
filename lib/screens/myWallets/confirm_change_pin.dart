@@ -1,15 +1,14 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import 'package:provider/provider.dart';
 
 class ConfirmChangePinScreen extends StatefulWidget {
   const ConfirmChangePinScreen({
@@ -118,19 +117,12 @@ class _ConfirmChangePinScreenState extends State<ConfirmChangePinScreen> {
                 return;
               }
 
-              final sub = Provider.of<SubstrateSdk>(context, listen: false);
               final defaultWallet = widget.walletProvider.getDefaultWallet();
 
-              // Récupérer la seed avec l'ancien PIN
-              final seed = await sub.getSeed(
-                defaultWallet.address,
-                widget.walletProvider.pinCode,
-              );
-
-              // Recréer le chest avec le nouveau PIN
-              await sub.importAccount(
-                mnemonic: seed,
-                password: pin,
+              await Durt.i.walletService.changePin(
+                address: defaultWallet.address,
+                oldPin: widget.walletProvider.pinCode,
+                newPin: pin,
               );
 
               // Mettre à jour le PIN dans le provider

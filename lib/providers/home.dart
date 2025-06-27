@@ -7,9 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/certification_data.dart';
+import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart' show MyWalletsProvider;
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/v2s_datapod.dart' show V2sDatapodProvider;
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/widgets/commons/common_elements.dart' show infoPopup;
@@ -21,7 +20,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_header_data.dart';
-import 'package:gecko/services/network_config_service.dart';
+import 'package:gecko/services/network_config.service.dart';
 
 class HomeProvider with ChangeNotifier {
   bool? isSearching;
@@ -69,7 +68,6 @@ class HomeProvider with ChangeNotifier {
     Hive.registerAdapter(BigIntAdapter());
     Hive.registerAdapter(G1WalletsListAdapter());
     Hive.registerAdapter(IdAdapter());
-    Hive.registerAdapter(CertificationDataAdapter());
 
     // Open required boxes synchronously
     configBox = await Hive.openBox("configBox");
@@ -84,12 +82,10 @@ class HomeProvider with ChangeNotifier {
   }
 
   Future changeCurrencyUnit(BuildContext context) async {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
     final bool isUdUnit = configBox.get('isUdUnit') ?? false;
     await configBox.put('isUdUnit', !isUdUnit);
     walletOptions.balanceCache = {};
-    sub.getBalanceRatio();
     notifyListeners();
   }
 
@@ -203,7 +199,6 @@ class HomeProvider with ChangeNotifier {
 
   Future<void> initHome(BuildContext context) async {
     final homeProvider = Provider.of<HomeProvider>(context, listen: false);
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
     final datapod = Provider.of<V2sDatapodProvider>(context, listen: false);
 
@@ -215,13 +210,11 @@ class HomeProvider with ChangeNotifier {
       // if (!sub.sdkReady && !sub.sdkLoading) sub.initApi();
       // ignore: use_build_context_synchronously
       await infoPopup(context, "chestNotCompatibleMustReinstallGecko".tr());
-      await Hive.deleteBoxFromDisk('walletBox');
-      await Hive.deleteBoxFromDisk('chestBox');
       await datapod.deleteAvatarsDirectory();
       await avatarsDirectory.create();
       await configBox.delete('defaultWallet');
       // if (!sub.sdkReady && !sub.sdkLoading) await sub.initApi();
-      await sub.deleteAllAccounts();
+      await Durt.i.walletService.clearWallets();
       configBox.put('dataVersion', dataVersion);
       myWalletProvider.reload();
     } else {
@@ -245,6 +238,19 @@ class HomeProvider with ChangeNotifier {
 
       // Connect to Duniter network
       await Durt.i.connect();
+
+      // Load wallets list
+      await myWalletProvider.readAllWallets();
+
+      //Connect to Indexer
+      // ignore: use_build_context_synchronously
+      final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+      await duniterIndexer.getValidIndexerEndpoint();
+
+      // // Test multi balances
+      // const addressToScan = ['5FpqW1thRkQnhEAV46e8MJWGUQJ2cNnf7wARsCEzJvd7RRAW'];
+      // final balances = await Durt.i.storage.getBalances(addressToScan);
+      // print('balances: ${balances.values.map((e) => e.free)}');
 
       // Future<void> updateConnectionStatus(List<ConnectivityResult> result) async {
       //   log.i('Network changed: $result');

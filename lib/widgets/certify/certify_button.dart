@@ -26,8 +26,7 @@ class CertifyButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
     return Column(
       children: <Widget>[
@@ -47,13 +46,9 @@ class CertifyButton extends StatelessWidget {
 
                   final result = await showConfirmationDialog(
                     context: context,
-                    title: walletName != null
-                        ? 'certification'.tr()
-                        : 'identityCreation'.tr(),
+                    title: walletName != null ? 'certification'.tr() : 'identityCreation'.tr(),
                     message: message,
-                    type: walletName != null
-                        ? ConfirmationDialogType.question
-                        : ConfirmationDialogType.info,
+                    type: walletName != null ? ConfirmationDialogType.question : ConfirmationDialogType.info,
                   );
 
                   if (!result) return;
@@ -64,8 +59,7 @@ class CertifyButton extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (homeContext) {
-                          return UnlockingWallet(
-                              wallet: myWalletProvider.idtyWallet!);
+                          return UnlockingWallet(wallet: myWalletProvider.idtyWallet!);
                         },
                       ),
                     );
@@ -73,13 +67,16 @@ class CertifyButton extends StatelessWidget {
                   if (myWalletProvider.pinCode == '') {
                     return;
                   }
-                  WalletsProfilesProvider walletViewProvider =
-                      Provider.of<WalletsProfilesProvider>(context,
-                          listen: false);
-                  final acc = sub.getCurrentKeyPair();
+                  WalletsProfilesProvider walletViewProvider = Provider.of<WalletsProfilesProvider>(context, listen: false);
+                  final identityWallet = Durt.i.walletService.identityWallet;
+
+                  if (identityWallet == null) {
+                    throw Exception('Identity wallet not found');
+                  }
+
                   try {
                     final transactionId = await sub.certify(
-                      acc.address!,
+                      identityWallet.address,
                       walletViewProvider.address,
                       myWalletProvider.pinCode,
                     );
@@ -114,8 +111,7 @@ class CertifyButton extends StatelessWidget {
           child: Text(
             "certify".tr(),
             textAlign: TextAlign.center,
-            style: scaledTextStyle(
-                fontSize: buttonFontSize, fontWeight: FontWeight.w500),
+            style: scaledTextStyle(fontSize: buttonFontSize, fontWeight: FontWeight.w500),
           ),
         ),
       ],

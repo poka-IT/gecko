@@ -99,7 +99,7 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
     return Scaffold(
       appBar: WalletAppBar(
         address: widget.address,
-        currentBalance: BigInt.from(walletOptions.balanceCache[widget.address] ?? 0),
+        currentBalance: walletOptions.balanceCache[widget.address] ?? BigInt.zero,
         title: 'chooseIdentityName'.tr(),
       ),
       body: Column(

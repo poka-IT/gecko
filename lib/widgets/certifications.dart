@@ -1,3 +1,4 @@
+import 'package:durt2/durt2.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -21,7 +22,7 @@ class _CertificationsState extends State<Certifications> {
     _isLoading = true;
 
     try {
-      final networkData = await sdk.getCertsCounter(widget.address);
+      final networkData = await Durt.i.storage.getCertsCounter(widget.address);
       if (!mounted) return;
 
       final cachedData = sdk.certsCounterCache[widget.address];

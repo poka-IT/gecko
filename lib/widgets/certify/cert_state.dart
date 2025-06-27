@@ -1,3 +1,4 @@
+import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/widgets/certify/certify_button.dart';
@@ -62,21 +63,4 @@ class CertStateWidget extends StatelessWidget {
   Widget _buildDisabledButton(String label) {
     return WaitToCertWidget(messageKey: label, duration: formatDuration(certState.duration ?? Duration.zero));
   }
-}
-
-enum CertStatus {
-  none,
-  canCert,
-  canRenewIn,
-  mustWaitBeforeCert,
-  mustConfirmIdentity,
-  emptyWallet,
-  revoked,
-}
-
-class CertState {
-  final CertStatus status;
-  final Duration? duration;
-
-  CertState({required this.status, this.duration});
 }

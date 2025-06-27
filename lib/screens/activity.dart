@@ -1,12 +1,10 @@
 // ignore_for_file: must_be_immutable
 
-import 'package:durt2/durt2.dart' show IdtyStatus;
+import 'package:durt2/durt2.dart' show IdtyStatus, Durt;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/history_query.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
@@ -32,27 +30,25 @@ class _ActivityScreenState extends State<ActivityScreen> {
   @override
   void initState() {
     super.initState();
-    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-    sub.getOldOwnerKey(widget.address);
+    Durt.i.storage.getOldOwnerKey(widget.address);
     _headerDataFuture = _loadWalletData();
   }
 
   Future<WalletHeaderData> _loadWalletData() async {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
     final (idtyStatusValue, balanceResult, certData) = await (
-      sub.idtyStatus(widget.address),
-      sub.getBalance(widget.address),
-      sub.getCertsCounter(widget.address),
+      Durt.i.storage.getIdtyStatus(widget.address),
+      Durt.i.storage.getBalance(widget.address),
+      Durt.i.storage.getCertsCounter(widget.address),
     ).wait;
 
     final data = WalletHeaderData(
       hasIdentity: idtyStatusValue != IdtyStatus.none,
       isOwner: myWalletProvider.isOwner(widget.address),
       walletName: duniterIndexer.walletNameIndexer[widget.address],
-      balance: BigInt.from(balanceResult.transferableBalance),
+      balance: balanceResult.transferableBalance,
       certCount: certData,
     );
 

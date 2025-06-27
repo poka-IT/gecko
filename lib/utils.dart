@@ -1,11 +1,10 @@
 import 'dart:typed_data';
 
+import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:provider/provider.dart';
 import 'package:truncate/truncate.dart';
 
 void snackNode(bool isConnected) {
@@ -13,9 +12,7 @@ void snackNode(bool isConnected) {
   if (!isConnected) {
     message = "noDuniterNodeAvailableTryLater".tr();
   } else {
-    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-
-    message = "${"youAreConnectedToNode".tr()}\n${sub.getConnectedEndpoint()!.split('//')[1]}";
+    message = "${"youAreConnectedToNode".tr()}\n${Networks.duniterEndpoint}";
   }
   final snackBar = SnackBar(
       backgroundColor: Colors.grey[900],

@@ -1,18 +1,17 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:io';
+import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
-import 'package:provider/provider.dart';
 
 class WalletsProfilesProvider with ChangeNotifier {
   WalletsProfilesProvider(this.address);
@@ -28,8 +27,6 @@ class WalletsProfilesProvider with ChangeNotifier {
   num? _balance;
 
   bool isCommentVisible = false;
-
-  final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
 
   String _comment = '';
   String get comment => _comment;
@@ -72,9 +69,9 @@ class WalletsProfilesProvider with ChangeNotifier {
 
     if (barcodeContent == '') return;
 
-    if (await isAddressOrPubkey(barcodeContent)) {
-      if (!(await isAddress(barcodeContent))) {
-        address = await sub.pubkeyV1ToAddress(barcodeContent);
+    if (isAddressOrPubkey(barcodeContent)) {
+      if (!(isAddress(barcodeContent))) {
+        address = Durt.i.utils.pubkeyV1ToAddress(barcodeContent);
       } else {
         address = barcodeContent;
       }
@@ -138,14 +135,9 @@ class WalletsProfilesProvider with ChangeNotifier {
   }
 }
 
-Future<bool> isAddressOrPubkey(String address) async {
-  return await isAddress(address) || isPubkey(address);
-}
+bool isAddressOrPubkey(String address) => isAddress(address) || isPubkey(address);
 
-Future<bool> isAddress(String address) async {
-  final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-  return await sub.sdk.api.account.checkAddressFormat(address, sub.initSs58).timeout(const Duration(milliseconds: 300)).onError((_, __) => false) ?? false;
-}
+bool isAddress(String address) => Durt.i.utils.isAddressValid(address);
 
 bool isPubkey(String pubkey) {
   pubkey = pubkey.split(':')[0];

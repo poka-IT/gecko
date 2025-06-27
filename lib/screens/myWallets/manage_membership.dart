@@ -1,6 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show IdtyStatus;
+import 'package:durt2/durt2.dart' show IdtyStatus, Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
@@ -47,7 +47,7 @@ class ManageMembership extends StatelessWidget {
                 ),
                 migrateIdentity(context),
                 FutureBuilder(
-                  future: sub.isSmith(address),
+                  future: Durt.i.storage.isSmith(address),
                   builder: (BuildContext context, AsyncSnapshot<bool> isSmith) {
                     if (isSmith.data ?? false) {
                       return Container(

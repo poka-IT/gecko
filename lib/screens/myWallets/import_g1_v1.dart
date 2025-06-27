@@ -1,18 +1,19 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
-import 'package:durt2/durt2.dart' show IdtyStatus, WalletData;
+import 'package:durt2/durt2.dart' show IdtyStatus, WalletData, Durt, MigrateWalletChecks;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/models/migrate_wallet_checks.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/g1v1_migration.provider.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/screens/myWallets/migrate_identity.dart' show mapValidationErrors;
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/utils.dart';
@@ -42,11 +43,11 @@ class ImportG1v1 extends StatelessWidget {
         backgroundColor: context.colorScheme.surface,
         appBar: GeckoAppBar('importOldAccount'.tr()),
         body: SafeArea(
-          child: Consumer<SubstrateSdk>(builder: (context, sub, _) {
+          child: Consumer<G1v1MigrationProvider>(builder: (context, g1v1Migration, _) {
             return FutureBuilder(
-                future: sub.getBalanceAndIdtyStatus(sub.g1V1NewAddress, selectedWallet.address),
-                builder: (BuildContext context, AsyncSnapshot<MigrateWalletChecks> status) {
-                  if (status.data == null) {
+                future: Durt.i.storage.getMigrateWalletChecks(fromAddress: g1v1Migration.g1V1NewAddress, toAddress: selectedWallet.address),
+                builder: (BuildContext context, AsyncSnapshot<MigrateWalletChecks> migrationChecks) {
+                  if (migrationChecks.data == null) {
                     return Column(children: [
                       ScaledSizedBox(height: 80),
                       Row(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -61,8 +62,6 @@ class ImportG1v1 extends StatelessWidget {
                       ]),
                     ]);
                   }
-
-                  final statusData = status.data!;
 
                   return SingleChildScrollView(
                     padding: EdgeInsets.all(scaleSize(12)),
@@ -99,25 +98,25 @@ class ImportG1v1 extends StatelessWidget {
                                       debounce!.cancel();
                                     }
                                     debounce = Timer(const Duration(milliseconds: debouneTime), () {
-                                      if (sub.csSalt.text != '' && sub.csPassword.text != '') {
-                                        sub.reload();
-                                        sub.csToV2Address(sub.csSalt.text, sub.csPassword.text);
+                                      if (g1v1Migration.csSalt.text != '' && g1v1Migration.csPassword.text != '') {
+                                        g1v1Migration.reload();
+                                        g1v1Migration.csToV2Address();
                                       }
                                     });
                                   },
                                   onFieldSubmitted: (text) {
-                                    if (sub.csSalt.text != '' && sub.csPassword.text != '') {
+                                    if (g1v1Migration.csSalt.text != '' && g1v1Migration.csPassword.text != '') {
                                       if (debounce?.isActive ?? false) {
                                         debounce!.cancel();
                                       }
-                                      sub.reload();
-                                      sub.csToV2Address(sub.csSalt.text, sub.csPassword.text);
+                                      g1v1Migration.reload();
+                                      g1v1Migration.csToV2Address();
                                     }
                                   },
                                   keyboardType: TextInputType.text,
                                   textInputAction: TextInputAction.next,
-                                  controller: sub.csSalt,
-                                  obscureText: !sub.isCesiumIDVisible,
+                                  controller: g1v1Migration.csSalt,
+                                  obscureText: !g1v1Migration.isCesiumIDVisible,
                                   style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
                                   decoration: InputDecoration(
                                     isDense: true,
@@ -132,12 +131,12 @@ class ImportG1v1 extends StatelessWidget {
                                       padding: EdgeInsets.zero,
                                       constraints: BoxConstraints(),
                                       icon: Icon(
-                                        sub.isCesiumIDVisible ? Icons.visibility_off : Icons.visibility,
+                                        g1v1Migration.isCesiumIDVisible ? Icons.visibility_off : Icons.visibility,
                                         color: Colors.black,
                                         size: scaleSize(18),
                                       ),
                                       onPressed: () {
-                                        sub.cesiumIDisVisible();
+                                        g1v1Migration.cesiumIDisVisible();
                                       },
                                     ),
                                   ),
@@ -152,27 +151,27 @@ class ImportG1v1 extends StatelessWidget {
                                       debounce!.cancel();
                                     }
                                     debounce = Timer(const Duration(milliseconds: debouneTime), () {
-                                      sub.g1V1NewAddress = '';
-                                      if (sub.csSalt.text != '' && sub.csPassword.text != '') {
-                                        sub.reload();
-                                        sub.csToV2Address(sub.csSalt.text, sub.csPassword.text);
+                                      g1v1Migration.g1V1NewAddress = '';
+                                      if (g1v1Migration.csSalt.text != '' && g1v1Migration.csPassword.text != '') {
+                                        g1v1Migration.reload();
+                                        g1v1Migration.csToV2Address();
                                       }
                                     });
                                   },
                                   onFieldSubmitted: (text) {
-                                    if (sub.csSalt.text != '' && sub.csPassword.text != '') {
+                                    if (g1v1Migration.csSalt.text != '' && g1v1Migration.csPassword.text != '') {
                                       if (debounce?.isActive ?? false) {
                                         debounce!.cancel();
                                       }
-                                      sub.g1V1NewAddress = '';
-                                      sub.reload();
-                                      sub.csToV2Address(sub.csSalt.text, sub.csPassword.text);
+                                      g1v1Migration.g1V1NewAddress = '';
+                                      g1v1Migration.reload();
+                                      g1v1Migration.csToV2Address();
                                     }
                                   },
                                   keyboardType: TextInputType.text,
                                   textInputAction: TextInputAction.done,
-                                  controller: sub.csPassword,
-                                  obscureText: !sub.isCesiumIDVisible,
+                                  controller: g1v1Migration.csPassword,
+                                  obscureText: !g1v1Migration.isCesiumPasswordVisible,
                                   style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
                                   decoration: InputDecoration(
                                     isDense: true,
@@ -186,12 +185,12 @@ class ImportG1v1 extends StatelessWidget {
                                       padding: EdgeInsets.zero,
                                       constraints: BoxConstraints(),
                                       icon: Icon(
-                                        sub.isCesiumIDVisible ? Icons.visibility_off : Icons.visibility,
+                                        g1v1Migration.isCesiumIDVisible ? Icons.visibility_off : Icons.visibility,
                                         color: Colors.black,
                                         size: scaleSize(18),
                                       ),
                                       onPressed: () {
-                                        sub.cesiumIDisVisible();
+                                        g1v1Migration.cesiumIDisVisible();
                                       },
                                     ),
                                   ),
@@ -203,7 +202,7 @@ class ImportG1v1 extends StatelessWidget {
 
                         // Section des informations du compte
                         Visibility(
-                          visible: sub.g1V1OldPubkey != '' && sub.csSalt.text != '' && sub.csPassword.text != '',
+                          visible: g1v1Migration.g1V1OldPubkey != '' && g1v1Migration.csSalt.text != '' && g1v1Migration.csPassword.text != '',
                           child: Card(
                             elevation: 2,
                             color: context.colorScheme.surfaceContainer,
@@ -235,7 +234,7 @@ class ImportG1v1 extends StatelessWidget {
                                             GestureDetector(
                                               key: keyCopyPubkey,
                                               onTap: () {
-                                                Clipboard.setData(ClipboardData(text: sub.g1V1OldPubkey));
+                                                Clipboard.setData(ClipboardData(text: g1v1Migration.g1V1OldPubkey));
                                                 snackCopyKey(context);
                                               },
                                               child: Row(
@@ -245,7 +244,7 @@ class ImportG1v1 extends StatelessWidget {
                                                     style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
                                                   ),
                                                   Text(
-                                                    getShortPubkey(sub.g1V1OldPubkey),
+                                                    getShortPubkey(g1v1Migration.g1V1OldPubkey),
                                                     style: scaledTextStyle(
                                                       fontSize: 13,
                                                       fontFamily: 'Monospace',
@@ -261,7 +260,7 @@ class ImportG1v1 extends StatelessWidget {
                                             GestureDetector(
                                               key: keyCopyAddress,
                                               onTap: () {
-                                                Clipboard.setData(ClipboardData(text: sub.g1V1NewAddress));
+                                                Clipboard.setData(ClipboardData(text: g1v1Migration.g1V1NewAddress));
                                                 snackCopyKey(context);
                                               },
                                               child: Row(
@@ -271,7 +270,7 @@ class ImportG1v1 extends StatelessWidget {
                                                     style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
                                                   ),
                                                   Text(
-                                                    getShortPubkey(sub.g1V1NewAddress),
+                                                    getShortPubkey(g1v1Migration.g1V1NewAddress),
                                                     style: scaledTextStyle(
                                                       fontSize: 13,
                                                       fontFamily: 'Monospace',
@@ -290,7 +289,7 @@ class ImportG1v1 extends StatelessWidget {
                                         crossAxisAlignment: CrossAxisAlignment.end,
                                         children: [
                                           BalanceDisplay(
-                                            value: statusData.fromBalance['transferableBalance'],
+                                            value: migrationChecks.data?.fromBalance?.transferableBalance ?? BigInt.zero,
                                             size: 14,
                                             fontWeight: FontWeight.w600,
                                             color: context.colorScheme.onSecondaryContainer,
@@ -299,12 +298,12 @@ class ImportG1v1 extends StatelessWidget {
                                           Row(
                                             children: [
                                               IdentityStatus(
-                                                address: sub.g1V1NewAddress,
+                                                address: g1v1Migration.g1V1NewAddress,
                                                 color: Colors.black,
                                               ),
                                               ScaledSizedBox(width: 4),
                                               Certifications(
-                                                address: sub.g1V1NewAddress,
+                                                address: g1v1Migration.g1V1NewAddress,
                                                 size: 12,
                                               ),
                                             ],
@@ -366,7 +365,7 @@ class ImportG1v1 extends StatelessWidget {
                                       }).toList(),
                                       onChanged: (WalletData? newSelectedWallet) {
                                         selectedWallet = newSelectedWallet!;
-                                        sub.reload();
+                                        g1v1Migration.reload();
                                       },
                                     ),
                                   ),
@@ -394,10 +393,10 @@ class ImportG1v1 extends StatelessWidget {
                                   ),
                                   shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
                                 ),
-                                onPressed: statusData.canValidate
+                                onPressed: migrationChecks.data!.canMigrate
                                     ? () async {
-                                        final addressToMigrate = sub.g1V1NewAddress;
-                                        final hasIdentity = statusData.fromIdtyStatus != IdtyStatus.none;
+                                        final addressToMigrate = g1v1Migration.g1V1NewAddress;
+                                        final hasIdentity = migrationChecks.data!.fromIdtyStatus != IdtyStatus.none;
                                         final message = hasIdentity
                                             ? 'migrationConfirmWithIdentity'.tr(args: [currencyName, getShortPubkey(selectedWallet.address)])
                                             : 'migrationConfirmBalanceOnly'.tr(args: [currencyName, getShortPubkey(selectedWallet.address)]);
@@ -426,14 +425,15 @@ class ImportG1v1 extends StatelessWidget {
                                           );
                                         }
 
-                                        final transactionId = await sub.migrateCsToV2(
-                                          sub.csSalt.text,
-                                          sub.csPassword.text,
+                                        // TODO: use Durt.i.duniter.migrateCsToV2
+                                        final transactionId = await Provider.of<SubstrateSdk>(context, listen: false).migrateCsToV2(
+                                          g1v1Migration.csSalt.text,
+                                          g1v1Migration.csPassword.text,
                                           selectedWallet.address,
                                           destPassword: pin ?? myWalletProvider.pinCode,
-                                          fromBalance: statusData.fromBalance,
-                                          fromIdtyStatus: statusData.fromIdtyStatus,
-                                          toIdtyStatus: statusData.toIdtyStatus,
+                                          fromBalance: migrationChecks.data!.fromBalance!.toMap(),
+                                          fromIdtyStatus: migrationChecks.data!.fromIdtyStatus,
+                                          toIdtyStatus: migrationChecks.data!.toIdtyStatus,
                                         );
                                         Navigator.pop(context);
                                         await Navigator.push(
@@ -461,7 +461,7 @@ class ImportG1v1 extends StatelessWidget {
                             ),
                             ScaledSizedBox(height: 6),
                             Text(
-                              statusData.validationStatus,
+                              mapValidationErrors(migrationChecks.data!.errors),
                               textAlign: TextAlign.center,
                               style: scaledTextStyle(fontSize: 11, color: Colors.grey[600]),
                             ),
@@ -478,11 +478,11 @@ class ImportG1v1 extends StatelessWidget {
   }
 
   void resetScreen() {
-    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
+    final g1v1Migration = Provider.of<G1v1MigrationProvider>(homeContext, listen: false);
 
-    sub.csSalt.text = '';
-    sub.csPassword.text = '';
-    sub.g1V1NewAddress = '';
-    sub.g1V1OldPubkey = '';
+    g1v1Migration.csSalt.text = '';
+    g1v1Migration.csPassword.text = '';
+    g1v1Migration.g1V1NewAddress = '';
+    g1v1Migration.g1V1OldPubkey = '';
   }
 }

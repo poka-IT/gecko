@@ -51,8 +51,6 @@ const String currencyName = 'ĞD';
 const debugPin = false;
 
 String indexerEndpoint = '';
-int balanceRatio = 1;
-int udValue = 0;
 
 // Indexer
 DateTime startBlockchainTime = DateTime(0, 0, 0, 0, 0);

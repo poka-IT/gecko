@@ -76,8 +76,7 @@ class HistoryQuery extends StatelessWidget {
     int nRepositories = 20;
     return GraphQLProvider(
       client: ValueNotifier(duniterIndexer.indexerClient),
-      child: Expanded(
-          child: Column(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         mainAxisSize: MainAxisSize.max,
         children: <Widget>[
@@ -168,7 +167,7 @@ class HistoryQuery extends StatelessWidget {
             },
           ),
         ],
-      )),
+      ),
     );
   }
 }

@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:io';
-import 'package:durt2/durt2.dart' show IdtyStatus;
+import 'package:durt2/durt2.dart' show IdtyStatus, Durt;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/extensions.dart';
@@ -59,22 +59,21 @@ class _WalletHeaderState extends State<WalletHeader> {
       return cached;
     }
 
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
     // Load all data in parallel with proper typing
     final (idtyStatus, balance, certData) = await (
-      sub.idtyStatus(widget.address),
-      sub.getBalance(widget.address),
-      sub.getCertsCounter(widget.address),
+      Durt.i.storage.getIdtyStatus(widget.address),
+      Durt.i.storage.getBalance(widget.address),
+      Durt.i.storage.getCertsCounter(widget.address),
     ).wait;
 
     final data = WalletHeaderData(
       hasIdentity: idtyStatus != IdtyStatus.none,
       isOwner: myWalletProvider.isOwner(widget.address),
       walletName: duniterIndexer.walletNameIndexer[widget.address],
-      balance: BigInt.from(balance.transferableBalance),
+      balance: balance.transferableBalance,
       certCount: certData,
     );
 
@@ -86,22 +85,21 @@ class _WalletHeaderState extends State<WalletHeader> {
   Future<void> _refreshData() async {
     if (!mounted) return;
 
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
     // Load all data in parallel with proper typing
     final (idtyStatus, balance, certData) = await (
-      sub.idtyStatus(widget.address),
-      sub.getBalance(widget.address),
-      sub.getCertsCounter(widget.address),
+      Durt.i.storage.getIdtyStatus(widget.address),
+      Durt.i.storage.getBalance(widget.address),
+      Durt.i.storage.getCertsCounter(widget.address),
     ).wait;
 
     final data = WalletHeaderData(
       hasIdentity: idtyStatus != IdtyStatus.none,
       isOwner: myWalletProvider.isOwner(widget.address),
       walletName: duniterIndexer.walletNameIndexer[widget.address],
-      balance: BigInt.from(balance.transferableBalance),
+      balance: balance.transferableBalance,
       certCount: certData,
     );
 
@@ -122,7 +120,7 @@ class _WalletHeaderState extends State<WalletHeader> {
     final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
     Provider.of<SubstrateSdk>(context); //To refresh header color on block changes
 
-    final balance = walletOptions.balanceCache[widget.address] == null ? currentWalletBalance : BigInt.from(walletOptions.balanceCache[widget.address] ?? 0);
+    final balance = walletOptions.balanceCache[widget.address] == null ? currentWalletBalance : walletOptions.balanceCache[widget.address] ?? BigInt.zero;
 
     final isEmptyWallet = balance == BigInt.zero;
 

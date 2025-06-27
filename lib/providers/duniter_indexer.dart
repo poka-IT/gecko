@@ -1,17 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:durt2/durt2.dart' hide Provider;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/providers/home.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/models/transaction.dart';
-import 'package:gecko/services/network_config_service.dart';
+import 'package:gecko/services/network_config.service.dart';
 
 class DuniterIndexer with ChangeNotifier {
   Map<String, String?> walletNameIndexer = {};
@@ -241,9 +241,8 @@ class DuniterIndexer with ChangeNotifier {
 
   Future<bool> isIndexerSynced(String endpoint) async {
     try {
-      final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-      var duniterFinilizedHash = await sub.getLastFinilizedHash();
-      final duniterFinilizedNumber = await sub.getBlockNumberByHash(duniterFinilizedHash);
+      var duniterFinilizedHash = await Durt.i.storage.getLastFinalizedHash();
+      final duniterFinilizedNumber = await Durt.i.storage.getBlockNumberByHash(duniterFinilizedHash);
       duniterFinilizedHash = "\\x${duniterFinilizedHash.substring(2)}";
 
       final indexerLink = HttpLink(endpoint);
@@ -417,7 +416,7 @@ class DuniterIndexer with ChangeNotifier {
 
     final dateDelimiter = getDateDelimiter();
 
-    final amount = transaction.isReceived ? transaction.amount : transaction.amount * -1;
+    final amount = BigInt.from(transaction.isReceived ? transaction.amount : transaction.amount * -1);
 
     bool isMigrationTime = startBlockchainInitialized && date.compareTo(startBlockchainTime) < 0;
 

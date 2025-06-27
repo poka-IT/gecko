@@ -1,5 +1,5 @@
-import 'package:gecko/models/certification_data.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:durt2/durt2.dart' show CertificationData;
 
 part 'wallet_header_data.g.dart';
 

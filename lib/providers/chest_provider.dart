@@ -3,7 +3,6 @@ import 'package:durt2/durt2.dart' show Durt, SafeBox, WalletData;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:provider/provider.dart';
 
@@ -15,9 +14,7 @@ class ChestProvider with ChangeNotifier {
   Future forgetSafe(BuildContext context, SafeBox safe) async {
     final bool? answer = await (_confirmDeletingChest(context, safe.name));
     // ignore: use_build_context_synchronously
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     if (answer ?? false) {
-      await sub.deleteAccounts(getChestWallets(safe));
       await Durt.i.walletService.deleteSafe(safe.key);
       final myWalletProvider =
           // ignore: use_build_context_synchronously

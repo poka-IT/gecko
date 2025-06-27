@@ -30,25 +30,20 @@ import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/screens/identity/confirm_identity.dart';
 
 class WalletOptions extends StatelessWidget {
-  const WalletOptions({Key? keyMyWallets, required this.wallet})
-      : super(key: keyMyWallets);
+  const WalletOptions({Key? keyMyWallets, required this.wallet}) : super(key: keyMyWallets);
   final WalletData wallet;
 
   @override
   Widget build(BuildContext context) {
-    final walletOptions =
-        Provider.of<WalletOptionsProvider>(context, listen: false);
-    WalletsProfilesProvider historyProvider =
-        Provider.of<WalletsProfilesProvider>(context, listen: false);
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
+    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
+    WalletsProfilesProvider historyProvider = Provider.of<WalletsProfilesProvider>(context, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     walletOptions.address.text = wallet.address;
 
     final currentChest = myWalletProvider.getCurrentSafe;
-    final isWalletNameIndexed =
-        duniterIndexer.walletNameIndexer[walletOptions.address.text] != null;
+    final isWalletNameIndexed = duniterIndexer.walletNameIndexer[walletOptions.address.text] != null;
 
     final isAlone = myWalletProvider.listWallets.length == 1;
 
@@ -63,7 +58,7 @@ class WalletOptions extends StatelessWidget {
       child: Scaffold(
         appBar: WalletAppBar(
           address: wallet.address,
-          currentBalance: BigInt.from(walletOptions.balanceCache[wallet.address] ?? 0),
+          currentBalance: walletOptions.balanceCache[wallet.address] ?? BigInt.zero,
           title: isWalletNameIndexed ? duniterIndexer.walletNameIndexer[walletOptions.address.text]! : wallet.name!,
         ),
         body: Stack(
@@ -91,37 +86,24 @@ class WalletOptions extends StatelessWidget {
                                 spacing: 8,
                                 children: [
                                   buildConfirmIdentitySection(walletProvider),
-                                  if (wallet.hasIdentity)
-                                    buildRenewMembershipSection(walletProvider),
-                                  buildOptionsSection(
-                                      context, walletProvider, historyProvider),
-                                  if (!isAlone)
-                                    buildDefaultWalletSection(
-                                        context,
-                                        walletProvider,
-                                        myWalletProvider,
-                                        walletOptions,
-                                        currentChest),
+                                  if (wallet.hasIdentity) buildRenewMembershipSection(walletProvider),
+                                  buildOptionsSection(context, walletProvider, historyProvider),
+                                  if (!isAlone) buildDefaultWalletSection(context, walletProvider, myWalletProvider, walletOptions, currentChest),
                                   if (!wallet.hasIdentity)
                                     InkWell(
                                       key: keyRenameWallet,
                                       onTap: () async {
-                                        await walletProvider.editWalletName(
-                                            context, wallet.address);
+                                        await walletProvider.editWalletName(context, wallet.address);
                                       },
                                       child: Container(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: scaleSize(17),
-                                            vertical: scaleSize(12)),
+                                        padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
                                         child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
                                           children: [
                                             Image.asset(
                                               'assets/walletOptions/edit.png',
                                               height: scaleSize(22),
-                                              color: const Color(0xFF4A90E2)
-                                                  .withValues(alpha: 0.8),
+                                              color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
                                             ),
                                             ScaledSizedBox(width: 18),
                                             Expanded(
@@ -138,12 +120,8 @@ class WalletOptions extends StatelessWidget {
                                         ),
                                       ),
                                     ),
-                                  if (!walletProvider.isDefaultWallet &&
-                                      !wallet.hasIdentity)
-                                    deleteWallet(
-                                        context, walletProvider, currentChest),
-                                  if (wallet.hasIdentity)
-                                    const ManageMembershipButton(),
+                                  if (!walletProvider.isDefaultWallet && !wallet.hasIdentity) deleteWallet(context, walletProvider, currentChest),
+                                  if (wallet.hasIdentity) const ManageMembershipButton(),
                                   if (isAlone) aloneWalletOptions(),
                                 ],
                               );
@@ -193,7 +171,7 @@ class WalletOptions extends StatelessWidget {
           child: ClipOval(
             child: wallet.imagePath == null || wallet.imagePath == ''
                 ? Image.asset(
-                    'assets/avatars/${wallet.number}.png',
+                    'assets/avatars/${wallet.number % 4}.png',
                     fit: BoxFit.cover,
                   )
                 : Image.file(
@@ -228,23 +206,17 @@ class WalletOptions extends StatelessWidget {
     );
   }
 
-  Widget activityWidget(
-      BuildContext context,
-      WalletsProfilesProvider historyProvider,
-      WalletOptionsProvider walletProvider) {
+  Widget activityWidget(BuildContext context, WalletsProfilesProvider historyProvider, WalletOptionsProvider walletProvider) {
     return InkWell(
       key: keyOpenActivity,
       onTap: () {
         Navigator.push(
           context,
-          PageNoTransit(
-              builder: (context) =>
-                  ActivityScreen(address: walletProvider.address.text)),
+          PageNoTransit(builder: (context) => ActivityScreen(address: walletProvider.address.text)),
         );
       },
       child: Container(
-        padding: EdgeInsets.symmetric(
-            horizontal: scaleSize(16), vertical: scaleSize(12)),
+        padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -271,10 +243,8 @@ class WalletOptions extends StatelessWidget {
   }
 
   Future setDefaultWallet(BuildContext context, int currentChest) async {
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
-    final walletOptions =
-        Provider.of<WalletOptionsProvider>(context, listen: false);
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
 
     await Durt.i.walletService.setDefaultWallet(walletOptions.address.text);
     await myWalletProvider.readAllWallets(currentChest);
@@ -282,45 +252,33 @@ class WalletOptions extends StatelessWidget {
     walletOptions.reload();
   }
 
-  Widget deleteWallet(BuildContext context, WalletOptionsProvider walletOptions,
-      int currentChest) {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final myWalletProvider =
-        Provider.of<MyWalletsProvider>(context, listen: false);
+  Widget deleteWallet(BuildContext context, WalletOptionsProvider walletOptions, int currentChest) {
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
     final defaultWallet = myWalletProvider.getDefaultWallet();
-    final bool isDefaultWallet =
-        walletOptions.address.text == defaultWallet.address;
+    final bool isDefaultWallet = walletOptions.address.text == defaultWallet.address;
     return FutureBuilder(
-        future: sub.hasAccountConsumers(wallet.address),
+        future: Durt.i.storage.hasAccountConsumers(wallet.address),
         builder: (BuildContext context, AsyncSnapshot<bool> hasConsumers) {
-          if (hasConsumers.connectionState != ConnectionState.done ||
-              hasConsumers.hasError ||
-              !hasConsumers.hasData) {
+          if (hasConsumers.connectionState != ConnectionState.done || hasConsumers.hasError || !hasConsumers.hasData) {
             return const SizedBox.shrink();
           }
-          final int balance =
-              walletOptions.balanceCache[walletOptions.address.text] ?? -1;
-          final bool canDelete = !isDefaultWallet &&
-              !hasConsumers.data! &&
-              (balance > 2 || balance == 0) &&
-              !wallet.hasIdentity;
+          final BigInt balance = walletOptions.balanceCache[walletOptions.address.text] ?? BigInt.zero;
+          final bool canDelete = !isDefaultWallet && !hasConsumers.data! && (balance > BigInt.from(2) || balance == BigInt.zero) && !wallet.hasIdentity;
           return InkWell(
             key: keyDeleteWallet,
             onTap: canDelete
                 ? () async {
                     await walletOptions.deleteWallet(context, wallet);
                     WidgetsBinding.instance.addPostFrameCallback((_) async {
-                      myWalletProvider.listWallets =
-                          await myWalletProvider.readAllWallets(currentChest);
+                      myWalletProvider.listWallets = await myWalletProvider.readAllWallets(currentChest);
                       myWalletProvider.reload();
                     });
                   }
                 : null,
             child: canDelete
                 ? Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: scaleSize(16), vertical: scaleSize(12)),
+                    padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -363,12 +321,8 @@ class WalletOptions extends StatelessWidget {
               sub.currencyParameters['membershipRenewalPeriod']!,
             );
 
-            final twentyDaysBeforeExpiration =
-                info.expireDate?.subtract(const Duration(days: 20));
-            final shouldHideButton = !info.canRenew ||
-                (info.expireDate != null &&
-                    !(twentyDaysBeforeExpiration?.isBefore(DateTime.now()) ??
-                        false));
+            final twentyDaysBeforeExpiration = info.expireDate?.subtract(const Duration(days: 20));
+            final shouldHideButton = !info.canRenew || (info.expireDate != null && !(twentyDaysBeforeExpiration?.isBefore(DateTime.now()) ?? false));
 
             if (shouldHideButton) return const SizedBox.shrink();
 
@@ -388,12 +342,10 @@ class WalletOptions extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      onPressed: () => MembershipRenewal.executeRenewal(
-                          context, walletProvider.address.text),
+                      onPressed: () => MembershipRenewal.executeRenewal(context, walletProvider.address.text),
                       child: Text(
                         'renewMembership'.tr(),
-                        style:
-                            scaledTextStyle(fontSize: 16, color: Colors.white),
+                        style: scaledTextStyle(fontSize: 16, color: Colors.white),
                       ),
                     ),
                   ),
@@ -408,19 +360,12 @@ class WalletOptions extends StatelessWidget {
     );
   }
 
-  Widget buildOptionsSection(
-      BuildContext context,
-      WalletOptionsProvider walletProvider,
-      WalletsProfilesProvider historyProvider) {
+  Widget buildOptionsSection(BuildContext context, WalletOptionsProvider walletProvider, WalletsProfilesProvider historyProvider) {
     return activityWidget(context, historyProvider, walletProvider);
   }
 
   Widget buildDefaultWalletSection(
-      BuildContext context,
-      WalletOptionsProvider walletProvider,
-      MyWalletsProvider myWalletProvider,
-      WalletOptionsProvider walletOptions,
-      int currentChest) {
+      BuildContext context, WalletOptionsProvider walletProvider, MyWalletsProvider myWalletProvider, WalletOptionsProvider walletOptions, int currentChest) {
     return Consumer<MyWalletsProvider>(
       builder: (context, myWalletProvider, _) {
         return InkWell(
@@ -432,24 +377,19 @@ class WalletOptions extends StatelessWidget {
                 }
               : null,
           child: Container(
-            padding: EdgeInsets.symmetric(
-                horizontal: scaleSize(16), vertical: scaleSize(12)),
+            padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Icon(
                   Icons.check_circle_outline,
                   size: scaleSize(24),
-                  color: walletProvider.isDefaultWallet
-                      ? Colors.grey[400]
-                      : const Color(0xFF4CAF50).withValues(alpha: 0.8),
+                  color: walletProvider.isDefaultWallet ? Colors.grey[400] : const Color(0xFF4CAF50).withValues(alpha: 0.8),
                 ),
                 ScaledSizedBox(width: 16),
                 Expanded(
                   child: Text(
-                    walletProvider.isDefaultWallet
-                        ? 'thisWalletIsDefault'.tr()
-                        : 'defineWalletAsDefault'.tr(),
+                    walletProvider.isDefaultWallet ? 'thisWalletIsDefault'.tr() : 'defineWalletAsDefault'.tr(),
                     style: scaledTextStyle(
                       fontSize: 16,
                       color: walletProvider.isDefaultWallet ? Colors.grey[500] : context.colorScheme.onSurface,
@@ -467,15 +407,12 @@ class WalletOptions extends StatelessWidget {
 
   Widget buildConfirmIdentitySection(WalletOptionsProvider walletProvider) {
     return Consumer<SubstrateSdk>(builder: (context, sub, _) {
-      return FutureBuilder(
-        future: sub.idtyStatusMulti([walletProvider.address.text]),
-        initialData: const [IdtyStatus.unknown],
-        builder:
-            (BuildContext context, AsyncSnapshot<List<IdtyStatus>> snapshot) {
+      return FutureBuilder<IdtyStatus>(
+        future: Durt.i.storage.getIdtyStatus(walletProvider.address.text),
+        initialData: IdtyStatus.unknown,
+        builder: (BuildContext context, AsyncSnapshot<IdtyStatus> snapshot) {
           return Visibility(
-            visible: snapshot.hasData &&
-                !snapshot.hasError &&
-                snapshot.data!.first == IdtyStatus.created,
+            visible: snapshot.hasData && !snapshot.hasError && snapshot.data == IdtyStatus.created,
             child: Column(children: [
               ScaledSizedBox(height: 22),
               SizedBox(
@@ -535,25 +472,20 @@ Widget aloneWalletOptions() {
             onTap: () async {
               if (!myWalletProvider.isNewDerivationLoading) {
                 if (!await myWalletProvider.askPinCode()) return;
-                String newDerivationName =
-                    '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number + 2}';
-                await myWalletProvider.generateNewDerivation(
-                    context, newDerivationName);
+                String newDerivationName = '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number + 2}';
+                await myWalletProvider.generateNewDerivation(context, newDerivationName);
                 Navigator.pushReplacementNamed(context, '/mywallets');
               }
             },
             child: Container(
-              padding: EdgeInsets.symmetric(
-                  horizontal: scaleSize(16), vertical: scaleSize(12)),
+              padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Icon(
                     Icons.add_circle_outline,
                     size: scaleSize(24),
-                    color: Durt.i.isConnected
-                        ? Color(0xFF4CAF50).withValues(alpha: 0.8)
-                        : Colors.grey[400],
+                    color: Durt.i.isConnected ? Color(0xFF4CAF50).withValues(alpha: 0.8) : Colors.grey[400],
                   ),
                   ScaledSizedBox(width: 16),
                   Expanded(
@@ -580,8 +512,7 @@ Widget aloneWalletOptions() {
           );
         },
         child: Container(
-          padding: EdgeInsets.symmetric(
-              horizontal: scaleSize(16), vertical: scaleSize(12)),
+          padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
           child: Row(
             children: [
               SvgPicture.asset(

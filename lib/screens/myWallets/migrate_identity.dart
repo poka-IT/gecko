@@ -1,11 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show Durt;
+import 'package:durt2/durt2.dart' show Durt, MigrateWalletChecks, MigrateWalletValidationError;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/models/migrate_wallet_checks.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
@@ -21,6 +20,19 @@ import 'package:gecko/widgets/commons/text_markdown.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:provider/provider.dart';
+
+String mapValidationErrors(Set<MigrateWalletValidationError> errors) {
+  if (errors.isEmpty) {
+    return '';
+  }
+  // Taking the first error to display. Can be modified to show all.
+  return switch (errors.first) {
+    MigrateWalletValidationError.isSmith => 'smithCantMigrateIdentity'.tr(),
+    MigrateWalletValidationError.hasConsumers => 'youMustWaitBeforeCashoutThisAccount'.tr(),
+    MigrateWalletValidationError.sourceAccountIsEmpty => 'thisAccountIsEmpty'.tr(),
+    MigrateWalletValidationError.cannotMigrateIdentityToIdentity => 'youCannotMigrateIdentityToExistingIdentity'.tr(),
+  };
+}
 
 class MigrateIdentityScreen extends StatelessWidget {
   const MigrateIdentityScreen({super.key});
@@ -39,13 +51,13 @@ class MigrateIdentityScreen extends StatelessWidget {
     final newMnemonicSentence = TextEditingController();
     final newWalletAddress = TextEditingController();
 
-    var statusData = const MigrateWalletChecks.defaultValues();
+    var migrationChecks = const MigrateWalletChecks.defaultValues();
     var mnemonicIsValid = false;
     int? matchDerivationNbr;
     String matchInfo = '';
 
     Future scanDerivations() async {
-      if (!await isAddress(newWalletAddress.text) || !Durt.i.walletService.isMnemonicValid(newMnemonicSentence.text) || !statusData.canValidate) {
+      if (!isAddress(newWalletAddress.text) || !Durt.i.walletService.isMnemonicValid(newMnemonicSentence.text) || !migrationChecks.canMigrate) {
         mnemonicIsValid = false;
         matchInfo = '';
         walletOptions.reload();
@@ -137,7 +149,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                                   ),
                                 ),
                                 BalanceDisplay(
-                                  value: walletOptions.balanceCache[fromAddress] ?? 0,
+                                  value: walletOptions.balanceCache[fromAddress] ?? BigInt.zero,
                                   size: isSmallScreen ? 14 : 15,
                                   fontWeight: FontWeight.bold,
                                   color: context.colorScheme.onSurface,
@@ -272,14 +284,14 @@ class MigrateIdentityScreen extends StatelessWidget {
                                 ),
                               ),
                               onChanged: (newAddress) async {
-                                if (await isAddress(newAddress)) {
-                                  statusData = await sub.getBalanceAndIdtyStatus(
-                                    fromAddress,
-                                    newAddress,
+                                if (isAddress(newAddress)) {
+                                  migrationChecks = await Durt.i.storage.getMigrateWalletChecks(
+                                    fromAddress: fromAddress,
+                                    toAddress: newAddress,
                                   );
                                   await scanDerivations();
                                 } else {
-                                  statusData = const MigrateWalletChecks.defaultValues();
+                                  migrationChecks = const MigrateWalletChecks.defaultValues();
                                   matchInfo = '';
                                   walletOptions.reload();
                                 }
@@ -312,11 +324,12 @@ class MigrateIdentityScreen extends StatelessWidget {
                 children: [
                   Consumer<WalletOptionsProvider>(
                     builder: (context, _, __) {
+                      final validationStatus = mapValidationErrors(migrationChecks.errors);
                       return Column(
                         children: [
-                          if (statusData.validationStatus.isNotEmpty)
+                          if (validationStatus.isNotEmpty)
                             Text(
-                              statusData.validationStatus,
+                              validationStatus,
                               textAlign: TextAlign.center,
                               style: scaledTextStyle(
                                 fontSize: isSmallScreen ? 12 : 13,
@@ -324,7 +337,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                               ),
                             ),
                           if (matchInfo.isNotEmpty) ...[
-                            if (statusData.validationStatus.isNotEmpty) ScaledSizedBox(height: isSmallScreen ? 4 : 8),
+                            if (validationStatus.isNotEmpty) ScaledSizedBox(height: isSmallScreen ? 4 : 8),
                             Text(
                               matchInfo,
                               textAlign: TextAlign.center,
@@ -352,26 +365,23 @@ class MigrateIdentityScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      onPressed: statusData.canValidate && mnemonicIsValid
+                      onPressed: migrationChecks.canMigrate && mnemonicIsValid
                           ? () async {
                               if (!await myWalletProvider.askPinCode()) return;
 
-                              await sub.importAccount(
-                                mnemonic: newMnemonicSentence.text,
-                                derivePath: matchDerivationNbr == -1 ? '' : "//$matchDerivationNbr",
-                                password: 'password',
-                              );
+                              await Durt.i.walletService.importAccount(
+                                  mnemonic: newMnemonicSentence.text, derivation: matchDerivationNbr == -1 ? null : matchDerivationNbr, pinCode: '1472');
 
                               final transactionId = await sub.migrateIdentity(
                                 fromAddress: fromAddress,
                                 destAddress: newWalletAddress.text,
                                 fromPassword: myWalletProvider.pinCode,
-                                destPassword: 'password',
+                                destPassword: '1472',
                                 withBalance: true,
-                                fromBalance: statusData.fromBalance,
+                                fromBalance: migrationChecks.fromBalance!.toMap(),
                               );
 
-                              sub.deleteAccounts([newWalletAddress.text]);
+                              await Durt.i.walletService.deleteWallet(newWalletAddress.text);
                               Navigator.pop(context);
                               Navigator.push(
                                 context,

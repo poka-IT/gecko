@@ -1,6 +1,6 @@
+import 'package:durt2/durt2.dart' hide Provider;
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/models/wallet_balance.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/widgets/balance_display.dart';
@@ -18,17 +18,17 @@ class Balance extends StatelessWidget {
     final finalColor = color ?? context.colorScheme.onSecondaryContainer;
     return Consumer<SubstrateSdk>(builder: (context, sdk, _) {
       return FutureBuilder(
-          future: sdk.getBalance(address),
+          future: Durt.i.storage.getBalance(address),
           builder: (BuildContext context, AsyncSnapshot<WalletBalance> globalBalance) {
             if (globalBalance.connectionState != ConnectionState.done || globalBalance.hasError || !globalBalance.hasData) {
-              if (walletOptions.balanceCache[address] != null && walletOptions.balanceCache[address] != -1) {
+              if (walletOptions.balanceCache[address] != null && walletOptions.balanceCache[address] != BigInt.from(-1)) {
                 return BalanceDisplay(value: walletOptions.balanceCache[address]!, size: size, color: finalColor);
               } else {
                 return const SizedBox.shrink();
               }
             }
             walletOptions.balanceCache[address] = globalBalance.data!.transferableBalance;
-            if (walletOptions.balanceCache[address] != -1) {
+            if (walletOptions.balanceCache[address] != BigInt.from(-1)) {
               return BalanceDisplay(value: walletOptions.balanceCache[address]!, size: size, color: finalColor);
             } else {
               return const Text('');

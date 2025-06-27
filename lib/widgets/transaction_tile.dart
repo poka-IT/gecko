@@ -27,7 +27,7 @@ class TransactionTile extends StatelessWidget {
   final double avatarSize;
   final Transaction transaction;
   final String dateForm;
-  final int finalAmount;
+  final BigInt finalAmount;
   final DuniterIndexer duniterIndexer;
   final BuildContext context;
 

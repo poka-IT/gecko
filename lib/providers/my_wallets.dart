@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:path_provider/path_provider.dart';
@@ -54,9 +53,9 @@ class MyWalletsProvider with ChangeNotifier {
     //     await sub.idtyStatusMulti(walletsToScan.keys.toList());
     for (final wallet in walletsToScan.values) {
       // wallet.identityStatus = idtyStatusList[n];
-      if (Durt.i.walletService.walletDataBox.containsKey(wallet.address)) continue;
+      // if (Durt.i.walletService.walletDataBox.containsKey(wallet.address)) continue;
+      // Durt.i.walletService.walletDataBox.put(wallet.address, wallet);
 
-      Durt.i.walletService.walletDataBox.put(wallet.address, wallet);
       listWallets.add(wallet);
     }
 
@@ -156,17 +155,14 @@ class MyWalletsProvider with ChangeNotifier {
 
     int? safeNumber = getCurrentSafe;
 
-    // ignore: use_build_context_synchronously
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-
     WalletData defaultWallet = getDefaultWallet();
 
     // ignore: use_build_context_synchronously
-    final address = await sub.derive(context, defaultWallet.address, newDerivationNbr, pinCode);
+    final walletData = await Durt.i.walletService.derive(fromAddress: defaultWallet.address, derivation: newDerivationNbr, pinCode: pinCode);
 
     WalletData newWallet = WalletData(
         safeBoxNumber: safeNumber,
-        address: address,
+        address: walletData.address,
         number: newWalletNbr,
         name: name,
         derivation: newDerivationNbr,
@@ -198,15 +194,19 @@ class MyWalletsProvider with ChangeNotifier {
     } else {
       newWalletNbr = walletConfig.last.number + 1;
     }
-    // ignore: use_build_context_synchronously
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     WalletData defaultWallet = myWalletProvider.getDefaultWallet();
 
-    final address = await sub.generateRootKeypair(defaultWallet.address, pinCode);
+    final walletData = await Durt.i.walletService.generateRootKeypair(fromAddress: defaultWallet.address, pinCode: pinCode);
 
     WalletData newWallet = WalletData(
-        safeBoxNumber: safeNumber, address: address, number: newWalletNbr, name: name, derivation: -1, imagePath: '${newWalletNbr % 4}.png', isOwned: true);
+        safeBoxNumber: safeNumber,
+        address: walletData.address,
+        number: newWalletNbr,
+        name: name,
+        derivation: -1,
+        imagePath: '${newWalletNbr % 4}.png',
+        isOwned: true);
 
     await Durt.i.walletService.walletDataBox.put(newWallet.address, newWallet);
     await readAllWallets();

@@ -1,6 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show Durt, IdtyStatus;
+import 'package:durt2/durt2.dart' show Durt, IdtyStatus, CertState, CertStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/extensions.dart';
@@ -49,21 +49,20 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
   }
 
   Future<WalletHeaderData> _loadWalletData() async {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
     final (idtyStatusValue, balanceResult, certData) = await (
-      sub.idtyStatus(address),
-      sub.getBalance(address),
-      sub.getCertsCounter(address),
+      Durt.i.storage.getIdtyStatus(widget.address),
+      Durt.i.storage.getBalance(widget.address),
+      Durt.i.storage.getCertsCounter(widget.address),
     ).wait;
 
     final data = WalletHeaderData(
       hasIdentity: idtyStatusValue != IdtyStatus.none,
       isOwner: myWalletProvider.isOwner(address),
       walletName: duniterIndexer.walletNameIndexer[address],
-      balance: BigInt.from(balanceResult.transferableBalance),
+      balance: balanceResult.transferableBalance,
       certCount: certData,
     );
 
@@ -135,20 +134,23 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
                                 ),
                                 Consumer<SubstrateSdk>(
                                   builder: (context, sub, _) {
-                                    return FutureBuilder(
-                                      future: sub.certState(address),
-                                      builder: (context, AsyncSnapshot<CertState> snapshot) {
-                                        if (!snapshot.hasData) return const SizedBox.shrink();
-                                        final certState = snapshot.data!;
-                                        return Visibility(
-                                          visible: certState.status != CertStatus.none,
-                                          child: CertStateWidget(
-                                            certState: certState,
-                                            address: address,
-                                          ),
-                                        );
-                                      },
-                                    );
+                                    final identityWallet = Durt.i.walletService.identityWallet;
+                                    return identityWallet != null
+                                        ? FutureBuilder(
+                                            future: Durt.i.storage.getCertState(fromAddress: identityWallet.address, toAddress: address),
+                                            builder: (context, AsyncSnapshot<CertState> snapshot) {
+                                              if (!snapshot.hasData) return const SizedBox.shrink();
+                                              final certState = snapshot.data!;
+                                              return Visibility(
+                                                visible: certState.status != CertStatus.none,
+                                                child: CertStateWidget(
+                                                  certState: certState,
+                                                  address: address,
+                                                ),
+                                              );
+                                            },
+                                          )
+                                        : const SizedBox.shrink();
                                   },
                                 ),
                                 _buildActionButton(

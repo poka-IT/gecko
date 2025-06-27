@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:durt/durt.dart' as durt;
 import 'package:durt2/durt2.dart' show Durt, Language, WalletBalance, WalletData;
@@ -280,12 +281,13 @@ class GenerateWalletsProvider with ChangeNotifier {
           // ignore: use_build_context_synchronously
           await infoPopup(context, "timeoutScanDerivations".tr());
 
+          // Remove all wallets
+          await Durt.i.walletService.walletDataBox.clear();
+          await Durt.i.walletService.safeBox.clear();
+
           // Pop to home
-          Navigator.popUntil(
-            // ignore: use_build_context_synchronously
-            context,
-            ModalRoute.withName('/'),
-          );
+          // ignore: use_build_context_synchronously
+          await Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
 
           return ScanDerivationsResult.timeout;
         },
@@ -293,13 +295,15 @@ class GenerateWalletsProvider with ChangeNotifier {
     } catch (e) {
       log.e('Error scanning derivations: $e');
       // Handle any other errors
+      // ignore: use_build_context_synchronously
       await infoPopup(context, "errorScanDerivations".tr());
 
-      Navigator.popUntil(
-        // ignore: use_build_context_synchronously
-        context,
-        ModalRoute.withName('/'),
-      );
+      // Remove all wallets
+      await Durt.i.walletService.walletDataBox.clear();
+      await Durt.i.walletService.safeBox.clear();
+
+      // ignore: use_build_context_synchronously
+      await Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
 
       return ScanDerivationsResult.error;
     }
@@ -325,15 +329,13 @@ class GenerateWalletsProvider with ChangeNotifier {
     scanStatus = ScanDerivationsStatus.scanning;
     notifyListeners();
     for (int derivationNbr in [for (var i = 0; i < numberScan; i += 1) i]) {
-      if ([28, 29, 30].contains(derivationNbr)) continue;
-      print('derivationNbr: $derivationNbr');
       final keypair = await Durt.i.walletService.getKeyPairFromMnemonic(generatedMnemonic!, derivation: derivationNbr);
       addressToScan.putIfAbsent(keypair.address, () => derivationNbr);
     }
 
     final balanceList = await Durt.i.storage.getBalances(addressToScan.keys.toList()).timeout(
           const Duration(seconds: 20),
-          onTimeout: () => {},
+          onTimeout: () => throw TimeoutException('Timeout scanning derivations'),
         );
 
     // Remove unused wallets

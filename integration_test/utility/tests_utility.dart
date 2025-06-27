@@ -242,7 +242,7 @@ Future bkSetNode([String? endpoint]) async {
     endpoint = 'ws://$ipAddress:9944';
   }
   configBox.put('customEndpoint', endpoint);
-  sub.connectNode();
+  // sub.connectNode();
 }
 
 // Restore chest in background
@@ -270,18 +270,19 @@ Future<WalletData> _addImportAccount(
     required int number,
     required String name,
     required int derivation}) async {
-  final address = await sub.importAccount(
-      mnemonic: mnemonic, derivePath: '//$derivation', password: 'AAAAA');
-  final myWallet = WalletData(
-      safeBoxNumber: safeNumber,
-      address: address,
-      name: name,
-      derivation: derivation,
-      imagePath: '${number % 4}.png',
-      isOwned: true);
-  await Durt.i.walletService.walletDataBox.put(myWallet.address, myWallet);
+  // final address = await sub.importAccount(
+  //     mnemonic: mnemonic, derivePath: '//$derivation', password: 'AAAAA');
+  // final myWallet = WalletData(
+  //     safeBoxNumber: safeNumber,
+  //     address: address,
+  //     name: name,
+  //     derivation: derivation,
+  //     imagePath: '${number % 4}.png',
+  //     isOwned: true);
+  // await Durt.i.walletService.walletDataBox.put(myWallet.address, myWallet);
 
-  return myWallet;
+  // return myWallet;
+  return WalletData(address: '', name: '', derivation: 0, imagePath: '', isOwned: false);
 }
 
 // Delete all wallets in background
@@ -291,10 +292,10 @@ Future bkDeleteAllWallets() async {
   final isWalletsPresents = await isPresent('scanQRCode'.tr(),
       timeout: const Duration(milliseconds: 300));
   if (isWalletsPresents) {
-    await Durt.i.walletService.clearWallet();
+    await Durt.i.walletService.clearWallets();
     await configBox.delete('defaultWallet');
     await configBox.delete('isUdUnit');
-    await sub.deleteAllAccounts();
+    // await sub.deleteAllAccounts();
     myWalletProvider.pinCode = '';
     myWalletProvider.reload();
   }

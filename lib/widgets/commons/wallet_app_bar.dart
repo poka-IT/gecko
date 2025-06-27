@@ -31,7 +31,7 @@ class WalletAppBar extends StatelessWidget implements PreferredSizeWidget {
     final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
     Provider.of<SubstrateSdk>(context); //To refresh header color on block changes
 
-    final balance = walletOptions.balanceCache[address] == null ? currentBalance : BigInt.from(walletOptions.balanceCache[address] ?? 0);
+    final balance = walletOptions.balanceCache[address] == null ? currentBalance : walletOptions.balanceCache[address] ?? BigInt.zero;
 
     final isEmptyWallet = balance == BigInt.zero;
 

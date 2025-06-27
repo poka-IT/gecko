@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:flutter/material.dart';
@@ -188,9 +187,6 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
 
   Widget pinForm(BuildContext context, int pinLenght) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-
-    final defaultWallet = myWalletProvider.getDefaultWallet();
 
     return Form(
       child: Padding(
@@ -247,7 +243,7 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
             onCompleted: (pin) async {
               myWalletProvider.isPinLoading = true;
               myWalletProvider.pinCode = pin.toUpperCase();
-              final isValid = await sub.checkPassword(defaultWallet.address, pin.toUpperCase());
+              final isValid = await Durt.i.walletService.checkCode(pin: pin.toUpperCase());
               if (!isValid) {
                 await Future.delayed(const Duration(milliseconds: 20));
                 pinColor = Colors.red[600]!;

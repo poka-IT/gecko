@@ -1,32 +1,22 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
-import 'package:durt2/durt2.dart' show Durt, IdtyStatus, Networks;
-import 'package:easy_localization/easy_localization.dart';
-import 'package:fast_base58/fast_base58.dart';
+import 'package:durt2/durt2.dart' show IdtyStatus, CertificationData, Durt, MembershipData;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/exceptions.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/certification_data.dart';
 import 'package:gecko/models/membership_status.dart';
-import 'package:gecko/models/migrate_wallet_checks.dart';
 import 'package:gecko/models/transaction_content.dart';
-import 'package:gecko/models/wallet_balance.dart';
-import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/utils.dart';
-import 'package:gecko/widgets/certify/cert_state.dart';
 import 'package:gecko/widgets/transaction_status.dart';
-import 'package:pinenacl/ed25519.dart';
 import 'package:polkawallet_sdk/api/apiKeyring.dart';
-import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:polkawallet_sdk/api/types/txInfoData.dart';
 import 'package:polkawallet_sdk/polkawallet_sdk.dart';
 import 'package:polkawallet_sdk/storage/keyring.dart';
-import 'package:polkawallet_sdk/storage/types/keyPairData.dart';
 import 'package:polkawallet_sdk/webviewWithExtension/types/signExtrinsicParam.dart';
 import 'package:provider/provider.dart';
 import 'package:pointycastle/pointycastle.dart' as pc;
@@ -55,14 +45,6 @@ class SubstrateSdk with ChangeNotifier {
   bool isCesiumAddresLoading = false;
   final Map<String, CertificationData> certsCounterCache = {};
   Map<String, List> oldOwnerKeys = {};
-
-  // Cache pour idtyStatus
-  final Map<String, IdtyStatus> _idtyStatusCache = {};
-
-  // Getter public pour accéder au statut en cache
-  IdtyStatus? getCachedIdtyStatus(String address) {
-    return _idtyStatusCache[address];
-  }
 
   /////////////////////////////////////
   ////////// 1: API METHODS ///////////
@@ -142,26 +124,6 @@ class SubstrateSdk with ChangeNotifier {
     // transactionStatus.remove(currentTransactionId);
   }
 
-  @Deprecated('Use Durt 2 instead')
-  Future _getStorage(String call) async {
-    try {
-      // log.d(call);
-      return await sdk.webView!.evalJavascript('api.query.$call');
-    } catch (e) {
-      log.e("_getStorage error: $e");
-      throw Exception("_getStorage error: $e");
-    }
-  }
-
-  Future<List<int>> _getStorageConst(List<String> calls) async {
-    final result = await sdk.webView!.evalJavascript(
-      'Object.values(Object.fromEntries([${calls.map((call) => '["$call", api.consts.$call[0]]').join(',')}]))',
-      wrapPromise: false,
-    );
-
-    return (result as List).map((dynamic value) => checkInt(value) ?? 0).toList();
-  }
-
   int? checkInt(dynamic value) {
     if (value is int) return value;
     if (value is double) return value.toInt();
@@ -200,827 +162,6 @@ class SubstrateSdk with ChangeNotifier {
     return signature64;
   }
 
-  ////////////////////////////////////////////
-  ////////// 2: GET ONCHAIN STORAGE //////////
-  ////////////////////////////////////////////
-
-  Future<int?> _getIdentityIndexOf(String address) async {
-    return await _getStorage('identity.identityIndexOf("$address")');
-  }
-
-  Future<List<int?>> _getIdentityIndexOfMulti(List<String> addresses) async {
-    String jsonString = jsonEncode(addresses);
-    return List<int?>.from(await _getStorage('identity.identityIndexOf.multi($jsonString)'));
-  }
-
-  Future<CertificationData> getCertsCounter(String address) async {
-    // On fait toujours la requête en background
-    final idtyIndex = await _getIdentityIndexOf(address);
-    if (idtyIndex == null) {
-      final emptyList = CertificationData(receivedCount: 0, sentCount: 0);
-      // Si le compteur a changé (était non vide avant), on notifie
-      if (certsCounterCache[address]?.receivedCount != 0 || certsCounterCache[address]?.sentCount != 0) {
-        certsCounterCache[address] = emptyList;
-        notifyListeners();
-      }
-      return emptyList;
-    }
-
-    final certsReceiver = await _getStorage('certification.storageIdtyCertMeta($idtyIndex)') ?? [];
-    final List<int> newCerts = [certsReceiver['receivedCount'] as int, certsReceiver['issuedCount'] as int];
-
-    // Si le compteur a changé, on met à jour le cache et on notifie
-    if (certsCounterCache[address]?.receivedCount != newCerts[0] || certsCounterCache[address]?.sentCount != newCerts[1]) {
-      certsCounterCache[address] = CertificationData(receivedCount: newCerts[0], sentCount: newCerts[1]);
-      notifyListeners();
-    }
-
-    return certsCounterCache[address]!;
-  }
-
-  Future<DateTime?> membershipExpireIn(String address) async {
-    final idtyIndex = await _getIdentityIndexOf(address);
-    if (idtyIndex == null) return null;
-
-    final expireOnMap = await _getStorage('membership.membership($idtyIndex)') ?? {};
-    final expireOn = expireOnMap['expireOn'] as int;
-
-    // Calculate time difference from current block (6 seconds per block)
-    final blockDifference = expireOn - blocNumber;
-
-    // Returns expiration date by adding (or subtracting if expired) time from now
-    return DateTime.now().add(Duration(seconds: blockDifference * 6));
-  }
-
-  Future<int> getCertValidityPeriod(String from, String to) async {
-    final idtyIndexFrom = await _getIdentityIndexOf(from);
-    final idtyIndexTo = await _getIdentityIndexOf(to);
-
-    if (idtyIndexFrom == null || idtyIndexTo == null) return 0;
-
-    final List certData = await _getStorage('certification.certsByReceiver($idtyIndexTo)') ?? [];
-
-    if (certData.isEmpty) return 0;
-    for (List certInfo in certData) {
-      if (certInfo[0] == idtyIndexFrom) {
-        return certInfo[1];
-      }
-    }
-
-    return 0;
-  }
-
-  Future<bool> hasAccountConsumers(String address) async {
-    final accountInfo = await _getStorage('system.account("$address")');
-    final consumers = accountInfo['consumers'];
-    return !(consumers == 0);
-  }
-
-  Future<int> getUdValue() async {
-    final value = await _getStorage('universalDividend.currentUd()');
-    return _convertToInt(value);
-  }
-
-  Future<int> getBalanceRatio() async {
-    udValue = await getUdValue();
-    return balanceRatio = (configBox.get('isUdUnit') ?? false) ? udValue : 1;
-  }
-
-  Future<Map<String, WalletBalance>> getBalanceMulti(List<String> addresses) async {
-    List stringifyAddresses = [];
-    for (var element in addresses) {
-      stringifyAddresses.add('"$element"');
-    }
-
-    // Get onchain storage values
-    final List<Map> accountMulti =
-        (await _getStorage('system.account.multi($stringifyAddresses)') as List).map((dynamic e) => e as Map<String, dynamic>).toList();
-
-    final List<int?> idtyIndexList = (await _getStorage('identity.identityIndexOf.multi($stringifyAddresses)') as List).map((dynamic e) => e as int?).toList();
-
-    //FIXME: With local dev duniter node only, need to switch null values by unused init as index to have good idtyDataList...
-    final List<int> idtyIndexListNoNull = idtyIndexList.map((item) => item ?? 99999999).toList();
-
-    final List<Map?> idtyDataList = (idtyIndexListNoNull.isEmpty ? [] : (await _getStorage('identity.identities.multi($idtyIndexListNoNull)')) as List)
-        .map((dynamic e) => e as Map<String, dynamic>?)
-        .toList();
-
-    int nbr = 0;
-    Map<String, WalletBalance> finalBalancesList = {};
-    for (Map account in accountMulti) {
-      final computedBalance = await _computeBalance(idtyDataList[nbr], account);
-      finalBalancesList.putIfAbsent(addresses[nbr], () => WalletBalance.fromMap(computedBalance));
-      nbr++;
-    }
-
-    return finalBalancesList;
-  }
-
-  Future<WalletBalance> getBalance(String address) async {
-    if (!Durt.i.isConnected) {
-      return WalletBalance.empty();
-    }
-
-    // Get onchain storage values
-    final Map account = await _getStorage('system.account("$address")');
-    final int? idtyIndex = await _getStorage('identity.identityIndexOf("$address")');
-    final Map? idtyData = idtyIndex == null ? null : await _getStorage('identity.identities($idtyIndex)');
-
-    final balanceMap = await _computeBalance(idtyData, account);
-    return WalletBalance.fromMap(balanceMap);
-  }
-
-  // Utility method to convert various data types to int
-  int _convertToInt(dynamic value) {
-    if (value == null) return 0;
-
-    if (value is int) {
-      return value;
-    } else if (value is String && value.startsWith('0x')) {
-      try {
-        // Parse hex value to BigInt and then to int
-        return BigInt.parse(value.substring(2), radix: 16).toInt();
-      } catch (e) {
-        log.e('Error converting hex to int: $e');
-        return 0;
-      }
-    } else if (value is String) {
-      try {
-        return int.parse(value);
-      } catch (e) {
-        log.e('Error converting string to int: $e');
-        return 0;
-      }
-    } else if (value is double) {
-      return value.toInt();
-    }
-
-    log.e('Unable to convert value to int: $value (type: ${value.runtimeType})');
-    return 0;
-  }
-
-  Future<Map<String, int>> _computeBalance(Map? idtyData, Map account) async {
-    final List pastReevals = await _getStorage('universalDividend.pastReevals()');
-    // Compute amount of claimable UDs
-    currentUdIndex = await getCurrentUdIndex();
-
-    final idtyStatus = mapStatus[idtyData?['status']] ?? IdtyStatus.none;
-
-    final int unclaimedUds = _computeUnclaimUds(
-      firstEligibleUd: _convertToInt(idtyData?['data']?['firstEligibleUd'] ?? 0),
-      pastReevals: pastReevals,
-      idtyStatus: idtyStatus,
-    );
-
-    // Convert values to integers
-    final int freeValue = _convertToInt(account['data']['free']);
-    final int reservedValue = _convertToInt(account['data']['reserved']);
-
-    // Calculate transferable and potential balance
-    final int transferableBalance = freeValue + unclaimedUds;
-
-    return {
-      'transferableBalance': transferableBalance,
-      'free': freeValue,
-      'unclaimedUds': unclaimedUds,
-      'reserved': reservedValue,
-    };
-  }
-
-  int _computeUnclaimUds({
-    required int firstEligibleUd,
-    required List pastReevals,
-    required IdtyStatus idtyStatus,
-  }) {
-    int totalAmount = 0;
-
-    if (firstEligibleUd == 0 || idtyStatus != IdtyStatus.validated) return 0;
-
-    for (final List reval in pastReevals.reversed) {
-      final int udIndex = _convertToInt(reval[0]);
-      final int udValue = _convertToInt(reval[1]);
-
-      // Loop each UDs revaluations and sum unclaimed balance
-      if (udIndex <= firstEligibleUd) {
-        final count = currentUdIndex - firstEligibleUd;
-        totalAmount += count * udValue;
-        break;
-      } else {
-        final count = currentUdIndex - udIndex;
-        totalAmount += count * udValue;
-        currentUdIndex = udIndex;
-      }
-    }
-
-    return totalAmount;
-  }
-
-  Future<CertState> certState(String to) async {
-    final toStatus = (await idtyStatusMulti([to])).first;
-    final myWallets = Provider.of<MyWalletsProvider>(homeContext, listen: false);
-    final walletOptions = Provider.of<WalletOptionsProvider>(homeContext, listen: false);
-    final from = myWallets.idtyWallet?.address;
-
-    if (from == null || from == to || !myWallets.getWalletDataByAddress(from)!.isMembre) {
-      return CertState(status: CertStatus.none);
-    }
-
-    // Vérification du solde
-    final balance = walletOptions.balanceCache[to] ?? 0;
-    if (balance == 0) {
-      return CertState(status: CertStatus.emptyWallet);
-    }
-
-    final removableOn = await getCertValidityPeriod(from, to);
-    final certMeta = await getCertMeta(from);
-    final int nextIssuableOn = certMeta['nextIssuableOn'] ?? 0;
-    final certRemovableDuration = (removableOn - blocNumber) * 6;
-    const int renewDelay = 2 * 30 * 24 * 3600; // 2 months
-
-    if (certRemovableDuration >= renewDelay) {
-      final certRenewDuration = certRemovableDuration - renewDelay;
-      return CertState(status: CertStatus.canRenewIn, duration: Duration(seconds: certRenewDuration));
-    } else if (nextIssuableOn > blocNumber) {
-      final certDelayDuration = (nextIssuableOn - blocNumber) * 6;
-      return CertState(status: CertStatus.mustWaitBeforeCert, duration: Duration(seconds: certDelayDuration));
-    } else if (toStatus == IdtyStatus.created) {
-      return CertState(status: CertStatus.mustConfirmIdentity);
-    } else if (toStatus == IdtyStatus.revoked) {
-      return CertState(status: CertStatus.revoked);
-    } else {
-      return CertState(status: CertStatus.canCert);
-    }
-  }
-
-  Future<Map> getCertMeta(String address) async {
-    var idtyIndex = await _getIdentityIndexOf(address);
-
-    final certMeta = await _getStorage('certification.storageIdtyCertMeta($idtyIndex)') ?? '';
-
-    return certMeta;
-  }
-
-  Future<List> getOldOwnerKey(String address) async {
-    // final walletOptions =
-    //     Provider.of<WalletOptionsProvider>(homeContext, listen: false);
-
-    var idtyIndex = await _getIdentityIndexOf(address);
-    if (idtyIndex == null) return [];
-
-    final Map? idtyData = await _getStorage('identity.identities($idtyIndex)');
-    if (idtyData == null || idtyData['oldOwnerKey'] == null) return [];
-
-    List oldKeys = idtyData['oldOwnerKey'] ?? [];
-    if (oldKeys.isEmpty) return [];
-
-    oldKeys[1] = blocNumberToDate(oldKeys[1]);
-    oldOwnerKeys.putIfAbsent(address, () => oldKeys);
-
-    return oldKeys;
-  }
-
-  DateTime blocNumberToDate(int blocNumber) {
-    return startBlockchainTime.add(Duration(seconds: blocNumber * 6));
-  }
-
-  final mapStatus = {
-    null: IdtyStatus.none,
-    'Unconfirmed': IdtyStatus.created,
-    'Unvalidated': IdtyStatus.confirmed,
-    'Member': IdtyStatus.validated,
-    'NotMember': IdtyStatus.expired,
-    'Revoked': IdtyStatus.revoked,
-    'unknown': IdtyStatus.unknown,
-  };
-
-  Future<IdtyStatus> idtyStatus(String address) async {
-    // On fait toujours la requête en background
-    final status = await _idtyStatus(address);
-
-    // Si le statut a changé, on met à jour le cache et on notifie
-    if (_idtyStatusCache[address] != status) {
-      _idtyStatusCache[address] = status;
-      notifyListeners();
-    }
-
-    // On retourne le statut du cache s'il existe, sinon le nouveau statut
-    return _idtyStatusCache[address] ?? status;
-  }
-
-  Future<IdtyStatus> _idtyStatus(String address) async {
-    final idtyIndex = await _getIdentityIndexOf(address);
-    if (idtyIndex == null) return IdtyStatus.none;
-    final idtyStatus = await idtyStatusByIndex(idtyIndex);
-    return idtyStatus;
-  }
-
-  Future<List<IdtyStatus>> idtyStatusMulti(List<String> addresses) async {
-    final idtyIndexes = await _getIdentityIndexOfMulti(addresses);
-
-    //FIXME: should not have to replace null values by 99999999
-    final idtyIndexesFix = idtyIndexes.map((item) => item ?? 99999999).toList();
-    final jsonString = jsonEncode(idtyIndexesFix);
-    final List idtyStatusList = await _getStorage('identity.identities.multi($jsonString)');
-
-    List<IdtyStatus> resultStatus = [];
-
-    for (final idtyStatus in idtyStatusList) {
-      if (idtyStatus == null) {
-        resultStatus.add(IdtyStatus.none);
-      } else {
-        resultStatus.add(mapStatus[idtyStatus['status']] ?? IdtyStatus.unknown);
-      }
-    }
-    return resultStatus;
-  }
-
-  Future<IdtyStatus> idtyStatusByIndex(int idtyIndex) async {
-    final idtyStatus = await _getStorage('identity.identities($idtyIndex)');
-    return mapStatus[idtyStatus['status']] ?? IdtyStatus.unknown;
-  }
-
-  Future<bool> isSmith(String address) async {
-    var idtyIndex = await _getIdentityIndexOf(address);
-    if (idtyIndex == -1) return false;
-
-    final isSmith = await _getStorage('smithMembers.smiths($idtyIndex)');
-    return !(isSmith == null);
-  }
-
-  Future<String> getGenesisHash() async {
-    final String genesisHash = await sdk.webView!.evalJavascript(
-          'api.genesisHash.toHex()',
-          wrapPromise: false,
-        ) ??
-        [];
-    return genesisHash;
-  }
-
-  Future<Uint8List> addressToPubkey(String address) async {
-    final pubkey = await sdk.api.account.decodeAddress([address]);
-    final String pubkeyHex = pubkey!.keys.first;
-    final pubkeyByte = HEX.decode(pubkeyHex.substring(2)) as Uint8List;
-    // final pubkey58 = Base58Encode(pubkeyByte);
-
-    return pubkeyByte;
-  }
-
-  Future<String> addressToPubkeyB58(String address) async {
-    return Base58Encode(await addressToPubkey(address));
-  }
-
-  Future<String> pubkeyV1ToAddress(String pubkey) async {
-    pubkey = pubkey.split(':')[0];
-    final pubkeyByte = Base58Decode(pubkey);
-    final String pubkeyHex = '0x${HEX.encode(pubkeyByte)}';
-    final address = await sdk.api.account.encodeAddress([pubkeyHex]);
-    return address!.values.first;
-  }
-
-  Future initCurrencyParameters() async {
-    const currencyParametersNames = {
-      'ss58': 'system.ss58Prefix.words',
-      'minCertForMembership': 'wot.minCertForMembership.words',
-      'existentialDeposit': 'balances.existentialDeposit.words',
-      'certPeriod': 'certification.certPeriod.words',
-      'certMaxByIssuer': 'certification.maxByIssuer.words',
-      'certValidityPeriod': 'certification.validityPeriod.words',
-      'membershipRenewalPeriod': 'membership.membershipRenewalPeriod.words',
-      'membershipPeriod': 'membership.membershipPeriod.words',
-    };
-
-    try {
-      final values = await _getStorageConst(currencyParametersNames.values.toList());
-
-      int i = 0;
-      for (final param in currencyParametersNames.keys) {
-        currencyParameters[param] = values[i];
-        i++;
-      }
-    } catch (e) {
-      log.e('error while getting currency parameters: $e');
-    }
-    log.i('currencyParameters: $currencyParameters');
-  }
-
-  void cesiumIDisVisible() {
-    isCesiumIDVisible = !isCesiumIDVisible;
-    notifyListeners();
-  }
-
-  Future<double> txFees(String fromAddress, String destAddress, double amount) async {
-    if (amount == 0) return 0;
-    final sender = await _setSender(fromAddress);
-    final txInfo = TxInfoData('balances', 'transferKeepAlive', sender);
-    final bigAmount = BigInt.from(amount * 100);
-    if (bigAmount > BigInt.from(9007199254740991)) {
-      throw Exception('Amount too large for JavaScript safe integer');
-    }
-    final amountUnit = bigAmount.toInt();
-
-    final estimateFees = await sdk.api.tx.estimateFees(txInfo, [destAddress, amountUnit]);
-
-    return estimateFees.partialFee / 100;
-  }
-
-  int hexStringToUint16(String input) {
-    // Slice the string in 2-char substrings and parse it from hex to decimal
-    final bytes = sliceString(input, 2).map((s) => int.parse(s, radix: 16));
-
-    // Create a Uint8 from the 2-bytes list
-    final u8list = Uint8List.fromList(bytes.toList());
-
-    // Return a Uint16 little endian representation
-    return ByteData.view(u8list.buffer).getUint16(0, Endian.little);
-  }
-
-  List<String> sliceString(String input, int count) {
-    if (input.isEmpty) return [];
-
-    if (input.length % count != 0) {
-      throw ArgumentError("Cannot slice $input in $count slices.");
-    }
-    // final slices = List<String>(count);
-    var slices = List<String>.filled(count, '');
-
-    int len = input.length;
-    int sliceSize = len ~/ count;
-
-    for (var i = 0; i < count; i++) {
-      var start = i * sliceSize;
-      slices[i] = input.substring(start, start + sliceSize);
-    }
-
-    return List.unmodifiable(slices);
-  }
-
-  Future<DateFormat> getBlockchainStart() async {
-    ////// Manu indexer
-    //// Extract block date. Ugly, I can't find a better way to get the date of the block ?
-    //// The only polkadot issue for that : https://github.com/polkadot-js/api/issues/2603
-    // const created_at = new Date(
-    //   signedBlock.block.extrinsics
-    //     .filter(
-    //       ({ method: { section, method } }) =>
-    //         section === 'timestamp' && method === 'set'
-    //     )[0]
-    //     .args[0].toNumber()
-    // )
-    //// manu rpc
-    // genesis: api.genesisHash.toHex(),
-    // chain: await api.rpc.chain.getHeader(),
-    // chainInfo: await api.registry.getChainProperties(),
-    // test: await api.rpc.state.getPairs('0x')
-    // query block finalisé qui ne change jamais.
-    // api.rpc.chain.subscribeFinalizedHeads
-    // events: await api.rpc.state.getStorage('0x26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7'),
-    // lastFinalizedBlock: await api.rpc.chain.getFinalizedHead()
-    // get block
-    // api.rpc.chain.getFinalizedHead
-
-    // shit
-    // final blockHash =
-    //     await sdk.webView!.evalJavascript('api.rpc.chain.getBlockHash(1)');
-    // final Map blockContent = await sdk.webView!
-    //     .evalJavascript('api.rpc.chain.getBlock("$blockHash")');
-    // final String dateBrut = blockContent['block']['extrinsics'][0];
-
-    // final dateTextByte = hex.decode(dateBrut.substring(2));
-
-    // final dateText = await sdk.webView!
-    //     .evalJavascript('api.tx($dateTextByte)', wrapPromise: false);
-
-    // log.d('Blockchain start: $dateText');
-    return DateFormat();
-  }
-
-  Future<String> getLastFinilizedHash() async => await sdk.webView!.evalJavascript('api.rpc.chain.getFinalizedHead()');
-
-  Future<int> getBlockNumberByHash(String hash) async {
-    final result = await sdk.webView!.evalJavascript('api.rpc.chain.getBlock("$hash")');
-    return result['block']['header']['number'] as int;
-  }
-
-  /////////////////////////////////////
-  ////// 3: SUBSTRATE CONNECTION //////
-  /////////////////////////////////////
-
-  Future<void> initApi() async {
-    sdkLoading = true;
-    await keyring.init([initSs58]);
-    keyring.setSS58(initSs58);
-
-    await sdk.init(keyring);
-    sdkReady = true;
-    sdkLoading = false;
-    notifyListeners();
-  }
-
-  String? getConnectedEndpoint() {
-    if (!sdkReady) return null;
-    return sdk.api.connectedNode?.endpoint;
-  }
-
-  Future<void> connectNode() async {
-    final homeProvider = Provider.of<HomeProvider>(homeContext, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(homeContext, listen: false);
-
-    homeProvider.changeMessage("connectionPending".tr());
-
-    // configBox.delete('customEndpoint');
-    final List<NetworkParams> listEndpoints = configBox.containsKey('customEndpoint') ? [getDuniterCustomEndpoint()] : getDuniterBootstrap();
-
-    int timeout = 15;
-
-    if (sdk.api.connectedNode?.endpoint != null) {
-      await sdk.api.setting.unsubscribeBestNumber();
-    }
-
-    isLoadingEndpoint = true;
-    notifyListeners();
-    final resNode = await sdk.api.connectNode(keyring, listEndpoints).timeout(
-          Duration(seconds: timeout),
-          onTimeout: () => null,
-        );
-    isLoadingEndpoint = false;
-    notifyListeners();
-    if (resNode != null) {
-      // Durt.i.isConnected = true;
-
-      // Subscribe bloc number
-      sdk.api.setting.subscribeBestNumber((res) {
-        blocNumber = _convertToInt(res.toString());
-        if (sdk.api.connectedNode?.endpoint == null) {
-          // Durt.i.isConnected = false;
-          homeProvider.changeMessage("networkLost".tr());
-        } else {
-          // Durt.i.isConnected = true;
-        }
-        notifyListeners();
-      });
-      currentUdIndex = await getCurrentUdIndex();
-      await getBalanceRatio();
-
-      // Currency parameters
-      await initCurrencyParameters();
-
-      notifyListeners();
-      homeProvider.changeMessage("wellConnectedToNode".tr(args: [getConnectedEndpoint()!.split('/')[2]]));
-    } else {
-      // Durt.i.isConnected = false;
-      notifyListeners();
-      homeProvider.changeMessage("noDuniterEndointAvailable".tr());
-      if (!myWalletProvider.isWalletsExists) snackNode(false);
-    }
-
-    log.i('Connected to node: ${sdk.api.connectedNode?.endpoint}');
-  }
-
-  List<NetworkParams> getDuniterBootstrap() {
-    List<NetworkParams> node = [];
-
-    for (String endpoint in Networks.listDuniterEndpoints) {
-      final n = NetworkParams();
-      n.name = currencyName;
-      n.endpoint = endpoint;
-      n.ss58 = currencyParameters['ss58'] ?? initSs58;
-      node.add(n);
-    }
-    return node;
-  }
-
-  Future<int> getCurrentUdIndex() async {
-    final udIndex = await _getStorage('universalDividend.currentUdIndex()');
-    return _convertToInt(udIndex);
-  }
-
-  NetworkParams getDuniterCustomEndpoint() {
-    final nodeParams = NetworkParams();
-    nodeParams.name = currencyName;
-    nodeParams.endpoint = configBox.get('customEndpoint');
-    nodeParams.ss58 = currencyParameters['ss58'] ?? initSs58;
-    return nodeParams;
-  }
-
-  Future<String> importAccount({String mnemonic = '', String derivePath = '', required String password, CryptoType cryptoType = CryptoType.sr25519}) async {
-    const keytype = KeyType.mnemonic;
-    if (mnemonic != '') generatedMnemonic = mnemonic;
-
-    importIsLoading = true;
-    notifyListeners();
-
-    final json = await sdk.api.keyring
-        .importAccount(keyring, keyType: keytype, key: generatedMnemonic, name: derivePath, password: password, derivePath: derivePath, cryptoType: cryptoType)
-        .catchError((e) {
-      importIsLoading = false;
-      notifyListeners();
-      return e;
-    });
-    if (json == null) return '';
-    try {
-      await sdk.api.keyring.addAccount(
-        keyring,
-        keyType: keytype,
-        acc: json,
-        password: password,
-      );
-    } catch (e) {
-      log.e(e);
-      importIsLoading = false;
-      notifyListeners();
-    }
-
-    importIsLoading = false;
-
-    notifyListeners();
-    return keyring.allAccounts.last.address!;
-  }
-
-  //////////////////////////////////
-  /////// 4: CRYPTOGRAPHY //////////
-  //////////////////////////////////
-
-  @Deprecated('Use Durt 2 instead')
-  KeyPairData getKeypair(String address) {
-    return keyring.keyPairs.firstWhere((kp) => kp.address == address, orElse: (() => KeyPairData()));
-  }
-
-  @Deprecated('Use Durt 2 instead')
-  Future<bool> checkPassword(String address, String pass) async {
-    final account = getKeypair(address);
-
-    return await sdk.api.keyring.checkPassword(account, pass);
-  }
-
-  @Deprecated('Use Durt 2 instead')
-  Future<String> getSeed(String address, String pin) async {
-    final account = getKeypair(address);
-    keyring.setCurrent(account);
-
-    final seed = await sdk.api.keyring.getDecryptedSeed(keyring, pin);
-
-    String seedText;
-    if (seed == null || seed.seed == null) {
-      seedText = '';
-    } else {
-      seedText = seed.seed!.split('//')[0];
-    }
-
-    return seedText;
-  }
-
-  @Deprecated('Use Durt 2 instead')
-  Future<KeyPairData?> changePassword(BuildContext context, String address, String passOld, String passNew) async {
-    final account = getKeypair(address);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-    keyring.setCurrent(account);
-    myWalletProvider.debounceResetPinCode();
-
-    return await sdk.api.keyring.changePassword(keyring, passOld, passNew);
-  }
-
-  @Deprecated('Use Durt 2 instead')
-  Future<void> deleteAllAccounts() async {
-    for (var account in keyring.allAccounts) {
-      await sdk.api.keyring.deleteAccount(keyring, account);
-    }
-  }
-
-  @Deprecated('Use Durt 2 instead')
-  Future<void> deleteAccounts(List<String> address) async {
-    for (var a in address) {
-      final account = getKeypair(a);
-      await sdk.api.keyring.deleteAccount(keyring, account);
-    }
-  }
-
-  @Deprecated('Use Durt 2 instead')
-  Future<String> generateMnemonic({String lang = appLang}) async {
-    final gen = await sdk.api.keyring.generateMnemonic(currencyParameters['ss58'] ?? initSs58);
-    generatedMnemonic = gen.mnemonic!;
-
-    return gen.mnemonic!;
-  }
-
-  @Deprecated('Use Durt 2 instead')
-  // Future<String> setCurrentWallet(WalletData wallet) async {
-  //   final currentChestNumber = configBox.get('currentChest');
-  //   ChestData newChestData = chestBox.get(currentChestNumber)!;
-  //   newChestData.defaultWallet = wallet.number;
-  //   await chestBox.put(currentChestNumber, newChestData);
-
-  //   try {
-  //     final acc = getKeypair(wallet.address);
-  //     keyring.setCurrent(acc);
-  //     return acc.address!;
-  //   } catch (e) {
-  //     return (e.toString());
-  //   }
-  // }
-
-  @Deprecated('Use Durt 2 instead')
-  KeyPairData getCurrentKeyPair() {
-    try {
-      final acc = keyring.current;
-      return acc;
-    } catch (e) {
-      return KeyPairData();
-    }
-  }
-
-  @Deprecated('Use Durt 2 instead')
-  Future<String> derive(BuildContext context, String address, int number, String password) async {
-    final keypair = getKeypair(address);
-
-    final seedMap = await keyring.store.getDecryptedSeed(keypair.pubKey, password);
-
-    if (seedMap?['type'] != 'mnemonic') return '';
-    final List seedList = seedMap!['seed'].split('//');
-    generatedMnemonic = seedList[0];
-
-    return await importAccount(mnemonic: generatedMnemonic, derivePath: '//$number', password: password);
-  }
-
-  @Deprecated('Use Durt 2 instead')
-  Future<String> generateRootKeypair(String address, String password) async {
-    final keypair = getKeypair(address);
-
-    final seedMap = await keyring.store.getDecryptedSeed(keypair.pubKey, password);
-
-    if (seedMap?['type'] != 'mnemonic') return '';
-    final List seedList = seedMap!['seed'].split('//');
-    generatedMnemonic = seedList[0];
-
-    return await importAccount(password: password);
-  }
-
-  @Deprecated('Use Durt 2 instead')
-  Future<String> csToV2Address(String salt, String password) async {
-    final scrypt = pc.KeyDerivator('scrypt');
-
-    scrypt.init(
-      pc.ScryptParameters(
-        4096,
-        16,
-        1,
-        32,
-        Uint8List.fromList(salt.codeUnits),
-      ),
-    );
-    final rawSeed = scrypt.process(Uint8List.fromList(password.codeUnits));
-    final rawSeedHex = '0x${HEX.encode(rawSeed)}';
-
-    // Just get the address without keystore
-    final newAddress = await sdk.api.keyring.addressFromRawSeed(currencyParameters['ss58']!, cryptoType: CryptoType.ed25519, rawSeed: rawSeedHex);
-
-    SigningKey rootKey = SigningKey(seed: rawSeed);
-    g1V1OldPubkey = Base58Encode(rootKey.publicKey);
-
-    g1V1NewAddress = newAddress.address!;
-    notifyListeners();
-    return g1V1NewAddress;
-  }
-
-  @Deprecated('Use Durt 2 instead')
-  Future<MigrateWalletChecks> getBalanceAndIdtyStatus(String fromAddress, String toAddress) async {
-    bool canValidate = false;
-    String validationStatus = '';
-
-    final fromBalance = fromAddress == '' ? WalletBalance.empty() : await getBalance(fromAddress);
-
-    final transferableBalance = fromBalance.transferableBalance;
-
-    final statusList = await idtyStatusMulti([fromAddress, toAddress]);
-    final fromIdtyStatus = statusList[0];
-    final fromHasConsumer = fromAddress == '' ? false : await hasAccountConsumers(fromAddress);
-    final toIdtyStatus = statusList[1];
-    final isSmithData = await isSmith(fromAddress);
-
-    // Check conditions to set 'canValidate' and 'validationStatus'
-    if (isSmithData) {
-      validationStatus = 'smithCantMigrateIdentity'.tr();
-    } else if (fromHasConsumer) {
-      validationStatus = 'youMustWaitBeforeCashoutThisAccount'.tr();
-    } else if (transferableBalance == 0) {
-      validationStatus = 'thisAccountIsEmpty'.tr();
-    } else if (toIdtyStatus != IdtyStatus.none && fromIdtyStatus != IdtyStatus.none) {
-      validationStatus = 'youCannotMigrateIdentityToExistingIdentity'.tr();
-    } else if (fromIdtyStatus == IdtyStatus.none || toIdtyStatus == IdtyStatus.none) {
-      canValidate = true;
-    }
-
-    // Convert to map to maintain compatibility with MigrateWalletChecks
-    final fromBalanceMap = fromBalance.toMap();
-
-    return MigrateWalletChecks(
-      fromBalance: fromBalanceMap,
-      fromIdtyStatus: fromIdtyStatus,
-      toIdtyStatus: toIdtyStatus,
-      validationStatus: validationStatus,
-      canValidate: canValidate,
-    );
-  }
-
   //////////////////////////////////////
   ///////// 5: CALLS EXECUTION /////////
   //////////////////////////////////////
@@ -1036,7 +177,7 @@ class SubstrateSdk with ChangeNotifier {
     final walletOptions = Provider.of<WalletOptionsProvider>(homeContext, listen: false);
     final sender = await _setSender(fromAddress);
 
-    final globalBalance = await getBalance(fromAddress);
+    final globalBalance = await Durt.i.storage.getBalance(fromAddress);
     final defaultWalletBalance = walletOptions.balanceCache[fromAddress] ?? 0;
     TxInfoData txInfo;
     List txOptions = [];
@@ -1070,11 +211,11 @@ class SubstrateSdk with ChangeNotifier {
 
     // Si on a un commentaire, on doit utiliser batchAll dans tous les cas
     final unclaimedUds = globalBalance.unclaimedUds;
-    if (comment.isNotEmpty || unclaimedUds > 0) {
+    if (comment.isNotEmpty || unclaimedUds > BigInt.zero) {
       txInfo = TxInfoData('utility', 'batchAll', sender);
 
       List<String> txs = [];
-      if (unclaimedUds > 0) {
+      if (unclaimedUds > BigInt.zero) {
         txs.add('api.tx.universalDividend.claimUds()');
       }
       txs.add(tx2);
@@ -1100,11 +241,11 @@ class SubstrateSdk with ChangeNotifier {
   }
 
   Future<String> certify(String fromAddress, String destAddress, String password) async {
-    final statusList = await idtyStatusMulti([fromAddress, destAddress]);
+    final statusList = await Durt.i.storage.getIdtyStatusMulti([fromAddress, destAddress]);
     final myIdtyStatus = statusList[0];
     final toIdtyStatus = statusList[1];
 
-    final toIndex = await _getIdentityIndexOf(destAddress);
+    final toIndex = await Durt.i.storage.getIdentityIndexOf(destAddress);
 
     if (myIdtyStatus != IdtyStatus.validated) {
       throw NotMemberException();
@@ -1115,7 +256,7 @@ class SubstrateSdk with ChangeNotifier {
     List txOptions = [];
     String? rawParams;
 
-    var toCerts = await getCertsCounter(destAddress);
+    var toCerts = await Durt.i.storage.getCertsCounter(destAddress);
     if (toCerts.receivedCount == 0 && toCerts.sentCount == 0) {
       toCerts = CertificationData(receivedCount: 0, sentCount: 0);
     }
@@ -1203,10 +344,10 @@ class SubstrateSdk with ChangeNotifier {
     String? rawParams;
 
     final prefix = 'icok'.codeUnits;
-    final genesisHashString = await getGenesisHash();
+    final genesisHashString = await Durt.i.storage.getBlockHash(0);
     final genesisHash = HEX.decode(genesisHashString.substring(2)) as Uint8List;
-    final idtyIndex = int32bytes((await _getIdentityIndexOf(fromAddress))!);
-    final oldPubkey = await addressToPubkey(fromAddress);
+    final idtyIndex = int32bytes((await Durt.i.storage.getIdentityIndexOf(fromAddress))!);
+    final oldPubkey = await Durt.i.utils.addressToPubkey(fromAddress);
     final messageToSign = Uint8List.fromList(prefix + genesisHash + idtyIndex + oldPubkey);
     final messageToSignHex = HEX.encode(messageToSign);
     final newKeySig = await _signMessage(messageToSign, destAddress, destPassword);
@@ -1261,11 +402,11 @@ newKeySig: $newKeySigType""");
   }
 
   Future<String> revokeIdentity(String address, String password) async {
-    final idtyIndex = await _getIdentityIndexOf(address);
+    final idtyIndex = await Durt.i.storage.getIdentityIndexOf(address);
     final sender = await _setSender(address);
 
     final prefix = 'revo'.codeUnits;
-    final genesisHashString = await getGenesisHash();
+    final genesisHashString = await Durt.i.storage.getBlockHash(0);
     final genesisHash = HEX.decode(genesisHashString.substring(2)) as Uint8List;
     final idtyIndexBytes = int32bytes(idtyIndex!);
     final messageToSign = Uint8List.fromList(prefix + genesisHash + idtyIndexBytes);
@@ -1394,18 +535,17 @@ newKeySig: $newKeySigType""");
   }
 
   Future<MembershipStatus> getMembershipStatus(String address) async {
-    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-    final idtyIndex = await _getIdentityIndexOf(address);
+    final idtyIndex = await Durt.i.storage.getIdentityIndexOf(address);
     if (idtyIndex == null) return MembershipStatus.empty();
 
-    final idtyStatus = await sub.idtyStatusByIndex(idtyIndex);
+    final idtyStatus = await Durt.i.storage.getIdtyStatus(address);
 
     // Vérifier si une évaluation est en cours
-    final hasPendingRenewal = await _getStorage('distance.pendingEvaluationRequest($idtyIndex)') != null;
+    final hasPendingRenewal = await Durt.instance.gdev.query.distance.pendingEvaluationRequest(idtyIndex) != null;
 
-    final Map<String, dynamic> expireOnMap = await _getStorage('membership.membership($idtyIndex)') ?? {};
+    final MembershipData? membershipData = await Durt.instance.gdev.query.membership.membership(idtyIndex);
 
-    if (expireOnMap.isEmpty && idtyStatus == IdtyStatus.confirmed) {
+    if (membershipData == null && idtyStatus == IdtyStatus.confirmed) {
       return MembershipStatus(
         expireDate: null,
         hasPendingRenewal: hasPendingRenewal,
@@ -1414,7 +554,7 @@ newKeySig: $newKeySigType""");
       );
     }
 
-    final expireOn = expireOnMap['expireOn'] as int;
+    final expireOn = membershipData!.expireOn;
 
     // Calculate time difference from current block (6 seconds per block)
     final blockDifference = expireOn - blocNumber;

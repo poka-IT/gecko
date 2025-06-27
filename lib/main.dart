@@ -19,6 +19,7 @@ import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:gecko/providers/g1v1_migration.provider.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/providers/substrate_sdk.dart';
@@ -40,6 +41,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/providers/theme_provider.dart';
+import 'package:gecko/providers/block_height_provider.dart';
 
 const bool enableSentry = true;
 
@@ -54,6 +56,9 @@ Future<void> main() async {
   final homeProvider = HomeProvider();
   // DuniterIndexer _duniterIndexer = DuniterIndexer();
 
+  //Init durt2
+  await Durt().init(network: Networks.gdev);
+
   // Initialize Hive
   await initHiveForFlutter();
   await homeProvider.initHive();
@@ -62,9 +67,6 @@ Future<void> main() async {
 
   // Register app dependencies
   // await registerDependencies();
-
-  //Init durt2
-  await Durt().init(network: Networks.gdev);
 
   if (kReleaseMode && enableSentry) {
     await SentryFlutter.init((options) {
@@ -76,17 +78,11 @@ Future<void> main() async {
       options.privacy.maskAllText = false;
       options.privacy.maskAllImages = false;
     },
-        appRunner: () => SystemChrome.setPreferredOrientations(
-                [DeviceOrientation.portraitUp]).then((_) {
+        appRunner: () => SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
               runApp(
                 SentryWidget(
                   child: EasyLocalization(
-                    supportedLocales: const [
-                      Locale('en'),
-                      Locale('fr'),
-                      Locale('es'),
-                      Locale('it')
-                    ],
+                    supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
                     path: 'assets/translations',
                     fallbackLocale: const Locale('en'),
                     child: const Gecko(),
@@ -97,16 +93,10 @@ Future<void> main() async {
   } else {
     log.i('Debug mode enabled: No sentry alert');
 
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
-        .then((_) {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
       runApp(EasyLocalization(
         // test, force locale :: startLocale: Locale.fromSubtags(languageCode: 'it'),
-        supportedLocales: const [
-          Locale('en'),
-          Locale('fr'),
-          Locale('es'),
-          Locale('it')
-        ],
+        supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
         path: 'assets/translations',
         fallbackLocale: const Locale('en'),
         child: const Gecko(),
@@ -136,6 +126,8 @@ class Gecko extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => V2sDatapodProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => BlockHeightProvider()),
+        ChangeNotifierProvider(create: (_) => G1v1MigrationProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {

@@ -71,7 +71,7 @@ class WalletTileMembre extends StatelessWidget {
                                 ? Padding(
                                     padding: EdgeInsets.all(scaleSize(16)),
                                     child: Image.asset(
-                                      'assets/avatars/${wallet.imagePath}',
+                                      'assets/avatars/${wallet.number % 4}.png',
                                       alignment: Alignment.bottomCenter,
                                     ),
                                   )

@@ -18,6 +18,7 @@ import 'package:durt2/durt2.dart' show Durt, Networks;
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/chest_provider.dart';
+import 'package:gecko/providers/connection_provider.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/g1v1_migration.provider.dart';
 import 'package:gecko/providers/generate_wallets.dart';
@@ -130,6 +131,7 @@ class Gecko extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => BlockHeightProvider()),
         ChangeNotifierProvider(create: (_) => G1v1MigrationProvider()),
+        ChangeNotifierProvider(create: (_) => ConnectionProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {

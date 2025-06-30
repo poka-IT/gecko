@@ -1,15 +1,35 @@
+import 'dart:async';
 import 'package:durt2/durt2.dart';
 import 'package:flutter/foundation.dart';
 
 class BlockHeightProvider with ChangeNotifier {
-  late ValueListenable<int> _blockHeightNotifier;
+  ValueListenable<int>? _blockHeightNotifier;
+  StreamSubscription<ConnectionStatus>? _connectionStatusSubscription;
 
   BlockHeightProvider() {
-    _blockHeightNotifier = Durt.i.storage.blockHeightNotifier;
-    _blockHeightNotifier.addListener(_onBlockHeightChanged);
+    _checkAndStartListening();
+    _connectionStatusSubscription = Durt.i.connectionStatusStream.listen((_) {
+      _checkAndStartListening();
+    });
   }
 
-  int get blockHeight => _blockHeightNotifier.value;
+  int get blockHeight => _blockHeightNotifier?.value ?? 0;
+
+  void _checkAndStartListening() {
+    final isConnected = Durt.i.connectionStatus == ConnectionStatus.connected;
+
+    if (isConnected && _blockHeightNotifier == null) {
+      // Start listening
+      _blockHeightNotifier = Durt.i.storage.blockHeightNotifier;
+      _blockHeightNotifier!.addListener(_onBlockHeightChanged);
+      notifyListeners();
+    } else if (!isConnected && _blockHeightNotifier != null) {
+      // Stop listening
+      _blockHeightNotifier!.removeListener(_onBlockHeightChanged);
+      _blockHeightNotifier = null;
+      notifyListeners();
+    }
+  }
 
   void _onBlockHeightChanged() {
     notifyListeners();
@@ -17,7 +37,8 @@ class BlockHeightProvider with ChangeNotifier {
 
   @override
   void dispose() {
-    _blockHeightNotifier.removeListener(_onBlockHeightChanged);
+    _connectionStatusSubscription?.cancel();
+    _blockHeightNotifier?.removeListener(_onBlockHeightChanged);
     super.dispose();
   }
 }

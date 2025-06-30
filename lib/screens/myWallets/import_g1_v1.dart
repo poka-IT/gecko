@@ -11,7 +11,6 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/g1v1_migration.provider.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/migrate_identity.dart' show mapValidationErrors;
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
@@ -36,7 +35,7 @@ class ImportG1v1 extends StatelessWidget {
     WalletData selectedWallet = myWalletProvider.getDefaultWallet();
 
     return PopScope(
-      onPopInvokedWithResult: (_, __) {
+      onPopInvokedWithResult: (_, _) {
         resetScreen();
       },
       child: Scaffold(
@@ -425,22 +424,22 @@ class ImportG1v1 extends StatelessWidget {
                                           );
                                         }
 
-                                        // TODO: use Durt.i.duniter.migrateCsToV2
-                                        final transactionId = await Provider.of<SubstrateSdk>(context, listen: false).migrateCsToV2(
-                                          g1v1Migration.csSalt.text,
-                                          g1v1Migration.csPassword.text,
-                                          selectedWallet.address,
-                                          destPassword: pin ?? myWalletProvider.pinCode,
-                                          fromBalance: migrationChecks.data!.fromBalance!.toMap(),
-                                          fromIdtyStatus: migrationChecks.data!.fromIdtyStatus,
-                                          toIdtyStatus: migrationChecks.data!.toIdtyStatus,
+                                        if (pin == null) return;
+
+                                        final toKeypair =
+                                            await Durt.i.wallets.getKeyPairFromAddress(address: selectedWallet.address, pinCode: myWalletProvider.pinCode);
+                                        final transactionStatus = Durt.i.duniter.migrateCsToV2(
+                                          salt: g1v1Migration.csSalt.text,
+                                          password: g1v1Migration.csPassword.text,
+                                          toKeypair: toKeypair,
                                         );
+
                                         Navigator.pop(context);
                                         await Navigator.push(
                                           context,
                                           MaterialPageRoute(builder: (context) {
-                                            return TransactionInProgress(
-                                                transactionId: transactionId,
+                                            return TransactionInProgressScreen(
+                                                transactionStatus: transactionStatus,
                                                 transType: hasIdentity ? 'identityMigration' : 'accountMigration',
                                                 fromAddress: getShortPubkey(addressToMigrate),
                                                 toAddress: getShortPubkey(selectedWallet.address));

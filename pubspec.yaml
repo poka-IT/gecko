@@ -32,15 +32,9 @@ dependencies:
   dio: ^5.8.0+1
   durt: ^0.1.9
   package_info_plus: ^8.2.1
-  polkawallet_sdk: #^0.5.2
-    # path: ../substrate_sdk
-    git:
-      url: https://github.com/poka-IT/sdk.git
-      # ref: gecko-fixes-4
-      ref: 0d26bb58618e0d60d4fbe36e1e406ea67ff9c077
   dots_indicator: ^4.0.1
   connectivity_plus: ^6.1.3
-  image_cropper: ^9.0.0
+  image_cropper: ^9.1.0
   easy_localization: ^3.0.7+1
   flutter_markdown: ^0.7.6+2
   pointycastle: ^3.9.1

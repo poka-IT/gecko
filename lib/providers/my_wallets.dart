@@ -33,8 +33,7 @@ class MyWalletsProvider with ChangeNotifier {
   List<WalletData> get listWalletsWithoutIdty => listWallets.where((w) => w.address != idtyWallet?.address).toList();
 
   Future<List<WalletData>> readAllWallets([int? safe]) async {
-    // final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-    safe = safe ?? getCurrentSafe;
+    safe ??= getCurrentSafe;
     listWallets.clear();
     final wallets = Durt.i.wallets.walletDataBox.toMap().values.toList();
     Map<String, WalletData> walletsToScan = {};
@@ -165,7 +164,7 @@ class MyWalletsProvider with ChangeNotifier {
         number: newWalletNbr,
         name: name,
         derivation: newDerivationNbr,
-        imagePath: '${newWalletNbr % 4}.png',
+        imagePath: 'assets/avatars/${newWalletNbr % 4}.png',
         isOwned: true);
 
     await Durt.i.wallets.walletDataBox.put(newWallet.address, newWallet);
@@ -204,7 +203,7 @@ class MyWalletsProvider with ChangeNotifier {
         number: newWalletNbr,
         name: name,
         derivation: -1,
-        imagePath: '${newWalletNbr % 4}.png',
+        imagePath: 'assets/avatars/${newWalletNbr % 4}.png',
         isOwned: true);
 
     await Durt.i.wallets.walletDataBox.put(newWallet.address, newWallet);

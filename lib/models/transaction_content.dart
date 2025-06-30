@@ -1,8 +1,8 @@
-import 'package:gecko/widgets/transaction_status.dart';
+import 'package:durt2/durt2.dart';
 
 class TransactionContent {
   final String transactionId;
-  TransactionStatus status;
+  TransactionState state;
   final String from;
   final String to;
   final double amount;
@@ -10,7 +10,7 @@ class TransactionContent {
 
   TransactionContent({
     required this.transactionId,
-    required this.status,
+    required this.state,
     required this.from,
     required this.to,
     required this.amount,

@@ -1,19 +1,17 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show IdtyStatus;
+import 'package:durt2/durt2.dart' show IdtyStatus, Durt, MembershipStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:provider/provider.dart';
-import 'package:gecko/models/membership_status.dart';
 
 class MembershipRenewal {
-  static RenewalInfo calculateRenewalInfo(MembershipStatus status, int renewalPeriodBlocks) {
+  static RenewalInfo calculateRenewalInfo(MembershipStatus status) {
     if (status.expireDate == null) {
       return status.idtyStatus == IdtyStatus.expired
           ? RenewalInfo(
@@ -50,14 +48,14 @@ class MembershipRenewal {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
     if (!await myWalletProvider.askPinCode()) return;
 
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final transactionId = await sub.renewMembership(address, myWalletProvider.pinCode);
+    final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: address, pinCode: myWalletProvider.pinCode);
+    final transactionStatus = Durt.i.duniter.renewMembership(keypair);
 
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) {
-        return TransactionInProgress(
-          transactionId: transactionId,
+        return TransactionInProgressScreen(
+          transactionStatus: transactionStatus,
           transType: 'renewMembership',
           fromAddress: getShortPubkey(address),
           toAddress: getShortPubkey(address),

@@ -1,6 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show Durt, MigrateWalletChecks, MigrateWalletValidationError;
+import 'package:durt2/durt2.dart' show Durt, MigrateWalletChecks, MigrateWalletValidationError, KeyPairType;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
@@ -10,7 +10,6 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
@@ -18,7 +17,6 @@ import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance_display.dart';
 import 'package:gecko/widgets/commons/text_markdown.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:polkawallet_sdk/api/apiKeyring.dart';
 import 'package:provider/provider.dart';
 
 String mapValidationErrors(Set<MigrateWalletValidationError> errors) {
@@ -43,7 +41,6 @@ class MigrateIdentityScreen extends StatelessWidget {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
     final generatedWalletsProvider = Provider.of<GenerateWalletsProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final screenSize = MediaQuery.of(context).size;
     final isSmallScreen = screenSize.height < 700;
 
@@ -66,13 +63,13 @@ class MigrateIdentityScreen extends StatelessWidget {
       log.d('Scan derivations to find a match');
 
       //Scan root wallet
-      final addressData = await sub.sdk.api.keyring.addressFromMnemonic(
-        sub.currencyParameters['ss58']!,
-        cryptoType: CryptoType.sr25519,
-        mnemonic: newMnemonicSentence.text,
+      final keypair = await Durt.i.wallets.getKeyPairFromMnemonic(
+        newMnemonicSentence.text,
+        derivation: 0,
+        keyPairType: KeyPairType.sr25519,
       );
 
-      if (addressData.address == newWalletAddress.text) {
+      if (keypair.address == newWalletAddress.text) {
         matchDerivationNbr = -1;
         mnemonicIsValid = true;
         walletOptions.reload();
@@ -81,14 +78,13 @@ class MigrateIdentityScreen extends StatelessWidget {
 
       //Scan derivations
       for (int derivationNbr in [for (var i = 0; i < generatedWalletsProvider.numberScan; i += 1) i]) {
-        final addressData = await sub.sdk.api.keyring.addressFromMnemonic(
-          sub.currencyParameters['ss58']!,
-          cryptoType: CryptoType.sr25519,
-          mnemonic: newMnemonicSentence.text,
-          derivePath: '//$derivationNbr',
+        final keypair = await Durt.i.wallets.getKeyPairFromMnemonic(
+          newMnemonicSentence.text,
+          derivation: derivationNbr,
+          keyPairType: KeyPairType.sr25519,
         );
 
-        if (addressData.address == newWalletAddress.text) {
+        if (keypair.address == newWalletAddress.text) {
           matchDerivationNbr = derivationNbr;
           mnemonicIsValid = true;
           matchInfo = "youCanMigrateThisIdentity".tr();
@@ -323,7 +319,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Consumer<WalletOptionsProvider>(
-                    builder: (context, _, __) {
+                    builder: (context, _, _) {
                       final validationStatus = mapValidationErrors(migrationChecks.errors);
                       return Column(
                         children: [
@@ -372,13 +368,12 @@ class MigrateIdentityScreen extends StatelessWidget {
                               await Durt.i.wallets.importAccount(
                                   mnemonic: newMnemonicSentence.text, derivation: matchDerivationNbr == -1 ? null : matchDerivationNbr, pinCode: '1472');
 
-                              final transactionId = await sub.migrateIdentity(
-                                fromAddress: fromAddress,
-                                destAddress: newWalletAddress.text,
-                                fromPassword: myWalletProvider.pinCode,
-                                destPassword: '1472',
+                              final fromKeypair = await Durt.i.wallets.getKeyPairFromAddress(address: fromAddress, pinCode: myWalletProvider.pinCode);
+                              final toKeypair = await Durt.i.wallets.getKeyPairFromAddress(address: newWalletAddress.text, pinCode: '1472');
+                              final transactionStatus = Durt.i.duniter.migrateIdentity(
+                                fromKeypair: fromKeypair,
+                                toKeypair: toKeypair,
                                 withBalance: true,
-                                fromBalance: migrationChecks.fromBalance!.toMap(),
                               );
 
                               await Durt.i.wallets.deleteWallet(newWalletAddress.text);
@@ -386,8 +381,8 @@ class MigrateIdentityScreen extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => TransactionInProgress(
-                                    transactionId: transactionId,
+                                  builder: (context) => TransactionInProgressScreen(
+                                    transactionStatus: transactionStatus,
                                     transType: 'identityMigration',
                                     fromAddress: getShortPubkey(fromAddress),
                                     toAddress: getShortPubkey(newWalletAddress.text),

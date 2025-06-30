@@ -7,16 +7,15 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/block_height_provider.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/settings_provider.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/theme_provider.dart' as theme_provider;
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
-import 'package:polkawallet_sdk/api/types/networkParams.dart';
 import 'package:provider/provider.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -382,7 +381,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Future<void> _showNodeSelectionDialog(BuildContext context, List<NetworkParams> nodes, String selectedEndpoint, TextEditingController controller) async {
+  Future<void> _showNodeSelectionDialog(BuildContext context, List<String> nodes, String selectedEndpoint, TextEditingController controller) async {
     final set = Provider.of<SettingsProvider>(context, listen: false);
 
     String? result = await showDialog<String>(
@@ -401,10 +400,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: nodes.map((node) {
-                final isSelected = node.endpoint == selectedEndpoint;
+                final isSelected = node == selectedEndpoint;
                 return InkWell(
                   onTap: () {
-                    Navigator.of(context).pop(node.endpoint);
+                    Navigator.of(context).pop(node);
                   },
                   child: Container(
                     padding: EdgeInsets.symmetric(
@@ -422,7 +421,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ScaledSizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            node.endpoint!,
+                            node,
                             style: scaledTextStyle(
                               fontSize: 14,
                               color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -460,30 +459,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget duniterEndpointSelection(BuildContext context) {
     String? selectedDuniterEndpoint;
 
-    List<NetworkParams> duniterBootstrapNodes = [];
+    List<String> duniterBootstrapNodes = [];
 
     for (String endpoint in Networks.listDuniterEndpoints) {
-      final n = NetworkParams();
-      n.name = Durt.i.network.name;
-      n.endpoint = endpoint;
-      n.ss58 = Durt.i.network.ss58;
-      duniterBootstrapNodes.add(n);
+      duniterBootstrapNodes.add(endpoint);
     }
 
     selectedDuniterEndpoint = Networks.duniterEndpoint;
 
-    final customEndpoint = NetworkParams();
-    customEndpoint.endpoint = 'Personnalisé';
-    final localEndpoint = NetworkParams();
-    localEndpoint.endpoint = 'ws://10.0.2.2:9944';
-    final automaticEndpoint = NetworkParams();
-    automaticEndpoint.endpoint = 'Auto';
+    final customEndpoint = 'Personnalisé';
+    final localEndpoint = 'ws://10.0.2.2:9944';
+    final automaticEndpoint = 'Auto';
     duniterBootstrapNodes.insert(0, automaticEndpoint);
     duniterBootstrapNodes.add(localEndpoint);
     duniterBootstrapNodes.add(customEndpoint);
 
     if (configBox.get('autoEndpoint') == true) {
-      selectedDuniterEndpoint = automaticEndpoint.endpoint;
+      selectedDuniterEndpoint = automaticEndpoint;
     } else if (configBox.containsKey('customEndpoint')) {
       selectedDuniterEndpoint = configBox.get('customEndpoint');
     }
@@ -499,170 +491,164 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Consumer<SubstrateSdk>(
-          builder: (context, sub, _) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.dns_rounded,
-                      color: context.colorScheme.primary,
-                      size: scaleSize(24),
-                    ),
-                    ScaledSizedBox(width: 12),
-                    Text(
-                      'currencyNode'.tr(),
-                      style: scaledTextStyle(
-                        fontSize: 14,
-                        color: Theme.of(context).textTheme.bodyMedium?.color,
-                      ),
-                    ),
-                    ScaledSizedBox(width: 12),
-                    Icon(
-                      Durt.i.isConnected && !sub.isLoadingEndpoint ? Icons.check_circle : Icons.error,
-                      color: Durt.i.isConnected && !sub.isLoadingEndpoint ? Colors.green : Colors.red,
-                      size: scaleSize(16),
-                    ),
-                    const Spacer(),
-                    Consumer<SettingsProvider>(
-                      builder: (context, set, _) {
-                        return PopupMenuButton<String>(
-                          key: keySelectDuniterNodeDropDown,
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: scaleSize(12),
-                              vertical: scaleSize(6),
-                            ),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.grey[300]!),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  getDisplayMode(),
-                                  style: scaledTextStyle(
-                                    fontSize: 14,
-                                    color: Theme.of(context).textTheme.bodyMedium?.color,
-                                  ),
-                                ),
-                                ScaledSizedBox(width: 4),
-                                Icon(
-                                  Icons.arrow_drop_down,
-                                  color: Colors.grey[600],
-                                  size: scaleSize(20),
-                                ),
-                              ],
-                            ),
-                          ),
-                          itemBuilder: (context) => [
-                            PopupMenuItem(
-                              key: keySelectDuniterNode('Auto'),
-                              value: 'Auto',
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    configBox.get('autoEndpoint') == true ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                                    color: configBox.get('autoEndpoint') == true ? context.colorScheme.primary : Colors.grey[400],
-                                    size: scaleSize(20),
-                                  ),
-                                  ScaledSizedBox(width: 12),
-                                  Text(
-                                    'Auto',
-                                    style: scaledTextStyle(
-                                      fontSize: 14,
-                                      color: Theme.of(context).textTheme.bodyMedium?.color,
-                                    ),
-                                  ),
-                                ],
+                Icon(
+                  Icons.dns_rounded,
+                  color: context.colorScheme.primary,
+                  size: scaleSize(24),
+                ),
+                ScaledSizedBox(width: 12),
+                Text(
+                  'currencyNode'.tr(),
+                  style: scaledTextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                  ),
+                ),
+                ScaledSizedBox(width: 12),
+                Icon(
+                  Durt.i.isConnected && !Durt.i.isDuniterLoading ? Icons.check_circle : Icons.error,
+                  color: Durt.i.isConnected && !Durt.i.isDuniterLoading ? Colors.green : Colors.red,
+                  size: scaleSize(16),
+                ),
+                const Spacer(),
+                Consumer<SettingsProvider>(
+                  builder: (context, set, _) {
+                    return PopupMenuButton<String>(
+                      key: keySelectDuniterNodeDropDown,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: scaleSize(12),
+                          vertical: scaleSize(6),
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey[300]!),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              getDisplayMode(),
+                              style: scaledTextStyle(
+                                fontSize: 14,
+                                color: Theme.of(context).textTheme.bodyMedium?.color,
                               ),
                             ),
-                            PopupMenuItem(
-                              key: keySelectDuniterNode('manual'.tr()),
-                              value: 'manual'.tr(),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    configBox.get('autoEndpoint') != true ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                                    color: configBox.get('autoEndpoint') != true ? context.colorScheme.primary : Colors.grey[400],
-                                    size: scaleSize(20),
-                                  ),
-                                  ScaledSizedBox(width: 12),
-                                  Text(
-                                    'manual'.tr(),
-                                    style: scaledTextStyle(
-                                      fontSize: 14,
-                                      color: Theme.of(context).textTheme.bodyMedium?.color,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            PopupMenuItem(
-                              key: keySelectDuniterNode('select'.tr()),
-                              value: 'select'.tr(),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.list_alt,
-                                    color: Colors.grey[400],
-                                    size: scaleSize(20),
-                                  ),
-                                  ScaledSizedBox(width: 12),
-                                  Text(
-                                    'select'.tr(),
-                                    style: scaledTextStyle(
-                                      fontSize: 14,
-                                      color: Theme.of(context).textTheme.bodyMedium?.color,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            ScaledSizedBox(width: 4),
+                            Icon(
+                              Icons.arrow_drop_down,
+                              color: Colors.grey[600],
+                              size: scaleSize(20),
                             ),
                           ],
-                          onSelected: (String value) async {
-                            if (value == 'select'.tr()) {
-                              await _showNodeSelectionDialog(
-                                context,
-                                duniterBootstrapNodes
-                                    .where((node) => node.endpoint != 'Auto' && node.endpoint != 'Personnalisé' && node.endpoint != 'ws://10.0.2.2:9944')
-                                    .toList(),
-                                selectedDuniterEndpoint ?? '',
-                                endpointController,
-                              );
-                            } else if (value == 'Auto') {
-                              configBox.delete('customEndpoint');
-                              configBox.put('autoEndpoint', true);
-                              await Durt.i.connect();
-                              set.reload();
-                            } else {
-                              configBox.put('autoEndpoint', false);
-                              if (!configBox.containsKey('customEndpoint')) {
-                                configBox.put('customEndpoint', _endpointController.text);
-                              }
-                              set.reload();
-                              _duniterFocusNode.requestFocus();
-                              _endpointController.selection = TextSelection.fromPosition(
-                                TextPosition(offset: _endpointController.text.length),
-                              );
-                            }
-                          },
-                        );
+                        ),
+                      ),
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          key: keySelectDuniterNode('Auto'),
+                          value: 'Auto',
+                          child: Row(
+                            children: [
+                              Icon(
+                                configBox.get('autoEndpoint') == true ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                                color: configBox.get('autoEndpoint') == true ? context.colorScheme.primary : Colors.grey[400],
+                                size: scaleSize(20),
+                              ),
+                              ScaledSizedBox(width: 12),
+                              Text(
+                                'Auto',
+                                style: scaledTextStyle(
+                                  fontSize: 14,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          key: keySelectDuniterNode('manual'.tr()),
+                          value: 'manual'.tr(),
+                          child: Row(
+                            children: [
+                              Icon(
+                                configBox.get('autoEndpoint') != true ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                                color: configBox.get('autoEndpoint') != true ? context.colorScheme.primary : Colors.grey[400],
+                                size: scaleSize(20),
+                              ),
+                              ScaledSizedBox(width: 12),
+                              Text(
+                                'manual'.tr(),
+                                style: scaledTextStyle(
+                                  fontSize: 14,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          key: keySelectDuniterNode('select'.tr()),
+                          value: 'select'.tr(),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.list_alt,
+                                color: Colors.grey[400],
+                                size: scaleSize(20),
+                              ),
+                              ScaledSizedBox(width: 12),
+                              Text(
+                                'select'.tr(),
+                                style: scaledTextStyle(
+                                  fontSize: 14,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      onSelected: (String value) async {
+                        if (value == 'select'.tr()) {
+                          await _showNodeSelectionDialog(
+                            context,
+                            duniterBootstrapNodes.where((node) => node != 'Auto' && node != 'Personnalisé' && node != 'ws://10.0.2.2:9944').toList(),
+                            selectedDuniterEndpoint ?? '',
+                            endpointController,
+                          );
+                        } else if (value == 'Auto') {
+                          configBox.delete('customEndpoint');
+                          configBox.put('autoEndpoint', true);
+                          await Durt.i.connect();
+                          set.reload();
+                        } else {
+                          configBox.put('autoEndpoint', false);
+                          if (!configBox.containsKey('customEndpoint')) {
+                            configBox.put('customEndpoint', _endpointController.text);
+                          }
+                          set.reload();
+                          _duniterFocusNode.requestFocus();
+                          _endpointController.selection = TextSelection.fromPosition(
+                            TextPosition(offset: _endpointController.text.length),
+                          );
+                        }
                       },
-                    ),
-                  ],
+                    );
+                  },
                 ),
-                if (sub.isLoadingEndpoint)
-                  Padding(
-                    padding: EdgeInsets.only(top: scaleSize(16)),
-                    child: Center(child: Loading(size: scaleSize(24), stroke: 2)),
-                  ),
               ],
-            );
-          },
+            ),
+            if (Durt.i.isDuniterLoading)
+              Padding(
+                padding: EdgeInsets.only(top: scaleSize(16)),
+                child: Center(child: Loading(size: scaleSize(24), stroke: 2)),
+              ),
+          ],
         ),
         Consumer<SettingsProvider>(
           builder: (context, set, _) {
@@ -724,14 +710,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             );
           },
         ),
-        Consumer<SubstrateSdk>(
-          builder: (context, sub, _) {
+        Consumer<BlockHeightProvider>(
+          builder: (context, blockHeightProvider, _) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ScaledSizedBox(height: 8),
                 Text(
-                  'blockN'.tr(args: [sub.blocNumber.toString()]),
+                  'blockN'.tr(args: [blockHeightProvider.blockHeight.toString()]),
                   style: scaledTextStyle(
                     fontSize: 13,
                     color: Theme.of(context).textTheme.bodySmall?.color,

@@ -1,6 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:io';
 import 'package:durt2/durt2.dart' show IdtyStatus, Durt;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,7 +19,6 @@ import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/providers/wallet_options.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/models/wallet_header_data.dart';
 
 class WalletHeader extends StatefulWidget {
@@ -118,7 +116,6 @@ class _WalletHeaderState extends State<WalletHeader> {
       DuniterIndexer duniterIndexer) {
     const double avatarSize = 90;
     final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
-    Provider.of<SubstrateSdk>(context); //To refresh header color on block changes
 
     final balance = walletOptions.balanceCache[widget.address] == null ? currentWalletBalance : walletOptions.balanceCache[widget.address] ?? BigInt.zero;
 
@@ -185,8 +182,8 @@ class _WalletHeaderState extends State<WalletHeader> {
                                       address: widget.address,
                                       size: avatarSize,
                                     ))
-                              : Image.file(
-                                  File(_newCustomImagePath),
+                              : Image.asset(
+                                  _newCustomImagePath,
                                   fit: BoxFit.cover,
                                 ),
                         ),

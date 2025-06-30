@@ -1,3 +1,4 @@
+import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -43,7 +44,7 @@ void main() async {
     await tapKey(keySelectThisWallet(test6.address), selectLast: true);
     await waitForButtonEnabled(keyConfirm);
     await tapKey(keyConfirm);
-    spawnBlock(duration: 1000);
+    Durt.i.duniter.spawnBlock();
     await tester.pump(const Duration(seconds: 2));
     await tester.pump(const Duration(seconds: 1));
     await waitFor('sending'.tr(), reverse: true, settle: false, timeout: const Duration(seconds: 20));

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:durt2/durt2.dart' show WalletData;
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
@@ -80,8 +79,8 @@ class WalletTile extends StatelessWidget {
                                   shape: BoxShape.circle,
                                   image: DecorationImage(
                                     fit: BoxFit.fitHeight,
-                                    image: FileImage(
-                                      File(repository.imagePath!),
+                                    image: AssetImage(
+                                      repository.imagePath!,
                                     ),
                                   ),
                                 ),

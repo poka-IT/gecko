@@ -24,7 +24,6 @@ class IdentityStatus extends StatelessWidget {
           if (snapshot.data != null && !snapshot.hasError) {
             final resStatus = snapshot.data!;
             walletData.identityStatus = resStatus;
-            Durt.i.wallets.walletDataBox.put(address, walletData);
           }
 
           final resStatus = walletData.identityStatus;

@@ -8,7 +8,6 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/buttons/add_new_derivation_button.dart';
@@ -65,7 +64,7 @@ class _WalletsHomeContent extends StatelessWidget {
             ],
           ),
         ),
-        bottomNavigationBar: Consumer<MyWalletsProvider>(builder: (context, _, __) {
+        bottomNavigationBar: Consumer<MyWalletsProvider>(builder: (context, _, _) {
           return myWalletProvider.lastFlyBy == null
               ? const GeckoBottomAppBar(
                   actualRoute: 'safeHome',
@@ -164,9 +163,7 @@ class _WalletsHomeContent extends StatelessWidget {
               wallet: repository,
               child: WalletTile(repository: repository),
             ),
-          Consumer<SubstrateSdk>(builder: (context, sub, _) {
-            return Durt.i.isConnected && myWalletProvider.listWallets.length < maxWalletsInSafe ? const AddNewDerivationButton() : const Text('');
-          }),
+          Durt.i.isConnected && myWalletProvider.listWallets.length < maxWalletsInSafe ? const AddNewDerivationButton() : const Text(''),
         ]),
         const SliverToBoxAdapter(child: ChestOptionsButtons()),
       ]),

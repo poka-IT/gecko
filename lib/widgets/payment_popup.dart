@@ -9,8 +9,8 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/text_input_formaters.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/models/transaction_in_progress_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/activity.dart';
@@ -20,7 +20,6 @@ import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:uuid/uuid.dart';
 
 void paymentPopup(BuildContext context, String toAddress, String? username) {
   final walletViewProvider = Provider.of<WalletsProfilesProvider>(context, listen: false);
@@ -46,17 +45,18 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
     Navigator.pop(context);
     if (!await myWalletProvider.askPinCode()) return;
 
-    // Payment workflow !
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-
-    final transactionId = const Uuid().v4();
-
-    sub.pay(
-      fromAddress: defaultWallet.address,
+    final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: defaultWallet.address, pinCode: myWalletProvider.pinCode);
+    final transactionStatus = Durt.i.duniter.pay(
+      keypair: keypair,
       destAddress: toAddress,
       amount: double.parse(walletViewProvider.payAmount.text),
-      password: myWalletProvider.pinCode,
-      transactionId: transactionId,
+      comment: walletViewProvider.comment,
+    );
+
+    final transactionData = TransactionInProgressData(
+      status: transactionStatus,
+      toAddress: toAddress,
+      amount: double.parse(walletViewProvider.payAmount.text),
       comment: walletViewProvider.comment,
     );
 
@@ -65,8 +65,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
       MaterialPageRoute(builder: (context) {
         return ActivityScreen(
           address: defaultWallet.address,
-          transactionId: transactionId,
-          comment: walletViewProvider.comment,
+          transactionData: transactionData,
         );
       }),
     );
@@ -93,7 +92,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
     // Vérifications de validité
     final bool isAmountValid = payAmountValue > BigInt.zero;
     final bool isNotSendingToSelf = toAddress != defaultWallet.address;
-    final bool hasEnoughBalance = payAmountValue <= defaultWalletBalance - existentialDeposit && defaultWalletBalance == payAmountValue;
+    final bool hasEnoughBalance = (payAmountValue <= defaultWalletBalance - existentialDeposit) || defaultWalletBalance == payAmountValue;
     final bool respectsExistentialDeposit = toAddressBalance > BigInt.zero || payAmountValue >= existentialDeposit;
 
     return isAmountValid && isNotSendingToSelf && hasEnoughBalance && respectsExistentialDeposit;
@@ -175,61 +174,29 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                             style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[600]),
                           ),
                           ScaledSizedBox(height: 4),
-                          Consumer<SubstrateSdk>(builder: (context, sub, _) {
-                            return Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.blueAccent.shade200, width: 1.5),
-                                borderRadius: const BorderRadius.all(Radius.circular(8)),
-                              ),
-                              alignment: Alignment.center,
-                              padding: const EdgeInsets.all(0),
-                              child: DropdownButton(
-                                dropdownColor: context.colorScheme.tertiary,
-                                elevation: 12,
-                                key: keyDropdownWallets,
-                                value: defaultWallet,
-                                menuMaxHeight: scaleSize(270),
-                                onTap: () {
-                                  FocusScope.of(context).requestFocus(amountFocus);
-                                },
-                                selectedItemBuilder: (_) {
-                                  return myWalletProvider.listWallets.map((WalletData wallet) {
-                                    return Container(
-                                      width: scaleSize(isTall ? 315 : 310),
-                                      padding: EdgeInsets.all(scaleSize(7)),
-                                      child: Visibility(
-                                        visible: wallet.address == defaultWallet.address,
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            NameByAddress(
-                                              wallet: wallet,
-                                              fontStyle: FontStyle.normal,
-                                              size: 16,
-                                            ),
-                                            const Spacer(),
-                                            Balance(address: wallet.address, size: 16),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  }).toList();
-                                },
-                                onChanged: (WalletData? newSelectedWallet) async {
-                                  defaultWallet = newSelectedWallet!;
-                                  await Durt.i.wallets.setDefaultWallet(newSelectedWallet.address);
-                                  sub.reload();
-                                  amountFocus.requestFocus();
-                                  setState(() {});
-                                },
-                                items: myWalletProvider.listWallets.map((WalletData wallet) {
-                                  return DropdownMenuItem(
-                                    value: wallet,
-                                    key: keySelectThisWallet(wallet.address),
-                                    child: Container(
-                                      color: context.colorScheme.tertiary,
-                                      width: scaleSize(isTall ? 315 : 310),
-                                      padding: const EdgeInsets.all(10),
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.blueAccent.shade200, width: 1.5),
+                              borderRadius: const BorderRadius.all(Radius.circular(8)),
+                            ),
+                            alignment: Alignment.center,
+                            padding: const EdgeInsets.all(0),
+                            child: DropdownButton(
+                              dropdownColor: context.colorScheme.tertiary,
+                              elevation: 12,
+                              key: keyDropdownWallets,
+                              value: defaultWallet,
+                              menuMaxHeight: scaleSize(270),
+                              onTap: () {
+                                FocusScope.of(context).requestFocus(amountFocus);
+                              },
+                              selectedItemBuilder: (_) {
+                                return myWalletProvider.listWallets.map((WalletData wallet) {
+                                  return Container(
+                                    width: scaleSize(isTall ? 315 : 310),
+                                    padding: EdgeInsets.all(scaleSize(7)),
+                                    child: Visibility(
+                                      visible: wallet.address == defaultWallet.address,
                                       child: Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
@@ -244,10 +211,39 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                       ),
                                     ),
                                   );
-                                }).toList(),
-                              ),
-                            );
-                          }),
+                                }).toList();
+                              },
+                              onChanged: (WalletData? newSelectedWallet) async {
+                                defaultWallet = newSelectedWallet!;
+                                await Durt.i.wallets.setDefaultWallet(newSelectedWallet.address);
+                                amountFocus.requestFocus();
+                                setState(() {});
+                              },
+                              items: myWalletProvider.listWallets.map((WalletData wallet) {
+                                return DropdownMenuItem(
+                                  value: wallet,
+                                  key: keySelectThisWallet(wallet.address),
+                                  child: Container(
+                                    color: context.colorScheme.tertiary,
+                                    width: scaleSize(isTall ? 315 : 310),
+                                    padding: const EdgeInsets.all(10),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        NameByAddress(
+                                          wallet: wallet,
+                                          fontStyle: FontStyle.normal,
+                                          size: 16,
+                                        ),
+                                        const Spacer(),
+                                        Balance(address: wallet.address, size: 16),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
                           ScaledSizedBox(height: 12),
                           Row(
                             children: [

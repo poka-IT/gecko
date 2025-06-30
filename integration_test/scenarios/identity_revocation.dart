@@ -1,3 +1,4 @@
+import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -16,15 +17,12 @@ void main() async {
 
     // Open chest
     await firstOpenChest();
-    await spawnBlock(until: 13);
+    await Durt.i.duniter.spawnBlock(until: 13);
     await sleep();
 
     // Create test5 identity
-    await bkPay(
-        fromAddress: test1.address, destAddress: test5.address, amount: 30);
-    sub.reload();
+    await bkPay(fromAddress: test1.address, destAddress: test5.address, amount: 30);
     await bkCertify(fromAddress: test1.address, destAddress: test5.address);
-    sub.reload();
     await sleep();
 
     // Certify test5 to become member
@@ -40,10 +38,9 @@ void main() async {
     await tapKey(keyManageMembership, duration: 100);
     await tapKey(keyRevokeIdty);
     await tapKey(keyConfirm);
-    spawnBlock(duration: 1000);
+    Durt.i.duniter.spawnBlock();
     await tester.pump(const Duration(seconds: 2));
-    await waitFor('sending'.tr(),
-        reverse: true, settle: false, timeout: const Duration(seconds: 20));
+    await waitFor('sending'.tr(), reverse: true, settle: false, timeout: const Duration(seconds: 20));
     await tapKey(keyCloseTransactionScreen, duration: 0);
     await waitFor('noIdentity'.tr(), exactMatch: true);
     await sleep();

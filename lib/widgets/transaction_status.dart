@@ -1,6 +1,5 @@
+import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
-
-enum TransactionStatus { sending, propagation, validating, failed, success, timeout, finalized, none }
 
 Map<String, String> actionMap = {
   'pay': 'transaction'.tr(),
@@ -12,14 +11,12 @@ Map<String, String> actionMap = {
   'accountMigration': 'accountMigration'.tr(),
 };
 
-Map<TransactionStatus, String> statusStatusMap = {
-  TransactionStatus.none: 'noTransaction'.tr(),
-  TransactionStatus.sending: 'sending'.tr(),
-  TransactionStatus.propagation: 'propagating'.tr(),
-  TransactionStatus.validating: 'validating'.tr(),
-  TransactionStatus.success: 'extrinsicValidated'.tr(args: [actionMap['pay']!]),
-  TransactionStatus.finalized: 'extrinsicFinalized'.tr(args: [actionMap['pay']!]),
-  TransactionStatus.timeout: 'execTimeoutOver'.tr(),
+Map<TransactionState, String> statusStatusMap = {
+  TransactionState.none: 'noTransaction'.tr(),
+  TransactionState.pending: 'sending'.tr(),
+  TransactionState.inBlock: 'extrinsicValidated'.tr(args: [actionMap['pay']!]),
+  TransactionState.finalized: 'extrinsicFinalized'.tr(args: [actionMap['pay']!]),
+  TransactionState.timeout: 'execTimeoutOver'.tr(),
 };
 
 Map<String, String> errorTransactionMap = {

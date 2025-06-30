@@ -3,7 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
@@ -138,8 +137,7 @@ class DebugScreen extends StatelessWidget {
                               ),
                             ),
                             onPressed: () async {
-                              final sub = Provider.of<SubstrateSdk>(context, listen: false);
-                              await sub.spawnBlock();
+                              await Durt.i.duniter.spawnBlock();
                             },
                             child: Text(
                               'Spawn a bloc',

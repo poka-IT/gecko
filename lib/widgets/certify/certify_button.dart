@@ -9,7 +9,6 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
@@ -25,7 +24,6 @@ class CertifyButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
     return Column(
@@ -75,16 +73,16 @@ class CertifyButton extends StatelessWidget {
                   }
 
                   try {
-                    final transactionId = await sub.certify(
-                      identityWallet.address,
-                      walletViewProvider.address,
-                      myWalletProvider.pinCode,
+                    final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: identityWallet.address, pinCode: myWalletProvider.pinCode);
+                    final transactionStatus = Durt.i.duniter.certify(
+                      keypair: keypair,
+                      destAddress: walletViewProvider.address,
                     );
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) {
-                        return TransactionInProgress(
-                          transactionId: transactionId,
+                        return TransactionInProgressScreen(
+                          transactionStatus: transactionStatus,
                           transType: 'cert',
                         );
                       }),

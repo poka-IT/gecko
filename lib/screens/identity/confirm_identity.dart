@@ -1,3 +1,4 @@
+import 'package:durt2/durt2.dart' hide Provider;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,7 +8,6 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
@@ -59,7 +59,6 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
     final name = _identityNameController.text.trim();
     final navigatorState = Navigator.of(context);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
     // Afficher le dialogue de confirmation
     final confirmed = await showConfirmationDialog(
@@ -72,15 +71,19 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
 
     if (!await myWalletProvider.askPinCode()) return;
 
-    final transactionId = await sub.confirmIdentity(widget.address, name, myWalletProvider.pinCode);
+    final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: widget.address, pinCode: myWalletProvider.pinCode);
+    final transactionStatus = Durt.i.duniter.confirmIdentity(
+      keypair: keypair,
+      name: name,
+    );
 
     if (!mounted) return;
     navigatorState.pop();
 
     navigatorState.push(
       MaterialPageRoute(
-        builder: (context) => TransactionInProgress(
-          transactionId: transactionId,
+        builder: (context) => TransactionInProgressScreen(
+          transactionStatus: transactionStatus,
           transType: 'comfirmIdty',
           fromAddress: widget.address,
           toAddress: widget.address,

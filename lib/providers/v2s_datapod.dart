@@ -6,7 +6,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_datapod.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -17,13 +16,12 @@ class V2sDatapodProvider with ChangeNotifier {
   Future<Map<String, dynamic>> _setSignedVariables(String address, Map<String, dynamic> messageToSign) async {
     final myWalletProvider = Provider.of<MyWalletsProvider>(homeContext, listen: false);
 
-    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
     final hashDocBytes = utf8.encode(jsonEncode(messageToSign));
     final hashDoc = sha256.convert(hashDocBytes).toString().toUpperCase();
     if (!await myWalletProvider.askPinCode()) return {};
-    final signature = await sub.signDatapod(hashDoc, address);
 
-    return <String, dynamic>{...messageToSign, 'hash': hashDoc, 'signature': signature};
+    // final signature = await sub.signDatapod(hashDoc, address);
+    return <String, dynamic>{...messageToSign, 'hash': hashDoc, 'signature': 'signature'};
   }
 
   Future<QueryResult?> _execQuery(String query, Map<String, dynamic> variables) async {
@@ -70,7 +68,7 @@ class V2sDatapodProvider with ChangeNotifier {
 
     final result = await _execQuery(deleteProfileQ, variables);
     if (result?.hasException ?? true) {
-      log.e(result?.exception.toString());
+      log.w(result?.exception.toString());
       return false;
     }
     log.d(result!.data!['deleteProfile']['message']);

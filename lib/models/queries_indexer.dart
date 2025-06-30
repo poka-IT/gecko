@@ -65,6 +65,15 @@ query ($address: String!, $first: Int!, $after: String) {
       hasNextPage
     }
   }
+  identityConnection(where: {accountId: {_eq: $address}}) {
+    edges {
+      node {
+        ownerKeyChange {
+          previousId
+        }
+      }
+    }
+  }
 }
 ''';
 

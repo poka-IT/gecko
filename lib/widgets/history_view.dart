@@ -1,10 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/loading.dart';
@@ -18,14 +16,15 @@ class HistoryView extends StatelessWidget {
     super.key,
     required this.result,
     required this.address,
+    required this.previousAddress,
   });
   final QueryResult result;
   final String address;
+  final String? previousAddress;
 
   @override
   Widget build(BuildContext context) {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
 
     int keyID = 0;
     const double avatarSize = 50;
@@ -93,7 +92,7 @@ class HistoryView extends StatelessWidget {
                   Loading(size: 30, stroke: 3),
                 ],
               ),
-            if (!duniterIndexer.pageInfo!['hasNextPage'] && sub.oldOwnerKeys[address]?[0] != null)
+            if (!duniterIndexer.pageInfo!['hasNextPage'] && previousAddress != null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 30),
                 child: InkWell(
@@ -101,7 +100,7 @@ class HistoryView extends StatelessWidget {
                     context,
                     PageNoTransit(builder: (context) {
                       return WalletViewScreen(
-                        address: sub.oldOwnerKeys[address]![0],
+                        address: previousAddress!,
                         username: null,
                       );
                     }),
@@ -120,7 +119,7 @@ class HistoryView extends StatelessWidget {
                           style: scaledTextStyle(fontSize: 19, color: Colors.green[700], fontWeight: FontWeight.w500),
                         ),
                         Text(
-                          'from'.tr(args: [' ${getShortPubkey(sub.oldOwnerKeys[address]![0])}']),
+                          'from'.tr(args: [' ${getShortPubkey(previousAddress!)}']),
                           style: scaledTextStyle(fontSize: 16),
                         ),
                       ]),

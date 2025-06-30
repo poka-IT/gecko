@@ -8,7 +8,7 @@ import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/providers/block_height_provider.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/activity.dart';
@@ -75,7 +75,6 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
     final walletProfile = Provider.of<WalletsProfilesProvider>(context, listen: false);
 
     walletProfile.address = address;
-    Durt.i.wallets.setDefaultWallet(address);
 
     return FutureBuilder<WalletHeaderData>(
       future: _headerDataFuture,
@@ -125,15 +124,10 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
                                   key: keyViewActivity,
                                   icon: 'assets/walletOptions/clock.png',
                                   label: "displayNActivity".tr(),
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    PageNoTransit(
-                                      builder: (context) => ActivityScreen(address: address),
-                                    ),
-                                  ),
+                                  onTap: () => Navigator.push(context, PageNoTransit(builder: (context) => ActivityScreen(address: address))),
                                 ),
-                                Consumer<SubstrateSdk>(
-                                  builder: (context, sub, _) {
+                                Consumer<BlockHeightProvider>(
+                                  builder: (context, _, _) {
                                     final identityWallet = Durt.i.wallets.identityWallet;
                                     return identityWallet != null
                                         ? FutureBuilder(
@@ -143,10 +137,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
                                               final certState = snapshot.data!;
                                               return Visibility(
                                                 visible: certState.status != CertStatus.none,
-                                                child: CertStateWidget(
-                                                  certState: certState,
-                                                  address: address,
-                                                ),
+                                                child: CertStateWidget(certState: certState, address: address),
                                               );
                                             },
                                           )
@@ -185,13 +176,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
     );
   }
 
-  Widget _buildActionButton({
-    required BuildContext context,
-    required String icon,
-    required String label,
-    required VoidCallback onTap,
-    Key? key,
-  }) {
+  Widget _buildActionButton({required BuildContext context, required String icon, required String label, required VoidCallback onTap, Key? key}) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -201,13 +186,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
           decoration: BoxDecoration(
             color: context.colorScheme.secondary,
             shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2))],
           ),
           child: Material(
             color: Colors.transparent,
@@ -226,68 +205,55 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
         Text(
           label,
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
         ),
       ],
     );
   }
 
   Widget _buildTransferButton(BuildContext context) {
-    return Consumer<SubstrateSdk>(builder: (context, sub, _) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            height: scaleSize(buttonSize + 5),
-            width: scaleSize(buttonSize + 5),
-            decoration: BoxDecoration(
-              color: context.colorScheme.primary,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.15),
-                  blurRadius: 6,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-              border: Border.all(
-                color: const Color(0xFF6c4204),
-                width: 3,
+    return Consumer<BlockHeightProvider>(
+      builder: (context, _, _) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              height: scaleSize(buttonSize + 5),
+              width: scaleSize(buttonSize + 5),
+              decoration: BoxDecoration(
+                color: context.colorScheme.primary,
+                shape: BoxShape.circle,
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 6, offset: const Offset(0, 3))],
+                border: Border.all(color: const Color(0xFF6c4204), width: 3),
               ),
-            ),
-            child: Opacity(
-              opacity: Durt.i.isConnected ? 1 : 0.5,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  key: keyPay,
-                  borderRadius: BorderRadius.circular((buttonSize + 5) / 2),
-                  onTap: Durt.i.isConnected ? () => _handleTransfer(context) : null,
-                  child: Padding(
-                    padding: EdgeInsets.all(scaleSize(15)),
-                    child: Image.asset(
-                      'assets/vector_white.png',
-                      color: Colors.white,
+              child: Opacity(
+                opacity: Durt.i.isConnected ? 1 : 0.5,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    key: keyPay,
+                    borderRadius: BorderRadius.circular((buttonSize + 5) / 2),
+                    onTap: Durt.i.isConnected ? () => _handleTransfer(context) : null,
+                    child: Padding(
+                      padding: EdgeInsets.all(scaleSize(15)),
+                      child: Image.asset('assets/vector_white.png', color: Colors.white),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-          ScaledSizedBox(height: 6),
-          Text(
-            'doATransfer'.tr(),
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: Durt.i.isConnected ? context.colorScheme.onSurface : Colors.grey[500],
-                ),
-          ),
-        ],
-      );
-    });
+            ScaledSizedBox(height: 6),
+            Text(
+              'doATransfer'.tr(),
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500, color: Durt.i.isConnected ? context.colorScheme.onSurface : Colors.grey[500]),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _handleTransfer(BuildContext context) async {
@@ -295,12 +261,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
     final defaultWallet = myWalletProvider.getDefaultWallet();
 
     if (myWalletProvider.pinCode == '') {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (homeContext) => UnlockingWallet(wallet: defaultWallet),
-        ),
-      );
+      await Navigator.push(context, MaterialPageRoute(builder: (homeContext) => UnlockingWallet(wallet: defaultWallet)));
     }
     if (myWalletProvider.pinCode == '') return;
     paymentPopup(context, address, username);

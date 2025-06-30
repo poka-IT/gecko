@@ -13,13 +13,13 @@ import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 import 'package:gecko/models/wallet_header_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/models/transaction_in_progress_data.dart';
 
 class ActivityScreen extends StatefulWidget {
-  const ActivityScreen({required this.address, this.username, this.transactionId, this.comment}) : super(key: keyActivityScreen);
+  const ActivityScreen({required this.address, this.username, this.transactionData}) : super(key: keyActivityScreen);
   final String address;
   final String? username;
-  final String? transactionId;
-  final String? comment;
+  final TransactionInProgressData? transactionData;
   @override
   State<ActivityScreen> createState() => _ActivityScreenState();
 }
@@ -81,7 +81,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
         final walletData = snapshot.data!;
 
         return PopScope(
-          onPopInvokedWithResult: (_, __) {
+          onPopInvokedWithResult: (_, _) {
             duniterIndexer.refetch = duniterIndexer.transBC = null;
           },
           child: Scaffold(
@@ -98,8 +98,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                     Expanded(
                       child: HistoryQuery(
                         address: widget.address,
-                        transactionId: widget.transactionId,
-                        comment: widget.comment,
+                        transactionData: widget.transactionData,
                       ),
                     ),
                   ],

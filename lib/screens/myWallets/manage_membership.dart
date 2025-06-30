@@ -1,20 +1,18 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show IdtyStatus, Durt;
+import 'package:durt2/durt2.dart' show IdtyStatus, Durt, MembershipStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/screens/myWallets/migrate_identity.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
-import 'package:gecko/models/membership_status.dart';
 import 'package:gecko/models/membership_renewal.dart';
 
 class ManageMembership extends StatelessWidget {
@@ -23,8 +21,6 @@ class ManageMembership extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sub = Provider.of<SubstrateSdk>(context);
-
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('manageMembership'.tr()),
@@ -37,7 +33,7 @@ class ManageMembership extends StatelessWidget {
               children: [
                 ScaledSizedBox(height: 20),
                 FutureBuilder<MembershipStatus>(
-                  future: sub.getMembershipStatus(address),
+                  future: Durt.i.storage.getMembershipStatus(address),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       return renewMembership(context, snapshot.data!);
@@ -151,19 +147,23 @@ class ManageMembership extends StatelessWidget {
 
           if (!answer) return;
           final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-          final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
           if (!await myWalletProvider.askPinCode()) return;
 
-          final transactionId = await sub.revokeIdentity(address, myWalletProvider.pinCode);
+          final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: address, pinCode: myWalletProvider.pinCode);
+          final transactionStatus = Durt.i.duniter.revokeIdentity(keypair);
 
           Navigator.pop(context);
 
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) {
-              return TransactionInProgress(
-                  transactionId: transactionId, transType: 'revokeIdty', fromAddress: getShortPubkey(address), toAddress: getShortPubkey(address));
+              return TransactionInProgressScreen(
+                transactionStatus: transactionStatus,
+                transType: 'revokeIdty',
+                fromAddress: getShortPubkey(address),
+                toAddress: getShortPubkey(address),
+              );
             }),
           );
         },
@@ -191,11 +191,7 @@ class ManageMembership extends StatelessWidget {
   }
 
   Widget renewMembership(BuildContext context, MembershipStatus status) {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final info = MembershipRenewal.calculateRenewalInfo(
-      status,
-      sub.currencyParameters['membershipRenewalPeriod']!,
-    );
+    final info = MembershipRenewal.calculateRenewalInfo(status);
     if (info.expireDate == null && status.idtyStatus != IdtyStatus.expired) return const SizedBox.shrink();
 
     return Container(

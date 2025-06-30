@@ -5,16 +5,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/utils.dart';
 import 'package:provider/provider.dart';
 import 'dart:io' as io;
 import 'package:gecko/main.dart' as app;
-import 'package:uuid/uuid.dart';
 
 const isHumanReading = false;
 Timeout testTimeout([int seconds = 120]) => Timeout(Duration(seconds: isHumanReading ? 600 : seconds));
-final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
 late WidgetTester tester;
 
 // TEST WALLETS CONSTS
@@ -165,43 +162,49 @@ Future spawnBlock({int number = 1, int duration = 200, int? until}) async {
     await sleep(duration);
   }
   if (until != null) {
-    number = until - sub.blocNumber;
+    number = until - Durt.i.storage.blockHeightNotifier.value;
   }
-  await sub.spawnBlock(number);
+  await Durt.i.duniter.spawnBlock(number: number);
   await sleep(200);
 }
 
 // Pay in background
 Future bkPay({required String fromAddress, required String destAddress, required double amount}) async {
-  final transactionId = const Uuid().v4();
-  sub.pay(
-    fromAddress: fromAddress,
+  final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: fromAddress, pinCode: 'AAAAA');
+  Durt.i.duniter.pay(
+    keypair: keypair,
     destAddress: destAddress,
     amount: amount,
-    password: 'AAAAA',
-    transactionId: transactionId,
     comment: 'test comment',
   );
   await sleep(500);
-  await spawnBlock();
+  await Durt.i.duniter.spawnBlock();
   await sleep(500);
 }
 
 // Certify in background
 Future bkCertify({required String fromAddress, required String destAddress, bool spawnBloc = true}) async {
-  sub.certify(fromAddress, destAddress, 'AAAAA');
+  final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: fromAddress, pinCode: 'AAAAA');
+  Durt.i.duniter.certify(
+    keypair: keypair,
+    destAddress: destAddress,
+  );
   if (spawnBloc) {
     await sleep(500);
-    await spawnBlock();
+    await Durt.i.duniter.spawnBlock();
   }
   await sleep(500);
 }
 
 // Confirm my identity in background
 Future bkConfirmIdentity({required String fromAddress, required String name}) async {
-  sub.confirmIdentity(fromAddress, name, 'AAAAA');
+  final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: fromAddress, pinCode: 'AAAAA');
+  Durt.i.duniter.confirmIdentity(
+    keypair: keypair,
+    name: name,
+  );
   await sleep(500);
-  await spawnBlock();
+  await Durt.i.duniter.spawnBlock();
   await sleep(500);
 }
 

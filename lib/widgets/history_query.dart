@@ -6,19 +6,16 @@ import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/history_view.dart';
 import 'package:gecko/widgets/transaction_in_progress_tile.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
-import 'dart:async';
+import 'package:gecko/models/transaction_in_progress_data.dart';
 
 class HistoryQuery extends StatelessWidget {
-  const HistoryQuery({super.key, required this.address, this.transactionId, this.comment});
+  const HistoryQuery({super.key, required this.address, this.transactionData});
   final String address;
-  final String? transactionId;
-  final String? comment;
+  final TransactionInProgressData? transactionData;
 
   @override
   Widget build(BuildContext context) {
@@ -33,43 +30,6 @@ class HistoryQuery extends StatelessWidget {
       ]);
     }
 
-    return FutureBuilder<bool>(
-      future: _waitForTransaction(transactionId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Loading();
-        }
-        if (snapshot.hasError) {
-          return Text('Erreur: ${snapshot.error}');
-        }
-        return _buildTransactionContent();
-      },
-    );
-  }
-
-  Future<bool> _waitForTransaction(String? transactionId) async {
-    if (transactionId == null) return false;
-    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-    final completer = Completer<bool>();
-
-    final timer = Timer.periodic(const Duration(milliseconds: 5), (timer) {
-      if (sub.transactionStatus.containsKey(transactionId)) {
-        timer.cancel();
-        completer.complete(true);
-      }
-    });
-
-    return completer.future.timeout(
-      const Duration(seconds: 5),
-      onTimeout: () {
-        timer.cancel();
-        completer.complete(false);
-        throw TimeoutException('The transaction has not been found after 5 seconds');
-      },
-    );
-  }
-
-  Widget _buildTransactionContent() {
     final duniterIndexer = Provider.of<DuniterIndexer>(homeContext, listen: false);
     final scrollController = ScrollController();
     FetchMoreOptions? opts;
@@ -101,7 +61,7 @@ class HistoryQuery extends StatelessWidget {
                 return Column(children: <Widget>[
                   Column(
                     children: [
-                      if (transactionId != null) TransactionInProgressTule(address: address, transactionId: transactionId!, comment: comment ?? ''),
+                      if (transactionData != null) TransactionInProgressTule(transactionData: transactionData!),
                       ScaledSizedBox(height: 50),
                       Text(
                         "noNetworkNoHistory".tr(),
@@ -115,7 +75,7 @@ class HistoryQuery extends StatelessWidget {
                 return Column(children: <Widget>[
                   Column(
                     children: [
-                      if (transactionId != null) TransactionInProgressTule(address: address, transactionId: transactionId!, comment: comment ?? ''),
+                      if (transactionData != null) TransactionInProgressTule(transactionData: transactionData!),
                       ScaledSizedBox(height: 50),
                       Text(
                         "noDataToDisplay".tr(),
@@ -130,6 +90,19 @@ class HistoryQuery extends StatelessWidget {
                 opts = duniterIndexer.mergeQueryResult(result, opts, address, nRepositories);
               }
 
+              final identityConnection = result.data?["identityConnection"]["edges"] as List<dynamic>;
+              String? previousAddress;
+
+              if (identityConnection.isNotEmpty) {
+                final ownerKeyChange = identityConnection[0]["node"]["ownerKeyChange"];
+                if (ownerKeyChange != null) {
+                  final ownerKeyChangeList = ownerKeyChange as List<dynamic>;
+                  if (ownerKeyChangeList.isNotEmpty) {
+                    previousAddress = ownerKeyChangeList.first["previousId"];
+                  }
+                }
+              }
+
               // Build history list
               return NotificationListener(
                   child: Builder(
@@ -141,10 +114,11 @@ class HistoryQuery extends StatelessWidget {
                           key: keyListTransactions,
                           controller: scrollController,
                           children: <Widget>[
-                            if (transactionId != null) TransactionInProgressTule(address: address, transactionId: transactionId!, comment: comment ?? ''),
+                            if (transactionData != null) TransactionInProgressTule(transactionData: transactionData!),
                             HistoryView(
                               result: result,
                               address: address,
+                              previousAddress: previousAddress,
                             )
                           ],
                         ),

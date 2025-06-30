@@ -258,8 +258,7 @@ class HomeProvider with ChangeNotifier {
       //     Durt.i.isConnected = false;
       //     await sub.sdk.api.setting.unsubscribeBestNumber();
       //     homeProvider.changeMessage("notConnectedToInternet".tr());
-      //     sub.reload();
-      //   } else {
+      //       //   } else {
       //     // Check if the phone is actually connected to the internet
       //     var connectivityResult = await (Connectivity().checkConnectivity());
       //     if (!connectivityResult.contains(ConnectivityResult.none)) {

@@ -48,7 +48,7 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
     final pinLenght = walletOptions.getPinLenght();
 
     return PopScope(
-      onPopInvokedWithResult: (_, __) {
+      onPopInvokedWithResult: (_, _) {
         myWalletProvider.isPinValid = false;
         myWalletProvider.isPinLoading = true;
       },

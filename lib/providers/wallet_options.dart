@@ -10,8 +10,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/v2s_datapod.dart';
+// import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
@@ -47,8 +46,7 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Future<int> deleteWallet(BuildContext context, WalletData wallet) async {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final datapod = Provider.of<V2sDatapodProvider>(context, listen: false);
+    // final datapod = Provider.of<V2sDatapodProvider>(context, listen: false);
     final answer = await showConfirmationDialog(
       context: context,
       message: 'areYouSureToForgetWallet'.tr(args: [wallet.name!]),
@@ -60,13 +58,11 @@ class WalletOptionsProvider with ChangeNotifier {
       if (balanceCache[wallet.address] != BigInt.zero) {
         final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
         final defaultWallet = myWalletProvider.getDefaultWallet();
-        final transactionId = const Uuid().v4();
-        sub.pay(
-          fromAddress: wallet.address,
+        final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: wallet.address, pinCode: myWalletProvider.pinCode);
+        Durt.i.duniter.pay(
+          keypair: keypair,
           destAddress: defaultWallet.address,
           amount: -1,
-          password: myWalletProvider.pinCode,
-          transactionId: transactionId,
           comment: 'ĞECKO:DELETEWALLET',
         );
       }
@@ -78,7 +74,7 @@ class WalletOptionsProvider with ChangeNotifier {
         }
       }
 
-      datapod.deleteProfile(address: wallet.address);
+      // datapod.deleteProfile(address: wallet.address);
       await Durt.i.wallets.deleteWallet(wallet.address);
 
       Navigator.pop(context);
@@ -87,7 +83,7 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   Future<String> changeAvatar() async {
-    final datapod = Provider.of<V2sDatapodProvider>(homeContext, listen: false);
+    // final datapod = Provider.of<V2sDatapodProvider>(homeContext, listen: false);
 
     final picker = ImagePicker();
 
@@ -142,7 +138,7 @@ class WalletOptionsProvider with ChangeNotifier {
 
       await Durt.i.wallets.walletDataBox.put(address.text, walletData);
       notifyListeners();
-      datapod.setAvatar(address.text, newPath);
+      // datapod.setAvatar(address.text, newPath);
 
       return newPath;
     } else {
@@ -153,8 +149,6 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Future<String?> confirmIdentityPopup(BuildContext context) async {
     final idtyName = TextEditingController();
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
@@ -218,14 +212,18 @@ class WalletOptionsProvider with ChangeNotifier {
 
                             final wallet = myWalletProvider.getWalletDataByAddress(address.text);
                             await Durt.i.wallets.setDefaultAddress(wallet!.address);
-                            final transactionId = await sub.confirmIdentity(walletOptions.address.text, idtyName.text, myWalletProvider.pinCode);
+                            final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: wallet.address, pinCode: myWalletProvider.pinCode);
+                            final transactionStatus = Durt.i.duniter.confirmIdentity(
+                              keypair: keypair,
+                              name: idtyName.text,
+                            );
                             Navigator.pop(context);
 
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) {
-                                return TransactionInProgress(
-                                  transactionId: transactionId,
+                                return TransactionInProgressScreen(
+                                  transactionStatus: transactionStatus,
                                   transType: 'comfirmIdty',
                                   fromAddress: getShortPubkey(wallet.address),
                                   toAddress: getShortPubkey(wallet.address),

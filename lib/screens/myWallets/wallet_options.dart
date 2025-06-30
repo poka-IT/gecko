@@ -1,19 +1,16 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
-import 'dart:io';
-import 'package:durt2/durt2.dart' show Durt, IdtyStatus, WalletData;
+import 'package:durt2/durt2.dart' show Durt, IdtyStatus, WalletData, MembershipStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/membership_status.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/activity.dart';
@@ -51,7 +48,7 @@ class WalletOptions extends StatelessWidget {
     walletOptions.isDefaultWallet = defaultWallet.address == wallet.address;
 
     return PopScope(
-      onPopInvokedWithResult: (_, __) {
+      onPopInvokedWithResult: (_, _) {
         walletOptions.isEditing = false;
         myWalletProvider.reload();
       },
@@ -122,7 +119,7 @@ class WalletOptions extends StatelessWidget {
                                     ),
                                   if (!walletProvider.isDefaultWallet && !wallet.hasIdentity) deleteWallet(context, walletProvider, currentChest),
                                   if (wallet.hasIdentity) const ManageMembershipButton(),
-                                  if (isAlone) aloneWalletOptions(),
+                                  if (isAlone) aloneWalletOptions(context),
                                 ],
                               );
                             },
@@ -174,8 +171,8 @@ class WalletOptions extends StatelessWidget {
                     'assets/avatars/${wallet.number % 4}.png',
                     fit: BoxFit.cover,
                   )
-                : Image.file(
-                    File(wallet.imagePath!),
+                : Image.asset(
+                    wallet.imagePath!,
                     fit: BoxFit.cover,
                   ),
           ),
@@ -307,54 +304,47 @@ class WalletOptions extends StatelessWidget {
   }
 
   Widget buildRenewMembershipSection(WalletOptionsProvider walletProvider) {
-    return Consumer<SubstrateSdk>(
-      builder: (context, sub, _) {
-        return FutureBuilder<MembershipStatus>(
-          future: sub.getMembershipStatus(walletProvider.address.text),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData || snapshot.hasError) {
-              return const SizedBox.shrink();
-            }
+    return FutureBuilder<MembershipStatus>(
+      future: Durt.i.storage.getMembershipStatus(walletProvider.address.text),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.hasError) {
+          return const SizedBox.shrink();
+        }
 
-            final info = MembershipRenewal.calculateRenewalInfo(
-              snapshot.data!,
-              sub.currencyParameters['membershipRenewalPeriod']!,
-            );
+        final info = MembershipRenewal.calculateRenewalInfo(snapshot.data!);
 
-            final twentyDaysBeforeExpiration = info.expireDate?.subtract(const Duration(days: 20));
-            final shouldHideButton = !info.canRenew || (info.expireDate != null && !(twentyDaysBeforeExpiration?.isBefore(DateTime.now()) ?? false));
+        final twentyDaysBeforeExpiration = info.expireDate?.subtract(const Duration(days: 20));
+        final shouldHideButton = !info.canRenew || (info.expireDate != null && !(twentyDaysBeforeExpiration?.isBefore(DateTime.now()) ?? false));
 
-            if (shouldHideButton) return const SizedBox.shrink();
+        if (shouldHideButton) return const SizedBox.shrink();
 
-            return Container(
-              margin: EdgeInsets.only(bottom: scaleSize(24)),
-              child: Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    height: scaleSize(50),
-                    child: ElevatedButton(
-                      key: keyRenewMembership,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: context.colorScheme.primary,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      onPressed: () => MembershipRenewal.executeRenewal(context, walletProvider.address.text),
-                      child: Text(
-                        'renewMembership'.tr(),
-                        style: scaledTextStyle(fontSize: 16, color: Colors.white),
-                      ),
+        return Container(
+          margin: EdgeInsets.only(bottom: scaleSize(24)),
+          child: Column(
+            children: [
+              SizedBox(
+                width: double.infinity,
+                height: scaleSize(50),
+                child: ElevatedButton(
+                  key: keyRenewMembership,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: context.colorScheme.primary,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  ScaledSizedBox(height: 8),
-                  MembershipRenewal.buildExpirationText(info, width: 250),
-                ],
+                  onPressed: () => MembershipRenewal.executeRenewal(context, walletProvider.address.text),
+                  child: Text(
+                    'renewMembership'.tr(),
+                    style: scaledTextStyle(fontSize: 16, color: Colors.white),
+                  ),
+                ),
               ),
-            );
-          },
+              ScaledSizedBox(height: 8),
+              MembershipRenewal.buildExpirationText(info, width: 250),
+            ],
+          ),
         );
       },
     );
@@ -406,103 +396,97 @@ class WalletOptions extends StatelessWidget {
   }
 
   Widget buildConfirmIdentitySection(WalletOptionsProvider walletProvider) {
-    return Consumer<SubstrateSdk>(builder: (context, sub, _) {
-      return FutureBuilder<IdtyStatus>(
-        future: Durt.i.storage.getIdtyStatus(walletProvider.address.text),
-        initialData: IdtyStatus.unknown,
-        builder: (BuildContext context, AsyncSnapshot<IdtyStatus> snapshot) {
-          return Visibility(
-            visible: snapshot.hasData && !snapshot.hasError && snapshot.data == IdtyStatus.created,
-            child: Column(children: [
-              ScaledSizedBox(height: 22),
-              SizedBox(
-                width: double.infinity,
-                height: scaleSize(50),
-                child: ElevatedButton(
-                  key: keyConfirmIdentity,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: context.colorScheme.primary,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+    return FutureBuilder<IdtyStatus>(
+      future: Durt.i.storage.getIdtyStatus(walletProvider.address.text),
+      initialData: IdtyStatus.unknown,
+      builder: (BuildContext context, AsyncSnapshot<IdtyStatus> snapshot) {
+        return Visibility(
+          visible: snapshot.hasData && !snapshot.hasError && snapshot.data == IdtyStatus.created,
+          child: Column(children: [
+            ScaledSizedBox(height: 22),
+            SizedBox(
+              width: double.infinity,
+              height: scaleSize(50),
+              child: ElevatedButton(
+                key: keyConfirmIdentity,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: context.colorScheme.primary,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ConfirmIdentityScreen(
-                          address: walletProvider.address.text,
-                        ),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ConfirmIdentityScreen(
+                        address: walletProvider.address.text,
                       ),
-                    );
-                  },
-                  child: Text(
-                    'confirmMyIdentity'.tr(),
-                    style: scaledTextStyle(fontSize: 16, color: Colors.white),
-                  ),
+                    ),
+                  );
+                },
+                child: Text(
+                  'confirmMyIdentity'.tr(),
+                  style: scaledTextStyle(fontSize: 16, color: Colors.white),
                 ),
               ),
-              ScaledSizedBox(height: 8),
-              Text(
-                "someoneCreatedYourIdentity".tr(args: [currencyName]),
-                style: scaledTextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                  fontStyle: FontStyle.italic,
-                ),
+            ),
+            ScaledSizedBox(height: 8),
+            Text(
+              "someoneCreatedYourIdentity".tr(args: [currencyName]),
+              style: scaledTextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+                fontStyle: FontStyle.italic,
               ),
-              ScaledSizedBox(height: 24),
-            ]),
-          );
-        },
-      );
-    });
+            ),
+            ScaledSizedBox(height: 24),
+          ]),
+        );
+      },
+    );
   }
 }
 
-Widget aloneWalletOptions() {
+Widget aloneWalletOptions(BuildContext context) {
+  final myWalletProvider = Provider.of<MyWalletsProvider>(context);
   return Column(
     children: [
       const ChestOptionsContent(),
-      Consumer<SubstrateSdk>(
-        builder: (context, sub, _) {
-          final myWalletProvider = Provider.of<MyWalletsProvider>(context);
-          return InkWell(
-            onTap: () async {
-              if (!myWalletProvider.isNewDerivationLoading) {
-                if (!await myWalletProvider.askPinCode()) return;
-                String newDerivationName = '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number + 2}';
-                await myWalletProvider.generateNewDerivation(context, newDerivationName);
-                Navigator.pushReplacementNamed(context, '/mywallets');
-              }
-            },
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.add_circle_outline,
-                    size: scaleSize(24),
-                    color: Durt.i.isConnected ? Color(0xFF4CAF50).withValues(alpha: 0.8) : Colors.grey[400],
-                  ),
-                  ScaledSizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      'createNewWallet'.tr(),
-                      style: scaledTextStyle(
-                        fontSize: 16,
-                        color: Durt.i.isConnected ? context.colorScheme.onSurface : Colors.grey[500],
-                      ),
-                      softWrap: true,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
+      InkWell(
+        onTap: () async {
+          if (!myWalletProvider.isNewDerivationLoading) {
+            if (!await myWalletProvider.askPinCode()) return;
+            String newDerivationName = '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number + 2}';
+            await myWalletProvider.generateNewDerivation(context, newDerivationName);
+            Navigator.pushReplacementNamed(context, '/mywallets');
+          }
         },
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.add_circle_outline,
+                size: scaleSize(24),
+                color: Durt.i.isConnected ? Color(0xFF4CAF50).withValues(alpha: 0.8) : Colors.grey[400],
+              ),
+              ScaledSizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  'createNewWallet'.tr(),
+                  style: scaledTextStyle(
+                    fontSize: 16,
+                    color: Durt.i.isConnected ? context.colorScheme.onSurface : Colors.grey[500],
+                  ),
+                  softWrap: true,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
       InkWell(
         onTap: () async {

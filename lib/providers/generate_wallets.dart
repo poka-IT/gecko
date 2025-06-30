@@ -355,7 +355,7 @@ class GenerateWalletsProvider with ChangeNotifier {
           address: scannedWallet,
           name: walletName,
           derivation: addressToScan[scannedWallet],
-          imagePath: '${scanedWalletNumber % 4}.png',
+          imagePath: 'assets/avatars/${scanedWalletNumber % 4}.png',
           isOwned: true);
       await Durt.i.wallets.walletDataBox.put(myWallet.address, myWallet);
       scanedWalletNumber++;
@@ -388,7 +388,8 @@ class GenerateWalletsProvider with ChangeNotifier {
 
       final actualSafeNumber = Durt.i.wallets.defaultSafeBoxNumber;
 
-      WalletData myWallet = WalletData(safeBoxNumber: actualSafeNumber, address: address, name: walletName, derivation: -1, imagePath: '0.png', isOwned: true);
+      WalletData myWallet =
+          WalletData(safeBoxNumber: actualSafeNumber, address: address, name: walletName, derivation: -1, imagePath: 'assets/avatars/0.png', isOwned: true);
       await Durt.i.wallets.walletDataBox.put(myWallet.address, myWallet);
       scanedWalletNumber++;
       return true;

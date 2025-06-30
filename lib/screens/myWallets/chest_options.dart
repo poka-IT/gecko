@@ -22,7 +22,7 @@ class ChestOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentSafe = Durt.i.walletService.defaultSafeBox;
+    final currentSafe = Durt.i.wallets.defaultSafeBox;
 
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
@@ -56,7 +56,7 @@ class ChestOptionsContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final chestProvider = Provider.of<ChestProvider>(context, listen: false);
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-    final currentChest = Durt.i.walletService.defaultSafeBox;
+    final currentChest = Durt.i.wallets.defaultSafeBox;
     final isAlone = myWalletProvider.listWallets.length == 1;
 
     return Column(

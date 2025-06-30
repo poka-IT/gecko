@@ -214,7 +214,7 @@ class HomeProvider with ChangeNotifier {
       await avatarsDirectory.create();
       await configBox.delete('defaultWallet');
       // if (!sub.sdkReady && !sub.sdkLoading) await sub.initApi();
-      await Durt.i.walletService.clearWallets();
+      await Durt.i.wallets.clearWallets();
       configBox.put('dataVersion', dataVersion);
       myWalletProvider.reload();
     } else {

@@ -14,7 +14,7 @@ class IdentityStatus extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final walletData = Durt.i.walletService.walletDataBox.get(address) ?? WalletData(address: address);
+    final walletData = Durt.i.wallets.walletDataBox.get(address) ?? WalletData(address: address);
     final finalColor = color ?? context.colorScheme.onSecondaryContainer;
 
     return FutureBuilder<IdtyStatus>(
@@ -24,7 +24,7 @@ class IdentityStatus extends StatelessWidget {
           if (snapshot.data != null && !snapshot.hasError) {
             final resStatus = snapshot.data!;
             walletData.identityStatus = resStatus;
-            Durt.i.walletService.walletDataBox.put(address, walletData);
+            Durt.i.wallets.walletDataBox.put(address, walletData);
           }
 
           final resStatus = walletData.identityStatus;

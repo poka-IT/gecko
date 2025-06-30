@@ -97,7 +97,7 @@ class RestoreChest extends StatelessWidget {
                             ),
                           ),
                           onPressed: () async {
-                            if (Durt.i.walletService.isMnemonicValid(genW.generatedMnemonic!)) {
+                            if (Durt.i.wallets.isMnemonicValid(genW.generatedMnemonic!)) {
                               genW.resetImportView();
                               await Navigator.push(
                                 context,

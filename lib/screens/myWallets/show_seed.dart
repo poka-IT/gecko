@@ -35,7 +35,7 @@ class ShowSeed extends StatelessWidget {
               child: Column(
                 children: <Widget>[
                   FutureBuilder(
-                      future: Durt.i.walletService.getSeed(address: defaultWallet.address, pin: walletProvider.pinCode),
+                      future: Durt.i.wallets.getSeed(address: defaultWallet.address, pin: walletProvider.pinCode),
                       builder: (BuildContext context, AsyncSnapshot<String?> seed) {
                         if (seed.connectionState != ConnectionState.done || seed.hasError) {
                           return ScaledSizedBox(

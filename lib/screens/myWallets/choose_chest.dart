@@ -27,7 +27,7 @@ class ChooseChest extends StatefulWidget {
 class _ChooseChestState extends State<ChooseChest> {
   final tplController = TextEditingController();
   final buttonCarouselController = CarouselSliderController();
-  int currentChest = Durt.i.walletService.defaultSafeBoxNumber;
+  int currentChest = Durt.i.wallets.defaultSafeBoxNumber;
 
   @override
   Widget build(BuildContext context) {
@@ -44,8 +44,7 @@ class _ChooseChestState extends State<ChooseChest> {
               options: CarouselOptions(
                 height: 210,
                 onPageChanged: (index, reason) {
-                  currentChest =
-                      Durt.i.walletService.safeBox.toMap().keys.toList()[index];
+                  currentChest = Durt.i.wallets.safeBox.toMap().keys.toList()[index];
                   setState(() {});
                 },
                 enableInfiniteScroll: false,
@@ -53,7 +52,7 @@ class _ChooseChestState extends State<ChooseChest> {
                 enlargeCenterPage: true,
                 viewportFraction: 0.5,
               ),
-              items: Durt.i.walletService.safeBox.toMap().entries.map((i) {
+              items: Durt.i.wallets.safeBox.toMap().entries.map((i) {
                 return Builder(
                   builder: (BuildContext context) {
                     return Column(children: <Widget>[
@@ -76,11 +75,10 @@ class _ChooseChestState extends State<ChooseChest> {
                 );
               }).toList(),
             ),
-            if (Durt.i.walletService.safeBox.values.toList().length > 1)
+            if (Durt.i.wallets.safeBox.values.toList().length > 1)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children:
-                    Durt.i.walletService.safeBox.values.toList().map((entry) {
+                children: Durt.i.wallets.safeBox.values.toList().map((entry) {
                   return GestureDetector(
                     onTap: () => buttonCarouselController.animateToPage(entry.key),
                     child: Container(

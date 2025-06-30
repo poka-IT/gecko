@@ -158,7 +158,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       _ => Language.english,
     };
 
-    final generatedMnemonicTyped = Durt.i.walletService.generateMnemonic(language: language);
+    final generatedMnemonicTyped = Durt.i.wallets.generateMnemonic(language: language);
 
     generatedMnemonic = generatedMnemonicTyped.sentence;
     return generatedMnemonicTyped.words;
@@ -274,16 +274,16 @@ class GenerateWalletsProvider with ChangeNotifier {
         const Duration(seconds: 120),
         onTimeout: () async {
           // Remove the current chest
-          final actualSafeNumber = Durt.i.walletService.defaultSafeBoxNumber;
-          await Durt.i.walletService.deleteSafe(actualSafeNumber);
+          final actualSafeNumber = Durt.i.wallets.defaultSafeBoxNumber;
+          await Durt.i.wallets.deleteSafe(actualSafeNumber);
 
           // Display error message to user
           // ignore: use_build_context_synchronously
           await infoPopup(context, "timeoutScanDerivations".tr());
 
           // Remove all wallets
-          await Durt.i.walletService.walletDataBox.clear();
-          await Durt.i.walletService.safeBox.clear();
+          await Durt.i.wallets.walletDataBox.clear();
+          await Durt.i.wallets.safeBox.clear();
 
           // Pop to home
           // ignore: use_build_context_synchronously
@@ -299,8 +299,8 @@ class GenerateWalletsProvider with ChangeNotifier {
       await infoPopup(context, "errorScanDerivations".tr());
 
       // Remove all wallets
-      await Durt.i.walletService.walletDataBox.clear();
-      await Durt.i.walletService.safeBox.clear();
+      await Durt.i.wallets.walletDataBox.clear();
+      await Durt.i.wallets.safeBox.clear();
 
       // ignore: use_build_context_synchronously
       await Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
@@ -329,7 +329,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     scanStatus = ScanDerivationsStatus.scanning;
     notifyListeners();
     for (int derivationNbr in [for (var i = 0; i < numberScan; i += 1) i]) {
-      final keypair = await Durt.i.walletService.getKeyPairFromMnemonic(generatedMnemonic!, derivation: derivationNbr);
+      final keypair = await Durt.i.wallets.getKeyPairFromMnemonic(generatedMnemonic!, derivation: derivationNbr);
       addressToScan.putIfAbsent(keypair.address, () => derivationNbr);
     }
 
@@ -347,8 +347,8 @@ class GenerateWalletsProvider with ChangeNotifier {
     for (String scannedWallet in balanceList.keys) {
       isAlive = true;
       String walletName = scanedWalletNumber == 0 ? 'currentWallet'.tr() : '${'wallet'.tr()} ${scanedWalletNumber + 1}';
-      await Durt.i.walletService.importDerivations(pinCode: pinCode, derivations: [addressToScan[scannedWallet]!]);
-      final actualSafeNumber = Durt.i.walletService.defaultSafeBoxNumber;
+      await Durt.i.wallets.importDerivations(pinCode: pinCode, derivations: [addressToScan[scannedWallet]!]);
+      final actualSafeNumber = Durt.i.wallets.defaultSafeBoxNumber;
 
       final myWallet = WalletData(
           safeBoxNumber: actualSafeNumber,
@@ -357,7 +357,7 @@ class GenerateWalletsProvider with ChangeNotifier {
           derivation: addressToScan[scannedWallet],
           imagePath: '${scanedWalletNumber % 4}.png',
           isOwned: true);
-      await Durt.i.walletService.walletDataBox.put(myWallet.address, myWallet);
+      await Durt.i.wallets.walletDataBox.put(myWallet.address, myWallet);
       scanedWalletNumber++;
       notifyListeners();
     }
@@ -371,9 +371,9 @@ class GenerateWalletsProvider with ChangeNotifier {
   Future<bool> scanRootBalance(String pinCode) async {
     if (generatedMnemonic == null) return false;
 
-    final keypair = await Durt.i.walletService.getKeyPairFromMnemonic(generatedMnemonic!);
+    final keypair = await Durt.i.wallets.getKeyPairFromMnemonic(generatedMnemonic!);
 
-    final address = Durt.i.walletService.getAddress(keypair.address);
+    final address = Durt.i.wallets.getAddress(keypair.address);
 
     // if (addressData.address == null) return false;
     final balance = await Durt.i.storage.getBalance(address).timeout(
@@ -384,12 +384,12 @@ class GenerateWalletsProvider with ChangeNotifier {
     if (balance.free != BigInt.zero) {
       String walletName = 'myRootWallet'.tr();
 
-      await Durt.i.walletService.importRootWallet(pinCode: pinCode);
+      await Durt.i.wallets.importRootWallet(pinCode: pinCode);
 
-      final actualSafeNumber = Durt.i.walletService.defaultSafeBoxNumber;
+      final actualSafeNumber = Durt.i.wallets.defaultSafeBoxNumber;
 
       WalletData myWallet = WalletData(safeBoxNumber: actualSafeNumber, address: address, name: walletName, derivation: -1, imagePath: '0.png', isOwned: true);
-      await Durt.i.walletService.walletDataBox.put(myWallet.address, myWallet);
+      await Durt.i.wallets.walletDataBox.put(myWallet.address, myWallet);
       scanedWalletNumber++;
       return true;
     } else {

@@ -119,7 +119,7 @@ class _ConfirmChangePinScreenState extends State<ConfirmChangePinScreen> {
 
               final defaultWallet = widget.walletProvider.getDefaultWallet();
 
-              await Durt.i.walletService.changePin(
+              await Durt.i.wallets.changePin(
                 address: defaultWallet.address,
                 oldPin: widget.walletProvider.pinCode,
                 newPin: pin,

@@ -205,7 +205,7 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
 
                 //TODO: Use int pincode directly instead of cast
                 final pinCodeint = int.parse(widget.pinCode);
-                await Durt.i.walletService.createSafe(mnemonic: generateWalletProvider.generatedMnemonic!, pinCode: pinCodeint);
+                await Durt.i.wallets.createSafe(mnemonic: generateWalletProvider.generatedMnemonic!, pinCode: pinCodeint);
 
                 ScanDerivationsResult scanStatus = ScanDerivationsResult.none;
                 if (widget.scanDerivation) {
@@ -214,8 +214,8 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                 switch (scanStatus) {
                   case ScanDerivationsResult.none:
                   case ScanDerivationsResult.walletNotFound:
-                    final walletData = await Durt.i.walletService.importRootWallet(pinCode: widget.pinCode);
-                    final address = Durt.i.walletService.getAddress(walletData.address);
+                    final walletData = await Durt.i.wallets.importRootWallet(pinCode: widget.pinCode);
+                    final address = Durt.i.wallets.getAddress(walletData.address);
 
                     WalletData myWallet = WalletData(
                       safeBoxNumber: configBox.get('currentChest'),
@@ -225,7 +225,7 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                       name: 'currentWallet'.tr(),
                       isOwned: true,
                     );
-                    await Durt.i.walletService.walletDataBox.put(myWallet.address, myWallet);
+                    await Durt.i.wallets.walletDataBox.put(myWallet.address, myWallet);
                     break;
                   case ScanDerivationsResult.timeout:
                   case ScanDerivationsResult.error:
@@ -249,8 +249,8 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                   defaultWallet = myWalletProvider.listWallets.first;
                 }
                 if (defaultWallet != null) {
-                  final address = Durt.i.walletService.getAddress(defaultWallet.address);
-                  await Durt.i.walletService.setDefaultWallet(address);
+                  final address = Durt.i.wallets.getAddress(defaultWallet.address);
+                  await Durt.i.wallets.setDefaultWallet(address);
                 }
 
                 await Navigator.push(

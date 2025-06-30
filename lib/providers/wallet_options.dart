@@ -41,7 +41,7 @@ class WalletOptionsProvider with ChangeNotifier {
 
     WalletData walletTarget = myWalletClass.getWalletDataByAddress(address)!;
     walletTarget.name = newName;
-    await Durt.i.walletService.walletDataBox.put(walletTarget.address, walletTarget);
+    await Durt.i.wallets.walletDataBox.put(walletTarget.address, walletTarget);
 
     _newWalletName.text = '';
   }
@@ -79,7 +79,7 @@ class WalletOptionsProvider with ChangeNotifier {
       }
 
       datapod.deleteProfile(address: wallet.address);
-      await Durt.i.walletService.deleteWallet(wallet.address);
+      await Durt.i.wallets.deleteWallet(wallet.address);
 
       Navigator.pop(context);
     }
@@ -140,7 +140,7 @@ class WalletOptionsProvider with ChangeNotifier {
 
       walletData.imagePath = newPath;
 
-      await Durt.i.walletService.walletDataBox.put(address.text, walletData);
+      await Durt.i.wallets.walletDataBox.put(address.text, walletData);
       notifyListeners();
       datapod.setAvatar(address.text, newPath);
 
@@ -217,7 +217,7 @@ class WalletOptionsProvider with ChangeNotifier {
                             if (!await myWalletProvider.askPinCode()) return;
 
                             final wallet = myWalletProvider.getWalletDataByAddress(address.text);
-                            await Durt.i.walletService.setDefaultAddress(wallet!.address);
+                            await Durt.i.wallets.setDefaultAddress(wallet!.address);
                             final transactionId = await sub.confirmIdentity(walletOptions.address.text, idtyName.text, myWalletProvider.pinCode);
                             Navigator.pop(context);
 

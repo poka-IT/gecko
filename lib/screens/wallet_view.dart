@@ -75,7 +75,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
     final walletProfile = Provider.of<WalletsProfilesProvider>(context, listen: false);
 
     walletProfile.address = address;
-    Durt.i.walletService.setDefaultWallet(address);
+    Durt.i.wallets.setDefaultWallet(address);
 
     return FutureBuilder<WalletHeaderData>(
       future: _headerDataFuture,
@@ -134,7 +134,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
                                 ),
                                 Consumer<SubstrateSdk>(
                                   builder: (context, sub, _) {
-                                    final identityWallet = Durt.i.walletService.identityWallet;
+                                    final identityWallet = Durt.i.wallets.identityWallet;
                                     return identityWallet != null
                                         ? FutureBuilder(
                                             future: Durt.i.storage.getCertState(fromAddress: identityWallet.address, toAddress: address),

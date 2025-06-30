@@ -23,8 +23,7 @@ class DragTuleAction extends StatelessWidget {
     return LongPressDraggable<String>(
       delay: const Duration(milliseconds: 200),
       data: wallet.address,
-      dragAnchorStrategy: (Draggable<Object> _, BuildContext __, Offset ___) =>
-          const Offset(55, 55),
+      dragAnchorStrategy: (Draggable<Object> _, BuildContext __, Offset ___) => const Offset(55, 55),
       onDragStarted: () => myWalletProvider.dragAddress = wallet,
       onDragEnd: (_) {
         myWalletProvider.lastFlyBy = null;
@@ -45,12 +44,10 @@ class DragTuleAction extends StatelessWidget {
       ),
       child: DragTarget<String>(
           onAcceptWithDetails: (senderAddress) async {
-            final walletData =
-                myWalletProvider.getWalletDataByAddress(senderAddress.data);
-            await Durt.i.walletService.setDefaultWallet(walletData!.address);
+            final walletData = myWalletProvider.getWalletDataByAddress(senderAddress.data);
+            await Durt.i.wallets.setDefaultWallet(walletData!.address);
             sub.reload();
-            paymentPopup(context, wallet.address,
-                g1WalletsBox.get(wallet.address)!.username ?? wallet.name!);
+            paymentPopup(context, wallet.address, g1WalletsBox.get(wallet.address)!.username ?? wallet.name!);
           },
           onMove: (details) {
             if (wallet.address != myWalletProvider.lastFlyBy?.address) {
@@ -58,8 +55,7 @@ class DragTuleAction extends StatelessWidget {
               myWalletProvider.reload();
             }
           },
-          onWillAcceptWithDetails: (senderAddress) =>
-              senderAddress.data != wallet.address,
+          onWillAcceptWithDetails: (senderAddress) => senderAddress.data != wallet.address,
           builder: (
             BuildContext context,
             List<dynamic> accepted,

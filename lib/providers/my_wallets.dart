@@ -24,9 +24,9 @@ class MyWalletsProvider with ChangeNotifier {
 
   bool isOwner(String address) => listWallets.any((wallet) => wallet.address == address);
 
-  int get getCurrentSafe => Durt.i.walletService.defaultSafeBoxNumber;
+  int get getCurrentSafe => Durt.i.wallets.defaultSafeBoxNumber;
 
-  bool get isWalletsExists => Durt.i.walletService.safeBox.isNotEmpty;
+  bool get isWalletsExists => Durt.i.wallets.safeBox.isNotEmpty;
 
   WalletData? get idtyWallet => listWallets.firstWhereOrNull((w) => w.isMembre) ?? listWallets.firstWhereOrNull((w) => w.hasIdentity);
 
@@ -36,7 +36,7 @@ class MyWalletsProvider with ChangeNotifier {
     // final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
     safe = safe ?? getCurrentSafe;
     listWallets.clear();
-    final wallets = Durt.i.walletService.walletDataBox.toMap().values.toList();
+    final wallets = Durt.i.wallets.walletDataBox.toMap().values.toList();
     Map<String, WalletData> walletsToScan = {};
     for (var walletFromBox in wallets) {
       if (walletFromBox.safeBoxNumber != safe) {
@@ -53,8 +53,8 @@ class MyWalletsProvider with ChangeNotifier {
     //     await sub.idtyStatusMulti(walletsToScan.keys.toList());
     for (final wallet in walletsToScan.values) {
       // wallet.identityStatus = idtyStatusList[n];
-      // if (Durt.i.walletService.walletDataBox.containsKey(wallet.address)) continue;
-      // Durt.i.walletService.walletDataBox.put(wallet.address, wallet);
+      // if (Durt.i.wallets.walletDataBox.containsKey(wallet.address)) continue;
+      // Durt.i.wallets.walletDataBox.put(wallet.address, wallet);
 
       listWallets.add(wallet);
     }
@@ -70,7 +70,7 @@ class MyWalletsProvider with ChangeNotifier {
     int? nbr = id[1];
     WalletData? targetedWallet;
 
-    Durt.i.walletService.walletDataBox.toMap().forEach((key, value) {
+    Durt.i.wallets.walletDataBox.toMap().forEach((key, value) {
       if (value.safeBoxNumber == safe && value.number == nbr) {
         targetedWallet = value;
         return;
@@ -95,15 +95,14 @@ class MyWalletsProvider with ChangeNotifier {
     return pinCode.isNotEmpty;
   }
 
-  WalletData? getWalletDataByAddress(String address) =>
-      Durt.i.walletService.walletDataBox.toMap().values.firstWhereOrNull((wallet) => wallet.address == address);
+  WalletData? getWalletDataByAddress(String address) => Durt.i.wallets.walletDataBox.toMap().values.firstWhereOrNull((wallet) => wallet.address == address);
 
   WalletData getDefaultWallet([int? safe]) {
-    if (Durt.i.walletService.safeBox.isEmpty) {
+    if (Durt.i.wallets.safeBox.isEmpty) {
       return WalletData(address: '', safeBoxNumber: 0, number: 0, isOwned: true);
     } else {
       safe ??= getCurrentSafe;
-      final defaultWallet = Durt.i.walletService.safeBox.get(safe)!.defaultAddress;
+      final defaultWallet = Durt.i.wallets.safeBox.get(safe)!.defaultAddress;
       if (defaultWallet == null) {
         return WalletData(address: '', safeBoxNumber: safe, number: 0, isOwned: true);
       }
@@ -122,8 +121,8 @@ class MyWalletsProvider with ChangeNotifier {
         type: ConfirmationDialogType.warning,
       );
       if (answer) {
-        await Durt.i.walletService.walletDataBox.clear();
-        await Durt.i.walletService.safeBox.clear();
+        await Durt.i.wallets.walletDataBox.clear();
+        await Durt.i.wallets.safeBox.clear();
         await configBox.delete('defaultWallet');
         // await sub.deleteAllAccounts();
 
@@ -158,7 +157,7 @@ class MyWalletsProvider with ChangeNotifier {
     WalletData defaultWallet = getDefaultWallet();
 
     // ignore: use_build_context_synchronously
-    final walletData = await Durt.i.walletService.derive(fromAddress: defaultWallet.address, derivation: newDerivationNbr, pinCode: pinCode);
+    final walletData = await Durt.i.wallets.derive(fromAddress: defaultWallet.address, derivation: newDerivationNbr, pinCode: pinCode);
 
     WalletData newWallet = WalletData(
         safeBoxNumber: safeNumber,
@@ -169,7 +168,7 @@ class MyWalletsProvider with ChangeNotifier {
         imagePath: '${newWalletNbr % 4}.png',
         isOwned: true);
 
-    await Durt.i.walletService.walletDataBox.put(newWallet.address, newWallet);
+    await Durt.i.wallets.walletDataBox.put(newWallet.address, newWallet);
     await readAllWallets();
 
     isNewDerivationLoading = false;
@@ -197,7 +196,7 @@ class MyWalletsProvider with ChangeNotifier {
 
     WalletData defaultWallet = myWalletProvider.getDefaultWallet();
 
-    final walletData = await Durt.i.walletService.generateRootKeypair(fromAddress: defaultWallet.address, pinCode: pinCode);
+    final walletData = await Durt.i.wallets.generateRootKeypair(fromAddress: defaultWallet.address, pinCode: pinCode);
 
     WalletData newWallet = WalletData(
         safeBoxNumber: safeNumber,
@@ -208,7 +207,7 @@ class MyWalletsProvider with ChangeNotifier {
         imagePath: '${newWalletNbr % 4}.png',
         isOwned: true);
 
-    await Durt.i.walletService.walletDataBox.put(newWallet.address, newWallet);
+    await Durt.i.wallets.walletDataBox.put(newWallet.address, newWallet);
     await readAllWallets();
 
     isNewDerivationLoading = false;

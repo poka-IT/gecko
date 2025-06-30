@@ -52,7 +52,7 @@ class CertifyButton extends StatelessWidget {
                   );
 
                   if (!result) return;
-                  await Durt.i.walletService.setDefaultWallet(address);
+                  await Durt.i.wallets.setDefaultWallet(address);
 
                   if (myWalletProvider.pinCode == '') {
                     await Navigator.push(
@@ -68,7 +68,7 @@ class CertifyButton extends StatelessWidget {
                     return;
                   }
                   WalletsProfilesProvider walletViewProvider = Provider.of<WalletsProfilesProvider>(context, listen: false);
-                  final identityWallet = Durt.i.walletService.identityWallet;
+                  final identityWallet = Durt.i.wallets.identityWallet;
 
                   if (identityWallet == null) {
                     throw Exception('Identity wallet not found');

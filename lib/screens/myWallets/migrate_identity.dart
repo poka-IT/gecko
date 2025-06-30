@@ -57,7 +57,7 @@ class MigrateIdentityScreen extends StatelessWidget {
     String matchInfo = '';
 
     Future scanDerivations() async {
-      if (!isAddress(newWalletAddress.text) || !Durt.i.walletService.isMnemonicValid(newMnemonicSentence.text) || !migrationChecks.canMigrate) {
+      if (!isAddress(newWalletAddress.text) || !Durt.i.wallets.isMnemonicValid(newMnemonicSentence.text) || !migrationChecks.canMigrate) {
         mnemonicIsValid = false;
         matchInfo = '';
         walletOptions.reload();
@@ -369,7 +369,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                           ? () async {
                               if (!await myWalletProvider.askPinCode()) return;
 
-                              await Durt.i.walletService.importAccount(
+                              await Durt.i.wallets.importAccount(
                                   mnemonic: newMnemonicSentence.text, derivation: matchDerivationNbr == -1 ? null : matchDerivationNbr, pinCode: '1472');
 
                               final transactionId = await sub.migrateIdentity(
@@ -381,7 +381,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                                 fromBalance: migrationChecks.fromBalance!.toMap(),
                               );
 
-                              await Durt.i.walletService.deleteWallet(newWalletAddress.text);
+                              await Durt.i.wallets.deleteWallet(newWalletAddress.text);
                               Navigator.pop(context);
                               Navigator.push(
                                 context,

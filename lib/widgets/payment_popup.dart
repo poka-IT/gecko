@@ -217,7 +217,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                 },
                                 onChanged: (WalletData? newSelectedWallet) async {
                                   defaultWallet = newSelectedWallet!;
-                                  await Durt.i.walletService.setDefaultWallet(newSelectedWallet.address);
+                                  await Durt.i.wallets.setDefaultWallet(newSelectedWallet.address);
                                   sub.reload();
                                   amountFocus.requestFocus();
                                   setState(() {});

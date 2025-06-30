@@ -36,8 +36,8 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
     super.initState();
     pinFocus = FocusNode(debugLabel: 'pinFocusNode');
     enterPin = TextEditingController();
-    currentSafeNumber = Durt.i.walletService.defaultSafeBoxNumber;
-    currentSafe = Durt.i.walletService.safeBox.get(currentSafeNumber)!;
+    currentSafeNumber = Durt.i.wallets.defaultSafeBoxNumber;
+    currentSafe = Durt.i.wallets.safeBox.get(currentSafeNumber)!;
   }
 
   @override
@@ -243,7 +243,7 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
             onCompleted: (pin) async {
               myWalletProvider.isPinLoading = true;
               myWalletProvider.pinCode = pin.toUpperCase();
-              final isValid = await Durt.i.walletService.checkCode(pin: pin.toUpperCase());
+              final isValid = await Durt.i.wallets.checkCode(pin: pin.toUpperCase());
               if (!isValid) {
                 await Future.delayed(const Duration(milliseconds: 20));
                 pinColor = Colors.red[600]!;

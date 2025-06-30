@@ -246,7 +246,7 @@ class WalletOptions extends StatelessWidget {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
     final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
 
-    await Durt.i.walletService.setDefaultWallet(walletOptions.address.text);
+    await Durt.i.wallets.setDefaultWallet(walletOptions.address.text);
     await myWalletProvider.readAllWallets(currentChest);
     myWalletProvider.reload();
     walletOptions.reload();

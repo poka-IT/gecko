@@ -15,18 +15,18 @@ class ChestProvider with ChangeNotifier {
     final bool? answer = await (_confirmDeletingChest(context, safe.name));
     // ignore: use_build_context_synchronously
     if (answer ?? false) {
-      await Durt.i.walletService.deleteSafe(safe.key);
+      await Durt.i.wallets.deleteSafe(safe.key);
       final myWalletProvider =
           // ignore: use_build_context_synchronously
           Provider.of<MyWalletsProvider>(context, listen: false);
 
       myWalletProvider.pinCode = '';
 
-      if (Durt.i.walletService.safeBox.isEmpty) {
-        await Durt.i.walletService.setDefaultSafeBoxNumber(0);
+      if (Durt.i.wallets.safeBox.isEmpty) {
+        await Durt.i.wallets.setDefaultSafeBoxNumber(0);
       } else {
-        final int lastSafe = Durt.i.walletService.safeBox.toMap().keys.first;
-        await Durt.i.walletService.setDefaultSafeBoxNumber(lastSafe);
+        final int lastSafe = Durt.i.wallets.safeBox.toMap().keys.first;
+        await Durt.i.wallets.setDefaultSafeBoxNumber(lastSafe);
       }
 
       Navigator.popUntil(
@@ -40,7 +40,7 @@ class ChestProvider with ChangeNotifier {
 
   List<String> getChestWallets(SafeBox safe) {
     List<String> toDelete = [];
-    Durt.i.walletService.walletDataBox.toMap().forEach((key, WalletData value) {
+    Durt.i.wallets.walletDataBox.toMap().forEach((key, WalletData value) {
       if (value.safeBoxNumber == safe.key) {
         toDelete.add(value.address);
       }

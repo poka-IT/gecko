@@ -199,29 +199,28 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   void resetImportView() {
-    cellController0.text = cellController1.text = cellController2.text = cellController3.text = cellController4.text = cellController5.text =
-        cellController6.text = cellController7.text = cellController8.text = cellController9.text = cellController10.text = cellController11.text = '';
+    cellController0.text = cellController1.text = cellController2.text = cellController3.text = cellController4.text =
+        cellController5.text = cellController6.text = cellController7.text = cellController8.text =
+            cellController9.text = cellController10.text = cellController11.text = '';
     isFirstTimeSentenceComplete = true;
     notifyListeners();
   }
 
   bool isSentenceComplete(BuildContext context) {
-    if (isBipWordsList(
-      [
-        cellController0.text,
-        cellController1.text,
-        cellController2.text,
-        cellController3.text,
-        cellController4.text,
-        cellController5.text,
-        cellController6.text,
-        cellController7.text,
-        cellController8.text,
-        cellController9.text,
-        cellController10.text,
-        cellController11.text
-      ],
-    )) {
+    if (isBipWordsList([
+      cellController0.text,
+      cellController1.text,
+      cellController2.text,
+      cellController3.text,
+      cellController4.text,
+      cellController5.text,
+      cellController6.text,
+      cellController7.text,
+      cellController8.text,
+      cellController9.text,
+      cellController10.text,
+      cellController11.text,
+    ])) {
       if (isFirstTimeSentenceComplete) {
         FocusScope.of(context).unfocus();
       }
@@ -252,7 +251,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       cellController8,
       cellController9,
       cellController10,
-      cellController11
+      cellController11,
     ];
     for (var word in sentence.text!.split(' ')) {
       bool isValid = isBipWord(word, false);
@@ -333,10 +332,9 @@ class GenerateWalletsProvider with ChangeNotifier {
       addressToScan.putIfAbsent(keypair.address, () => derivationNbr);
     }
 
-    final balanceList = await Durt.i.storage.getBalances(addressToScan.keys.toList()).timeout(
-          const Duration(seconds: 20),
-          onTimeout: () => throw TimeoutException('Timeout scanning derivations'),
-        );
+    final balanceList = await Durt.i.storage
+        .getBalances(addressToScan.keys.toList())
+        .timeout(const Duration(seconds: 20), onTimeout: () => throw TimeoutException('Timeout scanning derivations'));
 
     // Remove unused wallets
     balanceList.removeWhere((key, value) => value.free == BigInt.zero);
@@ -351,12 +349,13 @@ class GenerateWalletsProvider with ChangeNotifier {
       final actualSafeNumber = Durt.i.wallets.defaultSafeBoxNumber;
 
       final myWallet = WalletData(
-          safeBoxNumber: actualSafeNumber,
-          address: scannedWallet,
-          name: walletName,
-          derivation: addressToScan[scannedWallet],
-          imagePath: 'assets/avatars/${scanedWalletNumber % 4}.png',
-          isOwned: true);
+        safeBoxNumber: actualSafeNumber,
+        address: scannedWallet,
+        name: walletName,
+        derivation: addressToScan[scannedWallet],
+        imagePath: 'assets/avatars/${scanedWalletNumber % 4}.png',
+        isOwned: true,
+      );
       await Durt.i.wallets.walletDataBox.put(myWallet.address, myWallet);
       scanedWalletNumber++;
       notifyListeners();
@@ -376,10 +375,9 @@ class GenerateWalletsProvider with ChangeNotifier {
     final address = Durt.i.wallets.getAddress(keypair.address);
 
     // if (addressData.address == null) return false;
-    final balance = await Durt.i.storage.getBalance(address).timeout(
-          const Duration(seconds: 1),
-          onTimeout: () => WalletBalance.empty(),
-        );
+    final balance = await Durt.i.storage
+        .getBalance(address)
+        .timeout(const Duration(seconds: 1), onTimeout: () => WalletBalance.empty());
 
     if (balance.free != BigInt.zero) {
       String walletName = 'myRootWallet'.tr();
@@ -388,8 +386,14 @@ class GenerateWalletsProvider with ChangeNotifier {
 
       final actualSafeNumber = Durt.i.wallets.defaultSafeBoxNumber;
 
-      WalletData myWallet =
-          WalletData(safeBoxNumber: actualSafeNumber, address: address, name: walletName, derivation: -1, imagePath: 'assets/avatars/0.png', isOwned: true);
+      WalletData myWallet = WalletData(
+        safeBoxNumber: actualSafeNumber,
+        address: address,
+        name: walletName,
+        derivation: -1,
+        imagePath: 'assets/avatars/0.png',
+        isOwned: true,
+      );
       await Durt.i.wallets.walletDataBox.put(myWallet.address, myWallet);
       scanedWalletNumber++;
       return true;

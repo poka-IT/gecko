@@ -25,7 +25,8 @@ Map<String, String> errorTransactionMap = {
   'cert.CannotCertifySelf': 'canNotCertifySelf'.tr(),
   'identity.IdtyNameAlreadyExist': 'nameAlreadyExist'.tr(),
   'balances.KeepAlive': '2GDtoKeepAlive'.tr(),
-  '1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low': 'youHaveToFeedThisAccountBeforeUsing'.tr(),
+  '1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low':
+      'youHaveToFeedThisAccountBeforeUsing'.tr(),
   'Token.FundsUnavailable': 'fundsUnavailable'.tr(),
   'wot.MembershipRenewalPeriodNotRespected': 'membershipRenewalPeriodNotRespected'.tr(),
 };

@@ -17,17 +17,20 @@ class OnboardingStepTwo extends StatelessWidget {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('yourMnemonic'.tr()),
       body: SafeArea(
-        child: Stack(children: [
-          SingleChildScrollView(
-            child: InfoIntro(
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              child: InfoIntro(
                 text: 'keepThisMnemonicSecure'.tr(),
                 assetName: 'fabrication-de-portefeuille-impossible-sans-phrase.png',
                 buttonText: '>',
                 nextScreen: const OnboardingStepThree(),
-                pagePosition: 1),
-          ),
-          const OfflineInfo(),
-        ]),
+                pagePosition: 1,
+              ),
+            ),
+            const OfflineInfo(),
+          ],
+        ),
       ),
     );
   }

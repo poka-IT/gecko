@@ -88,7 +88,10 @@ class _SearchScreenState extends State<SearchScreen> {
                             : Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 10),
                                 child: IconButton(
-                                  onPressed: (() async => {searchProvider.searchController.text = '', searchProvider.reload()}),
+                                  onPressed: (() async => {
+                                    searchProvider.searchController.text = '',
+                                    searchProvider.reload(),
+                                  }),
                                   icon: Icon(Icons.close, color: Colors.grey[600], size: scaleSize(28)),
                                 ),
                               ),
@@ -204,8 +207,18 @@ class _SearchScreenState extends State<SearchScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 2), spreadRadius: 0),
-                BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 2, offset: const Offset(0, 1), spreadRadius: 0),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                  spreadRadius: 0,
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 2,
+                  offset: const Offset(0, 1),
+                  spreadRadius: 0,
+                ),
               ],
             ),
             child: ClipOval(

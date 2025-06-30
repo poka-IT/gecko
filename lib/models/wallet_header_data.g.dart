@@ -13,9 +13,7 @@ class WalletHeaderDataAdapter extends TypeAdapter<WalletHeaderData> {
   @override
   WalletHeaderData read(BinaryReader reader) {
     final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{
-      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
-    };
+    final fields = <int, dynamic>{for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read()};
     return WalletHeaderData(
       hasIdentity: fields[0] as bool,
       isOwner: fields[1] as bool,
@@ -47,7 +45,5 @@ class WalletHeaderDataAdapter extends TypeAdapter<WalletHeaderData> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is WalletHeaderDataAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+      other is WalletHeaderDataAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }

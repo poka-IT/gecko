@@ -84,37 +84,14 @@ final ThemeData lightTheme = ThemeData(
   appBarTheme: const AppBarTheme(
     elevation: 0,
     backgroundColor: _headerColor,
-    titleTextStyle: TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w500,
-      color: _textColor,
-      fontFamily: 'Roboto',
-    ),
+    titleTextStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _textColor, fontFamily: 'Roboto'),
     iconTheme: IconThemeData(color: _iconColor),
   ),
   textTheme: const TextTheme(
-    titleLarge: TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w500,
-      color: _textColor,
-      fontFamily: 'Roboto',
-    ),
-    bodyMedium: TextStyle(
-      fontSize: 14,
-      color: _textColor,
-      fontFamily: 'Roboto',
-    ),
-    bodySmall: TextStyle(
-      fontSize: 13,
-      color: _textSecondaryColor,
-      fontFamily: 'Roboto',
-    ),
-    labelMedium: TextStyle(
-      fontSize: 15,
-      fontFamily: 'Monospace',
-      fontWeight: FontWeight.w500,
-      color: _textColor,
-    ),
+    titleLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _textColor, fontFamily: 'Roboto'),
+    bodyMedium: TextStyle(fontSize: 14, color: _textColor, fontFamily: 'Roboto'),
+    bodySmall: TextStyle(fontSize: 13, color: _textSecondaryColor, fontFamily: 'Roboto'),
+    labelMedium: TextStyle(fontSize: 15, fontFamily: 'Monospace', fontWeight: FontWeight.w500, color: _textColor),
   ),
   colorScheme: ColorScheme.fromSeed(seedColor: _yellowC, brightness: Brightness.light).copyWith(
     secondary: _yellowC,
@@ -159,37 +136,14 @@ final ThemeData darkTheme = ThemeData(
   appBarTheme: const AppBarTheme(
     elevation: 0,
     backgroundColor: _darkHeaderColor,
-    titleTextStyle: TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w500,
-      color: _darkTextColor,
-      fontFamily: 'Roboto',
-    ),
+    titleTextStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _darkTextColor, fontFamily: 'Roboto'),
     iconTheme: IconThemeData(color: _darkIconColor),
   ),
   textTheme: const TextTheme(
-    titleLarge: TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w500,
-      color: _darkTextColor,
-      fontFamily: 'Roboto',
-    ),
-    bodyMedium: TextStyle(
-      fontSize: 14,
-      color: _darkTextColor,
-      fontFamily: 'Roboto',
-    ),
-    bodySmall: TextStyle(
-      fontSize: 13,
-      color: _darkTextSecondaryColor,
-      fontFamily: 'Roboto',
-    ),
-    labelMedium: TextStyle(
-      fontSize: 15,
-      fontFamily: 'Monospace',
-      fontWeight: FontWeight.w500,
-      color: _darkTextColor,
-    ),
+    titleLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: _darkTextColor, fontFamily: 'Roboto'),
+    bodyMedium: TextStyle(fontSize: 14, color: _darkTextColor, fontFamily: 'Roboto'),
+    bodySmall: TextStyle(fontSize: 13, color: _darkTextSecondaryColor, fontFamily: 'Roboto'),
+    labelMedium: TextStyle(fontSize: 15, fontFamily: 'Monospace', fontWeight: FontWeight.w500, color: _darkTextColor),
   ),
   colorScheme: ColorScheme.fromSeed(seedColor: _darkOrangeC, brightness: Brightness.dark).copyWith(
     secondary: _darkYellowC,

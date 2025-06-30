@@ -73,7 +73,8 @@ class HomeProvider with ChangeNotifier {
     configBox = await Hive.openBox("configBox");
 
     // Check if walletHeaderDataVersion non compatible, drop wallet_header_cache
-    if (configBox.get('walletHeaderDataVersion') == null || configBox.get('walletHeaderDataVersion') < walletHeaderDataVersion) {
+    if (configBox.get('walletHeaderDataVersion') == null ||
+        configBox.get('walletHeaderDataVersion') < walletHeaderDataVersion) {
       await Hive.deleteBoxFromDisk('wallet_header_cache');
       configBox.put('walletHeaderDataVersion', walletHeaderDataVersion);
     }
@@ -170,7 +171,9 @@ class HomeProvider with ChangeNotifier {
     } catch (e) {
       // 3. Fallback sur le fichier local
       try {
-        final localEndpoints = await rootBundle.loadString('config/gdev_endpoints.json').then((jsonStr) => List<String>.from(jsonDecode(jsonStr)));
+        final localEndpoints = await rootBundle
+            .loadString('config/gdev_endpoints.json')
+            .then((jsonStr) => List<String>.from(jsonDecode(jsonStr)));
 
         localEndpoints.shuffle();
         // await configBox.put('endpoint', localEndpoints);

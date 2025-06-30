@@ -18,4 +18,3 @@ extension ExtendedBuildContext on BuildContext {
   /// Is dark mode currently enabled?
   bool get isDarkTheme => Theme.of(this).brightness == Brightness.dark;
 }
-

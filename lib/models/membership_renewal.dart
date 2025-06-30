@@ -14,11 +14,7 @@ class MembershipRenewal {
   static RenewalInfo calculateRenewalInfo(MembershipStatus status) {
     if (status.expireDate == null) {
       return status.idtyStatus == IdtyStatus.expired
-          ? RenewalInfo(
-              canRenew: true,
-              isExpired: true,
-              hasPendingRenewal: status.hasPendingRenewal,
-            )
+          ? RenewalInfo(canRenew: true, isExpired: true, hasPendingRenewal: status.hasPendingRenewal)
           : RenewalInfo(canRenew: false);
     }
 
@@ -53,14 +49,16 @@ class MembershipRenewal {
 
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) {
-        return TransactionInProgressScreen(
-          transactionStatus: transactionStatus,
-          transType: 'renewMembership',
-          fromAddress: getShortPubkey(address),
-          toAddress: getShortPubkey(address),
-        );
-      }),
+      MaterialPageRoute(
+        builder: (context) {
+          return TransactionInProgressScreen(
+            transactionStatus: transactionStatus,
+            transType: 'renewMembership',
+            fromAddress: getShortPubkey(address),
+            toAddress: getShortPubkey(address),
+          );
+        },
+      ),
     );
   }
 
@@ -73,11 +71,18 @@ class MembershipRenewal {
     if (info.hasPendingRenewal) {
       text = 'membershipRenewalPending'.tr();
     } else if (info.isExpired) {
-      text = info.expireDate != null ? 'membershipExpiredOn'.tr(args: [DateFormat('dd/MM/yyyy').format(info.expireDate!)]) : 'membershipExpired'.tr();
+      text = info.expireDate != null
+          ? 'membershipExpiredOn'.tr(args: [DateFormat('dd/MM/yyyy').format(info.expireDate!)])
+          : 'membershipExpired'.tr();
     } else if (!isRenewalStartDateInFuture) {
       text = 'membershipExpiresOnSimple'.tr(args: [DateFormat('dd/MM/yyyy').format(info.expireDate!)]);
     } else {
-      text = 'membershipExpiresOn'.tr(args: [DateFormat('dd/MM/yyyy').format(info.expireDate!), DateFormat('dd/MM/yyyy').format(info.renewalStartDate!)]);
+      text = 'membershipExpiresOn'.tr(
+        args: [
+          DateFormat('dd/MM/yyyy').format(info.expireDate!),
+          DateFormat('dd/MM/yyyy').format(info.renewalStartDate!),
+        ],
+      );
     }
 
     final textWidget = Text(
@@ -89,7 +94,9 @@ class MembershipRenewal {
       ),
     );
 
-    return width != null ? SizedBox(width: scaleSize(width), child: textWidget) : SizedBox(width: scaleSize(250), child: textWidget);
+    return width != null
+        ? SizedBox(width: scaleSize(width), child: textWidget)
+        : SizedBox(width: scaleSize(250), child: textWidget);
   }
 }
 

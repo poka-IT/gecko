@@ -13,10 +13,7 @@ import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 
 class WalletTile extends StatelessWidget {
-  const WalletTile({
-    super.key,
-    required this.repository,
-  });
+  const WalletTile({super.key, required this.repository});
 
   final WalletData repository;
 
@@ -27,14 +24,7 @@ class WalletTile extends StatelessWidget {
       child: GestureDetector(
         key: keyOpenWallet(repository.address),
         onTap: () {
-          Navigator.push(
-            context,
-            SmoothTransition(
-              page: WalletOptions(
-                wallet: repository,
-              ),
-            ),
-          );
+          Navigator.push(context, SmoothTransition(page: WalletOptions(wallet: repository)));
         },
         child: ScaledSizedBox(
           // key: repository.number == 1 ? keyDragAndDrop : const Key('nothing'),
@@ -43,11 +33,7 @@ class WalletTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               color: Colors.white,
               boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
+                BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 2)),
               ],
             ),
             child: Column(
@@ -79,9 +65,7 @@ class WalletTile extends StatelessWidget {
                                   shape: BoxShape.circle,
                                   image: DecorationImage(
                                     fit: BoxFit.fitHeight,
-                                    image: AssetImage(
-                                      repository.imagePath!,
-                                    ),
+                                    image: AssetImage(repository.imagePath!),
                                   ),
                                 ),
                               ),
@@ -91,7 +75,9 @@ class WalletTile extends StatelessWidget {
                 ),
                 Container(
                   decoration: BoxDecoration(
-                    color: isDefault ? context.colorScheme.primary.withValues(alpha: 0.9) : context.colorScheme.secondary.withValues(alpha: 0.9),
+                    color: isDefault
+                        ? context.colorScheme.primary.withValues(alpha: 0.9)
+                        : context.colorScheme.secondary.withValues(alpha: 0.9),
                     borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(12),
                       bottomRight: Radius.circular(12),
@@ -128,5 +114,6 @@ class WalletTile extends StatelessWidget {
     );
   }
 
-  bool get isDefault => repository.address == Provider.of<MyWalletsProvider>(homeContext, listen: false).getDefaultWallet().address;
+  bool get isDefault =>
+      repository.address == Provider.of<MyWalletsProvider>(homeContext, listen: false).getDefaultWallet().address;
 }

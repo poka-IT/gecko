@@ -71,11 +71,11 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
 
     if (!await myWalletProvider.askPinCode()) return;
 
-    final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: widget.address, pinCode: myWalletProvider.pinCode);
-    final transactionStatus = Durt.i.duniter.confirmIdentity(
-      keypair: keypair,
-      name: name,
+    final keypair = await Durt.i.wallets.getKeyPairFromAddress(
+      address: widget.address,
+      pinCode: myWalletProvider.pinCode,
     );
+    final transactionStatus = Durt.i.duniter.confirmIdentity(keypair: keypair, name: name);
 
     if (!mounted) return;
     navigatorState.pop();
@@ -135,41 +135,34 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
                     // Titre principal
                     Text(
                       'identityInDuniterNetwork'.tr(args: [currencyName]),
-                      style: scaledTextStyle(
-                        fontSize: isSmallScreen ? 20 : 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: scaledTextStyle(fontSize: isSmallScreen ? 20 : 24, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),
                     ScaledSizedBox(height: isSmallScreen ? 16 : 24),
 
                     // Texte explicatif
-                    Text(
-                      'identityExplanation'.tr(),
-                      style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16),
-                    ),
+                    Text('identityExplanation'.tr(), style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16)),
                     ScaledSizedBox(height: isSmallScreen ? 16 : 24),
 
                     // Points importants
-                    ...[
-                      'identityNameUnique'.tr(),
-                      'identityNameSearchable'.tr(),
-                      'identityNamePermanent'.tr(),
-                    ].map((text) => Padding(
-                          padding: EdgeInsets.only(bottom: scaleSize(isSmallScreen ? 8 : 12)),
-                          child: Row(
-                            children: [
-                              Icon(Icons.check_circle, color: context.colorScheme.primary, size: scaleSize(isSmallScreen ? 16 : 20)),
-                              ScaledSizedBox(width: isSmallScreen ? 8 : 12),
-                              Expanded(
-                                child: Text(
-                                  text,
-                                  style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )),
+                    ...['identityNameUnique'.tr(), 'identityNameSearchable'.tr(), 'identityNamePermanent'.tr()].map(
+                      (text) => Padding(
+                        padding: EdgeInsets.only(bottom: scaleSize(isSmallScreen ? 8 : 12)),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              color: context.colorScheme.primary,
+                              size: scaleSize(isSmallScreen ? 16 : 20),
+                            ),
+                            ScaledSizedBox(width: isSmallScreen ? 8 : 12),
+                            Expanded(
+                              child: Text(text, style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                     ScaledSizedBox(height: isSmallScreen ? 24 : 32),
 
                     // Champ de saisie
@@ -183,22 +176,14 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
                           _confirmIdentity(context);
                         }
                       },
-                      inputFormatters: [
-                        FilteringTextInputFormatter.deny(RegExp(r'^ ')),
-                      ],
+                      inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r'^ '))],
                       decoration: InputDecoration(
                         hintText: 'enterIdentityName'.tr(),
                         errorText: _errorMessage.isNotEmpty ? _errorMessage : null,
                         filled: true,
                         fillColor: Colors.grey[100],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: scaleSize(16),
-                          vertical: scaleSize(12),
-                        ),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                        contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
                       ),
                       style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16),
                     ),
@@ -220,16 +205,11 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
                   backgroundColor: context.colorScheme.primary,
                   disabledBackgroundColor: Colors.grey[300],
                   elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 child: Text(
                   'validate'.tr(),
-                  style: scaledTextStyle(
-                    fontSize: isSmallScreen ? 14 : 16,
-                    color: Colors.white,
-                  ),
+                  style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16, color: Colors.white),
                 ),
               ),
             ),

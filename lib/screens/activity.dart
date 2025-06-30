@@ -96,10 +96,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   children: <Widget>[
                     WalletHeader(address: widget.address),
                     Expanded(
-                      child: HistoryQuery(
-                        address: widget.address,
-                        transactionData: widget.transactionData,
-                      ),
+                      child: HistoryQuery(address: widget.address, transactionData: widget.transactionData),
                     ),
                   ],
                 ),

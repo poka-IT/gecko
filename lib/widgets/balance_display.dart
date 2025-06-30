@@ -127,12 +127,7 @@ class BalanceDisplay extends StatelessWidget {
           style: scaledTextStyle(fontSize: size, color: color, fontWeight: fontWeight),
         ),
         ScaledSizedBox(width: 5),
-        UdUnitDisplay(
-          size: scaleSize(size),
-          color: color,
-          fontWeight: fontWeight,
-          valuePrefix: displayPrefix,
-        ),
+        UdUnitDisplay(size: scaleSize(size), color: color, fontWeight: fontWeight, valuePrefix: displayPrefix),
       ],
     );
   }

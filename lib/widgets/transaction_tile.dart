@@ -37,10 +37,7 @@ class TransactionTile extends StatelessWidget {
     final String? username = transaction.username == '' ? null : transaction.username;
 
     return Container(
-      margin: EdgeInsets.symmetric(
-        horizontal: scaleSize(16),
-        vertical: scaleSize(4),
-      ),
+      margin: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(4)),
       decoration: BoxDecoration(
         color: context.colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(12),
@@ -51,22 +48,13 @@ class TransactionTile extends StatelessWidget {
       ),
       child: ListTile(
         key: keyTransaction(newKey),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: scaleSize(16),
-          vertical: scaleSize(8),
-        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(8)),
         leading: Container(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(
-              color: context.colorScheme.onSecondaryContainer,
-              width: 1,
-            ),
+            border: Border.all(color: context.colorScheme.onSecondaryContainer, width: 1),
           ),
-          child: DatapodAvatar(
-            address: transaction.address,
-            size: avatarSize,
-          ),
+          child: DatapodAvatar(address: transaction.address, size: avatarSize),
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,26 +71,17 @@ class TransactionTile extends StatelessWidget {
             ScaledSizedBox(height: 4),
             RichText(
               text: TextSpan(
-                style: scaledTextStyle(
-                  fontSize: 13,
-                  color: homeContext.colorScheme.onSurfaceVariant,
-                ),
+                style: scaledTextStyle(fontSize: 13, color: homeContext.colorScheme.onSurfaceVariant),
                 children: <TextSpan>[
                   TextSpan(text: dateForm),
                   if (username != null) ...[
                     TextSpan(
                       text: '  ·  ',
-                      style: scaledTextStyle(
-                        fontSize: 13,
-                        color: Colors.grey[500],
-                      ),
+                      style: scaledTextStyle(fontSize: 13, color: Colors.grey[500]),
                     ),
                     TextSpan(
                       text: username,
-                      style: scaledTextStyle(
-                        fontStyle: FontStyle.italic,
-                        color: Colors.grey[600],
-                      ),
+                      style: scaledTextStyle(fontStyle: FontStyle.italic, color: Colors.grey[600]),
                     ),
                   ],
                 ],
@@ -112,11 +91,7 @@ class TransactionTile extends StatelessWidget {
               ScaledSizedBox(height: 4),
               Text(
                 transaction.comment,
-                style: scaledTextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                  fontStyle: FontStyle.italic,
-                ),
+                style: scaledTextStyle(fontSize: 12, color: Colors.grey[600], fontStyle: FontStyle.italic),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -133,10 +108,7 @@ class TransactionTile extends StatelessWidget {
           Navigator.push(
             context,
             PageNoTransit(
-              builder: (context) => WalletViewScreen(
-                address: transaction.address,
-                username: username,
-              ),
+              builder: (context) => WalletViewScreen(address: transaction.address, username: username),
             ),
           );
         },

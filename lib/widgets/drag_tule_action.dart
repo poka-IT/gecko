@@ -30,7 +30,11 @@ class DragTuleAction extends StatelessWidget {
       },
       feedback: ElevatedButton(
         onPressed: () {},
-        style: ElevatedButton.styleFrom(backgroundColor: context.colorScheme.primary, shape: const CircleBorder(), padding: EdgeInsets.all(scaleSize(14))),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: context.colorScheme.primary,
+          shape: const CircleBorder(),
+          padding: EdgeInsets.all(scaleSize(14)),
+        ),
         child: SizedBox(
           height: scaleSize(33),
           child: const Image(image: AssetImage('assets/vector_white.png')),

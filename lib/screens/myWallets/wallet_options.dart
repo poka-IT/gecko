@@ -85,7 +85,14 @@ class WalletOptions extends StatelessWidget {
                                   buildConfirmIdentitySection(walletProvider),
                                   if (wallet.hasIdentity) buildRenewMembershipSection(walletProvider),
                                   buildOptionsSection(context, walletProvider, historyProvider),
-                                  if (!isAlone) buildDefaultWalletSection(context, walletProvider, myWalletProvider, walletOptions, currentChest),
+                                  if (!isAlone)
+                                    buildDefaultWalletSection(
+                                      context,
+                                      walletProvider,
+                                      myWalletProvider,
+                                      walletOptions,
+                                      currentChest,
+                                    ),
                                   if (!wallet.hasIdentity)
                                     InkWell(
                                       key: keyRenameWallet,
@@ -93,7 +100,10 @@ class WalletOptions extends StatelessWidget {
                                         await walletProvider.editWalletName(context, wallet.address);
                                       },
                                       child: Container(
-                                        padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: scaleSize(17),
+                                          vertical: scaleSize(12),
+                                        ),
                                         child: Row(
                                           crossAxisAlignment: CrossAxisAlignment.center,
                                           children: [
@@ -117,7 +127,8 @@ class WalletOptions extends StatelessWidget {
                                         ),
                                       ),
                                     ),
-                                  if (!walletProvider.isDefaultWallet && !wallet.hasIdentity) deleteWallet(context, walletProvider, currentChest),
+                                  if (!walletProvider.isDefaultWallet && !wallet.hasIdentity)
+                                    deleteWallet(context, walletProvider, currentChest),
                                   if (wallet.hasIdentity) const ManageMembershipButton(),
                                   if (isAlone) aloneWalletOptions(context),
                                 ],
@@ -167,14 +178,8 @@ class WalletOptions extends StatelessWidget {
           ),
           child: ClipOval(
             child: wallet.imagePath == null || wallet.imagePath == ''
-                ? Image.asset(
-                    'assets/avatars/${wallet.number % 4}.png',
-                    fit: BoxFit.cover,
-                  )
-                : Image.asset(
-                    wallet.imagePath!,
-                    fit: BoxFit.cover,
-                  ),
+                ? Image.asset('assets/avatars/${wallet.number % 4}.png', fit: BoxFit.cover)
+                : Image.asset(wallet.imagePath!, fit: BoxFit.cover),
           ),
         ),
         Positioned(
@@ -182,20 +187,13 @@ class WalletOptions extends StatelessWidget {
           bottom: 0,
           child: Container(
             padding: EdgeInsets.all(scaleSize(8)),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-            ),
+            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
             child: InkWell(
               onTap: () async {
                 wallet.imagePath = await walletProvider.changeAvatar();
                 walletProvider.reload();
               },
-              child: Icon(
-                Icons.camera_alt,
-                size: scaleSize(20),
-                color: Colors.black54,
-              ),
+              child: Icon(Icons.camera_alt, size: scaleSize(20), color: Colors.black54),
             ),
           ),
         ),
@@ -203,7 +201,11 @@ class WalletOptions extends StatelessWidget {
     );
   }
 
-  Widget activityWidget(BuildContext context, WalletsProfilesProvider historyProvider, WalletOptionsProvider walletProvider) {
+  Widget activityWidget(
+    BuildContext context,
+    WalletsProfilesProvider historyProvider,
+    WalletOptionsProvider walletProvider,
+  ) {
     return InkWell(
       key: keyOpenActivity,
       onTap: () {
@@ -226,10 +228,7 @@ class WalletOptions extends StatelessWidget {
             Expanded(
               child: Text(
                 "displayActivity".tr(),
-                style: scaledTextStyle(
-                  fontSize: 16,
-                  color: context.colorScheme.onSurface,
-                ),
+                style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
                 softWrap: true,
               ),
             ),
@@ -255,52 +254,54 @@ class WalletOptions extends StatelessWidget {
     final defaultWallet = myWalletProvider.getDefaultWallet();
     final bool isDefaultWallet = walletOptions.address.text == defaultWallet.address;
     return FutureBuilder(
-        future: Durt.i.storage.hasAccountConsumers(wallet.address),
-        builder: (BuildContext context, AsyncSnapshot<bool> hasConsumers) {
-          if (hasConsumers.connectionState != ConnectionState.done || hasConsumers.hasError || !hasConsumers.hasData) {
-            return const SizedBox.shrink();
-          }
-          final BigInt balance = walletOptions.balanceCache[walletOptions.address.text] ?? BigInt.zero;
-          final bool canDelete = !isDefaultWallet && !hasConsumers.data! && (balance > BigInt.from(2) || balance == BigInt.zero) && !wallet.hasIdentity;
-          return InkWell(
-            key: keyDeleteWallet,
-            onTap: canDelete
-                ? () async {
-                    await walletOptions.deleteWallet(context, wallet);
-                    WidgetsBinding.instance.addPostFrameCallback((_) async {
-                      myWalletProvider.listWallets = await myWalletProvider.readAllWallets(currentChest);
-                      myWalletProvider.reload();
-                    });
-                  }
-                : null,
-            child: canDelete
-                ? Container(
-                    padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Image.asset(
-                          'assets/walletOptions/trash.png',
-                          height: scaleSize(24),
-                          color: const Color(0xffD80000),
+      future: Durt.i.storage.hasAccountConsumers(wallet.address),
+      builder: (BuildContext context, AsyncSnapshot<bool> hasConsumers) {
+        if (hasConsumers.connectionState != ConnectionState.done || hasConsumers.hasError || !hasConsumers.hasData) {
+          return const SizedBox.shrink();
+        }
+        final BigInt balance = walletOptions.balanceCache[walletOptions.address.text] ?? BigInt.zero;
+        final bool canDelete =
+            !isDefaultWallet &&
+            !hasConsumers.data! &&
+            (balance > BigInt.from(2) || balance == BigInt.zero) &&
+            !wallet.hasIdentity;
+        return InkWell(
+          key: keyDeleteWallet,
+          onTap: canDelete
+              ? () async {
+                  await walletOptions.deleteWallet(context, wallet);
+                  WidgetsBinding.instance.addPostFrameCallback((_) async {
+                    myWalletProvider.listWallets = await myWalletProvider.readAllWallets(currentChest);
+                    myWalletProvider.reload();
+                  });
+                }
+              : null,
+          child: canDelete
+              ? Container(
+                  padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/walletOptions/trash.png',
+                        height: scaleSize(24),
+                        color: const Color(0xffD80000),
+                      ),
+                      ScaledSizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          'deleteThisWallet'.tr(),
+                          style: scaledTextStyle(fontSize: 16, color: const Color(0xffD80000)),
+                          softWrap: true,
                         ),
-                        ScaledSizedBox(width: 16),
-                        Expanded(
-                          child: Text(
-                            'deleteThisWallet'.tr(),
-                            style: scaledTextStyle(
-                              fontSize: 16,
-                              color: const Color(0xffD80000),
-                            ),
-                            softWrap: true,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : const SizedBox.shrink(),
-          );
-        });
+                      ),
+                    ],
+                  ),
+                )
+              : const SizedBox.shrink(),
+        );
+      },
+    );
   }
 
   Widget buildRenewMembershipSection(WalletOptionsProvider walletProvider) {
@@ -314,7 +315,9 @@ class WalletOptions extends StatelessWidget {
         final info = MembershipRenewal.calculateRenewalInfo(snapshot.data!);
 
         final twentyDaysBeforeExpiration = info.expireDate?.subtract(const Duration(days: 20));
-        final shouldHideButton = !info.canRenew || (info.expireDate != null && !(twentyDaysBeforeExpiration?.isBefore(DateTime.now()) ?? false));
+        final shouldHideButton =
+            !info.canRenew ||
+            (info.expireDate != null && !(twentyDaysBeforeExpiration?.isBefore(DateTime.now()) ?? false));
 
         if (shouldHideButton) return const SizedBox.shrink();
 
@@ -330,15 +333,10 @@ class WalletOptions extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: context.colorScheme.primary,
                     elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
                   onPressed: () => MembershipRenewal.executeRenewal(context, walletProvider.address.text),
-                  child: Text(
-                    'renewMembership'.tr(),
-                    style: scaledTextStyle(fontSize: 16, color: Colors.white),
-                  ),
+                  child: Text('renewMembership'.tr(), style: scaledTextStyle(fontSize: 16, color: Colors.white)),
                 ),
               ),
               ScaledSizedBox(height: 8),
@@ -350,12 +348,21 @@ class WalletOptions extends StatelessWidget {
     );
   }
 
-  Widget buildOptionsSection(BuildContext context, WalletOptionsProvider walletProvider, WalletsProfilesProvider historyProvider) {
+  Widget buildOptionsSection(
+    BuildContext context,
+    WalletOptionsProvider walletProvider,
+    WalletsProfilesProvider historyProvider,
+  ) {
     return activityWidget(context, historyProvider, walletProvider);
   }
 
   Widget buildDefaultWalletSection(
-      BuildContext context, WalletOptionsProvider walletProvider, MyWalletsProvider myWalletProvider, WalletOptionsProvider walletOptions, int currentChest) {
+    BuildContext context,
+    WalletOptionsProvider walletProvider,
+    MyWalletsProvider myWalletProvider,
+    WalletOptionsProvider walletOptions,
+    int currentChest,
+  ) {
     return Consumer<MyWalletsProvider>(
       builder: (context, myWalletProvider, _) {
         return InkWell(
@@ -374,7 +381,9 @@ class WalletOptions extends StatelessWidget {
                 Icon(
                   Icons.check_circle_outline,
                   size: scaleSize(24),
-                  color: walletProvider.isDefaultWallet ? Colors.grey[400] : const Color(0xFF4CAF50).withValues(alpha: 0.8),
+                  color: walletProvider.isDefaultWallet
+                      ? Colors.grey[400]
+                      : const Color(0xFF4CAF50).withValues(alpha: 0.8),
                 ),
                 ScaledSizedBox(width: 16),
                 Expanded(
@@ -402,47 +411,38 @@ class WalletOptions extends StatelessWidget {
       builder: (BuildContext context, AsyncSnapshot<IdtyStatus> snapshot) {
         return Visibility(
           visible: snapshot.hasData && !snapshot.hasError && snapshot.data == IdtyStatus.created,
-          child: Column(children: [
-            ScaledSizedBox(height: 22),
-            SizedBox(
-              width: double.infinity,
-              height: scaleSize(50),
-              child: ElevatedButton(
-                key: keyConfirmIdentity,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: context.colorScheme.primary,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+          child: Column(
+            children: [
+              ScaledSizedBox(height: 22),
+              SizedBox(
+                width: double.infinity,
+                height: scaleSize(50),
+                child: ElevatedButton(
+                  key: keyConfirmIdentity,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: context.colorScheme.primary,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ConfirmIdentityScreen(
-                        address: walletProvider.address.text,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ConfirmIdentityScreen(address: walletProvider.address.text),
                       ),
-                    ),
-                  );
-                },
-                child: Text(
-                  'confirmMyIdentity'.tr(),
-                  style: scaledTextStyle(fontSize: 16, color: Colors.white),
+                    );
+                  },
+                  child: Text('confirmMyIdentity'.tr(), style: scaledTextStyle(fontSize: 16, color: Colors.white)),
                 ),
               ),
-            ),
-            ScaledSizedBox(height: 8),
-            Text(
-              "someoneCreatedYourIdentity".tr(args: [currencyName]),
-              style: scaledTextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-                fontStyle: FontStyle.italic,
+              ScaledSizedBox(height: 8),
+              Text(
+                "someoneCreatedYourIdentity".tr(args: [currencyName]),
+                style: scaledTextStyle(fontSize: 14, color: Colors.grey[600], fontStyle: FontStyle.italic),
               ),
-            ),
-            ScaledSizedBox(height: 24),
-          ]),
+              ScaledSizedBox(height: 24),
+            ],
+          ),
         );
       },
     );
@@ -490,27 +490,18 @@ Widget aloneWalletOptions(BuildContext context) {
       ),
       InkWell(
         onTap: () async {
-          Navigator.push(
-            homeContext,
-            MaterialPageRoute(builder: (context) => const ImportG1v1()),
-          );
+          Navigator.push(homeContext, MaterialPageRoute(builder: (context) => const ImportG1v1()));
         },
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
           child: Row(
             children: [
-              SvgPicture.asset(
-                'assets/cesium_bw2.svg',
-                height: scaleSize(24),
-              ),
+              SvgPicture.asset('assets/cesium_bw2.svg', height: scaleSize(24)),
               ScaledSizedBox(width: 16),
               Expanded(
                 child: Text(
                   'importIdPasswordAccount'.tr(),
-                  style: scaledTextStyle(
-                    fontSize: 16,
-                    color: homeContext.colorScheme.onSurface,
-                  ),
+                  style: scaledTextStyle(fontSize: 16, color: homeContext.colorScheme.onSurface),
                   softWrap: true,
                 ),
               ),

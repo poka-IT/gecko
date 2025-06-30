@@ -68,38 +68,42 @@ Future<void> main() async {
   // await registerDependencies();
 
   if (kReleaseMode && enableSentry) {
-    await SentryFlutter.init((options) {
-      options.dsn = 'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
-      options.replay.sessionSampleRate = 1.0;
-      options.replay.onErrorSampleRate = 1.0;
-      // Privacy settings for PII masking
-      //TODO: Set this to false in production for Ğ1
-      options.privacy.maskAllText = false;
-      options.privacy.maskAllImages = false;
-    },
-        appRunner: () => SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
-              runApp(
-                SentryWidget(
-                  child: EasyLocalization(
-                    supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
-                    path: 'assets/translations',
-                    fallbackLocale: const Locale('en'),
-                    child: const Gecko(),
-                  ),
-                ),
-              );
-            }));
+    await SentryFlutter.init(
+      (options) {
+        options.dsn = 'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
+        options.replay.sessionSampleRate = 1.0;
+        options.replay.onErrorSampleRate = 1.0;
+        // Privacy settings for PII masking
+        //TODO: Set this to false in production for Ğ1
+        options.privacy.maskAllText = false;
+        options.privacy.maskAllImages = false;
+      },
+      appRunner: () => SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
+        runApp(
+          SentryWidget(
+            child: EasyLocalization(
+              supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
+              path: 'assets/translations',
+              fallbackLocale: const Locale('en'),
+              child: const Gecko(),
+            ),
+          ),
+        );
+      }),
+    );
   } else {
     log.i('Debug mode enabled: No sentry alert');
 
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
-      runApp(EasyLocalization(
-        // test, force locale :: startLocale: Locale.fromSubtags(languageCode: 'it'),
-        supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
-        path: 'assets/translations',
-        fallbackLocale: const Locale('en'),
-        child: const Gecko(),
-      ));
+      runApp(
+        EasyLocalization(
+          // test, force locale :: startLocale: Locale.fromSubtags(languageCode: 'it'),
+          supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
+          path: 'assets/translations',
+          fallbackLocale: const Locale('en'),
+          child: const Gecko(),
+        ),
+      );
     });
   }
 }

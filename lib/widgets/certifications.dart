@@ -32,12 +32,15 @@ class _CertificationsState extends State<Certifications> {
       children: [
         Image.asset('assets/medal.png', color: finalColor, height: scaleSize(18)),
         ScaledSizedBox(width: 1),
-        Text(receivedCount.toString(), style: scaledTextStyle(fontSize: widget.size, color: finalColor)),
+        Text(
+          receivedCount.toString(),
+          style: scaledTextStyle(fontSize: widget.size, color: finalColor),
+        ),
         ScaledSizedBox(width: 5),
         Text(
           "($sentCount)",
           style: scaledTextStyle(fontSize: widget.size * 0.7, color: finalColor),
-        )
+        ),
       ],
     );
   }

@@ -6,10 +6,7 @@ import 'package:flutter/material.dart';
 
 class GeckoStyles {
   TextStyle successBold(List<String> pars) {
-    return TextStyle(
-      color: Colors.green.shade600,
-      fontWeight: FontWeight.bold,
-    );
+    return TextStyle(color: Colors.green.shade600, fontWeight: FontWeight.bold);
   }
 
   TextStyle success() {
@@ -17,11 +14,7 @@ class GeckoStyles {
   }
 
   TextStyle error500(List<String> pars) {
-    return const TextStyle(
-      fontSize: 19,
-      color: Colors.redAccent,
-      fontWeight: FontWeight.w500,
-    );
+    return const TextStyle(fontSize: 19, color: Colors.redAccent, fontWeight: FontWeight.w500);
   }
 
   TextStyle error() {

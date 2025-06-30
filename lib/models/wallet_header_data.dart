@@ -46,7 +46,10 @@ class WalletHeaderData {
   // Pour comparer si les données ont changé
   bool equals(WalletHeaderData other) {
     if (certCount.isEmpty || other.certCount.isEmpty) {
-      return hasIdentity == other.hasIdentity && isOwner == other.isOwner && walletName == other.walletName && balance == other.balance;
+      return hasIdentity == other.hasIdentity &&
+          isOwner == other.isOwner &&
+          walletName == other.walletName &&
+          balance == other.balance;
     }
     return hasIdentity == other.hasIdentity &&
         isOwner == other.isOwner &&

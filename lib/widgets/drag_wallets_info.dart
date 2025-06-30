@@ -35,22 +35,23 @@ class DragWalletsInfo extends StatelessWidget {
       width: screenWidth,
       height: scaleSize(85),
       child: Center(
-          child: Column(
-        children: [
-          ScaledSizedBox(height: 2),
-          Text(
-            '${'executeATransfer'.tr()}:',
-            style: scaledTextStyle(fontSize: 15),
-          ),
-          MarkdownBody(data: '${'from'.tr(args: [''])} **$fromName**', styleSheet: mdStyle),
-          if (isSameAddress)
-            Text(
-              'chooseATargetWallet'.tr(),
-              style: scaledTextStyle(fontSize: 15),
+        child: Column(
+          children: [
+            ScaledSizedBox(height: 2),
+            Text('${'executeATransfer'.tr()}:', style: scaledTextStyle(fontSize: 15)),
+            MarkdownBody(
+              data: '${'from'.tr(args: [''])} **$fromName**',
+              styleSheet: mdStyle,
             ),
-          if (!isSameAddress) MarkdownBody(data: '${'to'.tr(args: [''])} **$toName**', styleSheet: mdStyle),
-        ],
-      )),
+            if (isSameAddress) Text('chooseATargetWallet'.tr(), style: scaledTextStyle(fontSize: 15)),
+            if (!isSameAddress)
+              MarkdownBody(
+                data: '${'to'.tr(args: [''])} **$toName**',
+                styleSheet: mdStyle,
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

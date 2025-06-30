@@ -5,13 +5,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 
 class BubbleSpeak extends StatelessWidget {
-  const BubbleSpeak({
-    required this.text,
-    this.long,
-    this.fontSize = 18,
-    this.textKey,
-    super.key,
-  });
+  const BubbleSpeak({required this.text, this.long, this.fontSize = 18, this.textKey, super.key});
 
   final String text;
   final double? long;
@@ -27,20 +21,18 @@ class BubbleSpeak extends StatelessWidget {
       child: Text(
         text,
         key: textKey,
-        style: scaledTextStyle(color: context.colorScheme.onSecondaryContainer, fontSize: isTall ? fontSize : fontSize * 0.9, fontWeight: FontWeight.w400),
+        style: scaledTextStyle(
+          color: context.colorScheme.onSecondaryContainer,
+          fontSize: isTall ? fontSize : fontSize * 0.9,
+          fontWeight: FontWeight.w400,
+        ),
       ),
     );
   }
 }
 
 class BubbleSpeakWithTail extends StatelessWidget {
-  const BubbleSpeakWithTail({
-    required this.text,
-    this.long,
-    this.fontSize = 18,
-    this.textKey,
-    super.key,
-  });
+  const BubbleSpeakWithTail({required this.text, this.long, this.fontSize = 18, this.textKey, super.key});
 
   final String text;
   final double? long;
@@ -58,7 +50,9 @@ class BubbleSpeakWithTail extends StatelessWidget {
           left: 15,
           bottom: -scaleSize(28),
           child: Image(
-            image: AssetImage(homeContext.isDarkTheme ? 'assets/home/bout_de_bulle_dark.png' : 'assets/home/bout_de_bulle.png'),
+            image: AssetImage(
+              homeContext.isDarkTheme ? 'assets/home/bout_de_bulle_dark.png' : 'assets/home/bout_de_bulle.png',
+            ),
             height: scaleSize(30),
           ),
         ),

@@ -38,62 +38,68 @@ class SearchResult extends StatelessWidget {
             return SearchIdentityQuery(name: searchProvider.searchController.text);
           } else {
             return Expanded(
-              child: ListView(children: <Widget>[
-                for (G1WalletsList g1Wallet in snapshot.data ?? []) resultTileAddressSearch(g1Wallet, context),
-              ]),
+              child: ListView(
+                children: <Widget>[
+                  for (G1WalletsList g1Wallet in snapshot.data ?? []) resultTileAddressSearch(g1Wallet, context),
+                ],
+              ),
             );
           }
         }
-        return const Center(
-          child: Loading(
-            stroke: 3,
-            size: 30,
-          ),
-        );
+        return const Center(child: Loading(stroke: 3, size: 30));
       },
     );
   }
 
   Widget resultTileAddressSearch(G1WalletsList g1Wallet, BuildContext context) {
     return ListTile(
-        key: keySearchResult(g1Wallet.address),
-        horizontalTitleGap: 10,
-        contentPadding: const EdgeInsets.all(5),
-        leading: DatapodAvatar(address: g1Wallet.address, size: avatarSize),
-        title: Row(children: <Widget>[
-          Text(getShortPubkey(g1Wallet.address),
-              style: scaledTextStyle(fontSize: 14, fontFamily: 'Monospace', fontWeight: FontWeight.w500), textAlign: TextAlign.center),
-        ]),
-        trailing: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+      key: keySearchResult(g1Wallet.address),
+      horizontalTitleGap: 10,
+      contentPadding: const EdgeInsets.all(5),
+      leading: DatapodAvatar(address: g1Wallet.address, size: avatarSize),
+      title: Row(
+        children: <Widget>[
+          Text(
+            getShortPubkey(g1Wallet.address),
+            style: scaledTextStyle(fontSize: 14, fontFamily: 'Monospace', fontWeight: FontWeight.w500),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+      trailing: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
           ScaledSizedBox(
             width: 110,
-            child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-              Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Balance(address: g1Wallet.address, size: 14),
-              ]),
-            ]),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [Balance(address: g1Wallet.address, size: 14)],
+                ),
+              ],
+            ),
           ),
-        ]),
-        subtitle: Row(children: <Widget>[
-          NameByAddress(
-            wallet: WalletData(address: g1Wallet.address),
-            size: 14,
-          ),
-        ]),
-        dense: false,
-        isThreeLine: false,
-        onTap: () {
-          Navigator.pop(context);
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) {
+        ],
+      ),
+      subtitle: Row(
+        children: <Widget>[NameByAddress(wallet: WalletData(address: g1Wallet.address), size: 14)],
+      ),
+      dense: false,
+      isThreeLine: false,
+      onTap: () {
+        Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
               walletsProfilesClass.address = g1Wallet.address;
-              return WalletViewScreen(
-                address: g1Wallet.address,
-                username: g1Wallet.username,
-              );
-            }),
-          );
-        });
+              return WalletViewScreen(address: g1Wallet.address, username: g1Wallet.username);
+            },
+          ),
+        );
+      },
+    );
   }
 }

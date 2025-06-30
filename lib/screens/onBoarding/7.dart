@@ -19,18 +19,21 @@ class OnboardingStepSeven extends StatelessWidget {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('myPassword'.tr()),
       body: SafeArea(
-        child: Stack(children: [
-          SingleChildScrollView(
-            child: InfoIntro(
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              child: InfoIntro(
                 text: 'geckoWillGenerateAPassword'.tr(),
                 assetName: 'coffre-fort-code-secret-dans-telephone.png',
                 buttonText: '>',
                 nextScreen: OnboardingStepEight(scanDerivation: scanDerivation, fromRestore: fromRestore),
                 pagePosition: 6,
-                boxHeight: 320),
-          ),
-          const OfflineInfo(),
-        ]),
+                boxHeight: 320,
+              ),
+            ),
+            const OfflineInfo(),
+          ],
+        ),
       ),
     );
   }

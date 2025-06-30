@@ -58,7 +58,10 @@ class WalletOptionsProvider with ChangeNotifier {
       if (balanceCache[wallet.address] != BigInt.zero) {
         final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
         final defaultWallet = myWalletProvider.getDefaultWallet();
-        final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: wallet.address, pinCode: myWalletProvider.pinCode);
+        final keypair = await Durt.i.wallets.getKeyPairFromAddress(
+          address: wallet.address,
+          pinCode: myWalletProvider.pinCode,
+        );
         Durt.i.duniter.pay(
           keypair: keypair,
           destAddress: defaultWallet.address,
@@ -167,80 +170,98 @@ class WalletOptionsProvider with ChangeNotifier {
           ),
           content: SizedBox(
             height: 100,
-            child: Column(children: [
-              const SizedBox(height: 20),
-              TextField(
-                key: keyEnterIdentityUsername,
-                onChanged: (_) async {
-                  idtyExist = await duniterIndexer.isIdtyExist(idtyName.text);
-                  canValidate = !idtyExist && !await duniterIndexer.isIdtyExist(idtyName.text) && idtyName.text.length >= 2 && idtyName.text.length <= 32;
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                TextField(
+                  key: keyEnterIdentityUsername,
+                  onChanged: (_) async {
+                    idtyExist = await duniterIndexer.isIdtyExist(idtyName.text);
+                    canValidate =
+                        !idtyExist &&
+                        !await duniterIndexer.isIdtyExist(idtyName.text) &&
+                        idtyName.text.length >= 2 &&
+                        idtyName.text.length <= 32;
 
-                  notifyListeners();
-                },
-                inputFormatters: <TextInputFormatter>[
-                  // FilteringTextInputFormatter.allow(RegExp("[0-9a-zA-Z]")),
-                  FilteringTextInputFormatter.deny(RegExp(r'^ ')),
-                  // FilteringTextInputFormatter.deny(RegExp(r' $')),
-                ],
-                textAlign: TextAlign.center,
-                autofocus: true,
-                controller: idtyName,
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 10),
-              Consumer<WalletOptionsProvider>(builder: (context, wOptions, _) {
-                return Text(idtyExist ? "thisIdentityAlreadyExist".tr() : '', style: TextStyle(color: Colors.red[500]));
-              })
-            ]),
+                    notifyListeners();
+                  },
+                  inputFormatters: <TextInputFormatter>[
+                    // FilteringTextInputFormatter.allow(RegExp("[0-9a-zA-Z]")),
+                    FilteringTextInputFormatter.deny(RegExp(r'^ ')),
+                    // FilteringTextInputFormatter.deny(RegExp(r' $')),
+                  ],
+                  textAlign: TextAlign.center,
+                  autofocus: true,
+                  controller: idtyName,
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 10),
+                Consumer<WalletOptionsProvider>(
+                  builder: (context, wOptions, _) {
+                    return Text(
+                      idtyExist ? "thisIdentityAlreadyExist".tr() : '',
+                      style: TextStyle(color: Colors.red[500]),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
           actions: <Widget>[
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Consumer<WalletOptionsProvider>(builder: (context, wOptions, _) {
-                  return TextButton(
-                    key: keyConfirm,
-                    onPressed: canValidate
-                        ? () async {
-                            idtyName.text = idtyName.text.trim().replaceAll('  ', '');
+                Consumer<WalletOptionsProvider>(
+                  builder: (context, wOptions, _) {
+                    return TextButton(
+                      key: keyConfirm,
+                      onPressed: canValidate
+                          ? () async {
+                              idtyName.text = idtyName.text.trim().replaceAll('  ', '');
 
-                            if (idtyName.text.length.clamp(3, 32) != idtyName.text.length) {
-                              return;
+                              if (idtyName.text.length.clamp(3, 32) != idtyName.text.length) {
+                                return;
+                              }
+
+                              if (!await myWalletProvider.askPinCode()) return;
+
+                              final wallet = myWalletProvider.getWalletDataByAddress(address.text);
+                              await Durt.i.wallets.setDefaultAddress(wallet!.address);
+                              final keypair = await Durt.i.wallets.getKeyPairFromAddress(
+                                address: wallet.address,
+                                pinCode: myWalletProvider.pinCode,
+                              );
+                              final transactionStatus = Durt.i.duniter.confirmIdentity(
+                                keypair: keypair,
+                                name: idtyName.text,
+                              );
+                              Navigator.pop(context);
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return TransactionInProgressScreen(
+                                      transactionStatus: transactionStatus,
+                                      transType: 'comfirmIdty',
+                                      fromAddress: getShortPubkey(wallet.address),
+                                      toAddress: getShortPubkey(wallet.address),
+                                    );
+                                  },
+                                ),
+                              );
                             }
-
-                            if (!await myWalletProvider.askPinCode()) return;
-
-                            final wallet = myWalletProvider.getWalletDataByAddress(address.text);
-                            await Durt.i.wallets.setDefaultAddress(wallet!.address);
-                            final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: wallet.address, pinCode: myWalletProvider.pinCode);
-                            final transactionStatus = Durt.i.duniter.confirmIdentity(
-                              keypair: keypair,
-                              name: idtyName.text,
-                            );
-                            Navigator.pop(context);
-
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) {
-                                return TransactionInProgressScreen(
-                                  transactionStatus: transactionStatus,
-                                  transType: 'comfirmIdty',
-                                  fromAddress: getShortPubkey(wallet.address),
-                                  toAddress: getShortPubkey(wallet.address),
-                                );
-                              }),
-                            );
-                          }
-                        : null,
-                    child: Text(
-                      "validate".tr(),
-                      style: TextStyle(fontSize: 20, color: canValidate ? const Color(0xffD80000) : Colors.grey[500]),
-                    ),
-                  );
-                })
+                          : null,
+                      child: Text(
+                        "validate".tr(),
+                        style: TextStyle(fontSize: 20, color: canValidate ? const Color(0xffD80000) : Colors.grey[500]),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
-            const SizedBox(height: 5)
+            const SizedBox(height: 5),
           ],
         );
       },
@@ -263,42 +284,46 @@ class WalletOptionsProvider with ChangeNotifier {
           ),
           content: SizedBox(
             height: 100,
-            child: Column(children: [
-              const SizedBox(height: 20),
-              TextField(
-                onChanged: (_) => canValidateName(context, walletName),
-                textAlign: TextAlign.center,
-                autofocus: true,
-                controller: walletName,
-                style: const TextStyle(fontSize: 18),
-              )
-            ]),
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                TextField(
+                  onChanged: (_) => canValidateName(context, walletName),
+                  textAlign: TextAlign.center,
+                  autofocus: true,
+                  controller: walletName,
+                  style: const TextStyle(fontSize: 18),
+                ),
+              ],
+            ),
           ),
           actions: <Widget>[
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Consumer<WalletOptionsProvider>(builder: (context, wOptions, _) {
-                  return TextButton(
-                    key: keyInfoPopup,
-                    child: Text(
-                      "validate".tr(),
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: canValidateNameBool ? const Color(0xffD80000) : Colors.grey,
-                        fontWeight: FontWeight.w600,
+                Consumer<WalletOptionsProvider>(
+                  builder: (context, wOptions, _) {
+                    return TextButton(
+                      key: keyInfoPopup,
+                      child: Text(
+                        "validate".tr(),
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: canValidateNameBool ? const Color(0xffD80000) : Colors.grey,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    onPressed: () async {
-                      if (canValidateNameBool) {
-                        nameController.text = walletName.text;
-                        _renameWallet(address, walletName.text, isCesium: false);
-                        notifyListeners();
-                        Navigator.pop(context);
-                      }
-                    },
-                  );
-                })
+                      onPressed: () async {
+                        if (canValidateNameBool) {
+                          nameController.text = walletName.text;
+                          _renameWallet(address, walletName.text, isCesium: false);
+                          notifyListeners();
+                          Navigator.pop(context);
+                        }
+                      },
+                    );
+                  },
+                ),
               ],
             ),
             Row(
@@ -313,10 +338,10 @@ class WalletOptionsProvider with ChangeNotifier {
                   onPressed: () async {
                     Navigator.pop(context);
                   },
-                )
+                ),
               ],
             ),
-            const SizedBox(height: 20)
+            const SizedBox(height: 20),
           ],
         );
       },

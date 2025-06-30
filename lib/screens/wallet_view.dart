@@ -81,14 +81,18 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
-            appBar: AppBar(title: Text(username == null ? 'seeAWallet'.tr() : 'memberAccountOf'.tr(args: [username ?? '']))),
+            appBar: AppBar(
+              title: Text(username == null ? 'seeAWallet'.tr() : 'memberAccountOf'.tr(args: [username ?? ''])),
+            ),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
 
         if (snapshot.hasError || !snapshot.hasData) {
           return Scaffold(
-            appBar: AppBar(title: Text(username == null ? 'seeAWallet'.tr() : 'memberAccountOf'.tr(args: [username ?? '']))),
+            appBar: AppBar(
+              title: Text(username == null ? 'seeAWallet'.tr() : 'memberAccountOf'.tr(args: [username ?? ''])),
+            ),
             body: Center(child: Text('errorLoadingWalletData'.tr())),
           );
         }
@@ -124,14 +128,20 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
                                   key: keyViewActivity,
                                   icon: 'assets/walletOptions/clock.png',
                                   label: "displayNActivity".tr(),
-                                  onTap: () => Navigator.push(context, PageNoTransit(builder: (context) => ActivityScreen(address: address))),
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    PageNoTransit(builder: (context) => ActivityScreen(address: address)),
+                                  ),
                                 ),
                                 Consumer<BlockHeightProvider>(
                                   builder: (context, _, _) {
                                     final identityWallet = Durt.i.wallets.identityWallet;
                                     return identityWallet != null
                                         ? FutureBuilder(
-                                            future: Durt.i.storage.getCertState(fromAddress: identityWallet.address, toAddress: address),
+                                            future: Durt.i.storage.getCertState(
+                                              fromAddress: identityWallet.address,
+                                              toAddress: address,
+                                            ),
                                             builder: (context, AsyncSnapshot<CertState> snapshot) {
                                               if (!snapshot.hasData) return const SizedBox.shrink();
                                               final certState = snapshot.data!;
@@ -176,7 +186,13 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
     );
   }
 
-  Widget _buildActionButton({required BuildContext context, required String icon, required String label, required VoidCallback onTap, Key? key}) {
+  Widget _buildActionButton({
+    required BuildContext context,
+    required String icon,
+    required String label,
+    required VoidCallback onTap,
+    Key? key,
+  }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -186,7 +202,9 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
           decoration: BoxDecoration(
             color: context.colorScheme.secondary,
             shape: BoxShape.circle,
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2))],
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2)),
+            ],
           ),
           child: Material(
             color: Colors.transparent,
@@ -223,7 +241,9 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
               decoration: BoxDecoration(
                 color: context.colorScheme.primary,
                 shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 6, offset: const Offset(0, 3))],
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 6, offset: const Offset(0, 3)),
+                ],
                 border: Border.all(color: const Color(0xFF6c4204), width: 3),
               ),
               child: Opacity(
@@ -246,9 +266,10 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
             Text(
               'doATransfer'.tr(),
               textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500, color: Durt.i.isConnected ? context.colorScheme.onSurface : Colors.grey[500]),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w500,
+                color: Durt.i.isConnected ? context.colorScheme.onSurface : Colors.grey[500],
+              ),
             ),
           ],
         );
@@ -261,7 +282,10 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
     final defaultWallet = myWalletProvider.getDefaultWallet();
 
     if (myWalletProvider.pinCode == '') {
-      await Navigator.push(context, MaterialPageRoute(builder: (homeContext) => UnlockingWallet(wallet: defaultWallet)));
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (homeContext) => UnlockingWallet(wallet: defaultWallet)),
+      );
     }
     if (myWalletProvider.pinCode == '') return;
     paymentPopup(context, address, username);

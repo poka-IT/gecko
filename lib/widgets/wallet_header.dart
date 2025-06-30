@@ -22,12 +22,7 @@ import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/models/wallet_header_data.dart';
 
 class WalletHeader extends StatefulWidget {
-  const WalletHeader({
-    super.key,
-    required this.address,
-    this.customImagePath,
-    this.defaultImagePath,
-  });
+  const WalletHeader({super.key, required this.address, this.customImagePath, this.defaultImagePath});
 
   final String address;
   final String? customImagePath;
@@ -112,24 +107,27 @@ class _WalletHeaderState extends State<WalletHeader> {
     }
   }
 
-  Widget _buildContent(BuildContext context, BigInt currentWalletBalance, bool hasIdentity, bool isOwner, bool isPickerOpen, String newCustomImagePath,
-      DuniterIndexer duniterIndexer) {
+  Widget _buildContent(
+    BuildContext context,
+    BigInt currentWalletBalance,
+    bool hasIdentity,
+    bool isOwner,
+    bool isPickerOpen,
+    String newCustomImagePath,
+    DuniterIndexer duniterIndexer,
+  ) {
     const double avatarSize = 90;
     final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
 
-    final balance = walletOptions.balanceCache[widget.address] == null ? currentWalletBalance : walletOptions.balanceCache[widget.address] ?? BigInt.zero;
+    final balance = walletOptions.balanceCache[widget.address] == null
+        ? currentWalletBalance
+        : walletOptions.balanceCache[widget.address] ?? BigInt.zero;
 
     final isEmptyWallet = balance == BigInt.zero;
 
     return Container(
-      decoration: BoxDecoration(
-        color: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary,
-      ),
-      padding: EdgeInsets.only(
-        left: scaleSize(16),
-        right: scaleSize(16),
-        bottom: scaleSize(16),
-      ),
+      decoration: BoxDecoration(color: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary),
+      padding: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), bottom: scaleSize(16)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -141,11 +139,7 @@ class _WalletHeaderState extends State<WalletHeader> {
               shape: BoxShape.circle,
               color: Colors.white.withValues(alpha: 25),
               boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
+                BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 2)),
               ],
             ),
             child: Consumer<WalletOptionsProvider>(
@@ -174,18 +168,9 @@ class _WalletHeaderState extends State<WalletHeader> {
                         child: ClipOval(
                           child: _newCustomImagePath.isEmpty
                               ? (widget.defaultImagePath != null
-                                  ? Image.asset(
-                                      'assets/avatars/${widget.defaultImagePath}',
-                                      fit: BoxFit.cover,
-                                    )
-                                  : DatapodAvatar(
-                                      address: widget.address,
-                                      size: avatarSize,
-                                    ))
-                              : Image.asset(
-                                  _newCustomImagePath,
-                                  fit: BoxFit.cover,
-                                ),
+                                    ? Image.asset('assets/avatars/${widget.defaultImagePath}', fit: BoxFit.cover)
+                                    : DatapodAvatar(address: widget.address, size: avatarSize))
+                              : Image.asset(_newCustomImagePath, fit: BoxFit.cover),
                         ),
                       ),
                     ),
@@ -196,10 +181,7 @@ class _WalletHeaderState extends State<WalletHeader> {
                         child: Container(
                           width: avatarSize * 0.35,
                           height: avatarSize * 0.35,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.black.withValues(alpha: 0.4),
-                          ),
+                          decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.black.withValues(alpha: 0.4)),
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
@@ -216,11 +198,7 @@ class _WalletHeaderState extends State<WalletHeader> {
                                     }
                                   : null,
                               customBorder: const CircleBorder(),
-                              child: Icon(
-                                Icons.camera_alt,
-                                color: Colors.white,
-                                size: avatarSize * 0.2,
-                              ),
+                              child: Icon(Icons.camera_alt, color: Colors.white, size: avatarSize * 0.2),
                             ),
                           ),
                         ),
@@ -298,24 +276,15 @@ class _WalletHeaderState extends State<WalletHeader> {
                       ),
                     ),
                     child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        color: Colors.transparent,
-                      ),
+                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.transparent),
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            IdentityStatus(
-                              address: widget.address,
-                              color: context.colorScheme.primary,
-                            ),
+                            IdentityStatus(address: widget.address, color: context.colorScheme.primary),
                             SizedBox(width: scaleSize(8)),
-                            Certifications(
-                              address: widget.address,
-                              size: 13,
-                            ),
+                            Certifications(address: widget.address, size: 13),
                             Icon(
                               Icons.chevron_right,
                               size: scaleSize(15),
@@ -326,7 +295,7 @@ class _WalletHeaderState extends State<WalletHeader> {
                       ),
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -339,11 +308,7 @@ class _WalletHeaderState extends State<WalletHeader> {
     const double avatarSize = 90;
     return Container(
       color: context.colorScheme.tertiary,
-      padding: EdgeInsets.only(
-        left: scaleSize(16),
-        right: scaleSize(16),
-        bottom: scaleSize(16),
-      ),
+      padding: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), bottom: scaleSize(16)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -355,11 +320,7 @@ class _WalletHeaderState extends State<WalletHeader> {
               shape: BoxShape.circle,
               color: Colors.white.withValues(alpha: 0.1),
               boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
+                BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 2)),
               ],
             ),
           ),

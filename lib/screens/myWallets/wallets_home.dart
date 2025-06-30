@@ -33,7 +33,9 @@ class _WalletsHomeState extends State<WalletsHome> with SingleTickerProviderStat
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
     return Scaffold(
-      body: myWalletProvider.listWallets.length == 1 ? WalletOptions(wallet: myWalletProvider.listWallets[0]) : _WalletsHomeContent(),
+      body: myWalletProvider.listWallets.length == 1
+          ? WalletOptions(wallet: myWalletProvider.listWallets[0])
+          : _WalletsHomeContent(),
     );
   }
 }
@@ -46,40 +48,30 @@ class _WalletsHomeContent extends StatelessWidget {
     final SafeBox currentChest = Durt.i.wallets.safeBox.get(currentChestNumber)!;
 
     return Scaffold(
-        backgroundColor: context.colorScheme.surface,
-        appBar: AppBar(
-          toolbarHeight: scaleSize(57),
-          backgroundColor: context.colorScheme.tertiary,
-          title: Row(
-            children: [
-              Image.asset(
-                'assets/chests/${currentChest.number}.png',
-                height: 32,
-              ),
-              ScaledSizedBox(width: 17),
-              Text(
-                currentChest.name,
-                style: scaledTextStyle(color: context.colorScheme.onSurface, fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-            ],
-          ),
+      backgroundColor: context.colorScheme.surface,
+      appBar: AppBar(
+        toolbarHeight: scaleSize(57),
+        backgroundColor: context.colorScheme.tertiary,
+        title: Row(
+          children: [
+            Image.asset('assets/chests/${currentChest.number}.png', height: 32),
+            ScaledSizedBox(width: 17),
+            Text(
+              currentChest.name,
+              style: scaledTextStyle(color: context.colorScheme.onSurface, fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+          ],
         ),
-        bottomNavigationBar: Consumer<MyWalletsProvider>(builder: (context, _, _) {
+      ),
+      bottomNavigationBar: Consumer<MyWalletsProvider>(
+        builder: (context, _, _) {
           return myWalletProvider.lastFlyBy == null
-              ? const GeckoBottomAppBar(
-                  actualRoute: 'safeHome',
-                )
-              : DragWalletsInfo(
-                  lastFlyBy: myWalletProvider.lastFlyBy!,
-                  dragAddress: myWalletProvider.dragAddress!,
-                );
-        }),
-        body: SafeArea(
-          child: Stack(children: [
-            myWalletsTiles(context, currentChestNumber),
-            const OfflineInfo(),
-          ]),
-        ));
+              ? const GeckoBottomAppBar(actualRoute: 'safeHome')
+              : DragWalletsInfo(lastFlyBy: myWalletProvider.lastFlyBy!, dragAddress: myWalletProvider.dragAddress!);
+        },
+      ),
+      body: SafeArea(child: Stack(children: [myWalletsTiles(context, currentChestNumber), const OfflineInfo()])),
+    );
   }
 
   Widget myWalletsTiles(BuildContext context, int currentChestNumber) {
@@ -92,10 +84,11 @@ class _WalletsHomeContent extends StatelessWidget {
 
     if (myWalletProvider.listWallets.isEmpty) {
       return Center(
-          child: Text(
-        'Veuillez générer votre premier portefeuille',
-        style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-      ));
+        child: Text(
+          'Veuillez générer votre premier portefeuille',
+          style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+      );
     }
 
     final screenWidth = MediaQuery.of(context).size.width;
@@ -116,17 +109,18 @@ class _WalletsHomeContent extends StatelessWidget {
           keyTarget: keyDragAndDrop,
           contents: [
             TargetContent(
-                child: Column(
-              children: [
-                Image.asset('assets/drag-and-drop.png', height: scaleSize(115)),
-                ScaledSizedBox(height: 15),
-                Text(
-                  'explainDraggableWallet'.tr(),
-                  textAlign: TextAlign.center,
-                  style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                ),
-              ],
-            ))
+              child: Column(
+                children: [
+                  Image.asset('assets/drag-and-drop.png', height: scaleSize(115)),
+                  ScaledSizedBox(height: 15),
+                  Text(
+                    'explainDraggableWallet'.tr(),
+                    textAlign: TextAlign.center,
+                    style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+            ),
           ],
           alignSkip: Alignment.bottomRight,
           enableOverlayTab: true,
@@ -148,25 +142,36 @@ class _WalletsHomeContent extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 5),
-      child: CustomScrollView(slivers: <Widget>[
-        SliverToBoxAdapter(child: ScaledSizedBox(height: 12)),
-        if (myWalletProvider.idtyWallet != null)
-          SliverToBoxAdapter(
-            child: DragTuleAction(
-              wallet: myWalletProvider.idtyWallet!,
-              child: WalletTileMembre(wallet: myWalletProvider.idtyWallet!),
+      child: CustomScrollView(
+        slivers: <Widget>[
+          SliverToBoxAdapter(child: ScaledSizedBox(height: 12)),
+          if (myWalletProvider.idtyWallet != null)
+            SliverToBoxAdapter(
+              child: DragTuleAction(
+                wallet: myWalletProvider.idtyWallet!,
+                child: WalletTileMembre(wallet: myWalletProvider.idtyWallet!),
+              ),
             ),
+          SliverGrid.count(
+            key: keyListWallets,
+            crossAxisCount: nTule,
+            childAspectRatio: 1,
+            crossAxisSpacing: 0,
+            mainAxisSpacing: 0,
+            children: <Widget>[
+              for (final repository in myWalletProvider.listWalletsWithoutIdty)
+                DragTuleAction(
+                  wallet: repository,
+                  child: WalletTile(repository: repository),
+                ),
+              Durt.i.isConnected && myWalletProvider.listWallets.length < maxWalletsInSafe
+                  ? const AddNewDerivationButton()
+                  : const Text(''),
+            ],
           ),
-        SliverGrid.count(key: keyListWallets, crossAxisCount: nTule, childAspectRatio: 1, crossAxisSpacing: 0, mainAxisSpacing: 0, children: <Widget>[
-          for (final repository in myWalletProvider.listWalletsWithoutIdty)
-            DragTuleAction(
-              wallet: repository,
-              child: WalletTile(repository: repository),
-            ),
-          Durt.i.isConnected && myWalletProvider.listWallets.length < maxWalletsInSafe ? const AddNewDerivationButton() : const Text(''),
-        ]),
-        const SliverToBoxAdapter(child: ChestOptionsButtons()),
-      ]),
+          const SliverToBoxAdapter(child: ChestOptionsButtons()),
+        ],
+      ),
     );
   }
 }

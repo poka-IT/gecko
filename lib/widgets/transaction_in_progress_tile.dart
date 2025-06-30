@@ -17,10 +17,7 @@ import 'package:fade_and_translate/fade_and_translate.dart';
 import 'package:gecko/models/transaction_in_progress_data.dart';
 
 class TransactionInProgressTule extends StatefulWidget {
-  const TransactionInProgressTule({
-    super.key,
-    required this.transactionData,
-  });
+  const TransactionInProgressTule({super.key, required this.transactionData});
 
   final TransactionInProgressData transactionData;
 
@@ -41,7 +38,9 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
         setState(() {
           _status = status;
         });
-        if (status.state == TransactionState.finalized || status.state == TransactionState.error || status.state == TransactionState.timeout) {
+        if (status.state == TransactionState.finalized ||
+            status.state == TransactionState.error ||
+            status.state == TransactionState.timeout) {
           setState(() {
             _isVisible = false;
           });
@@ -89,10 +88,7 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: context.colorScheme.primary,
-              width: 2,
-            ),
+            border: Border.all(color: context.colorScheme.primary, width: 2),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -103,61 +99,61 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
                 style: scaledTextStyle(fontSize: 19, color: Colors.blueAccent, fontWeight: FontWeight.w400),
               ),
               ListTile(
-                  key: const Key('transactionInProgress'),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 15),
-                  leading: DatapodAvatar(address: widget.transactionData.toAddress, size: 50),
-                  title: Padding(
-                    padding: const EdgeInsets.only(bottom: 5),
-                    child: Text(getShortPubkey(widget.transactionData.toAddress), style: scaledTextStyle(fontSize: 16, fontFamily: 'Monospace')),
+                key: const Key('transactionInProgress'),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 15),
+                leading: DatapodAvatar(address: widget.transactionData.toAddress, size: 50),
+                title: Padding(
+                  padding: const EdgeInsets.only(bottom: 5),
+                  child: Text(
+                    getShortPubkey(widget.transactionData.toAddress),
+                    style: scaledTextStyle(fontSize: 16, fontFamily: 'Monospace'),
                   ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          statusIcon,
-                          ScaledSizedBox(width: 10),
-                          ScaledSizedBox(
-                            width: 170,
-                            child: Text(
-                              humanStatus,
-                              style: scaledTextStyle(
-                                fontStyle: FontStyle.italic,
-                                color: Theme.of(context).textTheme.titleLarge!.color,
-                                fontSize: 13,
-                              ),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        statusIcon,
+                        ScaledSizedBox(width: 10),
+                        ScaledSizedBox(
+                          width: 170,
+                          child: Text(
+                            humanStatus,
+                            style: scaledTextStyle(
+                              fontStyle: FontStyle.italic,
+                              color: Theme.of(context).textTheme.titleLarge!.color,
+                              fontSize: 13,
                             ),
                           ),
-                        ],
-                      ),
-                      if (widget.transactionData.comment != null && widget.transactionData.comment!.isNotEmpty) ...[
-                        ScaledSizedBox(height: 4),
-                        Text(
-                          widget.transactionData.comment!,
-                          style: scaledTextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                            fontStyle: FontStyle.italic,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
-                    ],
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
+                    ),
+                    if (widget.transactionData.comment != null && widget.transactionData.comment!.isNotEmpty) ...[
+                      ScaledSizedBox(height: 4),
                       Text(
-                        finalAmount.toString(),
-                        style: scaledTextStyle(fontSize: 15, color: Colors.blue[700], fontWeight: FontWeight.w500),
+                        widget.transactionData.comment!,
+                        style: scaledTextStyle(fontSize: 12, color: Colors.grey[600], fontStyle: FontStyle.italic),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      ScaledSizedBox(width: 5),
-                      UdUnitDisplay(size: scaleSize(15), color: Colors.blue[700]!, fontWeight: FontWeight.w500),
                     ],
-                  ),
-                  dense: !isTall,
-                  isThreeLine: false),
+                  ],
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      finalAmount.toString(),
+                      style: scaledTextStyle(fontSize: 15, color: Colors.blue[700], fontWeight: FontWeight.w500),
+                    ),
+                    ScaledSizedBox(width: 5),
+                    UdUnitDisplay(size: scaleSize(15), color: Colors.blue[700]!, fontWeight: FontWeight.w500),
+                  ],
+                ),
+                dense: !isTall,
+                isThreeLine: false,
+              ),
             ],
           ),
         ),

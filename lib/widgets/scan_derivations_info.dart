@@ -6,9 +6,7 @@ import 'package:gecko/providers/generate_wallets.dart';
 import 'package:provider/provider.dart';
 
 class ScanDerivationsInfo extends StatelessWidget {
-  const ScanDerivationsInfo({
-    super.key,
-  });
+  const ScanDerivationsInfo({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +19,7 @@ class ScanDerivationsInfo extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (generateWalletProvider.scanStatus == ScanDerivationsStatus.rootScanning)
-              Text(
-                'scanRootDerivationInProgress'.tr(),
-                style: scaledTextStyle(fontSize: 15),
-              ),
+              Text('scanRootDerivationInProgress'.tr(), style: scaledTextStyle(fontSize: 15)),
             if (generateWalletProvider.scanStatus == ScanDerivationsStatus.scanning)
               Text(
                 'derivationsScanProgress'.tr(args: [generateWalletProvider.numberScan.toString()]),
@@ -32,17 +27,19 @@ class ScanDerivationsInfo extends StatelessWidget {
               ),
             if (generateWalletProvider.scanStatus == ScanDerivationsStatus.import)
               Text(
-                "importDerivationsInProgress".tr(args: ['${generateWalletProvider.scanedWalletNumber}', '${generateWalletProvider.scanedValidWalletNumber}']),
+                "importDerivationsInProgress".tr(
+                  args: [
+                    '${generateWalletProvider.scanedWalletNumber}',
+                    '${generateWalletProvider.scanedValidWalletNumber}',
+                  ],
+                ),
                 style: scaledTextStyle(fontSize: 15),
               ),
             ScaledSizedBox(width: 10),
             ScaledSizedBox(
               height: 22,
               width: 22,
-              child: CircularProgressIndicator(
-                color: context.colorScheme.primary,
-                strokeWidth: scaleSize(3),
-              ),
+              child: CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: scaleSize(3)),
             ),
           ],
         ),

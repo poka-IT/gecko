@@ -24,12 +24,7 @@ class WalletBalance {
   });
 
   factory WalletBalance.empty() {
-    return WalletBalance(
-      transferableBalance: 0,
-      free: 0,
-      unclaimedUds: 0,
-      reserved: 0,
-    );
+    return WalletBalance(transferableBalance: 0, free: 0, unclaimedUds: 0, reserved: 0);
   }
 
   factory WalletBalance.fromMap(Map<String, int> map) {

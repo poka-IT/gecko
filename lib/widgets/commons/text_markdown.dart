@@ -59,14 +59,12 @@ class TextMarkDown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final markdownStyleSheet = markdownStyle ??
+    final markdownStyleSheet =
+        markdownStyle ??
         MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
           p: style,
           textAlign: textAlign,
-          a: style?.copyWith(
-            fontWeight: FontWeight.bold,
-            decoration: TextDecoration.underline,
-          ),
+          a: style?.copyWith(fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
           em: style?.copyWith(
             fontStyle: canUnderline ? style!.fontStyle : FontStyle.italic,
             decoration: canUnderline ? TextDecoration.underline : style!.decoration,
@@ -79,7 +77,8 @@ class TextMarkDown extends StatelessWidget {
       styleSheetTheme: styleSheetTheme,
       syntaxHighlighter: syntaxHighlighter,
       onSelectionChanged: onSelectionChanged,
-      onTapLink: onTapLink ??
+      onTapLink:
+          onTapLink ??
           (text, url, title) {
             launchUrl(Uri.parse(url ?? 'https://helios.do'));
           },

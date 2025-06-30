@@ -24,11 +24,7 @@ class UdUnitDisplay extends StatelessWidget {
     if (valuePrefix.isNotEmpty) {
       prefixWidget = Text(
         valuePrefix,
-        style: TextStyle(
-          fontSize: size,
-          color: color == Colors.white ? color : Colors.red,
-          fontWeight: fontWeight,
-        ),
+        style: TextStyle(fontSize: size, color: color == Colors.white ? color : Colors.red, fontWeight: fontWeight),
       );
     }
 
@@ -37,10 +33,7 @@ class UdUnitDisplay extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          if (valuePrefix.isNotEmpty) ...[
-            prefixWidget,
-            const SizedBox(width: 0.5),
-          ],
+          if (valuePrefix.isNotEmpty) ...[prefixWidget, const SizedBox(width: 0.5)],
           Text(
             'ud'.tr(args: ['']),
             style: TextStyle(fontSize: size, color: color, fontWeight: fontWeight),
@@ -53,20 +46,20 @@ class UdUnitDisplay extends StatelessWidget {
                 currencyName,
                 style: TextStyle(fontSize: size * 0.65, fontWeight: fontWeight, color: color),
               ),
-              const SizedBox(height: 15)
+              const SizedBox(height: 15),
             ],
-          )
+          ),
         ],
       );
     } else {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (valuePrefix.isNotEmpty) ...[
-            prefixWidget,
-            const SizedBox(width: 0.5),
-          ],
-          Text(currencyName, style: TextStyle(fontSize: size, color: color, fontWeight: fontWeight)),
+          if (valuePrefix.isNotEmpty) ...[prefixWidget, const SizedBox(width: 0.5)],
+          Text(
+            currencyName,
+            style: TextStyle(fontSize: size, color: color, fontWeight: fontWeight),
+          ),
         ],
       );
     }

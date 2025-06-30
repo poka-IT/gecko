@@ -14,7 +14,14 @@ import 'package:provider/provider.dart';
 import 'package:truncate/truncate.dart';
 
 class NameByAddress extends StatelessWidget {
-  const NameByAddress({super.key, required this.wallet, this.size = 20, this.color, this.fontWeight = FontWeight.w400, this.fontStyle = FontStyle.normal});
+  const NameByAddress({
+    super.key,
+    required this.wallet,
+    this.size = 20,
+    this.color,
+    this.fontWeight = FontWeight.w400,
+    this.fontStyle = FontStyle.normal,
+  });
   final WalletData wallet;
   final Color? color;
   final double size;
@@ -33,46 +40,40 @@ class NameByAddress extends StatelessWidget {
     return GraphQLProvider(
       client: ValueNotifier(duniterIndexer.indexerClient),
       child: Query(
-          options: QueryOptions(
-            document: gql(getNameByAddressQ),
-            variables: {
-              'address': wallet.address,
-            },
-          ),
-          builder: (QueryResult result, {VoidCallback? refetch, FetchMore? fetchMore}) {
-            if (kDebugMode) {
-              if (result.hasException) {
-                return Text(result.exception.toString());
-              }
+        options: QueryOptions(document: gql(getNameByAddressQ), variables: {'address': wallet.address}),
+        builder: (QueryResult result, {VoidCallback? refetch, FetchMore? fetchMore}) {
+          if (kDebugMode) {
+            if (result.hasException) {
+              return Text(result.exception.toString());
             }
+          }
 
-            if (result.isLoading) {
-              return const Loading();
-            }
+          if (result.isLoading) {
+            return const Loading();
+          }
 
-            final edges = result.data?['identityConnection']['edges'];
-            final name = edges != null && edges.isNotEmpty ? edges[0]['node']['name'] : null;
+          final edges = result.data?['identityConnection']['edges'];
+          final name = edges != null && edges.isNotEmpty ? edges[0]['node']['name'] : null;
 
-            duniterIndexer.walletNameIndexer[wallet.address] = name;
+          duniterIndexer.walletNameIndexer[wallet.address] = name;
 
-            g1WalletsBox.put(wallet.address, G1WalletsList(address: wallet.address, username: duniterIndexer.walletNameIndexer[wallet.address]));
+          g1WalletsBox.put(
+            wallet.address,
+            G1WalletsList(address: wallet.address, username: duniterIndexer.walletNameIndexer[wallet.address]),
+          );
 
-            if (duniterIndexer.walletNameIndexer[wallet.address] == null) {
-              return WalletName(wallet: wallet, size: size, color: finalColor);
-            }
+          if (duniterIndexer.walletNameIndexer[wallet.address] == null) {
+            return WalletName(wallet: wallet, size: size, color: finalColor);
+          }
 
-            return Text(
-              finalColor == homeContext.colorScheme.onSurfaceVariant
-                  ? '(${duniterIndexer.walletNameIndexer[wallet.address]!})'
-                  : truncate(duniterIndexer.walletNameIndexer[wallet.address]!, 19),
-              style: scaledTextStyle(
-                fontSize: size,
-                color: finalColor,
-                fontWeight: fontWeight,
-                fontStyle: fontStyle,
-              ),
-            );
-          }),
+          return Text(
+            finalColor == homeContext.colorScheme.onSurfaceVariant
+                ? '(${duniterIndexer.walletNameIndexer[wallet.address]!})'
+                : truncate(duniterIndexer.walletNameIndexer[wallet.address]!, 19),
+            style: scaledTextStyle(fontSize: size, color: finalColor, fontWeight: fontWeight, fontStyle: fontStyle),
+          );
+        },
+      ),
     );
   }
 }

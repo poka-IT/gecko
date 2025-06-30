@@ -20,14 +20,12 @@ class HistoryQuery extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (indexerEndpoint == '') {
-      return Column(children: <Widget>[
-        ScaledSizedBox(height: 50),
-        Text(
-          "noNetworkNoHistory".tr(),
-          textAlign: TextAlign.center,
-          style: scaledTextStyle(fontSize: 17),
-        )
-      ]);
+      return Column(
+        children: <Widget>[
+          ScaledSizedBox(height: 50),
+          Text("noNetworkNoHistory".tr(), textAlign: TextAlign.center, style: scaledTextStyle(fontSize: 17)),
+        ],
+      );
     }
 
     final duniterIndexer = Provider.of<DuniterIndexer>(homeContext, listen: false);
@@ -48,42 +46,39 @@ class HistoryQuery extends StatelessWidget {
             builder: (QueryResult result, {fetchMore, refetch}) {
               duniterIndexer.refetch = refetch;
               if (result.isLoading && result.data == null) {
-                return Center(
-                  child: CircularProgressIndicator(
-                    color: homeContext.colorScheme.primary,
-                  ),
-                );
+                return Center(child: CircularProgressIndicator(color: homeContext.colorScheme.primary));
               }
               final List transactions = result.data?["transferConnection"]["edges"];
 
               if (result.hasException) {
                 log.e('Error Indexer: ${result.exception}');
-                return Column(children: <Widget>[
-                  Column(
-                    children: [
-                      if (transactionData != null) TransactionInProgressTule(transactionData: transactionData!),
-                      ScaledSizedBox(height: 50),
-                      Text(
-                        "noNetworkNoHistory".tr(),
-                        textAlign: TextAlign.center,
-                        style: scaledTextStyle(fontSize: 17),
-                      ),
-                    ],
-                  )
-                ]);
+                return Column(
+                  children: <Widget>[
+                    Column(
+                      children: [
+                        if (transactionData != null) TransactionInProgressTule(transactionData: transactionData!),
+                        ScaledSizedBox(height: 50),
+                        Text(
+                          "noNetworkNoHistory".tr(),
+                          textAlign: TextAlign.center,
+                          style: scaledTextStyle(fontSize: 17),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
               } else if (transactions.isEmpty) {
-                return Column(children: <Widget>[
-                  Column(
-                    children: [
-                      if (transactionData != null) TransactionInProgressTule(transactionData: transactionData!),
-                      ScaledSizedBox(height: 50),
-                      Text(
-                        "noDataToDisplay".tr(),
-                        style: scaledTextStyle(fontSize: 17),
-                      ),
-                    ],
-                  )
-                ]);
+                return Column(
+                  children: <Widget>[
+                    Column(
+                      children: [
+                        if (transactionData != null) TransactionInProgressTule(transactionData: transactionData!),
+                        ScaledSizedBox(height: 50),
+                        Text("noDataToDisplay".tr(), style: scaledTextStyle(fontSize: 17)),
+                      ],
+                    ),
+                  ],
+                );
               }
 
               if (result.isNotLoading) {
@@ -105,39 +100,36 @@ class HistoryQuery extends StatelessWidget {
 
               // Build history list
               return NotificationListener(
-                  child: Builder(
-                    builder: (context) => Expanded(
-                      child: RefreshIndicator(
-                        color: context.colorScheme.primary,
-                        onRefresh: () async => refetch!.call(),
-                        child: ListView(
-                          key: keyListTransactions,
-                          controller: scrollController,
-                          children: <Widget>[
-                            if (transactionData != null) TransactionInProgressTule(transactionData: transactionData!),
-                            HistoryView(
-                              result: result,
-                              address: address,
-                              previousAddress: previousAddress,
-                            )
-                          ],
-                        ),
+                child: Builder(
+                  builder: (context) => Expanded(
+                    child: RefreshIndicator(
+                      color: context.colorScheme.primary,
+                      onRefresh: () async => refetch!.call(),
+                      child: ListView(
+                        key: keyListTransactions,
+                        controller: scrollController,
+                        children: <Widget>[
+                          if (transactionData != null) TransactionInProgressTule(transactionData: transactionData!),
+                          HistoryView(result: result, address: address, previousAddress: previousAddress),
+                        ],
                       ),
                     ),
                   ),
-                  onNotification: (dynamic t) {
-                    if (duniterIndexer.pageInfo == null) {
-                      duniterIndexer.reload();
-                    }
+                ),
+                onNotification: (dynamic t) {
+                  if (duniterIndexer.pageInfo == null) {
+                    duniterIndexer.reload();
+                  }
 
-                    if (t is ScrollEndNotification &&
-                        scrollController.position.pixels >= scrollController.position.maxScrollExtent * 0.7 &&
-                        duniterIndexer.pageInfo!['hasNextPage'] &&
-                        result.isNotLoading) {
-                      fetchMore!(opts!);
-                    }
-                    return true;
-                  });
+                  if (t is ScrollEndNotification &&
+                      scrollController.position.pixels >= scrollController.position.maxScrollExtent * 0.7 &&
+                      duniterIndexer.pageInfo!['hasNextPage'] &&
+                      result.isNotLoading) {
+                    fetchMore!(opts!);
+                  }
+                  return true;
+                },
+              );
             },
           ),
         ],

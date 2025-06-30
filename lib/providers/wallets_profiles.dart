@@ -35,10 +35,7 @@ class WalletsProfilesProvider with ChangeNotifier {
     if (value.isEmpty) {
       payComment.text = '';
     } else {
-      payComment.value = TextEditingValue(
-        text: value,
-        selection: payComment.selection,
-      );
+      payComment.value = TextEditingValue(text: value, selection: payComment.selection);
     }
     notifyListeners();
   }
@@ -76,26 +73,19 @@ class WalletsProfilesProvider with ChangeNotifier {
         address = barcodeContent;
       }
 
-      Navigator.popUntil(
-        context,
-        ModalRoute.withName('/'),
-      );
+      Navigator.popUntil(context, ModalRoute.withName('/'));
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) {
-          return WalletViewScreen(
-            address: address,
-            username: null,
-          );
-        }),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('qrCodeNotAddress'.tr()),
-          duration: const Duration(seconds: 2),
+        MaterialPageRoute(
+          builder: (context) {
+            return WalletViewScreen(address: address, username: null);
+          },
         ),
       );
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('qrCodeNotAddress'.tr()), duration: const Duration(seconds: 2)));
     }
   }
 
@@ -141,50 +131,46 @@ bool isAddress(String address) => Durt.i.utils.isAddressValid(address);
 
 bool isPubkey(String pubkey) {
   pubkey = pubkey.split(':')[0];
-  final RegExp regExp = RegExp(
-    r'^[a-zA-Z0-9]+$',
-    caseSensitive: false,
-    multiLine: false,
-  );
+  final RegExp regExp = RegExp(r'^[a-zA-Z0-9]+$', caseSensitive: false, multiLine: false);
 
   return regExp.hasMatch(pubkey) == true && pubkey.length > 42 && pubkey.length < 45;
 }
 
 void snackMessage(BuildContext context, {required String message, int duration = 4, double fontSize = 14}) {
   final snackBar = SnackBar(
-      backgroundColor: context.colorScheme.onSurface,
-      padding: EdgeInsets.all(scaleSize(19)),
-      content: Text(message,
-          style: scaledTextStyle(
-            fontSize: fontSize,
-            color: context.colorScheme.surfaceContainer,
-          )),
-      duration: Duration(seconds: duration));
+    backgroundColor: context.colorScheme.onSurface,
+    padding: EdgeInsets.all(scaleSize(19)),
+    content: Text(
+      message,
+      style: scaledTextStyle(fontSize: fontSize, color: context.colorScheme.surfaceContainer),
+    ),
+    duration: Duration(seconds: duration),
+  );
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
 
 void snackCopyKey(BuildContext context) {
   final snackBar = SnackBar(
-      backgroundColor: context.colorScheme.onSurface,
-      padding: EdgeInsets.all(scaleSize(19)),
-      content: Text("thisAddressHasBeenCopiedToClipboard".tr(),
-          style: scaledTextStyle(
-            fontSize: 13,
-            color: context.colorScheme.surfaceContainer,
-          )),
-      duration: const Duration(seconds: 4));
+    backgroundColor: context.colorScheme.onSurface,
+    padding: EdgeInsets.all(scaleSize(19)),
+    content: Text(
+      "thisAddressHasBeenCopiedToClipboard".tr(),
+      style: scaledTextStyle(fontSize: 13, color: context.colorScheme.surfaceContainer),
+    ),
+    duration: const Duration(seconds: 4),
+  );
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
 
 void snackCopySeed(BuildContext context) {
   final snackBar = SnackBar(
-      backgroundColor: context.colorScheme.onSurface,
-      padding: EdgeInsets.all(scaleSize(19)),
-      content: Text("thisMnemonicHasBeenCopiedToClipboard".tr(),
-          style: scaledTextStyle(
-            fontSize: 13,
-            color: context.colorScheme.surfaceContainer,
-          )),
-      duration: const Duration(seconds: 4));
+    backgroundColor: context.colorScheme.onSurface,
+    padding: EdgeInsets.all(scaleSize(19)),
+    content: Text(
+      "thisMnemonicHasBeenCopiedToClipboard".tr(),
+      style: scaledTextStyle(fontSize: 13, color: context.colorScheme.surfaceContainer),
+    ),
+    duration: const Duration(seconds: 4),
+  );
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }

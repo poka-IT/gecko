@@ -32,8 +32,7 @@ class AnimatedFadeOutIn<T> extends StatefulWidget {
   AnimatedFadeOutInState<T> createState() => AnimatedFadeOutInState<T>();
 }
 
-class AnimatedFadeOutInState<T> extends State<AnimatedFadeOutIn<T>>
-    with SingleTickerProviderStateMixin {
+class AnimatedFadeOutInState<T> extends State<AnimatedFadeOutIn<T>> with SingleTickerProviderStateMixin {
   late AnimationController controller;
   late Animation<double> animation;
   late T dataToShow;
@@ -53,15 +52,11 @@ class AnimatedFadeOutInState<T> extends State<AnimatedFadeOutIn<T>>
         }
       });
 
-    animation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: controller,
-        curve: Curves.easeIn,
-        reverseCurve: Curves.easeOut,
-      ),
-    );
-    if (widget.dataDidChange?.call(dataToShow, widget.data) ??
-        widget.data != dataToShow) {
+    animation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: controller, curve: Curves.easeIn, reverseCurve: Curves.easeOut));
+    if (widget.dataDidChange?.call(dataToShow, widget.data) ?? widget.data != dataToShow) {
       controller.forward(from: 0.0);
     }
   }
@@ -75,16 +70,12 @@ class AnimatedFadeOutInState<T> extends State<AnimatedFadeOutIn<T>>
   @override
   void didUpdateWidget(AnimatedFadeOutIn<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.dataDidChange?.call(oldWidget.data, widget.data) ??
-        widget.data != oldWidget.data) {
+    if (widget.dataDidChange?.call(oldWidget.data, widget.data) ?? widget.data != oldWidget.data) {
       dataToShow = oldWidget.data;
       controller.forward(from: 0.0);
     }
   }
 
   @override
-  Widget build(BuildContext context) => Opacity(
-        opacity: 1.0 - animation.value,
-        child: widget.builder(dataToShow),
-      );
+  Widget build(BuildContext context) => Opacity(opacity: 1.0 - animation.value, child: widget.builder(dataToShow));
 }

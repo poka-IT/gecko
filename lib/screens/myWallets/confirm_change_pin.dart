@@ -47,34 +47,28 @@ class _ConfirmChangePinScreenState extends State<ConfirmChangePinScreen> {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar(widget.walletName!),
       body: SafeArea(
-        child: Column(children: <Widget>[
-          const SizedBox(height: 80),
-          SizedBox(
-            width: 300,
-            child: Text(
-              'geckoWillCheckPassword'.tr(),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16.0,
-                color: Colors.grey[600],
-                fontWeight: FontWeight.w400,
+        child: Column(
+          children: <Widget>[
+            const SizedBox(height: 80),
+            SizedBox(
+              width: 300,
+              child: Text(
+                'geckoWillCheckPassword'.tr(),
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16.0, color: Colors.grey[600], fontWeight: FontWeight.w400),
               ),
             ),
-          ),
-          const SizedBox(height: 30),
-          if (hasError) ...[
-            Text(
-              "thisIsNotAGoodCode".tr(),
-              style: const TextStyle(
-                color: Colors.red,
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
+            const SizedBox(height: 30),
+            if (hasError) ...[
+              Text(
+                "thisIsNotAGoodCode".tr(),
+                style: const TextStyle(color: Colors.red, fontSize: 15, fontWeight: FontWeight.w500),
               ),
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
+            ],
+            pinForm(context),
           ],
-          pinForm(context),
-        ]),
+        ),
       ),
     );
   }

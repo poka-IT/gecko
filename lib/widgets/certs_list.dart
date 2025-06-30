@@ -40,37 +40,27 @@ class CertsList extends StatelessWidget {
     return GraphQLProvider(
       client: ValueNotifier(indexerProvider.indexerClient),
       child: Query(
-        options: QueryOptions(
-          document: gql(gertCertsReq),
-          variables: <String, dynamic>{
-            'address': address,
-          },
-        ),
+        options: QueryOptions(document: gql(gertCertsReq), variables: <String, dynamic>{'address': address}),
         builder: (QueryResult result, {fetchMore, refetch}) {
           if (result.isLoading || result.data == null) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (result.hasException || result.data == null) {
             log.e('Error Indexer: ${result.exception}');
-            return Column(children: <Widget>[
-              ScaledSizedBox(height: 50),
-              Text(
-                "noNetworkNoHistory".tr(),
-                textAlign: TextAlign.center,
-                style: scaledTextStyle(fontSize: 17),
-              )
-            ]);
+            return Column(
+              children: <Widget>[
+                ScaledSizedBox(height: 50),
+                Text("noNetworkNoHistory".tr(), textAlign: TextAlign.center, style: scaledTextStyle(fontSize: 17)),
+              ],
+            );
           } else if (result.data?['certConnection']['edges']?.isEmpty) {
-            return Column(children: <Widget>[
-              ScaledSizedBox(height: 50),
-              Text(
-                "noDataToDisplay".tr(),
-                style: scaledTextStyle(fontSize: 17),
-              )
-            ]);
+            return Column(
+              children: <Widget>[
+                ScaledSizedBox(height: 50),
+                Text("noDataToDisplay".tr(), style: scaledTextStyle(fontSize: 17)),
+              ],
+            );
           }
 
           final List certsData = result.data!['certConnection']['edges'];
@@ -103,16 +93,13 @@ class CertsList extends StatelessWidget {
                 key: keyListTransactions,
                 children: <Widget>[
                   result.data == null
-                      ? Column(children: <Widget>[
-                          ScaledSizedBox(height: 50),
-                          Text(
-                            "noTransactionToDisplay".tr(),
-                            style: scaledTextStyle(fontSize: 17),
-                          )
-                        ])
-                      : Column(children: <Widget>[
-                          CertTile(listCerts: listCerts),
-                        ])
+                      ? Column(
+                          children: <Widget>[
+                            ScaledSizedBox(height: 50),
+                            Text("noTransactionToDisplay".tr(), style: scaledTextStyle(fontSize: 17)),
+                          ],
+                        )
+                      : Column(children: <Widget>[CertTile(listCerts: listCerts)]),
                 ],
               ),
             ),

@@ -23,7 +23,12 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 
 class OnboardingStepTen extends StatefulWidget {
-  const OnboardingStepTen({Key? validationKey, required this.pinCode, this.scanDerivation = false, this.fromRestore = false}) : super(key: validationKey);
+  const OnboardingStepTen({
+    Key? validationKey,
+    required this.pinCode,
+    this.scanDerivation = false,
+    this.fromRestore = false,
+  }) : super(key: validationKey);
 
   final bool scanDerivation;
   final String pinCode;
@@ -93,7 +98,11 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                             children: [
                               Text(
                                 "youHaveToBeConnectedToValidateChest".tr(),
-                                style: scaledTextStyle(fontSize: 16, color: Colors.redAccent, fontWeight: FontWeight.w500),
+                                style: scaledTextStyle(
+                                  fontSize: 16,
+                                  color: Colors.redAccent,
+                                  fontWeight: FontWeight.w500,
+                                ),
                                 textAlign: TextAlign.center,
                               ),
                             ],
@@ -111,12 +120,20 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                                     ScaledSizedBox(height: isTall ? 30 : 0),
                                     const Spacer(),
                                     Icon(
-                                      configBox.get('isCacheChecked') ?? false ? Icons.check_box : Icons.check_box_outline_blank,
+                                      configBox.get('isCacheChecked') ?? false
+                                          ? Icons.check_box
+                                          : Icons.check_box_outline_blank,
                                       color: context.colorScheme.primary,
                                       size: scaleSize(22),
                                     ),
                                     ScaledSizedBox(width: 8),
-                                    Text('rememberPassword'.tr(), style: scaledTextStyle(fontSize: 14, color: homeContext.colorScheme.onSurfaceVariant)),
+                                    Text(
+                                      'rememberPassword'.tr(),
+                                      style: scaledTextStyle(
+                                        fontSize: 14,
+                                        color: homeContext.colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
                                     const Spacer(),
                                   ],
                                 ),
@@ -135,7 +152,13 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
     );
   }
 
-  Widget pinForm(BuildContext context, WalletOptionsProvider walletOptions, int pinLenght, int walletNbr, int derivation) {
+  Widget pinForm(
+    BuildContext context,
+    WalletOptionsProvider walletOptions,
+    int pinLenght,
+    int walletNbr,
+    int derivation,
+  ) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
 
     final currentChest = myWalletProvider.getCurrentSafe;
@@ -245,7 +268,10 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                 await Durt.i.wallets.setDefaultWallet(address);
               }
 
-              await Navigator.push(context, FaderTransition(page: OnboardingStepEleven(fromRestore: widget.fromRestore), isFast: false));
+              await Navigator.push(
+                context,
+                FaderTransition(page: OnboardingStepEleven(fromRestore: widget.fromRestore), isFast: false),
+              );
             } else {
               hasError = true;
               myWalletProvider.isPinLoading = false;

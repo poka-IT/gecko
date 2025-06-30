@@ -21,8 +21,11 @@ class Balance extends StatelessWidget {
         return FutureBuilder(
           future: Durt.i.storage.getBalance(address),
           builder: (BuildContext context, AsyncSnapshot<WalletBalance> globalBalance) {
-            if (globalBalance.connectionState != ConnectionState.done || globalBalance.hasError || !globalBalance.hasData) {
-              if (walletOptions.balanceCache[address] != null && walletOptions.balanceCache[address] != BigInt.from(-1)) {
+            if (globalBalance.connectionState != ConnectionState.done ||
+                globalBalance.hasError ||
+                !globalBalance.hasData) {
+              if (walletOptions.balanceCache[address] != null &&
+                  walletOptions.balanceCache[address] != BigInt.from(-1)) {
                 return BalanceDisplay(value: walletOptions.balanceCache[address]!, size: size, color: finalColor);
               } else {
                 return const SizedBox.shrink();

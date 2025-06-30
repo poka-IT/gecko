@@ -28,22 +28,24 @@ class ChestOptions extends StatelessWidget {
       resizeToAvoidBottomInset: false,
       appBar: GeckoAppBar(currentSafe.name),
       bottomNavigationBar: const GeckoBottomAppBar(),
-      body: Stack(children: [
-        Builder(
-          builder: (ctx) => SafeArea(
-            child: Column(
-              children: [
-                ScaledSizedBox(height: 20),
-                Padding(
-                  padding: EdgeInsets.only(left: scaleSize(16)),
-                  child: ChestOptionsContent(),
-                ),
-              ],
+      body: Stack(
+        children: [
+          Builder(
+            builder: (ctx) => SafeArea(
+              child: Column(
+                children: [
+                  ScaledSizedBox(height: 20),
+                  Padding(
+                    padding: EdgeInsets.only(left: scaleSize(16)),
+                    child: ChestOptionsContent(),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        const OfflineInfo(),
-      ]),
+          const OfflineInfo(),
+        ],
+      ),
     );
   }
 }
@@ -68,29 +70,20 @@ class ChestOptionsContent extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => ShowSeed(
-                        walletName: currentChest.name,
-                        walletProvider: myWalletProvider,
-                      )),
+                builder: (context) => ShowSeed(walletName: currentChest.name, walletProvider: myWalletProvider),
+              ),
             );
           },
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
             child: Row(
               children: [
-                Icon(
-                  Icons.vpn_key_outlined,
-                  size: scaleSize(24),
-                  color: context.colorScheme.onSurface,
-                ),
+                Icon(Icons.vpn_key_outlined, size: scaleSize(24), color: context.colorScheme.onSurface),
                 ScaledSizedBox(width: 16),
                 Expanded(
                   child: Text(
                     'displayMnemonic'.tr(),
-                    style: scaledTextStyle(
-                      fontSize: 16,
-                      color: context.colorScheme.onSurface,
-                    ),
+                    style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
                     softWrap: true,
                   ),
                 ),
@@ -105,10 +98,7 @@ class ChestOptionsContent extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ChangePinScreen(
-                  walletName: currentChest.name,
-                  walletProvider: myWalletProvider,
-                ),
+                builder: (context) => ChangePinScreen(walletName: currentChest.name, walletProvider: myWalletProvider),
               ),
             );
           },
@@ -116,19 +106,12 @@ class ChestOptionsContent extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
             child: Row(
               children: [
-                Icon(
-                  Icons.lock_outline,
-                  size: scaleSize(24),
-                  color: const Color.fromARGB(255, 255, 142, 142),
-                ),
+                Icon(Icons.lock_outline, size: scaleSize(24), color: const Color.fromARGB(255, 255, 142, 142)),
                 ScaledSizedBox(width: 16),
                 Expanded(
                   child: Text(
                     'changePassword'.tr(),
-                    style: scaledTextStyle(
-                      fontSize: 16,
-                      color: context.colorScheme.onSurface,
-                    ),
+                    style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
                     softWrap: true,
                   ),
                 ),
@@ -141,10 +124,7 @@ class ChestOptionsContent extends StatelessWidget {
             key: keycreateRootDerivation,
             onTap: Durt.i.isConnected
                 ? () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const CustomDerivation()),
-                    );
+                    await Navigator.push(context, MaterialPageRoute(builder: (context) => const CustomDerivation()));
                   }
                 : null,
             child: Container(
@@ -182,19 +162,12 @@ class ChestOptionsContent extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
             child: Row(
               children: [
-                Image.asset(
-                  'assets/walletOptions/trash.png',
-                  height: scaleSize(24),
-                  color: const Color(0xffD80000),
-                ),
+                Image.asset('assets/walletOptions/trash.png', height: scaleSize(24), color: const Color(0xffD80000)),
                 ScaledSizedBox(width: 16),
                 Expanded(
                   child: Text(
                     'forgetSafe'.tr(),
-                    style: scaledTextStyle(
-                      fontSize: 16,
-                      color: const Color(0xffD80000),
-                    ),
+                    style: scaledTextStyle(fontSize: 16, color: const Color(0xffD80000)),
                     softWrap: true,
                   ),
                 ),

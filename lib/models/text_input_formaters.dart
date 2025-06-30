@@ -8,10 +8,7 @@ class Utf8LengthLimitingTextInputFormatter extends TextInputFormatter {
   Utf8LengthLimitingTextInputFormatter(this.maxLength);
 
   @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
     if (utf8.encode(newValue.text).length <= maxLength) {
       return newValue;
     }

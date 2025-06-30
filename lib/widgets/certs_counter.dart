@@ -10,15 +10,16 @@ class CertsCounter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: Durt.i.storage.getCertsCounter(address),
-        builder: (context, certsCounter) {
-          if (certsCounter.connectionState != ConnectionState.done || certsCounter.hasError || !certsCounter.hasData) {
-            return const SizedBox.shrink();
-          }
-          return Text(
-            '(${isSent ? certsCounter.data!.sentCount : certsCounter.data!.receivedCount})',
-            style: scaledTextStyle(fontSize: 16),
-          );
-        });
+      future: Durt.i.storage.getCertsCounter(address),
+      builder: (context, certsCounter) {
+        if (certsCounter.connectionState != ConnectionState.done || certsCounter.hasError || !certsCounter.hasData) {
+          return const SizedBox.shrink();
+        }
+        return Text(
+          '(${isSent ? certsCounter.data!.sentCount : certsCounter.data!.receivedCount})',
+          style: scaledTextStyle(fontSize: 16),
+        );
+      },
+    );
   }
 }

@@ -31,80 +31,96 @@ class SearchIdentityQuery extends StatelessWidget {
     return GraphQLProvider(
       client: ValueNotifier(duniterIndexer.indexerClient),
       child: Query(
-          options: QueryOptions(
-            document: gql(searchAddressByNameQ),
-            variables: {
-              'name': '%$name%',
-            },
-          ),
-          builder: (QueryResult result, {VoidCallback? refetch, FetchMore? fetchMore}) {
-            if (kDebugMode) {
-              if (result.hasException) {
-                return Text(result.exception.toString());
-              }
+        options: QueryOptions(document: gql(searchAddressByNameQ), variables: {'name': '%$name%'}),
+        builder: (QueryResult result, {VoidCallback? refetch, FetchMore? fetchMore}) {
+          if (kDebugMode) {
+            if (result.hasException) {
+              return Text(result.exception.toString());
             }
+          }
 
-            if (result.isLoading) {
-              return Text('loading'.tr());
+          if (result.isLoading) {
+            return Text('loading'.tr());
+          }
+
+          final List identities = result.data?['identityConnection']['edges'] ?? [];
+
+          if (identities.isEmpty) {
+            return Text('noResult'.tr());
+          }
+
+          for (Map profile in identities) {
+            if (profile['node']['name'] != null && profile['node']['accountId'] != null) {
+              duniterIndexer.walletNameIndexer.putIfAbsent(profile['node']['accountId'], () => profile['node']['name']);
             }
+          }
 
-            final List identities = result.data?['identityConnection']['edges'] ?? [];
+          searchProvider.resultLenght = identities.length;
 
-            if (identities.isEmpty) {
-              return Text('noResult'.tr());
-            }
-
-            for (Map profile in identities) {
-              if (profile['node']['name'] != null && profile['node']['accountId'] != null) {
-                duniterIndexer.walletNameIndexer.putIfAbsent(profile['node']['accountId'], () => profile['node']['name']);
-              }
-            }
-
-            searchProvider.resultLenght = identities.length;
-
-            const double avatarSize = 45;
-            return Expanded(
-              child: ListView(children: <Widget>[
+          const double avatarSize = 45;
+          return Expanded(
+            child: ListView(
+              children: <Widget>[
                 for (Map profile in identities)
                   if (profile['node']['accountId'] != null)
                     ListTile(
-                        key: keySearchResult(profile['node']['accountId']),
-                        horizontalTitleGap: 10,
-                        contentPadding: const EdgeInsets.only(right: 2),
-                        leading: DatapodAvatar(address: profile['node']['accountId'], size: avatarSize),
-                        title: Row(children: <Widget>[
-                          Text(getShortPubkey(profile['node']['accountId']),
-                              style: scaledTextStyle(fontSize: 14, fontFamily: 'Monospace', fontWeight: FontWeight.w500), textAlign: TextAlign.center),
-                        ]),
-                        trailing: ScaledSizedBox(
-                          width: 120,
-                          child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                            Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                              Balance(address: profile['node']['accountId'], size: 14),
-                            ]),
-                          ]),
+                      key: keySearchResult(profile['node']['accountId']),
+                      horizontalTitleGap: 10,
+                      contentPadding: const EdgeInsets.only(right: 2),
+                      leading: DatapodAvatar(address: profile['node']['accountId'], size: avatarSize),
+                      title: Row(
+                        children: <Widget>[
+                          Text(
+                            getShortPubkey(profile['node']['accountId']),
+                            style: scaledTextStyle(fontSize: 14, fontFamily: 'Monospace', fontWeight: FontWeight.w500),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                      trailing: ScaledSizedBox(
+                        width: 120,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [Balance(address: profile['node']['accountId'], size: 14)],
+                            ),
+                          ],
                         ),
-                        subtitle: Row(children: <Widget>[
-                          Text(profile['node']['name'] ?? '', style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
-                        ]),
-                        dense: !isTall,
-                        isThreeLine: false,
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) {
+                      ),
+                      subtitle: Row(
+                        children: <Widget>[
+                          Text(
+                            profile['node']['name'] ?? '',
+                            style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                      dense: !isTall,
+                      isThreeLine: false,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) {
                               walletsProfiles.address = profile['node']['accountId'];
                               return WalletViewScreen(
                                 address: profile['node']['accountId'],
                                 username: profile['node']['name'],
                               );
-                            }),
-                          );
-                        }),
-              ]),
-            );
-          }),
+                            },
+                          ),
+                        );
+                      },
+                    ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }

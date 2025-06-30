@@ -22,14 +22,7 @@ class G1WalletsList {
   @HiveField(5)
   bool? isMembre;
 
-  G1WalletsList({
-    required this.address,
-    this.balance,
-    this.id,
-    this.username,
-    this.csName,
-    this.isMembre,
-  });
+  G1WalletsList({required this.address, this.balance, this.id, this.username, this.csName, this.isMembre});
 
   G1WalletsList.fromJson(Map<String, dynamic> json) {
     address = json['pubkey'];

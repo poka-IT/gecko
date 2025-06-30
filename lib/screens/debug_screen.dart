@@ -48,38 +48,25 @@ class DebugScreen extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Icon(
-                              Icons.dns_rounded,
-                              color: context.colorScheme.primary,
-                              size: scaleSize(24),
-                            ),
+                            Icon(Icons.dns_rounded, color: context.colorScheme.primary, size: scaleSize(24)),
                             ScaledSizedBox(width: 12),
                             Text(
                               'currencyNode'.tr(),
-                              style: scaledTextStyle(
-                                fontSize: 14,
-                                color: context.colorScheme.onSecondaryContainer,
-                              ),
+                              style: scaledTextStyle(fontSize: 14, color: context.colorScheme.onSecondaryContainer),
                             ),
                           ],
                         ),
                         ScaledSizedBox(height: 12),
                         Text(
                           'node: ${Networks.duniterEndpoint}',
-                          style: scaledTextStyle(
-                            fontSize: 13,
-                            color: context.colorScheme.onSecondaryContainer,
-                          ),
+                          style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
                         ),
                         ScaledSizedBox(height: 8),
                         Consumer<BlockHeightProvider>(
                           builder: (context, blockHeightProvider, child) {
                             return Text(
                               'blockN'.tr(args: [blockHeightProvider.blockHeight.toString()]),
-                              style: scaledTextStyle(
-                                fontSize: 13,
-                                color: context.colorScheme.onSecondaryContainer,
-                              ),
+                              style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
                             );
                           },
                         ),
@@ -109,18 +96,11 @@ class DebugScreen extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Icon(
-                              Icons.build_rounded,
-                              color: context.colorScheme.primary,
-                              size: scaleSize(24),
-                            ),
+                            Icon(Icons.build_rounded, color: context.colorScheme.primary, size: scaleSize(24)),
                             ScaledSizedBox(width: 12),
                             Text(
                               'Actions',
-                              style: scaledTextStyle(
-                                fontSize: 14,
-                                color: context.colorScheme.onSecondaryContainer,
-                              ),
+                              style: scaledTextStyle(fontSize: 14, color: context.colorScheme.onSecondaryContainer),
                             ),
                           ],
                         ),
@@ -132,20 +112,14 @@ class DebugScreen extends StatelessWidget {
                               foregroundColor: Colors.white,
                               backgroundColor: context.colorScheme.primary,
                               padding: EdgeInsets.symmetric(vertical: scaleSize(12)),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             ),
                             onPressed: () async {
                               await Durt.i.duniter.spawnBlock();
                             },
                             child: Text(
                               'Spawn a bloc',
-                              style: scaledTextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
+                              style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
                             ),
                           ),
                         ),

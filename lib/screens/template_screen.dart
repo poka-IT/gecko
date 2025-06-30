@@ -11,14 +11,11 @@ class TemplateScreen extends StatelessWidget {
     // final _homeProvider = Provider.of<HomeProvider>(context);
 
     return Scaffold(
-        backgroundColor: context.colorScheme.surface,
-        appBar: const GeckoAppBar('Template screen'),
-        body: SafeArea(
-          child: Column(children: <Widget>[
-            ScaledSizedBox(height: 20),
-            const Text('data'),
-            ScaledSizedBox(height: 20),
-          ]),
-        ));
+      backgroundColor: context.colorScheme.surface,
+      appBar: const GeckoAppBar('Template screen'),
+      body: SafeArea(
+        child: Column(children: <Widget>[ScaledSizedBox(height: 20), const Text('data'), ScaledSizedBox(height: 20)]),
+      ),
+    );
   }
 }

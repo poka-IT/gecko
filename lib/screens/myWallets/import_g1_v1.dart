@@ -42,24 +42,30 @@ class ImportG1v1 extends StatelessWidget {
         backgroundColor: context.colorScheme.surface,
         appBar: GeckoAppBar('importOldAccount'.tr()),
         body: SafeArea(
-          child: Consumer<G1v1MigrationProvider>(builder: (context, g1v1Migration, _) {
-            return FutureBuilder(
-                future: Durt.i.storage.getMigrateWalletChecks(fromAddress: g1v1Migration.g1V1NewAddress, toAddress: selectedWallet.address),
+          child: Consumer<G1v1MigrationProvider>(
+            builder: (context, g1v1Migration, _) {
+              return FutureBuilder(
+                future: Durt.i.storage.getMigrateWalletChecks(
+                  fromAddress: g1v1Migration.g1V1NewAddress,
+                  toAddress: selectedWallet.address,
+                ),
                 builder: (BuildContext context, AsyncSnapshot<MigrateWalletChecks> migrationChecks) {
                   if (migrationChecks.data == null) {
-                    return Column(children: [
-                      ScaledSizedBox(height: 80),
-                      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                        ScaledSizedBox(
-                          height: 35,
-                          width: 35,
-                          child: CircularProgressIndicator(
-                            color: context.colorScheme.primary,
-                            strokeWidth: 4,
-                          ),
+                    return Column(
+                      children: [
+                        ScaledSizedBox(height: 80),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ScaledSizedBox(
+                              height: 35,
+                              width: 35,
+                              child: CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: 4),
+                            ),
+                          ],
                         ),
-                      ]),
-                    ]);
+                      ],
+                    );
                   }
 
                   return SingleChildScrollView(
@@ -71,9 +77,7 @@ class ImportG1v1 extends StatelessWidget {
                         Card(
                           color: context.colorScheme.surfaceContainer,
                           elevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           child: Padding(
                             padding: EdgeInsets.all(scaleSize(12)),
                             child: Column(
@@ -122,9 +126,7 @@ class ImportG1v1 extends StatelessWidget {
                                     contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                     hintText: 'enterCesiumId'.tr(),
                                     hintStyle: scaledTextStyle(fontSize: 13),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                                     suffixIcon: IconButton(
                                       key: keyCesiumIdVisible,
                                       padding: EdgeInsets.zero,
@@ -177,9 +179,7 @@ class ImportG1v1 extends StatelessWidget {
                                     contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                     hintText: 'enterCesiumPassword'.tr(),
                                     hintStyle: scaledTextStyle(fontSize: 13),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                                     suffixIcon: IconButton(
                                       padding: EdgeInsets.zero,
                                       constraints: BoxConstraints(),
@@ -201,14 +201,15 @@ class ImportG1v1 extends StatelessWidget {
 
                         // Section des informations du compte
                         Visibility(
-                          visible: g1v1Migration.g1V1OldPubkey != '' && g1v1Migration.csSalt.text != '' && g1v1Migration.csPassword.text != '',
+                          visible:
+                              g1v1Migration.g1V1OldPubkey != '' &&
+                              g1v1Migration.csSalt.text != '' &&
+                              g1v1Migration.csPassword.text != '',
                           child: Card(
                             elevation: 2,
                             color: context.colorScheme.surfaceContainer,
                             margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             child: Padding(
                               padding: EdgeInsets.all(scaleSize(12)),
                               child: Column(
@@ -240,7 +241,10 @@ class ImportG1v1 extends StatelessWidget {
                                                 children: [
                                                   Text(
                                                     'v1: ',
-                                                    style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
+                                                    style: scaledTextStyle(
+                                                      fontSize: 13,
+                                                      color: context.colorScheme.onSecondaryContainer,
+                                                    ),
                                                   ),
                                                   Text(
                                                     getShortPubkey(g1v1Migration.g1V1OldPubkey),
@@ -266,7 +270,10 @@ class ImportG1v1 extends StatelessWidget {
                                                 children: [
                                                   Text(
                                                     'v2: ',
-                                                    style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
+                                                    style: scaledTextStyle(
+                                                      fontSize: 13,
+                                                      color: context.colorScheme.onSecondaryContainer,
+                                                    ),
                                                   ),
                                                   Text(
                                                     getShortPubkey(g1v1Migration.g1V1NewAddress),
@@ -288,7 +295,8 @@ class ImportG1v1 extends StatelessWidget {
                                         crossAxisAlignment: CrossAxisAlignment.end,
                                         children: [
                                           BalanceDisplay(
-                                            value: migrationChecks.data?.fromBalance?.transferableBalance ?? BigInt.zero,
+                                            value:
+                                                migrationChecks.data?.fromBalance?.transferableBalance ?? BigInt.zero,
                                             size: 14,
                                             fontWeight: FontWeight.w600,
                                             color: context.colorScheme.onSecondaryContainer,
@@ -301,10 +309,7 @@ class ImportG1v1 extends StatelessWidget {
                                                 color: Colors.black,
                                               ),
                                               ScaledSizedBox(width: 4),
-                                              Certifications(
-                                                address: g1v1Migration.g1V1NewAddress,
-                                                size: 12,
-                                              ),
+                                              Certifications(address: g1v1Migration.g1V1NewAddress, size: 12),
                                             ],
                                           ),
                                         ],
@@ -322,9 +327,7 @@ class ImportG1v1 extends StatelessWidget {
                           color: context.colorScheme.surfaceContainer,
                           elevation: 2,
                           margin: EdgeInsets.only(bottom: scaleSize(8)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           child: Padding(
                             padding: EdgeInsets.all(scaleSize(12)),
                             child: Column(
@@ -356,10 +359,7 @@ class ImportG1v1 extends StatelessWidget {
                                         return DropdownMenuItem(
                                           key: keySelectThisWallet(wallet.address),
                                           value: wallet,
-                                          child: Text(
-                                            wallet.name!,
-                                            style: scaledTextStyle(fontSize: 13),
-                                          ),
+                                          child: Text(wallet.name!, style: scaledTextStyle(fontSize: 13)),
                                         );
                                       }).toList(),
                                       onChanged: (WalletData? newSelectedWallet) {
@@ -374,7 +374,7 @@ class ImportG1v1 extends StatelessWidget {
                           ),
                         ),
 
-                        // Bouton de validation et message de statut
+                        // Bouton de validation et message de status
                         Column(
                           children: [
                             ScaledSizedBox(
@@ -387,9 +387,7 @@ class ImportG1v1 extends StatelessWidget {
                                   backgroundColor: context.colorScheme.primary,
                                   elevation: 2,
                                   padding: const EdgeInsets.symmetric(horizontal: 8),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
                                 ),
                                 onPressed: migrationChecks.data!.canMigrate
@@ -397,8 +395,12 @@ class ImportG1v1 extends StatelessWidget {
                                         final addressToMigrate = g1v1Migration.g1V1NewAddress;
                                         final hasIdentity = migrationChecks.data!.fromIdtyStatus != IdtyStatus.none;
                                         final message = hasIdentity
-                                            ? 'migrationConfirmWithIdentity'.tr(args: [currencyName, getShortPubkey(selectedWallet.address)])
-                                            : 'migrationConfirmBalanceOnly'.tr(args: [currencyName, getShortPubkey(selectedWallet.address)]);
+                                            ? 'migrationConfirmWithIdentity'.tr(
+                                                args: [currencyName, getShortPubkey(selectedWallet.address)],
+                                              )
+                                            : 'migrationConfirmBalanceOnly'.tr(
+                                                args: [currencyName, getShortPubkey(selectedWallet.address)],
+                                              );
 
                                         // Afficher le popup de confirmation
                                         bool? confirmed = await showConfirmationDialog(
@@ -426,8 +428,10 @@ class ImportG1v1 extends StatelessWidget {
 
                                         if (pin == null) return;
 
-                                        final toKeypair =
-                                            await Durt.i.wallets.getKeyPairFromAddress(address: selectedWallet.address, pinCode: myWalletProvider.pinCode);
+                                        final toKeypair = await Durt.i.wallets.getKeyPairFromAddress(
+                                          address: selectedWallet.address,
+                                          pinCode: myWalletProvider.pinCode,
+                                        );
                                         final transactionStatus = Durt.i.duniter.migrateCsToV2(
                                           salt: g1v1Migration.csSalt.text,
                                           password: g1v1Migration.csPassword.text,
@@ -437,13 +441,16 @@ class ImportG1v1 extends StatelessWidget {
                                         Navigator.pop(context);
                                         await Navigator.push(
                                           context,
-                                          MaterialPageRoute(builder: (context) {
-                                            return TransactionInProgressScreen(
+                                          MaterialPageRoute(
+                                            builder: (context) {
+                                              return TransactionInProgressScreen(
                                                 transactionStatus: transactionStatus,
                                                 transType: hasIdentity ? 'identityMigration' : 'accountMigration',
                                                 fromAddress: getShortPubkey(addressToMigrate),
-                                                toAddress: getShortPubkey(selectedWallet.address));
-                                          }),
+                                                toAddress: getShortPubkey(selectedWallet.address),
+                                              );
+                                            },
+                                          ),
                                         );
                                         resetScreen();
                                       }
@@ -469,8 +476,10 @@ class ImportG1v1 extends StatelessWidget {
                       ],
                     ),
                   );
-                });
-          }),
+                },
+              );
+            },
+          ),
         ),
       ),
     );

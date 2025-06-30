@@ -39,144 +39,146 @@ class RestoreChest extends StatelessWidget {
         backgroundColor: context.colorScheme.surface,
         appBar: GeckoAppBar('restoreAChest'.tr()),
         body: SafeArea(
-          child: Stack(children: [
-            SingleChildScrollView(
-              child: Column(children: <Widget>[
-                ScaledSizedBox(height: isTall ? 20 : 3),
-                bubbleSpeak('toRestoreEnterMnemonic'.tr()),
-                ScaledSizedBox(height: isTall ? 20 : 5),
-                Column(children: <Widget>[
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-                    arrayCell(context, genW.cellController0),
-                    arrayCell(context, genW.cellController1),
-                    arrayCell(context, genW.cellController2),
-                    arrayCell(context, genW.cellController3),
-                  ]),
-                  ScaledSizedBox(height: isTall ? 10 : 3),
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-                    arrayCell(context, genW.cellController4),
-                    arrayCell(context, genW.cellController5),
-                    arrayCell(context, genW.cellController6),
-                    arrayCell(context, genW.cellController7),
-                  ]),
-                  ScaledSizedBox(height: isTall ? 10 : 3),
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
-                    arrayCell(context, genW.cellController8),
-                    arrayCell(context, genW.cellController9),
-                    arrayCell(context, genW.cellController10),
-                    arrayCell(context, genW.cellController11),
-                  ]),
-                ]),
-                if (genW.isSentenceComplete(context))
-                  Container(
-                    padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: ScaledSizedBox(
-                        width: 340,
-                        height: 55,
-                        child: ElevatedButton(
-                          key: keyGoNext,
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: context.colorScheme.primary,
-                            elevation: 0,
-                            padding: EdgeInsets.symmetric(vertical: scaleSize(12)),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ).copyWith(
-                            elevation: WidgetStateProperty.resolveWith<double>(
-                              (Set<WidgetState> states) {
-                                if (states.contains(WidgetState.pressed)) return 0;
-                                return 8;
+          child: Stack(
+            children: [
+              SingleChildScrollView(
+                child: Column(
+                  children: <Widget>[
+                    ScaledSizedBox(height: isTall ? 20 : 3),
+                    bubbleSpeak('toRestoreEnterMnemonic'.tr()),
+                    ScaledSizedBox(height: isTall ? 20 : 5),
+                    Column(
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: <Widget>[
+                            arrayCell(context, genW.cellController0),
+                            arrayCell(context, genW.cellController1),
+                            arrayCell(context, genW.cellController2),
+                            arrayCell(context, genW.cellController3),
+                          ],
+                        ),
+                        ScaledSizedBox(height: isTall ? 10 : 3),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: <Widget>[
+                            arrayCell(context, genW.cellController4),
+                            arrayCell(context, genW.cellController5),
+                            arrayCell(context, genW.cellController6),
+                            arrayCell(context, genW.cellController7),
+                          ],
+                        ),
+                        ScaledSizedBox(height: isTall ? 10 : 3),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: <Widget>[
+                            arrayCell(context, genW.cellController8),
+                            arrayCell(context, genW.cellController9),
+                            arrayCell(context, genW.cellController10),
+                            arrayCell(context, genW.cellController11),
+                          ],
+                        ),
+                      ],
+                    ),
+                    if (genW.isSentenceComplete(context))
+                      Container(
+                        padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: ScaledSizedBox(
+                            width: 340,
+                            height: 55,
+                            child: ElevatedButton(
+                              key: keyGoNext,
+                              style:
+                                  ElevatedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    backgroundColor: context.colorScheme.primary,
+                                    elevation: 0,
+                                    padding: EdgeInsets.symmetric(vertical: scaleSize(12)),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ).copyWith(
+                                    elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
+                                      if (states.contains(WidgetState.pressed)) return 0;
+                                      return 8;
+                                    }),
+                                    shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.2)),
+                                  ),
+                              onPressed: () async {
+                                if (Durt.i.wallets.isMnemonicValid(genW.generatedMnemonic!)) {
+                                  genW.resetImportView();
+                                  await Navigator.push(
+                                    context,
+                                    FaderTransition(
+                                      page: skipIntro
+                                          ? const OnboardingStepNine(scanDerivation: true, fromRestore: true)
+                                          : const OnboardingStepSeven(scanDerivation: true, fromRestore: true),
+                                      isFast: true,
+                                    ),
+                                  );
+                                } else {
+                                  await badMnemonicPopup(context);
+                                }
                               },
+                              child: Text(
+                                'restoreThisChest'.tr(),
+                                style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+                              ),
                             ),
-                            shadowColor: WidgetStateProperty.all(
-                              Colors.black.withValues(alpha: 0.2),
-                            ),
-                          ),
-                          onPressed: () async {
-                            if (Durt.i.wallets.isMnemonicValid(genW.generatedMnemonic!)) {
-                              genW.resetImportView();
-                              await Navigator.push(
-                                context,
-                                FaderTransition(
-                                    page: skipIntro
-                                        ? const OnboardingStepNine(scanDerivation: true, fromRestore: true)
-                                        : const OnboardingStepSeven(scanDerivation: true, fromRestore: true),
-                                    isFast: true),
-                              );
-                            } else {
-                              await badMnemonicPopup(context);
-                            }
-                          },
-                          child: Text(
-                            'restoreThisChest'.tr(),
-                            style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
                           ),
                         ),
-                      ),
-                    ),
-                  )
-                else
-                  Column(children: [
-                    ScaledSizedBox(height: 20),
-                    ScaledSizedBox(
-                      width: 180,
-                      // height: 50,
-                      child: ElevatedButton(
-                          key: keyPastMnemonic,
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.black,
-                            backgroundColor: context.colorScheme.secondary,
-                            elevation: 0,
-                            padding: EdgeInsets.symmetric(
-                              vertical: scaleSize(8),
-                              horizontal: scaleSize(16),
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ).copyWith(
-                            elevation: WidgetStateProperty.resolveWith<double>(
-                              (Set<WidgetState> states) {
-                                if (states.contains(WidgetState.pressed)) return 0;
-                                return 4;
+                      )
+                    else
+                      Column(
+                        children: [
+                          ScaledSizedBox(height: 20),
+                          ScaledSizedBox(
+                            width: 180,
+                            // height: 50,
+                            child: ElevatedButton(
+                              key: keyPastMnemonic,
+                              style:
+                                  ElevatedButton.styleFrom(
+                                    foregroundColor: Colors.black,
+                                    backgroundColor: context.colorScheme.secondary,
+                                    elevation: 0,
+                                    padding: EdgeInsets.symmetric(vertical: scaleSize(8), horizontal: scaleSize(16)),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ).copyWith(
+                                    elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
+                                      if (states.contains(WidgetState.pressed)) return 0;
+                                      return 4;
+                                    }),
+                                    shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.15)),
+                                  ),
+                              onPressed: () {
+                                genW.pasteMnemonic(context);
                               },
-                            ),
-                            shadowColor: WidgetStateProperty.all(
-                              Colors.black.withValues(alpha: 0.15),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                children: [
+                                  Icon(
+                                    Icons.content_paste_go,
+                                    size: scaleSize(24),
+                                    color: Colors.black.withValues(alpha: 0.7),
+                                  ),
+                                  Text(
+                                    'pasteFromClipboard'.tr(),
+                                    textAlign: TextAlign.center,
+                                    style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w400, height: 1.2),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                          onPressed: () {
-                            genW.pasteMnemonic(context);
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Icon(
-                                Icons.content_paste_go,
-                                size: scaleSize(24),
-                                color: Colors.black.withValues(alpha: 0.7),
-                              ),
-                              Text(
-                                'pasteFromClipboard'.tr(),
-                                textAlign: TextAlign.center,
-                                style: scaledTextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.2,
-                                ),
-                              ),
-                            ],
-                          )),
-                    )
-                  ])
-              ]),
-            ),
-            const OfflineInfo(),
-          ]),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+              const OfflineInfo(),
+            ],
+          ),
         ),
       ),
     );
@@ -220,9 +222,7 @@ class RestoreChest extends StatelessWidget {
         textInputAction: TextInputAction.next,
         decoration: InputDecoration(
           border: InputBorder.none,
-          focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: context.colorScheme.primary),
-          ),
+          focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: context.colorScheme.primary)),
           contentPadding: EdgeInsets.zero,
         ),
         onChanged: (v) {
@@ -249,7 +249,9 @@ class RestoreChest extends StatelessWidget {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Phrase incorrecte'),
-          content: const Text('Votre phrase de restauration semble incorrecte, les mots ne sont pas dans le bon ordre.\nVeuillez la corriger.'),
+          content: const Text(
+            'Votre phrase de restauration semble incorrecte, les mots ne sont pas dans le bon ordre.\nVeuillez la corriger.',
+          ),
           actions: <Widget>[
             TextButton(
               child: const Text("OK"),

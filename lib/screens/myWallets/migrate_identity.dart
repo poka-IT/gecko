@@ -54,7 +54,9 @@ class MigrateIdentityScreen extends StatelessWidget {
     String matchInfo = '';
 
     Future scanDerivations() async {
-      if (!isAddress(newWalletAddress.text) || !Durt.i.wallets.isMnemonicValid(newMnemonicSentence.text) || !migrationChecks.canMigrate) {
+      if (!isAddress(newWalletAddress.text) ||
+          !Durt.i.wallets.isMnemonicValid(newMnemonicSentence.text) ||
+          !migrationChecks.canMigrate) {
         mnemonicIsValid = false;
         matchInfo = '';
         walletOptions.reload();
@@ -136,7 +138,9 @@ class MigrateIdentityScreen extends StatelessWidget {
                               alignment: WrapAlignment.center,
                               children: [
                                 TextMarkDown(
-                                  'areYouSureMigrateIdentity'.tr(args: [duniterIndexer.walletNameIndexer[fromAddress] ?? '???']),
+                                  'areYouSureMigrateIdentity'.tr(
+                                    args: [duniterIndexer.walletNameIndexer[fromAddress] ?? '???'],
+                                  ),
                                   textAlign: WrapAlignment.center,
                                   style: scaledTextStyle(
                                     fontSize: isSmallScreen ? 14 : 15,
@@ -150,7 +154,13 @@ class MigrateIdentityScreen extends StatelessWidget {
                                   fontWeight: FontWeight.bold,
                                   color: context.colorScheme.onSurface,
                                 ),
-                                Text(' ?', style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 15, color: context.colorScheme.onSurface)),
+                                Text(
+                                  ' ?',
+                                  style: scaledTextStyle(
+                                    fontSize: isSmallScreen ? 14 : 15,
+                                    color: context.colorScheme.onSurface,
+                                  ),
+                                ),
                               ],
                             ),
                           ],
@@ -308,11 +318,7 @@ class MigrateIdentityScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: Offset(0, -5),
-                  ),
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: Offset(0, -5)),
                 ],
               ),
               child: Column(
@@ -327,20 +333,14 @@ class MigrateIdentityScreen extends StatelessWidget {
                             Text(
                               validationStatus,
                               textAlign: TextAlign.center,
-                              style: scaledTextStyle(
-                                fontSize: isSmallScreen ? 12 : 13,
-                                color: Colors.grey[600],
-                              ),
+                              style: scaledTextStyle(fontSize: isSmallScreen ? 12 : 13, color: Colors.grey[600]),
                             ),
                           if (matchInfo.isNotEmpty) ...[
                             if (validationStatus.isNotEmpty) ScaledSizedBox(height: isSmallScreen ? 4 : 8),
                             Text(
                               matchInfo,
                               textAlign: TextAlign.center,
-                              style: scaledTextStyle(
-                                fontSize: isSmallScreen ? 12 : 13,
-                                color: Colors.grey[600],
-                              ),
+                              style: scaledTextStyle(fontSize: isSmallScreen ? 12 : 13, color: Colors.grey[600]),
                             ),
                           ],
                           ScaledSizedBox(height: isSmallScreen ? 12 : 16),
@@ -357,19 +357,26 @@ class MigrateIdentityScreen extends StatelessWidget {
                         backgroundColor: context.colorScheme.primary,
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: migrationChecks.canMigrate && mnemonicIsValid
                           ? () async {
                               if (!await myWalletProvider.askPinCode()) return;
 
                               await Durt.i.wallets.importAccount(
-                                  mnemonic: newMnemonicSentence.text, derivation: matchDerivationNbr == -1 ? null : matchDerivationNbr, pinCode: '1472');
+                                mnemonic: newMnemonicSentence.text,
+                                derivation: matchDerivationNbr == -1 ? null : matchDerivationNbr,
+                                pinCode: '1472',
+                              );
 
-                              final fromKeypair = await Durt.i.wallets.getKeyPairFromAddress(address: fromAddress, pinCode: myWalletProvider.pinCode);
-                              final toKeypair = await Durt.i.wallets.getKeyPairFromAddress(address: newWalletAddress.text, pinCode: '1472');
+                              final fromKeypair = await Durt.i.wallets.getKeyPairFromAddress(
+                                address: fromAddress,
+                                pinCode: myWalletProvider.pinCode,
+                              );
+                              final toKeypair = await Durt.i.wallets.getKeyPairFromAddress(
+                                address: newWalletAddress.text,
+                                pinCode: '1472',
+                              );
                               final transactionStatus = Durt.i.duniter.migrateIdentity(
                                 fromKeypair: fromKeypair,
                                 toKeypair: toKeypair,
@@ -393,10 +400,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                           : null,
                       child: Text(
                         'migrateIdentity'.tr(),
-                        style: scaledTextStyle(
-                          fontSize: isSmallScreen ? 15 : 16,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: scaledTextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),

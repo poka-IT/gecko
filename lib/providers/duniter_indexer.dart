@@ -120,7 +120,9 @@ class DuniterIndexer with ChangeNotifier {
     } catch (e) {
       // 3. Fallback sur le fichier local
       try {
-        final localEndpoints = await rootBundle.loadString('config/indexer_endpoints.json').then((jsonStr) => List<String>.from(jsonDecode(jsonStr)));
+        final localEndpoints = await rootBundle
+            .loadString('config/indexer_endpoints.json')
+            .then((jsonStr) => List<String>.from(jsonDecode(jsonStr)));
 
         await configBox.put('squidNodes', localEndpoints);
         return localEndpoints;
@@ -223,14 +225,9 @@ class DuniterIndexer with ChangeNotifier {
   void succesConnection(String endpoint) {
     final homeProvider = Provider.of<HomeProvider>(homeContext, listen: false);
 
-    final wsLinkIndexer = WebSocketLink(
-      'wss://$endpoint/v1beta1/relay',
-    );
+    final wsLinkIndexer = WebSocketLink('wss://$endpoint/v1beta1/relay');
 
-    indexerClient = GraphQLClient(
-      cache: GraphQLCache(),
-      link: wsLinkIndexer,
-    );
+    indexerClient = GraphQLClient(cache: GraphQLCache(), link: wsLinkIndexer);
 
     // Indexer Blockchain start
     getBlockStart();
@@ -246,11 +243,10 @@ class DuniterIndexer with ChangeNotifier {
       duniterFinilizedHash = "\\x${duniterFinilizedHash.substring(2)}";
 
       final indexerLink = HttpLink(endpoint);
-      final iClient = GraphQLClient(
-        cache: GraphQLCache(),
-        link: indexerLink,
+      final iClient = GraphQLClient(cache: GraphQLCache(), link: indexerLink);
+      final result = await iClient.query(
+        QueryOptions(document: gql(getBlockByHash), variables: <String, dynamic>{'hash': duniterFinilizedHash}),
       );
-      final result = await iClient.query(QueryOptions(document: gql(getBlockByHash), variables: <String, dynamic>{'hash': duniterFinilizedHash}));
 
       if (result.hasException || result.data == null || result.data!['block'].isEmpty) {
         log.e('Indexer is not synced: ${result.exception} -- ${result.data}');
@@ -322,7 +318,7 @@ class DuniterIndexer with ChangeNotifier {
         updateQuery: (previousResultData, fetchMoreResultData) {
           final List<dynamic> repos = [
             ...previousResultData!['transferConnection']['edges'] as List<dynamic>,
-            ...fetchMoreResultData!['transferConnection']['edges'] as List<dynamic>
+            ...fetchMoreResultData!['transferConnection']['edges'] as List<dynamic>,
           ];
 
           fetchMoreResultData['transferConnection']['edges'] = repos;
@@ -339,12 +335,10 @@ class DuniterIndexer with ChangeNotifier {
     return opts;
   }
 
-//// Manuals queries
+  //// Manuals queries
 
   Future<bool> isIdtyExist(String name) async {
-    final variables = <String, dynamic>{
-      'name': name,
-    };
+    final variables = <String, dynamic>{'name': name};
     final result = await _execQuery(isIdtyExistQ, variables);
     return result.data?['identityConnection']['edges']?.isNotEmpty ?? false;
   }
@@ -368,14 +362,9 @@ class DuniterIndexer with ChangeNotifier {
   }
 
   Stream<QueryResult> subscribeHistoryIssued(String address) {
-    final variables = <String, dynamic>{
-      'address': address,
-    };
+    final variables = <String, dynamic>{'address': address};
 
-    final options = SubscriptionOptions(
-      document: gql(subscribeHistoryIssuedQ),
-      variables: variables,
-    );
+    final options = SubscriptionOptions(document: gql(subscribeHistoryIssuedQ), variables: variables);
 
     return indexerClient.subscribe(options);
   }

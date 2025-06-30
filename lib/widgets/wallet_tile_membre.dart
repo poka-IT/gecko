@@ -25,14 +25,7 @@ class WalletTileMembre extends StatelessWidget {
       child: GestureDetector(
         key: keyOpenWallet(wallet.address),
         onTap: () {
-          Navigator.push(
-            context,
-            SmoothTransition(
-              page: WalletOptions(
-                wallet: wallet,
-              ),
-            ),
-          );
+          Navigator.push(context, SmoothTransition(page: WalletOptions(wallet: wallet)));
         },
         child: ScaledSizedBox(
           // key: wallet.number == 1 ? keyDragAndDrop : const Key('nothing'),
@@ -42,11 +35,7 @@ class WalletTileMembre extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               color: Colors.white,
               boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
+                BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 2)),
               ],
             ),
             child: Column(
@@ -80,9 +69,7 @@ class WalletTileMembre extends StatelessWidget {
                                       shape: BoxShape.circle,
                                       image: DecorationImage(
                                         fit: BoxFit.fitHeight,
-                                        image: AssetImage(
-                                          wallet.imagePath!,
-                                        ),
+                                        image: AssetImage(wallet.imagePath!),
                                       ),
                                     ),
                                   ),
@@ -103,16 +90,15 @@ class WalletTileMembre extends StatelessWidget {
                 ),
                 Container(
                   decoration: BoxDecoration(
-                    color: isDefault ? context.colorScheme.primary.withValues(alpha: 0.9) : context.colorScheme.secondary.withValues(alpha: 0.9),
+                    color: isDefault
+                        ? context.colorScheme.primary.withValues(alpha: 0.9)
+                        : context.colorScheme.secondary.withValues(alpha: 0.9),
                     borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(12),
                       bottomRight: Radius.circular(12),
                     ),
                   ),
-                  padding: EdgeInsets.symmetric(
-                    vertical: scaleSize(12),
-                    horizontal: scaleSize(16),
-                  ),
+                  padding: EdgeInsets.symmetric(vertical: scaleSize(12), horizontal: scaleSize(16)),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -149,5 +135,6 @@ class WalletTileMembre extends StatelessWidget {
     );
   }
 
-  bool get isDefault => wallet.address == Provider.of<MyWalletsProvider>(homeContext, listen: false).getDefaultWallet().address;
+  bool get isDefault =>
+      wallet.address == Provider.of<MyWalletsProvider>(homeContext, listen: false).getDefaultWallet().address;
 }

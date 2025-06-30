@@ -16,10 +16,7 @@ class _MessageLog3DState extends State<MessageLog3D> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 500),
-      vsync: this,
-    );
+    _controller = AnimationController(duration: const Duration(milliseconds: 500), vsync: this);
   }
 
   @override
@@ -80,10 +77,18 @@ class MessageCard extends StatelessWidget {
     return AnimatedBuilder(
       animation: animation,
       builder: (context, child) {
-        final double scale = Tween<double>(begin: startScale, end: endScale).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutBack)).value;
-        final double opacity = Tween<double>(begin: startOpacity, end: endOpacity).animate(CurvedAnimation(parent: animation, curve: Curves.easeInOut)).value;
-        final double yOffset =
-            Tween<double>(begin: index * 35.0, end: (index + 1) * 35.0).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutBack)).value;
+        final double scale = Tween<double>(
+          begin: startScale,
+          end: endScale,
+        ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutBack)).value;
+        final double opacity = Tween<double>(
+          begin: startOpacity,
+          end: endOpacity,
+        ).animate(CurvedAnimation(parent: animation, curve: Curves.easeInOut)).value;
+        final double yOffset = Tween<double>(
+          begin: index * 35.0,
+          end: (index + 1) * 35.0,
+        ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutBack)).value;
 
         return Positioned(
           bottom: yOffset,

@@ -12,26 +12,28 @@ class WaitToCertWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: <Widget>[
-      ScaledSizedBox(
-        height: buttonSize,
-        child: Opacity(
-          opacity: 0.4,
-          child: Image(
-            image: const AssetImage('assets/gecko_certify.png'),
-            color: context.colorScheme.surface,
-            colorBlendMode: BlendMode.saturation,
+    return Column(
+      children: <Widget>[
+        ScaledSizedBox(
+          height: buttonSize,
+          child: Opacity(
+            opacity: 0.4,
+            child: Image(
+              image: const AssetImage('assets/gecko_certify.png'),
+              color: context.colorScheme.surface,
+              colorBlendMode: BlendMode.saturation,
+            ),
           ),
         ),
-      ),
-      Container(
-        constraints: BoxConstraints(maxWidth: scaleSize(100)),
-        child: Text(
-          messageKey.tr(args: [duration]),
-          textAlign: TextAlign.center,
-          style: scaledTextStyle(fontSize: buttonFontSize - 4, fontWeight: FontWeight.w400, color: Colors.grey[600]),
+        Container(
+          constraints: BoxConstraints(maxWidth: scaleSize(100)),
+          child: Text(
+            messageKey.tr(args: [duration]),
+            textAlign: TextAlign.center,
+            style: scaledTextStyle(fontSize: buttonFontSize - 4, fontWeight: FontWeight.w400, color: Colors.grey[600]),
+          ),
         ),
-      ),
-    ]);
+      ],
+    );
   }
 }

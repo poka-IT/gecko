@@ -70,5 +70,5 @@ final Map<int, String> monthsInYear = {
   9: "month9".tr(),
   10: "month10".tr(),
   11: "month11".tr(),
-  12: "month12".tr()
+  12: "month12".tr(),
 };

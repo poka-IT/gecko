@@ -45,7 +45,10 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
     Navigator.pop(context);
     if (!await myWalletProvider.askPinCode()) return;
 
-    final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: defaultWallet.address, pinCode: myWalletProvider.pinCode);
+    final keypair = await Durt.i.wallets.getKeyPairFromAddress(
+      address: defaultWallet.address,
+      pinCode: myWalletProvider.pinCode,
+    );
     final transactionStatus = Durt.i.duniter.pay(
       keypair: keypair,
       destAddress: toAddress,
@@ -62,12 +65,11 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
 
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) {
-        return ActivityScreen(
-          address: defaultWallet.address,
-          transactionData: transactionData,
-        );
-      }),
+      MaterialPageRoute(
+        builder: (context) {
+          return ActivityScreen(address: defaultWallet.address, transactionData: transactionData);
+        },
+      ),
     );
   }
 
@@ -92,20 +94,20 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
     // Vérifications de validité
     final bool isAmountValid = payAmountValue > BigInt.zero;
     final bool isNotSendingToSelf = toAddress != defaultWallet.address;
-    final bool hasEnoughBalance = (payAmountValue <= defaultWalletBalance - existentialDeposit) || defaultWalletBalance == payAmountValue;
+    final bool hasEnoughBalance =
+        (payAmountValue <= defaultWalletBalance - existentialDeposit) || defaultWalletBalance == payAmountValue;
     final bool respectsExistentialDeposit = toAddressBalance > BigInt.zero || payAmountValue >= existentialDeposit;
 
     return isAmountValid && isNotSendingToSelf && hasEnoughBalance && respectsExistentialDeposit;
   }
 
-  myWalletProvider.readAllWallets().then((value) => myWalletProvider.listWallets.sort((a, b) => (a.derivation ?? -1).compareTo(b.derivation ?? -1)));
+  myWalletProvider.readAllWallets().then(
+    (value) => myWalletProvider.listWallets.sort((a, b) => (a.derivation ?? -1).compareTo(b.derivation ?? -1)),
+  );
 
   showModalBottomSheet<void>(
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.only(
-        topRight: Radius.circular(shapeSize),
-        topLeft: Radius.circular(shapeSize),
-      ),
+      borderRadius: BorderRadius.only(topRight: Radius.circular(shapeSize), topLeft: Radius.circular(shapeSize)),
     ),
     isScrollControlled: true,
     context: context,
@@ -200,11 +202,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                       child: Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
-                                          NameByAddress(
-                                            wallet: wallet,
-                                            fontStyle: FontStyle.normal,
-                                            size: 16,
-                                          ),
+                                          NameByAddress(wallet: wallet, fontStyle: FontStyle.normal, size: 16),
                                           const Spacer(),
                                           Balance(address: wallet.address, size: 16),
                                         ],
@@ -230,11 +228,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        NameByAddress(
-                                          wallet: wallet,
-                                          fontStyle: FontStyle.normal,
-                                          size: 16,
-                                        ),
+                                        NameByAddress(wallet: wallet, fontStyle: FontStyle.normal, size: 16),
                                         const Spacer(),
                                         Balance(address: wallet.address, size: 16),
                                       ],
@@ -249,7 +243,11 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                             children: [
                               Text(
                                 'to'.tr(args: ['']),
-                                style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.grey[600]),
+                                style: scaledTextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey[600],
+                                ),
                               ),
                               ScaledSizedBox(width: 10),
                               Text(
@@ -263,7 +261,11 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                             children: [
                               Text(
                                 'amount'.tr(),
-                                style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.grey[600]),
+                                style: scaledTextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey[600],
+                                ),
                               ),
                               const Spacer(),
                               if (fees > 0)
@@ -271,7 +273,11 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                   onTap: () => infoFeesPopup(context),
                                   child: Row(
                                     children: [
-                                      Icon(Icons.info_outlined, color: context.colorScheme.primary, size: scaleSize(21)),
+                                      Icon(
+                                        Icons.info_outlined,
+                                        color: context.colorScheme.primary,
+                                        size: scaleSize(21),
+                                      ),
                                       ScaledSizedBox(width: 5),
                                       Text(
                                         'fees'.tr(args: [fees.toString(), currencyName]),
@@ -334,7 +340,11 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                 ),
                                 contentPadding: EdgeInsets.all(scaleSize(6)),
                               ),
-                              style: scaledTextStyle(fontSize: 22, color: context.colorScheme.onSurface, fontWeight: FontWeight.w600),
+                              style: scaledTextStyle(
+                                fontSize: 22,
+                                color: context.colorScheme.onSurface,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                           if (walletViewProvider.isCommentVisible) const SizedBox(height: 8),
@@ -342,22 +352,21 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                             builder: (context, provider, _) {
                               return AnimatedCrossFade(
                                 duration: const Duration(milliseconds: 200),
-                                crossFadeState: provider.isCommentVisible ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                                crossFadeState: provider.isCommentVisible
+                                    ? CrossFadeState.showSecond
+                                    : CrossFadeState.showFirst,
                                 firstChild: TextButton.icon(
                                   style: TextButton.styleFrom(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: scaleSize(4),
-                                      vertical: scaleSize(2),
-                                    ),
+                                    padding: EdgeInsets.symmetric(horizontal: scaleSize(4), vertical: scaleSize(2)),
                                   ),
-                                  icon: Icon(
-                                    Icons.add_comment_outlined,
-                                    size: scaleSize(18),
-                                    color: Colors.grey[600],
-                                  ),
+                                  icon: Icon(Icons.add_comment_outlined, size: scaleSize(18), color: Colors.grey[600]),
                                   label: Text(
                                     'addComment'.tr(),
-                                    style: scaledTextStyle(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500),
+                                    style: scaledTextStyle(
+                                      fontSize: 13,
+                                      color: Colors.grey[600],
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                   onPressed: () {
                                     provider.toggleCommentVisibility();
@@ -377,9 +386,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                       controller: provider.payComment,
                                       focusNode: commentFocus,
                                       onChanged: (value) => provider.comment = value,
-                                      inputFormatters: [
-                                        Utf8LengthLimitingTextInputFormatter(146),
-                                      ],
+                                      inputFormatters: [Utf8LengthLimitingTextInputFormatter(146)],
                                       textInputAction: TextInputAction.done,
                                       onEditingComplete: () async {
                                         if (canValidate) {
@@ -401,11 +408,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                         suffixIcon: IconButton(
                                           padding: EdgeInsets.zero,
                                           constraints: const BoxConstraints(),
-                                          icon: Icon(
-                                            Icons.close,
-                                            size: scaleSize(16),
-                                            color: Colors.grey[600],
-                                          ),
+                                          icon: Icon(Icons.close, size: scaleSize(16), color: Colors.grey[600]),
                                           onPressed: () {
                                             provider.comment = '';
                                             provider.toggleCommentVisibility();
@@ -415,17 +418,11 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                         ),
                                         border: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(8),
-                                          borderSide: BorderSide(
-                                            color: Colors.grey[300]!,
-                                            width: 1,
-                                          ),
+                                          borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
                                         ),
                                         focusedBorder: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(8),
-                                          borderSide: BorderSide(
-                                            color: Colors.grey[400]!,
-                                            width: 1.5,
-                                          ),
+                                          borderSide: BorderSide(color: Colors.grey[400]!, width: 1.5),
                                         ),
                                       ),
                                     ),
@@ -500,21 +497,12 @@ Future<void> infoFeesPopup(BuildContext context) async {
               child: Container(
                 padding: const EdgeInsets.only(bottom: 2),
                 decoration: const BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Colors.blueAccent,
-                      width: 1,
-                    ),
-                  ),
+                  border: Border(bottom: BorderSide(color: Colors.blueAccent, width: 1)),
                 ),
                 child: Text(
                   'moreInfo'.tr(),
                   textAlign: TextAlign.center,
-                  style: scaledTextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w300,
-                    color: Colors.blueAccent,
-                  ),
+                  style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w300, color: Colors.blueAccent),
                 ),
               ),
             ),
@@ -528,17 +516,14 @@ Future<void> infoFeesPopup(BuildContext context) async {
                 key: keyInfoPopup,
                 child: Padding(
                   padding: const EdgeInsets.all(8),
-                  child: Text(
-                    'gotit'.tr(),
-                    style: scaledTextStyle(fontSize: 20, color: const Color(0xffD80000)),
-                  ),
+                  child: Text('gotit'.tr(), style: scaledTextStyle(fontSize: 20, color: const Color(0xffD80000))),
                 ),
                 onPressed: () {
                   Navigator.pop(context, true);
                 },
               ),
             ],
-          )
+          ),
         ],
       );
     },

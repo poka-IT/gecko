@@ -63,7 +63,10 @@ class _QrCodeFullscreenState extends State<QrCodeFullscreen> {
               Navigator.pop(context);
             },
           ),
-          title: Text('QR Code de ${getShortPubkey(widget.address)}', style: scaledTextStyle(color: context.colorScheme.primary, fontSize: 17)),
+          title: Text(
+            'QR Code de ${getShortPubkey(widget.address)}',
+            style: scaledTextStyle(color: context.colorScheme.primary, fontSize: 17),
+          ),
         ),
         body: SafeArea(
           child: SizedBox.expand(
@@ -95,7 +98,11 @@ class _QrCodeFullscreenState extends State<QrCodeFullscreen> {
                       },
                       child: Text(
                         'close'.tr(),
-                        style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w500, color: context.colorScheme.primary),
+                        style: scaledTextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w500,
+                          color: context.colorScheme.primary,
+                        ),
                       ),
                     ),
                   ),

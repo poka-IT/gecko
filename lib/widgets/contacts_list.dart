@@ -16,10 +16,7 @@ import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 
 class ContactsList extends StatelessWidget {
-  const ContactsList({
-    super.key,
-    required this.myContacts,
-  });
+  const ContactsList({super.key, required this.myContacts});
 
   final List<G1WalletsList> myContacts;
 
@@ -42,17 +39,11 @@ class ContactsList extends StatelessWidget {
                 margin: const EdgeInsets.symmetric(vertical: 12),
                 width: 40,
                 height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[600],
-                  borderRadius: BorderRadius.circular(2),
-                ),
+                decoration: BoxDecoration(color: Colors.grey[600], borderRadius: BorderRadius.circular(2)),
               ),
               ListTile(
                 leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: Text(
-                  'removeContact'.tr(),
-                  style: const TextStyle(color: Colors.red),
-                ),
+                title: Text('removeContact'.tr(), style: const TextStyle(color: Colors.red)),
                 onTap: () {
                   Navigator.pop(context);
                   walletsProfilesClass.addContact(contact);
@@ -73,58 +64,89 @@ class ContactsList extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 5),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-        ScaledSizedBox(height: 10, width: double.infinity),
-        if (myContacts.isEmpty)
-          Text('noContacts'.tr())
-        else
-          Expanded(
-            child: ListView(children: <Widget>[
-              for (G1WalletsList g1Wallet in myContacts)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 5),
-                  child: ListTile(
-                      key: keySearchResult('keyID++'),
-                      horizontalTitleGap: 7,
-                      contentPadding: const EdgeInsets.all(5),
-                      dense: !isTall,
-                      leading: DatapodAvatar(address: g1Wallet.address, size: 47),
-                      title: Row(children: <Widget>[
-                        Expanded(
-                          child: Text(
-                            getShortPubkey(g1Wallet.address),
-                            style: scaledTextStyle(fontSize: 14, fontFamily: 'Monospace', fontWeight: FontWeight.w500),
-                            textAlign: TextAlign.left,
-                            softWrap: true,
-                          ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          ScaledSizedBox(height: 10, width: double.infinity),
+          if (myContacts.isEmpty)
+            Text('noContacts'.tr())
+          else
+            Expanded(
+              child: ListView(
+                children: <Widget>[
+                  for (G1WalletsList g1Wallet in myContacts)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                      child: ListTile(
+                        key: keySearchResult('keyID++'),
+                        horizontalTitleGap: 7,
+                        contentPadding: const EdgeInsets.all(5),
+                        dense: !isTall,
+                        leading: DatapodAvatar(address: g1Wallet.address, size: 47),
+                        title: Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                getShortPubkey(g1Wallet.address),
+                                style: scaledTextStyle(
+                                  fontSize: 14,
+                                  fontFamily: 'Monospace',
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                textAlign: TextAlign.left,
+                                softWrap: true,
+                              ),
+                            ),
+                          ],
                         ),
-                      ]),
-                      trailing: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                        ScaledSizedBox(
-                          width: 110,
-                          child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                            Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                              Balance(address: g1Wallet.address, size: scaleSize(13)),
-                            ]),
-                          ]),
+                        trailing: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ScaledSizedBox(
+                              width: 110,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [Balance(address: g1Wallet.address, size: scaleSize(13))],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                      ]),
-                      subtitle: Row(children: <Widget>[NameByAddress(size: scaleSize(14), wallet: WalletData(address: g1Wallet.address))]),
-                      isThreeLine: false,
-                      onLongPress: () => _showContactMenu(context, g1Wallet),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) {
-                            walletsProfilesClass.address = g1Wallet.address;
-                            return WalletViewScreen(address: g1Wallet.address, username: duniterIndexer.walletNameIndexer[g1Wallet.address]);
-                          }),
-                        );
-                      }),
-                ),
-            ]),
-          )
-      ]),
+                        subtitle: Row(
+                          children: <Widget>[
+                            NameByAddress(
+                              size: scaleSize(14),
+                              wallet: WalletData(address: g1Wallet.address),
+                            ),
+                          ],
+                        ),
+                        isThreeLine: false,
+                        onLongPress: () => _showContactMenu(context, g1Wallet),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) {
+                                walletsProfilesClass.address = g1Wallet.address;
+                                return WalletViewScreen(
+                                  address: g1Wallet.address,
+                                  username: duniterIndexer.walletNameIndexer[g1Wallet.address],
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                ],
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

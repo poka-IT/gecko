@@ -51,11 +51,7 @@ class ManageMembership extends StatelessWidget {
                         padding: EdgeInsets.symmetric(horizontal: scaleSize(18)),
                         child: Row(
                           children: [
-                            Image.asset(
-                              'assets/skull_Icon.png',
-                              height: scaleSize(24),
-                              color: Colors.grey[400],
-                            ),
+                            Image.asset('assets/skull_Icon.png', height: scaleSize(24), color: Colors.grey[400]),
                             ScaledSizedBox(width: 16),
                             Expanded(
                               child: Column(
@@ -64,17 +60,11 @@ class ManageMembership extends StatelessWidget {
                                 children: [
                                   Text(
                                     'revokeMyIdentity'.tr(),
-                                    style: scaledTextStyle(
-                                      fontSize: 16,
-                                      color: Colors.grey[500],
-                                    ),
+                                    style: scaledTextStyle(fontSize: 16, color: Colors.grey[500]),
                                   ),
                                   Text(
                                     "youCannotRevokeThisIdentity".tr(),
-                                    style: scaledTextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[500],
-                                    ),
+                                    style: scaledTextStyle(fontSize: 12, color: Colors.grey[500]),
                                   ),
                                 ],
                               ),
@@ -104,28 +94,20 @@ class ManageMembership extends StatelessWidget {
         onTap: () async {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) {
-              return const MigrateIdentityScreen();
-            }),
+            MaterialPageRoute(
+              builder: (context) {
+                return const MigrateIdentityScreen();
+              },
+            ),
           );
         },
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
           child: Row(
             children: [
-              Icon(
-                Icons.change_circle_outlined,
-                size: scaleSize(24),
-                color: context.colorScheme.onSurface,
-              ),
+              Icon(Icons.change_circle_outlined, size: scaleSize(24), color: context.colorScheme.onSurface),
               ScaledSizedBox(width: 16),
-              Text(
-                'Migrer mon identité',
-                style: scaledTextStyle(
-                  fontSize: 16,
-                  color: context.colorScheme.onSurface,
-                ),
-              ),
+              Text('Migrer mon identité', style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface)),
             ],
           ),
         ),
@@ -150,39 +132,35 @@ class ManageMembership extends StatelessWidget {
 
           if (!await myWalletProvider.askPinCode()) return;
 
-          final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: address, pinCode: myWalletProvider.pinCode);
+          final keypair = await Durt.i.wallets.getKeyPairFromAddress(
+            address: address,
+            pinCode: myWalletProvider.pinCode,
+          );
           final transactionStatus = Durt.i.duniter.revokeIdentity(keypair);
 
           Navigator.pop(context);
 
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) {
-              return TransactionInProgressScreen(
-                transactionStatus: transactionStatus,
-                transType: 'revokeIdty',
-                fromAddress: getShortPubkey(address),
-                toAddress: getShortPubkey(address),
-              );
-            }),
+            MaterialPageRoute(
+              builder: (context) {
+                return TransactionInProgressScreen(
+                  transactionStatus: transactionStatus,
+                  transType: 'revokeIdty',
+                  fromAddress: getShortPubkey(address),
+                  toAddress: getShortPubkey(address),
+                );
+              },
+            ),
           );
         },
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
           child: Row(
             children: [
-              Image.asset(
-                'assets/skull_Icon.png',
-                height: scaleSize(24),
-              ),
+              Image.asset('assets/skull_Icon.png', height: scaleSize(24)),
               ScaledSizedBox(width: 16),
-              Text(
-                'revokeMyIdentity'.tr(),
-                style: scaledTextStyle(
-                  fontSize: 16,
-                  color: context.colorScheme.onSurface,
-                ),
-              ),
+              Text('revokeMyIdentity'.tr(), style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface)),
             ],
           ),
         ),

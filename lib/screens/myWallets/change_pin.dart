@@ -13,11 +13,7 @@ import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class ChangePinScreen extends StatefulWidget {
-  const ChangePinScreen({
-    super.key,
-    required this.walletName,
-    required this.walletProvider,
-  });
+  const ChangePinScreen({super.key, required this.walletName, required this.walletProvider});
 
   final String? walletName;
   final MyWalletsProvider walletProvider;
@@ -56,11 +52,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
                 Text(
                   'choosePassword'.tr(),
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w400,
-                  ),
+                  style: TextStyle(fontSize: 16.0, color: Colors.grey[600], fontWeight: FontWeight.w400),
                 ),
                 const SizedBox(height: 30),
                 pinForm(context),
@@ -144,11 +136,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
               const SizedBox(height: 20),
               Text(
                 "passwordTooSimple".tr(),
-                style: const TextStyle(
-                  color: Colors.red,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: const TextStyle(color: Colors.red, fontSize: 15, fontWeight: FontWeight.w500),
                 textAlign: TextAlign.center,
               ),
             ],

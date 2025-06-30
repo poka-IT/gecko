@@ -19,13 +19,13 @@ class DatapodAvatar extends StatelessWidget {
       return ScaledSizedBox(
         width: size,
         height: size,
-        child: ClipOval(
-          child: datapod.getAvatarLocal(address),
-        ),
+        child: ClipOval(child: datapod.getAvatarLocal(address)),
       );
     }
 
     return ScaledSizedBox(
-        width: size, child: ClipOval(child: datapod.defaultAvatar(size)));
+      width: size,
+      child: ClipOval(child: datapod.defaultAvatar(size)),
+    );
   }
 }

@@ -49,8 +49,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       text: configBox.containsKey('customIndexer')
           ? configBox.get('customIndexer')
           : duniterIndexer.listIndexerEndpoints.isNotEmpty
-              ? duniterIndexer.listIndexerEndpoints[0]
-              : 'https://',
+          ? duniterIndexer.listIndexerEndpoints[0]
+          : 'https://',
     );
   }
 
@@ -188,10 +188,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('clearCacheExplanation'.tr()),
-                              duration: const Duration(seconds: 2),
-                            ),
+                            SnackBar(content: Text('clearCacheExplanation'.tr()), duration: const Duration(seconds: 2)),
                           );
                         }
                       }
@@ -348,18 +345,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       },
       child: Row(
         children: [
-          Icon(
-            Icons.calculate_rounded,
-            color: context.colorScheme.primary,
-            size: scaleSize(24),
-          ),
+          Icon(Icons.calculate_rounded, color: context.colorScheme.primary, size: scaleSize(24)),
           ScaledSizedBox(width: 12),
           Text(
             'showUdAmounts'.tr(),
-            style: scaledTextStyle(
-              fontSize: 14,
-              color: Theme.of(context).textTheme.bodyMedium?.color,
-            ),
+            style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
           ),
           const Spacer(),
           Consumer<HomeProvider>(
@@ -381,7 +371,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Future<void> _showNodeSelectionDialog(BuildContext context, List<String> nodes, String selectedEndpoint, TextEditingController controller) async {
+  Future<void> _showNodeSelectionDialog(
+    BuildContext context,
+    List<String> nodes,
+    String selectedEndpoint,
+    TextEditingController controller,
+  ) async {
     final set = Provider.of<SettingsProvider>(context, listen: false);
 
     String? result = await showDialog<String>(
@@ -406,10 +401,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Navigator.of(context).pop(node);
                   },
                   child: Container(
-                    padding: EdgeInsets.symmetric(
-                      vertical: scaleSize(12),
-                      horizontal: scaleSize(16),
-                    ),
+                    padding: EdgeInsets.symmetric(vertical: scaleSize(12), horizontal: scaleSize(16)),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -422,10 +414,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         Expanded(
                           child: Text(
                             node,
-                            style: scaledTextStyle(
-                              fontSize: 14,
-                              color: Theme.of(context).textTheme.bodyMedium?.color,
-                            ),
+                            style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
                           ),
                         ),
                       ],
@@ -436,9 +425,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           contentPadding: EdgeInsets.symmetric(vertical: scaleSize(16)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         );
       },
     );
@@ -448,9 +435,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       configBox.put('autoEndpoint', false);
       configBox.put('customEndpoint', result);
       await Durt.i.connect(
-        customDuniterEndpoints: DuniterEndpoints(endpoints: {
-          Durt.i.network: [result],
-        }),
+        customDuniterEndpoints: DuniterEndpoints(
+          endpoints: {
+            Durt.i.network: [result],
+          },
+        ),
       );
       set.reload();
     }
@@ -496,18 +485,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.dns_rounded,
-                  color: context.colorScheme.primary,
-                  size: scaleSize(24),
-                ),
+                Icon(Icons.dns_rounded, color: context.colorScheme.primary, size: scaleSize(24)),
                 ScaledSizedBox(width: 12),
                 Text(
                   'currencyNode'.tr(),
-                  style: scaledTextStyle(
-                    fontSize: 14,
-                    color: Theme.of(context).textTheme.bodyMedium?.color,
-                  ),
+                  style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
                 ),
                 ScaledSizedBox(width: 12),
                 Icon(
@@ -521,10 +503,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     return PopupMenuButton<String>(
                       key: keySelectDuniterNodeDropDown,
                       child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: scaleSize(12),
-                          vertical: scaleSize(6),
-                        ),
+                        padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(6)),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: Colors.grey[300]!),
@@ -540,11 +519,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                             ),
                             ScaledSizedBox(width: 4),
-                            Icon(
-                              Icons.arrow_drop_down,
-                              color: Colors.grey[600],
-                              size: scaleSize(20),
-                            ),
+                            Icon(Icons.arrow_drop_down, color: Colors.grey[600], size: scaleSize(20)),
                           ],
                         ),
                       ),
@@ -555,8 +530,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           child: Row(
                             children: [
                               Icon(
-                                configBox.get('autoEndpoint') == true ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                                color: configBox.get('autoEndpoint') == true ? context.colorScheme.primary : Colors.grey[400],
+                                configBox.get('autoEndpoint') == true
+                                    ? Icons.radio_button_checked
+                                    : Icons.radio_button_unchecked,
+                                color: configBox.get('autoEndpoint') == true
+                                    ? context.colorScheme.primary
+                                    : Colors.grey[400],
                                 size: scaleSize(20),
                               ),
                               ScaledSizedBox(width: 12),
@@ -576,8 +555,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           child: Row(
                             children: [
                               Icon(
-                                configBox.get('autoEndpoint') != true ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                                color: configBox.get('autoEndpoint') != true ? context.colorScheme.primary : Colors.grey[400],
+                                configBox.get('autoEndpoint') != true
+                                    ? Icons.radio_button_checked
+                                    : Icons.radio_button_unchecked,
+                                color: configBox.get('autoEndpoint') != true
+                                    ? context.colorScheme.primary
+                                    : Colors.grey[400],
                                 size: scaleSize(20),
                               ),
                               ScaledSizedBox(width: 12),
@@ -596,11 +579,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           value: 'select'.tr(),
                           child: Row(
                             children: [
-                              Icon(
-                                Icons.list_alt,
-                                color: Colors.grey[400],
-                                size: scaleSize(20),
-                              ),
+                              Icon(Icons.list_alt, color: Colors.grey[400], size: scaleSize(20)),
                               ScaledSizedBox(width: 12),
                               Text(
                                 'select'.tr(),
@@ -617,7 +596,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         if (value == 'select'.tr()) {
                           await _showNodeSelectionDialog(
                             context,
-                            duniterBootstrapNodes.where((node) => node != 'Auto' && node != 'Personnalisé' && node != 'ws://10.0.2.2:9944').toList(),
+                            duniterBootstrapNodes
+                                .where(
+                                  (node) => node != 'Auto' && node != 'Personnalisé' && node != 'ws://10.0.2.2:9944',
+                                )
+                                .toList(),
                             selectedDuniterEndpoint ?? '',
                             endpointController,
                           );
@@ -684,23 +667,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     autocorrect: false,
                     style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
                     decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: scaleSize(12),
-                        vertical: scaleSize(8),
-                      ),
+                      contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(8)),
                       border: InputBorder.none,
                       hintText: 'wss://',
-                      hintStyle: scaledTextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[400],
-                      ),
+                      hintStyle: scaledTextStyle(fontSize: 14, color: Colors.grey[400]),
                     ),
                     onSubmitted: (value) async {
                       configBox.put('customEndpoint', value);
                       await Durt.i.connect(
-                        customDuniterEndpoints: DuniterEndpoints(endpoints: {
-                          Durt.i.network: [value],
-                        }),
+                        customDuniterEndpoints: DuniterEndpoints(
+                          endpoints: {
+                            Durt.i.network: [value],
+                          },
+                        ),
                       );
                       set.reload();
                     },
@@ -718,10 +697,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ScaledSizedBox(height: 8),
                 Text(
                   'blockN'.tr(args: [blockHeightProvider.blockHeight.toString()]),
-                  style: scaledTextStyle(
-                    fontSize: 13,
-                    color: Theme.of(context).textTheme.bodySmall?.color,
-                  ),
+                  style: scaledTextStyle(fontSize: 13, color: Theme.of(context).textTheme.bodySmall?.color),
                 ),
               ],
             );
@@ -731,7 +707,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Future<void> _showIndexerSelectionDialog(BuildContext context, List<String> indexers, String selectedEndpoint, TextEditingController controller) async {
+  Future<void> _showIndexerSelectionDialog(
+    BuildContext context,
+    List<String> indexers,
+    String selectedEndpoint,
+    TextEditingController controller,
+  ) async {
     final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
     final set = Provider.of<SettingsProvider>(context, listen: false);
 
@@ -757,10 +738,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Navigator.of(context).pop(endpoint);
                   },
                   child: Container(
-                    padding: EdgeInsets.symmetric(
-                      vertical: scaleSize(12),
-                      horizontal: scaleSize(16),
-                    ),
+                    padding: EdgeInsets.symmetric(vertical: scaleSize(12), horizontal: scaleSize(16)),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -773,10 +751,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         Expanded(
                           child: Text(
                             endpoint,
-                            style: scaledTextStyle(
-                              fontSize: 14,
-                              color: Theme.of(context).textTheme.bodyMedium?.color,
-                            ),
+                            style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
                           ),
                         ),
                       ],
@@ -787,9 +762,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           contentPadding: EdgeInsets.symmetric(vertical: scaleSize(16)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         );
       },
     );
@@ -809,7 +782,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (configBox.containsKey('customIndexer')) {
       selectedIndexerEndpoint = configBox.get('customIndexer');
     } else {
-      selectedIndexerEndpoint = duniterIndexer.listIndexerEndpoints.isNotEmpty ? duniterIndexer.listIndexerEndpoints[0] : 'https://';
+      selectedIndexerEndpoint = duniterIndexer.listIndexerEndpoints.isNotEmpty
+          ? duniterIndexer.listIndexerEndpoints[0]
+          : 'https://';
     }
 
     final indexerEndpointController = _indexerEndpointController;
@@ -828,23 +803,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Row(
                   children: [
-                    Icon(
-                      Icons.storage_rounded,
-                      color: context.colorScheme.primary,
-                      size: scaleSize(24),
-                    ),
+                    Icon(Icons.storage_rounded, color: context.colorScheme.primary, size: scaleSize(24)),
                     ScaledSizedBox(width: 12),
                     Text(
                       'Indexer',
-                      style: scaledTextStyle(
-                        fontSize: 14,
-                        color: Theme.of(context).textTheme.bodyMedium?.color,
-                      ),
+                      style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
                     ),
                     ScaledSizedBox(width: 12),
                     Icon(
-                      _indexerEndpointController.text.isNotEmpty && _indexerEndpointController.text != 'https://' ? Icons.check_circle : Icons.error,
-                      color: _indexerEndpointController.text.isNotEmpty && _indexerEndpointController.text != 'https://' ? Colors.green : Colors.red,
+                      _indexerEndpointController.text.isNotEmpty && _indexerEndpointController.text != 'https://'
+                          ? Icons.check_circle
+                          : Icons.error,
+                      color: _indexerEndpointController.text.isNotEmpty && _indexerEndpointController.text != 'https://'
+                          ? Colors.green
+                          : Colors.red,
                       size: scaleSize(16),
                     ),
                     const Spacer(),
@@ -852,10 +824,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       builder: (context, set, _) {
                         return PopupMenuButton<String>(
                           child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: scaleSize(12),
-                              vertical: scaleSize(6),
-                            ),
+                            padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(6)),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(color: Colors.grey[300]!),
@@ -871,11 +840,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   ),
                                 ),
                                 ScaledSizedBox(width: 4),
-                                Icon(
-                                  Icons.arrow_drop_down,
-                                  color: Colors.grey[600],
-                                  size: scaleSize(20),
-                                ),
+                                Icon(Icons.arrow_drop_down, color: Colors.grey[600], size: scaleSize(20)),
                               ],
                             ),
                           ),
@@ -885,8 +850,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               child: Row(
                                 children: [
                                   Icon(
-                                    !configBox.containsKey('customIndexer') ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                                    color: !configBox.containsKey('customIndexer') ? context.colorScheme.primary : Colors.grey[400],
+                                    !configBox.containsKey('customIndexer')
+                                        ? Icons.radio_button_checked
+                                        : Icons.radio_button_unchecked,
+                                    color: !configBox.containsKey('customIndexer')
+                                        ? context.colorScheme.primary
+                                        : Colors.grey[400],
                                     size: scaleSize(20),
                                   ),
                                   ScaledSizedBox(width: 12),
@@ -905,8 +874,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               child: Row(
                                 children: [
                                   Icon(
-                                    configBox.containsKey('customIndexer') ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                                    color: configBox.containsKey('customIndexer') ? context.colorScheme.primary : Colors.grey[400],
+                                    configBox.containsKey('customIndexer')
+                                        ? Icons.radio_button_checked
+                                        : Icons.radio_button_unchecked,
+                                    color: configBox.containsKey('customIndexer')
+                                        ? context.colorScheme.primary
+                                        : Colors.grey[400],
                                     size: scaleSize(20),
                                   ),
                                   ScaledSizedBox(width: 12),
@@ -924,11 +897,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               value: 'Sélectionner',
                               child: Row(
                                 children: [
-                                  Icon(
-                                    Icons.list_alt,
-                                    color: Colors.grey[400],
-                                    size: scaleSize(20),
-                                  ),
+                                  Icon(Icons.list_alt, color: Colors.grey[400], size: scaleSize(20)),
                                   ScaledSizedBox(width: 12),
                                   Text(
                                     'Sélectionner',
@@ -951,7 +920,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               );
                             } else if (value == 'Auto') {
                               configBox.delete('customIndexer');
-                              final defaultEndpoint = duniterIndexer.listIndexerEndpoints.isNotEmpty ? duniterIndexer.listIndexerEndpoints[0] : 'https://';
+                              final defaultEndpoint = duniterIndexer.listIndexerEndpoints.isNotEmpty
+                                  ? duniterIndexer.listIndexerEndpoints[0]
+                                  : 'https://';
                               selectedIndexerEndpoint = defaultEndpoint;
                               indexerEndpointController.text = defaultEndpoint;
                               await indexer.checkIndexerEndpoint(defaultEndpoint);
@@ -1015,16 +986,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     autocorrect: false,
                     style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
                     decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: scaleSize(12),
-                        vertical: scaleSize(8),
-                      ),
+                      contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(8)),
                       border: InputBorder.none,
                       hintText: 'https://',
-                      hintStyle: scaledTextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[400],
-                      ),
+                      hintStyle: scaledTextStyle(fontSize: 14, color: Colors.grey[400]),
                     ),
                     onSubmitted: (value) async {
                       configBox.put('customIndexer', value);
@@ -1046,13 +1011,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'theme'.tr(),
-          style: scaledTextStyle(
-            fontSize: 14,
-            color: Theme.of(context).textTheme.bodyMedium?.color,
-          ),
-        ),
+        Text('theme'.tr(), style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color)),
         ScaledSizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,

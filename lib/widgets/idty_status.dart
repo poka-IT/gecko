@@ -18,39 +18,51 @@ class IdentityStatus extends StatelessWidget {
     final finalColor = color ?? context.colorScheme.onSecondaryContainer;
 
     return FutureBuilder<IdtyStatus>(
-        future: Durt.i.storage.getIdtyStatus(address),
-        initialData: walletData.identityStatus,
-        builder: (context, AsyncSnapshot<IdtyStatus> snapshot) {
-          if (snapshot.data != null && !snapshot.hasError) {
-            final resStatus = snapshot.data!;
-            walletData.identityStatus = resStatus;
-          }
+      future: Durt.i.storage.getIdtyStatus(address),
+      initialData: walletData.identityStatus,
+      builder: (context, AsyncSnapshot<IdtyStatus> snapshot) {
+        if (snapshot.data != null && !snapshot.hasError) {
+          final resStatus = snapshot.data!;
+          walletData.identityStatus = resStatus;
+        }
 
-          final resStatus = walletData.identityStatus;
+        final resStatus = walletData.identityStatus;
 
-          final nameByAddress = resStatus == IdtyStatus.validated
-              ? NameByAddress(wallet: walletData, size: 18, color: finalColor, fontWeight: FontWeight.w500, fontStyle: FontStyle.normal)
-              : NameByAddress(
-                  wallet: walletData, size: 16, color: homeContext.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w500, fontStyle: FontStyle.italic);
+        final nameByAddress = resStatus == IdtyStatus.validated
+            ? NameByAddress(
+                wallet: walletData,
+                size: 18,
+                color: finalColor,
+                fontWeight: FontWeight.w500,
+                fontStyle: FontStyle.normal,
+              )
+            : NameByAddress(
+                wallet: walletData,
+                size: 16,
+                color: homeContext.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+                fontStyle: FontStyle.italic,
+              );
 
-          final Map<IdtyStatus, String> statusText = {
-            IdtyStatus.none: '',
-            IdtyStatus.created: 'identityCreated'.tr(),
-            IdtyStatus.confirmed: 'identityConfirmed'.tr(),
-            IdtyStatus.validated: 'memberValidated'.tr(),
-            IdtyStatus.expired: 'identityExpired'.tr(),
-            IdtyStatus.revoked: 'identityRevoked'.tr(),
-            IdtyStatus.unknown: ''
-          };
+        final Map<IdtyStatus, String> statusText = {
+          IdtyStatus.none: '',
+          IdtyStatus.created: 'identityCreated'.tr(),
+          IdtyStatus.confirmed: 'identityConfirmed'.tr(),
+          IdtyStatus.validated: 'memberValidated'.tr(),
+          IdtyStatus.expired: 'identityExpired'.tr(),
+          IdtyStatus.revoked: 'identityRevoked'.tr(),
+          IdtyStatus.unknown: '',
+        };
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              nameByAddress,
-              showText(context, statusText[resStatus]!, bold: resStatus == IdtyStatus.validated, size: scaleSize(15)),
-            ],
-          );
-        });
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            nameByAddress,
+            showText(context, statusText[resStatus]!, bold: resStatus == IdtyStatus.validated, size: scaleSize(15)),
+          ],
+        );
+      },
+    );
   }
 
   AnimatedFadeOutIn showText(BuildContext context, String text, {double size = 18, bool bold = false}) {
@@ -61,7 +73,11 @@ class IdentityStatus extends StatelessWidget {
       builder: (value) => Text(
         value,
         textAlign: TextAlign.center,
-        style: TextStyle(fontSize: size, color: bold ? finalColor : finalColor, fontWeight: bold ? FontWeight.w500 : FontWeight.w400),
+        style: TextStyle(
+          fontSize: size,
+          color: bold ? finalColor : finalColor,
+          fontWeight: bold ? FontWeight.w500 : FontWeight.w400,
+        ),
       ),
     );
   }

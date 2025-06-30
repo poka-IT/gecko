@@ -48,15 +48,15 @@ class CertStateWidget extends StatelessWidget {
       <= const Duration(minutes: 1) => 'seconds'.tr(args: [duration.inSeconds.toString()]),
       <= const Duration(hours: 1) => 'minutes'.tr(args: [duration.inMinutes.toString()]),
       <= const Duration(days: 1) => () {
-          final minutesPart = duration - Duration(hours: duration.inHours);
-          final showMinutes = minutesPart.inMinutes > 0 ? 'minutes'.tr(args: [minutesPart.inMinutes.toString()]) : '';
-          return 'hours'.tr(args: [duration.inHours.toString(), showMinutes]);
-        }(),
+        final minutesPart = duration - Duration(hours: duration.inHours);
+        final showMinutes = minutesPart.inMinutes > 0 ? 'minutes'.tr(args: [minutesPart.inMinutes.toString()]) : '';
+        return 'hours'.tr(args: [duration.inHours.toString(), showMinutes]);
+      }(),
       <= const Duration(days: 30) => 'days'.tr(args: [duration.inDays.toString()]),
       _ => () {
-          final months = (duration.inDays / 30).round();
-          return 'months'.tr(args: [months.toString()]);
-        }(),
+        final months = (duration.inDays / 30).round();
+        return 'months'.tr(args: [months.toString()]);
+      }(),
     };
   }
 

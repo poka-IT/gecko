@@ -34,10 +34,11 @@ class _ChooseChestState extends State<ChooseChest> {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
 
     return Scaffold(
-        backgroundColor: context.colorScheme.surface,
-        appBar: AppBar(toolbarHeight: scaleSize(57), title: Text('selectMyChest'.tr())),
-        body: SafeArea(
-          child: Column(children: <Widget>[
+      backgroundColor: context.colorScheme.surface,
+      appBar: AppBar(toolbarHeight: scaleSize(57), title: Text('selectMyChest'.tr())),
+      body: SafeArea(
+        child: Column(
+          children: <Widget>[
             const SizedBox(height: 160),
             CarouselSlider(
               carouselController: buttonCarouselController,
@@ -55,22 +56,15 @@ class _ChooseChestState extends State<ChooseChest> {
               items: Durt.i.wallets.safeBox.toMap().entries.map((i) {
                 return Builder(
                   builder: (BuildContext context) {
-                    return Column(children: <Widget>[
-                      i.value.imagePath == null
-                          ? Image.asset(
-                              'assets/chests/${i.value.number}.png',
-                              height: 150,
-                            )
-                          : Image.file(
-                              File(i.value.imagePath!),
-                              height: 150,
-                            ),
-                      const SizedBox(height: 30),
-                      Text(
-                        i.value.name,
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                    ]);
+                    return Column(
+                      children: <Widget>[
+                        i.value.imagePath == null
+                            ? Image.asset('assets/chests/${i.value.number}.png', height: 150)
+                            : Image.file(File(i.value.imagePath!), height: 150),
+                        const SizedBox(height: 30),
+                        Text(i.value.name, style: const TextStyle(fontSize: 20)),
+                      ],
+                    );
                   },
                 );
               }).toList(),
@@ -86,9 +80,10 @@ class _ChooseChestState extends State<ChooseChest> {
                       height: 12.0,
                       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
                       decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black)
-                              .withValues(alpha: currentChest == entry.key ? 0.9 : 0.4)),
+                        shape: BoxShape.circle,
+                        color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black)
+                            .withValues(alpha: currentChest == entry.key ? 0.9 : 0.4),
+                      ),
                     ),
                   );
                 }).toList(),
@@ -107,10 +102,7 @@ class _ChooseChestState extends State<ChooseChest> {
                   myWalletProvider.pinCode = '';
                   if (!await myWalletProvider.askPinCode()) return;
 
-                  Navigator.popUntil(
-                    context,
-                    ModalRoute.withName('/'),
-                  );
+                  Navigator.popUntil(context, ModalRoute.withName('/'));
                   Navigator.pushNamed(context, '/mywallets');
                 },
                 child: Text(
@@ -128,38 +120,53 @@ class _ChooseChestState extends State<ChooseChest> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) {
-                        return const OnboardingStepFive(skipIntro: true);
-                      }),
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return const OnboardingStepFive(skipIntro: true);
+                        },
+                      ),
                     );
                   },
                   child: SizedBox(
                     width: 400,
                     height: 50,
                     child: Center(
-                        child: Text('createChest'.tr(), style: TextStyle(fontSize: 21, color: context.colorScheme.primary, fontWeight: FontWeight.w600))),
+                      child: Text(
+                        'createChest'.tr(),
+                        style: TextStyle(fontSize: 21, color: context.colorScheme.primary, fontWeight: FontWeight.w600),
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
             InkWell(
-                key: keyImportChest,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) {
+              key: keyImportChest,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) {
                       return const RestoreChest(skipIntro: true);
-                    }),
-                  );
-                },
-                child: SizedBox(
-                  width: 400,
-                  height: 50,
-                  child:
-                      Center(child: Text('importChest'.tr(), style: TextStyle(fontSize: 21, color: context.colorScheme.primary, fontWeight: FontWeight.w600))),
-                )),
+                    },
+                  ),
+                );
+              },
+              child: SizedBox(
+                width: 400,
+                height: 50,
+                child: Center(
+                  child: Text(
+                    'importChest'.tr(),
+                    style: TextStyle(fontSize: 21, color: context.colorScheme.primary, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ),
             const SizedBox(height: 20),
-          ]),
-        ));
+          ],
+        ),
+      ),
+    );
   }
 }

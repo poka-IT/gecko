@@ -65,7 +65,10 @@ class CertifyButton extends StatelessWidget {
                   if (myWalletProvider.pinCode == '') {
                     return;
                   }
-                  WalletsProfilesProvider walletViewProvider = Provider.of<WalletsProfilesProvider>(context, listen: false);
+                  WalletsProfilesProvider walletViewProvider = Provider.of<WalletsProfilesProvider>(
+                    context,
+                    listen: false,
+                  );
                   final identityWallet = Durt.i.wallets.identityWallet;
 
                   if (identityWallet == null) {
@@ -73,25 +76,35 @@ class CertifyButton extends StatelessWidget {
                   }
 
                   try {
-                    final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: identityWallet.address, pinCode: myWalletProvider.pinCode);
+                    final keypair = await Durt.i.wallets.getKeyPairFromAddress(
+                      address: identityWallet.address,
+                      pinCode: myWalletProvider.pinCode,
+                    );
                     final transactionStatus = Durt.i.duniter.certify(
                       keypair: keypair,
                       destAddress: walletViewProvider.address,
                     );
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) {
-                        return TransactionInProgressScreen(
-                          transactionStatus: transactionStatus,
-                          transType: 'cert',
-                        );
-                      }),
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return TransactionInProgressScreen(transactionStatus: transactionStatus, transType: 'cert');
+                        },
+                      ),
                     );
                   } catch (e) {
                     if (e is NotMemberException) {
-                      showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
+                      showConfirmationDialog(
+                        context: context,
+                        type: ConfirmationDialogType.error,
+                        message: e.toString(),
+                      );
                     } else if (e is CantBeCertException) {
-                      showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
+                      showConfirmationDialog(
+                        context: context,
+                        type: ConfirmationDialogType.error,
+                        message: e.toString(),
+                      );
                     }
                   }
                 },

@@ -232,7 +232,7 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                   final address = Durt.i.wallets.getAddress(walletData.address);
 
                   WalletData myWallet = WalletData(
-                    safeBoxNumber: configBox.get('currentChest'),
+                    safeBoxNumber: Durt.i.wallets.defaultSafeBoxNumber,
                     address: address,
                     number: 0,
                     derivation: -1,

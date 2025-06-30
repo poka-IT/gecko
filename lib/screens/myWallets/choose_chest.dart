@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:durt2/durt2.dart' show Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -98,7 +97,7 @@ class _ChooseChestState extends State<ChooseChest> {
                   backgroundColor: context.colorScheme.primary,
                 ),
                 onPressed: () async {
-                  await configBox.put('currentChest', currentChest);
+                  await Durt.i.wallets.setDefaultSafeBoxNumber(currentChest);
                   myWalletProvider.pinCode = '';
                   if (!await myWalletProvider.askPinCode()) return;
 

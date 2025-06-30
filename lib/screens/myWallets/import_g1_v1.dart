@@ -414,9 +414,8 @@ class ImportG1v1 extends StatelessWidget {
 
                                         WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
 
-                                        String? pin;
                                         if (myWalletProvider.pinCode == '') {
-                                          pin = await Navigator.push(
+                                          await Navigator.push(
                                             context,
                                             MaterialPageRoute(
                                               builder: (homeContext) {
@@ -426,7 +425,7 @@ class ImportG1v1 extends StatelessWidget {
                                           );
                                         }
 
-                                        if (pin == null) return;
+                                        if (myWalletProvider.pinCode.isEmpty) return;
 
                                         final toKeypair = await Durt.i.wallets.getKeyPairFromAddress(
                                           address: selectedWallet.address,

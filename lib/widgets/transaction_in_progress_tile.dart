@@ -116,8 +116,7 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
                       children: [
                         statusIcon,
                         ScaledSizedBox(width: 10),
-                        ScaledSizedBox(
-                          width: 170,
+                        Expanded(
                           child: Text(
                             humanStatus,
                             style: scaledTextStyle(
@@ -125,6 +124,8 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
                               color: Theme.of(context).textTheme.titleLarge!.color,
                               fontSize: 13,
                             ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
                           ),
                         ),
                       ],

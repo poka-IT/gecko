@@ -49,11 +49,13 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
       address: defaultWallet.address,
       pinCode: myWalletProvider.pinCode,
     );
+    final isUdUnit = configBox.get('isUdUnit') ?? false;
     final transactionStatus = Durt.i.duniter.pay(
       keypair: keypair,
       destAddress: toAddress,
       amount: double.parse(walletViewProvider.payAmount.text),
       comment: walletViewProvider.comment,
+      isUd: isUdUnit,
     );
 
     final transactionData = TransactionInProgressData(

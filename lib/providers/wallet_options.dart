@@ -62,11 +62,13 @@ class WalletOptionsProvider with ChangeNotifier {
           address: wallet.address,
           pinCode: myWalletProvider.pinCode,
         );
+        final isUdUnit = configBox.get('isUdUnit') ?? false;
         Durt.i.duniter.pay(
           keypair: keypair,
           destAddress: defaultWallet.address,
           amount: -1,
           comment: 'ĞECKO:DELETEWALLET',
+          isUd: isUdUnit,
         );
       }
 

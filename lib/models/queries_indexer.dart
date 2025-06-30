@@ -139,7 +139,7 @@ query ($name: String!) {
 
 const getBlockchainStartQ = r'''
 query {
-  blockConnection(first: 1) {
+  blockConnection(first: 1, orderBy: { height: ASC }, where: {height: {_eq: 0}}) {
     edges {
       node {
         height

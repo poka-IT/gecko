@@ -8,7 +8,18 @@ allprojects {
 rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
-    afterEvaluate { android { compileSdkVersion 35 } }
+    afterEvaluate {
+        if (project.hasProperty('android')) {
+            android {
+                compileSdkVersion 35
+            }
+        }
+        if (project.plugins.hasPlugin('org.jetbrains.kotlin.android') || project.plugins.hasPlugin('org.jetbrains.kotlin.jvm')) {
+            project.kotlin {
+                jvmToolchain(17)
+            }
+        }
+    }
 }
 subprojects {
     project.evaluationDependsOn(':app')

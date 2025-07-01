@@ -37,6 +37,9 @@ class MyWalletsProvider with ChangeNotifier {
     safe ??= getCurrentSafe;
     listWallets.clear();
     final wallets = Durt.i.wallets.walletDataBox.toMap().values.toList();
+    // Sort immediately after getting from the box to ensure consistent order
+    wallets.sort((p1, p2) => Comparable.compare(p1.number, p2.number));
+
     Map<String, WalletData> walletsToScan = {};
     for (var walletFromBox in wallets) {
       if (walletFromBox.safeBoxNumber != safe) {
@@ -55,7 +58,11 @@ class MyWalletsProvider with ChangeNotifier {
 
       final idtyStatusMap = Map<String, IdtyStatus>.fromIterables(walletsToScan.keys, results);
 
-      for (final wallet in walletsToScan.values) {
+      // Sort walletsToScan by number before adding to maintain order
+      final sortedWalletsToScan = walletsToScan.values.toList();
+      sortedWalletsToScan.sort((p1, p2) => Comparable.compare(p1.number, p2.number));
+
+      for (final wallet in sortedWalletsToScan) {
         final idtyStatus = idtyStatusMap[wallet.address];
         if (idtyStatus == null) {
           wallet.identityStatus = IdtyStatus.none;

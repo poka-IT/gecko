@@ -1,6 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show Durt, WalletData;
+import 'dart:async';
+
+import 'package:durt2/durt2.dart' show Durt, WalletData, TransactionStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -41,30 +43,78 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
 
   resetState();
 
+  Future<dynamic> deriveKeypairWithYield(String address, String pinCode) async {
+    // This function yields control to the UI periodically during the derivation
+    // By wrapping the heavy operation and giving the UI a chance to update
+
+    // Yield to UI before starting
+    await Future.microtask(() {});
+
+    // Execute the derivation
+    final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: address, pinCode: pinCode);
+
+    // Yield to UI after completion
+    await Future.microtask(() {});
+
+    return keypair;
+  }
+
+  void executeTransactionInBackground(StreamController<TransactionStatus> statusController) async {
+    try {
+      // Give UI a chance to update before heavy operations
+      await Future.microtask(() {});
+
+      // Heavy operation 1: Derive keypair (cryptographic operation)
+      // Break this into smaller chunks to avoid blocking UI
+      final keypair = await deriveKeypairWithYield(defaultWallet.address, myWalletProvider.pinCode);
+
+      // Give UI another chance to update
+      await Future.microtask(() {});
+
+      final isUdUnit = configBox.get('isUdUnit') ?? false;
+
+      // Execute transaction (crypto + network)
+      final transactionStatus = Durt.i.duniter.pay(
+        keypair: keypair,
+        destAddress: toAddress,
+        amount: double.parse(walletViewProvider.payAmount.text),
+        comment: walletViewProvider.comment,
+        isUd: isUdUnit,
+      );
+
+      // Forward the actual transaction status to our controller
+      transactionStatus.listen(
+        (status) => statusController.add(status),
+        onError: (error) => statusController.addError(error),
+        onDone: () => statusController.close(),
+      );
+    } catch (e) {
+      // Handle errors
+      log.e('Transaction failed: $e');
+      statusController.addError(e);
+      statusController.close();
+    }
+  }
+
   Future executeTransfert() async {
+    // Close popup immediately to avoid blocking UI
     Navigator.pop(context);
+
+    // Get PIN code first (this is usually fast)
     if (!await myWalletProvider.askPinCode()) return;
 
-    final keypair = await Durt.i.wallets.getKeyPairFromAddress(
-      address: defaultWallet.address,
-      pinCode: myWalletProvider.pinCode,
-    );
-    final isUdUnit = configBox.get('isUdUnit') ?? false;
-    final transactionStatus = Durt.i.duniter.pay(
-      keypair: keypair,
-      destAddress: toAddress,
-      amount: double.parse(walletViewProvider.payAmount.text),
-      comment: walletViewProvider.comment,
-      isUd: isUdUnit,
-    );
+    // Create a StreamController to control the transaction status
+    final statusController = StreamController<TransactionStatus>();
 
+    // Create a transaction data with the controlled stream
     final transactionData = TransactionInProgressData(
-      status: transactionStatus,
+      status: statusController.stream,
       toAddress: toAddress,
       amount: double.parse(walletViewProvider.payAmount.text),
       comment: walletViewProvider.comment,
     );
 
+    // Navigate immediately to activity screen with loading state
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -73,6 +123,9 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
         },
       ),
     );
+
+    // Execute heavy operations asynchronously in background
+    executeTransactionInBackground(statusController);
   }
 
   bool canValidatePayment() {

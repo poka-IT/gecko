@@ -1,6 +1,6 @@
 // ignore_for_file: file_names, use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show Durt, WalletData;
+import 'package:durt2/durt2.dart' show Durt, WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -231,15 +231,17 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
                   final walletData = await Durt.i.wallets.importRootWallet(pinCode: widget.pinCode);
                   final address = Durt.i.wallets.getAddress(walletData.address);
 
-                  WalletData myWallet = WalletData(
-                    safeBoxNumber: Durt.i.wallets.defaultSafeBoxNumber,
+                  WalletEntity myWallet = WalletEntity(
                     address: address,
                     number: 0,
                     derivation: -1,
                     name: 'currentWallet'.tr(),
-                    isOwned: true,
                   );
-                  await Durt.i.wallets.walletDataBox.put(myWallet.address, myWallet);
+
+                  final safe = Durt.i.wallets.getSafeBox(currentChest);
+                  myWallet.safe.target = safe;
+
+                  await Durt.i.wallets.walletBox.putAsync(myWallet);
                   break;
                 case ScanDerivationsResult.timeout:
                 case ScanDerivationsResult.error:
@@ -255,8 +257,8 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
               myWalletProvider.debounceResetPinCode();
 
               // Set default wallet to number 0 of current chest
-              WalletData? defaultWallet =
-                  myWalletProvider.listWallets.firstWhereOrNull((w) => w.isMembre) ??
+              WalletEntity? defaultWallet =
+                  myWalletProvider.listWallets.firstWhereOrNull((w) => w.isMember) ??
                   myWalletProvider.listWallets.firstWhereOrNull((w) => w.hasIdentity) ??
                   myWalletProvider.listWallets.firstWhereOrNull((w) => w.number == 0);
 
@@ -265,7 +267,7 @@ class _OnboardingStepTenState extends State<OnboardingStepTen> {
               }
               if (defaultWallet != null) {
                 final address = Durt.i.wallets.getAddress(defaultWallet.address);
-                await Durt.i.wallets.setDefaultWallet(address);
+                await Durt.i.wallets.setDefaultAddress(address);
               }
 
               await Navigator.push(

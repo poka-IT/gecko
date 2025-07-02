@@ -2,7 +2,7 @@
 
 import 'dart:async';
 
-import 'package:durt2/durt2.dart' show Durt, WalletData, TransactionStatus;
+import 'package:durt2/durt2.dart' show Durt, WalletEntity, TransactionStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -238,43 +238,58 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                             ),
                             alignment: Alignment.center,
                             padding: const EdgeInsets.all(0),
-                            child: DropdownButton(
+                            child: DropdownButton<String>(
                               dropdownColor: context.colorScheme.tertiary,
                               elevation: 12,
                               key: keyDropdownWallets,
-                              value: defaultWallet,
+                              // The dropdown's value is the ADDRESS of the default wallet.
+                              value: defaultWallet.address,
                               menuMaxHeight: scaleSize(270),
                               onTap: () {
                                 FocusScope.of(context).requestFocus(amountFocus);
                               },
-                              selectedItemBuilder: (_) {
-                                return myWalletProvider.listWallets.map((WalletData wallet) {
+                              // This builds the widget that's visible when the dropdown is closed.
+                              selectedItemBuilder: (context) {
+                                return myWalletProvider.listWallets.map((wallet) {
                                   return Container(
+                                    // The dropdown automatically selects the correct widget to show.
                                     width: scaleSize(isTall ? 315 : 310),
                                     padding: EdgeInsets.all(scaleSize(7)),
-                                    child: Visibility(
-                                      visible: wallet.address == defaultWallet.address,
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          NameByAddress(wallet: wallet, fontStyle: FontStyle.normal, size: 16),
-                                          const Spacer(),
-                                          Balance(address: wallet.address, size: 16),
-                                        ],
-                                      ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        NameByAddress(wallet: wallet, fontStyle: FontStyle.normal, size: 16),
+                                        const Spacer(),
+                                        Balance(address: wallet.address, size: 16),
+                                      ],
                                     ),
                                   );
                                 }).toList();
                               },
-                              onChanged: (WalletData? newSelectedWallet) async {
-                                defaultWallet = newSelectedWallet!;
-                                await Durt.i.wallets.setDefaultWallet(newSelectedWallet.address);
+                              // This is called when the user selects a new item.
+                              onChanged: (String? newSelectedAddress) async {
+                                // It now receives the address as a String.
+                                if (newSelectedAddress == null) return;
+
+                                // Find the full WalletEntity object that corresponds to the selected address.
+                                final newSelectedWallet = myWalletProvider.listWallets.firstWhere(
+                                  (wallet) => wallet.address == newSelectedAddress,
+                                );
+
+                                // Update your local state and trigger a rebuild.
+                                setState(() {
+                                  defaultWallet = newSelectedWallet;
+                                });
+
+                                // Execute your original logic.
+                                await Durt.i.wallets.setDefaultAddress(newSelectedWallet.address);
                                 amountFocus.requestFocus();
-                                setState(() {});
                               },
-                              items: myWalletProvider.listWallets.map((WalletData wallet) {
-                                return DropdownMenuItem(
-                                  value: wallet,
+                              // This builds the list of choices the user sees when the dropdown is open.
+                              items: myWalletProvider.listWallets.map((WalletEntity wallet) {
+                                return DropdownMenuItem<String>(
+                                  // Each item's value is its unique ADDRESS string.
+                                  value: wallet.address,
                                   key: keySelectThisWallet(wallet.address),
                                   child: Container(
                                     color: context.colorScheme.tertiary,

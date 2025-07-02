@@ -63,7 +63,8 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
       isOwner: myWalletProvider.isOwner(address),
       walletName: duniterIndexer.walletNameIndexer[address],
       balance: balanceResult.transferableBalance,
-      certCount: certData,
+      certsReceived: certData.receivedCount,
+      certsSent: certData.sentCount,
     );
 
     await walletHeaderDataBox.put(address, data);

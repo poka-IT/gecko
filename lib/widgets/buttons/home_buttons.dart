@@ -1,6 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show WalletData;
+import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
@@ -111,7 +111,7 @@ class HomeButtons extends StatelessWidget {
                         onTap: !homeProvider.isWalletBoxInit
                             ? null
                             : () async {
-                                WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
+                                WalletEntity? defaultWallet = myWalletProvider.getDefaultWallet();
                                 if (myWalletProvider.pinCode == '') {
                                   await Navigator.push(
                                     context,

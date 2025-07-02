@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
-import 'package:durt2/durt2.dart' show IdtyStatus, WalletData, Durt, MigrateWalletChecks;
+import 'package:durt2/durt2.dart' show IdtyStatus, WalletEntity, Durt, MigrateWalletChecks;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/extensions.dart';
@@ -32,7 +32,7 @@ class ImportG1v1 extends StatelessWidget {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
     Timer? debounce;
-    WalletData selectedWallet = myWalletProvider.getDefaultWallet();
+    WalletEntity selectedWallet = myWalletProvider.getDefaultWallet();
 
     return PopScope(
       onPopInvokedWithResult: (_, _) {
@@ -362,7 +362,7 @@ class ImportG1v1 extends StatelessWidget {
                                           child: Text(wallet.name!, style: scaledTextStyle(fontSize: 13)),
                                         );
                                       }).toList(),
-                                      onChanged: (WalletData? newSelectedWallet) {
+                                      onChanged: (WalletEntity? newSelectedWallet) {
                                         selectedWallet = newSelectedWallet!;
                                         g1v1Migration.reload();
                                       },
@@ -412,7 +412,7 @@ class ImportG1v1 extends StatelessWidget {
 
                                         if (confirmed != true) return;
 
-                                        WalletData? defaultWallet = myWalletProvider.getDefaultWallet();
+                                        WalletEntity? defaultWallet = myWalletProvider.getDefaultWallet();
 
                                         if (myWalletProvider.pinCode == '') {
                                           await Navigator.push(

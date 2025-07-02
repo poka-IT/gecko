@@ -1,6 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show Durt, WalletData;
+import 'package:durt2/durt2.dart' show Durt, WalletEntity;
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 class DragTuleAction extends StatelessWidget {
   const DragTuleAction({super.key, required this.wallet, required this.child});
 
-  final WalletData wallet;
+  final WalletEntity wallet;
   final Widget child;
 
   @override
@@ -43,7 +43,7 @@ class DragTuleAction extends StatelessWidget {
       child: DragTarget<String>(
         onAcceptWithDetails: (senderAddress) async {
           final walletData = myWalletProvider.getWalletDataByAddress(senderAddress.data);
-          await Durt.i.wallets.setDefaultWallet(walletData!.address);
+          await Durt.i.wallets.setDefaultAddress(walletData!.address);
           paymentPopup(context, wallet.address, g1WalletsBox.get(wallet.address)!.username ?? wallet.name!);
         },
         onMove: (details) {

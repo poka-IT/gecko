@@ -1,11 +1,11 @@
-import 'package:durt2/durt2.dart' show WalletData;
+import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 
 class WalletName extends StatelessWidget {
   const WalletName({super.key, required this.wallet, this.size = 20, this.color = Colors.black, this.maxWidth});
 
-  final WalletData wallet;
+  final WalletEntity wallet;
   final double size;
   final Color color;
   final double? maxWidth;

@@ -49,7 +49,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
       isOwner: myWalletProvider.isOwner(widget.address),
       walletName: duniterIndexer.walletNameIndexer[widget.address],
       balance: balanceResult.transferableBalance,
-      certCount: certData,
+      certsReceived: certData.receivedCount,
+      certsSent: certData.sentCount,
     );
 
     return data;

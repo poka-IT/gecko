@@ -1,4 +1,4 @@
-import 'package:durt2/durt2.dart' show WalletData, Durt;
+import 'package:durt2/durt2.dart' show WalletEntity, Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +24,7 @@ class ShowSeed extends StatelessWidget {
   Widget build(BuildContext context) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
 
-    WalletData defaultWallet = myWalletProvider.getDefaultWallet();
+    WalletEntity defaultWallet = myWalletProvider.getDefaultWallet();
 
     return Scaffold(
       backgroundColor: context.colorScheme.surface,

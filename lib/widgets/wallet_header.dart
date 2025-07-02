@@ -67,7 +67,8 @@ class _WalletHeaderState extends State<WalletHeader> {
       isOwner: myWalletProvider.isOwner(widget.address),
       walletName: duniterIndexer.walletNameIndexer[widget.address],
       balance: balance.transferableBalance,
-      certCount: certData,
+      certsReceived: certData.receivedCount,
+      certsSent: certData.sentCount,
     );
 
     // Save to Hive cache
@@ -93,7 +94,8 @@ class _WalletHeaderState extends State<WalletHeader> {
       isOwner: myWalletProvider.isOwner(widget.address),
       walletName: duniterIndexer.walletNameIndexer[widget.address],
       balance: balance.transferableBalance,
-      certCount: certData,
+      certsReceived: certData.receivedCount,
+      certsSent: certData.sentCount,
     );
 
     final existing = walletHeaderDataBox.get(widget.address);

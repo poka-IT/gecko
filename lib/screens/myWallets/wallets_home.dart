@@ -45,7 +45,8 @@ class _WalletsHomeContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
     final currentChestNumber = myWalletProvider.getCurrentSafe;
-    final SafeBox currentChest = Durt.i.wallets.safeBox.get(currentChestNumber)!;
+
+    final SafeEntity currentChest = Durt.i.wallets.safeBox.getNumber(currentChestNumber);
 
     return Scaffold(
       backgroundColor: context.colorScheme.surface,

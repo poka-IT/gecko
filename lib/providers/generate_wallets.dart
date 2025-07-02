@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:durt/durt.dart' as durt;
-import 'package:durt2/durt2.dart' show Durt, Language, WalletBalance, WalletData;
+import 'package:durt2/durt2.dart' show Durt, Language, WalletBalance, WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -281,8 +281,8 @@ class GenerateWalletsProvider with ChangeNotifier {
           await infoPopup(context, "timeoutScanDerivations".tr());
 
           // Remove all wallets
-          await Durt.i.wallets.walletDataBox.clear();
-          await Durt.i.wallets.safeBox.clear();
+          await Durt.i.wallets.walletBox.removeAllAsync();
+          await Durt.i.wallets.safeBox.removeAllAsync();
 
           // Pop to home
           // ignore: use_build_context_synchronously
@@ -298,8 +298,8 @@ class GenerateWalletsProvider with ChangeNotifier {
       await infoPopup(context, "errorScanDerivations".tr());
 
       // Remove all wallets
-      await Durt.i.wallets.walletDataBox.clear();
-      await Durt.i.wallets.safeBox.clear();
+      await Durt.i.wallets.walletBox.removeAllAsync();
+      await Durt.i.wallets.safeBox.removeAllAsync();
 
       // ignore: use_build_context_synchronously
       await Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
@@ -345,18 +345,19 @@ class GenerateWalletsProvider with ChangeNotifier {
     for (String scannedWallet in balanceList.keys) {
       isAlive = true;
       String walletName = scanedWalletNumber == 0 ? 'currentWallet'.tr() : '${'wallet'.tr()} ${scanedWalletNumber + 1}';
-      await Durt.i.wallets.importDerivations(pinCode: pinCode, derivations: [addressToScan[scannedWallet]!]);
       final actualSafeNumber = Durt.i.wallets.defaultSafeBoxNumber;
 
-      final myWallet = WalletData(
-        safeBoxNumber: actualSafeNumber,
+      final myWallet = WalletEntity(
         address: scannedWallet,
         name: walletName,
         derivation: addressToScan[scannedWallet],
         imagePath: 'assets/avatars/${scanedWalletNumber % 4}.png',
-        isOwned: true,
       );
-      await Durt.i.wallets.walletDataBox.put(myWallet.address, myWallet);
+
+      final safe = Durt.i.wallets.getSafeBox(actualSafeNumber);
+      myWallet.safe.target = safe;
+
+      await Durt.i.wallets.walletBox.putAsync(myWallet);
       scanedWalletNumber++;
       notifyListeners();
     }
@@ -382,19 +383,21 @@ class GenerateWalletsProvider with ChangeNotifier {
     if (balance.free != BigInt.zero) {
       String walletName = 'myRootWallet'.tr();
 
-      await Durt.i.wallets.importRootWallet(pinCode: pinCode);
+      // await Durt.i.wallets.importRootWallet(pinCode: pinCode);
 
       final actualSafeNumber = Durt.i.wallets.defaultSafeBoxNumber;
 
-      WalletData myWallet = WalletData(
-        safeBoxNumber: actualSafeNumber,
+      WalletEntity myWallet = WalletEntity(
         address: address,
         name: walletName,
         derivation: -1,
         imagePath: 'assets/avatars/0.png',
-        isOwned: true,
       );
-      await Durt.i.wallets.walletDataBox.put(myWallet.address, myWallet);
+
+      final safe = Durt.i.wallets.getSafeBox(actualSafeNumber);
+      myWallet.safe.target = safe;
+
+      await Durt.i.wallets.walletBox.putAsync(myWallet);
       scanedWalletNumber++;
       return true;
     } else {

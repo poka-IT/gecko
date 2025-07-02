@@ -1,4 +1,4 @@
-import 'package:durt2/durt2.dart' show WalletData;
+import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:flutter/material.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -84,7 +84,7 @@ class SearchResult extends StatelessWidget {
         ],
       ),
       subtitle: Row(
-        children: <Widget>[NameByAddress(wallet: WalletData(address: g1Wallet.address), size: 14)],
+        children: <Widget>[NameByAddress(wallet: WalletEntity(address: g1Wallet.address), size: 14)],
       ),
       dense: false,
       isThreeLine: false,

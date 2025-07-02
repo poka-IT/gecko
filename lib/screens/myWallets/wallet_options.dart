@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
-import 'package:durt2/durt2.dart' show Durt, IdtyStatus, WalletData, MembershipStatus;
+import 'package:durt2/durt2.dart' show Durt, IdtyStatus, WalletEntity, MembershipStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -28,7 +28,7 @@ import 'package:gecko/screens/identity/confirm_identity.dart';
 
 class WalletOptions extends StatelessWidget {
   const WalletOptions({Key? keyMyWallets, required this.wallet}) : super(key: keyMyWallets);
-  final WalletData wallet;
+  final WalletEntity wallet;
 
   @override
   Widget build(BuildContext context) {
@@ -242,7 +242,7 @@ class WalletOptions extends StatelessWidget {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
     final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
 
-    await Durt.i.wallets.setDefaultWallet(walletOptions.address.text);
+    await Durt.i.wallets.setDefaultAddress(walletOptions.address.text);
     await myWalletProvider.readAllWallets(currentChest);
     myWalletProvider.reload();
     walletOptions.reload();

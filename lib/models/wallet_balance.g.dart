@@ -13,7 +13,9 @@ class WalletBalanceAdapter extends TypeAdapter<WalletBalance> {
   @override
   WalletBalance read(BinaryReader reader) {
     final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read()};
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
     return WalletBalance(
       transferableBalance: fields[0] as int,
       free: fields[1] as int,
@@ -42,5 +44,7 @@ class WalletBalanceAdapter extends TypeAdapter<WalletBalance> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is WalletBalanceAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
+      other is WalletBalanceAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
 }

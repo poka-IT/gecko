@@ -1,4 +1,4 @@
-import 'package:durt2/durt2.dart' show WalletData;
+import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -11,8 +11,8 @@ import 'package:provider/provider.dart';
 class DragWalletsInfo extends StatelessWidget {
   const DragWalletsInfo({super.key, required this.dragAddress, required this.lastFlyBy});
 
-  final WalletData dragAddress;
-  final WalletData lastFlyBy;
+  final WalletEntity dragAddress;
+  final WalletEntity lastFlyBy;
 
   @override
   Widget build(BuildContext context) {

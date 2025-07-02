@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:durt2/durt2.dart' show Durt, SafeBox, WalletData;
+import 'package:durt2/durt2.dart' show Durt, SafeEntity, WalletEntity, SafeEntityExt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -16,7 +16,7 @@ import 'package:gecko/globals.dart';
 
 class UnlockingWallet extends StatefulWidget {
   const UnlockingWallet({required this.wallet}) : super(key: keyUnlockWallet);
-  final WalletData wallet;
+  final WalletEntity wallet;
 
   @override
   State<UnlockingWallet> createState() => _UnlockingWalletState();
@@ -24,7 +24,7 @@ class UnlockingWallet extends StatefulWidget {
 
 class _UnlockingWalletState extends State<UnlockingWallet> {
   late int currentSafeNumber;
-  late SafeBox currentSafe;
+  late SafeEntity currentSafe;
   bool canUnlock = true;
   late final TextEditingController enterPin;
   late final FocusNode pinFocus;
@@ -37,7 +37,7 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
     pinFocus = FocusNode(debugLabel: 'pinFocusNode');
     enterPin = TextEditingController();
     currentSafeNumber = Durt.i.wallets.defaultSafeBoxNumber;
-    currentSafe = Durt.i.wallets.safeBox.get(currentSafeNumber)!;
+    currentSafe = Durt.i.wallets.safeBox.getNumber(currentSafeNumber);
   }
 
   @override

@@ -1,4 +1,4 @@
-import 'package:durt2/durt2.dart' show WalletData;
+import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
@@ -120,7 +120,7 @@ class ContactsList extends StatelessWidget {
                           children: <Widget>[
                             NameByAddress(
                               size: scaleSize(14),
-                              wallet: WalletData(address: g1Wallet.address),
+                              wallet: WalletEntity(address: g1Wallet.address),
                             ),
                           ],
                         ),

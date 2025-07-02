@@ -13,20 +13,23 @@ class WalletHeaderDataAdapter extends TypeAdapter<WalletHeaderData> {
   @override
   WalletHeaderData read(BinaryReader reader) {
     final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read()};
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
     return WalletHeaderData(
       hasIdentity: fields[0] as bool,
       isOwner: fields[1] as bool,
       walletName: fields[2] as String?,
       balance: fields[3] as BigInt,
-      certCount: fields[4] as CertificationData,
+      certsReceived: fields[4] as int,
+      certsSent: fields[5] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, WalletHeaderData obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.hasIdentity)
       ..writeByte(1)
@@ -36,7 +39,9 @@ class WalletHeaderDataAdapter extends TypeAdapter<WalletHeaderData> {
       ..writeByte(3)
       ..write(obj.balance)
       ..writeByte(4)
-      ..write(obj.certCount);
+      ..write(obj.certsReceived)
+      ..writeByte(5)
+      ..write(obj.certsSent);
   }
 
   @override
@@ -45,5 +50,7 @@ class WalletHeaderDataAdapter extends TypeAdapter<WalletHeaderData> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is WalletHeaderDataAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
+      other is WalletHeaderDataAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
 }

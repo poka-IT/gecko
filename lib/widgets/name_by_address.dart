@@ -1,4 +1,4 @@
-import 'package:durt2/durt2.dart' show WalletData;
+import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
@@ -22,7 +22,7 @@ class NameByAddress extends StatelessWidget {
     this.fontWeight = FontWeight.w400,
     this.fontStyle = FontStyle.normal,
   });
-  final WalletData wallet;
+  final WalletEntity wallet;
   final Color? color;
   final double size;
   final FontWeight fontWeight;

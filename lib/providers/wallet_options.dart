@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:io';
-import 'package:durt2/durt2.dart' show Durt, WalletData;
+import 'package:durt2/durt2.dart' show Durt, WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -38,14 +38,14 @@ class WalletOptionsProvider with ChangeNotifier {
   void _renameWallet(String address, String newName, {required bool isCesium}) async {
     MyWalletsProvider myWalletClass = MyWalletsProvider();
 
-    WalletData walletTarget = myWalletClass.getWalletDataByAddress(address)!;
+    WalletEntity walletTarget = myWalletClass.getWalletDataByAddress(address)!;
     walletTarget.name = newName;
-    await Durt.i.wallets.walletDataBox.put(walletTarget.address, walletTarget);
+    await Durt.i.wallets.walletBox.putAsync(walletTarget);
 
     _newWalletName.text = '';
   }
 
-  Future<int> deleteWallet(BuildContext context, WalletData wallet) async {
+  Future<int> deleteWallet(BuildContext context, WalletEntity wallet) async {
     // final datapod = Provider.of<V2sDatapodProvider>(context, listen: false);
     final answer = await showConfirmationDialog(
       context: context,
@@ -141,7 +141,7 @@ class WalletOptionsProvider with ChangeNotifier {
 
       walletData.imagePath = newPath;
 
-      await Durt.i.wallets.walletDataBox.put(address.text, walletData);
+      await Durt.i.wallets.walletBox.putAsync(walletData);
       notifyListeners();
       // datapod.setAvatar(address.text, newPath);
 

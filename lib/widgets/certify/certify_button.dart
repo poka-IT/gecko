@@ -50,7 +50,7 @@ class CertifyButton extends StatelessWidget {
                   );
 
                   if (!result) return;
-                  await Durt.i.wallets.setDefaultWallet(address);
+                  await Durt.i.wallets.setDefaultAddress(address);
 
                   if (myWalletProvider.pinCode == '') {
                     await Navigator.push(

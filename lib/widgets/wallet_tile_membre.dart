@@ -1,4 +1,4 @@
-import 'package:durt2/durt2.dart' show WalletData;
+import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
@@ -16,7 +16,7 @@ import 'package:provider/provider.dart';
 class WalletTileMembre extends StatelessWidget {
   const WalletTileMembre({super.key, required this.wallet});
 
-  final WalletData wallet;
+  final WalletEntity wallet;
 
   @override
   Widget build(BuildContext context) {

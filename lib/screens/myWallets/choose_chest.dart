@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:durt2/durt2.dart' show Durt;
+import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -44,7 +45,7 @@ class _ChooseChestState extends State<ChooseChest> {
               options: CarouselOptions(
                 height: 210,
                 onPageChanged: (index, reason) {
-                  currentChest = Durt.i.wallets.safeBox.toMap().keys.toList()[index];
+                  currentChest = Durt.i.wallets.safeBox.query().build().property(SafeEntity_.number).max();
                   setState(() {});
                 },
                 enableInfiniteScroll: false,
@@ -52,28 +53,28 @@ class _ChooseChestState extends State<ChooseChest> {
                 enlargeCenterPage: true,
                 viewportFraction: 0.5,
               ),
-              items: Durt.i.wallets.safeBox.toMap().entries.map((i) {
+              items: Durt.i.wallets.safeBox.getAll().map((safe) {
                 return Builder(
                   builder: (BuildContext context) {
                     return Column(
                       children: <Widget>[
-                        i.value.imagePath == null
-                            ? Image.asset('assets/chests/${i.value.number}.png', height: 150)
-                            : Image.file(File(i.value.imagePath!), height: 150),
+                        safe.imagePath == null
+                            ? Image.asset('assets/chests/${safe.number}.png', height: 150)
+                            : Image.file(File(safe.imagePath!), height: 150),
                         const SizedBox(height: 30),
-                        Text(i.value.name, style: const TextStyle(fontSize: 20)),
+                        Text(safe.name, style: const TextStyle(fontSize: 20)),
                       ],
                     );
                   },
                 );
               }).toList(),
             ),
-            if (Durt.i.wallets.safeBox.values.toList().length > 1)
+            if (Durt.i.wallets.safeBox.query().build().count() > 1)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: Durt.i.wallets.safeBox.values.toList().map((entry) {
+                children: Durt.i.wallets.safeBox.getAll().map((entry) {
                   return GestureDetector(
-                    onTap: () => buttonCarouselController.animateToPage(entry.key),
+                    onTap: () => buttonCarouselController.animateToPage(entry.id),
                     child: Container(
                       width: 12.0,
                       height: 12.0,
@@ -81,7 +82,7 @@ class _ChooseChestState extends State<ChooseChest> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black)
-                            .withValues(alpha: currentChest == entry.key ? 0.9 : 0.4),
+                            .withValues(alpha: currentChest == entry.id ? 0.9 : 0.4),
                       ),
                     ),
                   );
@@ -97,7 +98,7 @@ class _ChooseChestState extends State<ChooseChest> {
                   backgroundColor: context.colorScheme.primary,
                 ),
                 onPressed: () async {
-                  await Durt.i.wallets.setDefaultSafeBoxNumber(currentChest);
+                  Durt.i.wallets.setDefaultSafeBoxNumber(currentChest);
                   myWalletProvider.pinCode = '';
                   if (!await myWalletProvider.askPinCode()) return;
 

@@ -1,4 +1,5 @@
-import 'package:durt2/durt2.dart' show Durt, IdtyStatus, WalletData;
+import 'package:durt2/durt2.dart' show Durt, IdtyStatus, WalletEntity;
+import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
@@ -14,7 +15,9 @@ class IdentityStatus extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final walletData = Durt.i.wallets.walletDataBox.get(address) ?? WalletData(address: address);
+    final walletData =
+        Durt.i.wallets.walletBox.query(WalletEntity_.address.equals(address)).build().findFirst() ??
+        WalletEntity(address: address);
     final finalColor = color ?? context.colorScheme.onSecondaryContainer;
 
     return FutureBuilder<IdtyStatus>(

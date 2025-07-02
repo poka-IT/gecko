@@ -6,9 +6,9 @@ import 'package:url_launcher/url_launcher.dart';
 class TextMarkDown extends StatelessWidget {
   const TextMarkDown(
     this.data, {
+    required this.style,
+    required this.textAlign,
     super.key,
-    this.style,
-    this.textAlign,
     this.markdownStyle,
     this.selectable = false,
     this.styleSheetTheme,
@@ -33,9 +33,9 @@ class TextMarkDown extends StatelessWidget {
   });
 
   final String data;
-  final TextStyle? style;
+  final TextStyle style;
   final MarkdownStyleSheet? markdownStyle;
-  final WrapAlignment? textAlign;
+  final WrapAlignment textAlign;
   final bool selectable;
   final MarkdownStyleSheetBaseTheme? styleSheetTheme;
   final SyntaxHighlighter? syntaxHighlighter;
@@ -64,10 +64,10 @@ class TextMarkDown extends StatelessWidget {
         MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
           p: style,
           textAlign: textAlign,
-          a: style?.copyWith(fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
-          em: style?.copyWith(
-            fontStyle: canUnderline ? style!.fontStyle : FontStyle.italic,
-            decoration: canUnderline ? TextDecoration.underline : style!.decoration,
+          a: style.copyWith(fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+          em: style.copyWith(
+            fontStyle: canUnderline ? style.fontStyle : FontStyle.italic,
+            decoration: canUnderline ? TextDecoration.underline : style.decoration,
           ),
         );
     return MarkdownBody(

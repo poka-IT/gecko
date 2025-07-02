@@ -77,12 +77,12 @@ class GeckoBottomAppBar extends StatelessWidget {
   }
 
   Widget _buildNavItem({
-    Key? key,
+    required Key key,
+    required bool isSelected,
+    required VoidCallback? onTap,
     IconData? icon,
     String? imagePath,
-    required bool isSelected,
     bool isDisabled = false,
-    required VoidCallback? onTap,
   }) {
     final color = isSelected
         ? homeContext.colorScheme.onSurface.withValues(alpha: 0.8)

@@ -9,16 +9,15 @@ import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 
 class IdentityStatus extends StatelessWidget {
-  const IdentityStatus({super.key, required this.address, this.color});
+  const IdentityStatus({super.key, required this.address, required this.color});
   final String address;
-  final Color? color;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     final walletData =
         Durt.i.wallets.walletBox.query(WalletEntity_.address.equals(address)).build().findFirst() ??
         WalletEntity(address: address);
-    final finalColor = color ?? context.colorScheme.onSecondaryContainer;
 
     return FutureBuilder<IdtyStatus>(
       future: Durt.i.storage.getIdtyStatus(address),
@@ -35,7 +34,7 @@ class IdentityStatus extends StatelessWidget {
             ? NameByAddress(
                 wallet: walletData,
                 size: 18,
-                color: finalColor,
+                color: color,
                 fontWeight: FontWeight.w500,
                 fontStyle: FontStyle.normal,
               )
@@ -69,18 +68,13 @@ class IdentityStatus extends StatelessWidget {
   }
 
   AnimatedFadeOutIn showText(BuildContext context, String text, {double size = 18, bool bold = false}) {
-    final finalColor = color ?? context.colorScheme.onSecondaryContainer;
     return AnimatedFadeOutIn<String>(
       data: text,
       duration: const Duration(milliseconds: 150),
       builder: (value) => Text(
         value,
         textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: size,
-          color: bold ? finalColor : finalColor,
-          fontWeight: bold ? FontWeight.w500 : FontWeight.w400,
-        ),
+        style: TextStyle(fontSize: size, color: color, fontWeight: bold ? FontWeight.w500 : FontWeight.w400),
       ),
     );
   }

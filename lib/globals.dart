@@ -24,13 +24,6 @@ late Directory avatarsDirectory;
 late Directory avatarsCacheDirectory;
 late bool isTall;
 
-const cesiumPod = "https://g1.data.le-sou.org";
-// String cesiumPod = "https://g1.data.presles.fr";
-// String cesiumPod = "https://g1.data.e-is.pro";
-
-const datapodEndpoint = 'gdev-datapod.p2p.legal';
-// const datapodEndpoint = '10.0.2.2:8080';
-
 // Contexts
 late BuildContext homeContext;
 
@@ -55,8 +48,6 @@ String indexerEndpoint = '';
 // Indexer
 DateTime startBlockchainTime = DateTime(0, 0, 0, 0, 0);
 bool startBlockchainInitialized = false;
-
-int currentUdIndex = 0;
 
 final Map<int, String> monthsInYear = {
   1: "month1".tr(),

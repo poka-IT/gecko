@@ -17,7 +17,7 @@ import 'package:pdf/widgets.dart' as pw;
 class ShowSeed extends StatelessWidget {
   const ShowSeed({Key? keyMyWallets, required this.walletName, required this.walletProvider})
     : super(key: keyMyWallets);
-  final String? walletName;
+  final String walletName;
   final MyWalletsProvider walletProvider;
 
   @override

@@ -192,7 +192,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
     required String icon,
     required String label,
     required VoidCallback onTap,
-    Key? key,
+    required Key key,
   }) {
     return Column(
       mainAxisSize: MainAxisSize.min,

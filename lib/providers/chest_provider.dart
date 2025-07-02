@@ -43,11 +43,11 @@ class ChestProvider with ChangeNotifier {
     return safe.wallets.map((wallet) => wallet.address).toList();
   }
 
-  Future<bool?> _confirmDeletingChest(BuildContext context, String? walletName) async {
+  Future<bool?> _confirmDeletingChest(BuildContext context, String walletName) async {
     return showConfirmationDialog(
       context: context,
       type: ConfirmationDialogType.warning,
-      message: 'areYouSureToForgetSafe'.tr(args: [walletName!]),
+      message: 'areYouSureToForgetSafe'.tr(args: [walletName]),
     );
   }
 }

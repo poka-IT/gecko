@@ -15,7 +15,7 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 class ChangePinScreen extends StatefulWidget {
   const ChangePinScreen({super.key, required this.walletName, required this.walletProvider});
 
-  final String? walletName;
+  final String walletName;
   final MyWalletsProvider walletProvider;
 
   @override
@@ -40,7 +40,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
-      appBar: GeckoAppBar(widget.walletName!),
+      appBar: GeckoAppBar(widget.walletName),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(

@@ -130,10 +130,10 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
                         ),
                       ],
                     ),
-                    if (widget.transactionData.comment != null && widget.transactionData.comment!.isNotEmpty) ...[
+                    if (widget.transactionData.comment.isNotEmpty) ...[
                       ScaledSizedBox(height: 4),
                       Text(
-                        widget.transactionData.comment!,
+                        widget.transactionData.comment,
                         style: scaledTextStyle(fontSize: 12, color: Colors.grey[600], fontStyle: FontStyle.italic),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,

@@ -18,7 +18,7 @@ class ConfirmChangePinScreen extends StatefulWidget {
     required this.newPinCode,
   });
 
-  final String? walletName;
+  final String walletName;
   final MyWalletsProvider walletProvider;
   final String newPinCode;
 
@@ -45,7 +45,7 @@ class _ConfirmChangePinScreenState extends State<ConfirmChangePinScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
-      appBar: GeckoAppBar(widget.walletName!),
+      appBar: GeckoAppBar(widget.walletName),
       body: SafeArea(
         child: Column(
           children: <Widget>[

@@ -1,13 +1,15 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' hide Provider;
+import 'package:durt2/durt2.dart' show SafeEntity;
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/buttons/add_new_derivation_button.dart';
@@ -17,20 +19,20 @@ import 'package:gecko/widgets/drag_tule_action.dart';
 import 'package:gecko/widgets/drag_wallets_info.dart';
 import 'package:gecko/widgets/wallet_tile.dart';
 import 'package:gecko/widgets/wallet_tile_membre.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
-class WalletsHome extends StatefulWidget {
+class WalletsHome extends ConsumerStatefulWidget {
   const WalletsHome({super.key});
 
   @override
-  State<WalletsHome> createState() => _WalletsHomeState();
+  ConsumerState<WalletsHome> createState() => _WalletsHomeState();
 }
 
-class _WalletsHomeState extends State<WalletsHome> with SingleTickerProviderStateMixin {
+class _WalletsHomeState extends ConsumerState<WalletsHome> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     return Scaffold(
       body: myWalletProvider.listWallets.length == 1
@@ -40,13 +42,13 @@ class _WalletsHomeState extends State<WalletsHome> with SingleTickerProviderStat
   }
 }
 
-class _WalletsHomeContent extends StatelessWidget {
+class _WalletsHomeContent extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     final currentChestNumber = myWalletProvider.getCurrentSafe;
 
-    final SafeEntity currentChest = Durt.i.wallets.safeBox.getNumber(currentChestNumber);
+    final SafeEntity currentChest = ref.read(walletServiceProvider).getSafeBox(currentChestNumber);
 
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
@@ -64,19 +66,19 @@ class _WalletsHomeContent extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: Consumer<MyWalletsProvider>(
+      bottomNavigationBar: old_provider.Consumer<MyWalletsProvider>(
         builder: (context, _, _) {
           return myWalletProvider.lastFlyBy == null
               ? const GeckoBottomAppBar(actualRoute: 'safeHome')
               : DragWalletsInfo(lastFlyBy: myWalletProvider.lastFlyBy!, dragAddress: myWalletProvider.dragAddress!);
         },
       ),
-      body: SafeArea(child: Stack(children: [myWalletsTiles(context, currentChestNumber), const OfflineInfo()])),
+      body: SafeArea(child: Stack(children: [myWalletsTiles(context, ref, currentChestNumber), const OfflineInfo()])),
     );
   }
 
-  Widget myWalletsTiles(BuildContext context, int currentChestNumber) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
+  Widget myWalletsTiles(BuildContext context, WidgetRef ref, int currentChestNumber) {
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
     final isWalletsExists = myWalletProvider.isWalletsExists;
 
     if (!isWalletsExists) {
@@ -165,7 +167,7 @@ class _WalletsHomeContent extends StatelessWidget {
                   wallet: repository,
                   child: WalletTile(repository: repository),
                 ),
-              Durt.i.isConnected && myWalletProvider.listWallets.length < maxWalletsInSafe
+              ref.read(durtProvider).isConnected && myWalletProvider.listWallets.length < maxWalletsInSafe
                   ? const AddNewDerivationButton()
                   : const Text(''),
             ],

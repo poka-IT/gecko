@@ -1,13 +1,15 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:io';
-import 'package:durt2/durt2.dart' show Durt, WalletEntity;
+import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 // import 'package:gecko/providers/v2s_datapod.dart';
@@ -15,11 +17,23 @@ import 'package:gecko/utils.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:uuid/uuid.dart';
 
 class WalletOptionsProvider with ChangeNotifier {
+  late ProviderContainer _container;
+
+  WalletOptionsProvider() {
+    _container = ProviderContainer();
+  }
+
+  @override
+  void dispose() {
+    _container.dispose();
+    super.dispose();
+  }
+
   final address = TextEditingController();
   final _newWalletName = TextEditingController();
   bool isWalletUnlock = false;
@@ -40,7 +54,7 @@ class WalletOptionsProvider with ChangeNotifier {
 
     WalletEntity walletTarget = myWalletClass.getWalletDataByAddress(address)!;
     walletTarget.name = newName;
-    await Durt.i.wallets.walletBox.putAsync(walletTarget);
+    await _container.read(walletServiceProvider).walletBox.putAsync(walletTarget);
 
     _newWalletName.text = '';
   }
@@ -56,20 +70,21 @@ class WalletOptionsProvider with ChangeNotifier {
     if (answer) {
       //Check if balance is null
       if (balanceCache[wallet.address] != BigInt.zero) {
-        final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+        final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
         final defaultWallet = myWalletProvider.getDefaultWallet();
-        final keypair = await Durt.i.wallets.getKeyPairFromAddress(
-          address: wallet.address,
-          pinCode: myWalletProvider.pinCode,
-        );
+        final keypair = await _container
+            .read(walletServiceProvider)
+            .getKeyPairFromAddress(address: wallet.address, pinCode: myWalletProvider.pinCode);
         final isUdUnit = configBox.get('isUdUnit') ?? false;
-        Durt.i.duniter.pay(
-          keypair: keypair,
-          destAddress: defaultWallet.address,
-          amount: -1,
-          comment: 'ĞECKO:DELETEWALLET',
-          isUd: isUdUnit,
-        );
+        _container
+            .read(duniterServiceProvider)
+            .pay(
+              keypair: keypair,
+              destAddress: defaultWallet.address,
+              amount: -1,
+              comment: 'ĞECKO:DELETEWALLET',
+              isUd: isUdUnit,
+            );
       }
 
       if (wallet.imagePath != null) {
@@ -80,7 +95,7 @@ class WalletOptionsProvider with ChangeNotifier {
       }
 
       // datapod.deleteProfile(address: wallet.address);
-      await Durt.i.wallets.deleteWallet(wallet.address);
+      await _container.read(walletServiceProvider).deleteWallet(wallet.address);
 
       Navigator.pop(context);
     }
@@ -141,7 +156,7 @@ class WalletOptionsProvider with ChangeNotifier {
 
       walletData.imagePath = newPath;
 
-      await Durt.i.wallets.walletBox.putAsync(walletData);
+      await _container.read(walletServiceProvider).walletBox.putAsync(walletData);
       notifyListeners();
       // datapod.setAvatar(address.text, newPath);
 
@@ -154,8 +169,8 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Future<String?> confirmIdentityPopup(BuildContext context) async {
     final idtyName = TextEditingController();
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
 
     bool canValidate = false;
     bool idtyExist = false;
@@ -198,7 +213,7 @@ class WalletOptionsProvider with ChangeNotifier {
                   style: const TextStyle(fontSize: 16),
                 ),
                 const SizedBox(height: 10),
-                Consumer<WalletOptionsProvider>(
+                old_provider.Consumer<WalletOptionsProvider>(
                   builder: (context, wOptions, _) {
                     return Text(
                       idtyExist ? "thisIdentityAlreadyExist".tr() : '',
@@ -213,7 +228,7 @@ class WalletOptionsProvider with ChangeNotifier {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Consumer<WalletOptionsProvider>(
+                old_provider.Consumer<WalletOptionsProvider>(
                   builder: (context, wOptions, _) {
                     return TextButton(
                       key: keyConfirm,
@@ -228,15 +243,13 @@ class WalletOptionsProvider with ChangeNotifier {
                               if (!await myWalletProvider.askPinCode()) return;
 
                               final wallet = myWalletProvider.getWalletDataByAddress(address.text);
-                              await Durt.i.wallets.setDefaultAddress(wallet!.address);
-                              final keypair = await Durt.i.wallets.getKeyPairFromAddress(
-                                address: wallet.address,
-                                pinCode: myWalletProvider.pinCode,
-                              );
-                              final transactionStatus = Durt.i.duniter.confirmIdentity(
-                                keypair: keypair,
-                                name: idtyName.text,
-                              );
+                              await _container.read(walletServiceProvider).setDefaultAddress(wallet!.address);
+                              final keypair = await _container
+                                  .read(walletServiceProvider)
+                                  .getKeyPairFromAddress(address: wallet.address, pinCode: myWalletProvider.pinCode);
+                              final transactionStatus = _container
+                                  .read(duniterServiceProvider)
+                                  .confirmIdentity(keypair: keypair, name: idtyName.text);
                               Navigator.pop(context);
 
                               Navigator.push(
@@ -303,7 +316,7 @@ class WalletOptionsProvider with ChangeNotifier {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Consumer<WalletOptionsProvider>(
+                old_provider.Consumer<WalletOptionsProvider>(
                   builder: (context, wOptions, _) {
                     return TextButton(
                       key: keyInfoPopup,
@@ -351,7 +364,7 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   bool canValidateName(BuildContext context, final walletName) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     bool isNameValid = walletName.text.length >= 2 && !walletName.text.contains(':') && walletName.text.length <= 39;
 

@@ -1,19 +1,21 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:durt2/durt2.dart' hide Provider;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_indexer.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/models/transaction.dart';
 import 'package:gecko/services/network_config.service.dart';
 
 class DuniterIndexer with ChangeNotifier {
+  late ProviderContainer _container;
   Map<String, String?> walletNameIndexer = {};
   String? fetchMoreCursor;
   Map? pageInfo;
@@ -22,6 +24,16 @@ class DuniterIndexer with ChangeNotifier {
   bool isLoadingIndexer = false;
   Future<QueryResult<Object?>?> Function()? refetch;
   late GraphQLClient indexerClient;
+
+  DuniterIndexer() {
+    _container = ProviderContainer();
+  }
+
+  @override
+  void dispose() {
+    _container.dispose();
+    super.dispose();
+  }
 
   void reload() {
     notifyListeners();
@@ -134,7 +146,7 @@ class DuniterIndexer with ChangeNotifier {
   }
 
   Future<String> getValidIndexerEndpoint() async {
-    final homeProvider = Provider.of<HomeProvider>(homeContext, listen: false);
+    final homeProvider = old_provider.Provider.of<HomeProvider>(homeContext, listen: false);
 
     // Récupérer la liste des endpoints bootstrap
     listIndexerEndpoints = await _getBootstrapIndexerEndpoints();
@@ -223,7 +235,7 @@ class DuniterIndexer with ChangeNotifier {
   }
 
   void succesConnection(String endpoint) {
-    final homeProvider = Provider.of<HomeProvider>(homeContext, listen: false);
+    final homeProvider = old_provider.Provider.of<HomeProvider>(homeContext, listen: false);
 
     final wsLinkIndexer = WebSocketLink('wss://$endpoint/v1beta1/relay');
 
@@ -238,8 +250,10 @@ class DuniterIndexer with ChangeNotifier {
 
   Future<bool> isIndexerSynced(String endpoint) async {
     try {
-      var duniterFinilizedHash = await Durt.i.storage.getLastFinalizedHash();
-      final duniterFinilizedNumber = await Durt.i.storage.getBlockNumberByHash(duniterFinilizedHash);
+      var duniterFinilizedHash = await _container.read(storageServiceProvider).getLastFinalizedHash();
+      final duniterFinilizedNumber = await _container
+          .read(storageServiceProvider)
+          .getBlockNumberByHash(duniterFinilizedHash);
       duniterFinilizedHash = "\\x${duniterFinilizedHash.substring(2)}";
 
       final indexerLink = HttpLink(endpoint);

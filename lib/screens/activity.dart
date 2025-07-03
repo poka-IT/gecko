@@ -1,47 +1,49 @@
 // ignore_for_file: must_be_immutable
 
-import 'package:durt2/durt2.dart' show IdtyStatus, Durt;
+import 'package:durt2/durt2.dart' show IdtyStatus;
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/history_query.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 import 'package:gecko/models/wallet_header_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/transaction_in_progress_data.dart';
 
-class ActivityScreen extends StatefulWidget {
+class ActivityScreen extends ConsumerStatefulWidget {
   const ActivityScreen({required this.address, this.username, this.transactionData}) : super(key: keyActivityScreen);
   final String address;
   final String? username;
   final TransactionInProgressData? transactionData;
   @override
-  State<ActivityScreen> createState() => _ActivityScreenState();
+  ConsumerState<ActivityScreen> createState() => _ActivityScreenState();
 }
 
-class _ActivityScreenState extends State<ActivityScreen> {
+class _ActivityScreenState extends ConsumerState<ActivityScreen> {
   late Future<WalletHeaderData> _headerDataFuture;
 
   @override
   void initState() {
     super.initState();
-    Durt.i.storage.getOldOwnerKey(widget.address);
+    ref.read(storageServiceProvider).getOldOwnerKey(widget.address);
     _headerDataFuture = _loadWalletData();
   }
 
   Future<WalletHeaderData> _loadWalletData() async {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     final (idtyStatusValue, balanceResult, certData) = await (
-      Durt.i.storage.getIdtyStatus(widget.address),
-      Durt.i.storage.getBalance(widget.address),
-      Durt.i.storage.getCertsCounter(widget.address),
+      ref.read(storageServiceProvider).getIdtyStatus(widget.address),
+      ref.read(storageServiceProvider).getBalance(widget.address),
+      ref.read(storageServiceProvider).getCertsCounter(widget.address),
     ).wait;
 
     final data = WalletHeaderData(
@@ -58,7 +60,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: true);
+    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: true);
 
     return FutureBuilder<WalletHeaderData>(
       future: _headerDataFuture,

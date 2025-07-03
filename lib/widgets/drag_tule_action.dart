@@ -1,23 +1,25 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show Durt, WalletEntity;
+import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/widgets/payment_popup.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/providers.dart';
 
-class DragTuleAction extends StatelessWidget {
+class DragTuleAction extends ConsumerWidget {
   const DragTuleAction({super.key, required this.wallet, required this.child});
 
   final WalletEntity wallet;
   final Widget child;
 
   @override
-  Widget build(BuildContext context) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
     return LongPressDraggable<String>(
       delay: const Duration(milliseconds: 200),
       data: wallet.address,
@@ -43,8 +45,14 @@ class DragTuleAction extends StatelessWidget {
       child: DragTarget<String>(
         onAcceptWithDetails: (senderAddress) async {
           final walletData = myWalletProvider.getWalletDataByAddress(senderAddress.data);
-          await Durt.i.wallets.setDefaultAddress(walletData!.address);
-          paymentPopup(context, wallet.address, g1WalletsBox.get(wallet.address)!.username ?? wallet.name!);
+          if (walletData != null) {
+            await ref.read(walletServiceProvider).setDefaultAddress(walletData.address);
+          }
+          paymentPopup(
+            ref: ref,
+            toAddress: wallet.address,
+            username: g1WalletsBox.get(wallet.address)!.username ?? wallet.name!,
+          );
         },
         onMove: (details) {
           if (wallet.address != myWalletProvider.lastFlyBy?.address) {

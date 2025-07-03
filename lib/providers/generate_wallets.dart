@@ -1,19 +1,31 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:durt/durt.dart' as durt;
-import 'package:durt2/durt2.dart' show Durt, Language, WalletBalance, WalletEntity;
+import 'package:durt2/durt2.dart' show Language, WalletBalance, WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/bip39_words.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/widgets/scan_derivations_info.dart';
 import 'package:gecko/widgets/commons/common_elements.dart';
 import "package:unorm_dart/unorm_dart.dart" as unorm;
 
 class GenerateWalletsProvider with ChangeNotifier {
-  GenerateWalletsProvider();
+  late ProviderContainer _container;
+
+  GenerateWalletsProvider() {
+    _container = ProviderContainer();
+  }
+
+  @override
+  void dispose() {
+    _container.dispose();
+    super.dispose();
+  }
 
   final walletNameFocus = FocusNode();
   Color? askedWordColor = Colors.black;
@@ -158,7 +170,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       _ => Language.english,
     };
 
-    final generatedMnemonicTyped = Durt.i.wallets.generateMnemonic(language: language);
+    final generatedMnemonicTyped = _container.read(walletServiceProvider).generateMnemonic(language: language);
 
     generatedMnemonic = generatedMnemonicTyped.sentence;
     return generatedMnemonicTyped.words;
@@ -273,16 +285,16 @@ class GenerateWalletsProvider with ChangeNotifier {
         const Duration(seconds: 120),
         onTimeout: () async {
           // Remove the current chest
-          final actualSafeNumber = Durt.i.wallets.defaultSafeBoxNumber;
-          await Durt.i.wallets.deleteSafe(actualSafeNumber);
+          final actualSafeNumber = _container.read(walletServiceProvider).defaultSafeBoxNumber;
+          await _container.read(walletServiceProvider).deleteSafe(actualSafeNumber);
 
           // Display error message to user
           // ignore: use_build_context_synchronously
           await infoPopup(context, "timeoutScanDerivations".tr());
 
           // Remove all wallets
-          await Durt.i.wallets.walletBox.removeAllAsync();
-          await Durt.i.wallets.safeBox.removeAllAsync();
+          await _container.read(walletServiceProvider).walletBox.removeAllAsync();
+          await _container.read(walletServiceProvider).safeBox.removeAllAsync();
 
           // Pop to home
           // ignore: use_build_context_synchronously
@@ -298,8 +310,8 @@ class GenerateWalletsProvider with ChangeNotifier {
       await infoPopup(context, "errorScanDerivations".tr());
 
       // Remove all wallets
-      await Durt.i.wallets.walletBox.removeAllAsync();
-      await Durt.i.wallets.safeBox.removeAllAsync();
+      await _container.read(walletServiceProvider).walletBox.removeAllAsync();
+      await _container.read(walletServiceProvider).safeBox.removeAllAsync();
 
       // ignore: use_build_context_synchronously
       await Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
@@ -314,7 +326,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     Map<String, int> addressToScan = {};
     notifyListeners();
 
-    if (!Durt.i.isConnected) {
+    if (!_container.read(durtProvider).isConnected) {
       return ScanDerivationsResult.error;
     }
 
@@ -328,11 +340,14 @@ class GenerateWalletsProvider with ChangeNotifier {
     scanStatus = ScanDerivationsStatus.scanning;
     notifyListeners();
     for (int derivationNbr in [for (var i = 0; i < numberScan; i += 1) i]) {
-      final keypair = await Durt.i.wallets.getKeyPairFromMnemonic(generatedMnemonic!, derivation: derivationNbr);
+      final keypair = await _container
+          .read(walletServiceProvider)
+          .getKeyPairFromMnemonic(generatedMnemonic!, derivation: derivationNbr);
       addressToScan.putIfAbsent(keypair.address, () => derivationNbr);
     }
 
-    final balanceList = await Durt.i.storage
+    final balanceList = await _container
+        .read(storageServiceProvider)
         .getBalances(addressToScan.keys.toList())
         .timeout(const Duration(seconds: 20), onTimeout: () => throw TimeoutException('Timeout scanning derivations'));
 
@@ -345,7 +360,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     for (String scannedWallet in balanceList.keys) {
       isAlive = true;
       String walletName = scanedWalletNumber == 0 ? 'currentWallet'.tr() : '${'wallet'.tr()} ${scanedWalletNumber + 1}';
-      final actualSafeNumber = Durt.i.wallets.defaultSafeBoxNumber;
+      final actualSafeNumber = _container.read(walletServiceProvider).defaultSafeBoxNumber;
 
       final myWallet = WalletEntity(
         address: scannedWallet,
@@ -354,10 +369,10 @@ class GenerateWalletsProvider with ChangeNotifier {
         imagePath: 'assets/avatars/${scanedWalletNumber % 4}.png',
       );
 
-      final safe = Durt.i.wallets.getSafeBox(actualSafeNumber);
+      final safe = _container.read(walletServiceProvider).getSafeBox(actualSafeNumber);
       myWallet.safe.target = safe;
 
-      await Durt.i.wallets.walletBox.putAsync(myWallet);
+      await _container.read(walletServiceProvider).walletBox.putAsync(myWallet);
       scanedWalletNumber++;
       notifyListeners();
     }
@@ -371,21 +386,22 @@ class GenerateWalletsProvider with ChangeNotifier {
   Future<bool> scanRootBalance(String pinCode) async {
     if (generatedMnemonic == null) return false;
 
-    final keypair = await Durt.i.wallets.getKeyPairFromMnemonic(generatedMnemonic!);
+    final keypair = await _container.read(walletServiceProvider).getKeyPairFromMnemonic(generatedMnemonic!);
 
-    final address = Durt.i.wallets.getAddress(keypair.address);
+    final address = _container.read(walletServiceProvider).getAddress(keypair.address);
 
     // if (addressData.address == null) return false;
-    final balance = await Durt.i.storage
+    final balance = await _container
+        .read(storageServiceProvider)
         .getBalance(address)
         .timeout(const Duration(seconds: 1), onTimeout: () => WalletBalance.empty());
 
     if (balance.free != BigInt.zero) {
       String walletName = 'myRootWallet'.tr();
 
-      // await Durt.i.wallets.importRootWallet(pinCode: pinCode);
+      // await _container.read(walletServiceProvider).importRootWallet(pinCode: pinCode);
 
-      final actualSafeNumber = Durt.i.wallets.defaultSafeBoxNumber;
+      final actualSafeNumber = _container.read(walletServiceProvider).defaultSafeBoxNumber;
 
       WalletEntity myWallet = WalletEntity(
         address: address,
@@ -394,10 +410,10 @@ class GenerateWalletsProvider with ChangeNotifier {
         imagePath: 'assets/avatars/0.png',
       );
 
-      final safe = Durt.i.wallets.getSafeBox(actualSafeNumber);
+      final safe = _container.read(walletServiceProvider).getSafeBox(actualSafeNumber);
       myWallet.safe.target = safe;
 
-      await Durt.i.wallets.walletBox.putAsync(myWallet);
+      await _container.read(walletServiceProvider).walletBox.putAsync(myWallet);
       scanedWalletNumber++;
       return true;
     } else {

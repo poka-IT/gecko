@@ -1,16 +1,17 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
-class ConfirmChangePinScreen extends StatefulWidget {
+class ConfirmChangePinScreen extends ConsumerStatefulWidget {
   const ConfirmChangePinScreen({
     super.key,
     required this.walletName,
@@ -23,10 +24,10 @@ class ConfirmChangePinScreen extends StatefulWidget {
   final String newPinCode;
 
   @override
-  State<ConfirmChangePinScreen> createState() => _ConfirmChangePinScreenState();
+  ConsumerState<ConfirmChangePinScreen> createState() => _ConfirmChangePinScreenState();
 }
 
-class _ConfirmChangePinScreenState extends State<ConfirmChangePinScreen> {
+class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen> {
   final formKey = GlobalKey<FormState>();
   late final FocusNode pinFocus;
   late final TextEditingController enterPin;
@@ -113,11 +114,9 @@ class _ConfirmChangePinScreenState extends State<ConfirmChangePinScreen> {
 
               final defaultWallet = widget.walletProvider.getDefaultWallet();
 
-              await Durt.i.wallets.changePin(
-                address: defaultWallet.address,
-                oldPin: widget.walletProvider.pinCode,
-                newPin: pin,
-              );
+              await ref
+                  .read(walletServiceProvider)
+                  .changePin(address: defaultWallet.address, oldPin: widget.walletProvider.pinCode, newPin: pin);
 
               // Mettre à jour le PIN dans le provider
               widget.walletProvider.pinCode = pin;

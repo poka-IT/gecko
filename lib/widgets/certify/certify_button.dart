@@ -1,6 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/exceptions.dart';
@@ -15,16 +14,18 @@ import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/screens/wallet_view.dart' show buttonSize, buttonFontSize;
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/providers.dart';
 
-class CertifyButton extends StatelessWidget {
+class CertifyButton extends ConsumerWidget {
   const CertifyButton(this.address, {super.key});
   final String address;
 
   @override
-  Widget build(BuildContext context) {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     return Column(
       children: <Widget>[
@@ -50,7 +51,7 @@ class CertifyButton extends StatelessWidget {
                   );
 
                   if (!result) return;
-                  await Durt.i.wallets.setDefaultAddress(address);
+                  await ref.read(walletServiceProvider).setDefaultAddress(address);
 
                   if (myWalletProvider.pinCode == '') {
                     await Navigator.push(
@@ -65,25 +66,23 @@ class CertifyButton extends StatelessWidget {
                   if (myWalletProvider.pinCode == '') {
                     return;
                   }
-                  WalletsProfilesProvider walletViewProvider = Provider.of<WalletsProfilesProvider>(
+                  WalletsProfilesProvider walletViewProvider = old_provider.Provider.of<WalletsProfilesProvider>(
                     context,
                     listen: false,
                   );
-                  final identityWallet = Durt.i.wallets.identityWallet;
+                  final identityWallet = ref.read(walletServiceProvider).identityWallet;
 
                   if (identityWallet == null) {
                     throw Exception('Identity wallet not found');
                   }
 
                   try {
-                    final keypair = await Durt.i.wallets.getKeyPairFromAddress(
-                      address: identityWallet.address,
-                      pinCode: myWalletProvider.pinCode,
-                    );
-                    final transactionStatus = Durt.i.duniter.certify(
-                      keypair: keypair,
-                      destAddress: walletViewProvider.address,
-                    );
+                    final keypair = await ref
+                        .read(walletServiceProvider)
+                        .getKeyPairFromAddress(address: identityWallet.address, pinCode: myWalletProvider.pinCode);
+                    final transactionStatus = ref
+                        .read(duniterServiceProvider)
+                        .certify(keypair: keypair, destAddress: walletViewProvider.address);
                     Navigator.push(
                       context,
                       MaterialPageRoute(

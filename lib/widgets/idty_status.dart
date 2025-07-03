@@ -1,4 +1,4 @@
-import 'package:durt2/durt2.dart' show Durt, IdtyStatus, WalletEntity;
+import 'package:durt2/durt2.dart' show IdtyStatus, WalletEntity;
 import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -7,20 +7,25 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/widgets/name_by_address.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/providers.dart';
 
-class IdentityStatus extends StatelessWidget {
+class IdentityStatus extends ConsumerWidget {
   const IdentityStatus({super.key, required this.address, required this.color});
   final String address;
   final Color color;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final walletService = ref.watch(walletServiceProvider);
+    final storageService = ref.watch(storageServiceProvider);
+
     final walletData =
-        Durt.i.wallets.walletBox.query(WalletEntity_.address.equals(address)).build().findFirst() ??
+        walletService.walletBox.query(WalletEntity_.address.equals(address)).build().findFirst() ??
         WalletEntity(address: address);
 
     return FutureBuilder<IdtyStatus>(
-      future: Durt.i.storage.getIdtyStatus(address),
+      future: storageService.getIdtyStatus(address),
       initialData: walletData.identityStatus,
       builder: (context, AsyncSnapshot<IdtyStatus> snapshot) {
         if (snapshot.data != null && !snapshot.hasError) {

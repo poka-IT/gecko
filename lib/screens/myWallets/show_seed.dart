@@ -1,28 +1,30 @@
-import 'package:durt2/durt2.dart' show WalletEntity, Durt;
+import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'package:pdf/widgets.dart' as pw;
 
-class ShowSeed extends StatelessWidget {
+class ShowSeed extends ConsumerWidget {
   const ShowSeed({Key? keyMyWallets, required this.walletName, required this.walletProvider})
     : super(key: keyMyWallets);
   final String walletName;
   final MyWalletsProvider walletProvider;
 
   @override
-  Widget build(BuildContext context) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     WalletEntity defaultWallet = myWalletProvider.getDefaultWallet();
 
@@ -36,7 +38,9 @@ class ShowSeed extends StatelessWidget {
             child: Column(
               children: <Widget>[
                 FutureBuilder(
-                  future: Durt.i.wallets.getSeed(address: defaultWallet.address, pin: walletProvider.pinCode),
+                  future: ref
+                      .read(walletServiceProvider)
+                      .getSeed(address: defaultWallet.address, pin: walletProvider.pinCode),
                   builder: (BuildContext context, AsyncSnapshot<String?> seed) {
                     if (seed.connectionState != ConnectionState.done || seed.hasError) {
                       return ScaledSizedBox(

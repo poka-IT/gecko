@@ -1,20 +1,31 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:io';
-import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
 
 class WalletsProfilesProvider with ChangeNotifier {
-  WalletsProfilesProvider(this.address);
+  late ProviderContainer _container;
+
+  WalletsProfilesProvider(this.address) {
+    _container = ProviderContainer();
+  }
+
+  @override
+  void dispose() {
+    _container.dispose();
+    super.dispose();
+  }
 
   String address = '';
   String pubkeyShort = '';
@@ -68,7 +79,7 @@ class WalletsProfilesProvider with ChangeNotifier {
 
     if (isAddressOrPubkey(barcodeContent)) {
       if (!(isAddress(barcodeContent))) {
-        address = Durt.i.utils.pubkeyV1ToAddress(barcodeContent);
+        address = _container.read(utilsProvider).pubkeyV1ToAddress(barcodeContent);
       } else {
         address = barcodeContent;
       }
@@ -127,7 +138,14 @@ class WalletsProfilesProvider with ChangeNotifier {
 
 bool isAddressOrPubkey(String address) => isAddress(address) || isPubkey(address);
 
-bool isAddress(String address) => Durt.i.utils.isAddressValid(address);
+bool isAddress(String address) {
+  final container = ProviderContainer();
+  try {
+    return container.read(utilsProvider).isAddressValid(address);
+  } finally {
+    container.dispose();
+  }
+}
 
 bool isPubkey(String pubkey) {
   pubkey = pubkey.split(':')[0];

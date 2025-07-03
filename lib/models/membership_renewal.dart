@@ -1,14 +1,16 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show IdtyStatus, Durt, MembershipStatus;
+import 'package:durt2/durt2.dart' show IdtyStatus, MembershipStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
 class MembershipRenewal {
   static RenewalInfo calculateRenewalInfo(MembershipStatus status) {
@@ -33,7 +35,7 @@ class MembershipRenewal {
     );
   }
 
-  static Future<void> executeRenewal(BuildContext context, String address) async {
+  static Future<void> executeRenewal(BuildContext context, WidgetRef ref, String address) async {
     final answer = await showConfirmationDialog(
       context: context,
       message: 'areYouSureYouWantToRenewMembership'.tr(),
@@ -41,11 +43,13 @@ class MembershipRenewal {
     );
     if (!answer) return;
 
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     if (!await myWalletProvider.askPinCode()) return;
 
-    final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: address, pinCode: myWalletProvider.pinCode);
-    final transactionStatus = Durt.i.duniter.renewMembership(keypair);
+    final keypair = await ref
+        .read(walletServiceProvider)
+        .getKeyPairFromAddress(address: address, pinCode: myWalletProvider.pinCode);
+    final transactionStatus = ref.read(duniterServiceProvider).renewMembership(keypair);
 
     Navigator.push(
       context,

@@ -1,28 +1,30 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:durt2/durt2.dart' show Durt, SafeEntity, WalletEntity, SafeEntityExt;
+import 'package:durt2/durt2.dart' show SafeEntity, WalletEntity, SafeEntityExt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/globals.dart';
 
-class UnlockingWallet extends StatefulWidget {
+class UnlockingWallet extends ConsumerStatefulWidget {
   const UnlockingWallet({required this.wallet}) : super(key: keyUnlockWallet);
   final WalletEntity wallet;
 
   @override
-  State<UnlockingWallet> createState() => _UnlockingWalletState();
+  ConsumerState<UnlockingWallet> createState() => _UnlockingWalletState();
 }
 
-class _UnlockingWalletState extends State<UnlockingWallet> {
+class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
   late int currentSafeNumber;
   late SafeEntity currentSafe;
   bool canUnlock = true;
@@ -36,14 +38,14 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
     super.initState();
     pinFocus = FocusNode(debugLabel: 'pinFocusNode');
     enterPin = TextEditingController();
-    currentSafeNumber = Durt.i.wallets.defaultSafeBoxNumber;
-    currentSafe = Durt.i.wallets.safeBox.getNumber(currentSafeNumber);
+    currentSafeNumber = ref.read(walletServiceProvider).defaultSafeBoxNumber;
+    currentSafe = ref.read(walletServiceProvider).safeBox.getNumber(currentSafeNumber);
   }
 
   @override
   Widget build(BuildContext context) {
-    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     final pinLenght = walletOptions.getPinLenght();
 
@@ -130,7 +132,7 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
                       pinForm(context, pinLenght),
                       ScaledSizedBox(height: isTall ? 16 : 8),
                       if (canUnlock)
-                        Consumer<WalletOptionsProvider>(
+                        old_provider.Consumer<WalletOptionsProvider>(
                           builder: (context, sub, _) {
                             return InkWell(
                               key: keyCachePassword,
@@ -174,7 +176,7 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
   }
 
   Widget pinForm(BuildContext context, int pinLenght) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
 
     return Form(
       child: Padding(
@@ -224,7 +226,7 @@ class _UnlockingWalletState extends State<UnlockingWallet> {
           onCompleted: (pin) async {
             myWalletProvider.isPinLoading = true;
             myWalletProvider.pinCode = pin.toUpperCase();
-            final isValid = await Durt.i.wallets.checkCode(pin: pin.toUpperCase());
+            final isValid = await ref.read(walletServiceProvider).checkCode(pin: pin.toUpperCase());
             if (!isValid) {
               await Future.delayed(const Duration(milliseconds: 20));
               pinColor = Colors.red[600]!;

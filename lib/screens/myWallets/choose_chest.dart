@@ -2,36 +2,41 @@
 
 import 'dart:io';
 
-import 'package:durt2/durt2.dart' show Durt;
 import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:gecko/screens/onBoarding/5.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
-class ChooseChest extends StatefulWidget {
+class ChooseChest extends ConsumerStatefulWidget {
   const ChooseChest({super.key});
 
   @override
-  State<StatefulWidget> createState() {
-    return _ChooseChestState();
-  }
+  ConsumerState<ChooseChest> createState() => _ChooseChestState();
 }
 
-class _ChooseChestState extends State<ChooseChest> {
+class _ChooseChestState extends ConsumerState<ChooseChest> {
   final tplController = TextEditingController();
   final buttonCarouselController = CarouselSliderController();
-  int currentChest = Durt.i.wallets.defaultSafeBoxNumber;
+  late int currentChest;
+
+  @override
+  void initState() {
+    super.initState();
+    currentChest = ref.read(walletServiceProvider).defaultSafeBoxNumber;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
 
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
@@ -45,7 +50,13 @@ class _ChooseChestState extends State<ChooseChest> {
               options: CarouselOptions(
                 height: 210,
                 onPageChanged: (index, reason) {
-                  currentChest = Durt.i.wallets.safeBox.query().build().property(SafeEntity_.number).max();
+                  currentChest = ref
+                      .read(walletServiceProvider)
+                      .safeBox
+                      .query()
+                      .build()
+                      .property(SafeEntity_.number)
+                      .max();
                   setState(() {});
                 },
                 enableInfiniteScroll: false,
@@ -53,7 +64,7 @@ class _ChooseChestState extends State<ChooseChest> {
                 enlargeCenterPage: true,
                 viewportFraction: 0.5,
               ),
-              items: Durt.i.wallets.safeBox.getAll().map((safe) {
+              items: ref.read(walletServiceProvider).safeBox.getAll().map((safe) {
                 return Builder(
                   builder: (BuildContext context) {
                     return Column(
@@ -69,10 +80,10 @@ class _ChooseChestState extends State<ChooseChest> {
                 );
               }).toList(),
             ),
-            if (Durt.i.wallets.safeBox.query().build().count() > 1)
+            if (ref.read(walletServiceProvider).safeBox.query().build().count() > 1)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: Durt.i.wallets.safeBox.getAll().map((entry) {
+                children: ref.read(walletServiceProvider).safeBox.getAll().map((entry) {
                   return GestureDetector(
                     onTap: () => buttonCarouselController.animateToPage(entry.id),
                     child: Container(
@@ -98,7 +109,7 @@ class _ChooseChestState extends State<ChooseChest> {
                   backgroundColor: context.colorScheme.primary,
                 ),
                 onPressed: () async {
-                  Durt.i.wallets.setDefaultSafeBoxNumber(currentChest);
+                  ref.read(walletServiceProvider).setDefaultSafeBoxNumber(currentChest);
                   myWalletProvider.pinCode = '';
                   if (!await myWalletProvider.askPinCode()) return;
 

@@ -1,30 +1,31 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:bubble/bubble.dart';
-import 'package:durt2/durt2.dart' show Durt;
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/screens/onBoarding/7.dart';
 import 'package:gecko/screens/onBoarding/9.dart';
 import 'package:gecko/widgets/commons/fader_transition.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 // import 'package:gecko/models/home.dart';
 // import 'package:provider/provider.dart';
 
-class RestoreChest extends StatelessWidget {
+class RestoreChest extends ConsumerWidget {
   const RestoreChest({super.key, this.skipIntro = false});
   final bool skipIntro;
 
   @override
-  Widget build(BuildContext context) {
-    final genW = Provider.of<GenerateWalletsProvider>(context, listen: false);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final genW = old_provider.Provider.of<GenerateWalletsProvider>(context, listen: false);
 
     if (genW.isSentenceComplete(context)) {
       genW.generatedMnemonic =
@@ -105,7 +106,7 @@ class RestoreChest extends StatelessWidget {
                                     shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.2)),
                                   ),
                               onPressed: () async {
-                                if (Durt.i.wallets.isMnemonicValid(genW.generatedMnemonic!)) {
+                                if (ref.read(walletServiceProvider).isMnemonicValid(genW.generatedMnemonic!)) {
                                   genW.resetImportView();
                                   await Navigator.push(
                                     context,
@@ -206,7 +207,7 @@ class RestoreChest extends StatelessWidget {
   }
 
   Widget arrayCell(BuildContext context, TextEditingController cellCtl) {
-    final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context);
+    final generateWalletProvider = old_provider.Provider.of<GenerateWalletsProvider>(context);
 
     return Container(
       width: scaleSize(87),

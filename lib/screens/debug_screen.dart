@@ -1,18 +1,20 @@
 import 'package:durt2/durt2.dart' hide Provider;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
 import 'package:gecko/providers/block_height_provider.dart';
 
-class DebugScreen extends StatelessWidget {
+class DebugScreen extends ConsumerWidget {
   const DebugScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final screenSize = MediaQuery.of(context).size;
     final isSmallScreen = screenSize.height < 700;
 
@@ -62,7 +64,7 @@ class DebugScreen extends StatelessWidget {
                           style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
                         ),
                         ScaledSizedBox(height: 8),
-                        Consumer<BlockHeightProvider>(
+                        old_provider.Consumer<BlockHeightProvider>(
                           builder: (context, blockHeightProvider, child) {
                             return Text(
                               'blockN'.tr(args: [blockHeightProvider.blockHeight.toString()]),
@@ -115,7 +117,7 @@ class DebugScreen extends StatelessWidget {
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             ),
                             onPressed: () async {
-                              await Durt.i.duniter.spawnBlock();
+                              await ref.read(duniterServiceProvider).spawnBlock();
                             },
                             child: Text(
                               'Spawn a bloc',

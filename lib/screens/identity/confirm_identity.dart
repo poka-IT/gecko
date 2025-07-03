@@ -1,28 +1,29 @@
-import 'package:durt2/durt2.dart' hide Provider;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
-class ConfirmIdentityScreen extends StatefulWidget {
+class ConfirmIdentityScreen extends ConsumerStatefulWidget {
   const ConfirmIdentityScreen({super.key, required this.address});
   final String address;
 
   @override
-  State<ConfirmIdentityScreen> createState() => _ConfirmIdentityScreenState();
+  ConsumerState<ConfirmIdentityScreen> createState() => _ConfirmIdentityScreenState();
 }
 
-class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
+class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
   final TextEditingController _identityNameController = TextEditingController();
   bool _canValidate = false;
   String _errorMessage = '';
@@ -58,7 +59,7 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
   Future<void> _confirmIdentity(BuildContext context) async {
     final name = _identityNameController.text.trim();
     final navigatorState = Navigator.of(context);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     // Afficher le dialogue de confirmation
     final confirmed = await showConfirmationDialog(
@@ -71,11 +72,10 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
 
     if (!await myWalletProvider.askPinCode()) return;
 
-    final keypair = await Durt.i.wallets.getKeyPairFromAddress(
-      address: widget.address,
-      pinCode: myWalletProvider.pinCode,
-    );
-    final transactionStatus = Durt.i.duniter.confirmIdentity(keypair: keypair, name: name);
+    final keypair = await ref
+        .read(walletServiceProvider)
+        .getKeyPairFromAddress(address: widget.address, pinCode: myWalletProvider.pinCode);
+    final transactionStatus = ref.read(duniterServiceProvider).confirmIdentity(keypair: keypair, name: name);
 
     if (!mounted) return;
     navigatorState.pop();
@@ -94,8 +94,8 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
+    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
+    final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
     final screenSize = MediaQuery.of(context).size;
     final isSmallScreen = screenSize.height < 700;
 

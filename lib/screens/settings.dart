@@ -1,8 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show Durt, Networks, DuniterEndpoints;
+import 'package:durt2/durt2.dart' show Networks, DuniterEndpoints;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -16,7 +18,10 @@ import 'package:gecko/providers/theme_provider.dart' as theme_provider;
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
+
+// Helper pour accéder aux services Riverpod depuis ce fichier
+final _container = ProviderContainer();
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -39,7 +44,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _initControllers() {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
 
     _endpointController = TextEditingController(
       text: configBox.containsKey('customEndpoint') ? configBox.get('customEndpoint') : Networks.duniterEndpoint,
@@ -57,10 +62,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final duniterIndexer = Provider.of<DuniterIndexer>(context);
+    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context);
 
     // Mise à jour du champ node quand le nœud est connecté
-    if (Durt.i.isConnected && !configBox.containsKey('customEndpoint')) {
+    if (_container.read(durtProvider).isConnected && !configBox.containsKey('customEndpoint')) {
       final endpoint = Networks.duniterEndpoint;
       if (endpoint != _endpointController.text) {
         _endpointController.text = endpoint;
@@ -337,7 +342,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget chooseCurrencyUnit(BuildContext context) {
-    final homeProvider = Provider.of<HomeProvider>(context, listen: false);
+    final homeProvider = old_provider.Provider.of<HomeProvider>(context, listen: false);
     return InkWell(
       key: keyUdUnit,
       onTap: () async {
@@ -352,7 +357,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
           ),
           const Spacer(),
-          Consumer<HomeProvider>(
+          old_provider.Consumer<HomeProvider>(
             builder: (context, homeProvider, _) {
               final bool isUdUnit = configBox.get('isUdUnit') ?? false;
               return Switch(
@@ -377,7 +382,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String selectedEndpoint,
     TextEditingController controller,
   ) async {
-    final set = Provider.of<SettingsProvider>(context, listen: false);
+    final set = old_provider.Provider.of<SettingsProvider>(context, listen: false);
 
     String? result = await showDialog<String>(
       context: context,
@@ -434,13 +439,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
       controller.text = result;
       configBox.put('autoEndpoint', false);
       configBox.put('customEndpoint', result);
-      await Durt.i.connect(
-        customDuniterEndpoints: DuniterEndpoints(
-          endpoints: {
-            Durt.i.network: [result],
-          },
-        ),
-      );
+      await _container
+          .read(durtProvider)
+          .connect(
+            customDuniterEndpoints: DuniterEndpoints(
+              endpoints: {
+                _container.read(networkProvider): [result],
+              },
+            ),
+          );
       set.reload();
     }
   }
@@ -493,12 +500,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 ScaledSizedBox(width: 12),
                 Icon(
-                  Durt.i.isConnected && !Durt.i.isDuniterLoading ? Icons.check_circle : Icons.error,
-                  color: Durt.i.isConnected && !Durt.i.isDuniterLoading ? Colors.green : Colors.red,
+                  _container.read(durtProvider).isConnected && !_container.read(durtProvider).isDuniterLoading
+                      ? Icons.check_circle
+                      : Icons.error,
+                  color: _container.read(durtProvider).isConnected && !_container.read(durtProvider).isDuniterLoading
+                      ? Colors.green
+                      : Colors.red,
                   size: scaleSize(16),
                 ),
                 const Spacer(),
-                Consumer<SettingsProvider>(
+                old_provider.Consumer<SettingsProvider>(
                   builder: (context, set, _) {
                     return PopupMenuButton<String>(
                       key: keySelectDuniterNodeDropDown,
@@ -607,7 +618,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         } else if (value == 'Auto') {
                           configBox.delete('customEndpoint');
                           configBox.put('autoEndpoint', true);
-                          await Durt.i.connect();
+                          await _container.read(durtProvider).connect();
                           set.reload();
                         } else {
                           configBox.put('autoEndpoint', false);
@@ -626,14 +637,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ],
             ),
-            if (Durt.i.isDuniterLoading)
+            if (_container.read(durtProvider).isDuniterLoading)
               Padding(
                 padding: EdgeInsets.only(top: scaleSize(16)),
                 child: Center(child: Loading(size: scaleSize(24), stroke: 2)),
               ),
           ],
         ),
-        Consumer<SettingsProvider>(
+        old_provider.Consumer<SettingsProvider>(
           builder: (context, set, _) {
             if (configBox.get('autoEndpoint') == true) {
               return Column(
@@ -674,13 +685,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     onSubmitted: (value) async {
                       configBox.put('customEndpoint', value);
-                      await Durt.i.connect(
-                        customDuniterEndpoints: DuniterEndpoints(
-                          endpoints: {
-                            Durt.i.network: [value],
-                          },
-                        ),
-                      );
+                      await _container
+                          .read(durtProvider)
+                          .connect(
+                            customDuniterEndpoints: DuniterEndpoints(
+                              endpoints: {
+                                _container.read(networkProvider): [value],
+                              },
+                            ),
+                          );
                       set.reload();
                     },
                   ),
@@ -689,7 +702,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             );
           },
         ),
-        Consumer<BlockHeightProvider>(
+        old_provider.Consumer<BlockHeightProvider>(
           builder: (context, blockHeightProvider, _) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -713,8 +726,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String selectedEndpoint,
     TextEditingController controller,
   ) async {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final set = Provider.of<SettingsProvider>(context, listen: false);
+    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
+    final set = old_provider.Provider.of<SettingsProvider>(context, listen: false);
 
     String? result = await showDialog<String>(
       context: context,
@@ -776,7 +789,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget indexerEndpointSelection(BuildContext context) {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
 
     String? selectedIndexerEndpoint;
     if (configBox.containsKey('customIndexer')) {
@@ -796,7 +809,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Consumer<DuniterIndexer>(
+        old_provider.Consumer<DuniterIndexer>(
           builder: (context, indexer, _) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -820,7 +833,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       size: scaleSize(16),
                     ),
                     const Spacer(),
-                    Consumer<SettingsProvider>(
+                    old_provider.Consumer<SettingsProvider>(
                       builder: (context, set, _) {
                         return PopupMenuButton<String>(
                           child: Container(
@@ -952,7 +965,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             );
           },
         ),
-        Consumer<SettingsProvider>(
+        old_provider.Consumer<SettingsProvider>(
           builder: (context, set, _) {
             if (!configBox.containsKey('customIndexer')) {
               return Column(
@@ -1007,7 +1020,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget chooseThemeMode(BuildContext context) {
-    final themeProvider = Provider.of<theme_provider.ThemeProvider>(context, listen: false);
+    final themeProvider = old_provider.Provider.of<theme_provider.ThemeProvider>(context, listen: false);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1016,7 +1029,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Consumer<theme_provider.ThemeProvider>(
+            old_provider.Consumer<theme_provider.ThemeProvider>(
               builder: (context, theme, _) {
                 return SegmentedButton<theme_provider.ThemeModeSetting>(
                   segments: <ButtonSegment<theme_provider.ThemeModeSetting>>[

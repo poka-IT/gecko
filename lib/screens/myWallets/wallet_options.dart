@@ -1,14 +1,16 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
-import 'package:durt2/durt2.dart' show Durt, IdtyStatus, WalletEntity, MembershipStatus;
+import 'package:durt2/durt2.dart' show IdtyStatus, WalletEntity, MembershipStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
@@ -20,22 +22,22 @@ import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/buttons/manage_membership_button.dart';
 import 'package:gecko/models/membership_renewal.dart';
 import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/screens/identity/confirm_identity.dart';
 
-class WalletOptions extends StatelessWidget {
+class WalletOptions extends ConsumerWidget {
   const WalletOptions({Key? keyMyWallets, required this.wallet}) : super(key: keyMyWallets);
   final WalletEntity wallet;
 
   @override
-  Widget build(BuildContext context) {
-    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
-    WalletsProfilesProvider historyProvider = Provider.of<WalletsProfilesProvider>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
+    WalletsProfilesProvider historyProvider = old_provider.Provider.of<WalletsProfilesProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
 
     walletOptions.address.text = wallet.address;
 
@@ -76,18 +78,19 @@ class WalletOptions extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           // ScaledSizedBox(height: 16),
-                          Consumer<WalletOptionsProvider>(
+                          old_provider.Consumer<WalletOptionsProvider>(
                             builder: (context, walletProvider, _) {
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 spacing: 8,
                                 children: [
-                                  buildConfirmIdentitySection(walletProvider),
-                                  if (wallet.hasIdentity) buildRenewMembershipSection(walletProvider),
+                                  buildConfirmIdentitySection(context, ref, walletProvider),
+                                  if (wallet.hasIdentity) buildRenewMembershipSection(context, ref, walletProvider),
                                   buildOptionsSection(context, walletProvider, historyProvider),
                                   if (!isAlone)
                                     buildDefaultWalletSection(
                                       context,
+                                      ref,
                                       walletProvider,
                                       myWalletProvider,
                                       walletOptions,
@@ -128,9 +131,9 @@ class WalletOptions extends StatelessWidget {
                                       ),
                                     ),
                                   if (!walletProvider.isDefaultWallet && !wallet.hasIdentity)
-                                    deleteWallet(context, walletProvider, currentChest),
+                                    deleteWallet(context, ref, walletOptions, currentChest),
                                   if (wallet.hasIdentity) const ManageMembershipButton(),
-                                  if (isAlone) aloneWalletOptions(context),
+                                  if (isAlone) aloneWalletOptions(context, ref),
                                 ],
                               );
                             },
@@ -238,23 +241,23 @@ class WalletOptions extends StatelessWidget {
     );
   }
 
-  Future setDefaultWallet(BuildContext context, int currentChest) async {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
+  Future setDefaultWallet(BuildContext context, WidgetRef ref, int currentChest) async {
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
 
-    await Durt.i.wallets.setDefaultAddress(walletOptions.address.text);
+    await ref.read(walletServiceProvider).setDefaultAddress(walletOptions.address.text);
     await myWalletProvider.readAllWallets(currentChest);
     myWalletProvider.reload();
     walletOptions.reload();
   }
 
-  Widget deleteWallet(BuildContext context, WalletOptionsProvider walletOptions, int currentChest) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+  Widget deleteWallet(BuildContext context, WidgetRef ref, WalletOptionsProvider walletOptions, int currentChest) {
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     final defaultWallet = myWalletProvider.getDefaultWallet();
     final bool isDefaultWallet = walletOptions.address.text == defaultWallet.address;
     return FutureBuilder(
-      future: Durt.i.storage.hasAccountConsumers(wallet.address),
+      future: ref.read(storageServiceProvider).hasAccountConsumers(wallet.address),
       builder: (BuildContext context, AsyncSnapshot<bool> hasConsumers) {
         if (hasConsumers.connectionState != ConnectionState.done || hasConsumers.hasError || !hasConsumers.hasData) {
           return const SizedBox.shrink();
@@ -304,9 +307,9 @@ class WalletOptions extends StatelessWidget {
     );
   }
 
-  Widget buildRenewMembershipSection(WalletOptionsProvider walletProvider) {
+  Widget buildRenewMembershipSection(BuildContext context, WidgetRef ref, WalletOptionsProvider walletProvider) {
     return FutureBuilder<MembershipStatus>(
-      future: Durt.i.storage.getMembershipStatus(walletProvider.address.text),
+      future: ref.read(storageServiceProvider).getMembershipStatus(walletProvider.address.text),
       builder: (context, snapshot) {
         if (!snapshot.hasData || snapshot.hasError) {
           return const SizedBox.shrink();
@@ -335,7 +338,7 @@ class WalletOptions extends StatelessWidget {
                     elevation: 0,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
-                  onPressed: () => MembershipRenewal.executeRenewal(context, walletProvider.address.text),
+                  onPressed: () => MembershipRenewal.executeRenewal(context, ref, walletProvider.address.text),
                   child: Text('renewMembership'.tr(), style: scaledTextStyle(fontSize: 16, color: Colors.white)),
                 ),
               ),
@@ -358,18 +361,19 @@ class WalletOptions extends StatelessWidget {
 
   Widget buildDefaultWalletSection(
     BuildContext context,
+    WidgetRef ref,
     WalletOptionsProvider walletProvider,
     MyWalletsProvider myWalletProvider,
     WalletOptionsProvider walletOptions,
     int currentChest,
   ) {
-    return Consumer<MyWalletsProvider>(
+    return old_provider.Consumer<MyWalletsProvider>(
       builder: (context, myWalletProvider, _) {
         return InkWell(
           key: keySetDefaultWallet,
           onTap: !walletProvider.isDefaultWallet
               ? () async {
-                  await setDefaultWallet(context, currentChest);
+                  await setDefaultWallet(context, ref, currentChest);
                   walletProvider.isDefaultWallet = true;
                 }
               : null,
@@ -404,9 +408,9 @@ class WalletOptions extends StatelessWidget {
     );
   }
 
-  Widget buildConfirmIdentitySection(WalletOptionsProvider walletProvider) {
+  Widget buildConfirmIdentitySection(BuildContext context, WidgetRef ref, WalletOptionsProvider walletProvider) {
     return FutureBuilder<IdtyStatus>(
-      future: Durt.i.storage.getIdtyStatus(walletProvider.address.text),
+      future: ref.read(storageServiceProvider).getIdtyStatus(walletProvider.address.text),
       initialData: IdtyStatus.unknown,
       builder: (BuildContext context, AsyncSnapshot<IdtyStatus> snapshot) {
         return Visibility(
@@ -449,8 +453,8 @@ class WalletOptions extends StatelessWidget {
   }
 }
 
-Widget aloneWalletOptions(BuildContext context) {
-  final myWalletProvider = Provider.of<MyWalletsProvider>(context);
+Widget aloneWalletOptions(BuildContext context, WidgetRef ref) {
+  final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
   return Column(
     children: [
       const ChestOptionsContent(),
@@ -471,7 +475,7 @@ Widget aloneWalletOptions(BuildContext context) {
               Icon(
                 Icons.add_circle_outline,
                 size: scaleSize(24),
-                color: Durt.i.isConnected ? Color(0xFF4CAF50).withValues(alpha: 0.8) : Colors.grey[400],
+                color: ref.read(durtProvider).isConnected ? Color(0xFF4CAF50).withValues(alpha: 0.8) : Colors.grey[400],
               ),
               ScaledSizedBox(width: 16),
               Expanded(
@@ -479,7 +483,7 @@ Widget aloneWalletOptions(BuildContext context) {
                   'createNewWallet'.tr(),
                   style: scaledTextStyle(
                     fontSize: 16,
-                    color: Durt.i.isConnected ? context.colorScheme.onSurface : Colors.grey[500],
+                    color: ref.read(durtProvider).isConnected ? context.colorScheme.onSurface : Colors.grey[500],
                   ),
                   softWrap: true,
                 ),

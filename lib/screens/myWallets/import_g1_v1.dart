@@ -1,7 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
-import 'package:durt2/durt2.dart' show IdtyStatus, WalletEntity, Durt, MigrateWalletChecks;
+import 'package:durt2/durt2.dart' show IdtyStatus, WalletEntity, MigrateWalletChecks;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/providers.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/extensions.dart';
@@ -20,8 +22,11 @@ import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/balance_display.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
+
+// Helper pour accéder aux services Riverpod depuis ce fichier
+final _container = ProviderContainer();
 
 class ImportG1v1 extends StatelessWidget {
   const ImportG1v1({super.key});
@@ -29,7 +34,7 @@ class ImportG1v1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     Timer? debounce;
     WalletEntity selectedWallet = myWalletProvider.getDefaultWallet();
@@ -42,13 +47,15 @@ class ImportG1v1 extends StatelessWidget {
         backgroundColor: context.colorScheme.surface,
         appBar: GeckoAppBar('importOldAccount'.tr()),
         body: SafeArea(
-          child: Consumer<G1v1MigrationProvider>(
+          child: old_provider.Consumer<G1v1MigrationProvider>(
             builder: (context, g1v1Migration, _) {
               return FutureBuilder(
-                future: Durt.i.storage.getMigrateWalletChecks(
-                  fromAddress: g1v1Migration.g1V1NewAddress,
-                  toAddress: selectedWallet.address,
-                ),
+                future: _container
+                    .read(storageServiceProvider)
+                    .getMigrateWalletChecks(
+                      fromAddress: g1v1Migration.g1V1NewAddress,
+                      toAddress: selectedWallet.address,
+                    ),
                 builder: (BuildContext context, AsyncSnapshot<MigrateWalletChecks> migrationChecks) {
                   if (migrationChecks.data == null) {
                     return Column(
@@ -427,15 +434,19 @@ class ImportG1v1 extends StatelessWidget {
 
                                         if (myWalletProvider.pinCode.isEmpty) return;
 
-                                        final toKeypair = await Durt.i.wallets.getKeyPairFromAddress(
-                                          address: selectedWallet.address,
-                                          pinCode: myWalletProvider.pinCode,
-                                        );
-                                        final transactionStatus = Durt.i.duniter.migrateCsToV2(
-                                          salt: g1v1Migration.csSalt.text,
-                                          password: g1v1Migration.csPassword.text,
-                                          toKeypair: toKeypair,
-                                        );
+                                        final toKeypair = await _container
+                                            .read(walletServiceProvider)
+                                            .getKeyPairFromAddress(
+                                              address: selectedWallet.address,
+                                              pinCode: myWalletProvider.pinCode,
+                                            );
+                                        final transactionStatus = _container
+                                            .read(duniterServiceProvider)
+                                            .migrateCsToV2(
+                                              salt: g1v1Migration.csSalt.text,
+                                              password: g1v1Migration.csPassword.text,
+                                              toKeypair: toKeypair,
+                                            );
 
                                         Navigator.pop(context);
                                         await Navigator.push(
@@ -485,7 +496,7 @@ class ImportG1v1 extends StatelessWidget {
   }
 
   void resetScreen() {
-    final g1v1Migration = Provider.of<G1v1MigrationProvider>(homeContext, listen: false);
+    final g1v1Migration = old_provider.Provider.of<G1v1MigrationProvider>(homeContext, listen: false);
 
     g1v1Migration.csSalt.text = '';
     g1v1Migration.csPassword.text = '';

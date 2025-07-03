@@ -1,26 +1,28 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show IdtyStatus, Durt, MembershipStatus;
+import 'package:durt2/durt2.dart' show IdtyStatus, MembershipStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/screens/myWallets/migrate_identity.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/models/membership_renewal.dart';
 
-class ManageMembership extends StatelessWidget {
+class ManageMembership extends ConsumerWidget {
   const ManageMembership({super.key, required this.address});
   final String address;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('manageMembership'.tr()),
@@ -33,17 +35,17 @@ class ManageMembership extends StatelessWidget {
               children: [
                 ScaledSizedBox(height: 20),
                 FutureBuilder<MembershipStatus>(
-                  future: Durt.i.storage.getMembershipStatus(address),
+                  future: ref.read(storageServiceProvider).getMembershipStatus(address),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
-                      return renewMembership(context, snapshot.data!);
+                      return renewMembership(context, ref, snapshot.data!);
                     }
                     return const SizedBox.shrink();
                   },
                 ),
                 migrateIdentity(context),
                 FutureBuilder(
-                  future: Durt.i.storage.isSmith(address),
+                  future: ref.read(storageServiceProvider).isSmith(address),
                   builder: (BuildContext context, AsyncSnapshot<bool> isSmith) {
                     if (isSmith.data ?? false) {
                       return Container(
@@ -73,7 +75,7 @@ class ManageMembership extends StatelessWidget {
                         ),
                       );
                     } else {
-                      return revokeMyIdentity(context);
+                      return revokeMyIdentity(context, ref);
                     }
                   },
                 ),
@@ -115,7 +117,7 @@ class ManageMembership extends StatelessWidget {
     );
   }
 
-  Widget revokeMyIdentity(BuildContext context) {
+  Widget revokeMyIdentity(BuildContext context, WidgetRef ref) {
     return Container(
       margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
       child: InkWell(
@@ -128,15 +130,14 @@ class ManageMembership extends StatelessWidget {
           );
 
           if (!answer) return;
-          final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+          final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
           if (!await myWalletProvider.askPinCode()) return;
 
-          final keypair = await Durt.i.wallets.getKeyPairFromAddress(
-            address: address,
-            pinCode: myWalletProvider.pinCode,
-          );
-          final transactionStatus = Durt.i.duniter.revokeIdentity(keypair);
+          final keypair = await ref
+              .read(walletServiceProvider)
+              .getKeyPairFromAddress(address: address, pinCode: myWalletProvider.pinCode);
+          final transactionStatus = ref.read(duniterServiceProvider).revokeIdentity(keypair);
 
           Navigator.pop(context);
 
@@ -168,7 +169,7 @@ class ManageMembership extends StatelessWidget {
     );
   }
 
-  Widget renewMembership(BuildContext context, MembershipStatus status) {
+  Widget renewMembership(BuildContext context, WidgetRef ref, MembershipStatus status) {
     final info = MembershipRenewal.calculateRenewalInfo(status);
     if (info.expireDate == null && status.idtyStatus != IdtyStatus.expired) return const SizedBox.shrink();
 
@@ -177,7 +178,7 @@ class ManageMembership extends StatelessWidget {
       margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
       child: InkWell(
         key: keyRenewMembership,
-        onTap: info.canRenew ? () => MembershipRenewal.executeRenewal(context, address) : null,
+        onTap: info.canRenew ? () => MembershipRenewal.executeRenewal(context, ref, address) : null,
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
           child: Row(

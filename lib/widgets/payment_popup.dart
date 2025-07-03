@@ -2,16 +2,18 @@
 
 import 'dart:async';
 
-import 'package:durt2/durt2.dart' show Durt, WalletEntity, TransactionStatus;
+import 'package:durt2/durt2.dart' show TransactionStatus, WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/text_input_formaters.dart';
-import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/models/transaction_in_progress_data.dart';
+import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
@@ -20,12 +22,12 @@ import 'package:gecko/services/system.service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/name_by_address.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'package:url_launcher/url_launcher.dart';
 
-void paymentPopup(BuildContext context, String toAddress, String? username) {
-  final walletViewProvider = Provider.of<WalletsProfilesProvider>(context, listen: false);
-  final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+void paymentPopup({required WidgetRef ref, required String toAddress, required String? username}) {
+  final walletViewProvider = old_provider.Provider.of<WalletsProfilesProvider>(homeContext, listen: false);
+  final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(homeContext, listen: false);
 
   double fees = 0;
   const double shapeSize = 16;
@@ -51,7 +53,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
     await Future.microtask(() {});
 
     // Execute the derivation
-    final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: address, pinCode: pinCode);
+    final keypair = await ref.read(walletServiceProvider).getKeyPairFromAddress(address: address, pinCode: pinCode);
 
     // Yield to UI after completion
     await Future.microtask(() {});
@@ -74,13 +76,15 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
       final isUdUnit = configBox.get('isUdUnit') ?? false;
 
       // Execute transaction (crypto + network)
-      final transactionStatus = Durt.i.duniter.pay(
-        keypair: keypair,
-        destAddress: toAddress,
-        amount: double.parse(walletViewProvider.payAmount.text),
-        comment: walletViewProvider.comment,
-        isUd: isUdUnit,
-      );
+      final transactionStatus = ref
+          .read(duniterServiceProvider)
+          .pay(
+            keypair: keypair,
+            destAddress: toAddress,
+            amount: double.parse(walletViewProvider.payAmount.text),
+            comment: walletViewProvider.comment,
+            isUd: isUdUnit,
+          );
 
       // Forward the actual transaction status to our controller
       transactionStatus.listen(
@@ -98,7 +102,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
 
   Future executeTransfert() async {
     // Close popup immediately to avoid blocking UI
-    Navigator.pop(context);
+    Navigator.pop(homeContext);
 
     // Get PIN code first (this is usually fast)
     if (!await myWalletProvider.askPinCode()) return;
@@ -116,7 +120,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
 
     // Navigate immediately to activity screen with loading state
     Navigator.push(
-      context,
+      homeContext,
       MaterialPageRoute(
         builder: (context) {
           return ActivityScreen(address: defaultWallet.address, transactionData: transactionData);
@@ -134,7 +138,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
     if (payAmount.isEmpty) return false;
 
     // Récupération des soldes
-    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
+    final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(homeContext, listen: false);
     final defaultWalletBalance = walletOptions.balanceCache[defaultWallet.address] ?? BigInt.zero;
     final toAddressBalance = walletOptions.balanceCache[toAddress] ?? BigInt.zero;
 
@@ -165,7 +169,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
       borderRadius: BorderRadius.only(topRight: Radius.circular(shapeSize), topLeft: Radius.circular(shapeSize)),
     ),
     isScrollControlled: true,
-    context: context,
+    context: homeContext,
     builder: (BuildContext context) {
       // Calcul de la hauteur à utiliser : on se base sur scaleSize(380)
       // Si l'écran est trop petit, on utilisera 90% de sa hauteur.
@@ -267,13 +271,12 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                 }).toList();
                               },
                               // This is called when the user selects a new item.
-                              onChanged: (String? newSelectedAddress) async {
-                                // It now receives the address as a String.
-                                if (newSelectedAddress == null) return;
+                              onChanged: (String? newSelectedWalletAddress) async {
+                                if (newSelectedWalletAddress == null) return;
 
                                 // Find the full WalletEntity object that corresponds to the selected address.
                                 final newSelectedWallet = myWalletProvider.listWallets.firstWhere(
-                                  (wallet) => wallet.address == newSelectedAddress,
+                                  (wallet) => wallet.address == newSelectedWalletAddress,
                                 );
 
                                 // Update your local state and trigger a rebuild.
@@ -282,7 +285,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                 });
 
                                 // Execute your original logic.
-                                await Durt.i.wallets.setDefaultAddress(newSelectedWallet.address);
+                                await ref.read(walletServiceProvider).setDefaultAddress(newSelectedWallet.address);
                                 amountFocus.requestFocus();
                               },
                               // This builds the list of choices the user sees when the dropdown is open.
@@ -418,11 +421,11 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                             ),
                           ),
                           if (walletViewProvider.isCommentVisible) const SizedBox(height: 8),
-                          Consumer<WalletsProfilesProvider>(
-                            builder: (context, provider, _) {
+                          old_provider.Consumer<WalletsProfilesProvider>(
+                            builder: (context, profileProvider, _) {
                               return AnimatedCrossFade(
                                 duration: const Duration(milliseconds: 200),
-                                crossFadeState: provider.isCommentVisible
+                                crossFadeState: profileProvider.isCommentVisible
                                     ? CrossFadeState.showSecond
                                     : CrossFadeState.showFirst,
                                 firstChild: TextButton.icon(
@@ -439,7 +442,7 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                     ),
                                   ),
                                   onPressed: () {
-                                    provider.toggleCommentVisibility();
+                                    profileProvider.toggleCommentVisibility();
                                     Future.delayed(const Duration(milliseconds: 250), () {
                                       if (context.mounted) {
                                         amountFocus.unfocus();
@@ -453,9 +456,9 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     TextField(
-                                      controller: provider.payComment,
+                                      controller: profileProvider.payComment,
                                       focusNode: commentFocus,
-                                      onChanged: (value) => provider.comment = value,
+                                      onChanged: (value) => profileProvider.comment = value,
                                       inputFormatters: [Utf8LengthLimitingTextInputFormatter(146)],
                                       textInputAction: TextInputAction.done,
                                       onEditingComplete: () async {
@@ -480,8 +483,8 @@ void paymentPopup(BuildContext context, String toAddress, String? username) {
                                           constraints: const BoxConstraints(),
                                           icon: Icon(Icons.close, size: scaleSize(16), color: Colors.grey[600]),
                                           onPressed: () {
-                                            provider.comment = '';
-                                            provider.toggleCommentVisibility();
+                                            profileProvider.comment = '';
+                                            profileProvider.toggleCommentVisibility();
                                             commentFocus.unfocus();
                                             amountFocus.requestFocus();
                                           },

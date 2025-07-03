@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'package:durt2/durt2.dart' show Durt, Networks;
+import 'package:durt2/durt2.dart' show Networks;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart' show MyWalletsProvider;
 import 'package:gecko/providers/v2s_datapod.dart' show V2sDatapodProvider;
@@ -17,12 +19,24 @@ import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb, setEquals;
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_header_data.dart';
 import 'package:gecko/services/network_config.service.dart';
 
 class HomeProvider with ChangeNotifier {
+  late ProviderContainer _container;
+
+  HomeProvider() {
+    _container = ProviderContainer();
+  }
+
+  @override
+  void dispose() {
+    _container.dispose();
+    super.dispose();
+  }
+
   bool? isSearching;
   Icon searchIcon = const Icon(Icons.search);
   final searchQuery = TextEditingController();
@@ -83,7 +97,7 @@ class HomeProvider with ChangeNotifier {
   }
 
   Future changeCurrencyUnit(BuildContext context) async {
-    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
+    final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
     final bool isUdUnit = configBox.get('isUdUnit') ?? false;
     await configBox.put('isUdUnit', !isUdUnit);
     walletOptions.balanceCache = {};
@@ -201,9 +215,9 @@ class HomeProvider with ChangeNotifier {
   }
 
   Future<void> initHome(BuildContext context) async {
-    final homeProvider = Provider.of<HomeProvider>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-    final datapod = Provider.of<V2sDatapodProvider>(context, listen: false);
+    final homeProvider = old_provider.Provider.of<HomeProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final datapod = old_provider.Provider.of<V2sDatapodProvider>(context, listen: false);
 
     // Check if versionData non compatible, drop everything
     if (configBox.get('dataVersion') == null) {
@@ -217,14 +231,14 @@ class HomeProvider with ChangeNotifier {
       await avatarsDirectory.create();
       await configBox.delete('defaultWallet');
       // if (!sub.sdkReady && !sub.sdkLoading) await sub.initApi();
-      await Durt.i.wallets.clearWallets();
+      await _container.read(walletServiceProvider).clearWallets();
       configBox.put('dataVersion', dataVersion);
       myWalletProvider.reload();
     } else {
       // if (!sub.sdkReady && !sub.sdkLoading) await sub.initApi();
     }
 
-    if (!Durt.i.isConnected) {
+    if (!_container.read(durtProvider).isConnected) {
       await Hive.deleteBoxFromDisk('g1WalletsBox');
       await datapod.deleteAvatarsCacheDirectory();
       await avatarsCacheDirectory.create();
@@ -240,26 +254,22 @@ class HomeProvider with ChangeNotifier {
       }
 
       // Connect to Duniter network
-      await Durt.i.connect();
+      await _container.read(durtProvider).connect();
 
       // Load wallets list
       await myWalletProvider.readAllWallets();
 
       //Connect to Indexer
       // ignore: use_build_context_synchronously
-      final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+      final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
       await duniterIndexer.getValidIndexerEndpoint();
 
-      // // Test multi balances
-      // const addressToScan = ['5FpqW1thRkQnhEAV46e8MJWGUQJ2cNnf7wARsCEzJvd7RRAW'];
-      // final balances = await Durt.i.storage.getBalances(addressToScan);
-      // print('balances: ${balances.values.map((e) => e.free)}');
+      // // Test multi balances - TODO: Re-implement if needed
 
       // Future<void> updateConnectionStatus(List<ConnectivityResult> result) async {
       //   log.i('Network changed: $result');
       //   if (result.contains(ConnectivityResult.none)) {
-      //     Durt.i.isConnected = false;
-      //     await sub.sdk.api.setting.unsubscribeBestNumber();
+      //     // Handle disconnection - TODO: Re-implement if needed
       //     homeProvider.changeMessage("notConnectedToInternet".tr());
       //       //   } else {
       //     // Check if the phone is actually connected to the internet

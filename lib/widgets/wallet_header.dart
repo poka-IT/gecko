@@ -1,12 +1,14 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show IdtyStatus, Durt;
+import 'package:durt2/durt2.dart' show IdtyStatus;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
@@ -17,11 +19,11 @@ import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/models/wallet_header_data.dart';
 
-class WalletHeader extends StatefulWidget {
+class WalletHeader extends ConsumerStatefulWidget {
   const WalletHeader({super.key, required this.address, this.customImagePath, this.defaultImagePath});
 
   final String address;
@@ -29,10 +31,10 @@ class WalletHeader extends StatefulWidget {
   final String? defaultImagePath;
 
   @override
-  State<WalletHeader> createState() => _WalletHeaderState();
+  ConsumerState<WalletHeader> createState() => _WalletHeaderState();
 }
 
-class _WalletHeaderState extends State<WalletHeader> {
+class _WalletHeaderState extends ConsumerState<WalletHeader> {
   late Future<WalletHeaderData> _loadData;
   bool _isPickerOpen = false;
   String _newCustomImagePath = '';
@@ -52,14 +54,14 @@ class _WalletHeaderState extends State<WalletHeader> {
       return cached;
     }
 
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     // Load all data in parallel with proper typing
     final (idtyStatus, balance, certData) = await (
-      Durt.i.storage.getIdtyStatus(widget.address),
-      Durt.i.storage.getBalance(widget.address),
-      Durt.i.storage.getCertsCounter(widget.address),
+      ref.read(storageServiceProvider).getIdtyStatus(widget.address),
+      ref.read(storageServiceProvider).getBalance(widget.address),
+      ref.read(storageServiceProvider).getCertsCounter(widget.address),
     ).wait;
 
     final data = WalletHeaderData(
@@ -79,14 +81,14 @@ class _WalletHeaderState extends State<WalletHeader> {
   Future<void> _refreshData() async {
     if (!mounted) return;
 
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     // Load all data in parallel with proper typing
     final (idtyStatus, balance, certData) = await (
-      Durt.i.storage.getIdtyStatus(widget.address),
-      Durt.i.storage.getBalance(widget.address),
-      Durt.i.storage.getCertsCounter(widget.address),
+      ref.read(storageServiceProvider).getIdtyStatus(widget.address),
+      ref.read(storageServiceProvider).getBalance(widget.address),
+      ref.read(storageServiceProvider).getCertsCounter(widget.address),
     ).wait;
 
     final data = WalletHeaderData(
@@ -119,7 +121,7 @@ class _WalletHeaderState extends State<WalletHeader> {
     DuniterIndexer duniterIndexer,
   ) {
     const double avatarSize = 90;
-    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
+    final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
 
     final balance = walletOptions.balanceCache[widget.address] == null
         ? currentWalletBalance
@@ -144,7 +146,7 @@ class _WalletHeaderState extends State<WalletHeader> {
                 BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 2)),
               ],
             ),
-            child: Consumer<WalletOptionsProvider>(
+            child: old_provider.Consumer<WalletOptionsProvider>(
               builder: (context, walletOptionsProvider, child) {
                 if (_newCustomImagePath.isEmpty) {
                   _newCustomImagePath = widget.customImagePath ?? '';
@@ -410,7 +412,7 @@ class _WalletHeaderState extends State<WalletHeader> {
 
   @override
   Widget build(BuildContext context) {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
 
     // If data is in cache, show it immediately
     final cached = walletHeaderDataBox.get(widget.address);

@@ -1,18 +1,32 @@
 import 'dart:io';
 
-import 'package:durt2/durt2.dart' show Durt, WalletEntity, SafeEntityExt;
+import 'package:durt2/durt2.dart' show WalletEntity, SafeEntityExt;
 import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
 class MyWalletsProvider with ChangeNotifier {
+  late ProviderContainer _container;
+
+  MyWalletsProvider() {
+    _container = ProviderContainer();
+  }
+
+  @override
+  void dispose() {
+    _container.dispose();
+    super.dispose();
+  }
+
   List<WalletEntity> listWallets = [];
   String pinCode = '';
   late String mnemonic;
@@ -25,9 +39,9 @@ class MyWalletsProvider with ChangeNotifier {
 
   bool isOwner(String address) => listWallets.any((wallet) => wallet.address == address);
 
-  int get getCurrentSafe => Durt.i.wallets.defaultSafeBoxNumber;
+  int get getCurrentSafe => _container.read(walletServiceProvider).defaultSafeBoxNumber;
 
-  bool get isWalletsExists => !Durt.i.wallets.safeBox.isEmpty();
+  bool get isWalletsExists => !_container.read(walletServiceProvider).safeBox.isEmpty();
 
   WalletEntity? get idtyWallet =>
       listWallets.firstWhereOrNull((w) => w.isMember) ?? listWallets.firstWhereOrNull((w) => w.hasIdentity);
@@ -35,26 +49,26 @@ class MyWalletsProvider with ChangeNotifier {
   List<WalletEntity> get listWalletsWithoutIdty => listWallets.where((w) => w.address != idtyWallet?.address).toList();
 
   Future<List<WalletEntity>> readAllWallets([int? safeBoxNumber]) async {
-    final sbn = safeBoxNumber ?? Durt.i.wallets.defaultSafeBoxNumber;
+    final sbn = safeBoxNumber ?? _container.read(walletServiceProvider).defaultSafeBoxNumber;
 
-    final walletsExist = Durt.i.wallets.isWalletExist;
+    final walletsExist = _container.read(walletServiceProvider).isWalletExist;
     if (!walletsExist) {
       return [];
     }
 
-    final safe = Durt.i.wallets.getSafeBox(sbn);
+    final safe = _container.read(walletServiceProvider).getSafeBox(sbn);
 
     final wallets = safe.wallets.toList();
     wallets.sort((a, b) => a.number.compareTo(b.number));
 
-    final futures = wallets.map((wallet) => Durt.i.storage.getIdtyStatus(wallet.address));
+    final futures = wallets.map((wallet) => _container.read(storageServiceProvider).getIdtyStatus(wallet.address));
     final newStatuses = await Future.wait(futures);
 
     for (var i = 0; i < wallets.length; i++) {
       wallets[i].identityStatus = newStatuses[i];
     }
 
-    await Durt.i.wallets.walletBox.putManyAsync(wallets);
+    await _container.read(walletServiceProvider).walletBox.putManyAsync(wallets);
 
     listWallets = wallets;
 
@@ -69,7 +83,7 @@ class MyWalletsProvider with ChangeNotifier {
     final int safeNumber = id[0]!;
     final int walletNumber = id[1]!;
 
-    final qBuilder = Durt.i.wallets.walletBox.query(WalletEntity_.number.equals(walletNumber));
+    final qBuilder = _container.read(walletServiceProvider).walletBox.query(WalletEntity_.number.equals(walletNumber));
 
     qBuilder.link(WalletEntity_.safe, SafeEntity_.number.equals(safeNumber));
 
@@ -92,15 +106,15 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   WalletEntity? getWalletDataByAddress(String address) =>
-      Durt.i.wallets.walletBox.query(WalletEntity_.address.equals(address)).build().findFirst();
+      _container.read(walletServiceProvider).walletBox.query(WalletEntity_.address.equals(address)).build().findFirst();
 
   WalletEntity getDefaultWallet([int? safe]) {
-    if (Durt.i.wallets.safeBox.isEmpty()) {
+    if (_container.read(walletServiceProvider).safeBox.isEmpty()) {
       return WalletEntity(address: '', number: 0);
     } else {
       safe ??= getCurrentSafe;
 
-      final defaultWallet = Durt.i.wallets.safeBox.getNumber(safe).defaultAddress;
+      final defaultWallet = _container.read(walletServiceProvider).safeBox.getNumber(safe).defaultAddress;
       if (defaultWallet == null) {
         return WalletEntity(address: '', number: 0);
       }
@@ -109,7 +123,7 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   Future<int> deleteAllWallet(BuildContext context) async {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     try {
       log.w('DELETE ALL WALLETS ?');
 
@@ -119,9 +133,9 @@ class MyWalletsProvider with ChangeNotifier {
         type: ConfirmationDialogType.warning,
       );
       if (answer) {
-        await Durt.i.wallets.walletBox.removeAllAsync();
-        await Durt.i.wallets.safeBox.removeAllAsync();
-        await Durt.i.configBox.removeAllAsync();
+        await _container.read(walletServiceProvider).walletBox.removeAllAsync();
+        await _container.read(walletServiceProvider).safeBox.removeAllAsync();
+        await _container.read(configBoxProvider).removeAllAsync();
 
         final directory = await getApplicationDocumentsDirectory();
         final avatarFolder = Directory('${directory.path}/avatars/');
@@ -154,11 +168,9 @@ class MyWalletsProvider with ChangeNotifier {
     WalletEntity defaultWallet = getDefaultWallet();
 
     // ignore: use_build_context_synchronously
-    final walletData = await Durt.i.wallets.derive(
-      fromAddress: defaultWallet.address,
-      derivation: newDerivationNbr,
-      pinCode: pinCode,
-    );
+    final walletData = await _container
+        .read(walletServiceProvider)
+        .derive(fromAddress: defaultWallet.address, derivation: newDerivationNbr, pinCode: pinCode);
 
     WalletEntity newWallet = WalletEntity(
       address: walletData.address,
@@ -168,10 +180,10 @@ class MyWalletsProvider with ChangeNotifier {
       imagePath: 'assets/avatars/${newWalletNbr % 4}.png',
     );
 
-    final safe = Durt.i.wallets.getSafeBox(safeNumber);
+    final safe = _container.read(walletServiceProvider).getSafeBox(safeNumber);
     newWallet.safe.target = safe;
 
-    await Durt.i.wallets.walletBox.putAsync(newWallet);
+    await _container.read(walletServiceProvider).walletBox.putAsync(newWallet);
 
     await readAllWallets();
 
@@ -180,7 +192,7 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   Future<void> generateRootWallet(BuildContext context, String name) async {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     isNewDerivationLoading = true;
     notifyListeners();
@@ -200,7 +212,9 @@ class MyWalletsProvider with ChangeNotifier {
 
     WalletEntity defaultWallet = myWalletProvider.getDefaultWallet();
 
-    final walletData = await Durt.i.wallets.generateRootKeypair(fromAddress: defaultWallet.address, pinCode: pinCode);
+    final walletData = await _container
+        .read(walletServiceProvider)
+        .generateRootKeypair(fromAddress: defaultWallet.address, pinCode: pinCode);
 
     WalletEntity newWallet = WalletEntity(
       address: walletData.address,
@@ -210,10 +224,10 @@ class MyWalletsProvider with ChangeNotifier {
       imagePath: 'assets/avatars/${newWalletNbr % 4}.png',
     );
 
-    final safe = Durt.i.wallets.getSafeBox(safeNumber);
+    final safe = _container.read(walletServiceProvider).getSafeBox(safeNumber);
     newWallet.safe.target = safe;
 
-    await Durt.i.wallets.walletBox.putAsync(newWallet);
+    await _container.read(walletServiceProvider).walletBox.putAsync(newWallet);
     await readAllWallets();
 
     isNewDerivationLoading = false;

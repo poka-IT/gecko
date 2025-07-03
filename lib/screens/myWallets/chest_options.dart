@@ -1,11 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/change_pin.dart';
@@ -14,14 +15,14 @@ import 'package:gecko/screens/myWallets/show_seed.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
-class ChestOptions extends StatelessWidget {
+class ChestOptions extends ConsumerWidget {
   const ChestOptions({Key? keyMyWallets}) : super(key: keyMyWallets);
 
   @override
-  Widget build(BuildContext context) {
-    final currentSafe = Durt.i.wallets.defaultSafeBox;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentSafe = ref.read(walletServiceProvider).defaultSafeBox;
 
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
@@ -50,14 +51,14 @@ class ChestOptions extends StatelessWidget {
   }
 }
 
-class ChestOptionsContent extends StatelessWidget {
+class ChestOptionsContent extends ConsumerWidget {
   const ChestOptionsContent({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final chestProvider = Provider.of<ChestProvider>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-    final currentChest = Durt.i.wallets.defaultSafeBox;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final chestProvider = old_provider.Provider.of<ChestProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final currentChest = ref.read(walletServiceProvider).defaultSafeBox;
     final isAlone = myWalletProvider.listWallets.length == 1;
 
     return Column(
@@ -122,7 +123,7 @@ class ChestOptionsContent extends StatelessWidget {
         if (!isAlone)
           InkWell(
             key: keycreateRootDerivation,
-            onTap: Durt.i.isConnected
+            onTap: ref.read(durtProvider).isConnected
                 ? () async {
                     await Navigator.push(context, MaterialPageRoute(builder: (context) => const CustomDerivation()));
                   }
@@ -134,7 +135,7 @@ class ChestOptionsContent extends StatelessWidget {
                   Icon(
                     Icons.manage_accounts,
                     size: scaleSize(24),
-                    color: Durt.i.isConnected ? context.colorScheme.onSurface : Colors.grey[400],
+                    color: ref.read(durtProvider).isConnected ? context.colorScheme.onSurface : Colors.grey[400],
                   ),
                   ScaledSizedBox(width: 16),
                   Expanded(
@@ -142,7 +143,7 @@ class ChestOptionsContent extends StatelessWidget {
                       'createDerivation'.tr(),
                       style: scaledTextStyle(
                         fontSize: 16,
-                        color: Durt.i.isConnected ? context.colorScheme.onSurface : Colors.grey[500],
+                        color: ref.read(durtProvider).isConnected ? context.colorScheme.onSurface : Colors.grey[500],
                       ),
                       softWrap: true,
                     ),

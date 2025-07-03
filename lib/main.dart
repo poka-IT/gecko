@@ -16,7 +16,9 @@
 import 'dart:async';
 import 'package:durt2/durt2.dart' show Durt, Networks;
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
 import 'package:gecko/globals.dart';
+
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/connection_provider.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
@@ -116,50 +118,52 @@ class Gecko extends StatelessWidget {
   Widget build(BuildContext context) {
     // To configure multi_endpoints GraphQLProvider: https://stackoverflow.com/q/70656513/8301867
 
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => HomeProvider()),
-        ChangeNotifierProvider(create: (_) => WalletsProfilesProvider('')),
-        ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
-        ChangeNotifierProvider(create: (_) => ChestProvider()),
-        ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
-        ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
-        ChangeNotifierProvider(create: (_) => SearchProvider()),
-        ChangeNotifierProvider(create: (_) => DuniterIndexer()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()),
-        ChangeNotifierProvider(create: (_) => V2sDatapodProvider()),
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => BlockHeightProvider()),
-        ChangeNotifierProvider(create: (_) => G1v1MigrationProvider()),
-        ChangeNotifierProvider(create: (_) => ConnectionProvider()),
-      ],
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, child) {
-          return MaterialApp(
-            localizationsDelegates: context.localizationDelegates,
-            supportedLocales: context.supportedLocales,
-            locale: context.locale,
-            theme: lightTheme,
-            darkTheme: darkTheme,
-            themeMode: themeProvider.currentThemeMode,
-            builder: (context, child) => ResponsiveBreakpoints.builder(
-              child: child!,
-              breakpoints: [
-                const Breakpoint(start: 0, end: 450, name: MOBILE),
-                const Breakpoint(start: 451, end: 800, name: TABLET),
-                const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
-              ],
-            ),
-            title: 'Ğecko',
-            initialRoute: "/",
-            routes: {
-              '/': (context) => const HomeScreen(),
-              '/mywallets': (context) => const WalletsHome(),
-              '/search': (context) => const SearchScreen(),
-              '/searchResult': (context) => const SearchResultScreen(),
-            },
-          );
-        },
+    return ProviderScope(
+      child: MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => HomeProvider()),
+          ChangeNotifierProvider(create: (_) => WalletsProfilesProvider('')),
+          ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
+          ChangeNotifierProvider(create: (_) => ChestProvider()),
+          ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
+          ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
+          ChangeNotifierProvider(create: (_) => SearchProvider()),
+          ChangeNotifierProvider(create: (_) => DuniterIndexer()),
+          ChangeNotifierProvider(create: (_) => SettingsProvider()),
+          ChangeNotifierProvider(create: (_) => V2sDatapodProvider()),
+          ChangeNotifierProvider(create: (_) => ThemeProvider()),
+          ChangeNotifierProvider(create: (_) => BlockHeightProvider()),
+          ChangeNotifierProvider(create: (_) => G1v1MigrationProvider()),
+          ChangeNotifierProvider(create: (_) => ConnectionProvider()),
+        ],
+        child: Consumer<ThemeProvider>(
+          builder: (context, themeProvider, child) {
+            return MaterialApp(
+              localizationsDelegates: context.localizationDelegates,
+              supportedLocales: context.supportedLocales,
+              locale: context.locale,
+              theme: lightTheme,
+              darkTheme: darkTheme,
+              themeMode: themeProvider.currentThemeMode,
+              builder: (context, child) => ResponsiveBreakpoints.builder(
+                child: child!,
+                breakpoints: [
+                  const Breakpoint(start: 0, end: 450, name: MOBILE),
+                  const Breakpoint(start: 451, end: 800, name: TABLET),
+                  const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
+                ],
+              ),
+              title: 'Ğecko',
+              initialRoute: "/",
+              routes: {
+                '/': (context) => const HomeScreen(),
+                '/mywallets': (context) => const WalletsHome(),
+                '/search': (context) => const SearchScreen(),
+                '/searchResult': (context) => const SearchResultScreen(),
+              },
+            );
+          },
+        ),
       ),
     );
   }

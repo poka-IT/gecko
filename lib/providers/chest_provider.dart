@@ -1,13 +1,27 @@
 import 'dart:async';
-import 'package:durt2/durt2.dart' show Durt, SafeEntity;
+import 'package:durt2/durt2.dart' show SafeEntity;
 import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
 class ChestProvider with ChangeNotifier {
+  late ProviderContainer _container;
+
+  ChestProvider() {
+    _container = ProviderContainer();
+  }
+
+  @override
+  void dispose() {
+    _container.dispose();
+    super.dispose();
+  }
+
   void reload() {
     notifyListeners();
   }
@@ -16,18 +30,24 @@ class ChestProvider with ChangeNotifier {
     final bool? answer = await (_confirmDeletingChest(context, safe.name));
     // ignore: use_build_context_synchronously
     if (answer ?? false) {
-      await Durt.i.wallets.deleteSafe(safe.id);
+      await _container.read(walletServiceProvider).deleteSafe(safe.id);
       final myWalletProvider =
           // ignore: use_build_context_synchronously
-          Provider.of<MyWalletsProvider>(context, listen: false);
+          old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
       myWalletProvider.pinCode = '';
 
-      if (Durt.i.wallets.safeBox.isEmpty()) {
-        Durt.i.wallets.setDefaultSafeBoxNumber(0);
+      if (_container.read(walletServiceProvider).safeBox.isEmpty()) {
+        _container.read(walletServiceProvider).setDefaultSafeBoxNumber(0);
       } else {
-        final int lastSafe = Durt.i.wallets.safeBox.query().build().property(SafeEntity_.number).max();
-        Durt.i.wallets.setDefaultSafeBoxNumber(lastSafe);
+        final int lastSafe = _container
+            .read(walletServiceProvider)
+            .safeBox
+            .query()
+            .build()
+            .property(SafeEntity_.number)
+            .max();
+        _container.read(walletServiceProvider).setDefaultSafeBoxNumber(lastSafe);
       }
 
       Navigator.popUntil(

@@ -1,13 +1,15 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show Durt, IdtyStatus, CertState, CertStatus;
+import 'package:durt2/durt2.dart' show IdtyStatus, CertState, CertStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/block_height_provider.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
@@ -18,7 +20,7 @@ import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:gecko/widgets/payment_popup.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 import 'package:gecko/models/wallet_header_data.dart';
 import 'package:gecko/providers/duniter_indexer.dart';
@@ -26,16 +28,16 @@ import 'package:gecko/providers/duniter_indexer.dart';
 const double buttonSize = 75;
 const double buttonFontSize = 13;
 
-class WalletViewScreen extends StatefulWidget {
+class WalletViewScreen extends ConsumerStatefulWidget {
   const WalletViewScreen({required this.address, required this.username, super.key});
   final String address;
   final String? username;
 
   @override
-  State<WalletViewScreen> createState() => _WalletViewScreenState();
+  ConsumerState<WalletViewScreen> createState() => _WalletViewScreenState();
 }
 
-class _WalletViewScreenState extends State<WalletViewScreen> {
+class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
   late String address;
   late String? username;
   late Future<WalletHeaderData> _headerDataFuture;
@@ -49,13 +51,13 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
   }
 
   Future<WalletHeaderData> _loadWalletData() async {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     final (idtyStatusValue, balanceResult, certData) = await (
-      Durt.i.storage.getIdtyStatus(widget.address),
-      Durt.i.storage.getBalance(widget.address),
-      Durt.i.storage.getCertsCounter(widget.address),
+      ref.read(storageServiceProvider).getIdtyStatus(widget.address),
+      ref.read(storageServiceProvider).getBalance(widget.address),
+      ref.read(storageServiceProvider).getCertsCounter(widget.address),
     ).wait;
 
     final data = WalletHeaderData(
@@ -73,7 +75,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final walletProfile = Provider.of<WalletsProfilesProvider>(context, listen: false);
+    final walletProfile = old_provider.Provider.of<WalletsProfilesProvider>(context, listen: false);
 
     walletProfile.address = address;
 
@@ -134,15 +136,14 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
                                     PageNoTransit(builder: (context) => ActivityScreen(address: address)),
                                   ),
                                 ),
-                                Consumer<BlockHeightProvider>(
+                                old_provider.Consumer<BlockHeightProvider>(
                                   builder: (context, _, _) {
-                                    final identityWallet = Durt.i.wallets.identityWallet;
+                                    final identityWallet = ref.read(walletServiceProvider).identityWallet;
                                     return identityWallet != null
                                         ? FutureBuilder(
-                                            future: Durt.i.storage.getCertState(
-                                              fromAddress: identityWallet.address,
-                                              toAddress: address,
-                                            ),
+                                            future: ref
+                                                .read(storageServiceProvider)
+                                                .getCertState(fromAddress: identityWallet.address, toAddress: address),
                                             builder: (context, AsyncSnapshot<CertState> snapshot) {
                                               if (!snapshot.hasData) return const SizedBox.shrink();
                                               final certState = snapshot.data!;
@@ -171,7 +172,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
                         ),
                         Column(
                           children: [
-                            _buildTransferButton(context),
+                            _buildTransferButton(ref),
                             ScaledSizedBox(height: isTall ? 40 : 7),
                           ],
                         ),
@@ -230,8 +231,8 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
     );
   }
 
-  Widget _buildTransferButton(BuildContext context) {
-    return Consumer<BlockHeightProvider>(
+  Widget _buildTransferButton(WidgetRef ref) {
+    return old_provider.Consumer<BlockHeightProvider>(
       builder: (context, _, _) {
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -248,13 +249,13 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
                 border: Border.all(color: const Color(0xFF6c4204), width: 3),
               ),
               child: Opacity(
-                opacity: Durt.i.isConnected ? 1 : 0.5,
+                opacity: ref.read(durtProvider).isConnected ? 1 : 0.5,
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
                     key: keyPay,
                     borderRadius: BorderRadius.circular((buttonSize + 5) / 2),
-                    onTap: Durt.i.isConnected ? () => _handleTransfer(context) : null,
+                    onTap: ref.read(durtProvider).isConnected ? () => _handleTransfer(ref) : null,
                     child: Padding(
                       padding: EdgeInsets.all(scaleSize(15)),
                       child: Image.asset('assets/vector_white.png', color: Colors.white),
@@ -269,7 +270,7 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w500,
-                color: Durt.i.isConnected ? context.colorScheme.onSurface : Colors.grey[500],
+                color: ref.read(durtProvider).isConnected ? context.colorScheme.onSurface : Colors.grey[500],
               ),
             ),
           ],
@@ -278,17 +279,14 @@ class _WalletViewScreenState extends State<WalletViewScreen> {
     );
   }
 
-  Future<void> _handleTransfer(BuildContext context) async {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+  Future<void> _handleTransfer(WidgetRef ref) async {
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(homeContext, listen: false);
     final defaultWallet = myWalletProvider.getDefaultWallet();
 
     if (myWalletProvider.pinCode == '') {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (homeContext) => UnlockingWallet(wallet: defaultWallet)),
-      );
+      await Navigator.push(homeContext, MaterialPageRoute(builder: (_) => UnlockingWallet(wallet: defaultWallet)));
     }
     if (myWalletProvider.pinCode == '') return;
-    paymentPopup(context, address, username);
+    paymentPopup(ref: ref, toAddress: address, username: username);
   }
 }

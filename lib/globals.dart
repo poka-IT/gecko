@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/main.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_header_data.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -25,7 +26,7 @@ late Directory avatarsCacheDirectory;
 late bool isTall;
 
 // Contexts
-late BuildContext homeContext;
+BuildContext get homeContext => Gecko.navigatorContext!;
 
 // Logger
 final log = Logger();

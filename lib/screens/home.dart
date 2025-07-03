@@ -34,8 +34,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    homeContext = context;
-
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
     Provider.of<ChestProvider>(context);
     final isWalletsExists = myWalletProvider.isWalletsExists;

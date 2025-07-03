@@ -360,17 +360,17 @@ class ImportG1v1 extends StatelessWidget {
                                     key: keySelectWallet,
                                     child: DropdownButton(
                                       isExpanded: true,
-                                      value: selectedWallet,
+                                      value: selectedWallet.address,
                                       icon: const Icon(Icons.keyboard_arrow_down, size: 20),
                                       items: myWalletProvider.listWallets.map((wallet) {
                                         return DropdownMenuItem(
                                           key: keySelectThisWallet(wallet.address),
-                                          value: wallet,
+                                          value: wallet.address,
                                           child: Text(wallet.name!, style: scaledTextStyle(fontSize: 13)),
                                         );
                                       }).toList(),
-                                      onChanged: (WalletEntity? newSelectedWallet) {
-                                        selectedWallet = newSelectedWallet!;
+                                      onChanged: (String? newSelectedWallet) {
+                                        selectedWallet = myWalletProvider.getWalletDataByAddress(newSelectedWallet!)!;
                                         g1v1Migration.reload();
                                       },
                                     ),

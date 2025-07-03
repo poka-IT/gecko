@@ -11,6 +11,7 @@ import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/change_pin.dart';
 import 'package:gecko/screens/myWallets/custom_derivations.dart';
+import 'package:gecko/screens/myWallets/migrate_chest.dart';
 import 'package:gecko/screens/myWallets/show_seed.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
@@ -85,6 +86,37 @@ class ChestOptionsContent extends ConsumerWidget {
                   child: Text(
                     'displayMnemonic'.tr(),
                     style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
+                    softWrap: true,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        InkWell(
+          key: keyMigrateChest,
+          onTap: ref.read(durtProvider).isConnected
+              ? () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const MigrateChestScreen()));
+                }
+              : null,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.sync_alt,
+                  size: scaleSize(24),
+                  color: ref.read(durtProvider).isConnected ? context.colorScheme.onSurface : Colors.grey[400],
+                ),
+                ScaledSizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    'migrateChest'.tr(),
+                    style: scaledTextStyle(
+                      fontSize: 16,
+                      color: ref.read(durtProvider).isConnected ? context.colorScheme.onSurface : Colors.grey[500],
+                    ),
                     softWrap: true,
                   ),
                 ),

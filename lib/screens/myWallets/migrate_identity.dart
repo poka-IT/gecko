@@ -37,9 +37,17 @@ String mapValidationErrors(Set<MigrateWalletValidationError> errors) {
   };
 }
 
-class MigrateIdentityScreen extends StatelessWidget {
-  const MigrateIdentityScreen({super.key});
+class MigrateIdentityScreen extends StatefulWidget {
+  MigrateIdentityScreen({super.key});
 
+  final newMnemonicSentence = TextEditingController();
+  final newWalletAddress = TextEditingController();
+
+  @override
+  State<MigrateIdentityScreen> createState() => _MigrateIdentityScreenState();
+}
+
+class _MigrateIdentityScreenState extends State<MigrateIdentityScreen> {
   @override
   Widget build(BuildContext context) {
     final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
@@ -50,17 +58,17 @@ class MigrateIdentityScreen extends StatelessWidget {
     final isSmallScreen = screenSize.height < 700;
 
     final fromAddress = walletOptions.address.text;
-    final newMnemonicSentence = TextEditingController();
-    final newWalletAddress = TextEditingController();
 
     var migrationChecks = const MigrateWalletChecks.defaultValues();
     var mnemonicIsValid = false;
     int? matchDerivationNbr;
     String matchInfo = '';
 
+    bool isSmall = !isTall;
+
     Future scanDerivations() async {
-      if (!isAddress(newWalletAddress.text) ||
-          !_container.read(walletServiceProvider).isMnemonicValid(newMnemonicSentence.text) ||
+      if (!isAddress(widget.newWalletAddress.text) ||
+          !_container.read(walletServiceProvider).isMnemonicValid(widget.newMnemonicSentence.text) ||
           !migrationChecks.canMigrate) {
         mnemonicIsValid = false;
         matchInfo = '';
@@ -72,9 +80,9 @@ class MigrateIdentityScreen extends StatelessWidget {
       //Scan root wallet
       final keypair = await _container
           .read(walletServiceProvider)
-          .getKeyPairFromMnemonic(newMnemonicSentence.text, derivation: 0, keyPairType: KeyPairType.sr25519);
+          .getKeyPairFromMnemonic(widget.newMnemonicSentence.text, derivation: 0, keyPairType: KeyPairType.sr25519);
 
-      if (keypair.address == newWalletAddress.text) {
+      if (keypair.address == widget.newWalletAddress.text) {
         matchDerivationNbr = -1;
         mnemonicIsValid = true;
         walletOptions.reload();
@@ -86,12 +94,12 @@ class MigrateIdentityScreen extends StatelessWidget {
         final keypair = await _container
             .read(walletServiceProvider)
             .getKeyPairFromMnemonic(
-              newMnemonicSentence.text,
+              widget.newMnemonicSentence.text,
               derivation: derivationNbr,
               keyPairType: KeyPairType.sr25519,
             );
 
-        if (keypair.address == newWalletAddress.text) {
+        if (keypair.address == widget.newWalletAddress.text) {
           matchDerivationNbr = derivationNbr;
           mnemonicIsValid = true;
           matchInfo = "youCanMigrateThisIdentity".tr();
@@ -120,25 +128,25 @@ class MigrateIdentityScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ScaledSizedBox(height: isSmallScreen ? 16 : 24),
+                      ScaledSizedBox(height: isSmall ? 16 : 24),
                       // En-tête avec icône et texte explicatif
                       Center(
                         child: Column(
                           children: [
                             Container(
-                              width: scaleSize(isSmallScreen ? 50 : 70),
-                              height: scaleSize(isSmallScreen ? 50 : 70),
+                              width: scaleSize(isSmall ? 50 : 70),
+                              height: scaleSize(isSmall ? 50 : 70),
                               decoration: BoxDecoration(
                                 color: context.colorScheme.primary.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
                                 Icons.swap_horiz_rounded,
-                                size: scaleSize(isSmallScreen ? 25 : 35),
+                                size: scaleSize(isSmall ? 25 : 35),
                                 color: context.colorScheme.primary,
                               ),
                             ),
-                            ScaledSizedBox(height: isSmallScreen ? 16 : 24),
+                            ScaledSizedBox(height: isSmall ? 16 : 24),
                             Wrap(
                               alignment: WrapAlignment.center,
                               children: [
@@ -148,7 +156,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                                   ),
                                   textAlign: WrapAlignment.center,
                                   style: scaledTextStyle(
-                                    fontSize: isSmallScreen ? 14 : 15,
+                                    fontSize: isSmall ? 14 : 15,
                                     color: context.colorScheme.onSurface,
                                     height: 1.5,
                                   ),
@@ -171,18 +179,18 @@ class MigrateIdentityScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      ScaledSizedBox(height: isSmallScreen ? 24 : 40),
+                      ScaledSizedBox(height: isSmall ? 24 : 40),
 
                       // Champ de phrase de restauration
                       Text(
                         'migrateToThisWallet'.tr(),
                         style: scaledTextStyle(
-                          fontSize: isSmallScreen ? 15 : 16,
+                          fontSize: isSmall ? 15 : 16,
                           fontWeight: FontWeight.w600,
                           color: context.colorScheme.onSurface,
                         ),
                       ),
-                      ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+                      ScaledSizedBox(height: isSmall ? 12 : 16),
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.grey[100],
@@ -196,19 +204,19 @@ class MigrateIdentityScreen extends StatelessWidget {
                               padding: EdgeInsets.only(
                                 left: scaleSize(16),
                                 right: scaleSize(16),
-                                top: scaleSize(isSmallScreen ? 8 : 12),
+                                top: scaleSize(isSmall ? 8 : 12),
                               ),
                               child: Row(
                                 children: [
                                   Image.asset(
                                     'assets/onBoarding/phrase_de_restauration_flou.png',
-                                    width: scaleSize(isSmallScreen ? 16 : 20),
+                                    width: scaleSize(isSmall ? 16 : 20),
                                   ),
-                                  ScaledSizedBox(width: isSmallScreen ? 8 : 12),
+                                  ScaledSizedBox(width: isSmall ? 8 : 12),
                                   Text(
                                     'enterYourNewMnemonic'.tr(),
                                     style: scaledTextStyle(
-                                      fontSize: isSmallScreen ? 13 : 14,
+                                      fontSize: isSmall ? 13 : 14,
                                       color: Colors.grey[600],
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -217,20 +225,20 @@ class MigrateIdentityScreen extends StatelessWidget {
                               ),
                             ),
                             TextField(
-                              controller: newMnemonicSentence,
-                              minLines: isSmallScreen ? 2 : 3,
-                              maxLines: isSmallScreen ? 2 : 3,
+                              controller: widget.newMnemonicSentence,
+                              minLines: isSmall ? 2 : 3,
+                              maxLines: isSmall ? 2 : 3,
                               style: scaledTextStyle(
-                                fontSize: isSmallScreen ? 14 : 15,
+                                fontSize: isSmall ? 14 : 15,
                                 color: context.colorScheme.onSurface,
                                 height: 1.5,
                               ),
                               decoration: InputDecoration(
-                                contentPadding: EdgeInsets.all(scaleSize(isSmallScreen ? 12 : 16)),
+                                contentPadding: EdgeInsets.all(scaleSize(isSmall ? 12 : 16)),
                                 border: InputBorder.none,
                                 hintText: 'word1 word2 word3 word4 ...',
                                 hintStyle: scaledTextStyle(
-                                  fontSize: isSmallScreen ? 14 : 15,
+                                  fontSize: isSmall ? 14 : 15,
                                   color: Colors.grey[400],
                                   fontStyle: FontStyle.italic,
                                 ),
@@ -242,7 +250,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      ScaledSizedBox(height: isSmallScreen ? 16 : 24),
+                      ScaledSizedBox(height: isSmall ? 16 : 24),
 
                       // Champ d'adresse
                       Container(
@@ -258,19 +266,16 @@ class MigrateIdentityScreen extends StatelessWidget {
                               padding: EdgeInsets.only(
                                 left: scaleSize(16),
                                 right: scaleSize(16),
-                                top: scaleSize(isSmallScreen ? 8 : 12),
+                                top: scaleSize(isSmall ? 8 : 12),
                               ),
                               child: Row(
                                 children: [
-                                  Image.asset(
-                                    'assets/walletOptions/key.png',
-                                    width: scaleSize(isSmallScreen ? 16 : 20),
-                                  ),
-                                  ScaledSizedBox(width: isSmallScreen ? 8 : 12),
+                                  Image.asset('assets/walletOptions/key.png', width: scaleSize(isSmall ? 16 : 20)),
+                                  ScaledSizedBox(width: isSmall ? 8 : 12),
                                   Text(
                                     'enterYourNewAddress'.tr(args: [currencyName]),
                                     style: scaledTextStyle(
-                                      fontSize: isSmallScreen ? 13 : 14,
+                                      fontSize: isSmall ? 13 : 14,
                                       color: Colors.grey[600],
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -279,17 +284,14 @@ class MigrateIdentityScreen extends StatelessWidget {
                               ),
                             ),
                             TextField(
-                              controller: newWalletAddress,
-                              style: scaledTextStyle(
-                                fontSize: isSmallScreen ? 14 : 15,
-                                color: context.colorScheme.onSurface,
-                              ),
+                              controller: widget.newWalletAddress,
+                              style: scaledTextStyle(fontSize: isSmall ? 14 : 15, color: context.colorScheme.onSurface),
                               decoration: InputDecoration(
-                                contentPadding: EdgeInsets.all(scaleSize(isSmallScreen ? 12 : 16)),
+                                contentPadding: EdgeInsets.all(scaleSize(isSmall ? 12 : 16)),
                                 border: InputBorder.none,
-                                hintText: 'D....',
+                                hintText: 'G1....',
                                 hintStyle: scaledTextStyle(
-                                  fontSize: isSmallScreen ? 14 : 15,
+                                  fontSize: isSmall ? 14 : 15,
                                   color: Colors.grey[400],
                                   fontStyle: FontStyle.italic,
                                 ),
@@ -310,6 +312,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                           ],
                         ),
                       ),
+                      const SizedBox(height: 24),
                     ],
                   ),
                 ),
@@ -318,7 +321,7 @@ class MigrateIdentityScreen extends StatelessWidget {
 
             // Messages de statut et bouton de validation
             Container(
-              padding: EdgeInsets.all(scaleSize(isSmallScreen ? 16 : 24)),
+              padding: EdgeInsets.all(scaleSize(isSmall ? 16 : 24)),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
@@ -347,14 +350,14 @@ class MigrateIdentityScreen extends StatelessWidget {
                               style: scaledTextStyle(fontSize: isSmallScreen ? 12 : 13, color: Colors.grey[600]),
                             ),
                           ],
-                          ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+                          ScaledSizedBox(height: isSmall ? 12 : 16),
                         ],
                       );
                     },
                   ),
                   SizedBox(
                     width: double.infinity,
-                    height: scaleSize(isSmallScreen ? 44 : 50),
+                    height: scaleSize(isSmall ? 44 : 50),
                     child: ElevatedButton(
                       key: keyConfirm,
                       style: ElevatedButton.styleFrom(
@@ -370,7 +373,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                               await _container
                                   .read(walletServiceProvider)
                                   .importAccount(
-                                    mnemonic: newMnemonicSentence.text,
+                                    mnemonic: widget.newMnemonicSentence.text,
                                     derivation: matchDerivationNbr == -1 ? null : matchDerivationNbr,
                                     pinCode: '1472',
                                   );
@@ -380,12 +383,12 @@ class MigrateIdentityScreen extends StatelessWidget {
                                   .getKeyPairFromAddress(address: fromAddress, pinCode: myWalletProvider.pinCode);
                               final toKeypair = await _container
                                   .read(walletServiceProvider)
-                                  .getKeyPairFromAddress(address: newWalletAddress.text, pinCode: '1472');
+                                  .getKeyPairFromAddress(address: widget.newWalletAddress.text, pinCode: '1472');
                               final transactionStatus = _container
                                   .read(duniterServiceProvider)
                                   .migrateIdentity(fromKeypair: fromKeypair, toKeypair: toKeypair, withBalance: true);
 
-                              await _container.read(walletServiceProvider).deleteWallet(newWalletAddress.text);
+                              await _container.read(walletServiceProvider).deleteWallet(widget.newWalletAddress.text);
                               Navigator.pop(context);
                               Navigator.push(
                                 context,
@@ -394,7 +397,7 @@ class MigrateIdentityScreen extends StatelessWidget {
                                     transactionStatus: transactionStatus,
                                     transType: 'identityMigration',
                                     fromAddress: getShortPubkey(fromAddress),
-                                    toAddress: getShortPubkey(newWalletAddress.text),
+                                    toAddress: getShortPubkey(widget.newWalletAddress.text),
                                   ),
                                 ),
                               );

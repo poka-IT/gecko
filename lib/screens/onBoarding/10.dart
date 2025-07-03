@@ -21,6 +21,7 @@ import 'package:gecko/widgets/commons/fader_transition.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/scan_derivations_info.dart';
+import 'package:gif_view/gif_view.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart' as old_provider;
 
@@ -61,6 +62,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
     final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     final pinLenght = widget.pinCode.length;
+    GifView.preFetchImage(AssetImage('assets/onBoarding/gecko-clin.gif'));
 
     return PopScope(
       onPopInvokedWithResult: (_, _) {
@@ -163,6 +165,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
     int derivation,
   ) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
+    final generateWalletProvider = old_provider.Provider.of<GenerateWalletsProvider>(context);
 
     final currentChest = myWalletProvider.getCurrentSafe;
 

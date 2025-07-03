@@ -9,6 +9,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pdf/pdf.dart';
@@ -104,26 +105,12 @@ class ShowSeed extends ConsumerWidget {
                   },
                 ),
                 ScaledSizedBox(height: 50),
-                ScaledSizedBox(
+                PrimaryButton(
+                  label: 'close'.tr(),
                   width: 240,
-                  height: 55,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: context.colorScheme.primary,
-                      elevation: 2,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Text(
-                      'close'.tr(),
-                      style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
-                    ),
-                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
                 ),
               ],
             ),

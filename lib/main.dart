@@ -114,6 +114,9 @@ Future<void> main() async {
 class Gecko extends StatelessWidget {
   const Gecko({super.key});
 
+  static final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+  static BuildContext? get navigatorContext => _navigatorKey.currentContext;
+
   @override
   Widget build(BuildContext context) {
     // To configure multi_endpoints GraphQLProvider: https://stackoverflow.com/q/70656513/8301867
@@ -145,6 +148,7 @@ class Gecko extends StatelessWidget {
               theme: lightTheme,
               darkTheme: darkTheme,
               themeMode: themeProvider.currentThemeMode,
+              navigatorKey: _navigatorKey,
               builder: (context, child) => ResponsiveBreakpoints.builder(
                 child: child!,
                 breakpoints: [

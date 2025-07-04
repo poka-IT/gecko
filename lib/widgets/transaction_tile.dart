@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/transaction.dart';
+import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:intl/intl.dart';
+
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance_display.dart';
@@ -17,24 +17,22 @@ class TransactionTile extends StatelessWidget {
     required this.keyID,
     required this.avatarSize,
     required this.transaction,
-    required this.dateForm,
-    required this.finalAmount,
-    required this.duniterIndexer,
     required this.context,
   });
 
   final int keyID;
   final double avatarSize;
-  final Transaction transaction;
-  final String dateForm;
-  final BigInt finalAmount;
-  final DuniterIndexer duniterIndexer;
+  final TransactionDisplayItem transaction;
   final BuildContext context;
 
   @override
   Widget build(BuildContext context) {
     final newKey = keyID + 1;
     final String? username = transaction.username == '' ? null : transaction.username;
+    final BigInt finalAmount = transaction.isReceived ? transaction.amount : transaction.amount * BigInt.from(-1);
+    final String dateString = DateFormat.yMd(
+      Localizations.localeOf(context).languageCode,
+    ).add_Hm().format(transaction.transactionTime);
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(4)),
@@ -56,53 +54,47 @@ class TransactionTile extends StatelessWidget {
           ),
           child: DatapodAvatar(address: transaction.address, size: avatarSize),
         ),
-        title: Column(
+        title: Padding(
+          padding: EdgeInsets.only(bottom: scaleSize(5)),
+          child: Text(
+            getShortPubkey(transaction.address),
+            style: scaledTextStyle(fontSize: 16, fontFamily: 'Monospace'),
+          ),
+        ),
+        subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              getShortPubkey(transaction.address),
-              style: scaledTextStyle(
-                fontSize: 15,
-                fontFamily: 'Monospace',
-                fontWeight: FontWeight.w500,
-                color: context.colorScheme.onSecondaryContainer,
-              ),
-            ),
-            ScaledSizedBox(height: 4),
-            RichText(
-              text: TextSpan(
-                style: scaledTextStyle(fontSize: 13, color: homeContext.colorScheme.onSurfaceVariant),
-                children: <TextSpan>[
-                  TextSpan(text: dateForm),
-                  if (username != null) ...[
-                    TextSpan(
-                      text: '  ·  ',
-                      style: scaledTextStyle(fontSize: 13, color: Colors.grey[500]),
-                    ),
-                    TextSpan(
-                      text: username,
-                      style: scaledTextStyle(fontStyle: FontStyle.italic, color: Colors.grey[600]),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            if (transaction.comment.isNotEmpty) ...[
-              ScaledSizedBox(height: 4),
+            if (username != null) ...[
               Text(
-                transaction.comment,
+                username,
+                style: scaledTextStyle(fontSize: 12, color: Colors.grey[600]),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              ScaledSizedBox(height: 4),
+            ],
+            if (transaction.comment != null && transaction.comment!.isNotEmpty) ...[
+              Text(
+                transaction.comment!,
                 style: scaledTextStyle(fontSize: 12, color: Colors.grey[600], fontStyle: FontStyle.italic),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
+              ScaledSizedBox(height: 4),
             ],
+            Text(dateString, style: scaledTextStyle(fontSize: 11, color: Colors.grey[500])),
           ],
         ),
-        trailing: BalanceDisplay(
-          value: finalAmount,
-          size: scaleSize(13),
-          color: transaction.isReceived ? const Color(0xFF4CAF50) : const Color(0xFF2196F3),
-          fontWeight: FontWeight.w500,
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            BalanceDisplay(
+              value: finalAmount,
+              size: 16,
+              color: transaction.isReceived ? const Color(0xFF4CAF50) : const Color(0xFF2196F3),
+            ),
+          ],
         ),
         onTap: () {
           Navigator.push(

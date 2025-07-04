@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -14,28 +15,28 @@ import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
 import 'package:gecko/widgets/drawer.dart';
 import 'package:gecko/widgets/buttons/home_buttons.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await Provider.of<HomeProvider>(context, listen: false).initHome(context);
+      await old_provider.Provider.of<HomeProvider>(context, listen: false).initHome(context: context, ref: ref);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
-    Provider.of<ChestProvider>(context);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
+    old_provider.Provider.of<ChestProvider>(context);
     final isWalletsExists = myWalletProvider.isWalletsExists;
 
     isTall = (MediaQuery.of(context).size.height / MediaQuery.of(context).size.width) > 1.75;
@@ -49,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 Widget geckHome(BuildContext context) {
-  Provider.of<ChestProvider>(context);
+  old_provider.Provider.of<ChestProvider>(context);
 
   final statusBarHeight = MediaQuery.of(context).padding.top;
   return Container(
@@ -91,7 +92,7 @@ Widget geckHome(BuildContext context) {
                     const Shadow(offset: Offset(0, 0), blurRadius: 20, color: Colors.black),
                   ],
                 ),
-                child: Consumer<HomeProvider>(
+                child: old_provider.Consumer<HomeProvider>(
                   builder: (context, homeP, _) {
                     return AnimatedFadeOutIn<String>(
                       data: homeP.homeMessage,

@@ -3,7 +3,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/providers/search.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
@@ -19,7 +19,6 @@ class SearchResultScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final searchProvider = Provider.of<SearchProvider>(context, listen: false);
     final walletsProfilesClass = Provider.of<WalletsProfilesProvider>(context, listen: false);
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
 
     final avatarSize = scaleSize(37);
 
@@ -52,7 +51,6 @@ class SearchResultScreen extends StatelessWidget {
                   ScaledSizedBox(height: 13),
                   SearchResult(
                     searchProvider: searchProvider,
-                    duniterIndexer: duniterIndexer,
                     avatarSize: avatarSize,
                     walletsProfilesClass: walletsProfilesClass,
                   ),

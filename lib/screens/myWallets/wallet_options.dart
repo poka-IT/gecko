@@ -11,7 +11,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
@@ -28,26 +28,38 @@ import 'package:gecko/models/membership_renewal.dart';
 import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/screens/identity/confirm_identity.dart';
 
-class WalletOptions extends ConsumerWidget {
+class WalletOptions extends ConsumerStatefulWidget {
   const WalletOptions({Key? keyMyWallets, required this.wallet}) : super(key: keyMyWallets);
   final WalletEntity wallet;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WalletOptions> createState() => _WalletOptionsState();
+}
+
+class _WalletOptionsState extends ConsumerState<WalletOptions> {
+  late String currentWalletName;
+
+  @override
+  void initState() {
+    super.initState();
+    currentWalletName = widget.wallet.name ?? '';
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
     WalletsProfilesProvider historyProvider = old_provider.Provider.of<WalletsProfilesProvider>(context, listen: false);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
 
-    walletOptions.address.text = wallet.address;
+    walletOptions.address.text = widget.wallet.address;
 
     final currentChest = myWalletProvider.getCurrentSafe;
-    final isWalletNameIndexed = duniterIndexer.walletNameIndexer[walletOptions.address.text] != null;
+    final isWalletNameIndexed = ref.read(squidServiceProvider).walletNameIndexer[walletOptions.address.text] != null;
 
     final isAlone = myWalletProvider.listWallets.length == 1;
 
     final defaultWallet = myWalletProvider.getDefaultWallet();
-    walletOptions.isDefaultWallet = defaultWallet.address == wallet.address;
+    walletOptions.isDefaultWallet = defaultWallet.address == widget.wallet.address;
 
     return PopScope(
       onPopInvokedWithResult: (_, _) {
@@ -56,18 +68,20 @@ class WalletOptions extends ConsumerWidget {
       },
       child: Scaffold(
         appBar: WalletAppBar(
-          address: wallet.address,
-          currentBalance: walletOptions.balanceCache[wallet.address] ?? BigInt.zero,
-          title: isWalletNameIndexed ? duniterIndexer.walletNameIndexer[walletOptions.address.text]! : wallet.name!,
+          address: widget.wallet.address,
+          currentBalance: walletOptions.balanceCache[widget.wallet.address] ?? BigInt.zero,
+          title: isWalletNameIndexed
+              ? ref.read(squidServiceProvider).walletNameIndexer[walletOptions.address.text]!
+              : currentWalletName,
         ),
         body: Stack(
           children: [
             Column(
               children: [
                 WalletHeader(
-                  address: wallet.address,
-                  customImagePath: wallet.imagePath,
-                  defaultImagePath: wallet.imagePath,
+                  address: widget.wallet.address,
+                  customImagePath: widget.wallet.imagePath,
+                  defaultImagePath: widget.wallet.imagePath,
                 ),
                 // Corps avec les options
                 Expanded(
@@ -85,7 +99,8 @@ class WalletOptions extends ConsumerWidget {
                                 spacing: 8,
                                 children: [
                                   buildConfirmIdentitySection(context, ref, walletProvider),
-                                  if (wallet.hasIdentity) buildRenewMembershipSection(context, ref, walletProvider),
+                                  if (widget.wallet.hasIdentity)
+                                    buildRenewMembershipSection(context, ref, walletProvider),
                                   buildOptionsSection(context, walletProvider, historyProvider),
                                   if (!isAlone)
                                     buildDefaultWalletSection(
@@ -96,11 +111,26 @@ class WalletOptions extends ConsumerWidget {
                                       walletOptions,
                                       currentChest,
                                     ),
-                                  if (!wallet.hasIdentity)
+                                  if (!widget.wallet.hasIdentity)
                                     InkWell(
                                       key: keyRenameWallet,
                                       onTap: () async {
-                                        await walletProvider.editWalletName(context, wallet.address);
+                                        await walletProvider.editWalletName(context, widget.wallet);
+                                        // Reload wallets data to update the UI
+                                        await myWalletProvider.readAllWallets(currentChest);
+                                        // Reload the wallet object to get the updated name
+                                        final updatedWallet = myWalletProvider.getWalletDataByAddress(
+                                          widget.wallet.address,
+                                        );
+                                        if (updatedWallet != null) {
+                                          widget.wallet.name = updatedWallet.name;
+                                          // Update the local state to rebuild the UI
+                                          setState(() {
+                                            currentWalletName = updatedWallet.name!;
+                                          });
+                                        }
+                                        myWalletProvider.reload();
+                                        walletProvider.reload();
                                       },
                                       child: Container(
                                         padding: EdgeInsets.symmetric(
@@ -130,9 +160,9 @@ class WalletOptions extends ConsumerWidget {
                                         ),
                                       ),
                                     ),
-                                  if (!walletProvider.isDefaultWallet && !wallet.hasIdentity)
+                                  if (!walletProvider.isDefaultWallet && !widget.wallet.hasIdentity)
                                     deleteWallet(context, ref, walletOptions, currentChest),
-                                  if (wallet.hasIdentity) const ManageMembershipButton(),
+                                  if (widget.wallet.hasIdentity) const ManageMembershipButton(),
                                   if (isAlone) aloneWalletOptions(context, ref),
                                 ],
                               );
@@ -180,9 +210,9 @@ class WalletOptions extends ConsumerWidget {
             ],
           ),
           child: ClipOval(
-            child: wallet.imagePath == null || wallet.imagePath == ''
-                ? Image.asset('assets/avatars/${wallet.number % 4}.png', fit: BoxFit.cover)
-                : Image.asset(wallet.imagePath!, fit: BoxFit.cover),
+            child: widget.wallet.imagePath == null || widget.wallet.imagePath == ''
+                ? Image.asset('assets/avatars/${widget.wallet.number % 4}.png', fit: BoxFit.cover)
+                : Image.asset(widget.wallet.imagePath!, fit: BoxFit.cover),
           ),
         ),
         Positioned(
@@ -193,7 +223,7 @@ class WalletOptions extends ConsumerWidget {
             decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
             child: InkWell(
               onTap: () async {
-                wallet.imagePath = await walletProvider.changeAvatar();
+                widget.wallet.imagePath = await walletProvider.changeAvatar();
                 walletProvider.reload();
               },
               child: Icon(Icons.camera_alt, size: scaleSize(20), color: Colors.black54),
@@ -257,7 +287,7 @@ class WalletOptions extends ConsumerWidget {
     final defaultWallet = myWalletProvider.getDefaultWallet();
     final bool isDefaultWallet = walletOptions.address.text == defaultWallet.address;
     return FutureBuilder(
-      future: ref.read(storageServiceProvider).hasAccountConsumers(wallet.address),
+      future: ref.read(storageServiceProvider).hasAccountConsumers(widget.wallet.address),
       builder: (BuildContext context, AsyncSnapshot<bool> hasConsumers) {
         if (hasConsumers.connectionState != ConnectionState.done || hasConsumers.hasError || !hasConsumers.hasData) {
           return const SizedBox.shrink();
@@ -267,12 +297,12 @@ class WalletOptions extends ConsumerWidget {
             !isDefaultWallet &&
             !hasConsumers.data! &&
             (balance > BigInt.from(2) || balance == BigInt.zero) &&
-            !wallet.hasIdentity;
+            !widget.wallet.hasIdentity;
         return InkWell(
           key: keyDeleteWallet,
           onTap: canDelete
               ? () async {
-                  await walletOptions.deleteWallet(context, wallet);
+                  await walletOptions.deleteWallet(context, widget.wallet);
                   WidgetsBinding.instance.addPostFrameCallback((_) async {
                     myWalletProvider.listWallets = await myWalletProvider.readAllWallets(currentChest);
                     myWalletProvider.reload();

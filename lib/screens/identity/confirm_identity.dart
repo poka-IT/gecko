@@ -1,3 +1,4 @@
+import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,7 +8,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
@@ -34,9 +35,9 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
     super.dispose();
   }
 
-  Future<void> _validateIdentityName(DuniterIndexer duniterIndexer) async {
+  Future<void> _validateIdentityName() async {
     final name = _identityNameController.text.trim();
-    final idtyExist = await duniterIndexer.isIdtyExist(name);
+    final idtyExist = await SquidService.client.isIdtyExist(name);
     final hasNoSpaces = !name.contains(' ');
     final isValid = !idtyExist && hasNoSpaces && name.length >= 3 && name.length <= 32;
 
@@ -94,7 +95,6 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
     final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
     final screenSize = MediaQuery.of(context).size;
     final isSmallScreen = screenSize.height < 700;
@@ -169,7 +169,7 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
                     TextField(
                       key: keyEnterIdentityUsername,
                       controller: _identityNameController,
-                      onChanged: (_) => _validateIdentityName(duniterIndexer),
+                      onChanged: (_) => _validateIdentityName(),
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) {
                         if (_canValidate) {

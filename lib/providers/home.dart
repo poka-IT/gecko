@@ -1,28 +1,23 @@
-import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
-import 'package:durt2/durt2.dart' show Networks;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+
 import 'package:gecko/providers/my_wallets.dart' show MyWalletsProvider;
 import 'package:gecko/providers/v2s_datapod.dart' show V2sDatapodProvider;
 import 'package:gecko/providers/wallet_options.dart';
-import 'package:gecko/widgets/commons/common_elements.dart' show infoPopup;
+import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb, setEquals;
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_header_data.dart';
-import 'package:gecko/services/network_config.service.dart';
 
 class HomeProvider with ChangeNotifier {
   late ProviderContainer _container;
@@ -126,95 +121,11 @@ class HomeProvider with ChangeNotifier {
     }
   }
 
-  bool _isValidEndpointsList(dynamic endpoints) {
-    if (endpoints == null) return false;
-    if (endpoints is! List) return false;
-    if (endpoints.isEmpty) return false;
-    return endpoints.every((e) => e is String && e.startsWith('ws'));
-  }
-
-  Future<List<String>> _fetchRemoteEndpoints() async {
-    try {
-      final config = await NetworkConfigService.getNetworkConfig();
-      if (config.rpc.isEmpty) throw 'No RPC endpoints found';
-      return config.rpc;
-    } catch (e) {
-      log.e('Erreur fetch remote endpoints: $e');
-      rethrow;
-    }
-  }
-
-  Future<void> _updateEndpointsInBackground(List<String> currentEndpoints) async {
-    try {
-      final remoteEndpoints = await _fetchRemoteEndpoints();
-
-      // Comparer les listes sans tenir compte de l'ordre
-      final currentSet = Set.from(currentEndpoints);
-      final remoteSet = Set.from(remoteEndpoints);
-
-      if (!setEquals(currentSet, remoteSet)) {
-        remoteEndpoints.shuffle();
-        // await configBox.put('endpoint', remoteEndpoints);
-        log.i('Endpoints mis à jour en background');
-      }
-    } catch (e) {
-      log.e('Erreur update background: $e');
-    }
-  }
-
-  Future<List<String>> getValidEndpoints() async {
-    // 0. Set automode if not set
-    if (!configBox.containsKey('autoEndpoint')) {
-      configBox.put('autoEndpoint', true);
-    }
-
-    // 1. Vérification rapide de la configBox
-    final existingEndpoints = Networks.listDuniterEndpoints;
-    if (_isValidEndpointsList(existingEndpoints)) {
-      // Lancer la mise à jour en background
-      unawaited(_updateEndpointsInBackground(List<String>.from(existingEndpoints)));
-      return List<String>.from(existingEndpoints);
-    }
-
-    try {
-      // 2. Tentative de fetch distant
-      final endpoints = await _fetchRemoteEndpoints();
-      endpoints.shuffle();
-      // await configBox.put('endpoint', endpoints);
-      return endpoints;
-    } catch (e) {
-      // 3. Fallback sur le fichier local
-      try {
-        final localEndpoints = await rootBundle
-            .loadString('config/gdev_endpoints.json')
-            .then((jsonStr) => List<String>.from(jsonDecode(jsonStr)));
-
-        localEndpoints.shuffle();
-        // await configBox.put('endpoint', localEndpoints);
-        return localEndpoints;
-      } catch (e) {
-        log.e('Erreur critique endpoints: $e');
-        return Networks.listDuniterEndpoints;
-      }
-    }
-  }
-
-  T getRandomElement<T>(List<T> list) {
-    final random = Random();
-    var i = random.nextInt(list.length);
-    return list[i];
-  }
-
-  // void playSound(String customSound, double volume) async {
-  //   await player.play('$customSound.wav',
-  //       volume: volume, mode: PlayerMode.LOW_LATENCY, stayAwake: false);
-  // }
-
   void reload() {
     notifyListeners();
   }
 
-  Future<void> initHome(BuildContext context) async {
+  Future<void> initHome({required BuildContext context, required WidgetRef ref}) async {
     final homeProvider = old_provider.Provider.of<HomeProvider>(context, listen: false);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     final datapod = old_provider.Provider.of<V2sDatapodProvider>(context, listen: false);
@@ -256,15 +167,10 @@ class HomeProvider with ChangeNotifier {
       // Connect to Duniter network
       await _container.read(durtProvider).connect();
 
+      ref.watch(connectionStatusProvider);
+
       // Load wallets list
       await myWalletProvider.readAllWallets();
-
-      //Connect to Indexer
-      // ignore: use_build_context_synchronously
-      final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
-      await duniterIndexer.getValidIndexerEndpoint();
-
-      // // Test multi balances - TODO: Re-implement if needed
 
       // Future<void> updateConnectionStatus(List<ConnectivityResult> result) async {
       //   log.i('Network changed: $result');

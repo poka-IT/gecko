@@ -9,32 +9,24 @@ class OfflineInfo extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch the connection status stream.
-    // The widget will rebuild only when the status changes.
+    // Watch the connection status using the StateNotifierProvider
     final connectionStatus = ref.watch(connectionStatusProvider);
 
-    // .when is the standard way to handle async providers in Riverpod
-    return connectionStatus.when(
-      data: (status) {
-        final isConnected = status == d.ConnectionStatus.connected;
-        return Visibility(
-          visible: !isConnected,
-          child: Container(
-            width: double.infinity,
-            color: Colors.orange,
-            padding: const EdgeInsets.all(4),
-            child: Text(
-              'offline'.tr(),
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-          ),
-        );
-      },
-      // While connecting, we don't show anything.
-      loading: () => const SizedBox.shrink(),
-      // In case of an error with the stream itself, we show nothing.
-      error: (err, stack) => const SizedBox.shrink(),
+    // Since this is now a direct value, we don't need .when()
+    final isConnected = connectionStatus == d.ConnectionStatus.connected;
+
+    return Visibility(
+      visible: !isConnected,
+      child: Container(
+        width: double.infinity,
+        color: Colors.orange,
+        padding: const EdgeInsets.all(4),
+        child: Text(
+          'offline'.tr(),
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+      ),
     );
   }
 }

@@ -6,7 +6,7 @@ import 'package:gecko/exceptions.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
@@ -24,7 +24,6 @@ class CertifyButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     return Column(
@@ -38,7 +37,7 @@ class CertifyButton extends ConsumerWidget {
                 key: keyCertify,
                 splashColor: context.colorScheme.primary,
                 onTap: () async {
-                  final walletName = duniterIndexer.walletNameIndexer[address];
+                  final walletName = ref.read(squidServiceProvider).walletNameIndexer[address];
                   final message = walletName != null
                       ? '${'areYouSureYouWantToCertify1'.tr()}\n\n**$walletName**\n\n${'areYouSureYouWantToCertify2'.tr()}\n\n**${getShortPubkey(address)}**'
                       : '${'areYouSureCreateIdentityOnAddress'.tr()}\n\n**${getShortPubkey(address)}**';

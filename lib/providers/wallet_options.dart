@@ -1,16 +1,17 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:io';
-import 'package:durt2/durt2.dart' show WalletEntity;
+import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+
 import 'package:gecko/providers/my_wallets.dart';
 // import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/utils.dart';
@@ -49,56 +50,121 @@ class WalletOptionsProvider with ChangeNotifier {
     return pinLength;
   }
 
-  void _renameWallet(String address, String newName, {required bool isCesium}) async {
-    MyWalletsProvider myWalletClass = MyWalletsProvider();
-
-    WalletEntity walletTarget = myWalletClass.getWalletDataByAddress(address)!;
-    walletTarget.name = newName;
-    await _container.read(walletServiceProvider).walletBox.putAsync(walletTarget);
+  void _renameWallet(WalletEntity wallet, String newName, {required bool isCesium}) async {
+    wallet.name = newName;
+    _container.read(walletServiceProvider).walletBox.put(wallet);
 
     _newWalletName.text = '';
   }
 
   Future<int> deleteWallet(BuildContext context, WalletEntity wallet) async {
-    // final datapod = Provider.of<V2sDatapodProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final defaultWallet = myWalletProvider.getDefaultWallet();
+    final walletBalance = balanceCache[wallet.address] ?? BigInt.zero;
+
+    // Show confirmation dialog with transfer details
+    String confirmationMessage;
+    if (walletBalance > BigInt.zero) {
+      confirmationMessage = 'areYouSureToForgetWalletWithBalance'.tr(
+        args: [
+          wallet.name!,
+          '${(walletBalance.toDouble() / 100).toStringAsFixed(2)} $currencyName',
+          defaultWallet.name ?? 'defaultWallet'.tr(),
+        ],
+      );
+    } else {
+      confirmationMessage = 'areYouSureToForgetWallet'.tr(args: [wallet.name!]);
+    }
+
     final answer = await showConfirmationDialog(
       context: context,
-      message: 'areYouSureToForgetWallet'.tr(args: [wallet.name!]),
+      message: confirmationMessage,
       type: ConfirmationDialogType.warning,
     );
 
-    if (answer) {
-      //Check if balance is null
-      if (balanceCache[wallet.address] != BigInt.zero) {
-        final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-        final defaultWallet = myWalletProvider.getDefaultWallet();
-        final keypair = await _container
-            .read(walletServiceProvider)
-            .getKeyPairFromAddress(address: wallet.address, pinCode: myWalletProvider.pinCode);
-        final isUdUnit = configBox.get('isUdUnit') ?? false;
-        _container
-            .read(duniterServiceProvider)
-            .pay(
-              keypair: keypair,
-              destAddress: defaultWallet.address,
-              amount: -1,
-              comment: 'ĞECKO:DELETEWALLET',
-              isUd: isUdUnit,
-            );
-      }
+    if (!answer) return 0;
 
-      if (wallet.imagePath != null) {
-        final avatarFile = File(wallet.imagePath!);
-        if (await avatarFile.exists()) {
-          await avatarFile.delete();
+    // If wallet has balance, transfer funds first
+    if (walletBalance > BigInt.zero) {
+      if (!await myWalletProvider.askPinCode()) return 0;
+
+      final keypair = await _container
+          .read(walletServiceProvider)
+          .getKeyPairFromAddress(address: wallet.address, pinCode: myWalletProvider.pinCode);
+
+      final isUdUnit = configBox.get('isUdUnit') ?? false;
+      final transactionStatus = _container
+          .read(duniterServiceProvider)
+          .pay(
+            keypair: keypair,
+            destAddress: defaultWallet.address,
+            amount: -1,
+            comment: 'ĞECKO:DELETEWALLET',
+            isUd: isUdUnit,
+          );
+
+      // Show loading dialog while transaction is processing
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                ScaledSizedBox(height: 16),
+                Text(
+                  'transferringFundsToDefaultWallet'.tr(args: [defaultWallet.name ?? 'defaultWallet'.tr()]),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
+      // Wait for transaction completion and check if successful
+      bool transactionSuccessful = false;
+      String? errorMessage;
+
+      await for (final status in transactionStatus) {
+        if (status.state == TransactionState.finalized) {
+          transactionSuccessful = true;
+          break;
+        } else if (status.state == TransactionState.error) {
+          errorMessage = status.errorMessage ?? 'unknownError'.tr();
+          break;
         }
       }
 
-      // datapod.deleteProfile(address: wallet.address);
-      await _container.read(walletServiceProvider).deleteWallet(wallet.address);
-
+      // Close loading dialog
       Navigator.pop(context);
+
+      if (!transactionSuccessful) {
+        // Show error dialog
+        await showConfirmationDialog(
+          context: context,
+          message: 'transactionFailedWalletNotDeleted'.tr(args: [errorMessage!]),
+          type: ConfirmationDialogType.error,
+        );
+        return 1; // Return error code
+      }
     }
+
+    // Delete wallet files and data only if transaction was successful or wallet was empty
+    if (wallet.imagePath != null) {
+      final avatarFile = File(wallet.imagePath!);
+      if (await avatarFile.exists()) {
+        await avatarFile.delete();
+      }
+    }
+
+    // Delete from database
+    await _container.read(walletServiceProvider).deleteWallet(wallet.address);
+
+    // Navigate back
+    Navigator.pop(context);
     return 0;
   }
 
@@ -170,7 +236,6 @@ class WalletOptionsProvider with ChangeNotifier {
   Future<String?> confirmIdentityPopup(BuildContext context) async {
     final idtyName = TextEditingController();
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
 
     bool canValidate = false;
     bool idtyExist = false;
@@ -193,12 +258,8 @@ class WalletOptionsProvider with ChangeNotifier {
                 TextField(
                   key: keyEnterIdentityUsername,
                   onChanged: (_) async {
-                    idtyExist = await duniterIndexer.isIdtyExist(idtyName.text);
-                    canValidate =
-                        !idtyExist &&
-                        !await duniterIndexer.isIdtyExist(idtyName.text) &&
-                        idtyName.text.length >= 2 &&
-                        idtyName.text.length <= 32;
+                    idtyExist = await SquidService.client.isIdtyExist(idtyName.text);
+                    canValidate = !idtyExist && idtyName.text.length >= 2 && idtyName.text.length <= 32;
 
                     notifyListeners();
                   },
@@ -283,7 +344,7 @@ class WalletOptionsProvider with ChangeNotifier {
     );
   }
 
-  Future<String?> editWalletName(BuildContext context, String address) async {
+  Future<String?> editWalletName(BuildContext context, WalletEntity wallet) async {
     final walletName = TextEditingController();
     canValidateNameBool = false;
 
@@ -331,8 +392,7 @@ class WalletOptionsProvider with ChangeNotifier {
                       onPressed: () async {
                         if (canValidateNameBool) {
                           nameController.text = walletName.text;
-                          _renameWallet(address, walletName.text, isCesium: false);
-                          notifyListeners();
+                          _renameWallet(wallet, walletName.text, isCesium: false);
                           Navigator.pop(context);
                         }
                       },

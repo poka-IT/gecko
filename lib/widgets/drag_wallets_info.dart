@@ -2,29 +2,27 @@ import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
-import 'package:provider/provider.dart';
+import 'package:gecko/providers.dart';
 
-class DragWalletsInfo extends StatelessWidget {
+class DragWalletsInfo extends ConsumerWidget {
   const DragWalletsInfo({super.key, required this.dragAddress, required this.lastFlyBy});
 
   final WalletEntity dragAddress;
   final WalletEntity lastFlyBy;
 
   @override
-  Widget build(BuildContext context) {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-
+  Widget build(BuildContext context, WidgetRef ref) {
     final bool isSameAddress = dragAddress == lastFlyBy;
 
     final screenWidth = MediaQuery.of(homeContext).size.width;
 
-    final fromName = duniterIndexer.walletNameIndexer[dragAddress.address] ?? dragAddress.name;
+    final fromName = ref.read(squidServiceProvider).walletNameIndexer[dragAddress.address] ?? dragAddress.name;
 
-    final toName = duniterIndexer.walletNameIndexer[lastFlyBy.address] ?? lastFlyBy.name;
+    final toName = ref.read(squidServiceProvider).walletNameIndexer[lastFlyBy.address] ?? lastFlyBy.name;
     final mdStyle = MarkdownStyleSheet(
       p: scaledTextStyle(fontSize: 15, color: Colors.black, letterSpacing: 0.3),
       textAlign: WrapAlignment.spaceBetween,

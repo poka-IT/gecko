@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+
 import 'package:gecko/providers/search.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/wallet_view.dart';
@@ -18,13 +18,11 @@ class SearchResult extends StatelessWidget {
   const SearchResult({
     super.key,
     required this.searchProvider,
-    required this.duniterIndexer,
     required this.avatarSize,
     required this.walletsProfilesClass,
   });
 
   final SearchProvider searchProvider;
-  final DuniterIndexer duniterIndexer;
   final double avatarSize;
   final WalletsProfilesProvider walletsProfilesClass;
 

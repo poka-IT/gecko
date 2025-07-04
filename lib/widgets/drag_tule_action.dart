@@ -51,7 +51,7 @@ class DragTuleAction extends ConsumerWidget {
           paymentPopup(
             ref: ref,
             toAddress: wallet.address,
-            username: g1WalletsBox.get(wallet.address)!.username ?? wallet.name!,
+            username: g1WalletsBox.get(wallet.address)?.username ?? wallet.name!,
           );
         },
         onMove: (details) {

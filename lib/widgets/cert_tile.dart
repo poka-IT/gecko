@@ -6,11 +6,12 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
+import 'package:gecko/widgets/certs_list.dart';
 
 class CertTile extends StatelessWidget {
   const CertTile({super.key, required this.listCerts});
 
-  final List listCerts;
+  final List<CertDisplayItem> listCerts;
 
   @override
   Widget build(BuildContext context) {
@@ -26,11 +27,11 @@ class CertTile extends StatelessWidget {
               child: ListTile(
                 key: keyTransaction(keyID++),
                 contentPadding: EdgeInsets.only(left: 10, right: 0, top: scaleSize(3), bottom: scaleSize(3)),
-                leading: DatapodAvatar(address: repository['address'] ?? '', size: avatarSize),
+                leading: DatapodAvatar(address: repository.address, size: avatarSize),
                 title: Padding(
                   padding: const EdgeInsets.only(bottom: 2),
                   child: Text(
-                    repository['name'],
+                    repository.name,
                     style: scaledTextStyle(fontSize: 15, color: context.colorScheme.onSecondaryContainer),
                   ),
                 ),
@@ -38,14 +39,14 @@ class CertTile extends StatelessWidget {
                   text: TextSpan(
                     style: scaledTextStyle(fontSize: 14, color: homeContext.colorScheme.onSurfaceVariant),
                     children: <TextSpan>[
-                      TextSpan(text: repository['date'], style: scaledTextStyle(fontSize: 14)),
-                      if (repository[2] != '')
+                      TextSpan(text: repository.date, style: scaledTextStyle(fontSize: 14)),
+                      if (repository.name.isNotEmpty)
                         TextSpan(
                           text: '  ·  ',
                           style: scaledTextStyle(fontSize: 18, color: Colors.grey[550]),
                         ),
                       TextSpan(
-                        text: getShortPubkey(repository['address'] ?? ''),
+                        text: getShortPubkey(repository.address),
                         style: scaledTextStyle(
                           fontStyle: FontStyle.italic,
                           fontFamily: 'Monospace',
@@ -58,16 +59,18 @@ class CertTile extends StatelessWidget {
                 ),
                 dense: !isTall,
                 isThreeLine: false,
-                onTap: () {
-                  Navigator.push(
-                    homeContext,
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return WalletViewScreen(address: repository['address'], username: repository['name']);
-                      },
-                    ),
-                  );
-                },
+                onTap: repository.address.isNotEmpty
+                    ? () {
+                        Navigator.push(
+                          homeContext,
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return WalletViewScreen(address: repository.address, username: repository.name);
+                            },
+                          ),
+                        );
+                      }
+                    : null,
               ),
             ),
           ],

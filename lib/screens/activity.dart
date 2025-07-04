@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/history_query.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
@@ -37,7 +37,6 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
   }
 
   Future<WalletHeaderData> _loadWalletData() async {
-    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     final (idtyStatusValue, balanceResult, certData) = await (
@@ -49,7 +48,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
     final data = WalletHeaderData(
       hasIdentity: idtyStatusValue != IdtyStatus.none,
       isOwner: myWalletProvider.isOwner(widget.address),
-      walletName: duniterIndexer.walletNameIndexer[widget.address],
+      walletName: ref.read(squidServiceProvider).walletNameIndexer[widget.address],
       balance: balanceResult.transferableBalance,
       certsReceived: certData.receivedCount,
       certsSent: certData.sentCount,
@@ -60,8 +59,6 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: true);
-
     return FutureBuilder<WalletHeaderData>(
       future: _headerDataFuture,
       builder: (context, snapshot) {
@@ -83,31 +80,26 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
 
         final walletData = snapshot.data!;
 
-        return PopScope(
-          onPopInvokedWithResult: (_, _) {
-            duniterIndexer.refetch = duniterIndexer.transBC = null;
-          },
-          child: Scaffold(
-            appBar: WalletAppBar(
-              address: widget.address,
-              currentBalance: walletData.balance,
-              title: 'accountActivity'.tr(),
-            ),
-            body: Stack(
-              children: [
-                Column(
-                  children: <Widget>[
-                    WalletHeader(address: widget.address),
-                    Expanded(
-                      child: HistoryQuery(address: widget.address, transactionData: widget.transactionData),
-                    ),
-                  ],
-                ),
-                const OfflineInfo(),
-              ],
-            ),
-            bottomNavigationBar: const GeckoBottomAppBar(),
+        return Scaffold(
+          appBar: WalletAppBar(
+            address: widget.address,
+            currentBalance: walletData.balance,
+            title: 'accountActivity'.tr(),
           ),
+          body: Stack(
+            children: [
+              Column(
+                children: <Widget>[
+                  WalletHeader(address: widget.address),
+                  Expanded(
+                    child: HistoryQuery(address: widget.address, transactionData: widget.transactionData),
+                  ),
+                ],
+              ),
+              const OfflineInfo(),
+            ],
+          ),
+          bottomNavigationBar: const GeckoBottomAppBar(),
         );
       },
     );

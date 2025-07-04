@@ -23,7 +23,6 @@ import 'package:gecko/widgets/payment_popup.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 import 'package:gecko/models/wallet_header_data.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
 
 const double buttonSize = 75;
 const double buttonFontSize = 13;
@@ -51,7 +50,6 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
   }
 
   Future<WalletHeaderData> _loadWalletData() async {
-    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     final (idtyStatusValue, balanceResult, certData) = await (
@@ -63,7 +61,7 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
     final data = WalletHeaderData(
       hasIdentity: idtyStatusValue != IdtyStatus.none,
       isOwner: myWalletProvider.isOwner(address),
-      walletName: duniterIndexer.walletNameIndexer[address],
+      walletName: ref.read(squidServiceProvider).walletNameIndexer[address],
       balance: balanceResult.transferableBalance,
       certsReceived: certData.receivedCount,
       certsSent: certData.sentCount,

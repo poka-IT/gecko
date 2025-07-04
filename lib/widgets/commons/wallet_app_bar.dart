@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:gecko/providers.dart';
+
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'package:qr_flutter/qr_flutter.dart';
 
-class WalletAppBar extends StatelessWidget implements PreferredSizeWidget {
+class WalletAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const WalletAppBar({super.key, required this.address, required this.currentBalance, this.title, this.titleBuilder})
     : assert(title != null || titleBuilder != null);
 
@@ -20,9 +22,8 @@ class WalletAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String Function(String? username)? titleBuilder;
 
   @override
-  Widget build(BuildContext context) {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
 
     final balance = walletOptions.balanceCache[address] == null
         ? currentBalance
@@ -33,11 +34,15 @@ class WalletAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary,
       titleSpacing: 10,
-      title: Text(title ?? titleBuilder!(duniterIndexer.walletNameIndexer[address])),
+      title: old_provider.Consumer<WalletOptionsProvider>(
+        builder: (context, walletOptions, _) {
+          return Text(title ?? titleBuilder!(ref.watch(squidServiceProvider).walletNameIndexer[address]));
+        },
+      ),
       actions: [
         Row(
           children: [
-            Consumer<WalletsProfilesProvider>(
+            old_provider.Consumer<WalletsProfilesProvider>(
               builder: (context, profile, _) {
                 return IconButton(
                   onPressed: () async {

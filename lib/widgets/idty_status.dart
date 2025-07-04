@@ -39,7 +39,7 @@ class IdentityStatus extends ConsumerWidget {
             ? NameByAddress(
                 wallet: walletData,
                 size: 18,
-                color: color,
+                color: homeContext.colorScheme.onSurface,
                 fontWeight: FontWeight.w500,
                 fontStyle: FontStyle.normal,
               )

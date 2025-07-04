@@ -1,27 +1,29 @@
 import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:gecko/providers.dart';
+
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/name_by_address.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
-class ContactsList extends StatelessWidget {
+class ContactsList extends ConsumerWidget {
   const ContactsList({super.key, required this.myContacts});
 
   final List<G1WalletsList> myContacts;
 
   void _showContactMenu(BuildContext context, G1WalletsList contact) {
-    final walletsProfilesClass = Provider.of<WalletsProfilesProvider>(context, listen: false);
+    final walletsProfilesClass = old_provider.Provider.of<WalletsProfilesProvider>(context, listen: false);
 
     showModalBottomSheet(
       context: context,
@@ -58,9 +60,8 @@ class ContactsList extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final walletsProfilesClass = Provider.of<WalletsProfilesProvider>(context, listen: false);
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final walletsProfilesClass = old_provider.Provider.of<WalletsProfilesProvider>(context, listen: false);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 5),
@@ -134,7 +135,7 @@ class ContactsList extends StatelessWidget {
                                 walletsProfilesClass.address = g1Wallet.address;
                                 return WalletViewScreen(
                                   address: g1Wallet.address,
-                                  username: duniterIndexer.walletNameIndexer[g1Wallet.address],
+                                  username: ref.read(squidServiceProvider).walletNameIndexer[g1Wallet.address],
                                 );
                               },
                             ),

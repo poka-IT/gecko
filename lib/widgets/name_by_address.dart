@@ -1,19 +1,15 @@
-import 'package:durt2/durt2.dart' show WalletEntity;
-import 'package:flutter/foundation.dart';
+import 'package:durt2/durt2.dart' as d show WalletEntity, ConnectionStatus;
 import 'package:flutter/material.dart';
-import 'package:gecko/extensions.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
-import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/wallet_name.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:provider/provider.dart';
 import 'package:truncate/truncate.dart';
 
-class NameByAddress extends StatelessWidget {
+class NameByAddress extends ConsumerWidget {
   const NameByAddress({
     super.key,
     required this.wallet,
@@ -22,58 +18,51 @@ class NameByAddress extends StatelessWidget {
     this.fontWeight = FontWeight.w400,
     this.fontStyle = FontStyle.normal,
   });
-  final WalletEntity wallet;
+
+  final d.WalletEntity wallet;
   final Color? color;
   final double size;
   final FontWeight fontWeight;
   final FontStyle fontStyle;
 
   @override
-  Widget build(BuildContext context) {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
+  Widget build(BuildContext context, WidgetRef ref) {
     final finalColor = color ?? Theme.of(context).colorScheme.onSurface;
 
-    if (indexerEndpoint == '') {
+    // Check if we have network connection
+    final connectionStatus = ref.watch(connectionStatusProvider);
+
+    final isNetworkAvailable = connectionStatus == d.ConnectionStatus.connected;
+
+    if (!isNetworkAvailable) {
       return WalletName(wallet: wallet, size: size, color: finalColor);
     }
 
-    return GraphQLProvider(
-      client: ValueNotifier(duniterIndexer.indexerClient),
-      child: Query(
-        options: QueryOptions(document: gql(getNameByAddressQ), variables: {'address': wallet.address}),
-        builder: (QueryResult result, {VoidCallback? refetch, FetchMore? fetchMore}) {
-          if (kDebugMode) {
-            if (result.hasException) {
-              return Text(result.exception.toString());
-            }
-          }
+    final identityNameAsync = ref.watch(identityNameProvider(wallet.address));
 
-          if (result.isLoading) {
-            return const Loading();
-          }
+    return identityNameAsync.when(
+      data: (name) {
+        // Store in G1 wallets list for compatibility
+        if (name != null) {
+          g1WalletsBox.put(wallet.address, G1WalletsList(address: wallet.address, username: name));
+        }
 
-          final edges = result.data?['identityConnection']['edges'];
-          final name = edges != null && edges.isNotEmpty ? edges[0]['node']['name'] : null;
+        // If no identity name found, show wallet name
+        if (name == null) {
+          return WalletName(wallet: wallet, size: size, color: finalColor);
+        }
 
-          duniterIndexer.walletNameIndexer[wallet.address] = name;
-
-          g1WalletsBox.put(
-            wallet.address,
-            G1WalletsList(address: wallet.address, username: duniterIndexer.walletNameIndexer[wallet.address]),
-          );
-
-          if (duniterIndexer.walletNameIndexer[wallet.address] == null) {
-            return WalletName(wallet: wallet, size: size, color: finalColor);
-          }
-
-          return Text(
-            finalColor == homeContext.colorScheme.onSurfaceVariant
-                ? '(${duniterIndexer.walletNameIndexer[wallet.address]!})'
-                : truncate(duniterIndexer.walletNameIndexer[wallet.address]!, 19),
-            style: scaledTextStyle(fontSize: size, color: finalColor, fontWeight: fontWeight, fontStyle: fontStyle),
-          );
-        },
-      ),
+        // Show identity name
+        return Text(
+          truncate(name, 19),
+          style: scaledTextStyle(fontSize: size, color: finalColor, fontWeight: fontWeight, fontStyle: fontStyle),
+        );
+      },
+      loading: () => const Loading(),
+      error: (error, stackTrace) {
+        // On error, fall back to wallet name
+        return WalletName(wallet: wallet, size: size, color: finalColor);
+      },
     );
   }
 }

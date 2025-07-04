@@ -110,9 +110,9 @@ void paymentPopup({required WidgetRef ref, required String toAddress, required S
     // Create a StreamController to control the transaction status
     final statusController = StreamController<TransactionStatus>();
 
-    // Create a transaction data with the controlled stream
+    // Create a transaction data with the controlled stream (as broadcast to allow multiple listeners)
     final transactionData = TransactionInProgressData(
-      status: statusController.stream,
+      status: statusController.stream.asBroadcastStream(),
       toAddress: toAddress,
       amount: double.parse(walletViewProvider.payAmount.text),
       comment: walletViewProvider.comment,

@@ -3,29 +3,31 @@ import 'dart:async';
 import 'package:durt2/durt2.dart' hide Provider;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:gecko/providers/transaction_history_providers.dart';
+
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/transaction_status.dart';
 import 'package:gecko/widgets/transaction_state_icon.dart';
 import 'package:gecko/widgets/ud_unit_display.dart';
-import 'package:provider/provider.dart';
 import 'package:fade_and_translate/fade_and_translate.dart';
 import 'package:gecko/models/transaction_in_progress_data.dart';
 
-class TransactionInProgressTule extends StatefulWidget {
+class TransactionInProgressTule extends ConsumerStatefulWidget {
   const TransactionInProgressTule({super.key, required this.transactionData});
 
   final TransactionInProgressData transactionData;
 
   @override
-  State<TransactionInProgressTule> createState() => _TransactionInProgressTuleState();
+  ConsumerState<TransactionInProgressTule> createState() => _TransactionInProgressTuleState();
 }
 
-class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
+class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgressTule> {
   late StreamSubscription<TransactionStatus> _subscription;
   TransactionStatus? _status;
   bool _isVisible = true;
@@ -61,8 +63,6 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
       return const SizedBox.shrink();
     }
 
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-
     String humanStatus = '';
     final finalAmount = widget.transactionData.amount * -1;
 
@@ -71,6 +71,13 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
       humanStatus = 'extrinsicValidated'.tr(args: [actionMap['pay']!]);
     } else if (_status!.state == TransactionState.error) {
       humanStatus = errorTransactionMap[_status!.errorMessage] ?? _status!.errorMessage!;
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('transactionFailed'.tr()), backgroundColor: Colors.red));
+        }
+      });
     } else {
       humanStatus = statusStatusMap[_status!.state] ?? 'Unknown status: ${_status!.state}';
     }
@@ -82,7 +89,7 @@ class _TransactionInProgressTuleState extends State<TransactionInProgressTule> {
       translate: const Offset(0, -40),
       delay: const Duration(seconds: 2),
       duration: const Duration(milliseconds: 700),
-      onCompleted: () async => duniterIndexer.refetch?.call(),
+      onCompleted: () => ref.invalidate(transactionHistoryProvider(widget.transactionData.toAddress)),
       child: Padding(
         padding: const EdgeInsets.all(8),
         child: Container(

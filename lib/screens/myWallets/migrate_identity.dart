@@ -9,7 +9,7 @@ import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
@@ -37,23 +37,22 @@ String mapValidationErrors(Set<MigrateWalletValidationError> errors) {
   };
 }
 
-class MigrateIdentityScreen extends StatefulWidget {
+class MigrateIdentityScreen extends ConsumerStatefulWidget {
   MigrateIdentityScreen({super.key});
 
   final newMnemonicSentence = TextEditingController();
   final newWalletAddress = TextEditingController();
 
   @override
-  State<MigrateIdentityScreen> createState() => _MigrateIdentityScreenState();
+  ConsumerState<MigrateIdentityScreen> createState() => _MigrateIdentityScreenState();
 }
 
-class _MigrateIdentityScreenState extends State<MigrateIdentityScreen> {
+class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
   @override
   Widget build(BuildContext context) {
     final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     final generatedWalletsProvider = old_provider.Provider.of<GenerateWalletsProvider>(context, listen: false);
-    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
     final screenSize = MediaQuery.of(context).size;
     final isSmallScreen = screenSize.height < 700;
 
@@ -152,7 +151,7 @@ class _MigrateIdentityScreenState extends State<MigrateIdentityScreen> {
                               children: [
                                 TextMarkDown(
                                   'areYouSureMigrateIdentity'.tr(
-                                    args: [duniterIndexer.walletNameIndexer[fromAddress] ?? '???'],
+                                    args: [ref.read(squidServiceProvider).walletNameIndexer[fromAddress] ?? '???'],
                                   ),
                                   textAlign: WrapAlignment.center,
                                   style: scaledTextStyle(

@@ -1,25 +1,56 @@
+import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
-import 'package:gecko/models/queries_indexer.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:gecko/providers.dart';
+import 'package:gecko/providers/transaction_history_providers.dart';
 import 'package:gecko/widgets/history_view.dart';
 import 'package:gecko/widgets/transaction_in_progress_tile.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:provider/provider.dart';
 import 'package:gecko/models/transaction_in_progress_data.dart';
 
-class HistoryQuery extends StatelessWidget {
+class HistoryQuery extends ConsumerStatefulWidget {
   const HistoryQuery({super.key, required this.address, this.transactionData});
   final String address;
   final TransactionInProgressData? transactionData;
 
   @override
+  ConsumerState<HistoryQuery> createState() => _HistoryQueryState();
+}
+
+class _HistoryQueryState extends ConsumerState<HistoryQuery> {
+  late ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.7) {
+      final historyNotifier = ref.read(transactionHistoryProvider(widget.address).notifier);
+      historyNotifier.loadMoreTransactions();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (indexerEndpoint == '') {
+    // Check if we have network connection
+    final connectionStatus = ref.watch(connectionStatusProvider);
+    final isNetworkAvailable = connectionStatus == d.ConnectionStatus.connected;
+
+    if (!isNetworkAvailable) {
       return Column(
         children: <Widget>[
           ScaledSizedBox(height: 50),
@@ -28,112 +59,67 @@ class HistoryQuery extends StatelessWidget {
       );
     }
 
-    final duniterIndexer = Provider.of<DuniterIndexer>(homeContext, listen: false);
-    final scrollController = ScrollController();
-    FetchMoreOptions? opts;
-    int nRepositories = 20;
-    return GraphQLProvider(
-      client: ValueNotifier(duniterIndexer.indexerClient),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.max,
-        children: <Widget>[
-          Query(
-            options: QueryOptions(
-              document: gql(getHistoryByAddressRelayQ),
-              variables: <String, dynamic>{'address': address, 'first': nRepositories, 'after': null},
-            ),
-            builder: (QueryResult result, {fetchMore, refetch}) {
-              duniterIndexer.refetch = refetch;
-              if (result.isLoading && result.data == null) {
-                return Center(child: CircularProgressIndicator(color: homeContext.colorScheme.primary));
-              }
-              final List transactions = result.data?["transferConnection"]["edges"];
+    final historyState = ref.watch(transactionHistoryProvider(widget.address));
+    final previousAddressAsync = ref.watch(previousAddressProvider(widget.address));
 
-              if (result.hasException) {
-                log.e('Error Indexer: ${result.exception}');
-                return Column(
-                  children: <Widget>[
-                    Column(
-                      children: [
-                        if (transactionData != null) TransactionInProgressTule(transactionData: transactionData!),
-                        ScaledSizedBox(height: 50),
-                        Text(
-                          "noNetworkNoHistory".tr(),
-                          textAlign: TextAlign.center,
-                          style: scaledTextStyle(fontSize: 17),
-                        ),
-                      ],
-                    ),
-                  ],
-                );
-              } else if (transactions.isEmpty) {
-                return Column(
-                  children: <Widget>[
-                    Column(
-                      children: [
-                        if (transactionData != null) TransactionInProgressTule(transactionData: transactionData!),
-                        ScaledSizedBox(height: 50),
-                        Text("noDataToDisplay".tr(), style: scaledTextStyle(fontSize: 17)),
-                      ],
-                    ),
-                  ],
-                );
-              }
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisSize: MainAxisSize.max,
+      children: <Widget>[
+        // Handle loading state
+        if (historyState.isLoading && historyState.transactions.isEmpty)
+          Center(child: CircularProgressIndicator(color: context.colorScheme.primary)),
 
-              if (result.isNotLoading) {
-                opts = duniterIndexer.mergeQueryResult(result, opts, address, nRepositories);
-              }
-
-              final identityConnection = result.data?["identityConnection"]["edges"] as List<dynamic>;
-              String? previousAddress;
-
-              if (identityConnection.isNotEmpty) {
-                final ownerKeyChange = identityConnection[0]["node"]["ownerKeyChange"];
-                if (ownerKeyChange != null) {
-                  final ownerKeyChangeList = ownerKeyChange as List<dynamic>;
-                  if (ownerKeyChangeList.isNotEmpty) {
-                    previousAddress = ownerKeyChangeList.first["previousId"];
-                  }
-                }
-              }
-
-              // Build history list
-              return NotificationListener(
-                child: Builder(
-                  builder: (context) => Expanded(
-                    child: RefreshIndicator(
-                      color: context.colorScheme.primary,
-                      onRefresh: () async => refetch!.call(),
-                      child: ListView(
-                        key: keyListTransactions,
-                        controller: scrollController,
-                        children: <Widget>[
-                          if (transactionData != null) TransactionInProgressTule(transactionData: transactionData!),
-                          HistoryView(result: result, address: address, previousAddress: previousAddress),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                onNotification: (dynamic t) {
-                  if (duniterIndexer.pageInfo == null) {
-                    duniterIndexer.reload();
-                  }
-
-                  if (t is ScrollEndNotification &&
-                      scrollController.position.pixels >= scrollController.position.maxScrollExtent * 0.7 &&
-                      duniterIndexer.pageInfo!['hasNextPage'] &&
-                      result.isNotLoading) {
-                    fetchMore!(opts!);
-                  }
-                  return true;
-                },
-              );
-            },
+        // Handle error state
+        if (historyState.error != null)
+          Column(
+            children: <Widget>[
+              if (widget.transactionData != null) TransactionInProgressTule(transactionData: widget.transactionData!),
+              ScaledSizedBox(height: 50),
+              Text("noNetworkNoHistory".tr(), textAlign: TextAlign.center, style: scaledTextStyle(fontSize: 17)),
+            ],
           ),
-        ],
-      ),
+
+        // Handle empty state
+        if (!historyState.isLoading && historyState.transactions.isEmpty && historyState.error == null)
+          Column(
+            children: <Widget>[
+              if (widget.transactionData != null) TransactionInProgressTule(transactionData: widget.transactionData!),
+              ScaledSizedBox(height: 50),
+              Text("noDataToDisplay".tr(), style: scaledTextStyle(fontSize: 17)),
+            ],
+          ),
+
+        // Handle success state with transactions
+        if (historyState.transactions.isNotEmpty)
+          Expanded(
+            child: RefreshIndicator(
+              color: context.colorScheme.primary,
+              onRefresh: () async {
+                await ref.read(transactionHistoryProvider(widget.address).notifier).refresh();
+              },
+              child: ListView(
+                key: keyListTransactions,
+                controller: _scrollController,
+                children: <Widget>[
+                  if (widget.transactionData != null)
+                    TransactionInProgressTule(transactionData: widget.transactionData!),
+                  HistoryView(
+                    transactions: historyState.transactions,
+                    address: widget.address,
+                    previousAddress: previousAddressAsync.when(
+                      data: (address) => address,
+                      loading: () => null,
+                      error: (error, stackTrace) => null,
+                    ),
+                    hasNextPage: historyState.hasNextPage,
+                    isLoadingMore: historyState.isLoading,
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

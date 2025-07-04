@@ -9,7 +9,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/certifications.dart';
@@ -54,7 +54,6 @@ class _WalletHeaderState extends ConsumerState<WalletHeader> {
       return cached;
     }
 
-    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     // Load all data in parallel with proper typing
@@ -67,7 +66,7 @@ class _WalletHeaderState extends ConsumerState<WalletHeader> {
     final data = WalletHeaderData(
       hasIdentity: idtyStatus != IdtyStatus.none,
       isOwner: myWalletProvider.isOwner(widget.address),
-      walletName: duniterIndexer.walletNameIndexer[widget.address],
+      walletName: ref.read(squidServiceProvider).walletNameIndexer[widget.address],
       balance: balance.transferableBalance,
       certsReceived: certData.receivedCount,
       certsSent: certData.sentCount,
@@ -81,7 +80,6 @@ class _WalletHeaderState extends ConsumerState<WalletHeader> {
   Future<void> _refreshData() async {
     if (!mounted) return;
 
-    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     // Load all data in parallel with proper typing
@@ -94,7 +92,7 @@ class _WalletHeaderState extends ConsumerState<WalletHeader> {
     final data = WalletHeaderData(
       hasIdentity: idtyStatus != IdtyStatus.none,
       isOwner: myWalletProvider.isOwner(widget.address),
-      walletName: duniterIndexer.walletNameIndexer[widget.address],
+      walletName: ref.read(squidServiceProvider).walletNameIndexer[widget.address],
       balance: balance.transferableBalance,
       certsReceived: certData.receivedCount,
       certsSent: certData.sentCount,
@@ -118,7 +116,6 @@ class _WalletHeaderState extends ConsumerState<WalletHeader> {
     bool isOwner,
     bool isPickerOpen,
     String newCustomImagePath,
-    DuniterIndexer duniterIndexer,
   ) {
     const double avatarSize = 90;
     final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
@@ -275,7 +272,7 @@ class _WalletHeaderState extends ConsumerState<WalletHeader> {
                       PageNoTransit(
                         builder: (context) => CertificationsScreen(
                           address: widget.address,
-                          username: duniterIndexer.walletNameIndexer[widget.address] ?? '',
+                          username: ref.read(squidServiceProvider).walletNameIndexer[widget.address] ?? '',
                         ),
                       ),
                     ),
@@ -412,8 +409,6 @@ class _WalletHeaderState extends ConsumerState<WalletHeader> {
 
   @override
   Widget build(BuildContext context) {
-    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
-
     // If data is in cache, show it immediately
     final cached = walletHeaderDataBox.get(widget.address);
     if (cached != null) {
@@ -424,7 +419,6 @@ class _WalletHeaderState extends ConsumerState<WalletHeader> {
         cached.isOwner,
         _isPickerOpen,
         _newCustomImagePath,
-        duniterIndexer,
       );
     }
 
@@ -441,15 +435,7 @@ class _WalletHeaderState extends ConsumerState<WalletHeader> {
         }
 
         final data = snapshot.data!;
-        return _buildContent(
-          context,
-          data.balance,
-          data.hasIdentity,
-          data.isOwner,
-          _isPickerOpen,
-          _newCustomImagePath,
-          duniterIndexer,
-        );
+        return _buildContent(context, data.balance, data.hasIdentity, data.isOwner, _isPickerOpen, _newCustomImagePath);
       },
     );
   }

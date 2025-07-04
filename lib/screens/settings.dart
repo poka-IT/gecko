@@ -1,6 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show Networks, DuniterEndpoints;
+import 'package:durt2/durt2.dart' show Networks, SquidService;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,7 +10,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/block_height_provider.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/settings_provider.dart';
@@ -23,14 +23,14 @@ import 'package:provider/provider.dart' as old_provider;
 // Helper pour accéder aux services Riverpod depuis ce fichier
 final _container = ProviderContainer();
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final MyWalletsProvider _myWallets = MyWalletsProvider();
   final FocusNode _duniterFocusNode = FocusNode();
   final FocusNode _indexerFocusNode = FocusNode();
@@ -44,8 +44,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _initControllers() {
-    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
-
     _endpointController = TextEditingController(
       text: configBox.containsKey('customEndpoint') ? configBox.get('customEndpoint') : Networks.duniterEndpoint,
     );
@@ -53,8 +51,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _indexerEndpointController = TextEditingController(
       text: configBox.containsKey('customIndexer')
           ? configBox.get('customIndexer')
-          : duniterIndexer.listIndexerEndpoints.isNotEmpty
-          ? duniterIndexer.listIndexerEndpoints[0]
+          : Networks.listSquidEndpoints.isNotEmpty
+          ? Networks.listSquidEndpoints[0]
           : 'https://',
     );
   }
@@ -62,8 +60,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context);
-
     // Mise à jour du champ node quand le nœud est connecté
     if (_container.read(durtProvider).isConnected && !configBox.containsKey('customEndpoint')) {
       final endpoint = Networks.duniterEndpoint;
@@ -73,8 +69,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
 
     // Mise à jour du champ indexer quand il devient disponible
-    if (duniterIndexer.listIndexerEndpoints.isNotEmpty && !configBox.containsKey('customIndexer')) {
-      final indexerEndpoint = duniterIndexer.listIndexerEndpoints[0];
+    if (Networks.listSquidEndpoints.isNotEmpty && !configBox.containsKey('customIndexer')) {
+      final indexerEndpoint = Networks.listSquidEndpoints[0];
       if (indexerEndpoint != _indexerEndpointController.text) {
         _indexerEndpointController.text = indexerEndpoint;
       }
@@ -436,19 +432,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
 
     if (result != null) {
-      controller.text = result;
-      configBox.put('autoEndpoint', false);
-      configBox.put('customEndpoint', result);
-      await _container
-          .read(durtProvider)
-          .connect(
-            customDuniterEndpoints: DuniterEndpoints(
-              endpoints: {
-                _container.read(networkProvider): [result],
-              },
-            ),
-          );
-      set.reload();
+      // First test if the endpoint is valid
+      final isWorking = await _container.read(durtProvider).duniterConnection.testEndpoint(result);
+
+      if (isWorking) {
+        // If valid, update config and connect to this specific endpoint
+        controller.text = result;
+        configBox.put('autoEndpoint', false);
+        configBox.put('customEndpoint', result);
+
+        try {
+          await _container.read(durtProvider).setFixedEndpoint(result);
+          set.reload();
+        } catch (e) {
+          // If connection fails after test passed, show error
+          if (context.mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('connectionError'.tr()), backgroundColor: Colors.red));
+          }
+        }
+      } else {
+        // If endpoint test fails, show error and don't change config
+        if (context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('invalidEndpointError'.tr()), backgroundColor: Colors.red));
+        }
+      }
     }
   }
 
@@ -499,15 +510,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
                 ),
                 ScaledSizedBox(width: 12),
-                Icon(
-                  _container.read(durtProvider).isConnected && !_container.read(durtProvider).isDuniterLoading
-                      ? Icons.check_circle
-                      : Icons.error,
-                  color: _container.read(durtProvider).isConnected && !_container.read(durtProvider).isDuniterLoading
-                      ? Colors.green
-                      : Colors.red,
-                  size: scaleSize(16),
-                ),
+                Icon(_getConnectionStatusIcon(), color: _getConnectionStatusColor(), size: scaleSize(16)),
                 const Spacer(),
                 old_provider.Consumer<SettingsProvider>(
                   builder: (context, set, _) {
@@ -684,17 +687,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       hintStyle: scaledTextStyle(fontSize: 14, color: Colors.grey[400]),
                     ),
                     onSubmitted: (value) async {
-                      configBox.put('customEndpoint', value);
-                      await _container
-                          .read(durtProvider)
-                          .connect(
-                            customDuniterEndpoints: DuniterEndpoints(
-                              endpoints: {
-                                _container.read(networkProvider): [value],
-                              },
-                            ),
+                      // First test if the endpoint is valid
+                      final isWorking = await _container.read(durtProvider).duniterConnection.testEndpoint(value);
+
+                      if (isWorking) {
+                        // If valid, update config and connect to this specific endpoint
+                        configBox.put('customEndpoint', value);
+                        try {
+                          await _container.read(durtProvider).setFixedEndpoint(value);
+                          set.reload();
+                        } catch (e) {
+                          // If connection fails after test passed, show error
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('connectionError'.tr()), backgroundColor: Colors.red),
+                            );
+                          }
+                        }
+                      } else {
+                        // If endpoint test fails, show error and don't change config
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('invalidEndpointError'.tr()), backgroundColor: Colors.red),
                           );
-                      set.reload();
+                        }
+                      }
                     },
                   ),
                 ),
@@ -726,7 +743,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String selectedEndpoint,
     TextEditingController controller,
   ) async {
-    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
     final set = old_provider.Provider.of<SettingsProvider>(context, listen: false);
 
     String? result = await showDialog<String>(
@@ -783,21 +799,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (result != null) {
       controller.text = result;
       configBox.put('customIndexer', result);
-      await duniterIndexer.checkIndexerEndpoint(result);
+      final isWorking = await ref.read(squidEndpointTesterProvider)(result);
+      if (isWorking) {
+        Networks.squidEndpoint = result;
+        SquidService.setClient(result);
+      }
       set.reload();
     }
   }
 
   Widget indexerEndpointSelection(BuildContext context) {
-    final duniterIndexer = old_provider.Provider.of<DuniterIndexer>(context, listen: false);
-
     String? selectedIndexerEndpoint;
     if (configBox.containsKey('customIndexer')) {
       selectedIndexerEndpoint = configBox.get('customIndexer');
     } else {
-      selectedIndexerEndpoint = duniterIndexer.listIndexerEndpoints.isNotEmpty
-          ? duniterIndexer.listIndexerEndpoints[0]
-          : 'https://';
+      selectedIndexerEndpoint = Networks.listSquidEndpoints.isNotEmpty ? Networks.listSquidEndpoints[0] : 'https://';
     }
 
     final indexerEndpointController = _indexerEndpointController;
@@ -809,8 +825,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        old_provider.Consumer<DuniterIndexer>(
-          builder: (context, indexer, _) {
+        Consumer(
+          builder: (context, ref, _) {
+            ref.watch(squidEndpointProvider);
+            final isLoadingSquid = ref.watch(squidLoadingProvider);
+            final testEndpoint = ref.read(squidEndpointTesterProvider);
+
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -823,15 +843,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
                     ),
                     ScaledSizedBox(width: 12),
-                    Icon(
-                      _indexerEndpointController.text.isNotEmpty && _indexerEndpointController.text != 'https://'
-                          ? Icons.check_circle
-                          : Icons.error,
-                      color: _indexerEndpointController.text.isNotEmpty && _indexerEndpointController.text != 'https://'
-                          ? Colors.green
-                          : Colors.red,
-                      size: scaleSize(16),
-                    ),
+                    Icon(_getIndexerStatusIcon(), color: _getIndexerStatusColor(), size: scaleSize(16)),
                     const Spacer(),
                     old_provider.Consumer<SettingsProvider>(
                       builder: (context, set, _) {
@@ -927,18 +939,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             if (value == 'Sélectionner') {
                               await _showIndexerSelectionDialog(
                                 context,
-                                indexer.listIndexerEndpoints.cast<String>(),
+                                Networks.listSquidEndpoints,
                                 selectedIndexerEndpoint ?? '',
                                 indexerEndpointController,
                               );
                             } else if (value == 'Auto') {
                               configBox.delete('customIndexer');
-                              final defaultEndpoint = duniterIndexer.listIndexerEndpoints.isNotEmpty
-                                  ? duniterIndexer.listIndexerEndpoints[0]
+                              final defaultEndpoint = Networks.listSquidEndpoints.isNotEmpty
+                                  ? Networks.listSquidEndpoints[0]
                                   : 'https://';
                               selectedIndexerEndpoint = defaultEndpoint;
                               indexerEndpointController.text = defaultEndpoint;
-                              await indexer.checkIndexerEndpoint(defaultEndpoint);
+                              await testEndpoint(defaultEndpoint);
                               set.reload();
                             } else {
                               if (!configBox.containsKey('customIndexer')) {
@@ -956,7 +968,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ],
                 ),
-                if (indexer.isLoadingIndexer)
+                if (isLoadingSquid)
                   Padding(
                     padding: EdgeInsets.only(top: scaleSize(16)),
                     child: Center(child: Loading(size: scaleSize(24), stroke: 2)),
@@ -965,8 +977,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             );
           },
         ),
-        old_provider.Consumer<SettingsProvider>(
-          builder: (context, set, _) {
+        Consumer(
+          builder: (context, ref, _) {
+            final testEndpoint = ref.read(squidEndpointTesterProvider);
+            final set = old_provider.Provider.of<SettingsProvider>(context, listen: false);
+
             if (!configBox.containsKey('customIndexer')) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1006,7 +1021,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     onSubmitted: (value) async {
                       configBox.put('customIndexer', value);
-                      await duniterIndexer.checkIndexerEndpoint(value);
+                      await testEndpoint(value);
                       set.reload();
                     },
                   ),
@@ -1066,5 +1081,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ],
     );
+  }
+
+  IconData _getConnectionStatusIcon() {
+    if (_container.read(durtProvider).isConnected && !_container.read(durtProvider).isDuniterLoading) {
+      return Icons.check_circle;
+    } else if (_container.read(durtProvider).isDuniterLoading) {
+      return Icons.hourglass_bottom;
+    } else {
+      return Icons.error;
+    }
+  }
+
+  Color _getConnectionStatusColor() {
+    if (_container.read(durtProvider).isConnected && !_container.read(durtProvider).isDuniterLoading) {
+      return Colors.green;
+    } else if (_container.read(durtProvider).isDuniterLoading) {
+      return Colors.orange;
+    } else {
+      return Colors.red;
+    }
+  }
+
+  IconData _getIndexerStatusIcon() {
+    if (_indexerEndpointController.text.isNotEmpty && _indexerEndpointController.text != 'https://') {
+      return Icons.check_circle;
+    } else {
+      return Icons.error;
+    }
+  }
+
+  Color _getIndexerStatusColor() {
+    if (_indexerEndpointController.text.isNotEmpty && _indexerEndpointController.text != 'https://') {
+      return Colors.green;
+    } else {
+      return Colors.red;
+    }
   }
 }

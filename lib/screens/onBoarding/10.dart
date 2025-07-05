@@ -1,6 +1,6 @@
 // ignore_for_file: file_names, use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show WalletEntity;
+import 'package:durt2/durt2.dart' show WalletEntity, Durt, IdtyStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -227,7 +227,11 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
               final pinCodeint = int.parse(widget.pinCode);
               await ref
                   .read(walletServiceProvider)
-                  .createSafe(mnemonic: generateWalletProvider.generatedMnemonic!, pinCode: pinCodeint);
+                  .createSafe(
+                    mnemonic: generateWalletProvider.generatedMnemonic!,
+                    pinCode: pinCodeint,
+                    safeName: 'safeBoxName'.tr(),
+                  );
 
               ScanDerivationsResult scanStatus = ScanDerivationsResult.none;
               if (widget.scanDerivation) {
@@ -239,11 +243,12 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
                   final walletData = await ref.read(walletServiceProvider).importRootWallet(pinCode: widget.pinCode);
                   final address = ref.read(walletServiceProvider).getAddress(walletData.address);
 
-                  WalletEntity myWallet = WalletEntity(
+                  WalletEntity myWallet = WalletEntity.create(
                     address: address,
                     number: 0,
-                    derivation: -1,
                     name: 'currentWallet'.tr(),
+                    keyPairType: Durt.defaultKeyPairType,
+                    identityStatus: IdtyStatus.unknown,
                   );
 
                   final safe = ref.read(walletServiceProvider).getSafeBox(currentChest);

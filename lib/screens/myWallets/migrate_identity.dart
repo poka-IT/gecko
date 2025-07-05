@@ -82,7 +82,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
           .getKeyPairFromMnemonic(widget.newMnemonicSentence.text, derivation: 0, keyPairType: Durt.defaultKeyPairType);
 
       if (keypair.address == widget.newWalletAddress.text) {
-        matchDerivationNbr = -1;
+        matchDerivationNbr = null;
         mnemonicIsValid = true;
         walletOptions.reload();
         return;
@@ -373,8 +373,9 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                                   .read(walletServiceProvider)
                                   .importAccount(
                                     mnemonic: widget.newMnemonicSentence.text,
-                                    derivation: matchDerivationNbr == -1 ? null : matchDerivationNbr,
+                                    derivation: matchDerivationNbr,
                                     pinCode: '1472',
+                                    safeName: 'safeBoxName'.tr(),
                                   );
 
                               final fromKeypair = await _container

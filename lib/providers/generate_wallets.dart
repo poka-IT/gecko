@@ -330,6 +330,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       return ScanDerivationsResult.error;
     }
 
+    // 1. SCAN ROOT BALANCE
     scanStatus = ScanDerivationsStatus.rootScanning;
     notifyListeners();
     final hasRoot = await scanRootBalance(pinCode);
@@ -337,15 +338,34 @@ class GenerateWalletsProvider with ChangeNotifier {
       isAlive = true;
     }
 
+    // 2. PARALLEL KEYPAIR GENERATION
     scanStatus = ScanDerivationsStatus.scanning;
     notifyListeners();
-    for (int derivationNbr in [for (var i = 0; i < numberScan; i += 1) i]) {
-      final keypair = await _container
-          .read(walletServiceProvider)
-          .getKeyPairFromMnemonic(generatedMnemonic!, derivation: derivationNbr);
-      addressToScan.putIfAbsent(keypair.address, () => derivationNbr);
+
+    // Generate all keypairs in parallel instead of sequentially
+    final derivationNumbers = [for (var i = 0; i < numberScan; i += 1) i];
+    final keypairFutures = derivationNumbers
+        .map(
+          (derivationNbr) => _container
+              .read(walletServiceProvider)
+              .getKeyPairFromMnemonic(
+                generatedMnemonic!,
+                derivation: derivationNbr,
+                keyPairType: Durt.defaultKeyPairType,
+              )
+              .then((keypair) => MapEntry(derivationNbr, keypair)),
+        )
+        .toList();
+
+    // Wait for all keypairs to be generated in parallel
+    final keypairResults = await Future.wait(keypairFutures);
+
+    // Build the address to derivation map
+    for (final entry in keypairResults) {
+      addressToScan.putIfAbsent(entry.value.address, () => entry.key);
     }
 
+    // 3. BALANCE CHECK (already optimized - single batch call)
     final balanceList = await _container
         .read(storageServiceProvider)
         .getBalances(addressToScan.keys.toList())
@@ -355,28 +375,54 @@ class GenerateWalletsProvider with ChangeNotifier {
     balanceList.removeWhere((key, value) => value.free == BigInt.zero);
     scanedValidWalletNumber = balanceList.length + scanedWalletNumber;
 
+    // 4. PARALLEL WALLET IMPORT WITH PRESERVED ORDER
     scanStatus = ScanDerivationsStatus.import;
     notifyListeners();
-    for (String scannedWallet in balanceList.keys) {
+
+    if (balanceList.isNotEmpty) {
       isAlive = true;
-      String walletName = scanedWalletNumber == 0 ? 'currentWallet'.tr() : '${'wallet'.tr()} ${scanedWalletNumber + 1}';
+
+      // Sort wallets by derivation number to preserve order
+      final sortedWallets = balanceList.keys.toList()..sort((a, b) => addressToScan[a]!.compareTo(addressToScan[b]!));
+
+      // Prepare wallet data in parallel
       final actualSafeNumber = _container.read(walletServiceProvider).defaultSafeBoxNumber;
-
-      final myWallet = WalletEntity.create(
-        address: scannedWallet,
-        name: walletName,
-        derivation: addressToScan[scannedWallet],
-        imagePath: 'assets/avatars/${scanedWalletNumber % 4}.png',
-        keyPairType: Durt.defaultKeyPairType,
-        identityStatus: IdtyStatus.unknown,
-      );
-
       final safe = _container.read(walletServiceProvider).getSafeBox(actualSafeNumber);
-      myWallet.safe.target = safe;
 
-      await _container.read(walletServiceProvider).walletBox.putAsync(myWallet);
-      scanedWalletNumber++;
-      notifyListeners();
+      final walletDataList = <({WalletEntity wallet, int index})>[];
+      for (int i = 0; i < sortedWallets.length; i++) {
+        final scannedWallet = sortedWallets[i];
+        final walletIndex = scanedWalletNumber + i;
+        final walletName = walletIndex == 0 ? 'currentWallet'.tr() : '${'wallet'.tr()} ${walletIndex + 1}';
+
+        final myWallet = WalletEntity.create(
+          address: scannedWallet,
+          name: walletName,
+          derivation: addressToScan[scannedWallet],
+          imagePath: 'assets/avatars/${walletIndex % 4}.png',
+          keyPairType: Durt.defaultKeyPairType,
+          identityStatus: IdtyStatus.unknown,
+        );
+
+        myWallet.safe.target = safe;
+        walletDataList.add((wallet: myWallet, index: walletIndex));
+      }
+
+      // Import wallets in parallel batches to avoid overwhelming the system
+      const batchSize = 5; // Process 5 wallets at a time
+      for (int batchStart = 0; batchStart < walletDataList.length; batchStart += batchSize) {
+        final batchEnd = (batchStart + batchSize).clamp(0, walletDataList.length);
+        final batch = walletDataList.sublist(batchStart, batchEnd);
+
+        // Import current batch in parallel
+        await Future.wait(
+          batch.map((walletData) => _container.read(walletServiceProvider).walletBox.putAsync(walletData.wallet)),
+        );
+
+        // Update progress
+        scanedWalletNumber = batch.last.index + 1;
+        notifyListeners();
+      }
     }
 
     scanStatus = ScanDerivationsStatus.none;
@@ -392,7 +438,6 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     final address = _container.read(walletServiceProvider).getAddress(keypair.address);
 
-    // if (addressData.address == null) return false;
     final balance = await _container
         .read(storageServiceProvider)
         .getBalance(address)
@@ -401,15 +446,14 @@ class GenerateWalletsProvider with ChangeNotifier {
     if (balance.free != BigInt.zero) {
       String walletName = 'myRootWallet'.tr();
 
-      // await _container.read(walletServiceProvider).importRootWallet(pinCode: pinCode);
-
       final actualSafeNumber = _container.read(walletServiceProvider).defaultSafeBoxNumber;
 
-      WalletEntity myWallet = WalletEntity(
+      WalletEntity myWallet = WalletEntity.create(
         address: address,
         name: walletName,
-        derivation: -1,
         imagePath: 'assets/avatars/0.png',
+        keyPairType: Durt.defaultKeyPairType,
+        identityStatus: IdtyStatus.unknown,
       );
 
       final safe = _container.read(walletServiceProvider).getSafeBox(actualSafeNumber);

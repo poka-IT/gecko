@@ -1,4 +1,4 @@
-import 'package:durt2/durt2.dart' show IdtyStatus, WalletEntity;
+import 'package:durt2/durt2.dart' show IdtyStatus, WalletEntity, Durt;
 import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +22,7 @@ class IdentityStatus extends ConsumerWidget {
 
     final walletData =
         walletService.walletBox.query(WalletEntity_.address.equals(address)).build().findFirst() ??
-        WalletEntity(address: address);
+        WalletEntity.create(address: address, keyPairType: Durt.defaultKeyPairType, identityStatus: IdtyStatus.unknown);
 
     return FutureBuilder<IdtyStatus>(
       future: storageService.getIdtyStatus(address),

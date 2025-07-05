@@ -11,6 +11,7 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
+import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
@@ -44,10 +45,14 @@ class ShowSeed extends ConsumerWidget {
                       .getSeed(address: defaultWallet.address, pin: walletProvider.pinCode),
                   builder: (BuildContext context, AsyncSnapshot<String?> seed) {
                     if (seed.connectionState != ConnectionState.done || seed.hasError) {
-                      return ScaledSizedBox(
-                        height: 15,
-                        width: 15,
-                        child: CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: 2),
+                      return Center(
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 173),
+                            Loading(stroke: 4, size: 40),
+                            const SizedBox(height: 173),
+                          ],
+                        ),
                       );
                     } else if (!seed.hasData) {
                       return const Text('');

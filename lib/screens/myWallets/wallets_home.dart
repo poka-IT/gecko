@@ -50,30 +50,32 @@ class _WalletsHomeContent extends ConsumerWidget {
 
     final SafeEntity currentChest = ref.read(walletServiceProvider).getSafeBox(currentChestNumber);
 
-    return Scaffold(
-      backgroundColor: context.colorScheme.surface,
-      appBar: AppBar(
-        toolbarHeight: scaleSize(57),
-        backgroundColor: context.colorScheme.tertiary,
-        title: Row(
-          children: [
-            Image.asset('assets/chests/${currentChest.number}.png', height: 32),
-            ScaledSizedBox(width: 17),
-            Text(
-              currentChest.name,
-              style: scaledTextStyle(color: context.colorScheme.onSurface, fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-          ],
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: context.colorScheme.surface,
+        appBar: AppBar(
+          toolbarHeight: scaleSize(57),
+          backgroundColor: context.colorScheme.tertiary,
+          title: Row(
+            children: [
+              Image.asset('assets/chests/${currentChest.number}.png', height: 32),
+              ScaledSizedBox(width: 17),
+              Text(
+                currentChest.name,
+                style: scaledTextStyle(color: context.colorScheme.onSurface, fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
         ),
+        bottomNavigationBar: old_provider.Consumer<MyWalletsProvider>(
+          builder: (context, _, _) {
+            return myWalletProvider.lastFlyBy == null
+                ? const GeckoBottomAppBar(actualRoute: 'safeHome')
+                : DragWalletsInfo(lastFlyBy: myWalletProvider.lastFlyBy!, dragAddress: myWalletProvider.dragAddress!);
+          },
+        ),
+        body: SafeArea(child: Stack(children: [myWalletsTiles(context, ref, currentChestNumber), const OfflineInfo()])),
       ),
-      bottomNavigationBar: old_provider.Consumer<MyWalletsProvider>(
-        builder: (context, _, _) {
-          return myWalletProvider.lastFlyBy == null
-              ? const GeckoBottomAppBar(actualRoute: 'safeHome')
-              : DragWalletsInfo(lastFlyBy: myWalletProvider.lastFlyBy!, dragAddress: myWalletProvider.dragAddress!);
-        },
-      ),
-      body: SafeArea(child: Stack(children: [myWalletsTiles(context, ref, currentChestNumber), const OfflineInfo()])),
     );
   }
 

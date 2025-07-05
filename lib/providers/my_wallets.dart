@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:durt2/durt2.dart' show WalletEntity, SafeEntityExt;
+import 'package:durt2/durt2.dart' show WalletEntity, SafeEntityExt, Durt, IdtyStatus;
 import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -110,15 +110,31 @@ class MyWalletsProvider with ChangeNotifier {
 
   WalletEntity getDefaultWallet([int? safe]) {
     if (_container.read(walletServiceProvider).safeBox.isEmpty()) {
-      return WalletEntity(address: '', number: 0);
+      return WalletEntity.create(
+        address: '',
+        number: 0,
+        keyPairType: Durt.defaultKeyPairType,
+        identityStatus: IdtyStatus.unknown,
+      );
     } else {
       safe ??= getCurrentSafe;
 
       final defaultWallet = _container.read(walletServiceProvider).safeBox.getNumber(safe).defaultAddress;
       if (defaultWallet == null) {
-        return WalletEntity(address: '', number: 0);
+        return WalletEntity.create(
+          address: '',
+          number: 0,
+          keyPairType: Durt.defaultKeyPairType,
+          identityStatus: IdtyStatus.unknown,
+        );
       }
-      return getWalletDataByAddress(defaultWallet) ?? WalletEntity(address: '', number: 0);
+      return getWalletDataByAddress(defaultWallet) ??
+          WalletEntity.create(
+            address: '',
+            number: 0,
+            keyPairType: Durt.defaultKeyPairType,
+            identityStatus: IdtyStatus.unknown,
+          );
     }
   }
 
@@ -172,12 +188,14 @@ class MyWalletsProvider with ChangeNotifier {
         .read(walletServiceProvider)
         .derive(fromAddress: defaultWallet.address, derivation: newDerivationNbr, pinCode: pinCode);
 
-    WalletEntity newWallet = WalletEntity(
+    WalletEntity newWallet = WalletEntity.create(
       address: walletData.address,
       number: newWalletNbr,
       name: name,
       derivation: newDerivationNbr,
       imagePath: 'assets/avatars/${newWalletNbr % 4}.png',
+      keyPairType: Durt.defaultKeyPairType,
+      identityStatus: IdtyStatus.unknown,
     );
 
     final safe = _container.read(walletServiceProvider).getSafeBox(safeNumber);
@@ -216,12 +234,13 @@ class MyWalletsProvider with ChangeNotifier {
         .read(walletServiceProvider)
         .generateRootKeypair(fromAddress: defaultWallet.address, pinCode: pinCode);
 
-    WalletEntity newWallet = WalletEntity(
+    WalletEntity newWallet = WalletEntity.create(
       address: walletData.address,
       number: newWalletNbr,
       name: name,
-      derivation: -1,
       imagePath: 'assets/avatars/${newWalletNbr % 4}.png',
+      keyPairType: Durt.defaultKeyPairType,
+      identityStatus: IdtyStatus.unknown,
     );
 
     final safe = _container.read(walletServiceProvider).getSafeBox(safeNumber);

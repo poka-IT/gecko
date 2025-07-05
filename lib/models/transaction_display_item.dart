@@ -61,11 +61,11 @@ class TransactionDisplayItem {
     final difference = now.difference(timestamp);
 
     if (difference.inDays == 0) {
-      return "today";
+      return "today".tr();
     } else if (difference.inDays == 1) {
-      return "yesterday";
+      return "yesterday".tr();
     } else if (difference.inDays < 7) {
-      return "${difference.inDays} days ago";
+      return "daysAgo".tr(args: [difference.inDays.toString()]);
     } else {
       final locale = Localizations.localeOf(homeContext).languageCode;
       // Format verbose: "mardi 23 mars" ou "Tuesday 23 March"

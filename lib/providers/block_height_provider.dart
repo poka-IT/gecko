@@ -19,6 +19,23 @@ class BlockHeightProvider with ChangeNotifier {
 
   int get blockHeight => _blockHeightNotifier?.value ?? 0;
 
+  /// Refresh the provider to reconnect to the current node
+  /// This should be called when the node changes
+  void refresh() {
+    // Dispose current container and create a new one
+    _connectionStatusSubscription?.cancel();
+    _blockHeightNotifier?.removeListener(_onBlockHeightChanged);
+    _blockHeightNotifier = null;
+    _container.dispose();
+
+    // Create new container and restart listening
+    _container = ProviderContainer();
+    _checkAndStartListening();
+    _connectionStatusSubscription = _container.read(durtProvider).connectionStatusStream.listen((_) {
+      _checkAndStartListening();
+    });
+  }
+
   void _checkAndStartListening() {
     final isConnected = _container.read(durtProvider).connectionStatus == ConnectionStatus.connected;
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +32,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
   DateTime? _lastTransactionTimestamp;
   bool _isTransactionInProgressVisible = false;
   bool _isDisposed = false;
+  Timer? _hideIndicatorTimer;
 
   bool get _isAtTop => _scrollController.hasClients && _scrollController.position.pixels <= 50;
 
@@ -50,9 +53,16 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
   @override
   void dispose() {
     _isDisposed = true;
+    _hideIndicatorTimer?.cancel();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+
+    // Stop any ongoing animation before disposing
+    if (_newTransactionController.isAnimating) {
+      _newTransactionController.stop();
+    }
     _newTransactionController.dispose();
+
     super.dispose();
   }
 
@@ -75,8 +85,11 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
         _newTransactionController.forward();
       }
 
+      // Cancel previous timer if exists
+      _hideIndicatorTimer?.cancel();
+
       // Hide the indicator after 3 seconds
-      Future.delayed(const Duration(seconds: 3), () {
+      _hideIndicatorTimer = Timer(const Duration(seconds: 3), () {
         if (mounted && !_isDisposed) {
           _hideNewTransactionIndicator();
         }
@@ -85,20 +98,33 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
   }
 
   void _hideNewTransactionIndicator() {
+    // Cancel the timer since we're hiding manually
+    _hideIndicatorTimer?.cancel();
+
     // Only proceed if not disposed and widget is still mounted
     if (mounted && !_isDisposed) {
-      _newTransactionController.reverse().then((_) {
+      // Check if animation controller is still valid
+      if (_newTransactionController.isAnimating || _newTransactionController.status == AnimationStatus.completed) {
+        _newTransactionController
+            .reverse()
+            .then((_) {
+              if (mounted && !_isDisposed) {
+                setState(() {
+                  _showNewTransactionIndicator = false;
+                });
+              }
+            })
+            .catchError((error) {
+              // Ignore errors from disposed animation controller
+            });
+      } else {
+        // If animation is not running, just hide immediately
         if (mounted && !_isDisposed) {
           setState(() {
             _showNewTransactionIndicator = false;
           });
         }
-      });
-    } else if (mounted) {
-      // If disposed but widget is still mounted, just hide the indicator
-      setState(() {
-        _showNewTransactionIndicator = false;
-      });
+      }
     }
   }
 
@@ -114,9 +140,12 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
     final isVisible = info.visibleFraction > 0.1; // Consider visible if more than 10% is visible
 
     if (_isTransactionInProgressVisible != isVisible) {
-      setState(() {
-        _isTransactionInProgressVisible = isVisible;
-      });
+      // Only call setState if widget is still mounted and not disposed
+      if (mounted && !_isDisposed) {
+        setState(() {
+          _isTransactionInProgressVisible = isVisible;
+        });
+      }
 
       // If transaction in progress becomes visible and we're showing the indicator, hide it
       if (isVisible && _showNewTransactionIndicator) {
@@ -150,7 +179,9 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
       // Check if we have a newer transaction than before
       if (_lastTransactionTimestamp != null && currentLatestTimestamp.isAfter(_lastTransactionTimestamp!)) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _onNewTransactionReceived();
+          if (mounted && !_isDisposed) {
+            _onNewTransactionReceived();
+          }
         });
       }
 

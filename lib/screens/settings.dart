@@ -18,6 +18,7 @@ import 'package:gecko/providers/theme_provider.dart' as theme_provider;
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
+import 'package:gecko/widgets/transaction_in_progress_tile.dart';
 import 'package:provider/provider.dart' as old_provider;
 
 // Helper pour accéder aux services Riverpod depuis ce fichier
@@ -36,11 +37,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final FocusNode _indexerFocusNode = FocusNode();
   late TextEditingController _endpointController;
   late TextEditingController _indexerEndpointController;
+  bool _isManuallyConnectingDuniter = false;
+  bool _duniterConnectionFailed = false;
+  bool _indexerConnectionFailed = false;
+  bool _expertMode = false;
 
   @override
   void initState() {
     super.initState();
     _initControllers();
+    _expertMode = configBox.get('expertMode') ?? false;
   }
 
   void _initControllers() {
@@ -60,20 +66,70 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Mise à jour du champ node quand le nœud est connecté
-    if (_container.read(durtProvider).isConnected && !configBox.containsKey('customEndpoint')) {
-      final endpoint = Networks.duniterEndpoint;
-      if (endpoint != _endpointController.text) {
-        _endpointController.text = endpoint;
-      }
+    // Synchronize Duniter endpoint controller with current state
+    _syncDuniterEndpointController();
+
+    // Synchronize Indexer endpoint controller with current state
+    _syncIndexerEndpointController();
+  }
+
+  void _syncDuniterEndpointController() {
+    String correctEndpoint;
+    if (configBox.get('autoEndpoint') == true) {
+      correctEndpoint = Networks.duniterEndpoint;
+    } else if (configBox.containsKey('customEndpoint')) {
+      correctEndpoint = configBox.get('customEndpoint');
+    } else {
+      correctEndpoint = Networks.duniterEndpoint;
     }
 
-    // Mise à jour du champ indexer quand il devient disponible
-    if (Networks.listSquidEndpoints.isNotEmpty && !configBox.containsKey('customIndexer')) {
-      final indexerEndpoint = Networks.listSquidEndpoints[0];
-      if (indexerEndpoint != _indexerEndpointController.text) {
-        _indexerEndpointController.text = indexerEndpoint;
+    if (_endpointController.text != correctEndpoint) {
+      _endpointController.text = correctEndpoint;
+    }
+  }
+
+  void _syncIndexerEndpointController() {
+    String correctEndpoint;
+    if (configBox.containsKey('customIndexer')) {
+      correctEndpoint = configBox.get('customIndexer');
+    } else {
+      correctEndpoint = Networks.listSquidEndpoints.isNotEmpty ? Networks.listSquidEndpoints[0] : 'https://';
+    }
+
+    if (_indexerEndpointController.text != correctEndpoint) {
+      _indexerEndpointController.text = correctEndpoint;
+    }
+  }
+
+  /// Clean up all Duniter subscriptions and caches before changing nodes
+  Future<void> _cleanupDuniterSubscriptions() async {
+    try {
+      // 1. Unsubscribe from Duniter subscriptions
+      if (_container.read(durtProvider).isConnected) {
+        await _container.read(storageServiceProvider).unsubscribeFromCurrentBlockNumber();
+        await _container.read(storageServiceProvider).unsubscribeFromUniversalDividend();
       }
+
+      // 2. Clear wallet header data cache (contains balance and identity info)
+      await walletHeaderDataBox.clear();
+
+      // 3. Clear G1WalletsList cache (search results)
+      await g1WalletsBox.clear();
+
+      log.i('Cleaned up Duniter subscriptions and caches');
+    } catch (e) {
+      log.w('Error during subscription cleanup: $e');
+    }
+  }
+
+  /// Refresh BlockHeightProvider after successful node change
+  void _refreshBlockHeightProvider() {
+    try {
+      final blockHeightProvider = old_provider.Provider.of<BlockHeightProvider>(context, listen: false);
+      blockHeightProvider.refresh();
+      log.d('BlockHeightProvider refreshed after node change');
+    } catch (e) {
+      log.w('Error refreshing BlockHeightProvider: $e');
     }
   }
 
@@ -159,6 +215,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 ScaledSizedBox(height: isSmallScreen ? 12 : 16),
 
+                // Carte Mode expert
+                Container(
+                  decoration: BoxDecoration(
+                    color: context.colorScheme.surfaceContainer,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                    child: expertModeToggle(context),
+                  ),
+                ),
+                ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+
                 // Carte Nettoyage du cache
                 Container(
                   decoration: BoxDecoration(
@@ -187,6 +263,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         // Clear G1WalletsList cache
                         await g1WalletsBox.clear();
 
+                        // Clear transaction status cache
+                        TransactionStatusCache.clearCache();
+
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('clearCacheExplanation'.tr()), duration: const Duration(seconds: 2)),
@@ -204,11 +283,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             size: scaleSize(isSmallScreen ? 20 : 24),
                           ),
                           ScaledSizedBox(width: 12),
-                          Text(
-                            'clearCache'.tr(),
-                            style: scaledTextStyle(
-                              fontSize: isSmallScreen ? 14 : 15,
-                              color: Theme.of(context).textTheme.bodyMedium?.color,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'clearCache'.tr(),
+                                  style: scaledTextStyle(
+                                    fontSize: isSmallScreen ? 14 : 15,
+                                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                                  ),
+                                ),
+                                Text(
+                                  'clearCacheDescription'.tr(),
+                                  style: scaledTextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(context).textTheme.bodySmall?.color,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -218,64 +311,66 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 ScaledSizedBox(height: isSmallScreen ? 20 : 24),
 
-                // Section Réseau
-                Text(
-                  'networkSettings'.tr(),
-                  style: scaledTextStyle(
-                    fontSize: isSmallScreen ? 15 : 16,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).textTheme.titleLarge?.color,
+                // Section Réseau (visible seulement en mode expert)
+                if (_expertMode) ...[
+                  Text(
+                    'networkSettings'.tr(),
+                    style: scaledTextStyle(
+                      fontSize: isSmallScreen ? 15 : 16,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).textTheme.titleLarge?.color,
+                    ),
                   ),
-                ),
-                ScaledSizedBox(height: isSmallScreen ? 8 : 12),
+                  ScaledSizedBox(height: isSmallScreen ? 8 : 12),
 
-                // Carte Nœud Duniter
-                Container(
-                  decoration: BoxDecoration(
-                    color: context.colorScheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                  // Carte Nœud Duniter
+                  Container(
+                    decoration: BoxDecoration(
+                      color: context.colorScheme.surfaceContainer,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                          child: duniterEndpointSelection(context),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
-                        child: duniterEndpointSelection(context),
-                      ),
-                    ],
-                  ),
-                ),
-                ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+                  ScaledSizedBox(height: isSmallScreen ? 12 : 16),
 
-                // Carte Indexer
-                Container(
-                  decoration: BoxDecoration(
-                    color: context.colorScheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                  // Carte Indexer
+                  Container(
+                    decoration: BoxDecoration(
+                      color: context.colorScheme.surfaceContainer,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                          child: indexerEndpointSelection(context),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
-                        child: indexerEndpointSelection(context),
-                      ),
-                    ],
-                  ),
-                ),
-                ScaledSizedBox(height: isSmallScreen ? 20 : 24),
+                  ScaledSizedBox(height: isSmallScreen ? 20 : 24),
+                ],
 
                 // Section Danger
                 ScaledSizedBox(height: isSmallScreen ? 8 : 12),
@@ -432,33 +527,58 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
 
     if (result != null) {
-      // First test if the endpoint is valid
-      final isWorking = await _container.read(durtProvider).duniterConnection.testEndpoint(result);
+      setState(() {
+        _isManuallyConnectingDuniter = true;
+        _duniterConnectionFailed = false;
+      });
 
-      if (isWorking) {
-        // If valid, update config and connect to this specific endpoint
-        controller.text = result;
-        configBox.put('autoEndpoint', false);
-        configBox.put('customEndpoint', result);
+      try {
+        // Clean up existing subscriptions before changing nodes
+        await _cleanupDuniterSubscriptions();
 
-        try {
-          await _container.read(durtProvider).setFixedEndpoint(result);
-          set.reload();
-        } catch (e) {
-          // If connection fails after test passed, show error
+        // First test if the endpoint is valid
+        final isWorking = await _container.read(durtProvider).duniterConnection.testEndpoint(result);
+
+        if (isWorking) {
+          // If valid, update config and connect to this specific endpoint
+          controller.text = result;
+          configBox.put('autoEndpoint', false);
+          configBox.put('customEndpoint', result);
+
+          try {
+            await _container.read(durtProvider).setFixedEndpoint(result);
+            _syncDuniterEndpointController(); // Ensure controller is synchronized
+            _refreshBlockHeightProvider(); // Refresh block height provider
+            setState(() {
+              _duniterConnectionFailed = false;
+            });
+            set.reload();
+          } catch (e) {
+            // If connection fails after test passed, show error and mark as failed
+            setState(() {
+              _duniterConnectionFailed = true;
+            });
+            if (context.mounted) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('connectionError'.tr()), backgroundColor: Colors.red));
+            }
+          }
+        } else {
+          // If endpoint test fails, mark as failed and don't change config
+          setState(() {
+            _duniterConnectionFailed = true;
+          });
           if (context.mounted) {
             ScaffoldMessenger.of(
               context,
-            ).showSnackBar(SnackBar(content: Text('connectionError'.tr()), backgroundColor: Colors.red));
+            ).showSnackBar(SnackBar(content: Text('invalidEndpointError'.tr()), backgroundColor: Colors.red));
           }
         }
-      } else {
-        // If endpoint test fails, show error and don't change config
-        if (context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('invalidEndpointError'.tr()), backgroundColor: Colors.red));
-        }
+      } finally {
+        setState(() {
+          _isManuallyConnectingDuniter = false;
+        });
       }
     }
   }
@@ -619,15 +739,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             endpointController,
                           );
                         } else if (value == 'Auto') {
+                          // Clean up existing subscriptions before changing nodes
+                          await _cleanupDuniterSubscriptions();
+
                           configBox.delete('customEndpoint');
                           configBox.put('autoEndpoint', true);
+                          setState(() {
+                            _duniterConnectionFailed = false;
+                          });
                           await _container.read(durtProvider).connect();
+                          _syncDuniterEndpointController(); // Synchronize controller
+                          _refreshBlockHeightProvider(); // Refresh block height provider
                           set.reload();
                         } else {
                           configBox.put('autoEndpoint', false);
                           if (!configBox.containsKey('customEndpoint')) {
                             configBox.put('customEndpoint', _endpointController.text);
                           }
+                          _syncDuniterEndpointController(); // Synchronize controller
                           set.reload();
                           _duniterFocusNode.requestFocus();
                           _endpointController.selection = TextSelection.fromPosition(
@@ -640,7 +769,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ],
             ),
-            if (_container.read(durtProvider).isDuniterLoading)
+            if (_container.read(durtProvider).isDuniterLoading || _isManuallyConnectingDuniter)
               Padding(
                 padding: EdgeInsets.only(top: scaleSize(16)),
                 child: Center(child: Loading(size: scaleSize(24), stroke: 2)),
@@ -687,30 +816,55 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       hintStyle: scaledTextStyle(fontSize: 14, color: Colors.grey[400]),
                     ),
                     onSubmitted: (value) async {
-                      // First test if the endpoint is valid
-                      final isWorking = await _container.read(durtProvider).duniterConnection.testEndpoint(value);
+                      setState(() {
+                        _isManuallyConnectingDuniter = true;
+                        _duniterConnectionFailed = false;
+                      });
 
-                      if (isWorking) {
-                        // If valid, update config and connect to this specific endpoint
-                        configBox.put('customEndpoint', value);
-                        try {
-                          await _container.read(durtProvider).setFixedEndpoint(value);
-                          set.reload();
-                        } catch (e) {
-                          // If connection fails after test passed, show error
+                      try {
+                        // Clean up existing subscriptions before changing nodes
+                        await _cleanupDuniterSubscriptions();
+
+                        // First test if the endpoint is valid
+                        final isWorking = await _container.read(durtProvider).duniterConnection.testEndpoint(value);
+
+                        if (isWorking) {
+                          // If valid, update config and connect to this specific endpoint
+                          configBox.put('customEndpoint', value);
+                          try {
+                            await _container.read(durtProvider).setFixedEndpoint(value);
+                            _syncDuniterEndpointController(); // Synchronize controller
+                            _refreshBlockHeightProvider(); // Refresh block height provider
+                            setState(() {
+                              _duniterConnectionFailed = false;
+                            });
+                            set.reload();
+                          } catch (e) {
+                            // If connection fails after test passed, show error and mark as failed
+                            setState(() {
+                              _duniterConnectionFailed = true;
+                            });
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('connectionError'.tr()), backgroundColor: Colors.red),
+                              );
+                            }
+                          }
+                        } else {
+                          // If endpoint test fails, mark as failed and don't change config
+                          setState(() {
+                            _duniterConnectionFailed = true;
+                          });
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('connectionError'.tr()), backgroundColor: Colors.red),
+                              SnackBar(content: Text('invalidEndpointError'.tr()), backgroundColor: Colors.red),
                             );
                           }
                         }
-                      } else {
-                        // If endpoint test fails, show error and don't change config
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('invalidEndpointError'.tr()), backgroundColor: Colors.red),
-                          );
-                        }
+                      } finally {
+                        setState(() {
+                          _isManuallyConnectingDuniter = false;
+                        });
                       }
                     },
                   ),
@@ -724,10 +878,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ScaledSizedBox(height: 8),
+                ScaledSizedBox(height: 4),
                 Text(
                   'blockN'.tr(args: [blockHeightProvider.blockHeight.toString()]),
-                  style: scaledTextStyle(fontSize: 13, color: Theme.of(context).textTheme.bodySmall?.color),
+                  style: scaledTextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).textTheme.bodySmall?.color,
+                    fontStyle: FontStyle.italic,
+                  ),
                 ),
               ],
             );
@@ -797,12 +955,41 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
 
     if (result != null) {
+      // Store old endpoint in case we need to restore it
+      final oldEndpoint = configBox.containsKey('customIndexer') ? configBox.get('customIndexer') : null;
+
       controller.text = result;
       configBox.put('customIndexer', result);
+      _syncIndexerEndpointController(); // Synchronize controller
+
+      setState(() {
+        _indexerConnectionFailed = false;
+      });
+
       final isWorking = await ref.read(squidEndpointTesterProvider)(result);
       if (isWorking) {
         Networks.squidEndpoint = result;
         SquidService.setClient(result);
+        setState(() {
+          _indexerConnectionFailed = false;
+        });
+      } else {
+        // Restore old endpoint if test fails
+        if (oldEndpoint != null) {
+          controller.text = oldEndpoint;
+          configBox.put('customIndexer', oldEndpoint);
+        } else {
+          configBox.delete('customIndexer');
+        }
+        _syncIndexerEndpointController();
+        setState(() {
+          _indexerConnectionFailed = true;
+        });
+        if (context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('invalidIndexerError'.tr()), backgroundColor: Colors.red));
+        }
       }
       set.reload();
     }
@@ -811,9 +998,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget indexerEndpointSelection(BuildContext context) {
     String? selectedIndexerEndpoint;
     if (configBox.containsKey('customIndexer')) {
-      selectedIndexerEndpoint = configBox.get('customIndexer');
+      selectedIndexerEndpoint = configBox.get('customIndexer').split('/v1beta1/relay')[0];
     } else {
-      selectedIndexerEndpoint = Networks.listSquidEndpoints.isNotEmpty ? Networks.listSquidEndpoints[0] : 'https://';
+      selectedIndexerEndpoint = Networks.listSquidEndpoints.isNotEmpty
+          ? Networks.listSquidEndpoints[0].split('/v1beta1/relay')[0]
+          : 'wss://';
     }
 
     final indexerEndpointController = _indexerEndpointController;
@@ -949,13 +1138,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   ? Networks.listSquidEndpoints[0]
                                   : 'https://';
                               selectedIndexerEndpoint = defaultEndpoint;
-                              indexerEndpointController.text = defaultEndpoint;
+                              _syncIndexerEndpointController(); // Synchronize controller
+                              setState(() {
+                                _indexerConnectionFailed = false;
+                              });
                               await testEndpoint(defaultEndpoint);
                               set.reload();
                             } else {
                               if (!configBox.containsKey('customIndexer')) {
                                 configBox.put('customIndexer', _indexerEndpointController.text);
                               }
+                              _syncIndexerEndpointController(); // Synchronize controller
                               set.reload();
                               _indexerFocusNode.requestFocus();
                               _indexerEndpointController.selection = TextSelection.fromPosition(
@@ -977,10 +1170,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             );
           },
         ),
-        Consumer(
-          builder: (context, ref, _) {
+        old_provider.Consumer<SettingsProvider>(
+          builder: (context, set, _) {
             final testEndpoint = ref.read(squidEndpointTesterProvider);
-            final set = old_provider.Provider.of<SettingsProvider>(context, listen: false);
 
             if (!configBox.containsKey('customIndexer')) {
               return Column(
@@ -1012,16 +1204,48 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     focusNode: _indexerFocusNode,
                     controller: indexerEndpointController,
                     autocorrect: false,
-                    style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
+                    style: scaledTextStyle(fontSize: 13, color: Theme.of(context).textTheme.bodyMedium?.color),
                     decoration: InputDecoration(
                       contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(8)),
                       border: InputBorder.none,
                       hintText: 'https://',
-                      hintStyle: scaledTextStyle(fontSize: 14, color: Colors.grey[400]),
+                      hintStyle: scaledTextStyle(fontSize: 13, color: Colors.grey[400]),
                     ),
                     onSubmitted: (value) async {
+                      // Store old endpoint in case we need to restore it
+                      final oldEndpoint = configBox.containsKey('customIndexer')
+                          ? configBox.get('customIndexer')
+                          : null;
+
                       configBox.put('customIndexer', value);
-                      await testEndpoint(value);
+                      _syncIndexerEndpointController(); // Synchronize controller
+
+                      setState(() {
+                        _indexerConnectionFailed = false;
+                      });
+
+                      final isWorking = await testEndpoint(value);
+                      if (isWorking) {
+                        setState(() {
+                          _indexerConnectionFailed = false;
+                        });
+                      } else {
+                        // Restore old endpoint if test fails
+                        if (oldEndpoint != null) {
+                          configBox.put('customIndexer', oldEndpoint);
+                        } else {
+                          configBox.delete('customIndexer');
+                        }
+                        _syncIndexerEndpointController();
+                        setState(() {
+                          _indexerConnectionFailed = true;
+                        });
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('invalidIndexerError'.tr()), backgroundColor: Colors.red),
+                          );
+                        }
+                      }
                       set.reload();
                     },
                   ),
@@ -1083,28 +1307,82 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  Widget expertModeToggle(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        final newValue = !_expertMode;
+        configBox.put('expertMode', newValue);
+        setState(() {
+          _expertMode = newValue;
+        });
+      },
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: scaleSize(4)),
+        child: Row(
+          children: [
+            Icon(Icons.engineering_rounded, color: context.colorScheme.primary, size: scaleSize(24)),
+            ScaledSizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'expertMode'.tr(),
+                    style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
+                  ),
+                  Text(
+                    'expertModeDescription'.tr(),
+                    style: scaledTextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: _expertMode,
+              activeColor: context.colorScheme.primary,
+              inactiveThumbColor: Colors.grey[400],
+              inactiveTrackColor: Colors.grey[300],
+              onChanged: (bool value) {
+                configBox.put('expertMode', value);
+                setState(() {
+                  _expertMode = value;
+                });
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   IconData _getConnectionStatusIcon() {
-    if (_container.read(durtProvider).isConnected && !_container.read(durtProvider).isDuniterLoading) {
-      return Icons.check_circle;
-    } else if (_container.read(durtProvider).isDuniterLoading) {
+    if (_isManuallyConnectingDuniter || _container.read(durtProvider).isDuniterLoading) {
       return Icons.hourglass_bottom;
+    } else if (_duniterConnectionFailed) {
+      return Icons.error;
+    } else if (_container.read(durtProvider).isConnected) {
+      return Icons.check_circle;
     } else {
       return Icons.error;
     }
   }
 
   Color _getConnectionStatusColor() {
-    if (_container.read(durtProvider).isConnected && !_container.read(durtProvider).isDuniterLoading) {
-      return Colors.green;
-    } else if (_container.read(durtProvider).isDuniterLoading) {
+    if (_isManuallyConnectingDuniter || _container.read(durtProvider).isDuniterLoading) {
       return Colors.orange;
+    } else if (_duniterConnectionFailed) {
+      return Colors.red;
+    } else if (_container.read(durtProvider).isConnected) {
+      return Colors.green;
     } else {
       return Colors.red;
     }
   }
 
   IconData _getIndexerStatusIcon() {
-    if (_indexerEndpointController.text.isNotEmpty && _indexerEndpointController.text != 'https://') {
+    if (_indexerConnectionFailed) {
+      return Icons.error;
+    } else if (_indexerEndpointController.text.isNotEmpty && _indexerEndpointController.text != 'https://') {
       return Icons.check_circle;
     } else {
       return Icons.error;
@@ -1112,7 +1390,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Color _getIndexerStatusColor() {
-    if (_indexerEndpointController.text.isNotEmpty && _indexerEndpointController.text != 'https://') {
+    if (_indexerConnectionFailed) {
+      return Colors.red;
+    } else if (_indexerEndpointController.text.isNotEmpty && _indexerEndpointController.text != 'https://') {
       return Colors.green;
     } else {
       return Colors.red;

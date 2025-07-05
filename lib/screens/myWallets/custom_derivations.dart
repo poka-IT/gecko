@@ -33,7 +33,7 @@ class _CustomDerivationState extends State<CustomDerivation> {
 
     for (WalletEntity wallet in myWalletProvider.listWallets) {
       derivationList.remove(wallet.derivation.toString());
-      if (wallet.derivation == -1) {
+      if (wallet.derivation == null) {
         derivationList.remove('root');
       }
     }

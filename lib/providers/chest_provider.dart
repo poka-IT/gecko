@@ -30,7 +30,7 @@ class ChestProvider with ChangeNotifier {
     final bool? answer = await (_confirmDeletingChest(context, safe.name));
     // ignore: use_build_context_synchronously
     if (answer ?? false) {
-      await _container.read(walletServiceProvider).deleteSafe(safe.id);
+      await _container.read(walletServiceProvider).deleteSafe(safe.number);
       final myWalletProvider =
           // ignore: use_build_context_synchronously
           old_provider.Provider.of<MyWalletsProvider>(context, listen: false);

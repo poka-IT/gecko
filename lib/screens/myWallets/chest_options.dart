@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
@@ -153,37 +154,38 @@ class ChestOptionsContent extends ConsumerWidget {
           ),
         ),
         if (!isAlone)
-          InkWell(
-            key: keycreateRootDerivation,
-            onTap: ref.read(durtProvider).isConnected
-                ? () async {
-                    await Navigator.push(context, MaterialPageRoute(builder: (context) => const CustomDerivation()));
-                  }
-                : null,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.manage_accounts,
-                    size: scaleSize(24),
-                    color: ref.read(durtProvider).isConnected ? context.colorScheme.onSurface : Colors.grey[400],
-                  ),
-                  ScaledSizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      'createDerivation'.tr(),
-                      style: scaledTextStyle(
-                        fontSize: 16,
-                        color: ref.read(durtProvider).isConnected ? context.colorScheme.onSurface : Colors.grey[500],
-                      ),
-                      softWrap: true,
+          if (configBox.get('expertMode') ?? false)
+            InkWell(
+              key: keycreateRootDerivation,
+              onTap: ref.read(durtProvider).isConnected
+                  ? () async {
+                      await Navigator.push(context, MaterialPageRoute(builder: (context) => const CustomDerivation()));
+                    }
+                  : null,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.manage_accounts,
+                      size: scaleSize(24),
+                      color: ref.read(durtProvider).isConnected ? context.colorScheme.onSurface : Colors.grey[400],
                     ),
-                  ),
-                ],
+                    ScaledSizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        'createDerivation'.tr(),
+                        style: scaledTextStyle(
+                          fontSize: 16,
+                          color: ref.read(durtProvider).isConnected ? context.colorScheme.onSurface : Colors.grey[500],
+                        ),
+                        softWrap: true,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
         InkWell(
           key: keyDeleteChest,
           onTap: () async {

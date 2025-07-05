@@ -341,5 +341,7 @@
     "transactionFailedTitle": "Échec de la transaction",
     "errorDetails": "Détails de l'erreur :",
     "transactionDetails": "Détails de la transaction :",
-    "newTransactionReceived": "Nouvelle transaction reçue"
+    "newTransactionReceived": "Nouvelle transaction reçue",
+    "newCertificationReceived": "Nouvelle certification reçue",
+    "newCertificationSent": "Nouvelle certification envoyée"
 }

@@ -59,14 +59,11 @@ class TransactionHistoryNotifier extends StateNotifier<TransactionHistoryState> 
       return;
     }
 
-    log.d('Setting up activity subscription for account: $address');
-
     try {
       _activitySubscription = d.SquidService.client
           .subscribeAccountActivity(address)
           .listen(
             (transactionId) {
-              log.d('Activity subscription received data: $transactionId');
               if (transactionId != null && transactionId != _lastSeenTransactionId) {
                 log.i('New activity detected for $address: $transactionId (previous: $_lastSeenTransactionId)');
                 _lastSeenTransactionId = transactionId;
@@ -79,8 +76,6 @@ class TransactionHistoryNotifier extends StateNotifier<TransactionHistoryState> 
               log.e('Activity subscription error: $error');
             },
           );
-
-      log.d('Activity subscription set up successfully for $address');
     } catch (e) {
       log.e('Failed to setup activity subscription: $e');
     }
@@ -89,14 +84,6 @@ class TransactionHistoryNotifier extends StateNotifier<TransactionHistoryState> 
   /// Handle account activity by refreshing the transaction history
   void _onAccountActivity() async {
     try {
-      // Don't refresh if we're already loading
-      // if (state.isLoading) {
-      //   log.d('Skipping activity refresh: already loading');
-      //   return;
-      // }
-
-      log.i('Refreshing transaction history due to new activity for $address');
-
       // Refresh the complete transaction history
       await _refreshTransactionHistory();
     } catch (e) {
@@ -132,8 +119,6 @@ class TransactionHistoryNotifier extends StateNotifier<TransactionHistoryState> 
 
         if (hasNewTransactions) {
           log.i('Found ${newTransactions.length} transactions, with newer ones than before');
-        } else {
-          log.d('No new transactions found in refresh');
         }
 
         state = state.copyWith(
@@ -145,7 +130,6 @@ class TransactionHistoryNotifier extends StateNotifier<TransactionHistoryState> 
         // Update last seen transaction ID with the most recent one
         if (newTransactions.isNotEmpty) {
           _lastSeenTransactionId = _generateTransactionId(newTransactions.first);
-          log.d('Updated last seen transaction ID: $_lastSeenTransactionId');
         }
       } else {
         log.w('Received null result from getAccountHistory');
@@ -189,7 +173,6 @@ class TransactionHistoryNotifier extends StateNotifier<TransactionHistoryState> 
       // Store the most recent transaction ID for activity detection
       if (transactions.isNotEmpty) {
         _lastSeenTransactionId = _generateTransactionId(transactions.first);
-        log.d('Initial load: Set last seen transaction ID: $_lastSeenTransactionId');
       }
 
       state = state.copyWith(

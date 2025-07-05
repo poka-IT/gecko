@@ -276,5 +276,7 @@
     "transactionFailedTitle": "Transazione fallita",
     "errorDetails": "Dettagli dell'errore:",
     "transactionDetails": "Dettagli della transazione:",
-    "newTransactionReceived": "Nuova transazione ricevuta"
+    "newTransactionReceived": "Nuova transazione ricevuta",
+    "newCertificationReceived": "Nuova certificazione ricevuta",
+    "newCertificationSent": "Nuova certificazione inviata"
 }

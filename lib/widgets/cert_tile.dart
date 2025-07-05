@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
@@ -20,6 +21,7 @@ class CertTile extends StatelessWidget {
 
     return Column(
       children: listCerts.map((repository) {
+        final String dateString = DateFormat.yMd(Localizations.localeOf(context).languageCode).format(repository.date);
         return Column(
           children: <Widget>[
             Padding(
@@ -39,7 +41,7 @@ class CertTile extends StatelessWidget {
                   text: TextSpan(
                     style: scaledTextStyle(fontSize: 14, color: homeContext.colorScheme.onSurfaceVariant),
                     children: <TextSpan>[
-                      TextSpan(text: repository.date, style: scaledTextStyle(fontSize: 14)),
+                      TextSpan(text: dateString, style: scaledTextStyle(fontSize: 14)),
                       if (repository.name.isNotEmpty)
                         TextSpan(
                           text: '  ·  ',

@@ -93,11 +93,6 @@ class CertificationListNotifier extends StateNotifier<CertificationListState> {
     }
   }
 
-  /// Format number with leading zero if needed
-  String _formatNumber(int number) {
-    return number < 10 ? '0$number' : '$number';
-  }
-
   /// Load certifications from the server
   Future<void> loadCertifications() async {
     final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
@@ -113,16 +108,9 @@ class CertificationListNotifier extends StateNotifier<CertificationListState> {
 
       // Store the most recent certification timestamp for activity detection
       if (certs.isNotEmpty) {
-        _lastSeenCertId = certs.first.address + certs.first.date;
+        _lastSeenCertId = certs.first.address + certs.first.date.toString();
         // Extract timestamp from first certification
-        final dateParts = certs.first.date.split('-');
-        if (dateParts.length == 3) {
-          _lastCertTimestamp = DateTime(
-            int.parse(dateParts[2]), // year
-            int.parse(dateParts[1]), // month
-            int.parse(dateParts[0]), // day
-          );
-        }
+        _lastCertTimestamp = certs.first.date;
       }
 
       state = state.copyWith(certifications: certs, isLoading: false, hasError: false);
@@ -150,24 +138,15 @@ class CertificationListNotifier extends StateNotifier<CertificationListState> {
           hasNewCerts = true;
         } else {
           // Compare with the last known timestamp
-          final dateParts = newCerts.first.date.split('-');
-          if (dateParts.length == 3) {
-            final newTimestamp = DateTime(
-              int.parse(dateParts[2]), // year
-              int.parse(dateParts[1]), // month
-              int.parse(dateParts[0]), // day
-            );
+          hasNewCerts =
+              _lastCertTimestamp == null ||
+              newCerts.first.date.isAfter(_lastCertTimestamp!) ||
+              !state.certifications.any(
+                (cert) => cert.address == newCerts.first.address && cert.date == newCerts.first.date,
+              );
 
-            hasNewCerts =
-                _lastCertTimestamp == null ||
-                newTimestamp.isAfter(_lastCertTimestamp!) ||
-                !state.certifications.any(
-                  (cert) => cert.address == newCerts.first.address && cert.date == newCerts.first.date,
-                );
-
-            if (hasNewCerts) {
-              _lastCertTimestamp = newTimestamp;
-            }
+          if (hasNewCerts) {
+            _lastCertTimestamp = newCerts.first.date;
           }
         }
       }
@@ -179,7 +158,7 @@ class CertificationListNotifier extends StateNotifier<CertificationListState> {
 
       // Update last seen certification ID with the most recent one
       if (newCerts.isNotEmpty) {
-        _lastSeenCertId = newCerts.first.address + newCerts.first.date;
+        _lastSeenCertId = newCerts.first.address + newCerts.first.date.toString();
       }
     } catch (e) {
       log.e('Error refreshing certifications: $e');
@@ -208,11 +187,9 @@ class CertificationListNotifier extends StateNotifier<CertificationListState> {
 
         if (timestampString != null) {
           final timestamp = DateTime.parse(timestampString);
-          final dp = DateTime(timestamp.year, timestamp.month, timestamp.day);
-          final dateForm = '${_formatNumber(dp.day)}-${_formatNumber(dp.month)}-${dp.year}';
 
           if (!listCerts.any((existingCert) => existingCert.address == personAddress)) {
-            listCerts.add(CertDisplayItem(address: personAddress ?? '', name: personName ?? '', date: dateForm));
+            listCerts.add(CertDisplayItem(address: personAddress ?? '', name: personName ?? '', date: timestamp));
           }
         }
       }
@@ -230,11 +207,9 @@ class CertificationListNotifier extends StateNotifier<CertificationListState> {
 
         if (personAddress != null && timestampString != null) {
           final timestamp = DateTime.parse(timestampString);
-          final dp = DateTime(timestamp.year, timestamp.month, timestamp.day);
-          final dateForm = '${_formatNumber(dp.day)}-${_formatNumber(dp.month)}-${dp.year}';
 
           if (!listCerts.any((existingCert) => existingCert.address == personAddress)) {
-            listCerts.add(CertDisplayItem(address: personAddress, name: personName ?? '', date: dateForm));
+            listCerts.add(CertDisplayItem(address: personAddress, name: personName ?? '', date: timestamp));
           }
         }
       }

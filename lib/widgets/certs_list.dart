@@ -13,7 +13,7 @@ import 'package:gecko/widgets/cert_tile.dart';
 class CertDisplayItem {
   final String address;
   final String name;
-  final String date;
+  final DateTime date;
 
   CertDisplayItem({required this.address, required this.name, required this.date});
 }
@@ -109,7 +109,9 @@ class _CertsListState extends ConsumerState<CertsList> with TickerProviderStateM
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final appBarHeight = AppBar().preferredSize.height;
-    final windowHeight = screenHeight - appBarHeight - (isTall ? 170 : 140);
+    const bottomBarHeight = 30;
+
+    final windowHeight = screenHeight - appBarHeight - (isTall ? 170 : 140) - bottomBarHeight;
 
     // Check if we have network connection
     final connectionStatus = ref.watch(squidConnectionStatusProvider);
@@ -129,36 +131,22 @@ class _CertsListState extends ConsumerState<CertsList> with TickerProviderStateM
     // Check for new certifications using timestamp comparison
     if (!_isInitialLoad && !certState.isLoading && certState.certifications.isNotEmpty) {
       // Extract timestamp from first certification
-      final dateParts = certState.certifications.first.date.split('-');
-      if (dateParts.length == 3) {
-        final currentLatestTimestamp = DateTime(
-          int.parse(dateParts[2]), // year
-          int.parse(dateParts[1]), // month
-          int.parse(dateParts[0]), // day
-        );
+      final currentLatestTimestamp = certState.certifications.first.date;
 
-        // Check if we have a newer certification than before
-        if (_lastCertTimestamp != null && currentLatestTimestamp.isAfter(_lastCertTimestamp!)) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _onNewCertificationReceived();
-          });
-        }
-
-        // Always update the latest timestamp
-        _lastCertTimestamp = currentLatestTimestamp;
+      // Check if we have a newer certification than before
+      if (_lastCertTimestamp != null && currentLatestTimestamp.isAfter(_lastCertTimestamp!)) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _onNewCertificationReceived();
+        });
       }
+
+      // Always update the latest timestamp
+      _lastCertTimestamp = currentLatestTimestamp;
     }
 
     // Set initial timestamp after first load
     if (_isInitialLoad && !certState.isLoading && certState.certifications.isNotEmpty) {
-      final dateParts = certState.certifications.first.date.split('-');
-      if (dateParts.length == 3) {
-        _lastCertTimestamp = DateTime(
-          int.parse(dateParts[2]), // year
-          int.parse(dateParts[1]), // month
-          int.parse(dateParts[0]), // day
-        );
-      }
+      _lastCertTimestamp = certState.certifications.first.date;
       _isInitialLoad = false;
     }
 

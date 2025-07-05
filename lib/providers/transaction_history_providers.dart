@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/providers.dart';
 
@@ -40,9 +42,122 @@ class TransactionHistoryState {
 class TransactionHistoryNotifier extends StateNotifier<TransactionHistoryState> {
   final Ref ref;
   final String address;
+  StreamSubscription<String?>? _activitySubscription;
+  String? _lastSeenTransactionId;
 
   TransactionHistoryNotifier(this.ref, this.address) : super(const TransactionHistoryState()) {
     loadTransactions();
+    _subscribeToAccountActivity();
+  }
+
+  /// Subscribe to account activity (simple subscription that triggers refreshes)
+  void _subscribeToAccountActivity() {
+    // Check if we have Squid connection
+    final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
+    if (squidConnectionStatus != d.ConnectionStatus.connected) {
+      log.w('Cannot subscribe to account activity: Squid not connected');
+      return;
+    }
+
+    log.d('Setting up activity subscription for account: $address');
+
+    try {
+      _activitySubscription = d.SquidService.client
+          .subscribeAccountActivity(address)
+          .listen(
+            (transactionId) {
+              log.d('Activity subscription received data: $transactionId');
+              if (transactionId != null && transactionId != _lastSeenTransactionId) {
+                log.i('New activity detected for $address: $transactionId (previous: $_lastSeenTransactionId)');
+                _lastSeenTransactionId = transactionId;
+                _onAccountActivity();
+              } else if (transactionId != null) {
+                log.d('Received known transaction ID: $transactionId');
+              }
+            },
+            onError: (error) {
+              log.e('Activity subscription error: $error');
+            },
+          );
+
+      log.d('Activity subscription set up successfully for $address');
+    } catch (e) {
+      log.e('Failed to setup activity subscription: $e');
+    }
+  }
+
+  /// Handle account activity by refreshing the transaction history
+  void _onAccountActivity() async {
+    try {
+      // Don't refresh if we're already loading
+      // if (state.isLoading) {
+      //   log.d('Skipping activity refresh: already loading');
+      //   return;
+      // }
+
+      log.i('Refreshing transaction history due to new activity for $address');
+
+      // Refresh the complete transaction history
+      await _refreshTransactionHistory();
+    } catch (e) {
+      log.e('Error handling account activity: $e');
+    }
+  }
+
+  /// Refresh transaction history (used for activity-triggered updates)
+  Future<void> _refreshTransactionHistory() async {
+    final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
+    if (squidConnectionStatus != d.ConnectionStatus.connected) {
+      log.w('Cannot refresh: Squid not connected');
+      return;
+    }
+
+    try {
+      final genesisTime = await ref.read(genesisTimeProvider.future);
+
+      log.d('Fetching fresh transaction data for $address');
+      // Fetch fresh data
+      final result = await d.SquidService.client.getAccountHistory(address, number: 20, cursor: null);
+
+      if (result != null) {
+        final newTransactions = result.edges.map((edge) {
+          return TransactionDisplayItem.fromGraphQLNode(edge.node, address, genesisTime);
+        }).toList();
+
+        // Check if we actually have new transactions by comparing with current state
+        final hasNewTransactions =
+            newTransactions.isNotEmpty &&
+            (state.transactions.isEmpty ||
+                (newTransactions.first.timestamp.isAfter(state.transactions.first.timestamp)));
+
+        if (hasNewTransactions) {
+          log.i('Found ${newTransactions.length} transactions, with newer ones than before');
+        } else {
+          log.d('No new transactions found in refresh');
+        }
+
+        state = state.copyWith(
+          transactions: newTransactions,
+          hasNextPage: result.pageInfo.hasNextPage,
+          cursor: result.pageInfo.endCursor,
+        );
+
+        // Update last seen transaction ID with the most recent one
+        if (newTransactions.isNotEmpty) {
+          _lastSeenTransactionId = _generateTransactionId(newTransactions.first);
+          log.d('Updated last seen transaction ID: $_lastSeenTransactionId');
+        }
+      } else {
+        log.w('Received null result from getAccountHistory');
+      }
+    } catch (e) {
+      log.e('Error refreshing transaction history: $e');
+    }
+  }
+
+  /// Generate a consistent transaction ID from transaction data
+  String _generateTransactionId(TransactionDisplayItem transaction) {
+    return '${transaction.timestamp.millisecondsSinceEpoch}_${transaction.amount}_${transaction.isReceived}';
   }
 
   /// Load the first page of transactions
@@ -70,6 +185,12 @@ class TransactionHistoryNotifier extends StateNotifier<TransactionHistoryState> 
       final transactions = result.edges.map((edge) {
         return TransactionDisplayItem.fromGraphQLNode(edge.node, address, genesisTime);
       }).toList();
+
+      // Store the most recent transaction ID for activity detection
+      if (transactions.isNotEmpty) {
+        _lastSeenTransactionId = _generateTransactionId(transactions.first);
+        log.d('Initial load: Set last seen transaction ID: $_lastSeenTransactionId');
+      }
 
       state = state.copyWith(
         transactions: transactions,
@@ -119,10 +240,16 @@ class TransactionHistoryNotifier extends StateNotifier<TransactionHistoryState> 
     }
   }
 
-  /// Refresh the transaction history
+  /// Refresh the transaction history (public method for manual refresh)
   Future<void> refresh() async {
     state = const TransactionHistoryState();
     await loadTransactions();
+  }
+
+  @override
+  void dispose() {
+    _activitySubscription?.cancel();
+    super.dispose();
   }
 }
 

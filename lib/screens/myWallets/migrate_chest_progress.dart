@@ -111,7 +111,7 @@ class _MigrateChestProgressScreenState extends ConsumerState<MigrateChestProgres
           .getKeyPairFromMnemonic(
             widget.newMnemonic,
             derivation: task.wallet.derivation ?? 0,
-            keyPairType: KeyPairType.sr25519,
+            keyPairType: Durt.defaultKeyPairType,
           );
 
       // Migrate identity if wallet has one

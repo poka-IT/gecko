@@ -317,5 +317,10 @@
     "nodeAndIndexerSynced": "Node and indexer synced !",
     "selectNode": "Select a node",
     "selectIndexer": "Select an indexer",
-    "transactionFailed": "Transaction failed"
+    "transactionFailed": "Transaction failed",
+    "tapForDetails": "Tap for details",
+    "transactionFailedTitle": "Transaction Failed",
+    "errorDetails": "Error Details:",
+    "transactionDetails": "Transaction Details:",
+    "newTransactionReceived": "New transaction received"
 }

@@ -338,5 +338,10 @@
     "selectIndexer": "Seleccionar un indexador",
     "connectionError": "Error de conexión",
     "invalidEndpointError": "Punto final inválido",
-    "transactionFailed": "La transacción ha fallado"
+    "transactionFailed": "La transacción ha fallado",
+    "tapForDetails": "Pulse para más detalles",
+    "transactionFailedTitle": "Fallo de la transacción",
+    "errorDetails": "Detalles del error:",
+    "transactionDetails": "Detalles de la transacción:",
+    "newTransactionReceived": "Nueva transacción recibida"
 }

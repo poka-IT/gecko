@@ -64,14 +64,14 @@ class _MigrateChestScreenState extends ConsumerState<MigrateChestScreen> {
       // Generate root address using WalletService
       final rootKeypair = await ref
           .read(walletServiceProvider)
-          .getKeyPairFromMnemonic(newMnemonic, derivation: 0, keyPairType: KeyPairType.sr25519);
+          .getKeyPairFromMnemonic(newMnemonic, derivation: 0, keyPairType: Durt.defaultKeyPairType);
       destAddresses.add(rootKeypair.address);
 
       // Generate derived addresses
       for (int i = 0; i < nbrScan; i++) {
         final derivedKeypair = await ref
             .read(walletServiceProvider)
-            .getKeyPairFromMnemonic(newMnemonic, derivation: i, keyPairType: KeyPairType.sr25519);
+            .getKeyPairFromMnemonic(newMnemonic, derivation: i, keyPairType: Durt.defaultKeyPairType);
         destAddresses.add(derivedKeypair.address);
       }
 

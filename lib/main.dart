@@ -14,7 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'dart:async';
-import 'package:durt2/durt2.dart' show Durt, Networks;
+import 'package:durt2/durt2.dart' show Durt, Networks, KeyPairType;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
 import 'package:gecko/globals.dart';
@@ -49,24 +49,16 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
 
-  // if (kDebugMode) {
-  //   await dotenv.load();
-  // }
-
   final homeProvider = HomeProvider();
-  // DuniterIndexer _duniterIndexer = DuniterIndexer();
 
   //Init durt2
-  await Durt().init(network: Networks.gdev);
+  await Durt().init(network: Networks.gdev, keyPairType: KeyPairType.sr25519);
 
   // Initialize Hive
   await initHiveForFlutter();
   await homeProvider.initHive();
 
   appVersion = await homeProvider.getAppVersion();
-
-  // Register app dependencies
-  // await registerDependencies();
 
   if (kReleaseMode && enableSentry) {
     await SentryFlutter.init(

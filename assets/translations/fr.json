@@ -336,5 +336,10 @@
     "nodeAndIndexerSynced": "Noeud et indexeur synchronisés !",
     "selectNode": "Sélectionner un noeud",
     "selectIndexer": "Sélectionner un indexeur",
-    "transactionFailed": "La transaction a échoué"
+    "transactionFailed": "La transaction a échoué",
+    "tapForDetails": "Appuyez pour plus de détails",
+    "transactionFailedTitle": "Échec de la transaction",
+    "errorDetails": "Détails de l'erreur :",
+    "transactionDetails": "Détails de la transaction :",
+    "newTransactionReceived": "Nouvelle transaction reçue"
 }

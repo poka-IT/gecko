@@ -271,5 +271,10 @@
     "selectIndexer": "Seleziona un indexer",
     "invalidEndpointError": "L'endpoint non é valido",
     "connectionError": "Errore di connessione",
-    "transactionFailed": "La transazione ha fallito"
+    "transactionFailed": "La transazione ha fallito",
+    "tapForDetails": "Tocca per i dettagli",
+    "transactionFailedTitle": "Transazione fallita",
+    "errorDetails": "Dettagli dell'errore:",
+    "transactionDetails": "Dettagli della transazione:",
+    "newTransactionReceived": "Nuova transazione ricevuta"
 }

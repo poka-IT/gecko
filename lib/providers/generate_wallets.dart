@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:durt/durt.dart' as durt;
-import 'package:durt2/durt2.dart' show Language, WalletBalance, WalletEntity;
+import 'package:durt2/durt2.dart' show Language, WalletBalance, WalletEntity, IdtyStatus, Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -362,11 +362,13 @@ class GenerateWalletsProvider with ChangeNotifier {
       String walletName = scanedWalletNumber == 0 ? 'currentWallet'.tr() : '${'wallet'.tr()} ${scanedWalletNumber + 1}';
       final actualSafeNumber = _container.read(walletServiceProvider).defaultSafeBoxNumber;
 
-      final myWallet = WalletEntity(
+      final myWallet = WalletEntity.create(
         address: scannedWallet,
         name: walletName,
         derivation: addressToScan[scannedWallet],
         imagePath: 'assets/avatars/${scanedWalletNumber % 4}.png',
+        keyPairType: Durt.defaultKeyPairType,
+        identityStatus: IdtyStatus.unknown,
       );
 
       final safe = _container.read(walletServiceProvider).getSafeBox(actualSafeNumber);

@@ -1,6 +1,6 @@
 // ignore_for_file: must_be_immutable
 
-import 'package:durt2/durt2.dart' show IdtyStatus;
+import 'package:durt2/durt2.dart' show IdtyStatusExtension;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -46,7 +46,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
     ).wait;
 
     final data = WalletHeaderData(
-      hasIdentity: idtyStatusValue != IdtyStatus.none,
+      hasIdentity: idtyStatusValue.hasIdentity,
       isOwner: myWalletProvider.isOwner(widget.address),
       walletName: ref.read(squidServiceProvider).walletNameIndexer[widget.address],
       balance: balanceResult.transferableBalance,

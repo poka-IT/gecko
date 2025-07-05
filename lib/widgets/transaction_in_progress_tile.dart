@@ -11,6 +11,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/transaction_history_providers.dart';
 
 import 'package:gecko/utils.dart';
+import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/transaction_status.dart';
 import 'package:gecko/widgets/transaction_state_icon.dart';
@@ -57,6 +58,103 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
     super.dispose();
   }
 
+  void _showTransactionErrorDetails(BuildContext context, String? errorMessage) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+          ),
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 20,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Handle bar
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+                  ),
+                ),
+                SizedBox(height: 20),
+                // Title
+                Row(
+                  children: [
+                    Icon(Icons.error_outline, color: Colors.red[700], size: 24),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'transactionFailedTitle'.tr(),
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.red[700]),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
+                // Error details
+                Text('errorDetails'.tr(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[300]!),
+                  ),
+                  child: SelectableText(
+                    errorMessage ?? 'Unknown error occurred',
+                    style: TextStyle(fontSize: 14, fontFamily: 'Monospace', color: Colors.red[800]),
+                  ),
+                ),
+                SizedBox(height: 20),
+                // Transaction details
+                Text('transactionDetails'.tr(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[300]!),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('To: ${getShortPubkey(widget.transactionData.toAddress)}'),
+                      SizedBox(height: 4),
+                      Text('Amount: ${widget.transactionData.amount * -1}'),
+                      if (widget.transactionData.comment.isNotEmpty) ...[
+                        SizedBox(height: 4),
+                        Text('Comment: ${widget.transactionData.comment}'),
+                      ],
+                    ],
+                  ),
+                ),
+                SizedBox(height: 20),
+                // Close button using PrimaryButton widget
+                PrimaryButton(onPressed: () => Navigator.of(context).pop(), label: 'close'.tr()),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_status == null) {
@@ -73,9 +171,74 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
       humanStatus = errorTransactionMap[_status!.errorMessage] ?? _status!.errorMessage!;
       SchedulerBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('transactionFailed'.tr()), backgroundColor: Colors.red));
+          final errorMessage = _status!.errorMessage;
+          _status = null;
+          ScaffoldMessenger.of(homeContext).hideCurrentSnackBar();
+          ScaffoldMessenger.of(homeContext).showSnackBar(
+            SnackBar(
+              content: GestureDetector(
+                onTap: () {
+                  _showTransactionErrorDetails(homeContext, errorMessage);
+                },
+                behavior: HitTestBehavior.opaque,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Row(
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.white, size: 20),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'transactionFailed'.tr(),
+                              style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                            ),
+                            SizedBox(height: 2),
+                            Row(
+                              children: [
+                                Text(
+                                  'tapForDetails'.tr(),
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.7),
+                                    fontSize: 11,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                                SizedBox(width: 4),
+                                Icon(Icons.info_outline, color: Colors.white.withValues(alpha: 0.7), size: 12),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () {
+                          ScaffoldMessenger.of(homeContext).hideCurrentSnackBar();
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Icon(Icons.close, color: Colors.white, size: 16),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              backgroundColor: Colors.red[700],
+              duration: Duration(days: 365), // Persist indefinitely
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              margin: EdgeInsets.all(16),
+            ),
+          );
         }
       });
     } else {
@@ -153,10 +316,10 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                   children: [
                     Text(
                       finalAmount.toString(),
-                      style: scaledTextStyle(fontSize: 15, color: Colors.blue[700], fontWeight: FontWeight.w500),
+                      style: scaledTextStyle(fontSize: 15, color: const Color(0xFF2196F3), fontWeight: FontWeight.w500),
                     ),
                     ScaledSizedBox(width: 5),
-                    UdUnitDisplay(size: scaleSize(15), color: Colors.blue[700]!, fontWeight: FontWeight.w500),
+                    UdUnitDisplay(size: scaleSize(15), color: const Color(0xFF2196F3), fontWeight: FontWeight.w500),
                   ],
                 ),
                 dense: !isTall,

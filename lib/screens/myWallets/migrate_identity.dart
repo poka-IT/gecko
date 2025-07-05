@@ -1,6 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show MigrateWalletChecks, MigrateWalletValidationError, KeyPairType;
+import 'package:durt2/durt2.dart' show MigrateWalletChecks, MigrateWalletValidationError, Durt;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -79,7 +79,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
       //Scan root wallet
       final keypair = await _container
           .read(walletServiceProvider)
-          .getKeyPairFromMnemonic(widget.newMnemonicSentence.text, derivation: 0, keyPairType: KeyPairType.sr25519);
+          .getKeyPairFromMnemonic(widget.newMnemonicSentence.text, derivation: 0, keyPairType: Durt.defaultKeyPairType);
 
       if (keypair.address == widget.newWalletAddress.text) {
         matchDerivationNbr = -1;
@@ -95,7 +95,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
             .getKeyPairFromMnemonic(
               widget.newMnemonicSentence.text,
               derivation: derivationNbr,
-              keyPairType: KeyPairType.sr25519,
+              keyPairType: Durt.defaultKeyPairType,
             );
 
         if (keypair.address == widget.newWalletAddress.text) {

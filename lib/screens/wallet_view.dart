@@ -98,13 +98,10 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
           );
         }
 
-        final walletData = snapshot.data!;
-
         return Scaffold(
           resizeToAvoidBottomInset: true,
           appBar: WalletAppBar(
             address: address,
-            currentBalance: walletData.balance,
             titleBuilder: (uname) => uname == null ? 'seeAWallet'.tr() : 'memberAccountOf'.tr(args: [uname]),
           ),
           bottomNavigationBar: const GeckoBottomAppBar(),

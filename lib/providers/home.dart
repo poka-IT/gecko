@@ -8,7 +8,6 @@ import 'package:gecko/providers.dart';
 
 import 'package:gecko/providers/my_wallets.dart' show MyWalletsProvider;
 import 'package:gecko/providers/v2s_datapod.dart' show V2sDatapodProvider;
-import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
@@ -92,10 +91,12 @@ class HomeProvider with ChangeNotifier {
   }
 
   Future changeCurrencyUnit(BuildContext context) async {
-    final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
     final bool isUdUnit = configBox.get('isUdUnit') ?? false;
     await configBox.put('isUdUnit', !isUdUnit);
-    walletOptions.balanceCache = {};
+
+    // Note: Stream providers will automatically refresh from their subscriptions,
+    // so no need to invalidate them when currency unit changes
+
     notifyListeners();
   }
 

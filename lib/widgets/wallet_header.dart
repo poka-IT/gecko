@@ -111,21 +111,50 @@ class _WalletHeaderState extends ConsumerState<WalletHeader> {
 
   Widget _buildContent(
     BuildContext context,
-    BigInt currentWalletBalance,
     bool hasIdentity,
     bool isOwner,
     bool isPickerOpen,
     String newCustomImagePath,
   ) {
     const double avatarSize = 90;
-    final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
 
-    final balance = walletOptions.balanceCache[widget.address] == null
-        ? currentWalletBalance
-        : walletOptions.balanceCache[widget.address] ?? BigInt.zero;
+    // Get real-time balance from stream
+    final balanceStream = ref.watch(smartBalanceStreamProvider(widget.address));
 
-    final isEmptyWallet = balance == BigInt.zero;
+    return balanceStream.when(
+      data: (walletBalance) {
+        final balance = walletBalance.transferableBalance;
+        final isEmptyWallet = balance == BigInt.zero;
 
+        return _buildWalletContent(
+          context,
+          balance,
+          hasIdentity,
+          isOwner,
+          isPickerOpen,
+          newCustomImagePath,
+          avatarSize,
+          isEmptyWallet,
+        );
+      },
+      loading: () => _buildLoadingHeader(),
+      error: (error, stack) {
+        log.e('❌ WalletHeader balance stream error for ${widget.address}: $error');
+        return _buildLoadingHeader();
+      },
+    );
+  }
+
+  Widget _buildWalletContent(
+    BuildContext context,
+    BigInt balance,
+    bool hasIdentity,
+    bool isOwner,
+    bool isPickerOpen,
+    String newCustomImagePath,
+    double avatarSize,
+    bool isEmptyWallet,
+  ) {
     return Container(
       decoration: BoxDecoration(color: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary),
       padding: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), bottom: scaleSize(16)),
@@ -412,14 +441,7 @@ class _WalletHeaderState extends ConsumerState<WalletHeader> {
     // If data is in cache, show it immediately
     final cached = walletHeaderDataBox.get(widget.address);
     if (cached != null) {
-      return _buildContent(
-        context,
-        cached.balance,
-        cached.hasIdentity,
-        cached.isOwner,
-        _isPickerOpen,
-        _newCustomImagePath,
-      );
+      return _buildContent(context, cached.hasIdentity, cached.isOwner, _isPickerOpen, _newCustomImagePath);
     }
 
     // Sinon on affiche le loading
@@ -435,7 +457,7 @@ class _WalletHeaderState extends ConsumerState<WalletHeader> {
         }
 
         final data = snapshot.data!;
-        return _buildContent(context, data.balance, data.hasIdentity, data.isOwner, _isPickerOpen, _newCustomImagePath);
+        return _buildContent(context, data.hasIdentity, data.isOwner, _isPickerOpen, _newCustomImagePath);
       },
     );
   }

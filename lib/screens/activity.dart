@@ -78,12 +78,9 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
           );
         }
 
-        final walletData = snapshot.data!;
-
         return Scaffold(
           appBar: WalletAppBar(
             address: widget.address,
-            currentBalance: walletData.balance,
             title: 'accountActivity'.tr(),
           ),
           body: Stack(

@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
-import 'package:durt2/durt2.dart' show IdtyStatus, WalletEntity, MembershipStatus;
+import 'package:durt2/durt2.dart' show IdtyStatus, WalletEntity, MembershipStatus, WalletBalance;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -69,7 +69,6 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
       child: Scaffold(
         appBar: WalletAppBar(
           address: widget.wallet.address,
-          currentBalance: walletOptions.balanceCache[widget.wallet.address] ?? BigInt.zero,
           title: isWalletNameIndexed
               ? ref.read(squidServiceProvider).walletNameIndexer[walletOptions.address.text]!
               : currentWalletName,
@@ -287,15 +286,21 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     final defaultWallet = myWalletProvider.getDefaultWallet();
     final bool isDefaultWallet = walletOptions.address.text == defaultWallet.address;
     return FutureBuilder(
-      future: ref.read(storageServiceProvider).hasAccountConsumers(widget.wallet.address),
-      builder: (BuildContext context, AsyncSnapshot<bool> hasConsumers) {
-        if (hasConsumers.connectionState != ConnectionState.done || hasConsumers.hasError || !hasConsumers.hasData) {
+      future: Future.wait([
+        ref.read(storageServiceProvider).hasAccountConsumers(widget.wallet.address),
+        ref.read(storageServiceProvider).getBalance(widget.wallet.address),
+      ]),
+      builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+        if (snapshot.connectionState != ConnectionState.done || snapshot.hasError || !snapshot.hasData) {
           return const SizedBox.shrink();
         }
-        final BigInt balance = walletOptions.balanceCache[walletOptions.address.text] ?? BigInt.zero;
+
+        final bool hasConsumers = snapshot.data![0] as bool;
+        final BigInt balance = (snapshot.data![1] as WalletBalance).transferableBalance;
+
         final bool canDelete =
             !isDefaultWallet &&
-            !hasConsumers.data! &&
+            !hasConsumers &&
             (balance > BigInt.from(2) || balance == BigInt.zero) &&
             !widget.wallet.hasIdentity;
         return InkWell(

@@ -44,7 +44,6 @@ class WalletOptionsProvider with ChangeNotifier {
   final nameController = TextEditingController();
   bool isDefaultWallet = false;
   bool canValidateNameBool = false;
-  Map<String, BigInt> balanceCache = {};
 
   int getPinLenght() {
     return pinLength;
@@ -60,15 +59,16 @@ class WalletOptionsProvider with ChangeNotifier {
   Future<int> deleteWallet(BuildContext context, WalletEntity wallet) async {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     final defaultWallet = myWalletProvider.getDefaultWallet();
-    final walletBalance = balanceCache[wallet.address] ?? BigInt.zero;
+    
+    final walletBalance = await _container.read(storageServiceProvider).getBalance(wallet.address);
 
     // Show confirmation dialog with transfer details
     String confirmationMessage;
-    if (walletBalance > BigInt.zero) {
+    if (walletBalance.transferableBalance > BigInt.zero) {
       confirmationMessage = 'areYouSureToForgetWalletWithBalance'.tr(
         args: [
           wallet.name!,
-          '${(walletBalance.toDouble() / 100).toStringAsFixed(2)} $currencyName',
+          '${(walletBalance.transferableBalance.toDouble() / 100).toStringAsFixed(2)} $currencyName',
           defaultWallet.name ?? 'defaultWallet'.tr(),
         ],
       );
@@ -85,7 +85,7 @@ class WalletOptionsProvider with ChangeNotifier {
     if (!answer) return 0;
 
     // If wallet has balance, transfer funds first
-    if (walletBalance > BigInt.zero) {
+    if (walletBalance.transferableBalance > BigInt.zero) {
       if (!await myWalletProvider.askPinCode()) return 0;
 
       final keypair = await _container

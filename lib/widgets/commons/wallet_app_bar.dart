@@ -13,24 +13,36 @@ import 'package:provider/provider.dart' as old_provider;
 import 'package:qr_flutter/qr_flutter.dart';
 
 class WalletAppBar extends ConsumerWidget implements PreferredSizeWidget {
-  const WalletAppBar({super.key, required this.address, required this.currentBalance, this.title, this.titleBuilder})
+  const WalletAppBar({super.key, required this.address, this.title, this.titleBuilder})
     : assert(title != null || titleBuilder != null);
 
   final String address;
-  final BigInt currentBalance;
   final String? title;
   final String Function(String? username)? titleBuilder;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
+    // Use the real-time balance stream instead of the static parameter
+    final balanceStream = ref.watch(smartBalanceStreamProvider(address));
 
-    final balance = walletOptions.balanceCache[address] == null
-        ? currentBalance
-        : walletOptions.balanceCache[address] ?? BigInt.zero;
+    return balanceStream.when(
+      data: (walletBalance) {
+        final balance = walletBalance.transferableBalance;
+        final isEmptyWallet = balance == BigInt.zero;
+        return _buildAppBar(context, ref, isEmptyWallet);
+      },
+      loading: () {
+        // While loading, assume empty wallet (will show error color)
+        return _buildAppBar(context, ref, true);
+      },
+      error: (error, stack) {
+        // On error, assume empty wallet (will show error color)
+        return _buildAppBar(context, ref, true);
+      },
+    );
+  }
 
-    final isEmptyWallet = balance == BigInt.zero;
-
+  Widget _buildAppBar(BuildContext context, WidgetRef ref, bool isEmptyWallet) {
     return AppBar(
       backgroundColor: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary,
       titleSpacing: 10,

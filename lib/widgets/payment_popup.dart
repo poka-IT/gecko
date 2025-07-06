@@ -15,7 +15,6 @@ import 'package:gecko/models/transaction_in_progress_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/services/system.service.dart';
@@ -36,6 +35,11 @@ void paymentPopup({required WidgetRef ref, required String toAddress, required S
   final amountFocus = FocusNode();
   final commentFocus = FocusNode();
 
+  // Balance validation state
+  BigInt? defaultWalletBalance;
+  BigInt? toAddressBalance;
+  bool balancesLoaded = false;
+
   void resetState() {
     walletViewProvider.payAmount.text = '';
     walletViewProvider.isCommentVisible = false;
@@ -44,6 +48,25 @@ void paymentPopup({required WidgetRef ref, required String toAddress, required S
   }
 
   resetState();
+
+  // Load balances asynchronously
+  Future<void> loadBalances() async {
+    try {
+      final storageService = ref.read(storageServiceProvider);
+      final defaultBalance = await storageService.getBalance(defaultWallet.address);
+      final toBalance = await storageService.getBalance(toAddress);
+
+      defaultWalletBalance = defaultBalance.transferableBalance;
+      toAddressBalance = toBalance.transferableBalance;
+      balancesLoaded = true;
+    } catch (e) {
+      log.e('Error loading balances for payment validation: $e');
+      // Set conservative defaults on error
+      defaultWalletBalance = BigInt.zero;
+      toAddressBalance = BigInt.zero;
+      balancesLoaded = true;
+    }
+  }
 
   Future<dynamic> deriveKeypairWithYield(String address, String pinCode) async {
     // This function yields control to the UI periodically during the derivation
@@ -137,10 +160,10 @@ void paymentPopup({required WidgetRef ref, required String toAddress, required S
     final payAmount = walletViewProvider.payAmount.text;
     if (payAmount.isEmpty) return false;
 
-    // Récupération des soldes
-    final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(homeContext, listen: false);
-    final defaultWalletBalance = walletOptions.balanceCache[defaultWallet.address] ?? BigInt.zero;
-    final toAddressBalance = walletOptions.balanceCache[toAddress] ?? BigInt.zero;
+    // Wait for balances to be loaded before validating
+    if (!balancesLoaded || defaultWalletBalance == null || toAddressBalance == null) {
+      return false; // Cannot validate without balance data
+    }
 
     // Conversion du montant en unités de base
     final BigInt payAmountValue = SystemService.balanceRatio == BigInt.from(1)
@@ -150,12 +173,12 @@ void paymentPopup({required WidgetRef ref, required String toAddress, required S
     // TODO: récupérer la valeur réelle de l'existential deposit depuis le storage de Duniter
     final existentialDeposit = BigInt.from(200);
 
-    // Vérifications de validité
+    // Vérifications de validité avec les vraies balances
     final bool isAmountValid = payAmountValue > BigInt.zero;
     final bool isNotSendingToSelf = toAddress != defaultWallet.address;
     final bool hasEnoughBalance =
-        (payAmountValue <= defaultWalletBalance - existentialDeposit) || defaultWalletBalance == payAmountValue;
-    final bool respectsExistentialDeposit = toAddressBalance > BigInt.zero || payAmountValue >= existentialDeposit;
+        (payAmountValue <= defaultWalletBalance! - existentialDeposit) || defaultWalletBalance == payAmountValue;
+    final bool respectsExistentialDeposit = toAddressBalance! > BigInt.zero || payAmountValue >= existentialDeposit;
 
     return isAmountValid && isNotSendingToSelf && hasEnoughBalance && respectsExistentialDeposit;
   }
@@ -179,6 +202,17 @@ void paymentPopup({required WidgetRef ref, required String toAddress, required S
 
       return StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
+          // Load balances on first build and when wallet changes
+          if (!balancesLoaded) {
+            loadBalances().then((_) {
+              if (context.mounted) {
+                setState(() {
+                  // Trigger rebuild after balances are loaded
+                });
+              }
+            });
+          }
+
           canValidate = canValidatePayment();
           final bool isUdUnit = configBox.get('isUdUnit') ?? false;
           return Padding(
@@ -282,6 +316,10 @@ void paymentPopup({required WidgetRef ref, required String toAddress, required S
                                 // Update your local state and trigger a rebuild.
                                 setState(() {
                                   defaultWallet = newSelectedWallet;
+                                  // Reset balance loading state when wallet changes
+                                  balancesLoaded = false;
+                                  defaultWalletBalance = null;
+                                  toAddressBalance = null;
                                 });
 
                                 // Execute your original logic.

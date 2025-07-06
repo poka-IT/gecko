@@ -1,6 +1,6 @@
-import 'package:durt2/durt2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers.dart';
 
@@ -11,17 +11,21 @@ class CertsCounter extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final storageService = ref.watch(storageServiceProvider);
-    return FutureBuilder<CertificationData>(
-      future: storageService.getCertsCounter(address),
-      builder: (context, certsCounter) {
-        if (certsCounter.connectionState != ConnectionState.done || certsCounter.hasError || !certsCounter.hasData) {
-          return const SizedBox.shrink();
-        }
+    final certificationStream = ref.watch(smartCertificationStreamProvider(address));
+
+    return certificationStream.when(
+      data: (certsCounter) {
         return Text(
-          '(${isSent ? certsCounter.data!.sentCount : certsCounter.data!.receivedCount})',
+          '(${isSent ? certsCounter.sentCount : certsCounter.receivedCount})',
           style: scaledTextStyle(fontSize: 16),
         );
+      },
+      error: (error, stackTrace) {
+        log.e('❌ Certifications widget error for $address: $error');
+        return const SizedBox.shrink();
+      },
+      loading: () {
+        return const SizedBox.shrink();
       },
     );
   }

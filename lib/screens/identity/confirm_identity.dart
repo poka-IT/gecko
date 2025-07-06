@@ -10,7 +10,6 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
 
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
@@ -95,14 +94,12 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
     final screenSize = MediaQuery.of(context).size;
     final isSmallScreen = screenSize.height < 700;
 
     return Scaffold(
       appBar: WalletAppBar(
         address: widget.address,
-        currentBalance: walletOptions.balanceCache[widget.address] ?? BigInt.zero,
         title: 'chooseIdentityName'.tr(),
       ),
       body: Column(

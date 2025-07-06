@@ -16,7 +16,7 @@ import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/utils.dart';
-import 'package:gecko/widgets/balance_display.dart';
+import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/text_markdown.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart' as old_provider;
@@ -160,10 +160,10 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                                     height: 1.5,
                                   ),
                                 ),
-                                BalanceDisplay(
-                                  value: walletOptions.balanceCache[fromAddress] ?? BigInt.zero,
+                                // Use the Balance widget instead of accessing cache directly
+                                Balance(
+                                  address: fromAddress,
                                   size: isSmallScreen ? 14 : 15,
-                                  fontWeight: FontWeight.bold,
                                   color: context.colorScheme.onSurface,
                                 ),
                                 Text(

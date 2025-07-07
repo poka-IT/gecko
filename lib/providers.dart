@@ -29,6 +29,23 @@ class ConnectionStatusNotifier extends StateNotifier<d.ConnectionStatus> {
       // Listen to Duniter connection status
       _duniterSubscription = durt.duniterConnectionStatusStream.listen((status) {
         _duniterStatus = status;
+
+        // Update home message based on Duniter status
+        switch (status) {
+          case d.ConnectionStatus.connecting:
+            homeProvider.changeMessage("connecting".tr());
+            break;
+          case d.ConnectionStatus.connected:
+            homeProvider.changeMessage("connected".tr());
+            break;
+          case d.ConnectionStatus.error:
+            homeProvider.changeMessage("networkGenesisError".tr());
+            break;
+          case d.ConnectionStatus.disconnected:
+            homeProvider.changeMessage("networkConnectionError".tr());
+            break;
+        }
+
         _updateCombinedStatus();
       });
 
@@ -40,8 +57,11 @@ class ConnectionStatusNotifier extends StateNotifier<d.ConnectionStatus> {
           case d.ConnectionStatus.connected:
             homeProvider.changeMessage("nodeAndIndexerSynced".tr(), true);
             break;
-          case d.ConnectionStatus.disconnected || d.ConnectionStatus.error:
+          case d.ConnectionStatus.disconnected:
             homeProvider.changeMessage("noValidIndexerFound".tr());
+            break;
+          case d.ConnectionStatus.error:
+            homeProvider.changeMessage("indexerError".tr());
             break;
           case d.ConnectionStatus.connecting:
             break;
@@ -55,16 +75,27 @@ class ConnectionStatusNotifier extends StateNotifier<d.ConnectionStatus> {
       _squidStatus = durt.squidConnectionStatus;
       _updateCombinedStatus();
     } catch (e) {
-      state = d.ConnectionStatus.disconnected;
+      state = d.ConnectionStatus.error;
+      homeProvider.changeMessage("networkConnectionError".tr());
     }
   }
 
   void _updateCombinedStatus() {
-    // For now, we consider the app connected if either Duniter OR Squid is connected
-    // This can be adjusted based on your requirements
-    final newStatus = (_duniterStatus == d.ConnectionStatus.connected || _squidStatus == d.ConnectionStatus.connected)
-        ? d.ConnectionStatus.connected
-        : d.ConnectionStatus.disconnected;
+    // Priority order: connected > connecting > error > disconnected
+    // We consider the app connected if either Duniter OR Squid is connected
+    // We consider the app in error state if either has an error (genesis validation, etc.)
+
+    d.ConnectionStatus newStatus;
+
+    if (_duniterStatus == d.ConnectionStatus.connected || _squidStatus == d.ConnectionStatus.connected) {
+      newStatus = d.ConnectionStatus.connected;
+    } else if (_duniterStatus == d.ConnectionStatus.error || _squidStatus == d.ConnectionStatus.error) {
+      newStatus = d.ConnectionStatus.error;
+    } else if (_duniterStatus == d.ConnectionStatus.connecting || _squidStatus == d.ConnectionStatus.connecting) {
+      newStatus = d.ConnectionStatus.connecting;
+    } else {
+      newStatus = d.ConnectionStatus.disconnected;
+    }
 
     if (newStatus != state) {
       state = newStatus;
@@ -237,8 +268,23 @@ final squidEndpointTesterProvider = Provider<Future<bool> Function(String)>((ref
     ref.read(squidLoadingProvider.notifier).state = true;
 
     try {
+      // Ensure the endpoint has the correct format with path
+      String testEndpoint = endpoint;
+
+      // If the endpoint doesn't have a path, add the default v1beta1/relay path
+      if (!testEndpoint.contains('/v1beta1/relay') && !testEndpoint.contains('/v1/graphql')) {
+        if (testEndpoint.startsWith('wss://') || testEndpoint.startsWith('ws://')) {
+          testEndpoint = '$testEndpoint/v1beta1/relay';
+        } else if (testEndpoint.startsWith('https://') || testEndpoint.startsWith('http://')) {
+          testEndpoint = '$testEndpoint/v1beta1/relay';
+        } else {
+          // Add protocol and path
+          testEndpoint = 'wss://$testEndpoint/v1beta1/relay';
+        }
+      }
+
       // Test the endpoint
-      final result = await d.SquidService.testEndpoint(endpoint);
+      final result = await d.SquidService.testEndpoint(testEndpoint);
       return result;
     } finally {
       // Clear loading state
@@ -250,11 +296,6 @@ final squidEndpointTesterProvider = Provider<Future<bool> Function(String)>((ref
 /// Provides the [d.Utils] service for utility functions.
 final utilsProvider = Provider<d.Utils>((ref) {
   return ref.watch(durtProvider).utils;
-});
-
-/// Provides the [d.DuniterConnectionService] to manage connection status and endpoints.
-final duniterConnectionProvider = Provider<d.DuniterConnectionService>((ref) {
-  return ref.watch(durtProvider).duniterConnection;
 });
 
 /// Provides the ObjectBox [Box] for the [d.Config] entity.

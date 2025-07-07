@@ -81,25 +81,28 @@ Widget geckHome(BuildContext context) {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              DefaultTextStyle(
-                textAlign: TextAlign.center,
-                style: scaledTextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  shadows: <Shadow>[
-                    const Shadow(offset: Offset(0, 0), blurRadius: 20, color: Colors.black),
-                    const Shadow(offset: Offset(0, 0), blurRadius: 20, color: Colors.black),
-                  ],
-                ),
-                child: old_provider.Consumer<HomeProvider>(
-                  builder: (context, homeP, _) {
-                    return AnimatedFadeOutIn<String>(
-                      data: homeP.homeMessage,
-                      duration: const Duration(milliseconds: 200),
-                      builder: (value) => Text(value),
-                    );
-                  },
+              SizedBox(
+                width: 400,
+                child: DefaultTextStyle(
+                  textAlign: TextAlign.center,
+                  style: scaledTextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    shadows: <Shadow>[
+                      const Shadow(offset: Offset(0, 0), blurRadius: 20, color: Colors.black),
+                      const Shadow(offset: Offset(0, 0), blurRadius: 20, color: Colors.black),
+                    ],
+                  ),
+                  child: old_provider.Consumer<HomeProvider>(
+                    builder: (context, homeP, _) {
+                      return AnimatedFadeOutIn<String>(
+                        data: homeP.homeMessage,
+                        duration: const Duration(milliseconds: 200),
+                        builder: (value) => Text(value),
+                      );
+                    },
+                  ),
                 ),
               ),
             ],

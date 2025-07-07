@@ -34,7 +34,10 @@ class MainDrawer extends StatelessWidget {
                     decoration: BoxDecoration(color: context.colorScheme.primary),
                     child: Column(
                       children: <Widget>[
-                        Image(image: const AssetImage('assets/icon/gecko_final.png'), height: scaleSize(118)),
+                        ConstrainedBox(
+                          constraints: BoxConstraints(maxHeight: scaleSize(100)),
+                          child: Image(image: const AssetImage('assets/icon/gecko_final.png'), fit: BoxFit.contain),
+                        ),
                       ],
                     ),
                   ),

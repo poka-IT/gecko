@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers.dart';
-
 import 'package:gecko/providers/my_wallets.dart' show MyWalletsProvider;
 import 'package:gecko/providers/v2s_datapod.dart' show V2sDatapodProvider;
 import 'package:gecko/widgets/commons/common_elements.dart';
@@ -94,9 +93,6 @@ class HomeProvider with ChangeNotifier {
     final bool isUdUnit = configBox.get('isUdUnit') ?? false;
     await configBox.put('isUdUnit', !isUdUnit);
 
-    // Note: Stream providers will automatically refresh from their subscriptions,
-    // so no need to invalidate them when currency unit changes
-
     notifyListeners();
   }
 
@@ -136,7 +132,6 @@ class HomeProvider with ChangeNotifier {
       configBox.put('dataVersion', dataVersion);
     }
     if (myWalletProvider.isWalletsExists && (configBox.get('dataVersion')) < dataVersion) {
-      // if (!sub.sdkReady && !sub.sdkLoading) sub.initApi();
       // ignore: use_build_context_synchronously
       await infoPopup(context, "chestNotCompatibleMustReinstallGecko".tr());
       await datapod.deleteAvatarsDirectory();
@@ -146,8 +141,6 @@ class HomeProvider with ChangeNotifier {
       await _container.read(walletServiceProvider).clearWallets();
       configBox.put('dataVersion', dataVersion);
       myWalletProvider.reload();
-    } else {
-      // if (!sub.sdkReady && !sub.sdkLoading) await sub.initApi();
     }
 
     if (!_container.read(durtProvider).isConnected) {
@@ -166,7 +159,19 @@ class HomeProvider with ChangeNotifier {
       }
 
       // Connect to Duniter network
-      await _container.read(durtProvider).connect();
+      try {
+        await _container.read(durtProvider).connect();
+        log.i('Successfully connected to Duniter');
+      } catch (e) {
+        log.e('Failed to connect to Duniter: $e');
+
+        // Check if this is a genesis validation error
+        if (e.toString().contains('genesis hash') || e.toString().contains('genesis validation')) {
+          homeProvider.changeMessage("networkGenesisError".tr());
+        } else {
+          homeProvider.changeMessage("networkConnectionError".tr());
+        }
+      }
 
       ref.watch(connectionStatusProvider);
 

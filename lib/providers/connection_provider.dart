@@ -12,8 +12,8 @@ class ConnectionProvider with ChangeNotifier {
   ConnectionProvider() {
     _container = ProviderContainer();
     final durt = _container.read(durtProvider);
-    _connectionStatus = durt.connectionStatus;
-    _connectionStatusSubscription = durt.connectionStatusStream.listen((status) {
+    _connectionStatus = durt.duniterConnectionStatus;
+    _connectionStatusSubscription = durt.duniterConnectionStatusStream.listen((status) {
       if (_connectionStatus != status) {
         _connectionStatus = status;
         notifyListeners();

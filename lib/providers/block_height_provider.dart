@@ -12,7 +12,7 @@ class BlockHeightProvider with ChangeNotifier {
   BlockHeightProvider() {
     _container = ProviderContainer();
     _checkAndStartListening();
-    _connectionStatusSubscription = _container.read(durtProvider).connectionStatusStream.listen((_) {
+    _connectionStatusSubscription = _container.read(durtProvider).duniterConnectionStatusStream.listen((_) {
       _checkAndStartListening();
     });
   }
@@ -31,13 +31,13 @@ class BlockHeightProvider with ChangeNotifier {
     // Create new container and restart listening
     _container = ProviderContainer();
     _checkAndStartListening();
-    _connectionStatusSubscription = _container.read(durtProvider).connectionStatusStream.listen((_) {
+    _connectionStatusSubscription = _container.read(durtProvider).duniterConnectionStatusStream.listen((_) {
       _checkAndStartListening();
     });
   }
 
   void _checkAndStartListening() {
-    final isConnected = _container.read(durtProvider).connectionStatus == ConnectionStatus.connected;
+    final isConnected = _container.read(durtProvider).duniterConnectionStatus == ConnectionStatus.connected;
 
     if (isConnected && _blockHeightNotifier == null) {
       // Start listening

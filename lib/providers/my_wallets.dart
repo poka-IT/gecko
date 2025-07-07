@@ -61,11 +61,30 @@ class MyWalletsProvider with ChangeNotifier {
     final wallets = safe.wallets.toList();
     wallets.sort((a, b) => a.number.compareTo(b.number));
 
-    final futures = wallets.map((wallet) => _container.read(storageServiceProvider).getIdtyStatus(wallet.address));
-    final newStatuses = await Future.wait(futures);
+    // Check if Duniter is connected before trying to access storage service
+    // If not connected (e.g., genesis hash validation failed), keep wallets with default status
+    if (_container.read(durtProvider).isConnected) {
+      try {
+        final futures = wallets.map((wallet) => _container.read(storageServiceProvider).getIdtyStatus(wallet.address));
+        final newStatuses = await Future.wait(futures);
 
-    for (var i = 0; i < wallets.length; i++) {
-      wallets[i].identityStatus = newStatuses[i];
+        for (var i = 0; i < wallets.length; i++) {
+          wallets[i].identityStatus = newStatuses[i];
+        }
+      } catch (e) {
+        log.e('Error getting identity statuses: $e');
+        // If there's an error getting identity statuses, keep wallets with their existing status
+        // This prevents the app from crashing when storage service is not available
+        for (var wallet in wallets) {
+          wallet.identityStatus = IdtyStatus.unknown;
+        }
+      }
+    } else {
+      // If Duniter is not connected, set all wallets to unknown status
+      log.w('Duniter not connected, setting all wallets to unknown identity status');
+      for (var wallet in wallets) {
+        wallet.identityStatus = IdtyStatus.unknown;
+      }
     }
 
     await _container.read(walletServiceProvider).walletBox.putManyAsync(wallets);

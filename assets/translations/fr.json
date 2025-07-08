@@ -360,5 +360,7 @@
     "system": "Système",
     "dark": "Sombre",
     "safeBoxName": "Coffre",
-    "daysAgo": "Il y a {} jours"
+    "daysAgo": "Il y a {} jours",
+    "network": "Réseau",
+    "currentNetwork": "Réseau actuel : {} (SS58 : {})"
 }

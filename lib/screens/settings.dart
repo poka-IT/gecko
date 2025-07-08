@@ -43,6 +43,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _duniterConnectionFailed = false;
   bool _indexerConnectionFailed = false;
   bool _expertMode = false;
+  bool _isSwitchingNetwork = false;
 
   @override
   void initState() {
@@ -150,6 +151,59 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       log.i('Cleaned up Duniter subscriptions and caches');
     } catch (e) {
       log.w('Error during subscription cleanup: $e');
+    }
+  }
+
+  /// Switch to a different network
+  Future<void> _switchToNetwork(Networks newNetwork) async {
+    if (_container.read(durtProvider).network == newNetwork) {
+      return; // Already on this network
+    }
+
+    setState(() {
+      _isSwitchingNetwork = true;
+      _duniterConnectionFailed = false;
+      _indexerConnectionFailed = false;
+    });
+
+    try {
+      // 1. Clean up current subscriptions and caches
+      await _cleanupDuniterSubscriptions();
+
+      // 2. Clear endpoint configurations to force auto-discovery
+      configBox.delete('customEndpoint');
+      configBox.delete('customIndexer');
+      configBox.put('autoEndpoint', true);
+
+      // 3. Switch network in durt2
+      await _container.read(durtProvider).switchNetwork(newNetwork);
+
+      // 4. Save selected network in config
+      configBox.put('selectedNetwork', newNetwork.name);
+
+      // 5. Reconnect to the new network
+      await _container.read(durtProvider).connect();
+
+      // 6. Refresh controllers and UI
+      _syncDuniterEndpointController();
+      _syncIndexerEndpointController();
+      _refreshBlockHeightProvider();
+
+      log.i('Successfully switched to network: ${newNetwork.name}');
+    } catch (e) {
+      log.e('Error switching to network ${newNetwork.name}: $e');
+      setState(() {
+        _duniterConnectionFailed = true;
+      });
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error switching to ${newNetwork.name}: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      setState(() {
+        _isSwitchingNetwork = false;
+      });
     }
   }
 
@@ -495,6 +549,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   ScaledSizedBox(height: isSmallScreen ? 8 : 12),
 
+                  // Carte Sélection du réseau
+                  Container(
+                    decoration: BoxDecoration(
+                      color: context.colorScheme.surfaceContainer,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                          child: networkSelection(context),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+
                   // Carte Nœud Duniter
                   Container(
                     decoration: BoxDecoration(
@@ -803,7 +881,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
                 ),
                 ScaledSizedBox(width: 12),
-                Icon(_getConnectionStatusIcon(), color: _getConnectionStatusColor(), size: scaleSize(16)),
+                Consumer(
+                  builder: (context, ref, _) {
+                    return Icon(
+                      _getConnectionStatusIcon(ref),
+                      color: _getConnectionStatusColor(ref),
+                      size: scaleSize(16),
+                    );
+                  },
+                ),
                 const Spacer(),
                 old_provider.Consumer<SettingsProvider>(
                   builder: (context, set, _) {
@@ -910,18 +996,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             endpointController,
                           );
                         } else if (value == 'Auto') {
-                          // Clean up existing subscriptions before changing nodes
-                          await _cleanupDuniterSubscriptions();
-
-                          configBox.delete('customEndpoint');
-                          configBox.put('autoEndpoint', true);
                           setState(() {
+                            _isManuallyConnectingDuniter = true;
                             _duniterConnectionFailed = false;
                           });
-                          await _container.read(durtProvider).connect();
-                          _syncDuniterEndpointController(); // Synchronize controller
-                          _refreshBlockHeightProvider(); // Refresh block height provider
-                          set.reload();
+
+                          try {
+                            // Clean up existing subscriptions before changing nodes
+                            await _cleanupDuniterSubscriptions();
+
+                            configBox.delete('customEndpoint');
+                            configBox.put('autoEndpoint', true);
+
+                            await _container.read(durtProvider).connect();
+                            _syncDuniterEndpointController(); // Synchronize controller
+                            _refreshBlockHeightProvider(); // Refresh block height provider
+                            set.reload();
+                          } catch (e) {
+                            setState(() {
+                              _duniterConnectionFailed = true;
+                            });
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('connectionError'.tr()), backgroundColor: Colors.red),
+                              );
+                            }
+                          } finally {
+                            setState(() {
+                              _isManuallyConnectingDuniter = false;
+                            });
+                          }
                         } else {
                           configBox.put('autoEndpoint', false);
                           if (!configBox.containsKey('customEndpoint')) {
@@ -940,11 +1044,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ],
             ),
-            if (_container.read(durtProvider).isDuniterLoading || _isManuallyConnectingDuniter)
-              Padding(
-                padding: EdgeInsets.only(top: scaleSize(16)),
-                child: Center(child: Loading(size: scaleSize(24), stroke: 2)),
-              ),
+            Consumer(
+              builder: (context, ref, _) {
+                final isDuniterLoading = ref.watch(durtProvider).isDuniterLoading;
+
+                if (isDuniterLoading || _isManuallyConnectingDuniter) {
+                  return Padding(
+                    padding: EdgeInsets.only(top: scaleSize(16)),
+                    child: Center(child: Loading(size: scaleSize(24), stroke: 2)),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
           ],
         ),
         old_provider.Consumer<SettingsProvider>(
@@ -1613,24 +1725,110 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  IconData _getConnectionStatusIcon() {
-    if (_isManuallyConnectingDuniter || _container.read(durtProvider).isDuniterLoading) {
+  Widget networkSelection(BuildContext context) {
+    final Networks currentNetwork = _container.read(durtProvider).network;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.public_rounded, color: context.colorScheme.primary, size: scaleSize(24)),
+            ScaledSizedBox(width: 12),
+            Text(
+              'network'.tr(),
+              style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
+            ),
+            const Spacer(),
+            if (_isSwitchingNetwork)
+              Padding(
+                padding: EdgeInsets.only(right: scaleSize(8)),
+                child: Loading(size: scaleSize(16), stroke: 2),
+              ),
+          ],
+        ),
+        ScaledSizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            old_provider.Consumer<SettingsProvider>(
+              builder: (context, set, _) {
+                return SegmentedButton<Networks>(
+                  segments: <ButtonSegment<Networks>>[
+                    ButtonSegment(
+                      value: Networks.gdev,
+                      label: Text('gdev'),
+                      icon: const Icon(Icons.bug_report_rounded),
+                    ),
+                    ButtonSegment(
+                      value: Networks.gtest,
+                      label: Text('gtest'),
+                      icon: const Icon(Icons.bug_report_rounded),
+                    ),
+                    ButtonSegment(
+                      value: Networks.g1,
+                      label: Text('g1'),
+                      icon: const Icon(Icons.account_balance_rounded),
+                    ),
+                  ],
+                  selected: {currentNetwork},
+                  onSelectionChanged: _isSwitchingNetwork
+                      ? null
+                      : (Set<Networks> newSelection) {
+                          final selectedNetwork = newSelection.first;
+                          if (selectedNetwork != currentNetwork) {
+                            _switchToNetwork(selectedNetwork);
+                            set.reload();
+                          }
+                        },
+                  style: SegmentedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
+                    selectedForegroundColor: Theme.of(context).colorScheme.onPrimary,
+                    selectedBackgroundColor: Theme.of(context).colorScheme.primary,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+        ScaledSizedBox(height: 8),
+        Center(
+          child: Text(
+            'currentNetwork'.tr(args: [currentNetwork.name.toUpperCase(), currentNetwork.ss58.toString()]),
+            style: scaledTextStyle(
+              fontSize: 12,
+              color: Theme.of(context).textTheme.bodySmall?.color,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  IconData _getConnectionStatusIcon(WidgetRef ref) {
+    final durt = ref.watch(durtProvider);
+
+    if (_isManuallyConnectingDuniter || durt.isDuniterLoading) {
       return Icons.hourglass_bottom;
     } else if (_duniterConnectionFailed) {
       return Icons.error;
-    } else if (_container.read(durtProvider).isConnected) {
+    } else if (durt.isConnected) {
       return Icons.check_circle;
     } else {
       return Icons.error;
     }
   }
 
-  Color _getConnectionStatusColor() {
-    if (_isManuallyConnectingDuniter || _container.read(durtProvider).isDuniterLoading) {
+  Color _getConnectionStatusColor(WidgetRef ref) {
+    final durt = ref.watch(durtProvider);
+
+    if (_isManuallyConnectingDuniter || durt.isDuniterLoading) {
       return Colors.orange;
     } else if (_duniterConnectionFailed) {
       return Colors.red;
-    } else if (_container.read(durtProvider).isConnected) {
+    } else if (durt.isConnected) {
       return Colors.green;
     } else {
       return Colors.red;

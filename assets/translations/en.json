@@ -341,5 +341,7 @@
     "system": "System",
     "dark": "Dark",
     "safeBoxName": "Safe",
-    "daysAgo": "{} days ago"
+    "daysAgo": "{} days ago",
+    "network": "Network",
+    "currentNetwork": "Current network: {} (SS58: {})"
 }

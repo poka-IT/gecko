@@ -51,12 +51,19 @@ Future<void> main() async {
 
   final homeProvider = HomeProvider();
 
-  //Init durt2
-  await Durt().init(network: Networks.gdev, keyPairType: KeyPairType.sr25519);
-
-  // Initialize Hive
+  // Initialize Hive first to access configBox
   await initHiveForFlutter();
   await homeProvider.initHive();
+
+  // Get saved network from config or default to gdev
+  final savedNetworkName = configBox.get('selectedNetwork') ?? 'gdev';
+  final selectedNetwork = Networks.values.firstWhere(
+    (network) => network.name == savedNetworkName,
+    orElse: () => Networks.gdev,
+  );
+
+  //Init durt2 with selected network
+  await Durt().init(network: selectedNetwork, keyPairType: KeyPairType.sr25519);
 
   appVersion = await homeProvider.getAppVersion();
 

@@ -436,7 +436,7 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     final keypair = await _container.read(walletServiceProvider).getKeyPairFromMnemonic(generatedMnemonic!);
 
-    final address = _container.read(walletServiceProvider).getAddress(keypair.address);
+    final address = keypair.address;
 
     final balance = await _container
         .read(storageServiceProvider)

@@ -241,10 +241,9 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
                 case ScanDerivationsResult.none:
                 case ScanDerivationsResult.walletNotFound:
                   final walletData = await ref.read(walletServiceProvider).importRootWallet(pinCode: widget.pinCode);
-                  final address = ref.read(walletServiceProvider).getAddress(walletData.address);
 
                   WalletEntity myWallet = WalletEntity.create(
-                    address: address,
+                    address: walletData.address,
                     number: 0,
                     name: 'currentWallet'.tr(),
                     keyPairType: Durt.defaultKeyPairType,
@@ -279,8 +278,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
                 defaultWallet = myWalletProvider.listWallets.first;
               }
               if (defaultWallet != null) {
-                final address = ref.read(walletServiceProvider).getAddress(defaultWallet.address);
-                await ref.read(walletServiceProvider).setDefaultAddress(address);
+                await ref.read(walletServiceProvider).setDefaultAddress(defaultWallet.address);
               }
 
               await Navigator.push(

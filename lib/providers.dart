@@ -237,8 +237,8 @@ final stateApiProvider = Provider<d.StateApi>((ref) {
   return ref.watch(durtProvider).stateApi;
 });
 
-/// Provides the [d.Keyring] for managing key pairs from mnemonics.
-final keyringProvider = Provider<d.Keyring>((ref) {
+/// Provides the [d.DurtKeyring] for managing key pairs from mnemonics.
+final keyringProvider = Provider<d.DurtKeyring>((ref) {
   return ref.watch(durtProvider).keyring;
 });
 

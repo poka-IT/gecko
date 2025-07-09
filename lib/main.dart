@@ -62,8 +62,8 @@ Future<void> main() async {
     orElse: () => Networks.gdev,
   );
 
-  //Init durt2 with selected network
-  await Durt().init(network: selectedNetwork, keyPairType: KeyPairType.sr25519);
+  //Init durt2 with selected network and keypair type
+  await Durt().init(network: selectedNetwork, keyPairType: KeyPairType.ed25519);
 
   appVersion = await homeProvider.getAppVersion();
 

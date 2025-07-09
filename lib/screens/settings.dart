@@ -160,6 +160,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       return; // Already on this network
     }
 
+    if (!mounted) return;
     setState(() {
       _isSwitchingNetwork = true;
       _duniterConnectionFailed = false;
@@ -184,7 +185,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       // 5. Reconnect to the new network
       await _container.read(durtProvider).connect();
 
-      // 6. Refresh controllers and UI
+      // 6. Note: No need to reinitialize streams anymore - proxy streams in durt2 handle this automatically
+
+      // 7. Refresh controllers and UI
       _syncDuniterEndpointController();
       _syncIndexerEndpointController();
       _refreshBlockHeightProvider();
@@ -192,18 +195,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       log.i('Successfully switched to network: ${newNetwork.name}');
     } catch (e) {
       log.e('Error switching to network ${newNetwork.name}: $e');
-      setState(() {
-        _duniterConnectionFailed = true;
-      });
-      if (context.mounted) {
+      _refreshBlockHeightProvider();
+      if (mounted) {
+        setState(() {
+          _duniterConnectionFailed = true;
+        });
+      }
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error switching to ${newNetwork.name}: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
-      setState(() {
-        _isSwitchingNetwork = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isSwitchingNetwork = false;
+        });
+      }
     }
   }
 
@@ -777,6 +785,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
 
     if (result != null) {
+      if (!mounted) return;
       setState(() {
         _isManuallyConnectingDuniter = true;
         _duniterConnectionFailed = false;
@@ -799,16 +808,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             await _container.read(durtProvider).setFixedEndpoint(result);
             _syncDuniterEndpointController(); // Ensure controller is synchronized
             _refreshBlockHeightProvider(); // Refresh block height provider
-            setState(() {
-              _duniterConnectionFailed = false;
-            });
+            if (mounted) {
+              setState(() {
+                _duniterConnectionFailed = false;
+              });
+            }
             set.reload();
           } catch (e) {
             // If connection fails after test passed, show error and mark as failed
-            setState(() {
-              _duniterConnectionFailed = true;
-            });
-            if (context.mounted) {
+            if (mounted) {
+              setState(() {
+                _duniterConnectionFailed = true;
+              });
+            }
+            if (mounted) {
               ScaffoldMessenger.of(
                 context,
               ).showSnackBar(SnackBar(content: Text('connectionError'.tr()), backgroundColor: Colors.red));
@@ -816,19 +829,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           }
         } else {
           // If endpoint test fails, mark as failed and don't change config
-          setState(() {
-            _duniterConnectionFailed = true;
-          });
-          if (context.mounted) {
+          if (mounted) {
+            setState(() {
+              _duniterConnectionFailed = true;
+            });
+          }
+          if (mounted) {
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text('invalidEndpointError'.tr()), backgroundColor: Colors.red));
           }
         }
       } finally {
-        setState(() {
-          _isManuallyConnectingDuniter = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isManuallyConnectingDuniter = false;
+          });
+        }
       }
     }
   }
@@ -996,6 +1013,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             endpointController,
                           );
                         } else if (value == 'Auto') {
+                          if (!mounted) return;
                           setState(() {
                             _isManuallyConnectingDuniter = true;
                             _duniterConnectionFailed = false;
@@ -1013,18 +1031,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             _refreshBlockHeightProvider(); // Refresh block height provider
                             set.reload();
                           } catch (e) {
-                            setState(() {
-                              _duniterConnectionFailed = true;
-                            });
-                            if (context.mounted) {
+                            if (mounted) {
+                              setState(() {
+                                _duniterConnectionFailed = true;
+                              });
+                            }
+                            if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text('connectionError'.tr()), backgroundColor: Colors.red),
                               );
                             }
                           } finally {
-                            setState(() {
-                              _isManuallyConnectingDuniter = false;
-                            });
+                            if (mounted) {
+                              setState(() {
+                                _isManuallyConnectingDuniter = false;
+                              });
+                            }
                           }
                         } else {
                           configBox.put('autoEndpoint', false);
@@ -1099,6 +1121,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       hintStyle: scaledTextStyle(fontSize: 14, color: Colors.grey[400]),
                     ),
                     onSubmitted: (value) async {
+                      if (!mounted) return;
                       setState(() {
                         _isManuallyConnectingDuniter = true;
                         _duniterConnectionFailed = false;
@@ -1118,16 +1141,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             await _container.read(durtProvider).setFixedEndpoint(value);
                             _syncDuniterEndpointController(); // Synchronize controller
                             _refreshBlockHeightProvider(); // Refresh block height provider
-                            setState(() {
-                              _duniterConnectionFailed = false;
-                            });
+                            if (mounted) {
+                              setState(() {
+                                _duniterConnectionFailed = false;
+                              });
+                            }
                             set.reload();
                           } catch (e) {
                             // If connection fails after test passed, show error and mark as failed
-                            setState(() {
-                              _duniterConnectionFailed = true;
-                            });
-                            if (context.mounted) {
+                            if (mounted) {
+                              setState(() {
+                                _duniterConnectionFailed = true;
+                              });
+                            }
+                            if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text('connectionError'.tr()), backgroundColor: Colors.red),
                               );
@@ -1135,19 +1162,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           }
                         } else {
                           // If endpoint test fails, mark as failed and don't change config
-                          setState(() {
-                            _duniterConnectionFailed = true;
-                          });
-                          if (context.mounted) {
+                          if (mounted) {
+                            setState(() {
+                              _duniterConnectionFailed = true;
+                            });
+                          }
+                          if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text('invalidEndpointError'.tr()), backgroundColor: Colors.red),
                             );
                           }
                         }
                       } finally {
-                        setState(() {
-                          _isManuallyConnectingDuniter = false;
-                        });
+                        if (mounted) {
+                          setState(() {
+                            _isManuallyConnectingDuniter = false;
+                          });
+                        }
                       }
                     },
                   ),
@@ -1260,6 +1291,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       // Get the full endpoint from the display name
       final fullEndpoint = displayToFull[result];
       if (fullEndpoint != null) {
+        if (!mounted) return;
         setState(() {
           _indexerConnectionFailed = false;
         });
@@ -1279,9 +1311,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             log.w('Error reconnecting to Squid after endpoint change: $e');
           }
 
-          setState(() {
-            _indexerConnectionFailed = false;
-          });
+          if (mounted) {
+            setState(() {
+              _indexerConnectionFailed = false;
+            });
+          }
         } else {
           // Test failed - keep old endpoint or go back to auto mode
           if (oldEndpoint != null) {
@@ -1300,10 +1334,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             configBox.delete('customIndexer');
           }
           _syncIndexerEndpointController();
-          setState(() {
-            _indexerConnectionFailed = true;
-          });
-          if (context.mounted) {
+          if (mounted) {
+            setState(() {
+              _indexerConnectionFailed = true;
+            });
+          }
+          if (mounted) {
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text('invalidIndexerError'.tr()), backgroundColor: Colors.red));
@@ -1473,18 +1509,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             } else if (value == 'Auto') {
                               configBox.delete('customIndexer');
                               _syncIndexerEndpointController(); // Synchronize controller
-                              setState(() {
-                                _indexerConnectionFailed = false;
-                              });
+                              if (mounted) {
+                                setState(() {
+                                  _indexerConnectionFailed = false;
+                                });
+                              }
 
                               // Force reconnection to use strict validation instead of just testing
                               try {
                                 await _container.read(durtProvider).connect(initDuniter: false, initSquid: true);
                               } catch (e) {
                                 log.w('Error reconnecting to Squid in Auto mode: $e');
-                                setState(() {
-                                  _indexerConnectionFailed = true;
-                                });
+                                if (mounted) {
+                                  setState(() {
+                                    _indexerConnectionFailed = true;
+                                  });
+                                }
                               }
 
                               set.reload();
@@ -1576,9 +1616,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         }
                       }
 
-                      setState(() {
-                        _indexerConnectionFailed = false;
-                      });
+                      if (mounted) {
+                        setState(() {
+                          _indexerConnectionFailed = false;
+                        });
+                      }
 
                       // TEST FIRST before saving to configBox
                       final isWorking = await testEndpoint(fullEndpoint);
@@ -1594,9 +1636,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           log.w('Error reconnecting to Squid after endpoint change: $e');
                         }
 
-                        setState(() {
-                          _indexerConnectionFailed = false;
-                        });
+                        if (mounted) {
+                          setState(() {
+                            _indexerConnectionFailed = false;
+                          });
+                        }
                       } else {
                         // Test failed - keep old endpoint or go back to auto mode
                         if (oldEndpoint != null) {
@@ -1607,10 +1651,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           configBox.delete('customIndexer');
                         }
                         _syncIndexerEndpointController();
-                        setState(() {
-                          _indexerConnectionFailed = true;
-                        });
-                        if (context.mounted) {
+                        if (mounted) {
+                          setState(() {
+                            _indexerConnectionFailed = true;
+                          });
+                        }
+                        if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('invalidIndexerError'.tr()), backgroundColor: Colors.red),
                           );
@@ -1682,9 +1728,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       onTap: () {
         final newValue = !_expertMode;
         configBox.put('expertMode', newValue);
-        setState(() {
-          _expertMode = newValue;
-        });
+        if (mounted) {
+          setState(() {
+            _expertMode = newValue;
+          });
+        }
       },
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: scaleSize(4)),
@@ -1714,9 +1762,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               inactiveTrackColor: Colors.grey[300],
               onChanged: (bool value) {
                 configBox.put('expertMode', value);
-                setState(() {
-                  _expertMode = value;
-                });
+                if (mounted) {
+                  setState(() {
+                    _expertMode = value;
+                  });
+                }
               },
             ),
           ],

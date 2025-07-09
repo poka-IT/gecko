@@ -36,7 +36,7 @@ class ConnectionStatusNotifier extends StateNotifier<d.ConnectionStatus> {
             homeProvider.changeMessage("connecting".tr());
             break;
           case d.ConnectionStatus.connected:
-            homeProvider.changeMessage("connected".tr());
+            homeProvider.changeMessage("connected".tr(), true);
             break;
           case d.ConnectionStatus.error:
             homeProvider.changeMessage("networkGenesisError".tr());
@@ -101,6 +101,8 @@ class ConnectionStatusNotifier extends StateNotifier<d.ConnectionStatus> {
       state = newStatus;
     }
   }
+
+  /// Note: Stream reinitialization is no longer needed due to proxy streams
 
   @override
   void dispose() {
@@ -188,6 +190,12 @@ final duniterConnectionStatusProvider = StateNotifierProvider<DuniterConnectionS
 final squidConnectionStatusProvider = StateNotifierProvider<SquidConnectionStatusNotifier, d.ConnectionStatus>((ref) {
   return SquidConnectionStatusNotifier();
 });
+
+/// Global container for accessing providers from anywhere
+final globalProviderContainer = ProviderContainer();
+
+/// Note: Stream reinitialization is no longer needed since durt2 uses proxy streams
+/// that remain stable across network switches
 
 /// Provides the global, initialized instance of [d.Durt].
 ///

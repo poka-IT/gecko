@@ -186,7 +186,12 @@ class CertificationListNotifier extends StateNotifier<CertificationListState> {
         final String? timestampString = cert.updatedIn?.block?.timestamp;
 
         if (timestampString != null) {
-          final timestamp = DateTime.parse(timestampString);
+          // Parse the timestamp as UTC and convert to local time
+          final timestamp =
+              timestampString.endsWith('Z') || timestampString.contains('+') || timestampString.contains('-')
+              ? DateTime.parse(timestampString)
+                    .toLocal() // Already has timezone info
+              : DateTime.parse('${timestampString}Z').toLocal(); // Assume UTC if no timezone info
 
           if (!listCerts.any((existingCert) => existingCert.address == personAddress)) {
             listCerts.add(CertDisplayItem(address: personAddress ?? '', name: personName ?? '', date: timestamp));
@@ -206,7 +211,12 @@ class CertificationListNotifier extends StateNotifier<CertificationListState> {
         final String? timestampString = cert.updatedIn?.block?.timestamp;
 
         if (personAddress != null && timestampString != null) {
-          final timestamp = DateTime.parse(timestampString);
+          // Parse the timestamp as UTC and convert to local time
+          final timestamp =
+              timestampString.endsWith('Z') || timestampString.contains('+') || timestampString.contains('-')
+              ? DateTime.parse(timestampString)
+                    .toLocal() // Already has timezone info
+              : DateTime.parse('${timestampString}Z').toLocal(); // Assume UTC if no timezone info
 
           if (!listCerts.any((existingCert) => existingCert.address == personAddress)) {
             listCerts.add(CertDisplayItem(address: personAddress, name: personName ?? '', date: timestamp));

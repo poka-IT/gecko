@@ -35,7 +35,12 @@ class TransactionDisplayItem {
     final String otherAddress = isReceived ? (node.fromId ?? '') : (node.toId ?? '');
     final String? otherUsername = isReceived ? node.from?.identity?.name : node.to?.identity?.name;
     final BigInt amount = BigInt.parse(node.amount);
-    final DateTime transactionTime = DateTime.parse(node.timestamp);
+    // Parse the timestamp as UTC and convert to local time
+    final DateTime transactionTime =
+        node.timestamp.endsWith('Z') || node.timestamp.contains('+') || node.timestamp.contains('-')
+        ? DateTime.parse(node.timestamp)
+              .toLocal() // Already has timezone info
+        : DateTime.parse('${node.timestamp}Z').toLocal(); // Assume UTC if no timezone info
 
     // Calculate date delimiter for grouping
     final String dateDelimiter = _calculateDateDelimiter(transactionTime);

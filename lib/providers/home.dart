@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,13 +31,7 @@ class HomeProvider with ChangeNotifier {
     super.dispose();
   }
 
-  bool? isSearching;
-  Icon searchIcon = const Icon(Icons.search);
-  final searchQuery = TextEditingController();
-  Widget appBarTitle = Text('Ğecko', style: TextStyle(color: Colors.grey[850]));
   String homeMessage = "loading".tr();
-  final homeMessages = ["loading".tr()]; // 3D message log, not used
-  String defaultMessage = "noLizard".tr();
   bool isWalletBoxInit = false;
 
   Future<void> initHive() async {
@@ -112,8 +107,22 @@ class HomeProvider with ChangeNotifier {
     notifyListeners();
     if (reset) {
       await Future.delayed(const Duration(seconds: 5), () {
-        homeMessage = "noLizard".tr();
-        notifyListeners();
+        // Check connection status before changing to "noLizard"
+        // Only set "noLizard" if both Duniter and Squid are in good state
+        try {
+          final duniterStatus = _container.read(duniterConnectionStatusProvider);
+          final squidStatus = _container.read(squidConnectionStatusProvider);
+
+          // Only show "noLizard" if we have a good connection
+          if (duniterStatus == ConnectionStatus.connected && squidStatus == ConnectionStatus.connected) {
+            homeMessage = "noLizard".tr();
+            notifyListeners();
+          }
+          // If connections are bad, keep the current message (which should reflect the connection state)
+        } catch (e) {
+          log.w('Error checking connection status in changeMessage: $e');
+          // If we can't check status, don't change the message to be safe
+        }
       });
     }
   }

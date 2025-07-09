@@ -1,7 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
-import 'package:durt2/durt2.dart' show IdtyStatus, WalletEntity, MigrateWalletChecks;
+import 'package:durt2/durt2.dart'
+    show IdtyStatus, WalletEntity, MigrateWalletChecks, TransactionStatus, TransactionState;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -31,6 +32,35 @@ final _container = ProviderContainer();
 class ImportG1v1 extends StatelessWidget {
   const ImportG1v1({super.key});
   static const int debouneTime = 600;
+
+  /// Effectue la migration G1v1 vers v2 avec affichage immédiat de l'écran de transaction
+  Stream<TransactionStatus> _performG1v1Migration({
+    required String salt,
+    required String password,
+    required String toAddress,
+    required String pinCode,
+  }) async* {
+    try {
+      // Émettre immédiatement un état pending pour afficher l'écran
+      yield TransactionStatus(hash: '', state: TransactionState.pending);
+
+      final toKeypair = await _container
+          .read(walletServiceProvider)
+          .getKeyPairFromAddress(address: toAddress, pinCode: pinCode);
+
+      // Continuer avec la migration normale
+      yield* _container
+          .read(duniterServiceProvider)
+          .migrateCsToV2(salt: salt, password: password, toKeypair: toKeypair);
+    } catch (e) {
+      log.e('G1v1 migration error: $e');
+      yield TransactionStatus(
+        hash: '',
+        state: TransactionState.error,
+        errorMessage: 'migrationError'.tr(args: [e.toString()]),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -191,12 +221,12 @@ class ImportG1v1 extends StatelessWidget {
                                       padding: EdgeInsets.zero,
                                       constraints: BoxConstraints(),
                                       icon: Icon(
-                                        g1v1Migration.isCesiumIDVisible ? Icons.visibility_off : Icons.visibility,
+                                        g1v1Migration.isCesiumPasswordVisible ? Icons.visibility_off : Icons.visibility,
                                         color: Colors.black,
                                         size: scaleSize(18),
                                       ),
                                       onPressed: () {
-                                        g1v1Migration.cesiumIDisVisible();
+                                        g1v1Migration.cesiumPasswordisVisible();
                                       },
                                     ),
                                   ),
@@ -434,27 +464,22 @@ class ImportG1v1 extends StatelessWidget {
 
                                         if (myWalletProvider.pinCode.isEmpty) return;
 
-                                        final toKeypair = await _container
-                                            .read(walletServiceProvider)
-                                            .getKeyPairFromAddress(
-                                              address: selectedWallet.address,
-                                              pinCode: myWalletProvider.pinCode,
-                                            );
-                                        final transactionStatus = _container
-                                            .read(duniterServiceProvider)
-                                            .migrateCsToV2(
-                                              salt: g1v1Migration.csSalt.text,
-                                              password: g1v1Migration.csPassword.text,
-                                              toKeypair: toKeypair,
-                                            );
+                                        // ✅ Créer le stream UNE SEULE FOIS
+                                        final transactionStream = _performG1v1Migration(
+                                          salt: g1v1Migration.csSalt.text,
+                                          password: g1v1Migration.csPassword.text,
+                                          toAddress: selectedWallet.address,
+                                          pinCode: myWalletProvider.pinCode,
+                                        );
 
+                                        // ✅ Pusher l'écran de transaction avec le stream créé
                                         Navigator.pop(context);
                                         await Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) {
                                               return TransactionInProgressScreen(
-                                                transactionStatus: transactionStatus,
+                                                transactionStatus: transactionStream,
                                                 transType: hasIdentity ? 'identityMigration' : 'accountMigration',
                                                 fromAddress: getShortPubkey(addressToMigrate),
                                                 toAddress: getShortPubkey(selectedWallet.address),

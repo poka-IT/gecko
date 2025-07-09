@@ -298,5 +298,7 @@
     "expertModeDescription": "Abilita funzionalità avanzate per utenti esperti",
     "clearCache": "Cancella cache",
     "clearCacheDescription": "Rimuove i dati temporanei per liberare spazio",
-    "canNotRevokeUnvalidated": "Non puoi revocare un'identitá non validata"
+    "canNotRevokeUnvalidated": "Non puoi revocare un'identitá non validata",
+    "incorrectPinCode": "Codice PIN errato. Riprova.",
+    "migrationError": "Errore durante la migrazione: {}"
 }

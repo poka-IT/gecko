@@ -363,5 +363,7 @@
     "dark": "Oscuro",
     "safeBoxName": "Cofre",
     "daysAgo": "Hace {} días",
-    "canNotRevokeUnvalidated": "No puedes revocar una identidad no validada"
+    "canNotRevokeUnvalidated": "No puedes revocar una identidad no validada",
+    "incorrectPinCode": "Código PIN incorrecto. Por favor, inténtalo de nuevo.",
+    "migrationError": "Error durante la migración: {}"
 }

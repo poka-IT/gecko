@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show MigrateWalletChecks, MigrateWalletValidationError, Durt;
+import 'package:durt2/durt2.dart'
+    show MigrateWalletChecks, MigrateWalletValidationError, Durt, TransactionStatus, TransactionState, DurtKeyPair;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -9,13 +10,13 @@ import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:pointycastle/api.dart' show InvalidCipherTextException;
 
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
-import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/text_markdown.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
@@ -38,39 +39,90 @@ String mapValidationErrors(Set<MigrateWalletValidationError> errors) {
 }
 
 class MigrateIdentityScreen extends ConsumerStatefulWidget {
-  MigrateIdentityScreen({super.key});
-
-  final newMnemonicSentence = TextEditingController();
-  final newWalletAddress = TextEditingController();
+  const MigrateIdentityScreen({super.key});
 
   @override
   ConsumerState<MigrateIdentityScreen> createState() => _MigrateIdentityScreenState();
 }
 
 class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
+  // ✅ Controllers définis dans la classe State (persistent)
+  late TextEditingController newMnemonicSentence;
+  late TextEditingController newWalletAddress;
+
+  // ✅ Variables d'état persistent entre les rebuilds
+  var migrationChecks = const MigrateWalletChecks.defaultValues();
+  var mnemonicIsValid = false;
+  int? matchDerivationNbr;
+  String matchInfo = '';
+  DurtKeyPair? toKeypair;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialisation des controllers
+    newMnemonicSentence = TextEditingController();
+    newWalletAddress = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    // Libération des ressources
+    newMnemonicSentence.dispose();
+    newWalletAddress.dispose();
+    super.dispose();
+  }
+
+  /// Effectue la migration d'identité avec gestion d'erreur
+  Stream<TransactionStatus> _performMigration({
+    required String fromAddress,
+    required String pinCode,
+    required DurtKeyPair toKeypair,
+  }) async* {
+    try {
+      // Étape 1: Importer le nouveau wallet temporairement
+      yield TransactionStatus(hash: '', state: TransactionState.pending);
+
+      // Étape 2: Récupérer les keypairs
+      final fromKeypair = await _container
+          .read(walletServiceProvider)
+          .getKeyPairFromAddress(address: fromAddress, pinCode: pinCode);
+
+      // Étape 4: Lancer la transaction de migration
+      yield* _container
+          .read(duniterServiceProvider)
+          .migrateIdentity(fromKeypair: fromKeypair, toKeypair: toKeypair, withBalance: true);
+    } on InvalidCipherTextException catch (e) {
+      log.e('Invalid cipher text: $e');
+      yield TransactionStatus(hash: '', state: TransactionState.error, errorMessage: 'incorrectPinCode'.tr());
+    } catch (e) {
+      log.e('Migration error: $e');
+      yield TransactionStatus(
+        hash: '',
+        state: TransactionState.error,
+        errorMessage: 'migrationError'.tr(args: [e.toString()]),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     final generatedWalletsProvider = old_provider.Provider.of<GenerateWalletsProvider>(context, listen: false);
-    final screenSize = MediaQuery.of(context).size;
-    final isSmallScreen = screenSize.height < 700;
 
     final fromAddress = walletOptions.address.text;
-
-    var migrationChecks = const MigrateWalletChecks.defaultValues();
-    var mnemonicIsValid = false;
-    int? matchDerivationNbr;
-    String matchInfo = '';
 
     bool isSmall = !isTall;
 
     Future scanDerivations() async {
-      if (!isAddress(widget.newWalletAddress.text) ||
-          !_container.read(walletServiceProvider).isMnemonicValid(widget.newMnemonicSentence.text) ||
+      if (!isAddress(newWalletAddress.text) ||
+          !_container.read(walletServiceProvider).isMnemonicValid(newMnemonicSentence.text) ||
           !migrationChecks.canMigrate) {
-        mnemonicIsValid = false;
-        matchInfo = '';
+        setState(() {
+          mnemonicIsValid = false;
+          matchInfo = '';
+        });
         walletOptions.reload();
         return;
       }
@@ -79,11 +131,14 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
       //Scan root wallet
       final keypair = await _container
           .read(walletServiceProvider)
-          .getKeyPairFromMnemonic(widget.newMnemonicSentence.text, derivation: 0, keyPairType: Durt.defaultKeyPairType);
+          .getKeyPairFromMnemonic(newMnemonicSentence.text, keyPairType: Durt.defaultKeyPairType);
 
-      if (keypair.address == widget.newWalletAddress.text) {
-        matchDerivationNbr = null;
-        mnemonicIsValid = true;
+      if (keypair.address == newWalletAddress.text) {
+        setState(() {
+          toKeypair = keypair;
+          matchDerivationNbr = null;
+          mnemonicIsValid = true;
+        });
         walletOptions.reload();
         return;
       }
@@ -93,23 +148,30 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
         final keypair = await _container
             .read(walletServiceProvider)
             .getKeyPairFromMnemonic(
-              widget.newMnemonicSentence.text,
+              newMnemonicSentence.text,
               derivation: derivationNbr,
               keyPairType: Durt.defaultKeyPairType,
             );
 
-        if (keypair.address == widget.newWalletAddress.text) {
-          matchDerivationNbr = derivationNbr;
-          mnemonicIsValid = true;
-          matchInfo = "youCanMigrateThisIdentity".tr();
+        if (keypair.address == newWalletAddress.text) {
+          setState(() {
+            toKeypair = keypair;
+            matchDerivationNbr = derivationNbr;
+            mnemonicIsValid = true;
+            matchInfo = "youCanMigrateThisIdentity".tr();
+          });
           break;
         } else {
-          mnemonicIsValid = false;
+          setState(() {
+            mnemonicIsValid = false;
+          });
         }
       }
 
       if (!mnemonicIsValid) {
-        matchInfo = "addressNotBelongToMnemonic".tr();
+        setState(() {
+          matchInfo = "addressNotBelongToMnemonic".tr();
+        });
       }
       walletOptions.reload();
     }
@@ -163,13 +225,13 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                                 // Use the Balance widget instead of accessing cache directly
                                 Balance(
                                   address: fromAddress,
-                                  size: isSmallScreen ? 14 : 15,
+                                  size: isSmall ? 14 : 15,
                                   color: context.colorScheme.onSurface,
                                 ),
                                 Text(
                                   ' ?',
                                   style: scaledTextStyle(
-                                    fontSize: isSmallScreen ? 14 : 15,
+                                    fontSize: isSmall ? 14 : 15,
                                     color: context.colorScheme.onSurface,
                                   ),
                                 ),
@@ -227,7 +289,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                               ),
                             ),
                             TextField(
-                              controller: widget.newMnemonicSentence,
+                              controller: newMnemonicSentence,
                               minLines: isSmall ? 2 : 3,
                               maxLines: isSmall ? 2 : 3,
                               style: scaledTextStyle(
@@ -286,7 +348,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                               ),
                             ),
                             TextField(
-                              controller: widget.newWalletAddress,
+                              controller: newWalletAddress,
                               style: scaledTextStyle(fontSize: isSmall ? 14 : 15, color: context.colorScheme.onSurface),
                               decoration: InputDecoration(
                                 contentPadding: EdgeInsets.all(scaleSize(isSmall ? 12 : 16)),
@@ -300,13 +362,18 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                               ),
                               onChanged: (newAddress) async {
                                 if (isAddress(newAddress)) {
-                                  migrationChecks = await _container
+                                  final checks = await _container
                                       .read(storageServiceProvider)
                                       .getMigrateWalletChecks(fromAddress: fromAddress, toAddress: newAddress);
+                                  setState(() {
+                                    migrationChecks = checks;
+                                  });
                                   await scanDerivations();
                                 } else {
-                                  migrationChecks = const MigrateWalletChecks.defaultValues();
-                                  matchInfo = '';
+                                  setState(() {
+                                    migrationChecks = const MigrateWalletChecks.defaultValues();
+                                    matchInfo = '';
+                                  });
                                   walletOptions.reload();
                                 }
                               },
@@ -342,14 +409,14 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                             Text(
                               validationStatus,
                               textAlign: TextAlign.center,
-                              style: scaledTextStyle(fontSize: isSmallScreen ? 12 : 13, color: Colors.grey[600]),
+                              style: scaledTextStyle(fontSize: isSmall ? 12 : 13, color: Colors.grey[600]),
                             ),
                           if (matchInfo.isNotEmpty) ...[
-                            if (validationStatus.isNotEmpty) ScaledSizedBox(height: isSmallScreen ? 4 : 8),
+                            if (validationStatus.isNotEmpty) ScaledSizedBox(height: isSmall ? 4 : 8),
                             Text(
                               matchInfo,
                               textAlign: TextAlign.center,
-                              style: scaledTextStyle(fontSize: isSmallScreen ? 12 : 13, color: Colors.grey[600]),
+                              style: scaledTextStyle(fontSize: isSmall ? 12 : 13, color: Colors.grey[600]),
                             ),
                           ],
                           ScaledSizedBox(height: isSmall ? 12 : 16),
@@ -368,47 +435,37 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                         elevation: 0,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      onPressed: migrationChecks.canMigrate && mnemonicIsValid
+                      onPressed: migrationChecks.canMigrate && mnemonicIsValid && toKeypair != null
                           ? () async {
-                              if (!await myWalletProvider.askPinCode()) return;
+                              try {
+                                // Demander le code PIN d'abord
+                                if (!await myWalletProvider.askPinCode()) return;
 
-                              await _container
-                                  .read(walletServiceProvider)
-                                  .importAccount(
-                                    mnemonic: widget.newMnemonicSentence.text,
-                                    derivation: matchDerivationNbr,
-                                    pinCode: '1472',
-                                    safeName: 'safeBoxName'.tr(),
-                                  );
+                                // ✅ Créer le stream UNE SEULE FOIS
+                                final transactionStream = _performMigration(
+                                  fromAddress: fromAddress,
+                                  pinCode: myWalletProvider.pinCode,
+                                  toKeypair: toKeypair!,
+                                );
 
-                              final fromKeypair = await _container
-                                  .read(walletServiceProvider)
-                                  .getKeyPairFromAddress(address: fromAddress, pinCode: myWalletProvider.pinCode);
-                              final toKeypair = await _container
-                                  .read(walletServiceProvider)
-                                  .getKeyPairFromAddress(address: widget.newWalletAddress.text, pinCode: '1472');
-                              final transactionStatus = _container
-                                  .read(duniterServiceProvider)
-                                  .migrateIdentity(fromKeypair: fromKeypair, toKeypair: toKeypair, withBalance: true);
-
-                              await _container.read(walletServiceProvider).deleteWallet(widget.newWalletAddress.text);
-                              Navigator.pop(context);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => TransactionInProgressScreen(
-                                    transactionStatus: transactionStatus,
-                                    transType: 'identityMigration',
-                                    fromAddress: getShortPubkey(fromAddress),
-                                    toAddress: getShortPubkey(widget.newWalletAddress.text),
+                                // ✅ Pusher l'écran de transaction avec le stream créé
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        TransactionInProgressScreen(transactionStatus: transactionStream),
                                   ),
-                                ),
-                              );
+                                );
+                              } catch (e) {
+                                log.e('Error during migration setup: $e');
+                                // Gestion d'erreur si nécessaire
+                              }
                             }
                           : null,
                       child: Text(
                         'migrateIdentity'.tr(),
-                        style: scaledTextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.w600),
+                        style: scaledTextStyle(fontSize: isSmall ? 15 : 16, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),

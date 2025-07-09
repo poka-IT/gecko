@@ -344,5 +344,7 @@
     "daysAgo": "{} days ago",
     "network": "Network",
     "currentNetwork": "Current network: {} (SS58: {})",
-    "canNotRevokeUnvalidated": "You cannot revoke an unvalidated identity"
+    "canNotRevokeUnvalidated": "You cannot revoke an unvalidated identity",
+    "incorrectPinCode": "Incorrect PIN code. Please try again.",
+    "migrationError": "Migration error: {}"
 }

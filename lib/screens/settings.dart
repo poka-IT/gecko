@@ -253,24 +253,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         return Networks.listDuniterEndpoints;
       }
 
-      // Return hardcoded endpoints as last fallback
-      return [
-        'wss://gdev.p2p.legal/ws',
-        'wss://gdev.coinduf.eu/ws',
-        'wss://vit.fdn.org/ws',
-        'wss://gdev.cgeek.fr/ws',
-        'wss://gdev.pini.fr/ws',
-      ];
+      throw Exception('No Duniter endpoints found');
     } catch (e) {
       log.e('Error getting Duniter endpoints: $e');
-      // Return hardcoded endpoints as fallback
-      return [
-        'wss://gdev.p2p.legal/ws',
-        'wss://gdev.coinduf.eu/ws',
-        'wss://vit.fdn.org/ws',
-        'wss://gdev.cgeek.fr/ws',
-        'wss://gdev.pini.fr/ws',
-      ];
+      throw Exception('Error getting Duniter endpoints: $e');
     }
   }
 

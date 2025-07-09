@@ -343,5 +343,6 @@
     "safeBoxName": "Safe",
     "daysAgo": "{} days ago",
     "network": "Network",
-    "currentNetwork": "Current network: {} (SS58: {})"
+    "currentNetwork": "Current network: {} (SS58: {})",
+    "canNotRevokeUnvalidated": "You cannot revoke an unvalidated identity"
 }

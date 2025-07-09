@@ -62,7 +62,8 @@ class CertificationListNotifier extends StateNotifier<CertificationListState> {
           .listen(
             (certId) {
               if (certId != null && certId != _lastSeenCertId) {
-                log.i('New cert activity detected for $address: $certId (previous: $_lastSeenCertId)');
+                // ignore: avoid_print
+                print('New cert activity detected for $address: $certId (previous: $_lastSeenCertId)');
                 _lastSeenCertId = certId;
                 _onCertActivity();
               } else if (certId != null) {

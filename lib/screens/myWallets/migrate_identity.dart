@@ -212,12 +212,15 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                                     width: scaleSize(isSmall ? 16 : 20),
                                   ),
                                   ScaledSizedBox(width: isSmall ? 8 : 12),
-                                  Text(
-                                    'enterYourNewMnemonic'.tr(),
-                                    style: scaledTextStyle(
-                                      fontSize: isSmall ? 13 : 14,
-                                      color: Colors.grey[600],
-                                      fontWeight: FontWeight.w500,
+                                  SizedBox(
+                                    width: 280,
+                                    child: Text(
+                                      'enterYourNewMnemonic'.tr(),
+                                      style: scaledTextStyle(
+                                        fontSize: isSmall ? 13 : 14,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
                                   ),
                                 ],

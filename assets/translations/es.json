@@ -362,5 +362,6 @@
     "system": "Sistema",
     "dark": "Oscuro",
     "safeBoxName": "Cofre",
-    "daysAgo": "Hace {} días"
+    "daysAgo": "Hace {} días",
+    "canNotRevokeUnvalidated": "No puedes revocar una identidad no validada"
 }

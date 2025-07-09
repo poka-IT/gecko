@@ -1,6 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show Networks;
+import 'package:durt2/durt2.dart' show Networks, EndpointType;
 import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +19,6 @@ import 'package:gecko/providers/theme_provider.dart' as theme_provider;
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
-import 'package:gecko/widgets/transaction_in_progress_tile.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:durt2/durt2.dart' as d;
 
@@ -236,7 +235,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           .query(
             CachedEndpoint_.networkIndex
                 .equals(d.Networks.values.indexOf(durt.network))
-                .and(CachedEndpoint_.type.equals('rpc'))
+                .and(CachedEndpoint_.type.equals(EndpointType.rpc.name))
                 .and(CachedEndpoint_.isWorking.equals(true)),
           )
           .order(CachedEndpoint_.priority, flags: Order.descending)
@@ -285,7 +284,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           .query(
             CachedEndpoint_.networkIndex
                 .equals(d.Networks.values.indexOf(durt.network))
-                .and(CachedEndpoint_.type.equals('squid'))
+                .and(CachedEndpoint_.type.equals(EndpointType.squid.name))
                 .and(CachedEndpoint_.isWorking.equals(true)),
           )
           .order(CachedEndpoint_.priority, flags: Order.descending)
@@ -435,75 +434,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       );
 
                       if (confirm) {
-                        // Clear WalletHeaderData cache
-                        await walletHeaderDataBox.clear();
-
-                        // Clear G1WalletsList cache
-                        await g1WalletsBox.clear();
-
-                        // Clear transaction status cache
-                        TransactionStatusCache.clearCache();
-
-                        // Clear Squid and Duniter endpoint caches
                         try {
-                          // Clear Squid endpoint cache from durt2 configBox
-                          final durt = _container.read(durtProvider);
-                          final networks = ['gdev', 'gtest', 'g1'];
+                          // Clear cache
+                          final settingsProvider = old_provider.Provider.of<SettingsProvider>(context, listen: false);
+                          await settingsProvider.clearAllCaches();
 
-                          for (final network in networks) {
-                            // Clear cached Squid endpoints - find and remove Config objects
-                            final squidCacheKey = 'fast_squid_endpoint_$network';
-                            final squidTimeKey = 'endpoint_cache_time_${network}_squid';
-
-                            // Find and remove Squid endpoint cache
-                            final squidQuery = durt.configBox.query(Config_.key.equals(squidCacheKey)).build();
-                            final squidConfig = squidQuery.findFirst();
-                            squidQuery.close();
-                            if (squidConfig != null) {
-                              durt.configBox.remove(squidConfig.id);
-                            }
-
-                            // Find and remove Squid time cache
-                            final squidTimeQuery = durt.configBox.query(Config_.key.equals(squidTimeKey)).build();
-                            final squidTimeConfig = squidTimeQuery.findFirst();
-                            squidTimeQuery.close();
-                            if (squidTimeConfig != null) {
-                              durt.configBox.remove(squidTimeConfig.id);
-                            }
-
-                            // Clear cached Duniter endpoints if they exist
-                            final duniterCacheKey = 'fast_duniter_endpoint_$network';
-                            final duniterTimeKey = 'endpoint_cache_time_${network}_rpc';
-
-                            // Find and remove Duniter endpoint cache
-                            final duniterQuery = durt.configBox.query(Config_.key.equals(duniterCacheKey)).build();
-                            final duniterConfig = duniterQuery.findFirst();
-                            duniterQuery.close();
-                            if (duniterConfig != null) {
-                              durt.configBox.remove(duniterConfig.id);
-                            }
-
-                            // Find and remove Duniter time cache
-                            final duniterTimeQuery = durt.configBox.query(Config_.key.equals(duniterTimeKey)).build();
-                            final duniterTimeConfig = duniterTimeQuery.findFirst();
-                            duniterTimeQuery.close();
-                            if (duniterTimeConfig != null) {
-                              durt.configBox.remove(duniterTimeConfig.id);
-                            }
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('clearCacheExplanation'.tr()),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
                           }
-
-                          // Clear ObjectBox cached endpoints
-                          durt.endpointBox.removeAll();
-
-                          log.i('Cleared Squid and Duniter endpoint caches');
                         } catch (e) {
-                          log.w('Error clearing endpoint caches: $e');
-                        }
-
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('clearCacheExplanation'.tr()), duration: const Duration(seconds: 2)),
-                          );
+                          log.e('Error clearing caches: $e');
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error clearing caches: $e'), backgroundColor: Colors.red),
+                            );
+                          }
                         }
                       }
                     },

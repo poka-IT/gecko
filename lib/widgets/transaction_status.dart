@@ -22,6 +22,7 @@ Map<TransactionState, String> statusStatusMap = {
 Map<String, String> errorTransactionMap = {
   'cert.NotRespectCertPeriod': '24hbetweenCerts'.tr(),
   'identity.CreatorNotAllowedToCreateIdty': '24hbetweenCerts'.tr(),
+  'identity.CanNotRevokeUnvalidated': 'canNotRevokeUnvalidated'.tr(),
   'cert.CannotCertifySelf': 'canNotCertifySelf'.tr(),
   'identity.IdtyNameAlreadyExist': 'nameAlreadyExist'.tr(),
   'balances.KeepAlive': '2GDtoKeepAlive'.tr(),

@@ -170,9 +170,11 @@ class HomeProvider with ChangeNotifier {
       // Connect to Duniter network
       try {
         await _container.read(durtProvider).connect();
-        log.i('Successfully connected to Duniter');
+        // ignore: avoid_print
+        print('💡 Successfully connected to Duniter');
       } catch (e) {
-        log.e('Failed to connect to Duniter: $e');
+        // ignore: avoid_print
+        print('🔴 Failed to connect to Duniter: $e');
 
         // Check if this is a genesis validation error
         if (e.toString().contains('genesis hash') || e.toString().contains('genesis validation')) {
@@ -186,6 +188,11 @@ class HomeProvider with ChangeNotifier {
 
       // Load wallets list
       await myWalletProvider.readAllWallets();
+
+      // Uncomment this to clear all caches on startup
+      // ignore: use_build_context_synchronously
+      // final settingsProvider = old_provider.Provider.of<SettingsProvider>(context, listen: false);
+      // await settingsProvider.clearAllCaches();
 
       // Future<void> updateConnectionStatus(List<ConnectivityResult> result) async {
       //   log.i('Network changed: $result');

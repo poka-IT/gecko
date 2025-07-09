@@ -362,5 +362,6 @@
     "safeBoxName": "Coffre",
     "daysAgo": "Il y a {} jours",
     "network": "Réseau",
-    "currentNetwork": "Réseau actuel : {} (SS58 : {})"
+    "currentNetwork": "Réseau actuel : {} (SS58 : {})",
+    "canNotRevokeUnvalidated": "Vous ne pouvez pas révoquer une identité non validée"
 }

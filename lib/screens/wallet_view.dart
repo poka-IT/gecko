@@ -18,7 +18,6 @@ import 'package:gecko/widgets/certify/cert_state.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/wallet_header.dart';
-import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:gecko/widgets/payment_popup.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
@@ -126,10 +125,23 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
                                   key: keyViewActivity,
                                   icon: 'assets/walletOptions/clock.png',
                                   label: "displayNActivity".tr(),
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    PageNoTransit(builder: (context) => ActivityScreen(address: address)),
-                                  ),
+                                  onTap: () async {
+                                    // Récupérer les données du header depuis le cache ou les charger
+                                    final headerData = await _getWalletHeaderData(address);
+
+                                    Navigator.push(
+                                      context,
+                                      PageRouteBuilder(
+                                        pageBuilder: (context, animation, secondaryAnimation) =>
+                                            ActivityScreen(address: address, initialHeaderData: headerData),
+                                        transitionDuration: Duration.zero, // Pas d'animation à l'aller
+                                        reverseTransitionDuration: Duration.zero, // Pas d'animation au retour
+                                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                          return child; // Pas de transition
+                                        },
+                                      ),
+                                    );
+                                  },
                                 ),
                                 old_provider.Consumer<BlockHeightProvider>(
                                   builder: (context, _, _) {
@@ -283,5 +295,40 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
     }
     if (myWalletProvider.pinCode == '') return;
     paymentPopup(ref: ref, toAddress: address, username: username);
+  }
+
+  Future<WalletHeaderData?> _getWalletHeaderData(String address) async {
+    try {
+      // D'abord essayer de récupérer depuis le cache
+      final cached = walletHeaderDataBox.get(address);
+      if (cached != null) {
+        return cached;
+      }
+
+      // Si pas de cache, charger les données
+      final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+
+      final (idtyStatus, balance, certData) = await (
+        ref.read(storageServiceProvider).getIdtyStatus(address),
+        ref.read(storageServiceProvider).getBalance(address),
+        ref.read(storageServiceProvider).getCertsCounter(address),
+      ).wait;
+
+      final data = WalletHeaderData(
+        hasIdentity: idtyStatus != IdtyStatus.none,
+        isOwner: myWalletProvider.isOwner(address),
+        walletName: ref.read(squidServiceProvider).walletNameIndexer[address],
+        balance: balance.transferableBalance,
+        certsReceived: certData.receivedCount,
+        certsSent: certData.sentCount,
+      );
+
+      // Sauvegarder dans le cache
+      await walletHeaderDataBox.put(address, data);
+      return data;
+    } catch (e) {
+      // En cas d'erreur, retourner null pour utiliser le fallback
+      return null;
+    }
   }
 }

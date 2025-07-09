@@ -10,8 +10,8 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/models/wallet_header_data.dart';
 import 'package:gecko/providers.dart';
-
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
@@ -21,7 +21,6 @@ import 'package:gecko/screens/myWallets/import_g1_v1.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
-import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/buttons/manage_membership_button.dart';
 import 'package:gecko/models/membership_renewal.dart';
@@ -240,10 +239,21 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
   ) {
     return InkWell(
       key: keyOpenActivity,
-      onTap: () {
+      onTap: () async {
+        // Récupérer les données du header depuis le cache ou les charger
+        final headerData = await _getWalletHeaderData(walletProvider.address.text);
+
         Navigator.push(
           context,
-          PageNoTransit(builder: (context) => ActivityScreen(address: walletProvider.address.text)),
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                ActivityScreen(address: walletProvider.address.text, initialHeaderData: headerData),
+            transitionDuration: Duration.zero, // Pas d'animation à l'aller
+            reverseTransitionDuration: Duration.zero, // Pas d'animation au retour
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return child; // Pas de transition
+            },
+          ),
         );
       },
       child: Container(
@@ -268,6 +278,41 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
         ),
       ),
     );
+  }
+
+  Future<WalletHeaderData?> _getWalletHeaderData(String address) async {
+    try {
+      // D'abord essayer de récupérer depuis le cache
+      final cached = walletHeaderDataBox.get(address);
+      if (cached != null) {
+        return cached;
+      }
+
+      // Si pas de cache, charger les données
+      final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+
+      final (idtyStatus, balance, certData) = await (
+        ref.read(storageServiceProvider).getIdtyStatus(address),
+        ref.read(storageServiceProvider).getBalance(address),
+        ref.read(storageServiceProvider).getCertsCounter(address),
+      ).wait;
+
+      final data = WalletHeaderData(
+        hasIdentity: idtyStatus != IdtyStatus.none,
+        isOwner: myWalletProvider.isOwner(address),
+        walletName: ref.read(squidServiceProvider).walletNameIndexer[address],
+        balance: balance.transferableBalance,
+        certsReceived: certData.receivedCount,
+        certsSent: certData.sentCount,
+      );
+
+      // Sauvegarder dans le cache
+      await walletHeaderDataBox.put(address, data);
+      return data;
+    } catch (e) {
+      // En cas d'erreur, retourner null pour utiliser le fallback
+      return null;
+    }
   }
 
   Future setDefaultWallet(BuildContext context, WidgetRef ref, int currentChest) async {

@@ -55,7 +55,7 @@ Future<void> main() async {
   await initHiveForFlutter();
   await homeProvider.initHive();
 
-  // Get saved network from config or default to gdev
+  // Get saved network from config or default to gtest
   final savedNetworkName = configBox.get('selectedNetwork') ?? 'gtest';
   final selectedNetwork = Networks.values.firstWhere(
     (network) => network.name == savedNetworkName,

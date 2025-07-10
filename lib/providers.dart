@@ -224,8 +224,8 @@ final duniterServiceProvider = Provider<d.DuniterService>((ref) {
 
 /// Provides the [d.Gdev] client, the auto-generated interface for interacting
 /// with the Duniter v2 Substrate runtime (querying storage, etc.).
-final gdevProvider = Provider<d.Gdev>((ref) {
-  return ref.watch(durtProvider).gdev;
+final blockchainProvider = Provider<d.Duniter>((ref) {
+  return ref.watch(durtProvider).blockchain;
 });
 
 /// Provides the low-level Polkadart [d.Provider] for sending raw JSON-RPC requests.
@@ -250,7 +250,7 @@ final keyringProvider = Provider<d.DurtKeyring>((ref) {
   return ref.watch(durtProvider).keyring;
 });
 
-/// Provides the current [d.Networks] enum value the app is connected to (e.g., gdev, gtest).
+/// Provides the current [d.Networks] enum value the app is connected to (e.g., gdev, gtest, g1).
 final networkProvider = Provider<d.Networks>((ref) {
   return ref.watch(durtProvider).network;
 });

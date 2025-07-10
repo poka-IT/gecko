@@ -7,7 +7,6 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
@@ -20,7 +19,6 @@ class HomeButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
-    final homeProvider = Provider.of<HomeProvider>(context, listen: false);
     final historyProvider = Provider.of<WalletsProfilesProvider>(context);
 
     return Column(
@@ -104,27 +102,23 @@ class HomeButtons extends StatelessWidget {
                   child: ClipOval(
                     key: keyOpenWalletsHomme,
                     child: Material(
-                      color: homeProvider.isWalletBoxInit
-                          ? context.colorScheme.primary
-                          : Colors.grey[500], // button color
+                      color: context.colorScheme.primary, // button color
                       child: InkWell(
-                        onTap: !homeProvider.isWalletBoxInit
-                            ? null
-                            : () async {
-                                WalletEntity? defaultWallet = myWalletProvider.getDefaultWallet();
-                                if (myWalletProvider.pinCode == '') {
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (homeContext) {
-                                        return UnlockingWallet(wallet: defaultWallet);
-                                      },
-                                    ),
-                                  );
-                                }
-                                if (myWalletProvider.pinCode == '') return;
-                                Navigator.pushNamed(context, '/mywallets');
-                              },
+                        onTap: () async {
+                          WalletEntity? defaultWallet = myWalletProvider.getDefaultWallet();
+                          if (myWalletProvider.pinCode == '') {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (homeContext) {
+                                  return UnlockingWallet(wallet: defaultWallet);
+                                },
+                              ),
+                            );
+                          }
+                          if (myWalletProvider.pinCode == '') return;
+                          Navigator.pushNamed(context, '/mywallets');
+                        },
                         child: Padding(
                           padding: EdgeInsets.all(scaleSize(14.5)),
                           child: Image(image: const AssetImage('assets/home/wallet.png'), height: scaleSize(61)),

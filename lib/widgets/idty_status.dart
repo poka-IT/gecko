@@ -74,7 +74,8 @@ class IdentityStatus extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        nameByAddress,
+        // FittedBox only for the name to scale down when too long
+        FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: nameByAddress),
         showText(context, statusText[resStatus]!, bold: resStatus == IdtyStatus.validated, size: scaleSize(15)),
       ],
     );

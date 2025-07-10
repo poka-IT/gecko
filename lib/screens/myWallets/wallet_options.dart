@@ -489,46 +489,47 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
   }
 
   Widget buildConfirmIdentitySection(BuildContext context, WidgetRef ref, WalletOptionsProvider walletProvider) {
-    return FutureBuilder<IdtyStatus>(
-      future: ref.read(storageServiceProvider).getIdtyStatus(walletProvider.address.text),
-      initialData: IdtyStatus.unknown,
-      builder: (BuildContext context, AsyncSnapshot<IdtyStatus> snapshot) {
-        return Visibility(
-          visible: snapshot.hasData && !snapshot.hasError && snapshot.data == IdtyStatus.created,
-          child: Column(
-            children: [
-              ScaledSizedBox(height: 22),
-              SizedBox(
-                width: double.infinity,
-                height: scaleSize(50),
-                child: ElevatedButton(
-                  key: keyConfirmIdentity,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: context.colorScheme.primary,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ConfirmIdentityScreen(address: walletProvider.address.text),
-                      ),
-                    );
-                  },
-                  child: Text('confirmMyIdentity'.tr(), style: scaledTextStyle(fontSize: 16, color: Colors.white)),
+    // Use live subscription instead of FutureBuilder for real-time updates
+    final idtyStatusStream = ref.watch(smartIdtyStatusStreamProvider(walletProvider.address.text));
+
+    return idtyStatusStream.when(
+      data: (idtyStatus) => Visibility(
+        visible: idtyStatus == IdtyStatus.created,
+        child: Column(
+          children: [
+            ScaledSizedBox(height: 22),
+            SizedBox(
+              width: double.infinity,
+              height: scaleSize(50),
+              child: ElevatedButton(
+                key: keyConfirmIdentity,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: context.colorScheme.primary,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ConfirmIdentityScreen(address: walletProvider.address.text),
+                    ),
+                  );
+                },
+                child: Text('confirmMyIdentity'.tr(), style: scaledTextStyle(fontSize: 16, color: Colors.white)),
               ),
-              ScaledSizedBox(height: 8),
-              Text(
-                "someoneCreatedYourIdentity".tr(args: [Durt.i.network.symbol]),
-                style: scaledTextStyle(fontSize: 14, color: Colors.grey[600], fontStyle: FontStyle.italic),
-              ),
-              ScaledSizedBox(height: 24),
-            ],
-          ),
-        );
-      },
+            ),
+            ScaledSizedBox(height: 8),
+            Text(
+              "someoneCreatedYourIdentity".tr(args: [Durt.i.network.symbol]),
+              style: scaledTextStyle(fontSize: 14, color: Colors.grey[600], fontStyle: FontStyle.italic),
+            ),
+            ScaledSizedBox(height: 24),
+          ],
+        ),
+      ),
+      loading: () => const SizedBox.shrink(), // Hide while loading
+      error: (_, _) => const SizedBox.shrink(), // Hide on error
     );
   }
 }

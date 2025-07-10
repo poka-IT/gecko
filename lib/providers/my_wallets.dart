@@ -87,7 +87,7 @@ class MyWalletsProvider with ChangeNotifier {
       }
     }
 
-    await _container.read(walletServiceProvider).walletBox.putManyAsync(wallets);
+    _container.read(walletServiceProvider).walletBox.putManyAsync(wallets);
 
     listWallets = wallets;
 

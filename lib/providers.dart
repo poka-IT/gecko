@@ -346,6 +346,24 @@ final identityNameProvider = FutureProvider.family<String?, String>((ref, addres
   }
 });
 
+/// Provides real-time identity name stream for a given address.
+/// This uses a real GraphQL subscription to detect identity name changes in real-time.
+/// The stream automatically starts when the first listener is added and stops when the last one is removed.
+final identityNameStreamProvider = StreamProvider.family.autoDispose<String?, String>((ref, address) {
+  // Check if Squid is connected
+  final squidConnectionStatus = ref.watch(squidConnectionStatusProvider);
+  if (squidConnectionStatus != d.ConnectionStatus.connected) {
+    // Return a stream that emits null if not connected
+    return Stream.value(null);
+  }
+
+  // Use the GraphQL subscription from SquidService
+  return d.SquidService.client.subscribeIdentityName(address).handleError((error) {
+    log.e('Identity name subscription error for $address: $error');
+    // Return null on error instead of breaking the stream
+  });
+});
+
 /// Provides a synchronous access to the cached identity name.
 /// Returns null if not cached yet.
 final cachedIdentityNameProvider = Provider.family<String?, String>((ref, address) {

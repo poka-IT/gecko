@@ -42,6 +42,33 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
     currentSafe = ref.read(walletServiceProvider).safeBox.getNumber(currentSafeNumber);
   }
 
+  /// Wait for Durt to be connected and storage service ready before allowing access
+  Future<void> _waitForSystemReady() async {
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+
+    // Wait for Durt to be connected
+    while (!ref.read(durtProvider).isConnected) {
+      // ignore: avoid_print
+      print('🔴 Durt not connected');
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+
+    // Wait for DuniterStorageService to be properly initialized
+    while (true) {
+      try {
+        final _ = ref.read(durtProvider).storage;
+        break;
+      } catch (e) {
+        // Storage service not ready yet, wait a bit more
+        // ignore: avoid_print
+        print('🔴 Storage service not ready yet: $e');
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+    }
+
+    await myWalletProvider.readAllWallets();
+  }
+
   @override
   Widget build(BuildContext context) {
     final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
@@ -237,8 +264,12 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
               pinFocus.requestFocus();
             } else {
               myWalletProvider.isPinValid = true;
-              myWalletProvider.isPinLoading = false;
               pinColor = Colors.green[400]!;
+
+              // Wait for Durt to be connected and wallets to be loaded before allowing access
+              await _waitForSystemReady();
+
+              myWalletProvider.isPinLoading = false;
               myWalletProvider.debounceResetPinCode();
               // ignore: use_build_context_synchronously
               Navigator.pop(context, pin.toUpperCase());

@@ -32,7 +32,6 @@ class HomeProvider with ChangeNotifier {
   }
 
   String homeMessage = "loading".tr();
-  bool isWalletBoxInit = false;
 
   Future<void> initHive() async {
     late Directory hivePath;
@@ -167,7 +166,6 @@ class HomeProvider with ChangeNotifier {
       g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
       contactsBox = await Hive.openBox<G1WalletsList>("contactsBox");
 
-      homeProvider.isWalletBoxInit = true;
       myWalletProvider.reload();
 
       // await homeProvider.getValidEndpoints();

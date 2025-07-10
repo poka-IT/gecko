@@ -54,7 +54,7 @@ class NameByAddress extends ConsumerWidget {
 
         // Show identity name
         return Text(
-          truncate(name, 19),
+          truncate(name, 22),
           style: scaledTextStyle(fontSize: size, color: finalColor, fontWeight: fontWeight, fontStyle: fontStyle),
         );
       },

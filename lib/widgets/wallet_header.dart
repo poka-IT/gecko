@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show IdtyStatus;
+import 'package:durt2/durt2.dart' show IdtyStatus, WalletBalance;
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,9 +22,8 @@ import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/providers/wallet_options.dart';
-import 'package:gecko/models/wallet_header_data.dart';
 
-class WalletHeader extends ConsumerStatefulWidget {
+class WalletHeader extends ConsumerWidget {
   const WalletHeader({super.key, required this.address, this.customImagePath, this.defaultImagePath});
 
   final String address;
@@ -31,434 +31,420 @@ class WalletHeader extends ConsumerStatefulWidget {
   final String? defaultImagePath;
 
   @override
-  ConsumerState<WalletHeader> createState() => _WalletHeaderState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final isOwner = myWalletProvider.isOwner(address);
+
+    // Use live subscriptions instead of cached data
+    final idtyStatusStream = ref.watch(smartIdtyStatusStreamProvider(address));
+    final balanceStream = ref.watch(smartBalanceStreamProvider(address));
+    final identityNameAsync = ref.watch(identityNameStreamProvider(address));
+
+    return Container(
+      decoration: BoxDecoration(color: context.colorScheme.tertiary),
+      child: Column(
+        children: [
+          // Status and subscription management
+          WalletHeaderSubscriptionStatus(idtyStatusStream: idtyStatusStream, balanceStream: balanceStream),
+
+          // Main content with live data
+          WalletHeaderMainContent(
+            address: address,
+            isOwner: isOwner,
+            idtyStatusStream: idtyStatusStream,
+            balanceStream: balanceStream,
+            identityNameAsync: identityNameAsync,
+            customImagePath: customImagePath,
+            defaultImagePath: defaultImagePath,
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-class _WalletHeaderState extends ConsumerState<WalletHeader> {
-  late Future<WalletHeaderData> _loadData;
+/// Subscription status indicator widget for debugging (can be removed in production)
+class WalletHeaderSubscriptionStatus extends StatelessWidget {
+  const WalletHeaderSubscriptionStatus({super.key, required this.idtyStatusStream, required this.balanceStream});
+
+  final AsyncValue<IdtyStatus> idtyStatusStream;
+  final AsyncValue<WalletBalance> balanceStream;
+
+  @override
+  Widget build(BuildContext context) {
+    // Show subscription status for debugging (remove in production)
+    final hasErrors = idtyStatusStream.hasError || balanceStream.hasError;
+    final isLoading = idtyStatusStream.isLoading || balanceStream.isLoading;
+
+    if (hasErrors || isLoading) {
+      return Container(
+        padding: EdgeInsets.all(scaleSize(4)),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (isLoading) Icon(Icons.sync, size: scaleSize(12), color: Colors.orange),
+            if (hasErrors) Icon(Icons.error_outline, size: scaleSize(12), color: Colors.red),
+          ],
+        ),
+      );
+    }
+    return const SizedBox.shrink();
+  }
+}
+
+/// Main content of the wallet header with live data
+class WalletHeaderMainContent extends StatelessWidget {
+  const WalletHeaderMainContent({
+    super.key,
+    required this.address,
+    required this.isOwner,
+    required this.idtyStatusStream,
+    required this.balanceStream,
+    required this.identityNameAsync,
+    this.customImagePath,
+    this.defaultImagePath,
+  });
+
+  final String address;
+  final bool isOwner;
+  final AsyncValue<IdtyStatus> idtyStatusStream;
+  final AsyncValue<WalletBalance> balanceStream;
+  final AsyncValue<String?> identityNameAsync;
+  final String? customImagePath;
+  final String? defaultImagePath;
+
+  @override
+  Widget build(BuildContext context) {
+    return balanceStream.when(
+      data: (walletBalance) {
+        final balance = walletBalance.transferableBalance;
+        final isEmptyWallet = balance == BigInt.zero;
+
+        return Container(
+          decoration: BoxDecoration(color: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary),
+          padding: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), bottom: scaleSize(16)),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Avatar section
+              WalletHeaderAvatar(
+                address: address,
+                isOwner: isOwner,
+                customImagePath: customImagePath,
+                defaultImagePath: defaultImagePath,
+              ),
+              ScaledSizedBox(width: 16),
+
+              // Info section with live data
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Address
+                    WalletHeaderAddress(address: address),
+                    ScaledSizedBox(height: 6),
+
+                    // Balance
+                    Balance(address: address, size: 18),
+                    ScaledSizedBox(height: 6),
+
+                    // Identity status and certifications with live data
+                    WalletHeaderIdentitySection(
+                      address: address,
+                      idtyStatusStream: idtyStatusStream,
+                      identityNameAsync: identityNameAsync,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      loading: () => const WalletHeaderLoading(),
+      error: (error, stack) {
+        log.e('❌ WalletHeader balance stream error for $address: $error');
+        return const WalletHeaderError();
+      },
+    );
+  }
+}
+
+/// Identity section with live status and certifications
+class WalletHeaderIdentitySection extends StatelessWidget {
+  const WalletHeaderIdentitySection({
+    super.key,
+    required this.address,
+    required this.idtyStatusStream,
+    required this.identityNameAsync,
+  });
+
+  final String address;
+  final AsyncValue<IdtyStatus> idtyStatusStream;
+  final AsyncValue<String?> identityNameAsync;
+
+  @override
+  Widget build(BuildContext context) {
+    return idtyStatusStream.when(
+      data: (idtyStatus) {
+        final hasIdentity = idtyStatus != IdtyStatus.none;
+
+        if (!hasIdentity) {
+          return const SizedBox.shrink();
+        }
+
+        return InkWell(
+          onTap: () => Navigator.push(
+            context,
+            PageNoTransit(
+              builder: (context) => CertificationsScreen(address: address, username: identityNameAsync.value ?? ''),
+            ),
+          ),
+          child: Container(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.transparent),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Identity status with live updates
+                Flexible(
+                  child: IdentityStatus(address: address, color: context.colorScheme.primary),
+                ),
+
+                // Certifications with live updates
+                Row(
+                  children: [
+                    Certifications(address: address, size: 13),
+                    Icon(
+                      Icons.chevron_right,
+                      size: scaleSize(15),
+                      color: context.colorScheme.primary.withValues(alpha: 0.5),
+                    ),
+                    ScaledSizedBox(width: 8),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      loading: () => const WalletHeaderLoadingIdentity(),
+      error: (error, stack) {
+        log.e('❌ Identity status error for $address: $error');
+        return const SizedBox.shrink();
+      },
+    );
+  }
+}
+
+/// Avatar section with editing capability for owners
+class WalletHeaderAvatar extends ConsumerStatefulWidget {
+  const WalletHeaderAvatar({
+    super.key,
+    required this.address,
+    required this.isOwner,
+    this.customImagePath,
+    this.defaultImagePath,
+  });
+
+  final String address;
+  final bool isOwner;
+  final String? customImagePath;
+  final String? defaultImagePath;
+
+  @override
+  ConsumerState<WalletHeaderAvatar> createState() => _WalletHeaderAvatarState();
+}
+
+class _WalletHeaderAvatarState extends ConsumerState<WalletHeaderAvatar> {
   bool _isPickerOpen = false;
   String _newCustomImagePath = '';
 
   @override
   void initState() {
     super.initState();
-    _loadData = _initializeData();
-  }
-
-  Future<WalletHeaderData> _initializeData() async {
-    // Check cache from Hive
-    final cached = walletHeaderDataBox.get(widget.address);
-    if (cached != null) {
-      // Refresh in background
-      _refreshData();
-      return cached;
-    }
-
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-
-    // Load all data in parallel with proper typing
-    final (idtyStatus, balance, certData) = await (
-      ref.read(storageServiceProvider).getIdtyStatus(widget.address),
-      ref.read(storageServiceProvider).getBalance(widget.address),
-      ref.read(storageServiceProvider).getCertsCounter(widget.address),
-    ).wait;
-
-    final data = WalletHeaderData(
-      hasIdentity: idtyStatus != IdtyStatus.none,
-      isOwner: myWalletProvider.isOwner(widget.address),
-      walletName: ref.read(squidServiceProvider).walletNameIndexer[widget.address],
-      balance: balance.transferableBalance,
-      certsReceived: certData.receivedCount,
-      certsSent: certData.sentCount,
-    );
-
-    // Save to Hive cache
-    await walletHeaderDataBox.put(widget.address, data);
-    return data;
-  }
-
-  Future<void> _refreshData() async {
-    if (!mounted) return;
-
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-
-    // Load all data in parallel with proper typing
-    final (idtyStatus, balance, certData) = await (
-      ref.read(storageServiceProvider).getIdtyStatus(widget.address),
-      ref.read(storageServiceProvider).getBalance(widget.address),
-      ref.read(storageServiceProvider).getCertsCounter(widget.address),
-    ).wait;
-
-    final data = WalletHeaderData(
-      hasIdentity: idtyStatus != IdtyStatus.none,
-      isOwner: myWalletProvider.isOwner(widget.address),
-      walletName: ref.read(squidServiceProvider).walletNameIndexer[widget.address],
-      balance: balance.transferableBalance,
-      certsReceived: certData.receivedCount,
-      certsSent: certData.sentCount,
-    );
-
-    final existing = walletHeaderDataBox.get(widget.address);
-    if (existing == null || !existing.equals(data)) {
-      await walletHeaderDataBox.put(widget.address, data);
-      if (mounted) {
-        setState(() {
-          _loadData = Future.value(data);
-        });
-      }
-    }
-  }
-
-  Widget _buildContent(
-    BuildContext context,
-    bool hasIdentity,
-    bool isOwner,
-    bool isPickerOpen,
-    String newCustomImagePath,
-  ) {
-    const double avatarSize = 90;
-
-    // Get real-time balance from stream
-    final balanceStream = ref.watch(smartBalanceStreamProvider(widget.address));
-
-    return balanceStream.when(
-      data: (walletBalance) {
-        final balance = walletBalance.transferableBalance;
-        final isEmptyWallet = balance == BigInt.zero;
-
-        return _buildWalletContent(
-          context,
-          balance,
-          hasIdentity,
-          isOwner,
-          isPickerOpen,
-          newCustomImagePath,
-          avatarSize,
-          isEmptyWallet,
-        );
-      },
-      loading: () => _buildLoadingHeader(),
-      error: (error, stack) {
-        log.e('❌ WalletHeader balance stream error for ${widget.address}: $error');
-        return _buildLoadingHeader();
-      },
-    );
-  }
-
-  Widget _buildWalletContent(
-    BuildContext context,
-    BigInt balance,
-    bool hasIdentity,
-    bool isOwner,
-    bool isPickerOpen,
-    String newCustomImagePath,
-    double avatarSize,
-    bool isEmptyWallet,
-  ) {
-    return Container(
-      decoration: BoxDecoration(color: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary),
-      padding: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), bottom: scaleSize(16)),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Avatar section
-          Container(
-            width: scaleSize(90),
-            height: scaleSize(90),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 25),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 2)),
-              ],
-            ),
-            child: old_provider.Consumer<WalletOptionsProvider>(
-              builder: (context, walletOptionsProvider, child) {
-                if (_newCustomImagePath.isEmpty) {
-                  _newCustomImagePath = widget.customImagePath ?? '';
-                }
-                return Stack(
-                  children: [
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: isOwner && !_isPickerOpen
-                            ? () async {
-                                setState(() => _isPickerOpen = true);
-                                walletOptionsProvider.reload();
-                                final newPath = await walletOptionsProvider.changeAvatar();
-                                setState(() {
-                                  _newCustomImagePath = newPath;
-                                  _isPickerOpen = false;
-                                });
-                                walletOptionsProvider.reload();
-                              }
-                            : null,
-                        customBorder: const CircleBorder(),
-                        child: ClipOval(
-                          child: _newCustomImagePath.isEmpty
-                              ? (widget.defaultImagePath != null
-                                    ? Image.asset('assets/avatars/${widget.defaultImagePath}', fit: BoxFit.cover)
-                                    : DatapodAvatar(address: widget.address, size: avatarSize))
-                              : Image.asset(_newCustomImagePath, fit: BoxFit.cover),
-                        ),
-                      ),
-                    ),
-                    if (isOwner)
-                      Positioned(
-                        right: 0,
-                        bottom: 0,
-                        child: Container(
-                          width: avatarSize * 0.35,
-                          height: avatarSize * 0.35,
-                          decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.black.withValues(alpha: 0.4)),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: !_isPickerOpen
-                                  ? () async {
-                                      setState(() => _isPickerOpen = true);
-                                      walletOptionsProvider.reload();
-                                      final newPath = await walletOptionsProvider.changeAvatar();
-                                      setState(() {
-                                        _newCustomImagePath = newPath;
-                                        _isPickerOpen = false;
-                                      });
-                                      walletOptionsProvider.reload();
-                                    }
-                                  : null,
-                              customBorder: const CircleBorder(),
-                              child: Icon(Icons.camera_alt, color: Colors.white, size: avatarSize * 0.2),
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                );
-              },
-            ),
-          ),
-          SizedBox(width: scaleSize(20)),
-
-          // Info section
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Address row
-                GestureDetector(
-                  key: keyCopyAddress,
-                  onTap: () {
-                    Clipboard.setData(ClipboardData(text: widget.address));
-                    snackCopyKey(context);
-                  },
-                  child: Row(
-                    children: [
-                      Flexible(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            getShortPubkey(widget.address),
-                            style: scaledTextStyle(
-                              fontSize: 20,
-                              fontFamily: 'Monospace',
-                              fontWeight: FontWeight.w600,
-                              color: context.colorScheme.onSecondaryContainer,
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: scaleSize(14)),
-                      IconButton(
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        icon: Icon(
-                          Icons.copy,
-                          size: scaleSize(20),
-                          color: context.colorScheme.primary.withValues(alpha: 0.5),
-                        ),
-                        onPressed: () {
-                          Clipboard.setData(ClipboardData(text: widget.address));
-                          snackCopyKey(context);
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                ScaledSizedBox(height: 8),
-
-                // Balance
-                Balance(address: widget.address, size: 18),
-
-                // Certifications section
-                ScaledSizedBox(height: 12),
-                Visibility(
-                  visible: hasIdentity,
-                  child: InkWell(
-                    onTap: () => Navigator.push(
-                      context,
-                      PageNoTransit(
-                        builder: (context) => CertificationsScreen(
-                          address: widget.address,
-                          username: ref.read(squidServiceProvider).walletNameIndexer[widget.address] ?? '',
-                        ),
-                      ),
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.transparent),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IdentityStatus(address: widget.address, color: context.colorScheme.primary),
-                            SizedBox(width: scaleSize(8)),
-                            Certifications(address: widget.address, size: 13),
-                            Icon(
-                              Icons.chevron_right,
-                              size: scaleSize(15),
-                              color: context.colorScheme.primary.withValues(alpha: 0.5),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLoadingHeader() {
-    const double avatarSize = 90;
-    return Container(
-      color: context.colorScheme.tertiary,
-      padding: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), bottom: scaleSize(16)),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Avatar placeholder
-          Container(
-            width: scaleSize(avatarSize),
-            height: scaleSize(avatarSize),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.1),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 2)),
-              ],
-            ),
-          ),
-          SizedBox(width: scaleSize(20)),
-
-          // Info section placeholders
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Address placeholder
-                Row(
-                  children: [
-                    Container(
-                      width: scaleSize(150),
-                      height: scaleSize(20),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(4),
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                    SizedBox(width: scaleSize(14)),
-                    Container(
-                      width: scaleSize(20),
-                      height: scaleSize(20),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(4),
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                  ],
-                ),
-                ScaledSizedBox(height: 8),
-
-                // Balance placeholder
-                Container(
-                  width: scaleSize(120),
-                  height: scaleSize(18),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4),
-                    color: Colors.white.withValues(alpha: 0.1),
-                  ),
-                ),
-
-                // Certifications placeholder
-                ScaledSizedBox(height: 12),
-                Row(
-                  children: [
-                    Container(
-                      width: scaleSize(20),
-                      height: scaleSize(20),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(4),
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                    SizedBox(width: scaleSize(8)),
-                    Container(
-                      width: scaleSize(80),
-                      height: scaleSize(13),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(4),
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                    Container(
-                      width: scaleSize(15),
-                      height: scaleSize(15),
-                      margin: EdgeInsets.only(left: scaleSize(4)),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(4),
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+    _newCustomImagePath = widget.customImagePath ?? '';
   }
 
   @override
   Widget build(BuildContext context) {
-    // If data is in cache, show it immediately
-    final cached = walletHeaderDataBox.get(widget.address);
-    if (cached != null) {
-      return _buildContent(context, cached.hasIdentity, cached.isOwner, _isPickerOpen, _newCustomImagePath);
-    }
+    const double avatarSize = 90;
 
-    // Sinon on affiche le loading
-    return FutureBuilder<WalletHeaderData>(
-      future: _loadData,
-      builder: (context, AsyncSnapshot<WalletHeaderData> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return _buildLoadingHeader();
-        }
+    return Container(
+      width: scaleSize(avatarSize),
+      height: scaleSize(avatarSize),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withValues(alpha: 25),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 2))],
+      ),
+      child: old_provider.Consumer<WalletOptionsProvider>(
+        builder: (context, walletOptionsProvider, child) {
+          return Stack(
+            children: [
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: widget.isOwner && !_isPickerOpen
+                      ? () async {
+                          setState(() => _isPickerOpen = true);
+                          walletOptionsProvider.reload();
+                          final newPath = await walletOptionsProvider.changeAvatar();
+                          setState(() {
+                            _newCustomImagePath = newPath;
+                            _isPickerOpen = false;
+                          });
+                          walletOptionsProvider.reload();
+                        }
+                      : null,
+                  customBorder: const CircleBorder(),
+                  child: ClipOval(
+                    child: _newCustomImagePath.isEmpty
+                        ? (widget.defaultImagePath != null
+                              ? Image.asset(widget.defaultImagePath!, fit: BoxFit.cover)
+                              : DatapodAvatar(address: widget.address, size: avatarSize))
+                        : Image.asset(_newCustomImagePath, fit: BoxFit.cover),
+                  ),
+                ),
+              ),
+              if (widget.isOwner)
+                Positioned(
+                  right: scaleSize(5),
+                  bottom: scaleSize(5),
+                  child: Container(
+                    padding: EdgeInsets.all(scaleSize(4)),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: Icon(Icons.camera_alt, size: scaleSize(12), color: Colors.black54),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
 
-        if (snapshot.hasError || !snapshot.hasData) {
-          return const SizedBox.shrink();
-        }
+/// Address section with copy functionality
+class WalletHeaderAddress extends StatelessWidget {
+  const WalletHeaderAddress({super.key, required this.address});
 
-        final data = snapshot.data!;
-        return _buildContent(context, data.hasIdentity, data.isOwner, _isPickerOpen, _newCustomImagePath);
+  final String address;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      key: keyCopyAddress,
+      onTap: () {
+        Clipboard.setData(ClipboardData(text: address));
+        snackCopyKey(context);
       },
+      child: Row(
+        children: [
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                getShortPubkey(address),
+                style: scaledTextStyle(
+                  fontSize: 20,
+                  fontFamily: 'Monospace',
+                  fontWeight: FontWeight.w600,
+                  color: context.colorScheme.onSecondaryContainer,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: scaleSize(14)),
+          IconButton(
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            icon: Icon(Icons.copy, size: scaleSize(20), color: context.colorScheme.primary.withValues(alpha: 0.5)),
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: address));
+              snackCopyKey(context);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Loading state for the main header
+class WalletHeaderLoading extends StatelessWidget {
+  const WalletHeaderLoading({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(scaleSize(16)),
+      child: Row(
+        children: [
+          CircleAvatar(radius: scaleSize(45), backgroundColor: Colors.grey[300]),
+          ScaledSizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: scaleSize(20),
+                  width: double.infinity,
+                  decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(4)),
+                ),
+                ScaledSizedBox(height: 8),
+                Container(
+                  height: scaleSize(16),
+                  width: scaleSize(100),
+                  decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(4)),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Error state for the main header
+class WalletHeaderError extends StatelessWidget {
+  const WalletHeaderError({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(scaleSize(16)),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline, size: scaleSize(40), color: Colors.red),
+          ScaledSizedBox(width: 16),
+          Text('errorLoadingWalletData'.tr(), style: scaledTextStyle(fontSize: 16, color: Colors.red)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Loading state for the identity section
+class WalletHeaderLoadingIdentity extends StatelessWidget {
+  const WalletHeaderLoadingIdentity({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: scaleSize(20),
+      width: scaleSize(80),
+      decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(4)),
     );
   }
 }

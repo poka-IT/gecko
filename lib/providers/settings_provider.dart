@@ -8,6 +8,58 @@ import 'package:gecko/providers.dart';
 // Helper to access Riverpod services
 final _container = ProviderContainer();
 
+/// Global provider for Universal Dividends toggle state
+final universalDividendsToggleProvider = StateNotifierProvider<UniversalDividendsToggleNotifier, bool>((ref) {
+  return UniversalDividendsToggleNotifier(ref);
+});
+
+/// StateNotifier for managing the global Universal Dividends toggle state
+class UniversalDividendsToggleNotifier extends StateNotifier<bool> {
+  static const String _storageKey = 'include_universal_dividends_global';
+  final Ref ref;
+
+  UniversalDividendsToggleNotifier(this.ref) : super(false) {
+    _loadFromStorage();
+  }
+
+  /// Load the toggle state from storage
+  void _loadFromStorage() {
+    try {
+      final durt = ref.read(durtProvider);
+      final storedValue = durt.configBox.getValue(_storageKey, defaultValue: 'false');
+      state = storedValue == 'true';
+    } catch (e) {
+      log.e('Error loading UD toggle state: $e');
+      state = false;
+    }
+  }
+
+  /// Toggle the Universal Dividends state
+  void toggle() {
+    final newState = !state;
+    state = newState;
+    _saveToStorage();
+  }
+
+  /// Set the Universal Dividends state
+  void setIncludeUniversalDividends(bool include) {
+    if (state != include) {
+      state = include;
+      _saveToStorage();
+    }
+  }
+
+  /// Save the toggle state to storage
+  void _saveToStorage() {
+    try {
+      final durt = ref.read(durtProvider);
+      durt.configBox.putValue(_storageKey, state.toString());
+    } catch (e) {
+      log.e('Error saving UD toggle state: $e');
+    }
+  }
+}
+
 class SettingsProvider with ChangeNotifier {
   void reload() {
     notifyListeners();

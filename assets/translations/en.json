@@ -346,5 +346,15 @@
     "currentNetwork": "Current network: {} (SS58: {})",
     "canNotRevokeUnvalidated": "You cannot revoke an unvalidated identity",
     "incorrectPinCode": "Incorrect PIN code. Please try again.",
-    "migrationError": "Migration error: {}"
+    "migrationError": "Migration error: {}",
+    "youAreNotMember": "You are not a member",
+    "youAreMember": "You are a member",
+    "youAreCandidate": "You are a candidate",
+    "zoomDraw": "Zoom and draw",
+    "zoomToDraw": "Zoom to draw on signature",
+    "showUniversalDividends": "Show universal dividends",
+    "hideUniversalDividends": "Hide universal dividends",
+    "universalDividends": "Universal Dividends",
+    "universalDividend": "Universal Dividend",
+    "udShort": "UD"
 }

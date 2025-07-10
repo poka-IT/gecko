@@ -365,5 +365,10 @@
     "daysAgo": "Hace {} días",
     "canNotRevokeUnvalidated": "No puedes revocar una identidad no validada",
     "incorrectPinCode": "Código PIN incorrecto. Por favor, inténtalo de nuevo.",
-    "migrationError": "Error durante la migración: {}"
+    "migrationError": "Error de migración: {}",
+    "showUniversalDividends": "Mostrar dividendos universales",
+    "hideUniversalDividends": "Ocultar dividendos universales",
+    "universalDividends": "Dividendos Universales",
+    "universalDividend": "Dividendo Universal",
+    "udShort": "DU"
 }

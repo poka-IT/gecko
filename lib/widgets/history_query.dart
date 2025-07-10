@@ -68,8 +68,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
 
   void _onScroll() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.7) {
-      final historyNotifier = ref.read(transactionHistoryProvider(widget.address).notifier);
-      historyNotifier.loadMoreTransactions();
+      loadMoreTransactions(ref, widget.address);
     }
   }
 
@@ -156,6 +155,13 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
 
   @override
   Widget build(BuildContext context) {
+    // Listen for scroll to top events
+    ref.listen<int>(scrollToTopProvider, (previous, next) {
+      if (previous != next && _scrollController.hasClients) {
+        _scrollController.animateTo(0, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
+      }
+    });
+
     // Check if we have network connection
     final connectionStatus = ref.watch(connectionStatusProvider);
     final isNetworkAvailable = connectionStatus == d.ConnectionStatus.connected;
@@ -169,15 +175,21 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
       );
     }
 
+    // Use filtered state for display
     final historyState = ref.watch(transactionHistoryProvider(widget.address));
     final previousAddressAsync = ref.watch(previousAddressProvider(widget.address));
 
-    // Check for new transactions using timestamp comparison instead of just count
-    if (!_isInitialLoad && !historyState.isLoading && historyState.transactions.isNotEmpty) {
-      final currentLatestTimestamp = historyState.transactions.first.timestamp;
+    // Use COMBINED state for new transaction detection (always includes all data, not affected by toggle)
+    final rawHistoryState = ref.watch(combinedHistoryProvider(widget.address));
 
-      // Check if we have a newer transaction than before
-      if (_lastTransactionTimestamp != null && currentLatestTimestamp.isAfter(_lastTransactionTimestamp!)) {
+    // Always initialize/update timestamp with RAW data (including UDs) to prevent false notifications
+    if (!rawHistoryState.isLoading && rawHistoryState.transactions.isNotEmpty) {
+      final currentLatestTimestamp = rawHistoryState.transactions.first.timestamp;
+
+      // Only show notification if NOT initial load AND we have a newer transaction than before
+      if (!_isInitialLoad &&
+          _lastTransactionTimestamp != null &&
+          currentLatestTimestamp.isAfter(_lastTransactionTimestamp!)) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted && !_isDisposed) {
             _onNewTransactionReceived();
@@ -185,18 +197,12 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
         });
       }
 
-      // Always update the latest timestamp
+      // Always update the latest timestamp (including on initial load)
       _lastTransactionTimestamp = currentLatestTimestamp;
     }
 
-    // Set initial timestamp after first load
-    if (_isInitialLoad && !historyState.isLoading && historyState.transactions.isNotEmpty) {
-      _lastTransactionTimestamp = historyState.transactions.first.timestamp;
-      _isInitialLoad = false;
-    }
-
-    // Mark initial load as complete even if no transactions
-    if (_isInitialLoad && !historyState.isLoading) {
+    // Mark initial load as complete when RAW data is loaded (prevents logic conflicts)
+    if (_isInitialLoad && !rawHistoryState.isLoading) {
       _isInitialLoad = false;
     }
 
@@ -250,7 +256,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                 child: RefreshIndicator(
                   color: context.colorScheme.primary,
                   onRefresh: () async {
-                    await ref.read(transactionHistoryProvider(widget.address).notifier).refresh();
+                    await refreshTransactionHistory(ref, widget.address);
                   },
                   child: ListView(
                     key: keyListTransactions,
@@ -262,6 +268,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                           onVisibilityChanged: _onTransactionInProgressVisibilityChanged,
                           child: TransactionInProgressTule(transactionData: widget.transactionData!),
                         ),
+
                       HistoryView(
                         transactions: historyState.transactions,
                         address: widget.address,

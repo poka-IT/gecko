@@ -54,6 +54,7 @@ class WalletAppBar extends ConsumerWidget implements PreferredSizeWidget {
       actions: [
         Row(
           children: [
+            // Contact Button
             old_provider.Consumer<WalletsProfilesProvider>(
               builder: (context, profile, _) {
                 return IconButton(
@@ -72,6 +73,7 @@ class WalletAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 );
               },
             ),
+            // QR Code
             InkWell(
               onTap: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => QrCodeFullscreen(address)));

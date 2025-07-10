@@ -22,13 +22,23 @@ import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/providers/wallet_options.dart';
+import 'package:gecko/providers/transaction_history_providers.dart';
+import 'package:gecko/providers/settings_provider.dart';
+import 'package:gecko/models/transaction_display_item.dart';
 
 class WalletHeader extends ConsumerWidget {
-  const WalletHeader({super.key, required this.address, this.customImagePath, this.defaultImagePath});
+  const WalletHeader({
+    super.key,
+    required this.address,
+    this.customImagePath,
+    this.defaultImagePath,
+    this.showUDToggle = false,
+  });
 
   final String address;
   final String? customImagePath;
   final String? defaultImagePath;
+  final bool showUDToggle;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -56,6 +66,7 @@ class WalletHeader extends ConsumerWidget {
             identityNameAsync: identityNameAsync,
             customImagePath: customImagePath,
             defaultImagePath: defaultImagePath,
+            showUDToggle: showUDToggle,
           ),
         ],
       ),
@@ -103,6 +114,7 @@ class WalletHeaderMainContent extends StatelessWidget {
     required this.identityNameAsync,
     this.customImagePath,
     this.defaultImagePath,
+    this.showUDToggle = false,
   });
 
   final String address;
@@ -112,6 +124,7 @@ class WalletHeaderMainContent extends StatelessWidget {
   final AsyncValue<String?> identityNameAsync;
   final String? customImagePath;
   final String? defaultImagePath;
+  final bool showUDToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -126,7 +139,7 @@ class WalletHeaderMainContent extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Avatar section
+              // Avatar section - back to original position
               WalletHeaderAvatar(
                 address: address,
                 isOwner: isOwner,
@@ -445,6 +458,109 @@ class WalletHeaderLoadingIdentity extends StatelessWidget {
       height: scaleSize(20),
       width: scaleSize(80),
       decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(4)),
+    );
+  }
+}
+
+/// Compact Universal Dividends toggle for wallet header
+class WalletHeaderUDToggle extends ConsumerStatefulWidget {
+  const WalletHeaderUDToggle({super.key, required this.address});
+
+  final String address;
+
+  @override
+  ConsumerState<WalletHeaderUDToggle> createState() => _WalletHeaderUDToggleState();
+}
+
+class _WalletHeaderUDToggleState extends ConsumerState<WalletHeaderUDToggle> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  bool _hasCheckedForUDs = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isEnabled = ref.watch(universalDividendsToggleProvider);
+
+    // Check if UDs are available by looking at the combined provider
+    final combinedState = ref.watch(combinedHistoryProvider(widget.address));
+    final hasUDs = combinedState.transactions.any(
+      (transaction) => transaction.type == TransactionType.universalDividend,
+    );
+
+    // Trigger fade-in animation when UDs are detected for the first time
+    if (hasUDs && !_hasCheckedForUDs) {
+      _hasCheckedForUDs = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _animationController.forward();
+        }
+      });
+    }
+
+    // Hide toggle if no UDs are available
+    if (!hasUDs) {
+      return const SizedBox.shrink();
+    }
+
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: scaleSize(6)),
+        child: GestureDetector(
+          onTap: () {
+            toggleUniversalDividends(ref, widget.address);
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: scaleSize(8), vertical: scaleSize(4)),
+            decoration: BoxDecoration(
+              color: isEnabled ? context.colorScheme.primary.withValues(alpha: 0.1) : context.colorScheme.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isEnabled
+                    ? context.colorScheme.primary.withValues(alpha: 0.3)
+                    : context.colorScheme.outline.withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.water_drop,
+                  size: scaleSize(12),
+                  color: isEnabled ? context.colorScheme.primary : context.colorScheme.onSurfaceVariant,
+                ),
+                SizedBox(width: scaleSize(4)),
+                // Short text "UD" or "DU"
+                Text(
+                  'udShort'.tr(),
+                  style: scaledTextStyle(
+                    fontSize: 11,
+                    color: isEnabled ? context.colorScheme.primary : context.colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

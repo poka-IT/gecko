@@ -298,7 +298,12 @@
     "expertModeDescription": "Abilita funzionalità avanzate per utenti esperti",
     "clearCache": "Cancella cache",
     "clearCacheDescription": "Rimuove i dati temporanei per liberare spazio",
-    "canNotRevokeUnvalidated": "Non puoi revocare un'identitá non validata",
-    "incorrectPinCode": "Codice PIN errato. Riprova.",
-    "migrationError": "Errore durante la migrazione: {}"
+    "canNotRevokeUnvalidated": "Non puoi revocare un'identità non convalidata",
+    "incorrectPinCode": "Codice PIN errato. Per favore riprova.",
+    "migrationError": "Errore di migrazione: {}",
+    "showUniversalDividends": "Mostra dividendi universali",
+    "hideUniversalDividends": "Nascondi dividendi universali",
+    "universalDividends": "Dividendi Universali",
+    "universalDividend": "Dividendo Universale",
+    "udShort": "DU"
 }

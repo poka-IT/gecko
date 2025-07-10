@@ -51,7 +51,7 @@ class ImportG1v1 extends StatelessWidget {
       // Continuer avec la migration normale
       yield* _container
           .read(duniterServiceProvider)
-          .migrateCsToV2(salt: salt, password: password, toKeypair: toKeypair);
+          .migrateCsToV2(salt: salt, password: password, toKeypair: toKeypair, withBalance: true);
     } catch (e) {
       log.e('G1v1 migration error: $e');
       yield TransactionStatus(

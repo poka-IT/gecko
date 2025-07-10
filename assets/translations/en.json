@@ -160,7 +160,7 @@
     "24hbetweenCerts": "You have to wait 24h between certs",
     "canNotCertifySelf": "You can not certify yourself",
     "nameAlreadyExist": "This name is already taken",
-    "2GDtoKeepAlive": "You have to keep at least 2ĞD to keep your account alive",
+    "2GDtoKeepAlive": "You have to keep at least 2{} to keep your account alive",
     "youHaveToFeedThisAccountBeforeUsing": "You have to feed this account\nbefore using it.",
     "execTimeoutOver": "Execution timeout is over",
     "seeAWallet": "See a wallet",

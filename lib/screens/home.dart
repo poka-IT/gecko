@@ -1,3 +1,4 @@
+import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
@@ -152,7 +153,7 @@ Widget welcomeHome(BuildContext context) {
             children: <Widget>[
               Expanded(
                 child: Text(
-                  "fastAppDescription".tr(args: [currencyName]),
+                  "fastAppDescription".tr(args: [Durt.i.network.symbol]),
                   textAlign: TextAlign.center,
                   style: scaledTextStyle(
                     color: Colors.white,

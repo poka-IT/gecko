@@ -2,7 +2,7 @@
 
 import 'dart:async';
 import 'package:durt2/durt2.dart'
-    show IdtyStatus, WalletEntity, MigrateWalletChecks, TransactionStatus, TransactionState;
+    show IdtyStatus, WalletEntity, MigrateWalletChecks, TransactionStatus, TransactionState, Durt;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -433,10 +433,10 @@ class ImportG1v1 extends StatelessWidget {
                                         final hasIdentity = migrationChecks.data!.fromIdtyStatus != IdtyStatus.none;
                                         final message = hasIdentity
                                             ? 'migrationConfirmWithIdentity'.tr(
-                                                args: [currencyName, getShortPubkey(selectedWallet.address)],
+                                                args: [Durt.i.network.symbol, getShortPubkey(selectedWallet.address)],
                                               )
                                             : 'migrationConfirmBalanceOnly'.tr(
-                                                args: [currencyName, getShortPubkey(selectedWallet.address)],
+                                                args: [Durt.i.network.symbol, getShortPubkey(selectedWallet.address)],
                                               );
 
                                         // Afficher le popup de confirmation

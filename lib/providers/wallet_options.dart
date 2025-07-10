@@ -59,7 +59,7 @@ class WalletOptionsProvider with ChangeNotifier {
   Future<int> deleteWallet(BuildContext context, WalletEntity wallet) async {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     final defaultWallet = myWalletProvider.getDefaultWallet();
-    
+
     final walletBalance = await _container.read(storageServiceProvider).getBalance(wallet.address);
 
     // Show confirmation dialog with transfer details
@@ -68,7 +68,7 @@ class WalletOptionsProvider with ChangeNotifier {
       confirmationMessage = 'areYouSureToForgetWalletWithBalance'.tr(
         args: [
           wallet.name!,
-          '${(walletBalance.transferableBalance.toDouble() / 100).toStringAsFixed(2)} $currencyName',
+          '${(walletBalance.transferableBalance.toDouble() / 100).toStringAsFixed(2)} ${Durt.i.network.symbol}',
           defaultWallet.name ?? 'defaultWallet'.tr(),
         ],
       );

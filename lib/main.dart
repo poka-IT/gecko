@@ -56,10 +56,10 @@ Future<void> main() async {
   await homeProvider.initHive();
 
   // Get saved network from config or default to gdev
-  final savedNetworkName = configBox.get('selectedNetwork') ?? 'gdev';
+  final savedNetworkName = configBox.get('selectedNetwork') ?? 'gtest';
   final selectedNetwork = Networks.values.firstWhere(
     (network) => network.name == savedNetworkName,
-    orElse: () => Networks.gdev,
+    orElse: () => Networks.gtest,
   );
 
   //Init durt2 with selected network and keypair type

@@ -8,8 +8,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:logger/logger.dart';
 
 // Version of box data
-const int dataVersion = 10;
-const int walletHeaderDataVersion = 1;
+const int dataVersion = 11;
+const int walletHeaderDataVersion = 2;
 
 late String appVersion;
 const int pinLength = 4;
@@ -37,9 +37,6 @@ final log = Logger();
 // const Color floattingYellow = Color(0xffEFEFBF); // Moved to theme_provider.dart
 // const Color backgroundColor = Color(0xFFF5F5F5); // Moved to theme_provider.dart
 // const Color headerColor = Color(0xFFFFF3E0); // Moved to theme_provider.dart
-
-// Substrate settings
-const String currencyName = 'ĞD';
 
 // Debug
 const debugPin = false;

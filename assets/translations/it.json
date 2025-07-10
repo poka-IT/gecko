@@ -156,7 +156,7 @@
     "24hbetweenCerts": "Bisogna aspettare 24 ore fra le certificazioni",
     "canNotCertifySelf": "Non puoi certificare te stesso",
     "nameAlreadyExist": "Nome giá in uso",
-    "2GDtoKeepAlive": "Devi mantenere almeno 2ĞD per mantenere il conto vivo",
+    "2GDtoKeepAlive": "Devi mantenere almeno 2{} per mantenere il conto vivo",
     "youHaveToFeedThisAccountBeforeUsing": "Devi incrementare il saldo\ndi questo conto prima di usarlo.",
     "execTimeoutOver": "Tempo di esecuzione terminato",
     "seeAWallet": "Vedi un portafoglio",

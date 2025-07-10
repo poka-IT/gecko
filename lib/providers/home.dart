@@ -80,8 +80,6 @@ class HomeProvider with ChangeNotifier {
       await Hive.deleteBoxFromDisk('wallet_header_cache');
       configBox.put('walletHeaderDataVersion', walletHeaderDataVersion);
     }
-
-    walletHeaderDataBox = await Hive.openBox<WalletHeaderData>("wallet_header_cache");
   }
 
   Future changeCurrencyUnit(BuildContext context) async {
@@ -140,17 +138,27 @@ class HomeProvider with ChangeNotifier {
     if (configBox.get('dataVersion') == null) {
       configBox.put('dataVersion', dataVersion);
     }
-    if (myWalletProvider.isWalletsExists && (configBox.get('dataVersion')) < dataVersion) {
+    if (configBox.get('dataVersion') < dataVersion) {
       // ignore: use_build_context_synchronously
       await infoPopup(context, "chestNotCompatibleMustReinstallGecko".tr());
       await datapod.deleteAvatarsDirectory();
       await avatarsDirectory.create();
       await configBox.delete('defaultWallet');
-      // if (!sub.sdkReady && !sub.sdkLoading) await sub.initApi();
+      await configBox.clear();
+      await Hive.deleteBoxFromDisk('g1WalletsBox');
+      await Hive.deleteBoxFromDisk('contactsBox');
+      await Hive.deleteBoxFromDisk('wallet_header_cache');
+
+      g1WalletsBox = await Hive.openBox('g1WalletsBox');
+      contactsBox = await Hive.openBox('contactsBox');
+      walletHeaderDataBox = await Hive.openBox('wallet_header_cache');
+
       await _container.read(walletServiceProvider).clearWallets();
       configBox.put('dataVersion', dataVersion);
       myWalletProvider.reload();
     }
+
+    walletHeaderDataBox = await Hive.openBox<WalletHeaderData>("wallet_header_cache");
 
     if (!_container.read(durtProvider).isConnected) {
       await Hive.deleteBoxFromDisk('g1WalletsBox');

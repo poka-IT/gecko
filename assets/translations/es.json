@@ -158,7 +158,7 @@
     "24hbetweenCerts": "Hay que esperar 24 horas entre certificaciones",
     "canNotCertifySelf": "No puedes certificarte a ti mismo",
     "nameAlreadyExist": "Este nombre ya está ocupado",
-    "2GDtoKeepAlive": "Tienes que mantener al menos 2ĞD para mantener tu cuenta viva",
+    "2GDtoKeepAlive": "Tienes que mantener al menos 2{} para mantener tu cuenta viva",
     "youHaveToFeedThisAccountBeforeUsing": "Tienes que nutrir el balance\nde esta cuenta antes de usarla.",
     "execTimeoutOver": "Se ha agotado el tiempo de ejecución",
     "seeAWallet": "Ver un monedero",

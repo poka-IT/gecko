@@ -1,6 +1,6 @@
+import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 
@@ -10,15 +10,15 @@ import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/search_result_list.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
 class SearchResultScreen extends StatelessWidget {
   const SearchResultScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final searchProvider = Provider.of<SearchProvider>(context, listen: false);
-    final walletsProfilesClass = Provider.of<WalletsProfilesProvider>(context, listen: false);
+    final searchProvider = old_provider.Provider.of<SearchProvider>(context, listen: false);
+    final walletsProfilesClass = old_provider.Provider.of<WalletsProfilesProvider>(context, listen: false);
 
     final avatarSize = scaleSize(37);
 
@@ -47,7 +47,7 @@ class SearchResultScreen extends StatelessWidget {
                     ),
                   ),
                   ScaledSizedBox(height: 22),
-                  Text('inBlockchainResult'.tr(args: [currencyName]), style: scaledTextStyle(fontSize: 15)),
+                  Text('inBlockchainResult'.tr(args: [Durt.i.network.symbol]), style: scaledTextStyle(fontSize: 15)),
                   ScaledSizedBox(height: 13),
                   SearchResult(
                     searchProvider: searchProvider,

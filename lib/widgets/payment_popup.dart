@@ -2,7 +2,7 @@
 
 import 'dart:async';
 
-import 'package:durt2/durt2.dart' show TransactionStatus, WalletEntity;
+import 'package:durt2/durt2.dart' show TransactionStatus, WalletEntity, Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -391,7 +391,7 @@ void paymentPopup({required WidgetRef ref, required String toAddress, required S
                                       ),
                                       ScaledSizedBox(width: 5),
                                       Text(
-                                        'fees'.tr(args: [fees.toString(), currencyName]),
+                                        'fees'.tr(args: [fees.toString(), Durt.i.network.symbol]),
                                         style: scaledTextStyle(
                                           color: context.colorScheme.primary,
                                           fontSize: 13,
@@ -440,7 +440,7 @@ void paymentPopup({required WidgetRef ref, required String toAddress, required S
                               decoration: InputDecoration(
                                 hintText: '0.00',
                                 suffix: Text(
-                                  isUdUnit ? 'ud'.tr(args: ['']) : currencyName,
+                                  isUdUnit ? 'ud'.tr(args: ['']) : Durt.i.network.symbol,
                                   style: const TextStyle(fontSize: 14),
                                 ),
                                 filled: true,

@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
-import 'package:durt2/durt2.dart' show IdtyStatus, WalletEntity, MembershipStatus, WalletBalance;
+import 'package:durt2/durt2.dart' show IdtyStatus, WalletEntity, MembershipStatus, WalletBalance, Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -521,7 +521,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
               ),
               ScaledSizedBox(height: 8),
               Text(
-                "someoneCreatedYourIdentity".tr(args: [currencyName]),
+                "someoneCreatedYourIdentity".tr(args: [Durt.i.network.symbol]),
                 style: scaledTextStyle(fontSize: 14, color: Colors.grey[600], fontStyle: FontStyle.italic),
               ),
               ScaledSizedBox(height: 24),

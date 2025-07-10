@@ -1,3 +1,4 @@
+import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -43,7 +44,7 @@ class UdUnitDisplay extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                currencyName,
+                Durt.i.network.symbol,
                 style: TextStyle(fontSize: size * 0.65, fontWeight: fontWeight, color: color),
               ),
               const SizedBox(height: 15),
@@ -57,7 +58,7 @@ class UdUnitDisplay extends StatelessWidget {
         children: [
           if (valuePrefix.isNotEmpty) ...[prefixWidget, const SizedBox(width: 0.5)],
           Text(
-            currencyName,
+            Durt.i.network.symbol,
             style: TextStyle(fontSize: size, color: color, fontWeight: fontWeight),
           ),
         ],

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
@@ -98,10 +97,7 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
     final isSmallScreen = screenSize.height < 700;
 
     return Scaffold(
-      appBar: WalletAppBar(
-        address: widget.address,
-        title: 'chooseIdentityName'.tr(),
-      ),
+      appBar: WalletAppBar(address: widget.address, title: 'chooseIdentityName'.tr()),
       body: Column(
         children: [
           Expanded(
@@ -131,7 +127,7 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
 
                     // Titre principal
                     Text(
-                      'identityInDuniterNetwork'.tr(args: [currencyName]),
+                      'identityInDuniterNetwork'.tr(args: [Durt.i.network.symbol]),
                       style: scaledTextStyle(fontSize: isSmallScreen ? 20 : 24, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),

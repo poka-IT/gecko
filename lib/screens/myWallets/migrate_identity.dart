@@ -337,7 +337,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                                   Image.asset('assets/walletOptions/key.png', width: scaleSize(isSmall ? 16 : 20)),
                                   ScaledSizedBox(width: isSmall ? 8 : 12),
                                   Text(
-                                    'enterYourNewAddress'.tr(args: [currencyName]),
+                                    'enterYourNewAddress'.tr(args: [Durt.i.network.symbol]),
                                     style: scaledTextStyle(
                                       fontSize: isSmall ? 13 : 14,
                                       color: Colors.grey[600],

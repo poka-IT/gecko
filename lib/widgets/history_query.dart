@@ -1,174 +1,322 @@
-import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/material.dart';
-import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
-import 'package:gecko/models/queries_indexer.dart';
-import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/widgets/commons/loading.dart';
-import 'package:gecko/widgets/history_view.dart';
-import 'package:gecko/widgets/transaction_in_progress_tile.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:provider/provider.dart';
 import 'dart:async';
 
-class HistoryQuery extends StatelessWidget {
-  const HistoryQuery({super.key, required this.address, this.transactionId, this.comment});
+import 'package:durt2/durt2.dart' as d;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/extensions.dart';
+import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers.dart';
+import 'package:gecko/providers/transaction_history_providers.dart';
+import 'package:gecko/widgets/history_view.dart';
+import 'package:gecko/widgets/transaction_in_progress_tile.dart';
+import 'package:gecko/models/transaction_in_progress_data.dart';
+import 'package:visibility_detector/visibility_detector.dart';
+
+class HistoryQuery extends ConsumerStatefulWidget {
+  const HistoryQuery({super.key, required this.address, this.transactionData});
   final String address;
-  final String? transactionId;
-  final String? comment;
+  final TransactionInProgressData? transactionData;
+
+  @override
+  ConsumerState<HistoryQuery> createState() => _HistoryQueryState();
+}
+
+class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProviderStateMixin {
+  late ScrollController _scrollController;
+  late AnimationController _newTransactionController;
+  late Animation<double> _fadeInAnimation;
+  bool _showNewTransactionIndicator = false;
+  bool _isInitialLoad = true;
+  DateTime? _lastTransactionTimestamp;
+  bool _isTransactionInProgressVisible = false;
+  bool _isDisposed = false;
+  Timer? _hideIndicatorTimer;
+
+  bool get _isAtTop => _scrollController.hasClients && _scrollController.position.pixels <= 50;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+
+    // Animation for new transaction indicator
+    _newTransactionController = AnimationController(duration: const Duration(milliseconds: 500), vsync: this);
+    _fadeInAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _newTransactionController, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    _hideIndicatorTimer?.cancel();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+
+    // Stop any ongoing animation before disposing
+    if (_newTransactionController.isAnimating) {
+      _newTransactionController.stop();
+    }
+    _newTransactionController.dispose();
+
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.7) {
+      final historyNotifier = ref.read(transactionHistoryProvider(widget.address).notifier);
+      historyNotifier.loadMoreTransactions();
+    }
+  }
+
+  void _onNewTransactionReceived() {
+    // Don't show indicator if transaction in progress tile is visible
+    if (mounted && !_isDisposed && !_isTransactionInProgressVisible) {
+      setState(() {
+        _showNewTransactionIndicator = true;
+      });
+
+      // Only call forward if not disposed
+      if (!_isDisposed) {
+        _newTransactionController.forward();
+      }
+
+      // Cancel previous timer if exists
+      _hideIndicatorTimer?.cancel();
+
+      // Hide the indicator after 3 seconds
+      _hideIndicatorTimer = Timer(const Duration(seconds: 3), () {
+        if (mounted && !_isDisposed) {
+          _hideNewTransactionIndicator();
+        }
+      });
+    }
+  }
+
+  void _hideNewTransactionIndicator() {
+    // Cancel the timer since we're hiding manually
+    _hideIndicatorTimer?.cancel();
+
+    // Only proceed if not disposed and widget is still mounted
+    if (mounted && !_isDisposed) {
+      // Check if animation controller is still valid
+      if (_newTransactionController.isAnimating || _newTransactionController.status == AnimationStatus.completed) {
+        _newTransactionController
+            .reverse()
+            .then((_) {
+              if (mounted && !_isDisposed) {
+                setState(() {
+                  _showNewTransactionIndicator = false;
+                });
+              }
+            })
+            .catchError((error) {
+              // Ignore errors from disposed animation controller
+            });
+      } else {
+        // If animation is not running, just hide immediately
+        if (mounted && !_isDisposed) {
+          setState(() {
+            _showNewTransactionIndicator = false;
+          });
+        }
+      }
+    }
+  }
+
+  void _onIndicatorTapped() {
+    // Scroll to top of the list
+    _scrollController.animateTo(0, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
+
+    // Hide the indicator immediately
+    _hideNewTransactionIndicator();
+  }
+
+  void _onTransactionInProgressVisibilityChanged(VisibilityInfo info) {
+    final isVisible = info.visibleFraction > 0.1; // Consider visible if more than 10% is visible
+
+    if (_isTransactionInProgressVisible != isVisible) {
+      // Only call setState if widget is still mounted and not disposed
+      if (mounted && !_isDisposed) {
+        setState(() {
+          _isTransactionInProgressVisible = isVisible;
+        });
+      }
+
+      // If transaction in progress becomes visible and we're showing the indicator, hide it
+      if (isVisible && _showNewTransactionIndicator) {
+        _hideNewTransactionIndicator();
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (indexerEndpoint == '') {
-      return Column(children: <Widget>[
-        ScaledSizedBox(height: 50),
-        Text(
-          "noNetworkNoHistory".tr(),
-          textAlign: TextAlign.center,
-          style: scaledTextStyle(fontSize: 17),
-        )
-      ]);
+    // Check if we have network connection
+    final connectionStatus = ref.watch(connectionStatusProvider);
+    final isNetworkAvailable = connectionStatus == d.ConnectionStatus.connected;
+
+    if (!isNetworkAvailable) {
+      return Column(
+        children: <Widget>[
+          ScaledSizedBox(height: 50),
+          Text("noNetworkNoHistory".tr(), textAlign: TextAlign.center, style: scaledTextStyle(fontSize: 17)),
+        ],
+      );
     }
 
-    return FutureBuilder<bool>(
-      future: _waitForTransaction(transactionId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Loading();
-        }
-        if (snapshot.hasError) {
-          return Text('Erreur: ${snapshot.error}');
-        }
-        return _buildTransactionContent();
-      },
-    );
-  }
+    final historyState = ref.watch(transactionHistoryProvider(widget.address));
+    final previousAddressAsync = ref.watch(previousAddressProvider(widget.address));
 
-  Future<bool> _waitForTransaction(String? transactionId) async {
-    if (transactionId == null) return false;
-    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-    final completer = Completer<bool>();
+    // Check for new transactions using timestamp comparison instead of just count
+    if (!_isInitialLoad && !historyState.isLoading && historyState.transactions.isNotEmpty) {
+      final currentLatestTimestamp = historyState.transactions.first.timestamp;
 
-    final timer = Timer.periodic(const Duration(milliseconds: 5), (timer) {
-      if (sub.transactionStatus.containsKey(transactionId)) {
-        timer.cancel();
-        completer.complete(true);
+      // Check if we have a newer transaction than before
+      if (_lastTransactionTimestamp != null && currentLatestTimestamp.isAfter(_lastTransactionTimestamp!)) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && !_isDisposed) {
+            _onNewTransactionReceived();
+          }
+        });
       }
-    });
 
-    return completer.future.timeout(
-      const Duration(seconds: 5),
-      onTimeout: () {
-        timer.cancel();
-        completer.complete(false);
-        throw TimeoutException('The transaction has not been found after 5 seconds');
-      },
-    );
-  }
+      // Always update the latest timestamp
+      _lastTransactionTimestamp = currentLatestTimestamp;
+    }
 
-  Widget _buildTransactionContent() {
-    final duniterIndexer = Provider.of<DuniterIndexer>(homeContext, listen: false);
-    final scrollController = ScrollController();
-    FetchMoreOptions? opts;
-    int nRepositories = 20;
-    return GraphQLProvider(
-      client: ValueNotifier(duniterIndexer.indexerClient),
-      child: Expanded(
-          child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.max,
-        children: <Widget>[
-          Query(
-            options: QueryOptions(
-              document: gql(getHistoryByAddressRelayQ),
-              variables: <String, dynamic>{'address': address, 'first': nRepositories, 'after': null},
-            ),
-            builder: (QueryResult result, {fetchMore, refetch}) {
-              duniterIndexer.refetch = refetch;
-              if (result.isLoading && result.data == null) {
-                return Center(
-                  child: CircularProgressIndicator(
-                    color: homeContext.colorScheme.primary,
-                  ),
-                );
-              }
-              final List transactions = result.data?["transferConnection"]["edges"];
+    // Set initial timestamp after first load
+    if (_isInitialLoad && !historyState.isLoading && historyState.transactions.isNotEmpty) {
+      _lastTransactionTimestamp = historyState.transactions.first.timestamp;
+      _isInitialLoad = false;
+    }
 
-              if (result.hasException) {
-                log.e('Error Indexer: ${result.exception}');
-                return Column(children: <Widget>[
-                  Column(
-                    children: [
-                      if (transactionId != null) TransactionInProgressTule(address: address, transactionId: transactionId!, comment: comment ?? ''),
-                      ScaledSizedBox(height: 50),
-                      Text(
-                        "noNetworkNoHistory".tr(),
-                        textAlign: TextAlign.center,
-                        style: scaledTextStyle(fontSize: 17),
-                      ),
-                    ],
-                  )
-                ]);
-              } else if (transactions.isEmpty) {
-                return Column(children: <Widget>[
-                  Column(
-                    children: [
-                      if (transactionId != null) TransactionInProgressTule(address: address, transactionId: transactionId!, comment: comment ?? ''),
-                      ScaledSizedBox(height: 50),
-                      Text(
-                        "noDataToDisplay".tr(),
-                        style: scaledTextStyle(fontSize: 17),
-                      ),
-                    ],
-                  )
-                ]);
-              }
+    // Mark initial load as complete even if no transactions
+    if (_isInitialLoad && !historyState.isLoading) {
+      _isInitialLoad = false;
+    }
 
-              if (result.isNotLoading) {
-                opts = duniterIndexer.mergeQueryResult(result, opts, address, nRepositories);
-              }
+    // Initialize transaction in progress visibility based on whether we have transaction data
+    // If no transaction data, then the tile doesn't exist, so it's not visible
+    if (widget.transactionData == null && _isTransactionInProgressVisible) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_isDisposed) {
+          setState(() {
+            _isTransactionInProgressVisible = false;
+          });
+        }
+      });
+    }
 
-              // Build history list
-              return NotificationListener(
-                  child: Builder(
-                    builder: (context) => Expanded(
-                      child: RefreshIndicator(
-                        color: context.colorScheme.primary,
-                        onRefresh: () async => refetch!.call(),
-                        child: ListView(
-                          key: keyListTransactions,
-                          controller: scrollController,
-                          children: <Widget>[
-                            if (transactionId != null) TransactionInProgressTule(address: address, transactionId: transactionId!, comment: comment ?? ''),
-                            HistoryView(
-                              result: result,
-                              address: address,
-                            )
-                          ],
+    return Stack(
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.max,
+          children: <Widget>[
+            // Handle loading state
+            if (historyState.isLoading && historyState.transactions.isEmpty)
+              Center(child: CircularProgressIndicator(color: context.colorScheme.primary)),
+
+            // Handle error state
+            if (historyState.error != null)
+              Column(
+                children: <Widget>[
+                  if (widget.transactionData != null)
+                    TransactionInProgressTule(transactionData: widget.transactionData!),
+                  ScaledSizedBox(height: 50),
+                  Text("noNetworkNoHistory".tr(), textAlign: TextAlign.center, style: scaledTextStyle(fontSize: 17)),
+                ],
+              ),
+
+            // Handle empty state
+            if (!historyState.isLoading && historyState.transactions.isEmpty && historyState.error == null)
+              Column(
+                children: <Widget>[
+                  if (widget.transactionData != null)
+                    TransactionInProgressTule(transactionData: widget.transactionData!),
+                  ScaledSizedBox(height: 50),
+                  Text("noDataToDisplay".tr(), style: scaledTextStyle(fontSize: 17)),
+                ],
+              ),
+
+            // Handle success state with transactions
+            if (historyState.transactions.isNotEmpty)
+              Expanded(
+                child: RefreshIndicator(
+                  color: context.colorScheme.primary,
+                  onRefresh: () async {
+                    await ref.read(transactionHistoryProvider(widget.address).notifier).refresh();
+                  },
+                  child: ListView(
+                    key: keyListTransactions,
+                    controller: _scrollController,
+                    children: <Widget>[
+                      if (widget.transactionData != null)
+                        VisibilityDetector(
+                          key: const Key('transaction-in-progress-tile'),
+                          onVisibilityChanged: _onTransactionInProgressVisibilityChanged,
+                          child: TransactionInProgressTule(transactionData: widget.transactionData!),
                         ),
+                      HistoryView(
+                        transactions: historyState.transactions,
+                        address: widget.address,
+                        previousAddress: previousAddressAsync.when(
+                          data: (address) => address,
+                          loading: () => null,
+                          error: (error, stackTrace) => null,
+                        ),
+                        hasNextPage: historyState.hasNextPage,
+                        isLoadingMore: historyState.isLoading,
                       ),
-                    ),
+                    ],
                   ),
-                  onNotification: (dynamic t) {
-                    if (duniterIndexer.pageInfo == null) {
-                      duniterIndexer.reload();
-                    }
+                ),
+              ),
+          ],
+        ),
 
-                    if (t is ScrollEndNotification &&
-                        scrollController.position.pixels >= scrollController.position.maxScrollExtent * 0.7 &&
-                        duniterIndexer.pageInfo!['hasNextPage'] &&
-                        result.isNotLoading) {
-                      fetchMore!(opts!);
-                    }
-                    return true;
-                  });
-            },
+        // New transaction indicator
+        if (_showNewTransactionIndicator)
+          Positioned(
+            top: 16,
+            left: 16,
+            right: 16,
+            child: FadeTransition(
+              opacity: _fadeInAnimation,
+              child: GestureDetector(
+                onTap: _onIndicatorTapped,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: context.colorScheme.primary,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 2)),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.notifications_active, color: Colors.white, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        "newTransactionReceived".tr(),
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(width: 8),
+                      if (!_isAtTop) Icon(Icons.keyboard_arrow_up, color: Colors.white, size: 20),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
-        ],
-      )),
+      ],
     );
   }
 }

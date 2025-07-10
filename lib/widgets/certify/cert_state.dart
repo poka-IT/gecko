@@ -1,3 +1,4 @@
+import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/widgets/certify/certify_button.dart';
@@ -47,36 +48,19 @@ class CertStateWidget extends StatelessWidget {
       <= const Duration(minutes: 1) => 'seconds'.tr(args: [duration.inSeconds.toString()]),
       <= const Duration(hours: 1) => 'minutes'.tr(args: [duration.inMinutes.toString()]),
       <= const Duration(days: 1) => () {
-          final minutesPart = duration - Duration(hours: duration.inHours);
-          final showMinutes = minutesPart.inMinutes > 0 ? 'minutes'.tr(args: [minutesPart.inMinutes.toString()]) : '';
-          return 'hours'.tr(args: [duration.inHours.toString(), showMinutes]);
-        }(),
+        final minutesPart = duration - Duration(hours: duration.inHours);
+        final showMinutes = minutesPart.inMinutes > 0 ? 'minutes'.tr(args: [minutesPart.inMinutes.toString()]) : '';
+        return 'hours'.tr(args: [duration.inHours.toString(), showMinutes]);
+      }(),
       <= const Duration(days: 30) => 'days'.tr(args: [duration.inDays.toString()]),
       _ => () {
-          final months = (duration.inDays / 30).round();
-          return 'months'.tr(args: [months.toString()]);
-        }(),
+        final months = (duration.inDays / 30).round();
+        return 'months'.tr(args: [months.toString()]);
+      }(),
     };
   }
 
   Widget _buildDisabledButton(String label) {
     return WaitToCertWidget(messageKey: label, duration: formatDuration(certState.duration ?? Duration.zero));
   }
-}
-
-enum CertStatus {
-  none,
-  canCert,
-  canRenewIn,
-  mustWaitBeforeCert,
-  mustConfirmIdentity,
-  emptyWallet,
-  revoked,
-}
-
-class CertState {
-  final CertStatus status;
-  final Duration? duration;
-
-  CertState({required this.status, this.duration});
 }

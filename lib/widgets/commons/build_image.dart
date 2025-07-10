@@ -3,12 +3,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 
 class BuildImage extends StatelessWidget {
-  const BuildImage({
-    super.key,
-    required this.assetName,
-    required this.boxHeight,
-    required this.imageWidth,
-  });
+  const BuildImage({super.key, required this.assetName, required this.boxHeight, required this.imageWidth});
 
   final String assetName;
   final double boxHeight;
@@ -18,19 +13,18 @@ class BuildImage extends StatelessWidget {
   Widget build(BuildContext context) {
     final ratio = isTall ? 1 : 0.95;
     return Container(
-        padding: const EdgeInsets.all(0),
-        width: scaleSize(imageWidth * ratio),
-        height: scaleSize(boxHeight * ratio),
-        decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xffd2d4cf),
-                Color(0xffeaeae7),
-              ],
-            ),
-            border: Border.all(color: Colors.grey[900]!)),
-        child: Image.asset('assets/onBoarding/$assetName'));
+      padding: const EdgeInsets.all(0),
+      width: scaleSize(imageWidth * ratio),
+      height: scaleSize(boxHeight * ratio),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xffd2d4cf), Color(0xffeaeae7)],
+        ),
+        border: Border.all(color: Colors.grey[900]!),
+      ),
+      child: Image.asset('assets/onBoarding/$assetName'),
+    );
   }
 }

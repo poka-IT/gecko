@@ -32,10 +32,7 @@ class ManageMembershipButton extends StatelessWidget {
             Expanded(
               child: Text(
                 'manageMembership'.tr(),
-                style: scaledTextStyle(
-                  fontSize: 16,
-                  color: context.colorScheme.onSurface,
-                ),
+                style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
               ),
             ),
           ],

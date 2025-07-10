@@ -17,18 +17,21 @@ class OnboardingStepFor extends StatelessWidget {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('yourMnemonic'.tr()),
       body: SafeArea(
-        child: Stack(children: [
-          SingleChildScrollView(
-            child: InfoIntro(
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              child: InfoIntro(
                 text: 'itsTimeToUseAPenAndPaper'.tr(),
                 assetName: 'gecko_also_can_forget.png'.tr(),
                 buttonText: '>',
                 nextScreen: const OnboardingStepFive(),
                 pagePosition: 3,
-                isMd: true),
-          ),
-          const OfflineInfo(),
-        ]),
+                isMd: true,
+              ),
+            ),
+            const OfflineInfo(),
+          ],
+        ),
       ),
     );
   }

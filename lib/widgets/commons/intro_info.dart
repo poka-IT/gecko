@@ -34,20 +34,22 @@ class InfoIntro extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: <Widget>[
-      ScaledSizedBox(height: isTall ? 25 : 5),
-      BuildProgressBar(pagePosition: pagePosition),
-      ScaledSizedBox(height: isTall ? 25 : 5),
-      BuildText(text: text, size: textSize, isMd: isMd),
-      BuildImage(assetName: assetName, boxHeight: boxHeight, imageWidth: imageWidth),
-      Container(
-        padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: NextButton(text: buttonText, nextScreen: nextScreen, isFast: false),
+    return Column(
+      children: <Widget>[
+        ScaledSizedBox(height: isTall ? 25 : 5),
+        BuildProgressBar(pagePosition: pagePosition),
+        ScaledSizedBox(height: isTall ? 25 : 5),
+        BuildText(text: text, size: textSize, isMd: isMd),
+        BuildImage(assetName: assetName, boxHeight: boxHeight, imageWidth: imageWidth),
+        Container(
+          padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: NextButton(text: buttonText, nextScreen: nextScreen, isFast: false),
+          ),
         ),
-      ),
-      ScaledSizedBox(height: isTall ? 40 : 5),
-    ]);
+        ScaledSizedBox(height: isTall ? 40 : 5),
+      ],
+    );
   }
 }

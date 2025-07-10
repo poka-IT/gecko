@@ -1,3 +1,4 @@
+import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -36,7 +37,7 @@ void main() async {
 }
 
 Future payTest2() async {
-  spawnBlock(until: 13);
+  Durt.i.duniter.spawnBlock(until: 13);
   await waitFor('searchWallet'.tr());
   await tapKey(keyOpenSearch);
   final addressToSearch = await clipPaste();
@@ -51,15 +52,13 @@ Future payTest2() async {
   await tapKey(keyPay);
   await enterText(keyAmountField, '12.14');
   await tapKey(keyConfirmPayment);
-  spawnBlock(duration: 500);
+  Durt.i.duniter.spawnBlock();
   await tester.pump(const Duration(seconds: 2));
-  await waitFor('sending'.tr(),
-      reverse: true, timeout: const Duration(seconds: 20));
-  await waitFor('extrinsicValidated'.tr(args: ['transaction'.tr()]),
-      timeout: const Duration(seconds: 12));
+  await waitFor('sending'.tr(), reverse: true, timeout: const Duration(seconds: 20));
+  await waitFor('extrinsicValidated'.tr(args: ['transaction'.tr()]), timeout: const Duration(seconds: 12));
   await tapKey(keyCloseTransactionScreen, duration: 0);
   await waitFor('12.14');
-  spawnBlock(duration: 500);
+  Durt.i.duniter.spawnBlock();
   await waitFor('9.14');
   humanRead(2);
 }
@@ -69,12 +68,10 @@ Future certifyTest5() async {
   await pump(number: 8);
   await tapKey(keyCertify);
   await tapKey(keyConfirm);
-  spawnBlock(duration: 1000);
+  Durt.i.duniter.spawnBlock();
   await pump(number: 3);
-  await waitFor('sending'.tr(),
-      reverse: true, timeout: const Duration(seconds: 20));
-  await waitFor('extrinsicValidated'.tr(args: ['certification'.tr()]),
-      timeout: const Duration(seconds: 6));
+  await waitFor('sending'.tr(), reverse: true, timeout: const Duration(seconds: 20));
+  await waitFor('extrinsicValidated'.tr(args: ['certification'.tr()]), timeout: const Duration(seconds: 6));
   await tapKey(keyCloseTransactionScreen);
   await waitFor('identityCreated'.tr());
 
@@ -86,10 +83,9 @@ Future certifyTest5() async {
   await tapKey(keyConfirmIdentity);
   await enterText(keyEnterIdentityUsername, test5.name);
   await tapKey(keyConfirm);
-  spawnBlock(duration: 1000);
+  Durt.i.duniter.spawnBlock();
   await pump(number: 3);
-  await waitFor('sending'.tr(),
-      reverse: true, timeout: const Duration(seconds: 20));
+  await waitFor('sending'.tr(), reverse: true, timeout: const Duration(seconds: 20));
   await tapKey(keyCloseTransactionScreen);
   await waitFor('identityConfirmed'.tr());
   humanRead(2);
@@ -114,10 +110,9 @@ Future certifyTest5() async {
   // Certify with test2 account
   await tapKey(keyCertify);
   await tapKey(keyConfirm);
-  spawnBlock(duration: 1000);
+  Durt.i.duniter.spawnBlock();
   await pump(number: 3);
-  await waitFor('sending'.tr(),
-      reverse: true, settle: false, timeout: const Duration(seconds: 20));
+  await waitFor('sending'.tr(), reverse: true, settle: false, timeout: const Duration(seconds: 20));
   await tapKey(keyCloseTransactionScreen);
   await waitFor('2');
 
@@ -131,10 +126,9 @@ Future certifyTest5() async {
   // Certify with test3 account
   await tapKey(keyCertify);
   await tapKey(keyConfirm);
-  spawnBlock(duration: 1000);
+  Durt.i.duniter.spawnBlock();
   await pump(number: 3);
-  await waitFor('sending'.tr(),
-      reverse: true, settle: false, timeout: const Duration(seconds: 20));
+  await waitFor('sending'.tr(), reverse: true, settle: false, timeout: const Duration(seconds: 20));
   await tapKey(keyCloseTransactionScreen);
   await waitFor('mustWaitXBeforeCertify'.tr().substring(0, 8));
 
@@ -144,13 +138,13 @@ Future certifyTest5() async {
   await waitFor('memberValidated'.tr());
 
   // spawn 20 blocs and check if ud is creating
-  await spawnBlock(until: 20);
+  await Durt.i.duniter.spawnBlock(until: 20);
   await waitFor('109.13');
-  await spawnBlock(until: 30);
+  await Durt.i.duniter.spawnBlock(until: 30);
   await waitFor('209.13');
 
   // Check UD reval
-  await spawnBlock(until: 60);
+  await Durt.i.duniter.spawnBlock(until: 60);
   await waitFor('509.57');
   humanRead(5);
 }

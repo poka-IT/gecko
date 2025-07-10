@@ -1,109 +1,114 @@
 import 'dart:io';
 
+import 'package:durt2/durt2.dart' show WalletEntity, SafeEntityExt, Durt, IdtyStatus;
+import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/chest_data.dart';
-import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/providers/chest_provider.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
 class MyWalletsProvider with ChangeNotifier {
-  List<WalletData> listWallets = [];
+  late ProviderContainer _container;
+
+  MyWalletsProvider() {
+    _container = ProviderContainer();
+  }
+
+  @override
+  void dispose() {
+    _container.dispose();
+    super.dispose();
+  }
+
+  List<WalletEntity> listWallets = [];
   String pinCode = '';
   late String mnemonic;
   int? pinLenght;
   bool isNewDerivationLoading = false;
-  WalletData? lastFlyBy;
-  WalletData? dragAddress;
+  WalletEntity? lastFlyBy;
+  WalletEntity? dragAddress;
   bool isPinValid = false;
   bool isPinLoading = true;
-  final chestProvider = Provider.of<ChestProvider>(homeContext, listen: false);
 
   bool isOwner(String address) => listWallets.any((wallet) => wallet.address == address);
 
-  bool get isWalletsExists => chestBox.isNotEmpty;
+  int get getCurrentSafe => _container.read(walletServiceProvider).defaultSafeBoxNumber;
 
-  WalletData? get idtyWallet => listWallets.firstWhereOrNull((w) => w.isMembre) ?? listWallets.firstWhereOrNull((w) => w.hasIdentity);
+  bool get isWalletsExists => !_container.read(walletServiceProvider).safeBox.isEmpty();
 
-  List<WalletData> get listWalletsWithoutIdty => listWallets.where((w) => w.address != idtyWallet?.address).toList();
+  WalletEntity? get idtyWallet =>
+      listWallets.firstWhereOrNull((w) => w.isMember) ?? listWallets.firstWhereOrNull((w) => w.hasIdentity);
 
-  Future<void> clearWallets(ChestData chest) async {
-    // ignore: use_build_context_synchronously
-    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-    final chestProvider = Provider.of<ChestProvider>(homeContext, listen: false);
-    final wallets = chestProvider.getChestWallets(chest);
-    await sub.deleteAccounts(wallets);
-    await chestBox.delete(chest.key);
-    await walletBox.clear();
-    await configBox.put('currentChest', 0);
+  List<WalletEntity> get listWalletsWithoutIdty => listWallets.where((w) => w.address != idtyWallet?.address).toList();
 
-    pinCode = '';
-  }
+  Future<List<WalletEntity>> readAllWallets([int? safeBoxNumber]) async {
+    final sbn = safeBoxNumber ?? _container.read(walletServiceProvider).defaultSafeBoxNumber;
 
-  Future<List<WalletData>> readAllWallets([int? chest]) async {
-    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-    chest = chest ?? chestProvider.getCurrentChestNumber();
-    listWallets.clear();
-
-    final walletsInChest = walletBox.values.where((w) => w.chest == chest);
-
-    final Map<String, WalletData> walletsToScan = {};
-
-    for (final wallet in walletsInChest) {
-      if (wallet.identityStatus == IdtyStatus.unknown) {
-        walletsToScan[wallet.address] = wallet;
-      } else {
-        listWallets.add(wallet);
-      }
+    final walletsExist = _container.read(walletServiceProvider).isWalletExist;
+    if (!walletsExist) {
+      return [];
     }
 
-    if (walletsToScan.isNotEmpty) {
-      final addresses = walletsToScan.keys.toList();
+    final safe = _container.read(walletServiceProvider).getSafeBox(sbn);
+
+    final wallets = safe.wallets.toList();
+    wallets.sort((a, b) => a.number.compareTo(b.number));
+
+    // Check if Duniter is connected before trying to access storage service
+    // If not connected (e.g., genesis hash validation failed), keep wallets with default status
+    if (_container.read(durtProvider).isConnected) {
       try {
-        final idtyStatusList = await sub.idtyStatusMulti(addresses);
+        final futures = wallets.map((wallet) => _container.read(storageServiceProvider).getIdtyStatus(wallet.address));
+        final newStatuses = await Future.wait(futures);
 
-        if (idtyStatusList.length == addresses.length) {
-          for (var i = 0; i < addresses.length; i++) {
-            final wallet = walletsToScan[addresses[i]]!;
-            wallet.identityStatus = idtyStatusList[i];
-            await walletBox.put(wallet.address, wallet);
-          }
-        } else {
-          log.w('Idty status check returned a list of different size than wallets to scan. Wallets will be displayed with unknown status.');
+        for (var i = 0; i < wallets.length; i++) {
+          wallets[i].identityStatus = newStatuses[i];
         }
-      } catch (e, s) {
-        log.e('Failed to fetch identity statuses', error: e, stackTrace: s);
+      } catch (e) {
+        log.e('Error getting identity statuses: $e');
+        // If there's an error getting identity statuses, keep wallets with their existing status
+        // This prevents the app from crashing when storage service is not available
+        for (var wallet in wallets) {
+          wallet.identityStatus = IdtyStatus.unknown;
+        }
       }
-
-      listWallets.addAll(walletsToScan.values);
+    } else {
+      // If Duniter is not connected, set all wallets to unknown status
+      log.w('Duniter not connected, setting all wallets to unknown identity status');
+      for (var wallet in wallets) {
+        wallet.identityStatus = IdtyStatus.unknown;
+      }
     }
 
-    listWallets.sort((p1, p2) => Comparable.compare(p1.number!, p2.number!));
+    await _container.read(walletServiceProvider).walletBox.putManyAsync(wallets);
 
-    return listWallets;
+    listWallets = wallets;
+
+    return wallets;
   }
 
-  WalletData? getWalletDataById(List<int?> id) {
-    if (id.isEmpty) return WalletData(address: '', isOwned: true);
-    int? chest = id[0];
-    int? nbr = id[1];
-    WalletData? targetedWallet;
+  WalletEntity? getWalletDataById(List<int?> id) {
+    if (id.length < 2 || id[0] == null || id[1] == null) {
+      return null;
+    }
 
-    walletBox.toMap().forEach((key, value) {
-      if (value.chest == chest && value.number == nbr) {
-        targetedWallet = value;
-        return;
-      }
-    });
+    final int safeNumber = id[0]!;
+    final int walletNumber = id[1]!;
 
-    return targetedWallet;
+    final qBuilder = _container.read(walletServiceProvider).walletBox.query(WalletEntity_.number.equals(walletNumber));
+
+    qBuilder.link(WalletEntity_.safe, SafeEntity_.number.equals(safeNumber));
+
+    final wallet = qBuilder.build().findFirst();
+
+    return wallet;
   }
 
   Future<bool> askPinCode({bool force = false}) async {
@@ -113,42 +118,59 @@ class MyWalletsProvider with ChangeNotifier {
       pinCode = '';
       await Navigator.push(
         homeContext,
-        MaterialPageRoute(
-          builder: (homeContext) => UnlockingWallet(wallet: defaultWallet),
-        ),
+        MaterialPageRoute(builder: (homeContext) => UnlockingWallet(wallet: defaultWallet)),
       );
     }
     return pinCode.isNotEmpty;
   }
 
-  WalletData? getWalletDataByAddress(String address) => walletBox.toMap().values.firstWhereOrNull((wallet) => wallet.address == address);
+  WalletEntity? getWalletDataByAddress(String address) =>
+      _container.read(walletServiceProvider).walletBox.query(WalletEntity_.address.equals(address)).build().findFirst();
 
-  WalletData getDefaultWallet([int? chest]) {
-    if (chestBox.isEmpty) {
-      return WalletData(address: '', chest: 0, number: 0, isOwned: true);
+  WalletEntity getDefaultWallet([int? safe]) {
+    if (_container.read(walletServiceProvider).safeBox.isEmpty()) {
+      return WalletEntity.create(
+        address: '',
+        number: 0,
+        keyPairType: Durt.defaultKeyPairType,
+        identityStatus: IdtyStatus.unknown,
+      );
     } else {
-      chest ??= chestProvider.getCurrentChestNumber();
-      int? defaultWalletNumber = chestBox.get(chest)!.defaultWallet;
-      return getWalletDataById([chest, defaultWalletNumber]) ?? WalletData(address: '', chest: chest, number: 0, isOwned: true);
+      safe ??= getCurrentSafe;
+
+      final defaultWallet = _container.read(walletServiceProvider).safeBox.getNumber(safe).defaultAddress;
+      if (defaultWallet == null) {
+        return WalletEntity.create(
+          address: '',
+          number: 0,
+          keyPairType: Durt.defaultKeyPairType,
+          identityStatus: IdtyStatus.unknown,
+        );
+      }
+      return getWalletDataByAddress(defaultWallet) ??
+          WalletEntity.create(
+            address: '',
+            number: 0,
+            keyPairType: Durt.defaultKeyPairType,
+            identityStatus: IdtyStatus.unknown,
+          );
     }
   }
 
   Future<int> deleteAllWallet(BuildContext context) async {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     try {
       log.w('DELETE ALL WALLETS ?');
 
       final answer = await showConfirmationDialog(
         context: context,
-        message: 'areYouSureForgetAllChests'.tr(),
+        message: 'areYouSureForgetAllSafes'.tr(),
         type: ConfirmationDialogType.warning,
       );
       if (answer) {
-        await walletBox.clear();
-        await chestBox.clear();
-        await configBox.delete('defaultWallet');
-        await sub.deleteAllAccounts();
+        await _container.read(walletServiceProvider).walletBox.removeAllAsync();
+        await _container.read(walletServiceProvider).safeBox.removeAllAsync();
+        await _container.read(configBoxProvider).removeAllAsync();
 
         final directory = await getApplicationDocumentsDirectory();
         final avatarFolder = Directory('${directory.path}/avatars/');
@@ -176,26 +198,30 @@ class MyWalletsProvider with ChangeNotifier {
     int newWalletNbr = idList[0];
     int newDerivationNbr = number ?? idList[1];
 
-    int? chest = chestProvider.getCurrentChestNumber();
+    int? safeNumber = getCurrentSafe;
+
+    WalletEntity defaultWallet = getDefaultWallet();
 
     // ignore: use_build_context_synchronously
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final walletData = await _container
+        .read(walletServiceProvider)
+        .derive(fromAddress: defaultWallet.address, derivation: newDerivationNbr, pinCode: pinCode);
 
-    WalletData defaultWallet = getDefaultWallet();
+    WalletEntity newWallet = WalletEntity.create(
+      address: walletData.address,
+      number: newWalletNbr,
+      name: name,
+      derivation: newDerivationNbr,
+      imagePath: 'assets/avatars/${newWalletNbr % 4}.png',
+      keyPairType: Durt.defaultKeyPairType,
+      identityStatus: IdtyStatus.unknown,
+    );
 
-    // ignore: use_build_context_synchronously
-    final address = await sub.derive(context, defaultWallet.address, newDerivationNbr, pinCode);
+    final safe = _container.read(walletServiceProvider).getSafeBox(safeNumber);
+    newWallet.safe.target = safe;
 
-    WalletData newWallet = WalletData(
-        chest: chest,
-        address: address,
-        number: newWalletNbr,
-        name: name,
-        derivation: newDerivationNbr,
-        imageDefaultPath: '${newWalletNbr % 4}.png',
-        isOwned: true);
+    await _container.read(walletServiceProvider).walletBox.putAsync(newWallet);
 
-    await walletBox.put(newWallet.address, newWallet);
     await readAllWallets();
 
     isNewDerivationLoading = false;
@@ -203,44 +229,53 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   Future<void> generateRootWallet(BuildContext context, String name) async {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     isNewDerivationLoading = true;
     notifyListeners();
     int newWalletNbr;
-    int? chest = chestProvider.getCurrentChestNumber();
+    int? safeNumber = getCurrentSafe;
 
-    List<WalletData> walletConfig = await readAllWallets(chest);
+    List<WalletEntity> walletConfig = await readAllWallets(safeNumber);
     walletConfig.sort((p1, p2) {
-      return Comparable.compare(p1.number!, p2.number!);
+      return Comparable.compare(p1.number, p2.number);
     });
 
     if (walletConfig.isEmpty) {
       newWalletNbr = 0;
     } else {
-      newWalletNbr = walletConfig.last.number! + 1;
+      newWalletNbr = walletConfig.last.number + 1;
     }
-    // ignore: use_build_context_synchronously
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
 
-    WalletData defaultWallet = myWalletProvider.getDefaultWallet();
+    WalletEntity defaultWallet = myWalletProvider.getDefaultWallet();
 
-    final address = await sub.generateRootKeypair(defaultWallet.address, pinCode);
+    final walletData = await _container
+        .read(walletServiceProvider)
+        .generateRootKeypair(fromAddress: defaultWallet.address, pinCode: pinCode);
 
-    WalletData newWallet = WalletData(
-        chest: chest, address: address, number: newWalletNbr, name: name, derivation: -1, imageDefaultPath: '${newWalletNbr % 4}.png', isOwned: true);
+    WalletEntity newWallet = WalletEntity.create(
+      address: walletData.address,
+      number: newWalletNbr,
+      name: name,
+      imagePath: 'assets/avatars/${newWalletNbr % 4}.png',
+      keyPairType: Durt.defaultKeyPairType,
+      identityStatus: IdtyStatus.unknown,
+    );
 
-    await walletBox.put(newWallet.address, newWallet);
+    final safe = _container.read(walletServiceProvider).getSafeBox(safeNumber);
+    newWallet.safe.target = safe;
+
+    await _container.read(walletServiceProvider).walletBox.putAsync(newWallet);
     await readAllWallets();
 
     isNewDerivationLoading = false;
     notifyListeners();
   }
 
-  Future<List<int>> getNextWalletNumberAndDerivation({int? chestNumber}) async {
-    chestNumber ??= chestProvider.getCurrentChestNumber();
+  Future<List<int>> getNextWalletNumberAndDerivation({int? safeNumber}) async {
+    safeNumber ??= getCurrentSafe;
 
-    listWallets.sort((p1, p2) => p1.number!.compareTo(p2.number!));
+    listWallets.sort((p1, p2) => p1.number.compareTo(p2.number));
 
     if (listWallets.isEmpty) {
       return [0, 0];
@@ -250,7 +285,7 @@ class MyWalletsProvider with ChangeNotifier {
 
     final newDerivationNbr = maxDerivation == -1 ? 0 : maxDerivation + 1;
 
-    final newWalletNbr = listWallets.last.number! + 1;
+    final newWalletNbr = listWallets.last.number + 1;
 
     return [newWalletNbr, newDerivationNbr];
   }

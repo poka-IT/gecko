@@ -61,12 +61,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
 
   Widget sentanceArray() {
     if (mnemonicList == null) {
-      return Center(
-        child: CircularProgressIndicator(
-          color: context.colorScheme.primary,
-          strokeWidth: 2,
-        ),
-      );
+      return Center(child: CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: 2));
     }
 
     return Container(
@@ -74,9 +69,7 @@ class _ChooseChestState extends State<OnboardingStepFive> {
       decoration: BoxDecoration(
         border: Border.all(color: Colors.black),
         color: const Color(0xffeeeedd),
-        borderRadius: const BorderRadius.all(
-          Radius.circular(10),
-        ),
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
       ),
       padding: EdgeInsets.all(scaleSize(14)),
       child: Stack(
@@ -86,57 +79,57 @@ class _ChooseChestState extends State<OnboardingStepFive> {
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              Row(children: <Widget>[
-                arrayCell(mnemonicList![0]),
-                arrayCell(mnemonicList![1]),
-                arrayCell(mnemonicList![2]),
-                arrayCell(mnemonicList![3]),
-              ]),
+              Row(
+                children: <Widget>[
+                  arrayCell(1, mnemonicList![0]),
+                  arrayCell(2, mnemonicList![1]),
+                  arrayCell(3, mnemonicList![2]),
+                  arrayCell(4, mnemonicList![3]),
+                ],
+              ),
               ScaledSizedBox(height: 15),
-              Row(children: <Widget>[
-                arrayCell(mnemonicList![4]),
-                arrayCell(mnemonicList![5]),
-                arrayCell(mnemonicList![6]),
-                arrayCell(mnemonicList![7]),
-              ]),
+              Row(
+                children: <Widget>[
+                  arrayCell(5, mnemonicList![4]),
+                  arrayCell(6, mnemonicList![5]),
+                  arrayCell(7, mnemonicList![6]),
+                  arrayCell(8, mnemonicList![7]),
+                ],
+              ),
               ScaledSizedBox(height: 15),
-              Row(children: <Widget>[
-                arrayCell(mnemonicList![8]),
-                arrayCell(mnemonicList![9]),
-                arrayCell(mnemonicList![10]),
-                arrayCell(mnemonicList![11]),
-              ]),
+              Row(
+                children: <Widget>[
+                  arrayCell(9, mnemonicList![8]),
+                  arrayCell(10, mnemonicList![9]),
+                  arrayCell(11, mnemonicList![10]),
+                  arrayCell(12, mnemonicList![11]),
+                ],
+              ),
             ],
           ),
           if (isLoading)
             Container(
               color: const Color(0xffeeeedd).withValues(alpha: 0.7),
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: context.colorScheme.primary,
-                  strokeWidth: 2,
-                ),
-              ),
+              child: Center(child: CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: 2)),
             ),
         ],
       ),
     );
   }
 
-  Widget arrayCell(String dataWord) {
+  Widget arrayCell(int index, String dataWord) {
     return ScaledSizedBox(
       width: 82,
-      child: Column(children: <Widget>[
-        Text(
-          dataWord.split(':')[0],
-          style: scaledTextStyle(fontSize: 10, color: const Color(0xff6b6b52)),
-        ),
-        Text(
-          dataWord.split(':')[1],
-          key: keyMnemonicWord(dataWord.split(':')[0]),
-          style: scaledTextStyle(fontSize: 15, color: Colors.black),
-        ),
-      ]),
+      child: Column(
+        children: <Widget>[
+          Text(index.toString(), style: scaledTextStyle(fontSize: 10, color: const Color(0xff6b6b52))),
+          Text(
+            dataWord,
+            key: keyMnemonicWord(index.toString()),
+            style: scaledTextStyle(fontSize: 15, color: Colors.black),
+          ),
+        ],
+      ),
     );
   }
 
@@ -146,112 +139,106 @@ class _ChooseChestState extends State<OnboardingStepFive> {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('yourMnemonic'.tr()),
       body: SafeArea(
-        child: Stack(children: [
-          SingleChildScrollView(
-            child: Column(children: [
-              ScaledSizedBox(height: isTall ? 25 : 5),
-              const BuildProgressBar(pagePosition: 4),
-              ScaledSizedBox(height: isTall ? 25 : 5),
-              BuildText(text: 'geckoGeneratedYourMnemonicKeepItSecret'.tr()),
-              ScaledSizedBox(height: isTall ? 15 : 5),
-              sentanceArray(),
-              ScaledSizedBox(height: isTall ? 17 : 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              child: Column(
                 children: [
-                  ScaledSizedBox(
-                    height: 40,
-                    width: 132,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                  ScaledSizedBox(height: isTall ? 25 : 5),
+                  const BuildProgressBar(pagePosition: 4),
+                  ScaledSizedBox(height: isTall ? 25 : 5),
+                  BuildText(text: 'geckoGeneratedYourMnemonicKeepItSecret'.tr()),
+                  ScaledSizedBox(height: isTall ? 15 : 5),
+                  sentanceArray(),
+                  ScaledSizedBox(height: isTall ? 17 : 5),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ScaledSizedBox(
+                        height: 40,
+                        width: 132,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            backgroundColor: context.colorScheme.primary,
+                            elevation: 1,
+                          ),
+                          onPressed: isMnemonicGenerated
+                              ? () {
+                                  Clipboard.setData(ClipboardData(text: generateWalletProvider.generatedMnemonic!));
+                                  snackCopySeed(context);
+                                }
+                              : null,
+                          child: Row(
+                            children: <Widget>[
+                              Image.asset('assets/walletOptions/copy-white.png', height: scaleSize(23)),
+                              const Spacer(),
+                              Text('copy'.tr(), style: scaledTextStyle(fontSize: 14, color: Colors.grey[50])),
+                              const Spacer(),
+                            ],
+                          ),
                         ),
-                        backgroundColor: context.colorScheme.primary,
-                        elevation: 1,
                       ),
-                      onPressed: isMnemonicGenerated
-                          ? () {
-                              Clipboard.setData(ClipboardData(text: generateWalletProvider.generatedMnemonic!));
-                              snackCopySeed(context);
-                            }
-                          : null,
-                      child: Row(children: <Widget>[
-                        Image.asset(
-                          'assets/walletOptions/copy-white.png',
-                          height: scaleSize(23),
+                      ScaledSizedBox(width: 70),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return PrintWallet(generateWalletProvider.generatedMnemonic!);
+                              },
+                            ),
+                          );
+                        },
+                        child: Image.asset(
+                          'assets/printer.png',
+                          height: scaleSize(42),
+                          color: context.colorScheme.onSurface,
                         ),
-                        const Spacer(),
-                        Text(
-                          'copy'.tr(),
-                          style: scaledTextStyle(fontSize: 14, color: Colors.grey[50]),
+                      ),
+                    ],
+                  ),
+                  ScaledSizedBox(height: isTall ? 17 : 5),
+                  Container(
+                    padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
+                    child: ScaledSizedBox(
+                      width: 350,
+                      height: 55,
+                      child: ElevatedButton(
+                        key: keyGenerateMnemonic,
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.black,
+                          backgroundColor: const Color(0xffFFD58D),
+                          elevation: 2,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shadowColor: const Color(0xffFFD58D).withValues(alpha: 0.3),
                         ),
-                        const Spacer(),
-                      ]),
+                        onPressed: () {
+                          _regenerateMnemonic();
+                        },
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            "chooseAnotherMnemonic".tr(),
+                            textAlign: TextAlign.center,
+                            style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                  ScaledSizedBox(width: 70),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) {
-                          return PrintWallet(generateWalletProvider.generatedMnemonic!);
-                        }),
-                      );
-                    },
-                    child: Image.asset(
-                      'assets/printer.png',
-                      height: scaleSize(42),
-                      color: context.colorScheme.onSurface,
-                    ),
-                  ),
+                  ScaledSizedBox(height: isTall ? 20 : 10),
+                  nextButton(context, "iNotedMyMnemonic".tr(), false, widget.skipIntro),
+                  ScaledSizedBox(height: isTall ? 40 : 5),
                 ],
               ),
-              ScaledSizedBox(height: isTall ? 17 : 5),
-              Container(
-                padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
-                child: ScaledSizedBox(
-                  width: 350,
-                  height: 55,
-                  child: ElevatedButton(
-                    key: keyGenerateMnemonic,
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.black,
-                      backgroundColor: const Color(0xffFFD58D),
-                      elevation: 2,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      shadowColor: const Color(0xffFFD58D).withValues(alpha: 0.3),
-                    ),
-                    onPressed: () {
-                      _regenerateMnemonic();
-                    },
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        "chooseAnotherMnemonic".tr(),
-                        textAlign: TextAlign.center,
-                        style: scaledTextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              ScaledSizedBox(height: isTall ? 20 : 10),
-              nextButton(context, "iNotedMyMnemonic".tr(), false, widget.skipIntro),
-              ScaledSizedBox(height: isTall ? 40 : 5),
-            ]),
-          ),
-          const OfflineInfo(),
-        ]),
+            ),
+            const OfflineInfo(),
+          ],
+        ),
       ),
     );
   }
@@ -268,30 +255,32 @@ class _ChooseChestState extends State<OnboardingStepFive> {
           backgroundColor: context.colorScheme.primary,
           elevation: 2,
           padding: const EdgeInsets.symmetric(vertical: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
         ),
         onPressed: isMnemonicGenerated
             ? () {
                 generateWalletProvider.nbrWord = generateWalletProvider.getRandomInt();
-                generateWalletProvider.nbrWordAlpha = generateWalletProvider.intToString(generateWalletProvider.nbrWord + 1);
+                generateWalletProvider.nbrWordAlpha = generateWalletProvider.intToString(
+                  generateWalletProvider.nbrWord + 1,
+                );
                 myWalletProvider.mnemonic = generateWalletProvider.generatedMnemonic!;
 
                 Navigator.push(
                   context,
-                  FaderTransition(page: OnboardingStepSix(generatedMnemonic: generateWalletProvider.generatedMnemonic, skipIntro: skipIntro), isFast: true),
+                  FaderTransition(
+                    page: OnboardingStepSix(
+                      generatedMnemonic: generateWalletProvider.generatedMnemonic,
+                      skipIntro: skipIntro,
+                    ),
+                    isFast: true,
+                  ),
                 );
               }
             : null,
         child: Text(
           text,
-          style: scaledTextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-          ),
+          style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.white),
         ),
       ),
     );

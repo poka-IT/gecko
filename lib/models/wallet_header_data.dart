@@ -1,4 +1,3 @@
-import 'package:gecko/models/certification_data.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 part 'wallet_header_data.g.dart';
@@ -33,26 +32,33 @@ class WalletHeaderData {
   final BigInt balance;
 
   @HiveField(4)
-  final CertificationData certCount;
+  final int certsReceived;
+
+  @HiveField(5)
+  final int certsSent;
 
   WalletHeaderData({
     required this.hasIdentity,
     required this.isOwner,
     this.walletName,
     required this.balance,
-    required this.certCount,
+    required this.certsReceived,
+    required this.certsSent,
   });
 
   // Pour comparer si les données ont changé
   bool equals(WalletHeaderData other) {
-    if (certCount.isEmpty || other.certCount.isEmpty) {
-      return hasIdentity == other.hasIdentity && isOwner == other.isOwner && walletName == other.walletName && balance == other.balance;
+    if (certsReceived == 0 && certsSent == 0) {
+      return hasIdentity == other.hasIdentity &&
+          isOwner == other.isOwner &&
+          walletName == other.walletName &&
+          balance == other.balance;
     }
     return hasIdentity == other.hasIdentity &&
         isOwner == other.isOwner &&
         walletName == other.walletName &&
         balance == other.balance &&
-        certCount.receivedCount == other.certCount.receivedCount &&
-        certCount.sentCount == other.certCount.sentCount;
+        certsReceived == other.certsReceived &&
+        certsSent == other.certsSent;
   }
 }

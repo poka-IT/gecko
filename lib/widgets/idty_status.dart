@@ -1,72 +1,93 @@
+import 'package:durt2/durt2.dart' show IdtyStatus, WalletEntity, Durt;
+import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/widgets/name_by_address.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/providers.dart';
 
-class IdentityStatus extends StatelessWidget {
-  const IdentityStatus({super.key, required this.address, this.color});
+class IdentityStatus extends ConsumerWidget {
+  const IdentityStatus({super.key, required this.address, required this.color});
   final String address;
-  final Color? color;
+  final Color color;
 
   @override
-  Widget build(BuildContext context) {
-    final walletData = walletBox.get(address) ?? WalletData(address: address);
-    final finalColor = color ?? context.colorScheme.onSecondaryContainer;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final walletService = ref.watch(walletServiceProvider);
 
-    return Consumer<SubstrateSdk>(builder: (context, sub, _) {
-      return FutureBuilder(
-          future: sub.idtyStatusMulti([address]),
-          initialData: [walletData.identityStatus],
-          builder: (context, AsyncSnapshot<List<IdtyStatus>> snapshot) {
-            if (snapshot.data != null && !snapshot.hasError) {
-              final resStatus = snapshot.data!.first;
-              walletData.identityStatus = resStatus;
-              walletBox.put(address, walletData);
-            }
+    final walletData =
+        walletService.walletBox.query(WalletEntity_.address.equals(address)).build().findFirst() ??
+        WalletEntity.create(address: address, keyPairType: Durt.defaultKeyPairType, identityStatus: IdtyStatus.unknown);
 
-            final resStatus = walletData.identityStatus;
+    // Use the smart identity status provider instead of FutureBuilder
+    final idtyStatusStream = ref.watch(smartIdtyStatusStreamProvider(address));
 
-            final nameByAddress = resStatus == IdtyStatus.member
-                ? NameByAddress(wallet: walletData, size: 18, color: finalColor, fontWeight: FontWeight.w500, fontStyle: FontStyle.normal)
-                : NameByAddress(
-                    wallet: walletData, size: 16, color: homeContext.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w500, fontStyle: FontStyle.italic);
+    return idtyStatusStream.when(
+      data: (idtyStatus) {
+        // Update wallet data with new status
+        walletData.identityStatus = idtyStatus;
+        return _buildStatusWidget(context, walletData, idtyStatus);
+      },
+      loading: () {
+        // Show current status while loading
+        return _buildStatusWidget(context, walletData, walletData.identityStatus);
+      },
+      error: (error, stack) {
+        log.e('❌ Identity status widget error for $address: $error');
+        // Show current status on error
+        return _buildStatusWidget(context, walletData, walletData.identityStatus);
+      },
+    );
+  }
 
-            final Map<IdtyStatus, String> statusText = {
-              IdtyStatus.none: '',
-              IdtyStatus.unconfirmed: 'identityCreated'.tr(),
-              IdtyStatus.unvalidated: 'identityConfirmed'.tr(),
-              IdtyStatus.member: 'memberValidated'.tr(),
-              IdtyStatus.notMember: 'identityExpired'.tr(),
-              IdtyStatus.revoked: 'identityRevoked'.tr(),
-              IdtyStatus.unknown: ''
-            };
+  Widget _buildStatusWidget(BuildContext context, WalletEntity walletData, IdtyStatus resStatus) {
+    final nameByAddress = resStatus == IdtyStatus.validated
+        ? NameByAddress(
+            wallet: walletData,
+            size: 18,
+            color: homeContext.colorScheme.onSurface,
+            fontWeight: FontWeight.w500,
+            fontStyle: FontStyle.normal,
+          )
+        : NameByAddress(
+            wallet: walletData,
+            size: 16,
+            color: homeContext.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w500,
+            fontStyle: FontStyle.italic,
+          );
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                nameByAddress,
-                showText(context, statusText[resStatus]!, bold: resStatus == IdtyStatus.member, size: scaleSize(15)),
-              ],
-            );
-          });
-    });
+    final Map<IdtyStatus, String> statusText = {
+      IdtyStatus.none: '',
+      IdtyStatus.created: 'identityCreated'.tr(),
+      IdtyStatus.confirmed: 'identityConfirmed'.tr(),
+      IdtyStatus.validated: 'memberValidated'.tr(),
+      IdtyStatus.expired: 'identityExpired'.tr(),
+      IdtyStatus.revoked: 'identityRevoked'.tr(),
+      IdtyStatus.unknown: '',
+    };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        nameByAddress,
+        showText(context, statusText[resStatus]!, bold: resStatus == IdtyStatus.validated, size: scaleSize(15)),
+      ],
+    );
   }
 
   AnimatedFadeOutIn showText(BuildContext context, String text, {double size = 18, bool bold = false}) {
-    final finalColor = color ?? context.colorScheme.onSecondaryContainer;
     return AnimatedFadeOutIn<String>(
       data: text,
       duration: const Duration(milliseconds: 150),
       builder: (value) => Text(
         value,
         textAlign: TextAlign.center,
-        style: TextStyle(fontSize: size, color: bold ? finalColor : finalColor, fontWeight: bold ? FontWeight.w500 : FontWeight.w400),
+        style: TextStyle(fontSize: size, color: color, fontWeight: bold ? FontWeight.w500 : FontWeight.w400),
       ),
     );
   }

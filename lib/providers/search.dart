@@ -14,7 +14,7 @@ class SearchProvider with ChangeNotifier {
   }
 
   Future<List<G1WalletsList>> searchAddress() async {
-    if (await isAddress(searchController.text)) {
+    if (isAddress(searchController.text)) {
       G1WalletsList wallet = G1WalletsList(address: searchController.text);
       return [wallet];
     } else {

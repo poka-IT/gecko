@@ -1,21 +1,17 @@
+import 'package:durt2/durt2.dart' show Durt, WalletEntity, IdtyStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/utils.dart';
 import 'package:provider/provider.dart';
 import 'dart:io' as io;
 import 'package:gecko/main.dart' as app;
-import 'package:uuid/uuid.dart';
 
 const isHumanReading = false;
 Timeout testTimeout([int seconds = 120]) => Timeout(Duration(seconds: isHumanReading ? 600 : seconds));
-final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
 late WidgetTester tester;
 
 // TEST WALLETS CONSTS
@@ -75,14 +71,14 @@ bool isButtonEnabled(Key key) {
 Future scrollUntil(Key element) async {
   final findList = find.byType(Scrollable);
   final findElement = findByKey(element);
-  await tester.scrollUntilVisible(
-    findElement,
-    500.0,
-    scrollable: findList,
-  );
+  await tester.scrollUntilVisible(findElement, 500.0, scrollable: findList);
 }
 
-Future<void> waitForButtonEnabled(Key key, {Duration timeout = const Duration(seconds: 5), bool reverse = false}) async {
+Future<void> waitForButtonEnabled(
+  Key key, {
+  Duration timeout = const Duration(seconds: 5),
+  bool reverse = false,
+}) async {
   final end = DateTime.now().add(timeout);
 
   log.i('INTEGRATION TEST: Wait for $key to be enabled');
@@ -115,12 +111,14 @@ Future enterText(Key fieldKey, String textIn, [int duration = 200]) async {
   humanRead();
 }
 
-Future<void> waitFor(String text,
-    {Duration timeout = const Duration(seconds: 5),
-    final bool reverse = false,
-    final bool exactMatch = false,
-    final bool settle = true,
-    final int pumpDuration = 100}) async {
+Future<void> waitFor(
+  String text, {
+  Duration timeout = const Duration(seconds: 5),
+  final bool reverse = false,
+  final bool exactMatch = false,
+  final bool settle = true,
+  final int pumpDuration = 100,
+}) async {
   final end = DateTime.now().add(timeout);
 
   Finder finder = exactMatch ? find.text(text) : find.textContaining(text);
@@ -166,43 +164,38 @@ Future spawnBlock({int number = 1, int duration = 200, int? until}) async {
     await sleep(duration);
   }
   if (until != null) {
-    number = until - sub.blocNumber;
+    number = until - Durt.i.storage.blockHeightNotifier.value;
   }
-  await sub.spawnBlock(number);
+  await Durt.i.duniter.spawnBlock(number: number);
   await sleep(200);
 }
 
 // Pay in background
 Future bkPay({required String fromAddress, required String destAddress, required double amount}) async {
-  final transactionId = const Uuid().v4();
-  sub.pay(
-    fromAddress: fromAddress,
-    destAddress: destAddress,
-    amount: amount,
-    password: 'AAAAA',
-    transactionId: transactionId,
-    comment: 'test comment',
-  );
+  final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: fromAddress, pinCode: 'AAAAA');
+  Durt.i.duniter.pay(keypair: keypair, destAddress: destAddress, amount: amount, comment: 'test comment');
   await sleep(500);
-  await spawnBlock();
+  await Durt.i.duniter.spawnBlock();
   await sleep(500);
 }
 
 // Certify in background
 Future bkCertify({required String fromAddress, required String destAddress, bool spawnBloc = true}) async {
-  sub.certify(fromAddress, destAddress, 'AAAAA');
+  final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: fromAddress, pinCode: 'AAAAA');
+  Durt.i.duniter.certify(keypair: keypair, destAddress: destAddress);
   if (spawnBloc) {
     await sleep(500);
-    await spawnBlock();
+    await Durt.i.duniter.spawnBlock();
   }
   await sleep(500);
 }
 
 // Confirm my identity in background
 Future bkConfirmIdentity({required String fromAddress, required String name}) async {
-  sub.confirmIdentity(fromAddress, name, 'AAAAA');
+  final keypair = await Durt.i.wallets.getKeyPairFromAddress(address: fromAddress, pinCode: 'AAAAA');
+  Durt.i.duniter.confirmIdentity(keypair: keypair, name: name);
   await sleep(500);
-  await spawnBlock();
+  await Durt.i.duniter.spawnBlock();
   await sleep(500);
 }
 
@@ -213,29 +206,55 @@ Future bkSetNode([String? endpoint]) async {
     endpoint = 'ws://$ipAddress:9944';
   }
   configBox.put('customEndpoint', endpoint);
-  sub.connectNode();
+  // sub.connectNode();
 }
 
 // Restore chest in background
 Future bkRestoreChest([String mnemonic = testMnemonic]) async {
   final myWalletProvider = Provider.of<MyWalletsProvider>(homeContext, listen: false);
-  final generateWalletProvider = Provider.of<GenerateWalletsProvider>(homeContext, listen: false);
+  // final generateWalletProvider = Provider.of<GenerateWalletsProvider>(homeContext, listen: false);
 
-  await generateWalletProvider.storeHDWChest(homeContext);
+  // await generateWalletProvider.storeHDWChest(homeContext);
 
   for (int number = 0; number <= 4; number++) {
-    await _addImportAccount(mnemonic: mnemonic, chest: 0, number: number, name: 'test${number + 1}', derivation: (number + 1) * 2);
+    await _addImportAccount(
+      mnemonic: mnemonic,
+      safeNumber: 0,
+      number: number,
+      name: 'test${number + 1}',
+      derivation: (number + 1) * 2,
+    );
   }
   myWalletProvider.reload();
 }
 
-Future<WalletData> _addImportAccount({required String mnemonic, required int chest, required int number, required String name, required int derivation}) async {
-  final address = await sub.importAccount(mnemonic: mnemonic, derivePath: '//$derivation', password: 'AAAAA');
-  final myWallet =
-      WalletData(chest: chest, address: address, number: number, name: name, derivation: derivation, imageDefaultPath: '${number % 4}.png', isOwned: true);
-  await walletBox.put(myWallet.address, myWallet);
+Future<WalletEntity> _addImportAccount({
+  required String mnemonic,
+  required int safeNumber,
+  required int number,
+  required String name,
+  required int derivation,
+}) async {
+  // final address = await sub.importAccount(
+  //     mnemonic: mnemonic, derivePath: '//$derivation', password: 'AAAAA');
+  // final myWallet = WalletEntity(
+  //     safeBoxNumber: safeNumber,
+  //     address: address,
+  //     name: name,
+  //     derivation: derivation,
+  //     imagePath: '${number % 4}.png',
+  //     isOwned: true);
+  // await Durt.i.wallets.walletDataBox.put(myWallet.address, myWallet);
 
-  return myWallet;
+  // return myWallet;
+  return WalletEntity.create(
+    address: '',
+    name: '',
+    derivation: 0,
+    imagePath: '',
+    keyPairType: Durt.defaultKeyPairType,
+    identityStatus: IdtyStatus.unknown,
+  );
 }
 
 // Delete all wallets in background
@@ -243,11 +262,10 @@ Future bkDeleteAllWallets() async {
   final myWalletProvider = Provider.of<MyWalletsProvider>(homeContext, listen: false);
   final isWalletsPresents = await isPresent('scanQRCode'.tr(), timeout: const Duration(milliseconds: 300));
   if (isWalletsPresents) {
-    await walletBox.clear();
-    await chestBox.clear();
+    await Durt.i.wallets.clearWallets();
     await configBox.delete('defaultWallet');
     await configBox.delete('isUdUnit');
-    await sub.deleteAllAccounts();
+    // await sub.deleteAllAccounts();
     myWalletProvider.pinCode = '';
     myWalletProvider.reload();
   }
@@ -283,22 +301,15 @@ String getWidgetText(Key key) {
   return (word4Finder.evaluate().single.widget as Text).data!;
 }
 
-void ignoreOverflowErrors(
-  FlutterErrorDetails details, {
-  bool forceReport = false,
-}) {
+void ignoreOverflowErrors(FlutterErrorDetails details, {bool forceReport = false}) {
   bool ifIsOverflowError = false;
   bool isUnableToLoadAsset = false;
 
   // Detect overflow error.
   var exception = details.exception;
   if (exception is FlutterError) {
-    ifIsOverflowError = !exception.diagnostics.any(
-      (e) => e.value.toString().startsWith("A RenderFlex overflowed by"),
-    );
-    isUnableToLoadAsset = !exception.diagnostics.any(
-      (e) => e.value.toString().startsWith("Unable to load asset"),
-    );
+    ifIsOverflowError = !exception.diagnostics.any((e) => e.value.toString().startsWith("A RenderFlex overflowed by"));
+    isUnableToLoadAsset = !exception.diagnostics.any((e) => e.value.toString().startsWith("Unable to load asset"));
   }
 
   // Ignore if is overflow error.

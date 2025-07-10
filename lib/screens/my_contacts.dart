@@ -58,32 +58,30 @@ class _ContactsScreenState extends State<ContactsScreen> {
         appBar: GeckoAppBar('contactsManagementWithNbr'.tr(args: ['${allContacts.length}'])),
         bottomNavigationBar: const GeckoBottomAppBar(),
         body: SafeArea(
-          child: Stack(children: [
-            Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    focusNode: _searchFocus,
-                    onChanged: (value) => setState(() => searchQuery = value),
-                    decoration: InputDecoration(
-                      hintText: 'searchContacts'.tr(),
-                      prefixIcon: const Icon(Icons.search),
-                      border: const OutlineInputBorder(),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: context.colorScheme.primary),
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      focusNode: _searchFocus,
+                      onChanged: (value) => setState(() => searchQuery = value),
+                      decoration: InputDecoration(
+                        hintText: 'searchContacts'.tr(),
+                        prefixIcon: const Icon(Icons.search),
+                        border: const OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: context.colorScheme.primary)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     ),
                   ),
-                ),
-                Expanded(
-                  child: ContactsList(myContacts: filteredContacts),
-                ),
-              ],
-            ),
-            const OfflineInfo(),
-          ]),
+                  Expanded(child: ContactsList(myContacts: filteredContacts)),
+                ],
+              ),
+              const OfflineInfo(),
+            ],
+          ),
         ),
       ),
     );

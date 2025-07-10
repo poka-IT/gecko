@@ -1,0 +1,9 @@
+schema:
+  - ../durt2/lib/src/models/graphql/squid-schema.graphql
+documents:
+  - ../durt2/lib/src/models/**/*.graphql
+  - ../durt2/lib/src/models/**/*.gql
+extensions:
+  endpoints:
+    default:
+      url: 'https://gtest-squid.axiom-team.fr/v1beta1/relay' 

@@ -1,39 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:gecko/extensions.dart';
-import 'package:gecko/models/wallet_balance.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/wallet_options.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/globals.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/widgets/balance_display.dart';
-import 'package:provider/provider.dart';
 
-class Balance extends StatelessWidget {
+class Balance extends ConsumerWidget {
   const Balance({super.key, required this.address, required this.size, this.color});
   final String address;
   final double size;
   final Color? color;
 
   @override
-  Widget build(BuildContext context) {
-    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
-    final finalColor = color ?? context.colorScheme.onSecondaryContainer;
-    return Consumer<SubstrateSdk>(builder: (context, sdk, _) {
-      return FutureBuilder(
-          future: sdk.getBalance(address),
-          builder: (BuildContext context, AsyncSnapshot<WalletBalance> globalBalance) {
-            if (globalBalance.connectionState != ConnectionState.done || globalBalance.hasError || !globalBalance.hasData) {
-              if (walletOptions.balanceCache[address] != null && walletOptions.balanceCache[address] != -1) {
-                return BalanceDisplay(value: walletOptions.balanceCache[address]!, size: size, color: finalColor);
-              } else {
-                return const SizedBox.shrink();
-              }
-            }
-            walletOptions.balanceCache[address] = globalBalance.data!.transferableBalance;
-            if (walletOptions.balanceCache[address] != -1) {
-              return BalanceDisplay(value: walletOptions.balanceCache[address]!, size: size, color: finalColor);
-            } else {
-              return const Text('');
-            }
-          });
-    });
+  Widget build(BuildContext context, WidgetRef ref) {
+    final finalColor = color ?? Theme.of(context).colorScheme.onSecondaryContainer;
+
+    // Use the smart balance provider that automatically chooses between persistent and auto-dispose
+    final balanceStream = ref.watch(smartBalanceStreamProvider(address));
+
+    return balanceStream.when(
+      data: (walletBalance) {
+        // Extract the transferable balance from WalletBalance
+        final transferableBalance = walletBalance.transferableBalance;
+        return BalanceDisplay(value: transferableBalance, size: size, color: finalColor);
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (error, stack) {
+        log.e('❌ Balance widget error for $address: $error');
+        return const SizedBox.shrink();
+      },
+    );
   }
 }

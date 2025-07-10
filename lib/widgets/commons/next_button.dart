@@ -5,12 +5,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/widgets/commons/fader_transition.dart';
 
 class NextButton extends StatelessWidget {
-  const NextButton({
-    super.key,
-    required this.text,
-    required this.nextScreen,
-    required this.isFast,
-  });
+  const NextButton({super.key, required this.text, required this.nextScreen, required this.isFast});
 
   final String text;
   final Widget nextScreen;
@@ -28,9 +23,7 @@ class NextButton extends StatelessWidget {
           backgroundColor: context.colorScheme.primary,
           elevation: 2,
           padding: const EdgeInsets.symmetric(vertical: 2),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
         ),
         onPressed: () {
@@ -38,11 +31,7 @@ class NextButton extends StatelessWidget {
         },
         child: Text(
           text,
-          style: scaledTextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
+          style: scaledTextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Colors.white),
         ),
       ),
     );

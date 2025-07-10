@@ -21,14 +21,15 @@ class WalletHeaderDataAdapter extends TypeAdapter<WalletHeaderData> {
       isOwner: fields[1] as bool,
       walletName: fields[2] as String?,
       balance: fields[3] as BigInt,
-      certCount: fields[4] as CertificationData,
+      certsReceived: fields[4] as int,
+      certsSent: fields[5] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, WalletHeaderData obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.hasIdentity)
       ..writeByte(1)
@@ -38,7 +39,9 @@ class WalletHeaderDataAdapter extends TypeAdapter<WalletHeaderData> {
       ..writeByte(3)
       ..write(obj.balance)
       ..writeByte(4)
-      ..write(obj.certCount);
+      ..write(obj.certsReceived)
+      ..writeByte(5)
+      ..write(obj.certsSent);
   }
 
   @override

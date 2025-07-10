@@ -3,19 +3,29 @@
 import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
-import 'package:provider/provider.dart';
 
 class WalletsProfilesProvider with ChangeNotifier {
-  WalletsProfilesProvider(this.address);
+  late ProviderContainer _container;
+
+  WalletsProfilesProvider(this.address) {
+    _container = ProviderContainer();
+  }
+
+  @override
+  void dispose() {
+    _container.dispose();
+    super.dispose();
+  }
 
   String address = '';
   String pubkeyShort = '';
@@ -29,8 +39,6 @@ class WalletsProfilesProvider with ChangeNotifier {
 
   bool isCommentVisible = false;
 
-  final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-
   String _comment = '';
   String get comment => _comment;
   set comment(String value) {
@@ -38,10 +46,7 @@ class WalletsProfilesProvider with ChangeNotifier {
     if (value.isEmpty) {
       payComment.text = '';
     } else {
-      payComment.value = TextEditingValue(
-        text: value,
-        selection: payComment.selection,
-      );
+      payComment.value = TextEditingValue(text: value, selection: payComment.selection);
     }
     notifyListeners();
   }
@@ -72,33 +77,26 @@ class WalletsProfilesProvider with ChangeNotifier {
 
     if (barcodeContent == '') return;
 
-    if (await isAddressOrPubkey(barcodeContent)) {
-      if (!(await isAddress(barcodeContent))) {
-        address = await sub.pubkeyV1ToAddress(barcodeContent);
+    if (isAddressOrPubkey(barcodeContent)) {
+      if (!(isAddress(barcodeContent))) {
+        address = _container.read(utilsProvider).pubkeyV1ToAddress(barcodeContent);
       } else {
         address = barcodeContent;
       }
 
-      Navigator.popUntil(
-        context,
-        ModalRoute.withName('/'),
-      );
+      Navigator.popUntil(context, ModalRoute.withName('/'));
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) {
-          return WalletViewScreen(
-            address: address,
-            username: null,
-          );
-        }),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('qrCodeNotAddress'.tr()),
-          duration: const Duration(seconds: 2),
+        MaterialPageRoute(
+          builder: (context) {
+            return WalletViewScreen(address: address, username: null);
+          },
         ),
       );
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('qrCodeNotAddress'.tr()), duration: const Duration(seconds: 2)));
     }
   }
 
@@ -138,61 +136,59 @@ class WalletsProfilesProvider with ChangeNotifier {
   }
 }
 
-Future<bool> isAddressOrPubkey(String address) async {
-  return await isAddress(address) || isPubkey(address);
-}
+bool isAddressOrPubkey(String address) => isAddress(address) || isPubkey(address);
 
-Future<bool> isAddress(String address) async {
-  final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-  return await sub.sdk.api.account.checkAddressFormat(address, sub.initSs58).timeout(const Duration(milliseconds: 300)).onError((_, __) => false) ?? false;
+bool isAddress(String address) {
+  final container = ProviderContainer();
+  try {
+    return container.read(utilsProvider).isAddressValid(address);
+  } finally {
+    container.dispose();
+  }
 }
 
 bool isPubkey(String pubkey) {
   pubkey = pubkey.split(':')[0];
-  final RegExp regExp = RegExp(
-    r'^[a-zA-Z0-9]+$',
-    caseSensitive: false,
-    multiLine: false,
-  );
+  final RegExp regExp = RegExp(r'^[a-zA-Z0-9]+$', caseSensitive: false, multiLine: false);
 
   return regExp.hasMatch(pubkey) == true && pubkey.length > 42 && pubkey.length < 45;
 }
 
 void snackMessage(BuildContext context, {required String message, int duration = 4, double fontSize = 14}) {
   final snackBar = SnackBar(
-      backgroundColor: context.colorScheme.onSurface,
-      padding: EdgeInsets.all(scaleSize(19)),
-      content: Text(message,
-          style: scaledTextStyle(
-            fontSize: fontSize,
-            color: context.colorScheme.surfaceContainer,
-          )),
-      duration: Duration(seconds: duration));
+    backgroundColor: context.colorScheme.onSurface,
+    padding: EdgeInsets.all(scaleSize(19)),
+    content: Text(
+      message,
+      style: scaledTextStyle(fontSize: fontSize, color: context.colorScheme.surfaceContainer),
+    ),
+    duration: Duration(seconds: duration),
+  );
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
 
 void snackCopyKey(BuildContext context) {
   final snackBar = SnackBar(
-      backgroundColor: context.colorScheme.onSurface,
-      padding: EdgeInsets.all(scaleSize(19)),
-      content: Text("thisAddressHasBeenCopiedToClipboard".tr(),
-          style: scaledTextStyle(
-            fontSize: 13,
-            color: context.colorScheme.surfaceContainer,
-          )),
-      duration: const Duration(seconds: 4));
+    backgroundColor: context.colorScheme.onSurface,
+    padding: EdgeInsets.all(scaleSize(19)),
+    content: Text(
+      "thisAddressHasBeenCopiedToClipboard".tr(),
+      style: scaledTextStyle(fontSize: 13, color: context.colorScheme.surfaceContainer),
+    ),
+    duration: const Duration(seconds: 4),
+  );
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
 
 void snackCopySeed(BuildContext context) {
   final snackBar = SnackBar(
-      backgroundColor: context.colorScheme.onSurface,
-      padding: EdgeInsets.all(scaleSize(19)),
-      content: Text("thisMnemonicHasBeenCopiedToClipboard".tr(),
-          style: scaledTextStyle(
-            fontSize: 13,
-            color: context.colorScheme.surfaceContainer,
-          )),
-      duration: const Duration(seconds: 4));
+    backgroundColor: context.colorScheme.onSurface,
+    padding: EdgeInsets.all(scaleSize(19)),
+    content: Text(
+      "thisMnemonicHasBeenCopiedToClipboard".tr(),
+      style: scaledTextStyle(fontSize: 13, color: context.colorScheme.surfaceContainer),
+    ),
+    duration: const Duration(seconds: 4),
+  );
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }

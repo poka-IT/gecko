@@ -5,12 +5,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 
 class BuildText extends StatelessWidget {
-  const BuildText({
-    super.key,
-    required this.text,
-    this.size = 17,
-    this.isMd = true,
-  });
+  const BuildText({super.key, required this.text, this.size = 17, this.isMd = true});
 
   final String text;
   final double size;
@@ -27,10 +22,21 @@ class BuildText extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       width: scaleSize(350 * ratio),
-      decoration: BoxDecoration(color: context.colorScheme.surfaceContainer, border: Border.all(color: Colors.grey[900]!)),
+      decoration: BoxDecoration(
+        color: context.colorScheme.surfaceContainer,
+        border: Border.all(color: Colors.grey[900]!),
+      ),
       child: isMd
           ? MarkdownBody(data: text, styleSheet: mdStyle)
-          : Text(text, textAlign: TextAlign.justify, style: scaledTextStyle(fontSize: size * ratio, color: context.colorScheme.onSecondaryContainer, letterSpacing: 0.3)),
+          : Text(
+              text,
+              textAlign: TextAlign.justify,
+              style: scaledTextStyle(
+                fontSize: size * ratio,
+                color: context.colorScheme.onSecondaryContainer,
+                letterSpacing: 0.3,
+              ),
+            ),
     );
   }
 }

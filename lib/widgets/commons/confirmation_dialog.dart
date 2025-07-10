@@ -5,47 +5,41 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 
 /// Type de message pour le dialogue de confirmation
-enum ConfirmationDialogType {
-  info,
-  warning,
-  success,
-  error,
-  question,
-}
+enum ConfirmationDialogType { info, warning, success, error, question }
 
 /// Extension pour obtenir l'icône correspondante au type de message
 extension ConfirmationDialogTypeExtension on ConfirmationDialogType {
   IconData get icon => switch (this) {
-        ConfirmationDialogType.info => Icons.info_rounded,
-        ConfirmationDialogType.warning => Icons.warning_rounded,
-        ConfirmationDialogType.success => Icons.task_alt_rounded,
-        ConfirmationDialogType.error => Icons.cancel_rounded,
-        ConfirmationDialogType.question => Icons.help_rounded,
-      };
+    ConfirmationDialogType.info => Icons.info_rounded,
+    ConfirmationDialogType.warning => Icons.warning_rounded,
+    ConfirmationDialogType.success => Icons.task_alt_rounded,
+    ConfirmationDialogType.error => Icons.cancel_rounded,
+    ConfirmationDialogType.question => Icons.help_rounded,
+  };
 
   Color get iconColor => switch (this) {
-        ConfirmationDialogType.info => homeContext.colorScheme.primary,
-        ConfirmationDialogType.warning => const Color(0xFFFF9800),
-        ConfirmationDialogType.success => const Color(0xFF4CAF50),
-        ConfirmationDialogType.error => const Color(0xFFF44336),
-        ConfirmationDialogType.question => const Color(0xFF673AB7),
-      };
+    ConfirmationDialogType.info => homeContext.colorScheme.primary,
+    ConfirmationDialogType.warning => const Color(0xFFFF9800),
+    ConfirmationDialogType.success => const Color(0xFF4CAF50),
+    ConfirmationDialogType.error => const Color(0xFFF44336),
+    ConfirmationDialogType.question => const Color(0xFF673AB7),
+  };
 
   String get title => switch (this) {
-        ConfirmationDialogType.info => 'info'.tr(),
-        ConfirmationDialogType.warning => 'warning'.tr(),
-        ConfirmationDialogType.success => 'success'.tr(),
-        ConfirmationDialogType.error => 'error'.tr(),
-        ConfirmationDialogType.question => 'question'.tr(),
-      };
+    ConfirmationDialogType.info => 'info'.tr(),
+    ConfirmationDialogType.warning => 'warning'.tr(),
+    ConfirmationDialogType.success => 'success'.tr(),
+    ConfirmationDialogType.error => 'error'.tr(),
+    ConfirmationDialogType.question => 'question'.tr(),
+  };
 
   String get confirmText => switch (this) {
-        ConfirmationDialogType.info => 'confirm'.tr(),
-        ConfirmationDialogType.warning => 'confirm'.tr(),
-        ConfirmationDialogType.success => 'confirm'.tr(),
-        ConfirmationDialogType.error => 'close'.tr(),
-        ConfirmationDialogType.question => 'confirm'.tr(),
-      };
+    ConfirmationDialogType.info => 'confirm'.tr(),
+    ConfirmationDialogType.warning => 'confirm'.tr(),
+    ConfirmationDialogType.success => 'confirm'.tr(),
+    ConfirmationDialogType.error => 'close'.tr(),
+    ConfirmationDialogType.question => 'confirm'.tr(),
+  };
 }
 
 Future<bool> showConfirmationDialog({
@@ -69,9 +63,7 @@ Future<bool> showConfirmationDialog({
     barrierDismissible: barrierDismissible,
     builder: (BuildContext context) {
       return Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         elevation: 0,
         child: Container(
           padding: EdgeInsets.all(20),
@@ -79,11 +71,7 @@ Future<bool> showConfirmationDialog({
             color: context.colorScheme.surface,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
-              BoxShadow(
-                color: iconColorToShow.withValues(alpha: 0.1),
-                blurRadius: 20,
-                offset: Offset(0, 10),
-              ),
+              BoxShadow(color: iconColorToShow.withValues(alpha: 0.1), blurRadius: 20, offset: Offset(0, 10)),
             ],
           ),
           child: Column(
@@ -91,23 +79,13 @@ Future<bool> showConfirmationDialog({
             children: [
               Container(
                 padding: EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: iconColorToShow.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  iconToShow,
-                  color: iconColorToShow,
-                  size: 32,
-                ),
+                decoration: BoxDecoration(color: iconColorToShow.withValues(alpha: 0.1), shape: BoxShape.circle),
+                child: Icon(iconToShow, color: iconColorToShow, size: 32),
               ),
               SizedBox(height: 20),
               Text(
                 dialogTitle,
-                style: scaledTextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: scaledTextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 16),
@@ -121,10 +99,7 @@ Future<bool> showConfirmationDialog({
                     padding: EdgeInsets.only(bottom: 8),
                     child: Text(
                       cleanText,
-                      style: scaledTextStyle(
-                        fontSize: 15,
-                        fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-                      ),
+                      style: scaledTextStyle(fontSize: 15, fontWeight: isBold ? FontWeight.bold : FontWeight.normal),
                       textAlign: TextAlign.center,
                     ),
                   );
@@ -140,17 +115,11 @@ Future<bool> showConfirmationDialog({
                         onPressed: () => Navigator.of(context).pop(false),
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         child: Text(
                           cancelText ?? 'cancel'.tr(),
-                          style: scaledTextStyle(
-                            fontSize: 15,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: scaledTextStyle(fontSize: 15, color: Colors.grey[600], fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
@@ -164,17 +133,9 @@ Future<bool> showConfirmationDialog({
                         foregroundColor: Colors.white,
                         elevation: 0,
                         padding: EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: Text(
-                        confirmTextToShow,
-                        style: scaledTextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      child: Text(confirmTextToShow, style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                     ),
                   ),
                 ],

@@ -14,13 +14,15 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'dart:async';
+import 'package:durt2/durt2.dart' show Durt, Networks, KeyPairType;
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/chest_provider.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:gecko/providers/connection_provider.dart';
+import 'package:gecko/providers/g1v1_migration.provider.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/settings_provider.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/providers/home.dart';
@@ -32,7 +34,6 @@ import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/search_result.dart';
-
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:responsive_framework/responsive_framework.dart';
@@ -40,6 +41,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/providers/theme_provider.dart';
+import 'package:gecko/providers/block_height_provider.dart';
 
 const bool enableSentry = true;
 
@@ -47,52 +49,61 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
 
-  // if (kDebugMode) {
-  //   await dotenv.load();
-  // }
-
   final homeProvider = HomeProvider();
-  // DuniterIndexer _duniterIndexer = DuniterIndexer();
 
-  // Initialize Hive
+  // Initialize Hive first to access configBox
   await initHiveForFlutter();
   await homeProvider.initHive();
+
+  // Get saved network from config or default to gdev
+  final savedNetworkName = configBox.get('selectedNetwork') ?? 'gdev';
+  final selectedNetwork = Networks.values.firstWhere(
+    (network) => network.name == savedNetworkName,
+    orElse: () => Networks.gdev,
+  );
+
+  //Init durt2 with selected network and keypair type
+  await Durt().init(network: selectedNetwork, keyPairType: KeyPairType.ed25519);
 
   appVersion = await homeProvider.getAppVersion();
 
   if (kReleaseMode && enableSentry) {
-    await SentryFlutter.init((options) {
-      options.dsn = 'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
-      options.replay.sessionSampleRate = 1.0;
-      options.replay.onErrorSampleRate = 1.0;
-      // Privacy settings for PII masking
-      //TODO: Set this to false in production for Ğ1
-      options.privacy.maskAllText = false;
-      options.privacy.maskAllImages = false;
-    },
-        appRunner: () => SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
-              runApp(
-                SentryWidget(
-                  child: EasyLocalization(
-                    supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
-                    path: 'assets/translations',
-                    fallbackLocale: const Locale('en'),
-                    child: Gecko(),
-                  ),
-                ),
-              );
-            }));
+    await SentryFlutter.init(
+      (options) {
+        options.dsn = 'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
+        options.replay.sessionSampleRate = 1.0;
+        options.replay.onErrorSampleRate = 1.0;
+        // Privacy settings for PII masking
+        //TODO: Set this to false in production for Ğ1
+        options.privacy.maskAllText = false;
+        options.privacy.maskAllImages = false;
+      },
+      appRunner: () => SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
+        runApp(
+          SentryWidget(
+            child: EasyLocalization(
+              supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
+              path: 'assets/translations',
+              fallbackLocale: const Locale('en'),
+              child: const Gecko(),
+            ),
+          ),
+        );
+      }),
+    );
   } else {
     log.i('Debug mode enabled: No sentry alert');
 
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
-      runApp(EasyLocalization(
-        // test, force locale :: startLocale: Locale.fromSubtags(languageCode: 'it'),
-        supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
-        path: 'assets/translations',
-        fallbackLocale: const Locale('en'),
-        child: Gecko(),
-      ));
+      runApp(
+        EasyLocalization(
+          // test, force locale :: startLocale: Locale.fromSubtags(languageCode: 'it'),
+          supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
+          path: 'assets/translations',
+          fallbackLocale: const Locale('en'),
+          child: const Gecko(),
+        ),
+      );
     });
   }
 }
@@ -107,50 +118,58 @@ class Gecko extends StatelessWidget {
   Widget build(BuildContext context) {
     // To configure multi_endpoints GraphQLProvider: https://stackoverflow.com/q/70656513/8301867
 
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => HomeProvider()),
-        ChangeNotifierProvider(create: (_) => WalletsProfilesProvider('')),
-        ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
-        ChangeNotifierProvider(create: (_) => ChestProvider()),
-        ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
-        ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
-        ChangeNotifierProvider(create: (_) => SearchProvider()),
-        ChangeNotifierProvider(create: (_) => SubstrateSdk()),
-        ChangeNotifierProvider(create: (_) => DuniterIndexer()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()),
-        ChangeNotifierProvider(create: (_) => V2sDatapodProvider()),
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
-      ],
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, child) {
-          return MaterialApp(
-            localizationsDelegates: context.localizationDelegates,
-            supportedLocales: context.supportedLocales,
-            locale: context.locale,
-            theme: lightTheme,
-            darkTheme: darkTheme,
-            themeMode: themeProvider.currentThemeMode,
-            navigatorKey: _navigatorKey,
-            builder: (context, child) => ResponsiveBreakpoints.builder(
-              child: child!,
-              breakpoints: [
-                const Breakpoint(start: 0, end: 450, name: MOBILE),
-                const Breakpoint(start: 451, end: 800, name: TABLET),
-                const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
-              ],
-            ),
-            title: 'Ğecko',
-            initialRoute: "/",
-            routes: {
-              '/': (context) => const HomeScreen(),
-              '/mywallets': (context) => const WalletsHome(),
-              '/search': (context) => const SearchScreen(),
-              '/searchResult': (context) => const SearchResultScreen(),
-            },
-          );
-        },
+    return ProviderScope(
+      child: MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => HomeProvider()),
+          ChangeNotifierProvider(create: (_) => WalletsProfilesProvider('')),
+          ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
+          ChangeNotifierProvider(create: (_) => ChestProvider()),
+          ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
+          ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
+          ChangeNotifierProvider(create: (_) => SearchProvider()),
+          ChangeNotifierProvider(create: (_) => SettingsProvider()),
+          ChangeNotifierProvider(create: (_) => V2sDatapodProvider()),
+          ChangeNotifierProvider(create: (_) => ThemeProvider()),
+          ChangeNotifierProvider(create: (_) => BlockHeightProvider()),
+          ChangeNotifierProvider(create: (_) => G1v1MigrationProvider()),
+          ChangeNotifierProvider(create: (_) => ConnectionProvider()),
+        ],
+        child: Consumer<ThemeProvider>(
+          builder: (context, themeProvider, child) {
+            return MaterialApp(
+              localizationsDelegates: context.localizationDelegates,
+              supportedLocales: context.supportedLocales,
+              locale: context.locale,
+              theme: lightTheme,
+              darkTheme: darkTheme,
+              themeMode: themeProvider.currentThemeMode,
+              navigatorKey: _navigatorKey,
+              builder: (context, child) => ResponsiveBreakpoints.builder(
+                child: child!,
+                breakpoints: [
+                  const Breakpoint(start: 0, end: 450, name: MOBILE),
+                  const Breakpoint(start: 451, end: 800, name: TABLET),
+                  const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
+                ],
+              ),
+              title: 'Ğecko',
+              initialRoute: "/",
+              routes: {
+                '/': (context) => const HomeScreen(),
+                '/mywallets': (context) => const WalletsHome(),
+                '/search': (context) => const SearchScreen(),
+                '/searchResult': (context) => const SearchResultScreen(),
+              },
+            );
+          },
+        ),
       ),
     );
   }
 }
+
+// Future<void> registerDependencies() async {
+//   // Wait for all non-lazy repos to be ready
+//   await GetIt.I.allReady();
+// }

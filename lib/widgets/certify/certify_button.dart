@@ -6,26 +6,25 @@ import 'package:gecko/exceptions.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/screens/wallet_view.dart' show buttonSize, buttonFontSize;
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/providers.dart';
 
-class CertifyButton extends StatelessWidget {
+class CertifyButton extends ConsumerWidget {
   const CertifyButton(this.address, {super.key});
   final String address;
 
   @override
-  Widget build(BuildContext context) {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     return Column(
       children: <Widget>[
@@ -38,7 +37,7 @@ class CertifyButton extends StatelessWidget {
                 key: keyCertify,
                 splashColor: context.colorScheme.primary,
                 onTap: () async {
-                  final walletName = duniterIndexer.walletNameIndexer[address];
+                  final walletName = ref.read(squidServiceProvider).walletNameIndexer[address];
                   final message = walletName != null
                       ? '${'areYouSureYouWantToCertify1'.tr()}\n\n**$walletName**\n\n${'areYouSureYouWantToCertify2'.tr()}\n\n**${getShortPubkey(address)}**'
                       : '${'areYouSureCreateIdentityOnAddress'.tr()}\n\n**${getShortPubkey(address)}**';
@@ -51,7 +50,7 @@ class CertifyButton extends StatelessWidget {
                   );
 
                   if (!result) return;
-                  await sub.setCurrentWallet(myWalletProvider.idtyWallet!);
+                  await ref.read(walletServiceProvider).setDefaultAddress(address);
 
                   if (myWalletProvider.pinCode == '') {
                     await Navigator.push(
@@ -66,28 +65,44 @@ class CertifyButton extends StatelessWidget {
                   if (myWalletProvider.pinCode == '') {
                     return;
                   }
-                  WalletsProfilesProvider walletViewProvider = Provider.of<WalletsProfilesProvider>(context, listen: false);
-                  final acc = sub.getCurrentKeyPair();
+                  WalletsProfilesProvider walletViewProvider = old_provider.Provider.of<WalletsProfilesProvider>(
+                    context,
+                    listen: false,
+                  );
+                  final identityWallet = ref.read(walletServiceProvider).identityWallet;
+
+                  if (identityWallet == null) {
+                    throw Exception('Identity wallet not found');
+                  }
+
                   try {
-                    final transactionId = await sub.certify(
-                      acc.address!,
-                      walletViewProvider.address,
-                      myWalletProvider.pinCode,
-                    );
+                    final keypair = await ref
+                        .read(walletServiceProvider)
+                        .getKeyPairFromAddress(address: identityWallet.address, pinCode: myWalletProvider.pinCode);
+                    final transactionStatus = ref
+                        .read(duniterServiceProvider)
+                        .certify(keypair: keypair, destAddress: walletViewProvider.address);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) {
-                        return TransactionInProgress(
-                          transactionId: transactionId,
-                          transType: 'cert',
-                        );
-                      }),
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return TransactionInProgressScreen(transactionStatus: transactionStatus, transType: 'cert');
+                        },
+                      ),
                     );
                   } catch (e) {
                     if (e is NotMemberException) {
-                      showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
+                      showConfirmationDialog(
+                        context: context,
+                        type: ConfirmationDialogType.error,
+                        message: e.toString(),
+                      );
                     } else if (e is CantBeCertException) {
-                      showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
+                      showConfirmationDialog(
+                        context: context,
+                        type: ConfirmationDialogType.error,
+                        message: e.toString(),
+                      );
                     }
                   }
                 },

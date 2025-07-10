@@ -6,7 +6,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/queries_datapod.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -17,13 +16,12 @@ class V2sDatapodProvider with ChangeNotifier {
   Future<Map<String, dynamic>> _setSignedVariables(String address, Map<String, dynamic> messageToSign) async {
     final myWalletProvider = Provider.of<MyWalletsProvider>(homeContext, listen: false);
 
-    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
     final hashDocBytes = utf8.encode(jsonEncode(messageToSign));
     final hashDoc = sha256.convert(hashDocBytes).toString().toUpperCase();
     if (!await myWalletProvider.askPinCode()) return {};
-    final signature = await sub.signDatapod(hashDoc, address);
 
-    return <String, dynamic>{...messageToSign, 'hash': hashDoc, 'signature': signature};
+    // final signature = await sub.signDatapod(hashDoc, address);
+    return <String, dynamic>{...messageToSign, 'hash': hashDoc, 'signature': 'signature'};
   }
 
   Future<QueryResult?> _execQuery(String query, Map<String, dynamic> variables) async {
@@ -34,14 +32,15 @@ class V2sDatapodProvider with ChangeNotifier {
     // return await datapodClient.query(options);
   }
 
-  Future<bool> updateProfile(
-      {required String address,
-      String? title,
-      String? description,
-      String? avatar,
-      String? city,
-      List<Map<String, String>>? socials,
-      Map<String, double>? geoloc}) async {
+  Future<bool> updateProfile({
+    required String address,
+    String? title,
+    String? description,
+    String? avatar,
+    String? city,
+    List<Map<String, String>>? socials,
+    Map<String, double>? geoloc,
+  }) async {
     final messageToSign = {
       'address': address,
       'description': description,
@@ -49,7 +48,7 @@ class V2sDatapodProvider with ChangeNotifier {
       'geoloc': geoloc,
       'title': title,
       'city': city,
-      'socials': socials
+      'socials': socials,
     };
     final variables = await _setSignedVariables(address, messageToSign);
     if (variables.isEmpty) return false;
@@ -70,7 +69,7 @@ class V2sDatapodProvider with ChangeNotifier {
 
     final result = await _execQuery(deleteProfileQ, variables);
     if (result?.hasException ?? true) {
-      log.e(result?.exception.toString());
+      log.w(result?.exception.toString());
       return false;
     }
     log.d(result!.data!['deleteProfile']['message']);
@@ -91,16 +90,8 @@ class V2sDatapodProvider with ChangeNotifier {
     return true;
   }
 
-  Future<bool> addTransactionComment({
-    required String id,
-    required String issuer,
-    required String comment,
-  }) async {
-    final messageToSign = {
-      'id': id,
-      'address': issuer,
-      'comment': comment,
-    };
+  Future<bool> addTransactionComment({required String id, required String issuer, required String comment}) async {
+    final messageToSign = {'id': id, 'address': issuer, 'comment': comment};
     final variables = await _setSignedVariables(issuer, messageToSign);
     if (variables.isEmpty) return false;
 
@@ -120,9 +111,7 @@ class V2sDatapodProvider with ChangeNotifier {
   }
 
   Future<DateTime?> profileEditedAt(String address) async {
-    final variables = <String, dynamic>{
-      'address': address,
-    };
+    final variables = <String, dynamic>{'address': address};
     final result = await _execQuery(profileEditedAtQ, variables);
     if (result?.hasException ?? true) {
       // log.e(result?.exception.toString());
@@ -134,9 +123,7 @@ class V2sDatapodProvider with ChangeNotifier {
   }
 
   Future<Image> getRemoteAvatar(String address, {double size = 20, String? uuid}) async {
-    final variables = <String, dynamic>{
-      'address': address,
-    };
+    final variables = <String, dynamic>{'address': address};
     final result = await _execQuery(getAvatarQ, variables);
     if (result?.hasException ?? true) {
       log.e(result?.exception.toString());
@@ -153,11 +140,7 @@ class V2sDatapodProvider with ChangeNotifier {
     log.d('We save avatar for $address');
     await saveAvatar(address, sanitizedAvatar64, uuid);
 
-    return Image.memory(
-      base64.decode(sanitizedAvatar64),
-      height: size,
-      fit: BoxFit.fitWidth,
-    );
+    return Image.memory(base64.decode(sanitizedAvatar64), height: size, fit: BoxFit.fitWidth);
   }
 
   Future<File> saveAvatar(String address, String data, String? uuid) async {
@@ -184,10 +167,7 @@ class V2sDatapodProvider with ChangeNotifier {
 
   Image getAvatarLocal(String address) {
     final avatarFile = File('${avatarsCacheDirectory.path}/$address');
-    return Image.file(
-      avatarFile,
-      fit: BoxFit.cover,
-    );
+    return Image.file(avatarFile, fit: BoxFit.cover);
   }
 
   Image defaultAvatar(double size) => Image.asset(('assets/icon_user.png'), height: scaleSize(size));

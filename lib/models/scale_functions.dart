@@ -29,13 +29,6 @@ TextStyle scaledTextStyle({
 }
 
 class ScaledSizedBox extends SizedBox {
-  ScaledSizedBox({
-    super.key,
-    double? width,
-    double? height,
-    super.child,
-  }) : super(
-          width: width != null ? scaleSize(width) : null,
-          height: height != null ? scaleSize(height) : null,
-        );
+  ScaledSizedBox({super.key, double? width, double? height, super.child})
+    : super(width: width != null ? scaleSize(width) : null, height: height != null ? scaleSize(height) : null);
 }

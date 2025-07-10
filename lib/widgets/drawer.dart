@@ -12,10 +12,7 @@ import 'package:gecko/screens/my_contacts.dart';
 import 'package:gecko/screens/settings.dart';
 
 class MainDrawer extends StatelessWidget {
-  const MainDrawer({
-    super.key,
-    required this.isWalletsExists,
-  });
+  const MainDrawer({super.key, required this.isWalletsExists});
 
   final bool isWalletsExists;
 
@@ -30,95 +27,101 @@ class MainDrawer extends StatelessWidget {
         child: Column(
           children: <Widget>[
             Expanded(
-                child: ListView(padding: EdgeInsets.zero, children: <Widget>[
-              DrawerHeader(
-                decoration: BoxDecoration(
-                  color: context.colorScheme.primary,
-                ),
-                child: Column(children: <Widget>[
-                  Image(image: const AssetImage('assets/icon/gecko_final.png'), height: scaleSize(118)),
-                ]),
-              ),
-              ScaledSizedBox(height: scaleSize(10)),
-              ListTile(
-                key: keyParameters,
-                leading: Icon(Icons.settings, size: scaleSize(25)),
-                dense: !isTall,
-                // contentPadding:
-                //     EdgeInsets.symmetric(horizontal: scaleSize(12)),
-                title: Text(
-                  'parameters'.tr(),
-                  style: listStyle,
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) {
-                      return SettingsScreen();
-                    }),
-                  );
-                },
-              ),
-              ScaledSizedBox(height: scaleSize(4)),
-              if (isWalletsExists)
-                ListTile(
-                  key: keyContacts,
-                  leading: Icon(Icons.contacts_rounded, size: scaleSize(25)),
-                  dense: !isTall,
-                  title: Text(
-                    'contactsManagement'.tr(),
-                    style: listStyle,
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: <Widget>[
+                  DrawerHeader(
+                    decoration: BoxDecoration(color: context.colorScheme.primary),
+                    child: Column(
+                      children: <Widget>[
+                        ConstrainedBox(
+                          constraints: BoxConstraints(maxHeight: scaleSize(100)),
+                          child: Image(image: const AssetImage('assets/icon/gecko_final.png'), fit: BoxFit.contain),
+                        ),
+                      ],
+                    ),
                   ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return const ContactsScreen();
-                      }),
-                    );
-                  },
-                ),
-              if (isWalletsExists) ScaledSizedBox(height: scaleSize(4)),
-              if (kDebugMode)
-                ListTile(
-                  key: keyDebugScreen,
-                  leading: Icon(Icons.developer_mode_rounded, size: scaleSize(25)),
-                  dense: !isTall,
-                  title: Text(
-                    'Debug screen'.tr(),
-                    style: listStyle,
+                  ScaledSizedBox(height: scaleSize(10)),
+                  ListTile(
+                    key: keyParameters,
+                    leading: Icon(Icons.settings, size: scaleSize(25)),
+                    dense: !isTall,
+                    // contentPadding:
+                    //     EdgeInsets.symmetric(horizontal: scaleSize(12)),
+                    title: Text('parameters'.tr(), style: listStyle),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return SettingsScreen();
+                          },
+                        ),
+                      );
+                    },
                   ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return const DebugScreen();
-                      }),
-                    );
-                  },
-                ),
-            ])),
+                  ScaledSizedBox(height: scaleSize(4)),
+                  if (isWalletsExists)
+                    ListTile(
+                      key: keyContacts,
+                      leading: Icon(Icons.contacts_rounded, size: scaleSize(25)),
+                      dense: !isTall,
+                      title: Text('contactsManagement'.tr(), style: listStyle),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return const ContactsScreen();
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  if (isWalletsExists) ScaledSizedBox(height: scaleSize(4)),
+                  if (kDebugMode)
+                    ListTile(
+                      key: keyDebugScreen,
+                      leading: Icon(Icons.developer_mode_rounded, size: scaleSize(25)),
+                      dense: !isTall,
+                      title: Text('Debug screen'.tr(), style: listStyle),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return const DebugScreen();
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                ],
+              ),
+            ),
             Align(
               alignment: FractionalOffset.bottomCenter,
               child: InkWell(
-                  key: keyCopyAddress,
-                  splashColor: context.colorScheme.primary,
-                  child: Padding(
-                    padding: const EdgeInsets.all(15),
-                    child: Opacity(
-                      opacity: 0.8,
-                      child: Text('Ğecko v$appVersion', style: scaledTextStyle(fontSize: 12)),
-                    ),
-                  ),
-                  onTap: () {
-                    Clipboard.setData(ClipboardData(text: 'Ğecko v$appVersion'));
-                    snackMessage(context, message: 'Le numéro de version de Ğecko a été copié dans votre presse papier', duration: 4);
-                  }),
+                key: keyCopyAddress,
+                splashColor: context.colorScheme.primary,
+                child: Padding(
+                  padding: const EdgeInsets.all(15),
+                  child: Opacity(opacity: 0.8, child: Text('Ğecko v$appVersion', style: scaledTextStyle(fontSize: 12))),
+                ),
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: 'Ğecko v$appVersion'));
+                  snackMessage(
+                    context,
+                    message: 'Le numéro de version de Ğecko a été copié dans votre presse papier',
+                    duration: 4,
+                  );
+                },
+              ),
             ),
-            ScaledSizedBox(height: 15)
+            ScaledSizedBox(height: 15),
           ],
         ),
       ),

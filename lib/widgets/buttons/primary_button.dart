@@ -34,20 +34,15 @@ class PrimaryButton extends StatelessWidget {
           backgroundColor: context.colorScheme.primary,
           elevation: 2,
           padding: const EdgeInsets.symmetric(horizontal: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(borderRadius),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius)),
           shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
         ),
-        child: child ??
+        child:
+            child ??
             Text(
               label,
               textAlign: TextAlign.center,
-              style: scaledTextStyle(
-                fontSize: fontSize,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
+              style: scaledTextStyle(fontSize: fontSize, fontWeight: FontWeight.w600, color: Colors.white),
             ),
       ),
     );

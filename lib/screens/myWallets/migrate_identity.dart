@@ -1,98 +1,177 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:durt2/durt2.dart'
+    show MigrateWalletChecks, MigrateWalletValidationError, Durt, TransactionStatus, TransactionState, DurtKeyPair;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/providers.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/models/migrate_wallet_checks.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:pointycastle/api.dart' show InvalidCipherTextException;
+
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
-import 'package:gecko/utils.dart';
-import 'package:gecko/widgets/balance_display.dart';
+import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/text_markdown.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:polkawallet_sdk/api/apiKeyring.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
-class MigrateIdentityScreen extends StatefulWidget {
-  MigrateIdentityScreen({super.key});
+// Helper pour accéder aux services Riverpod depuis ce fichier
+final _container = ProviderContainer();
 
-  final newMnemonicSentence = TextEditingController();
-  final newWalletAddress = TextEditingController();
-
-  @override
-  State<MigrateIdentityScreen> createState() => _MigrateIdentityScreenState();
+String mapValidationErrors(Set<MigrateWalletValidationError> errors) {
+  if (errors.isEmpty) {
+    return '';
+  }
+  // Taking the first error to display. Can be modified to show all.
+  return switch (errors.first) {
+    MigrateWalletValidationError.isSmith => 'smithCantMigrateIdentity'.tr(),
+    MigrateWalletValidationError.hasConsumers => 'youMustWaitBeforeCashoutThisAccount'.tr(),
+    MigrateWalletValidationError.sourceAccountIsEmpty => 'thisAccountIsEmpty'.tr(),
+    MigrateWalletValidationError.cannotMigrateIdentityToIdentity => 'youCannotMigrateIdentityToExistingIdentity'.tr(),
+  };
 }
 
-class _MigrateIdentityScreenState extends State<MigrateIdentityScreen> {
+class MigrateIdentityScreen extends ConsumerStatefulWidget {
+  const MigrateIdentityScreen({super.key});
+
+  @override
+  ConsumerState<MigrateIdentityScreen> createState() => _MigrateIdentityScreenState();
+}
+
+class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
+  // ✅ Controllers définis dans la classe State (persistent)
+  late TextEditingController newMnemonicSentence;
+  late TextEditingController newWalletAddress;
+
+  // ✅ Variables d'état persistent entre les rebuilds
+  var migrationChecks = const MigrateWalletChecks.defaultValues();
+  var mnemonicIsValid = false;
+  int? matchDerivationNbr;
+  String matchInfo = '';
+  DurtKeyPair? toKeypair;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialisation des controllers
+    newMnemonicSentence = TextEditingController();
+    newWalletAddress = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    // Libération des ressources
+    newMnemonicSentence.dispose();
+    newWalletAddress.dispose();
+    super.dispose();
+  }
+
+  /// Effectue la migration d'identité avec gestion d'erreur
+  Stream<TransactionStatus> _performMigration({
+    required String fromAddress,
+    required String pinCode,
+    required DurtKeyPair toKeypair,
+  }) async* {
+    try {
+      // Étape 1: Importer le nouveau wallet temporairement
+      yield TransactionStatus(hash: '', state: TransactionState.pending);
+
+      // Étape 2: Récupérer les keypairs
+      final fromKeypair = await _container
+          .read(walletServiceProvider)
+          .getKeyPairFromAddress(address: fromAddress, pinCode: pinCode);
+
+      // Étape 4: Lancer la transaction de migration
+      yield* _container
+          .read(duniterServiceProvider)
+          .migrateIdentity(fromKeypair: fromKeypair, toKeypair: toKeypair, withBalance: true);
+    } on InvalidCipherTextException catch (e) {
+      log.e('Invalid cipher text: $e');
+      yield TransactionStatus(hash: '', state: TransactionState.error, errorMessage: 'incorrectPinCode'.tr());
+    } catch (e) {
+      log.e('Migration error: $e');
+      yield TransactionStatus(
+        hash: '',
+        state: TransactionState.error,
+        errorMessage: 'migrationError'.tr(args: [e.toString()]),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-    final generatedWalletsProvider = Provider.of<GenerateWalletsProvider>(context, listen: false);
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final generatedWalletsProvider = old_provider.Provider.of<GenerateWalletsProvider>(context, listen: false);
 
     final fromAddress = walletOptions.address.text;
-
-    var statusData = const MigrateWalletChecks.defaultValues();
-    var mnemonicIsValid = false;
-    int? matchDerivationNbr;
-    String matchInfo = '';
 
     bool isSmall = !isTall;
 
     Future scanDerivations() async {
-      if (!await isAddress(widget.newWalletAddress.text) || !await sub.isMnemonicValid(widget.newMnemonicSentence.text) || !statusData.canValidate) {
-        mnemonicIsValid = false;
-        matchInfo = '';
+      if (!isAddress(newWalletAddress.text) ||
+          !_container.read(walletServiceProvider).isMnemonicValid(newMnemonicSentence.text) ||
+          !migrationChecks.canMigrate) {
+        setState(() {
+          mnemonicIsValid = false;
+          matchInfo = '';
+        });
         walletOptions.reload();
         return;
       }
       log.d('Scan derivations to find a match');
 
       //Scan root wallet
-      final addressData = await sub.sdk.api.keyring.addressFromMnemonic(
-        sub.currencyParameters['ss58']!,
-        cryptoType: CryptoType.sr25519,
-        mnemonic: widget.newMnemonicSentence.text,
-      );
+      final keypair = await _container
+          .read(walletServiceProvider)
+          .getKeyPairFromMnemonic(newMnemonicSentence.text, keyPairType: Durt.defaultKeyPairType);
 
-      if (addressData.address == widget.newWalletAddress.text) {
-        matchDerivationNbr = -1;
-        mnemonicIsValid = true;
+      if (keypair.address == newWalletAddress.text) {
+        setState(() {
+          toKeypair = keypair;
+          matchDerivationNbr = null;
+          mnemonicIsValid = true;
+        });
         walletOptions.reload();
         return;
       }
 
       //Scan derivations
       for (int derivationNbr in [for (var i = 0; i < generatedWalletsProvider.numberScan; i += 1) i]) {
-        final addressData = await sub.sdk.api.keyring.addressFromMnemonic(
-          sub.currencyParameters['ss58']!,
-          cryptoType: CryptoType.sr25519,
-          mnemonic: widget.newMnemonicSentence.text,
-          derivePath: '//$derivationNbr',
-        );
+        final keypair = await _container
+            .read(walletServiceProvider)
+            .getKeyPairFromMnemonic(
+              newMnemonicSentence.text,
+              derivation: derivationNbr,
+              keyPairType: Durt.defaultKeyPairType,
+            );
 
-        if (addressData.address == widget.newWalletAddress.text) {
-          matchDerivationNbr = derivationNbr;
-          mnemonicIsValid = true;
-          matchInfo = "youCanMigrateThisIdentity".tr();
+        if (keypair.address == newWalletAddress.text) {
+          setState(() {
+            toKeypair = keypair;
+            matchDerivationNbr = derivationNbr;
+            mnemonicIsValid = true;
+            matchInfo = "youCanMigrateThisIdentity".tr();
+          });
           break;
         } else {
-          mnemonicIsValid = false;
+          setState(() {
+            mnemonicIsValid = false;
+          });
         }
       }
 
       if (!mnemonicIsValid) {
-        matchInfo = "addressNotBelongToMnemonic".tr();
+        setState(() {
+          matchInfo = "addressNotBelongToMnemonic".tr();
+        });
       }
       walletOptions.reload();
     }
@@ -133,7 +212,9 @@ class _MigrateIdentityScreenState extends State<MigrateIdentityScreen> {
                               alignment: WrapAlignment.center,
                               children: [
                                 TextMarkDown(
-                                  'areYouSureMigrateIdentity'.tr(args: [duniterIndexer.walletNameIndexer[fromAddress] ?? '???']),
+                                  'areYouSureMigrateIdentity'.tr(
+                                    args: [ref.read(squidServiceProvider).walletNameIndexer[fromAddress] ?? '???'],
+                                  ),
                                   textAlign: WrapAlignment.center,
                                   style: scaledTextStyle(
                                     fontSize: isSmall ? 14 : 15,
@@ -141,13 +222,19 @@ class _MigrateIdentityScreenState extends State<MigrateIdentityScreen> {
                                     height: 1.5,
                                   ),
                                 ),
-                                BalanceDisplay(
-                                  value: walletOptions.balanceCache[fromAddress] ?? 0,
+                                // Use the Balance widget instead of accessing cache directly
+                                Balance(
+                                  address: fromAddress,
                                   size: isSmall ? 14 : 15,
-                                  fontWeight: FontWeight.bold,
                                   color: context.colorScheme.onSurface,
                                 ),
-                                Text(' ?', style: scaledTextStyle(fontSize: isSmall ? 14 : 15, color: context.colorScheme.onSurface)),
+                                Text(
+                                  ' ?',
+                                  style: scaledTextStyle(
+                                    fontSize: isSmall ? 14 : 15,
+                                    color: context.colorScheme.onSurface,
+                                  ),
+                                ),
                               ],
                             ),
                           ],
@@ -187,19 +274,22 @@ class _MigrateIdentityScreenState extends State<MigrateIdentityScreen> {
                                     width: scaleSize(isSmall ? 16 : 20),
                                   ),
                                   ScaledSizedBox(width: isSmall ? 8 : 12),
-                                  Text(
-                                    'enterYourNewMnemonic'.tr(),
-                                    style: scaledTextStyle(
-                                      fontSize: isSmall ? 13 : 14,
-                                      color: Colors.grey[600],
-                                      fontWeight: FontWeight.w500,
+                                  SizedBox(
+                                    width: 280,
+                                    child: Text(
+                                      'enterYourNewMnemonic'.tr(),
+                                      style: scaledTextStyle(
+                                        fontSize: isSmall ? 13 : 14,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
                             TextField(
-                              controller: widget.newMnemonicSentence,
+                              controller: newMnemonicSentence,
                               minLines: isSmall ? 2 : 3,
                               maxLines: isSmall ? 2 : 3,
                               style: scaledTextStyle(
@@ -244,10 +334,7 @@ class _MigrateIdentityScreenState extends State<MigrateIdentityScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  Image.asset(
-                                    'assets/walletOptions/key.png',
-                                    width: scaleSize(isSmall ? 16 : 20),
-                                  ),
+                                  Image.asset('assets/walletOptions/key.png', width: scaleSize(isSmall ? 16 : 20)),
                                   ScaledSizedBox(width: isSmall ? 8 : 12),
                                   Text(
                                     'enterYourNewAddress'.tr(args: [currencyName]),
@@ -261,11 +348,8 @@ class _MigrateIdentityScreenState extends State<MigrateIdentityScreen> {
                               ),
                             ),
                             TextField(
-                              controller: widget.newWalletAddress,
-                              style: scaledTextStyle(
-                                fontSize: isSmall ? 14 : 15,
-                                color: context.colorScheme.onSurface,
-                              ),
+                              controller: newWalletAddress,
+                              style: scaledTextStyle(fontSize: isSmall ? 14 : 15, color: context.colorScheme.onSurface),
                               decoration: InputDecoration(
                                 contentPadding: EdgeInsets.all(scaleSize(isSmall ? 12 : 16)),
                                 border: InputBorder.none,
@@ -277,15 +361,19 @@ class _MigrateIdentityScreenState extends State<MigrateIdentityScreen> {
                                 ),
                               ),
                               onChanged: (newAddress) async {
-                                if (await isAddress(newAddress)) {
-                                  statusData = await sub.getBalanceAndIdtyStatus(
-                                    fromAddress,
-                                    newAddress,
-                                  );
+                                if (isAddress(newAddress)) {
+                                  final checks = await _container
+                                      .read(storageServiceProvider)
+                                      .getMigrateWalletChecks(fromAddress: fromAddress, toAddress: newAddress);
+                                  setState(() {
+                                    migrationChecks = checks;
+                                  });
                                   await scanDerivations();
                                 } else {
-                                  statusData = const MigrateWalletChecks.defaultValues();
-                                  matchInfo = '';
+                                  setState(() {
+                                    migrationChecks = const MigrateWalletChecks.defaultValues();
+                                    matchInfo = '';
+                                  });
                                   walletOptions.reload();
                                 }
                               },
@@ -306,38 +394,29 @@ class _MigrateIdentityScreenState extends State<MigrateIdentityScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: Offset(0, -5),
-                  ),
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: Offset(0, -5)),
                 ],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Consumer<WalletOptionsProvider>(
-                    builder: (context, _, __) {
+                  old_provider.Consumer<WalletOptionsProvider>(
+                    builder: (context, _, _) {
+                      final validationStatus = mapValidationErrors(migrationChecks.errors);
                       return Column(
                         children: [
-                          if (statusData.validationStatus.isNotEmpty)
+                          if (validationStatus.isNotEmpty)
                             Text(
-                              statusData.validationStatus,
+                              validationStatus,
                               textAlign: TextAlign.center,
-                              style: scaledTextStyle(
-                                fontSize: isSmall ? 12 : 13,
-                                color: Colors.grey[600],
-                              ),
+                              style: scaledTextStyle(fontSize: isSmall ? 12 : 13, color: Colors.grey[600]),
                             ),
                           if (matchInfo.isNotEmpty) ...[
-                            if (statusData.validationStatus.isNotEmpty) ScaledSizedBox(height: isSmall ? 4 : 8),
+                            if (validationStatus.isNotEmpty) ScaledSizedBox(height: isSmall ? 4 : 8),
                             Text(
                               matchInfo,
                               textAlign: TextAlign.center,
-                              style: scaledTextStyle(
-                                fontSize: isSmall ? 12 : 13,
-                                color: Colors.grey[600],
-                              ),
+                              style: scaledTextStyle(fontSize: isSmall ? 12 : 13, color: Colors.grey[600]),
                             ),
                           ],
                           ScaledSizedBox(height: isSmall ? 12 : 16),
@@ -354,50 +433,39 @@ class _MigrateIdentityScreenState extends State<MigrateIdentityScreen> {
                         backgroundColor: context.colorScheme.primary,
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      onPressed: statusData.canValidate && mnemonicIsValid
+                      onPressed: migrationChecks.canMigrate && mnemonicIsValid && toKeypair != null
                           ? () async {
-                              if (!await myWalletProvider.askPinCode()) return;
+                              try {
+                                // Demander le code PIN d'abord
+                                if (!await myWalletProvider.askPinCode()) return;
 
-                              await sub.importAccount(
-                                mnemonic: widget.newMnemonicSentence.text,
-                                derivePath: matchDerivationNbr == -1 ? '' : "//$matchDerivationNbr",
-                                password: 'password',
-                              );
+                                // ✅ Créer le stream UNE SEULE FOIS
+                                final transactionStream = _performMigration(
+                                  fromAddress: fromAddress,
+                                  pinCode: myWalletProvider.pinCode,
+                                  toKeypair: toKeypair!,
+                                );
 
-                              final transactionId = await sub.migrateIdentity(
-                                fromAddress: fromAddress,
-                                destAddress: widget.newWalletAddress.text,
-                                fromPassword: myWalletProvider.pinCode,
-                                destPassword: 'password',
-                                withBalance: true,
-                                fromBalance: statusData.fromBalance,
-                              );
-
-                              sub.deleteAccounts([widget.newWalletAddress.text]);
-                              Navigator.pop(context);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => TransactionInProgress(
-                                    transactionId: transactionId,
-                                    transType: 'identityMigration',
-                                    fromAddress: getShortPubkey(fromAddress),
-                                    toAddress: getShortPubkey(widget.newWalletAddress.text),
+                                // ✅ Pusher l'écran de transaction avec le stream créé
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        TransactionInProgressScreen(transactionStatus: transactionStream),
                                   ),
-                                ),
-                              );
+                                );
+                              } catch (e) {
+                                log.e('Error during migration setup: $e');
+                                // Gestion d'erreur si nécessaire
+                              }
                             }
                           : null,
                       child: Text(
                         'migrateIdentity'.tr(),
-                        style: scaledTextStyle(
-                          fontSize: isSmall ? 15 : 16,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: scaledTextStyle(fontSize: isSmall ? 15 : 16, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),

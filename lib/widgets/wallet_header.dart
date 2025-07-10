@@ -1,14 +1,15 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:io';
+import 'package:durt2/durt2.dart' show IdtyStatus;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:gecko/providers.dart';
+
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/certifications.dart';
@@ -18,28 +19,22 @@ import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/providers/wallet_options.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/models/wallet_header_data.dart';
 
-class WalletHeader extends StatefulWidget {
-  const WalletHeader({
-    super.key,
-    required this.address,
-    this.customImagePath,
-    this.defaultImagePath,
-  });
+class WalletHeader extends ConsumerStatefulWidget {
+  const WalletHeader({super.key, required this.address, this.customImagePath, this.defaultImagePath});
 
   final String address;
   final String? customImagePath;
   final String? defaultImagePath;
 
   @override
-  State<WalletHeader> createState() => _WalletHeaderState();
+  ConsumerState<WalletHeader> createState() => _WalletHeaderState();
 }
 
-class _WalletHeaderState extends State<WalletHeader> {
+class _WalletHeaderState extends ConsumerState<WalletHeader> {
   late Future<WalletHeaderData> _loadData;
   bool _isPickerOpen = false;
   String _newCustomImagePath = '';
@@ -59,23 +54,22 @@ class _WalletHeaderState extends State<WalletHeader> {
       return cached;
     }
 
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     // Load all data in parallel with proper typing
     final (idtyStatus, balance, certData) = await (
-      sub.idtyStatus(widget.address),
-      sub.getBalance(widget.address),
-      sub.getCertsCounter(widget.address),
+      ref.read(storageServiceProvider).getIdtyStatus(widget.address),
+      ref.read(storageServiceProvider).getBalance(widget.address),
+      ref.read(storageServiceProvider).getCertsCounter(widget.address),
     ).wait;
 
     final data = WalletHeaderData(
       hasIdentity: idtyStatus != IdtyStatus.none,
       isOwner: myWalletProvider.isOwner(widget.address),
-      walletName: duniterIndexer.walletNameIndexer[widget.address],
-      balance: BigInt.from(balance.transferableBalance),
-      certCount: certData,
+      walletName: ref.read(squidServiceProvider).walletNameIndexer[widget.address],
+      balance: balance.transferableBalance,
+      certsReceived: certData.receivedCount,
+      certsSent: certData.sentCount,
     );
 
     // Save to Hive cache
@@ -86,23 +80,22 @@ class _WalletHeaderState extends State<WalletHeader> {
   Future<void> _refreshData() async {
     if (!mounted) return;
 
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     // Load all data in parallel with proper typing
     final (idtyStatus, balance, certData) = await (
-      sub.idtyStatus(widget.address),
-      sub.getBalance(widget.address),
-      sub.getCertsCounter(widget.address),
+      ref.read(storageServiceProvider).getIdtyStatus(widget.address),
+      ref.read(storageServiceProvider).getBalance(widget.address),
+      ref.read(storageServiceProvider).getCertsCounter(widget.address),
     ).wait;
 
     final data = WalletHeaderData(
       hasIdentity: idtyStatus != IdtyStatus.none,
       isOwner: myWalletProvider.isOwner(widget.address),
-      walletName: duniterIndexer.walletNameIndexer[widget.address],
-      balance: BigInt.from(balance.transferableBalance),
-      certCount: certData,
+      walletName: ref.read(squidServiceProvider).walletNameIndexer[widget.address],
+      balance: balance.transferableBalance,
+      certsReceived: certData.receivedCount,
+      certsSent: certData.sentCount,
     );
 
     final existing = walletHeaderDataBox.get(widget.address);
@@ -116,25 +109,55 @@ class _WalletHeaderState extends State<WalletHeader> {
     }
   }
 
-  Widget _buildContent(BuildContext context, BigInt currentWalletBalance, bool hasIdentity, bool isOwner, bool isPickerOpen, String newCustomImagePath,
-      DuniterIndexer duniterIndexer) {
+  Widget _buildContent(
+    BuildContext context,
+    bool hasIdentity,
+    bool isOwner,
+    bool isPickerOpen,
+    String newCustomImagePath,
+  ) {
     const double avatarSize = 90;
-    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
-    Provider.of<SubstrateSdk>(context); //To refresh header color on block changes
 
-    final balance = walletOptions.balanceCache[widget.address] == null ? currentWalletBalance : BigInt.from(walletOptions.balanceCache[widget.address] ?? 0);
+    // Get real-time balance from stream
+    final balanceStream = ref.watch(smartBalanceStreamProvider(widget.address));
 
-    final isEmptyWallet = balance == BigInt.zero;
+    return balanceStream.when(
+      data: (walletBalance) {
+        final balance = walletBalance.transferableBalance;
+        final isEmptyWallet = balance == BigInt.zero;
 
+        return _buildWalletContent(
+          context,
+          balance,
+          hasIdentity,
+          isOwner,
+          isPickerOpen,
+          newCustomImagePath,
+          avatarSize,
+          isEmptyWallet,
+        );
+      },
+      loading: () => _buildLoadingHeader(),
+      error: (error, stack) {
+        log.e('❌ WalletHeader balance stream error for ${widget.address}: $error');
+        return _buildLoadingHeader();
+      },
+    );
+  }
+
+  Widget _buildWalletContent(
+    BuildContext context,
+    BigInt balance,
+    bool hasIdentity,
+    bool isOwner,
+    bool isPickerOpen,
+    String newCustomImagePath,
+    double avatarSize,
+    bool isEmptyWallet,
+  ) {
     return Container(
-      decoration: BoxDecoration(
-        color: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary,
-      ),
-      padding: EdgeInsets.only(
-        left: scaleSize(16),
-        right: scaleSize(16),
-        bottom: scaleSize(16),
-      ),
+      decoration: BoxDecoration(color: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary),
+      padding: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), bottom: scaleSize(16)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -146,14 +169,10 @@ class _WalletHeaderState extends State<WalletHeader> {
               shape: BoxShape.circle,
               color: Colors.white.withValues(alpha: 25),
               boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
+                BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 2)),
               ],
             ),
-            child: Consumer<WalletOptionsProvider>(
+            child: old_provider.Consumer<WalletOptionsProvider>(
               builder: (context, walletOptionsProvider, child) {
                 if (_newCustomImagePath.isEmpty) {
                   _newCustomImagePath = widget.customImagePath ?? '';
@@ -179,18 +198,9 @@ class _WalletHeaderState extends State<WalletHeader> {
                         child: ClipOval(
                           child: _newCustomImagePath.isEmpty
                               ? (widget.defaultImagePath != null
-                                  ? Image.asset(
-                                      'assets/avatars/${widget.defaultImagePath}',
-                                      fit: BoxFit.cover,
-                                    )
-                                  : DatapodAvatar(
-                                      address: widget.address,
-                                      size: avatarSize,
-                                    ))
-                              : Image.file(
-                                  File(_newCustomImagePath),
-                                  fit: BoxFit.cover,
-                                ),
+                                    ? Image.asset('assets/avatars/${widget.defaultImagePath}', fit: BoxFit.cover)
+                                    : DatapodAvatar(address: widget.address, size: avatarSize))
+                              : Image.asset(_newCustomImagePath, fit: BoxFit.cover),
                         ),
                       ),
                     ),
@@ -201,10 +211,7 @@ class _WalletHeaderState extends State<WalletHeader> {
                         child: Container(
                           width: avatarSize * 0.35,
                           height: avatarSize * 0.35,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.black.withValues(alpha: 0.4),
-                          ),
+                          decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.black.withValues(alpha: 0.4)),
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
@@ -221,11 +228,7 @@ class _WalletHeaderState extends State<WalletHeader> {
                                     }
                                   : null,
                               customBorder: const CircleBorder(),
-                              child: Icon(
-                                Icons.camera_alt,
-                                color: Colors.white,
-                                size: avatarSize * 0.2,
-                              ),
+                              child: Icon(Icons.camera_alt, color: Colors.white, size: avatarSize * 0.2),
                             ),
                           ),
                         ),
@@ -298,29 +301,20 @@ class _WalletHeaderState extends State<WalletHeader> {
                       PageNoTransit(
                         builder: (context) => CertificationsScreen(
                           address: widget.address,
-                          username: duniterIndexer.walletNameIndexer[widget.address] ?? '',
+                          username: ref.read(squidServiceProvider).walletNameIndexer[widget.address] ?? '',
                         ),
                       ),
                     ),
                     child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        color: Colors.transparent,
-                      ),
+                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.transparent),
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            IdentityStatus(
-                              address: widget.address,
-                              color: context.colorScheme.primary,
-                            ),
+                            IdentityStatus(address: widget.address, color: context.colorScheme.primary),
                             SizedBox(width: scaleSize(8)),
-                            Certifications(
-                              address: widget.address,
-                              size: 13,
-                            ),
+                            Certifications(address: widget.address, size: 13),
                             Icon(
                               Icons.chevron_right,
                               size: scaleSize(15),
@@ -331,7 +325,7 @@ class _WalletHeaderState extends State<WalletHeader> {
                       ),
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -344,11 +338,7 @@ class _WalletHeaderState extends State<WalletHeader> {
     const double avatarSize = 90;
     return Container(
       color: context.colorScheme.tertiary,
-      padding: EdgeInsets.only(
-        left: scaleSize(16),
-        right: scaleSize(16),
-        bottom: scaleSize(16),
-      ),
+      padding: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), bottom: scaleSize(16)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -360,11 +350,7 @@ class _WalletHeaderState extends State<WalletHeader> {
               shape: BoxShape.circle,
               color: Colors.white.withValues(alpha: 0.1),
               boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
+                BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 2)),
               ],
             ),
           ),
@@ -452,20 +438,10 @@ class _WalletHeaderState extends State<WalletHeader> {
 
   @override
   Widget build(BuildContext context) {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-
     // If data is in cache, show it immediately
     final cached = walletHeaderDataBox.get(widget.address);
     if (cached != null) {
-      return _buildContent(
-        context,
-        cached.balance,
-        cached.hasIdentity,
-        cached.isOwner,
-        _isPickerOpen,
-        _newCustomImagePath,
-        duniterIndexer,
-      );
+      return _buildContent(context, cached.hasIdentity, cached.isOwner, _isPickerOpen, _newCustomImagePath);
     }
 
     // Sinon on affiche le loading
@@ -481,15 +457,7 @@ class _WalletHeaderState extends State<WalletHeader> {
         }
 
         final data = snapshot.data!;
-        return _buildContent(
-          context,
-          data.balance,
-          data.hasIdentity,
-          data.isOwner,
-          _isPickerOpen,
-          _newCustomImagePath,
-          duniterIndexer,
-        );
+        return _buildContent(context, data.hasIdentity, data.isOwner, _isPickerOpen, _newCustomImagePath);
       },
     );
   }

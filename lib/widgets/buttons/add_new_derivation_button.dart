@@ -9,15 +9,13 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:provider/provider.dart';
 
 class AddNewDerivationButton extends StatelessWidget {
-  const AddNewDerivationButton({
-    super.key,
-  });
+  const AddNewDerivationButton({super.key});
 
   @override
   Widget build(BuildContext context) {
     final myWalletProvider = Provider.of<MyWalletsProvider>(context);
 
-    String newDerivationName = '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number! + 2}';
+    String newDerivationName = '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number + 2}';
     return Padding(
       padding: EdgeInsets.all(scaleSize(11)),
       child: Container(
@@ -25,11 +23,7 @@ class AddNewDerivationButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           color: Colors.white,
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 2)),
           ],
         ),
         child: Column(
@@ -54,10 +48,7 @@ class AddNewDerivationButton extends StatelessWidget {
                         ? ScaledSizedBox(
                             height: 50,
                             width: 50,
-                            child: CircularProgressIndicator(
-                              color: context.colorScheme.primary,
-                              strokeWidth: 6,
-                            ),
+                            child: CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: 6),
                           )
                         : Text(
                             '+',

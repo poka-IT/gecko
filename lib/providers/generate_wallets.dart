@@ -1,23 +1,31 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:durt/durt.dart' as durt;
+import 'package:durt2/durt2.dart' show Language, WalletBalance, WalletEntity, IdtyStatus, Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/bip39_words.dart';
-import 'package:gecko/models/chest_data.dart';
-import 'package:gecko/models/wallet_data.dart';
-import 'package:gecko/models/wallet_balance.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/widgets/scan_derivations_info.dart';
 import 'package:gecko/widgets/commons/common_elements.dart';
-import 'package:polkawallet_sdk/api/apiKeyring.dart';
-import 'package:provider/provider.dart';
 import "package:unorm_dart/unorm_dart.dart" as unorm;
 
 class GenerateWalletsProvider with ChangeNotifier {
-  GenerateWalletsProvider();
+  late ProviderContainer _container;
+
+  GenerateWalletsProvider() {
+    _container = ProviderContainer();
+  }
+
+  @override
+  void dispose() {
+    _container.dispose();
+    super.dispose();
+  }
 
   final walletNameFocus = FocusNode();
   Color? askedWordColor = Colors.black;
@@ -59,27 +67,29 @@ class GenerateWalletsProvider with ChangeNotifier {
   final cellController11 = TextEditingController();
   bool isFirstTimeSentenceComplete = true;
 
-  Future storeHDWChest(BuildContext context) async {
-    int chestNumber = chestBox.isEmpty ? 0 : chestBox.keys.last + 1;
+  // @Deprecated('Use Durt 2 instead')
+  // Future storeHDWChest(BuildContext context) async {
+  //   int chestNumber = chestBox.isEmpty ? 0 : chestBox.keys.last + 1;
 
-    String chestName;
-    if (chestNumber == 0) {
-      chestName = 'geckoChest'.tr();
-    } else {
-      chestName = '${'geckoChest'.tr()}${chestNumber + 1}';
-    }
-    await configBox.put('currentChest', chestNumber);
+  //   String chestName;
+  //   if (chestNumber == 0) {
+  //     chestName = 'geckoChest'.tr();
+  //   } else {
+  //     chestName = '${'geckoChest'.tr()}${chestNumber + 1}';
+  //   }
+  //   await configBox.put('currentChest', chestNumber);
 
-    ChestData thisChest = ChestData(
-      name: chestName,
-      defaultWallet: 0,
-      imageName: '${chestNumber % 8}.png',
-    );
-    await chestBox.put(chestNumber, thisChest);
+  //   ChestData thisChest = ChestData(
+  //     name: chestName,
+  //     defaultWallet: 0,
+  //     imageName: '${chestNumber % 8}.png',
+  //   );
+  //   await chestBox.add(thisChest);
+  //   int? chestKey = chestBox.keys.last;
 
-    await configBox.put('currentChest', chestNumber);
-    notifyListeners();
-  }
+  //   await configBox.put('currentChest', chestKey);
+  //   notifyListeners();
+  // }
 
   void checkAskedWord(String inputWord, String mnemo) {
     final expectedWord = mnemo.split(' ')[nbrWord];
@@ -152,20 +162,18 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   Future<List<String>?> generateWordList(BuildContext context) async {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    if (!sub.sdkReady) return null;
+    final language = switch (appLang) {
+      'english' => Language.english,
+      'french' => Language.french,
+      'spanish' => Language.spanish,
+      'italian' => Language.italian,
+      _ => Language.english,
+    };
 
-    generatedMnemonic = await sub.generateMnemonic(lang: appLang);
-    List<String> wordsList = [];
-    String word;
-    int nbr = 1;
+    final generatedMnemonicTyped = _container.read(walletServiceProvider).generateMnemonic(language: language);
 
-    for (word in generatedMnemonic!.split(' ')) {
-      wordsList.add("$nbr:$word");
-      nbr++;
-    }
-
-    return wordsList;
+    generatedMnemonic = generatedMnemonicTyped.sentence;
+    return generatedMnemonicTyped.words;
   }
 
   bool isBipWord(String word, [bool checkRedondance = true]) {
@@ -203,29 +211,28 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   void resetImportView() {
-    cellController0.text = cellController1.text = cellController2.text = cellController3.text = cellController4.text = cellController5.text =
-        cellController6.text = cellController7.text = cellController8.text = cellController9.text = cellController10.text = cellController11.text = '';
+    cellController0.text = cellController1.text = cellController2.text = cellController3.text = cellController4.text =
+        cellController5.text = cellController6.text = cellController7.text = cellController8.text =
+            cellController9.text = cellController10.text = cellController11.text = '';
     isFirstTimeSentenceComplete = true;
     notifyListeners();
   }
 
   bool isSentenceComplete(BuildContext context) {
-    if (isBipWordsList(
-      [
-        cellController0.text,
-        cellController1.text,
-        cellController2.text,
-        cellController3.text,
-        cellController4.text,
-        cellController5.text,
-        cellController6.text,
-        cellController7.text,
-        cellController8.text,
-        cellController9.text,
-        cellController10.text,
-        cellController11.text
-      ],
-    )) {
+    if (isBipWordsList([
+      cellController0.text,
+      cellController1.text,
+      cellController2.text,
+      cellController3.text,
+      cellController4.text,
+      cellController5.text,
+      cellController6.text,
+      cellController7.text,
+      cellController8.text,
+      cellController9.text,
+      cellController10.text,
+      cellController11.text,
+    ])) {
       if (isFirstTimeSentenceComplete) {
         FocusScope.of(context).unfocus();
       }
@@ -238,7 +245,9 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   Future pasteMnemonic(BuildContext context) async {
     final sentence = await Clipboard.getData('text/plain');
-    if (sentence?.text == null || sentence!.text!.split(' ').length != 12) return;
+    if (sentence?.text == null || sentence!.text!.split(' ').length != 12) {
+      return;
+    }
 
     int nbr = 0;
 
@@ -254,7 +263,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       cellController8,
       cellController9,
       cellController10,
-      cellController11
+      cellController11,
     ];
     for (var word in sentence.text!.split(' ')) {
       bool isValid = isBipWord(word, false);
@@ -273,97 +282,147 @@ class GenerateWalletsProvider with ChangeNotifier {
   Future<ScanDerivationsResult> scanDerivations(BuildContext context, String pinCode) async {
     try {
       return await _scanDerivations(context, pinCode).timeout(
-        const Duration(seconds: 20),
+        const Duration(seconds: 120),
         onTimeout: () async {
           // Remove the current chest
-          final currentChestNumber = configBox.get('currentChest');
-          if (currentChestNumber != null) {
-            final currentChest = chestBox.get(currentChestNumber);
-            if (currentChest != null) {
-              await chestBox.delete(currentChestNumber);
-            }
-          }
+          final actualSafeNumber = _container.read(walletServiceProvider).defaultSafeBoxNumber;
+          await _container.read(walletServiceProvider).deleteSafe(actualSafeNumber);
 
           // Display error message to user
           // ignore: use_build_context_synchronously
           await infoPopup(context, "timeoutScanDerivations".tr());
 
+          // Remove all wallets
+          await _container.read(walletServiceProvider).walletBox.removeAllAsync();
+          await _container.read(walletServiceProvider).safeBox.removeAllAsync();
+
           // Pop to home
-          Navigator.popUntil(
-            // ignore: use_build_context_synchronously
-            context,
-            ModalRoute.withName('/'),
-          );
+          // ignore: use_build_context_synchronously
+          await Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
 
           return ScanDerivationsResult.timeout;
         },
       );
     } catch (e) {
+      log.e('Error scanning derivations: $e');
       // Handle any other errors
+      // ignore: use_build_context_synchronously
       await infoPopup(context, "errorScanDerivations".tr());
 
-      Navigator.popUntil(
-        // ignore: use_build_context_synchronously
-        context,
-        ModalRoute.withName('/'),
-      );
+      // Remove all wallets
+      await _container.read(walletServiceProvider).walletBox.removeAllAsync();
+      await _container.read(walletServiceProvider).safeBox.removeAllAsync();
+
+      // ignore: use_build_context_synchronously
+      await Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
 
       return ScanDerivationsResult.error;
     }
   }
 
   Future<ScanDerivationsResult> _scanDerivations(BuildContext context, String pinCode) async {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final currentChestNumber = configBox.get('currentChest');
     bool isAlive = false;
     scanedWalletNumber = 0;
     Map<String, int> addressToScan = {};
     notifyListeners();
 
-    if (!sub.nodeConnected) {
+    if (!_container.read(durtProvider).isConnected) {
       return ScanDerivationsResult.error;
     }
 
+    // 1. SCAN ROOT BALANCE
     scanStatus = ScanDerivationsStatus.rootScanning;
-    final hasRoot = await scanRootBalance(sub, currentChestNumber, pinCode);
     notifyListeners();
+    final hasRoot = await scanRootBalance(pinCode);
     if (hasRoot) {
       isAlive = true;
     }
 
+    // 2. PARALLEL KEYPAIR GENERATION
     scanStatus = ScanDerivationsStatus.scanning;
-    for (int derivationNbr in [for (var i = 0; i < numberScan; i += 1) i]) {
-      final addressData = await sub.sdk.api.keyring
-          .addressFromMnemonic(sub.currencyParameters['ss58']!, cryptoType: CryptoType.sr25519, mnemonic: generatedMnemonic!, derivePath: '//$derivationNbr');
-      addressToScan.putIfAbsent(addressData.address!, () => derivationNbr);
+    notifyListeners();
+
+    // Generate all keypairs in parallel instead of sequentially
+    final derivationNumbers = [for (var i = 0; i < numberScan; i += 1) i];
+    final keypairFutures = derivationNumbers
+        .map(
+          (derivationNbr) => _container
+              .read(walletServiceProvider)
+              .getKeyPairFromMnemonic(
+                generatedMnemonic!,
+                derivation: derivationNbr,
+                keyPairType: Durt.defaultKeyPairType,
+              )
+              .then((keypair) => MapEntry(derivationNbr, keypair)),
+        )
+        .toList();
+
+    // Wait for all keypairs to be generated in parallel
+    final keypairResults = await Future.wait(keypairFutures);
+
+    // Build the address to derivation map
+    for (final entry in keypairResults) {
+      addressToScan.putIfAbsent(entry.value.address, () => entry.key);
     }
 
-    final balanceList = await sub.getBalanceMulti(addressToScan.keys.toList()).timeout(
-          const Duration(seconds: 20),
-          onTimeout: () => {},
-        );
+    // 3. BALANCE CHECK (already optimized - single batch call)
+    final balanceList = await _container
+        .read(storageServiceProvider)
+        .getBalances(addressToScan.keys.toList())
+        .timeout(const Duration(seconds: 20), onTimeout: () => throw TimeoutException('Timeout scanning derivations'));
 
     // Remove unused wallets
-    balanceList.removeWhere((key, value) => value.transferableBalance == 0);
+    balanceList.removeWhere((key, value) => value.free == BigInt.zero);
     scanedValidWalletNumber = balanceList.length + scanedWalletNumber;
 
+    // 4. PARALLEL WALLET IMPORT WITH PRESERVED ORDER
     scanStatus = ScanDerivationsStatus.import;
-    for (String scannedWallet in balanceList.keys) {
-      isAlive = true;
-      String walletName = scanedWalletNumber == 0 ? 'currentWallet'.tr() : '${'wallet'.tr()} ${scanedWalletNumber + 1}';
-      await sub.importAccount(mnemonic: generatedMnemonic!, derivePath: "//${addressToScan[scannedWallet]}", password: pinCode);
+    notifyListeners();
 
-      WalletData myWallet = WalletData(
-          chest: currentChestNumber,
+    if (balanceList.isNotEmpty) {
+      isAlive = true;
+
+      // Sort wallets by derivation number to preserve order
+      final sortedWallets = balanceList.keys.toList()..sort((a, b) => addressToScan[a]!.compareTo(addressToScan[b]!));
+
+      // Prepare wallet data in parallel
+      final actualSafeNumber = _container.read(walletServiceProvider).defaultSafeBoxNumber;
+      final safe = _container.read(walletServiceProvider).getSafeBox(actualSafeNumber);
+
+      final walletDataList = <({WalletEntity wallet, int index})>[];
+      for (int i = 0; i < sortedWallets.length; i++) {
+        final scannedWallet = sortedWallets[i];
+        final walletIndex = scanedWalletNumber + i;
+        final walletName = walletIndex == 0 ? 'currentWallet'.tr() : '${'wallet'.tr()} ${walletIndex + 1}';
+
+        final myWallet = WalletEntity.create(
           address: scannedWallet,
-          number: scanedWalletNumber,
           name: walletName,
           derivation: addressToScan[scannedWallet],
-          imageDefaultPath: '${scanedWalletNumber % 4}.png',
-          isOwned: true);
-      await walletBox.put(myWallet.address, myWallet);
-      scanedWalletNumber++;
-      notifyListeners();
+          imagePath: 'assets/avatars/${walletIndex % 4}.png',
+          keyPairType: Durt.defaultKeyPairType,
+          identityStatus: IdtyStatus.unknown,
+        );
+
+        myWallet.safe.target = safe;
+        walletDataList.add((wallet: myWallet, index: walletIndex));
+      }
+
+      // Import wallets in parallel batches to avoid overwhelming the system
+      const batchSize = 5; // Process 5 wallets at a time
+      for (int batchStart = 0; batchStart < walletDataList.length; batchStart += batchSize) {
+        final batchEnd = (batchStart + batchSize).clamp(0, walletDataList.length);
+        final batch = walletDataList.sublist(batchStart, batchEnd);
+
+        // Import current batch in parallel
+        await Future.wait(
+          batch.map((walletData) => _container.read(walletServiceProvider).walletBox.putAsync(walletData.wallet)),
+        );
+
+        // Update progress
+        scanedWalletNumber = batch.last.index + 1;
+        notifyListeners();
+      }
     }
 
     scanStatus = ScanDerivationsStatus.none;
@@ -372,24 +431,35 @@ class GenerateWalletsProvider with ChangeNotifier {
     return isAlive ? ScanDerivationsResult.walletExists : ScanDerivationsResult.walletNotFound;
   }
 
-  Future<bool> scanRootBalance(SubstrateSdk sub, int currentChestNumber, String pinCode) async {
-    if (sub.currencyParameters['ss58'] == null || generatedMnemonic == null) return false;
-    final addressData =
-        await sub.sdk.api.keyring.addressFromMnemonic(sub.currencyParameters['ss58']!, cryptoType: CryptoType.sr25519, mnemonic: generatedMnemonic!);
+  Future<bool> scanRootBalance(String pinCode) async {
+    if (generatedMnemonic == null) return false;
 
-    if (addressData.address == null) return false;
-    final balance = await sub.getBalance(addressData.address!).timeout(
-          const Duration(seconds: 1),
-          onTimeout: () => WalletBalance.empty(),
-        );
+    final keypair = await _container.read(walletServiceProvider).getKeyPairFromMnemonic(generatedMnemonic!);
 
-    if (balance.transferableBalance != 0) {
+    final address = keypair.address;
+
+    final balance = await _container
+        .read(storageServiceProvider)
+        .getBalance(address)
+        .timeout(const Duration(seconds: 1), onTimeout: () => WalletBalance.empty());
+
+    if (balance.free != BigInt.zero) {
       String walletName = 'myRootWallet'.tr();
-      await sub.importAccount(mnemonic: generatedMnemonic!, password: pinCode);
 
-      WalletData myWallet = WalletData(
-          chest: currentChestNumber, address: addressData.address!, number: 0, name: walletName, derivation: -1, imageDefaultPath: '0.png', isOwned: true);
-      await walletBox.put(myWallet.address, myWallet);
+      final actualSafeNumber = _container.read(walletServiceProvider).defaultSafeBoxNumber;
+
+      WalletEntity myWallet = WalletEntity.create(
+        address: address,
+        name: walletName,
+        imagePath: 'assets/avatars/0.png',
+        keyPairType: Durt.defaultKeyPairType,
+        identityStatus: IdtyStatus.unknown,
+      );
+
+      final safe = _container.read(walletServiceProvider).getSafeBox(actualSafeNumber);
+      myWallet.safe.target = safe;
+
+      await _container.read(walletServiceProvider).walletBox.putAsync(myWallet);
       scanedWalletNumber++;
       return true;
     } else {

@@ -1,27 +1,26 @@
+import 'package:durt2/durt2.dart' hide Provider;
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/transaction_content.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/transaction_status.dart';
-import 'package:gecko/widgets/transaction_status_icon.dart';
+import 'package:gecko/widgets/transaction_state_icon.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-class TransactionInProgress extends StatefulWidget {
-  final String transactionId;
+class TransactionInProgressScreen extends StatefulWidget {
+  final Stream<TransactionStatus> transactionStatus;
   final String transType;
   final String? fromAddress, toAddress, toUsername;
 
-  const TransactionInProgress({
+  const TransactionInProgressScreen({
     super.key,
-    required this.transactionId,
+    required this.transactionStatus,
     this.transType = 'pay',
     this.fromAddress,
     this.toAddress,
@@ -29,17 +28,13 @@ class TransactionInProgress extends StatefulWidget {
   });
 
   @override
-  State<TransactionInProgress> createState() => _TransactionInProgressState();
+  State<TransactionInProgressScreen> createState() => _TransactionInProgressScreenState();
 }
 
-class _TransactionInProgressState extends State<TransactionInProgress> {
-  String resultText = '';
+class _TransactionInProgressScreenState extends State<TransactionInProgressScreen> {
   late String fromAddressFormat;
   late String toAddressFormat;
   late String toUsernameFormat;
-  late String amount;
-  late bool isUdUnit;
-  TransactionContent? txContent;
 
   @override
   void initState() {
@@ -54,55 +49,11 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
     toAddressFormat = widget.toAddress ?? walletProfiles.address;
     toUsernameFormat = widget.toUsername ?? walletDataName ?? getShortPubkey(toAddressFormat);
 
-    amount = walletProfiles.payAmount.text;
-    isUdUnit = configBox.get('isUdUnit') ?? false;
-    waitForTransactionStatus();
     super.initState();
-  }
-
-  void waitForTransactionStatus() async {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    while (!sub.transactionStatus.containsKey(widget.transactionId)) {
-      await Future.delayed(const Duration(milliseconds: 200));
-    }
-
-    setState(() {
-      txContent = sub.transactionStatus[widget.transactionId]!;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final sub = Provider.of<SubstrateSdk>(context, listen: true);
-
-    if (txContent == null) {
-      return Scaffold(
-        body: Center(
-          child: Loading(
-            size: 30,
-          ),
-        ),
-      );
-    }
-
-    if (sub.transactionStatus.containsKey(widget.transactionId)) {
-      txContent = sub.transactionStatus[widget.transactionId]!;
-    }
-
-    if (txContent!.status == TransactionStatus.success) {
-      if (widget.transType == 'renewMembership') {
-        resultText = 'membershipRenewalConfirmed'.tr();
-      } else {
-        resultText = 'extrinsicValidated'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]);
-      }
-    } else if (txContent!.status == TransactionStatus.failed) {
-      final errorParts = txContent!.error?.split('Exception: ');
-      final error = errorParts != null && errorParts.length > 1 ? errorParts[1] : txContent!.error;
-      resultText = errorTransactionMap[error] ?? error!;
-    } else {
-      resultText = statusStatusMap[txContent!.status] ?? 'Unknown status: ${txContent!.status}';
-    }
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: context.colorScheme.tertiary,
@@ -111,130 +62,111 @@ class _TransactionInProgressState extends State<TransactionInProgress> {
         centerTitle: true,
         title: Text(
           'extrinsicInProgress'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]),
-          style: scaledTextStyle(
-            fontSize: 16,
-            color: context.colorScheme.onSurface,
-            fontWeight: FontWeight.w500,
-          ),
+          style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface, fontWeight: FontWeight.w500),
         ),
       ),
-      body: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            color: context.colorScheme.tertiary,
-            padding: EdgeInsets.symmetric(
-              horizontal: scaleSize(24),
-              vertical: scaleSize(16),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  'fromMinus'.tr(),
-                  style: scaledTextStyle(
-                    fontSize: 13,
-                    color: Colors.black54,
-                  ),
-                ),
-                ScaledSizedBox(height: 4),
-                Text(
-                  fromAddressFormat,
-                  style: scaledTextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                if (fromAddressFormat != toAddressFormat) ...[
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: scaleSize(8)),
-                    child: Container(
-                      height: 1,
-                      color: Colors.black.withValues(alpha: 0.06),
-                    ),
-                  ),
-                  Text(
-                    'toMinus'.tr(),
-                    style: scaledTextStyle(
-                      fontSize: 13,
-                      color: Colors.black54,
-                    ),
-                  ),
-                  ScaledSizedBox(height: 4),
-                  Text(
-                    toUsernameFormat,
-                    style: scaledTextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: scaleSize(52),
-                  height: scaleSize(52),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.black12,
-                      width: 1,
-                    ),
-                  ),
-                  child: Center(
-                    child: TransactionStatusIcon(txContent!.status),
-                  ),
-                ),
-                if (txContent!.status != TransactionStatus.none) ...[
-                  ScaledSizedBox(height: 24),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: scaleSize(32)),
-                    child: Text(
-                      resultText,
-                      textAlign: TextAlign.center,
-                      style: scaledTextStyle(
-                        fontSize: 15,
-                        height: 1.4,
-                        color: context.colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.all(scaleSize(24)),
-            child: SizedBox(
+      body: SafeArea(
+        child: Column(
+          children: [
+            Container(
               width: double.infinity,
-              height: scaleSize(48),
-              child: ElevatedButton(
-                key: keyCloseTransactionScreen,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE65100),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
+              color: context.colorScheme.tertiary,
+              padding: EdgeInsets.symmetric(horizontal: scaleSize(24), vertical: scaleSize(16)),
+              child: Column(
+                children: [
+                  Text('fromMinus'.tr(), style: scaledTextStyle(fontSize: 13, color: Colors.black54)),
+                  ScaledSizedBox(height: 4),
+                  Text(fromAddressFormat, style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                  if (fromAddressFormat != toAddressFormat) ...[
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: scaleSize(8)),
+                      child: Container(height: 1, color: Colors.black.withValues(alpha: 0.06)),
+                    ),
+                    Text('toMinus'.tr(), style: scaledTextStyle(fontSize: 13, color: Colors.black54)),
+                    ScaledSizedBox(height: 4),
+                    Text(toUsernameFormat, style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                  ],
+                ],
+              ),
+            ),
+            Expanded(
+              child: StreamBuilder<TransactionStatus>(
+                stream: widget.transactionStatus,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: Loading(size: 30));
+                  }
+
+                  final txStatus = snapshot.data!;
+                  String resultText;
+
+                  if (txStatus.state == TransactionState.finalized) {
+                    if (widget.transType == 'renewMembership') {
+                      resultText = 'membershipRenewalConfirmed'.tr();
+                    } else {
+                      resultText = 'extrinsicValidated'.tr(
+                        args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()],
+                      );
+                    }
+                  } else if (txStatus.state == TransactionState.error) {
+                    final errorParts = txStatus.errorMessage?.split('Exception: ');
+                    final error = errorParts != null && errorParts.length > 1 ? errorParts[1] : txStatus.errorMessage;
+                    resultText = errorTransactionMap[error] ?? error!;
+                  } else {
+                    resultText = statusStatusMap[txStatus.state] ?? 'Unknown status: ${txStatus.state}';
+                  }
+
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: scaleSize(52),
+                        height: scaleSize(52),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.black12, width: 1),
+                        ),
+                        child: Center(child: TransactionStateIcon(txStatus.state)),
+                      ),
+                      if (txStatus.state != TransactionState.none) ...[
+                        ScaledSizedBox(height: 24),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: scaleSize(32)),
+                          child: Text(
+                            resultText,
+                            textAlign: TextAlign.center,
+                            style: scaledTextStyle(fontSize: 15, height: 1.4, color: context.colorScheme.onSurface),
+                          ),
+                        ),
+                      ],
+                    ],
+                  );
+                },
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(scaleSize(24)),
+              child: SizedBox(
+                width: double.infinity,
+                height: scaleSize(48),
+                child: ElevatedButton(
+                  key: keyCloseTransactionScreen,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFE65100),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                   ),
-                ),
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'close'.tr(),
-                  style: scaledTextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'close'.tr(),
+                    style: scaledTextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w500),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

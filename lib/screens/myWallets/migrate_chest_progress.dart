@@ -2,34 +2,36 @@
 
 import 'dart:async';
 
+import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/onBoarding/7.dart';
 import 'package:gecko/widgets/commons/fader_transition.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
 enum MigrationStatus { pending, migrating, success, failed, empty }
 
 class MigrationTask {
-  final WalletData wallet;
+  final WalletEntity wallet;
   MigrationStatus status;
   String? details; // For TxID or error message
 
   MigrationTask(this.wallet, {this.status = MigrationStatus.pending});
 
-  bool get isDone => status == MigrationStatus.success || status == MigrationStatus.failed || status == MigrationStatus.empty;
+  bool get isDone =>
+      status == MigrationStatus.success || status == MigrationStatus.failed || status == MigrationStatus.empty;
 }
 
-class MigrateChestProgressScreen extends StatefulWidget {
+class MigrateChestProgressScreen extends ConsumerStatefulWidget {
   final String newMnemonic;
-  final List<WalletData> walletsToMigrate;
+  final List<WalletEntity> walletsToMigrate;
   final String oldChestPin;
 
   const MigrateChestProgressScreen({
@@ -40,10 +42,10 @@ class MigrateChestProgressScreen extends StatefulWidget {
   });
 
   @override
-  State<MigrateChestProgressScreen> createState() => _MigrateChestProgressScreenState();
+  ConsumerState<MigrateChestProgressScreen> createState() => _MigrateChestProgressScreenState();
 }
 
-class _MigrateChestProgressScreenState extends State<MigrateChestProgressScreen> {
+class _MigrateChestProgressScreenState extends ConsumerState<MigrateChestProgressScreen> {
   late List<MigrationTask> _tasks;
   bool _migrationCompleted = false;
   bool _migrationSuccess = false;
@@ -59,10 +61,8 @@ class _MigrateChestProgressScreenState extends State<MigrateChestProgressScreen>
   }
 
   Future<void> _startMigration() async {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-
     final migrations = _tasks.map((task) {
-      return _migrateSingleWallet(task, sub);
+      return _migrateSingleWallet(task);
     }).toList();
 
     try {
@@ -81,27 +81,81 @@ class _MigrateChestProgressScreenState extends State<MigrateChestProgressScreen>
     }
   }
 
-  Future<void> _migrateSingleWallet(MigrationTask task, SubstrateSdk sub) async {
+  Future<void> _migrateSingleWallet(MigrationTask task) async {
     if (!mounted) return;
     setState(() => task.status = MigrationStatus.migrating);
 
     try {
-      final transactionId = await sub.migrateWalletToNewMnemonic(
-        sourceWallet: task.wallet,
-        newMnemonic: widget.newMnemonic,
-        sourcePassword: widget.oldChestPin,
-      );
+      // Check if wallet has any balance to migrate
+      final balance = await ref.read(durtProvider).storage.getBalance(task.wallet.address);
 
-      if (transactionId.isNotEmpty) {
-        await Future.delayed(const Duration(seconds: 12)); // Wait for block
+      if (balance.transferableBalance == BigInt.zero) {
+        // Wallet is empty, mark as empty instead of migrating
         if (!mounted) return;
         setState(() {
-          task.status = MigrationStatus.success;
-          task.details = transactionId;
+          task.status = MigrationStatus.empty;
+          task.details = "walletIsEmptyNoMigrationNeeded".tr();
         });
+        return;
+      }
+
+      // Get source wallet keypair
+      final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+      final sourceKeypair = await ref
+          .read(walletServiceProvider)
+          .getKeyPairFromAddress(address: task.wallet.address, pinCode: myWalletProvider.pinCode);
+
+      // Get destination wallet keypair
+      final destKeypair = await ref
+          .read(walletServiceProvider)
+          .getKeyPairFromMnemonic(
+            widget.newMnemonic,
+            derivation: task.wallet.derivation ?? 0,
+            keyPairType: Durt.defaultKeyPairType,
+          );
+
+      // Migrate identity if wallet has one
+      if (task.wallet.hasIdentity) {
+        final transactionStatus = ref
+            .read(duniterServiceProvider)
+            .migrateIdentity(fromKeypair: sourceKeypair, toKeypair: destKeypair, withBalance: true);
+
+        // Wait for transaction confirmation
+        await for (final status in transactionStatus) {
+          if (status.state == TransactionState.finalized) {
+            if (!mounted) return;
+            setState(() {
+              task.status = MigrationStatus.success;
+              task.details = status.hash ?? "identityMigrationSuccess".tr();
+            });
+            return;
+          } else if (status.state == TransactionState.error) {
+            throw Exception("Migration failed: ${status.errorMessage}");
+          }
+        }
       } else {
-        if (!mounted) return;
-        setState(() => task.status = MigrationStatus.empty);
+        // Simple balance transfer for wallets without identity
+        final transactionStatus = ref
+            .read(duniterServiceProvider)
+            .pay(
+              keypair: sourceKeypair,
+              destAddress: destKeypair.address,
+              amount: balance.transferableBalance.toDouble() / 100,
+            );
+
+        // Wait for transaction confirmation
+        await for (final status in transactionStatus) {
+          if (status.state == TransactionState.finalized) {
+            if (!mounted) return;
+            setState(() {
+              task.status = MigrationStatus.success;
+              task.details = status.hash ?? "balanceTransferSuccess".tr();
+            });
+            return;
+          } else if (status.state == TransactionState.error) {
+            throw Exception("Transfer failed: ${status.errorMessage}");
+          }
+        }
       }
     } catch (e) {
       if (!mounted) rethrow;
@@ -127,9 +181,7 @@ class _MigrateChestProgressScreenState extends State<MigrateChestProgressScreen>
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    LinearProgressIndicator(
-                      value: totalTasks > 0 ? _completedSteps / totalTasks : 0,
-                    ),
+                    LinearProgressIndicator(value: totalTasks > 0 ? _completedSteps / totalTasks : 0),
                     const SizedBox(height: 16),
                     Text('migratedWalletsNofM'.tr(args: [_completedSteps.toString(), totalTasks.toString()])),
                   ],
@@ -167,19 +219,21 @@ class _MigrateChestProgressScreenState extends State<MigrateChestProgressScreen>
                 child: PrimaryButton(
                   onPressed: () async {
                     if (_migrationSuccess) {
-                      final genW = Provider.of<GenerateWalletsProvider>(context, listen: false);
+                      final genW = old_provider.Provider.of<GenerateWalletsProvider>(context, listen: false);
                       genW.generatedMnemonic = widget.newMnemonic;
                       genW.resetImportView();
 
-                      final myWallets = Provider.of<MyWalletsProvider>(context, listen: false);
                       final currentChestNumber = configBox.get('currentChest');
-                      final currentChest = chestBox.get(currentChestNumber)!;
 
-                      await myWallets.clearWallets(currentChest);
+                      // Clear all wallets from current chest
+                      await ref.read(walletServiceProvider).deleteSafe(currentChestNumber);
 
                       await Navigator.pushAndRemoveUntil(
                         context,
-                        FaderTransition(page: const OnboardingStepSeven(scanDerivation: true, fromRestore: true), isFast: true),
+                        FaderTransition(
+                          page: const OnboardingStepSeven(scanDerivation: true, fromRestore: true),
+                          isFast: true,
+                        ),
                         (route) => false,
                       );
                     } else {
@@ -205,11 +259,7 @@ class _MigrateChestProgressScreenState extends State<MigrateChestProgressScreen>
         statusText = 'pending'.tr();
         break;
       case MigrationStatus.migrating:
-        leading = const SizedBox(
-          width: 24,
-          height: 24,
-          child: CircularProgressIndicator(strokeWidth: 2.5),
-        );
+        leading = const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.5));
         statusText = 'migratingStatus'.tr();
         break;
       case MigrationStatus.success:
@@ -234,12 +284,7 @@ class _MigrateChestProgressScreenState extends State<MigrateChestProgressScreen>
           builder: (context) => AlertDialog(
             title: Text('migrationFailedTitle'.tr()),
             content: SingleChildScrollView(child: SelectableText(task.details!)),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('close'.tr()),
-              ),
-            ],
+            actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: Text('close'.tr()))],
           ),
         );
       };
@@ -248,10 +293,7 @@ class _MigrateChestProgressScreenState extends State<MigrateChestProgressScreen>
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       child: ListTile(
-        leading: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          child: leading,
-        ),
+        leading: AnimatedSwitcher(duration: const Duration(milliseconds: 300), child: leading),
         title: Text(task.wallet.name ?? task.wallet.address),
         subtitle: Text(statusText),
         onTap: onTap,

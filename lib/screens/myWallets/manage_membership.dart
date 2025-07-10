@@ -1,30 +1,28 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:durt2/durt2.dart' show IdtyStatus, MembershipStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/screens/myWallets/migrate_identity.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:provider/provider.dart';
-import 'package:gecko/models/membership_status.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/models/membership_renewal.dart';
 
-class ManageMembership extends StatelessWidget {
+class ManageMembership extends ConsumerWidget {
   const ManageMembership({super.key, required this.address});
   final String address;
 
   @override
-  Widget build(BuildContext context) {
-    final sub = Provider.of<SubstrateSdk>(context);
-
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('manageMembership'.tr()),
@@ -37,16 +35,16 @@ class ManageMembership extends StatelessWidget {
               children: [
                 ScaledSizedBox(height: 20),
                 FutureBuilder<MembershipStatus>(
-                  future: sub.getMembershipStatus(address),
+                  future: ref.read(storageServiceProvider).getMembershipStatus(address),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
-                      return renewMembership(context, snapshot.data!);
+                      return renewMembership(context, ref, snapshot.data!);
                     }
                     return const SizedBox.shrink();
                   },
                 ),
                 FutureBuilder(
-                  future: sub.isSmith(address),
+                  future: ref.read(storageServiceProvider).isSmith(address),
                   builder: (BuildContext context, AsyncSnapshot<bool> isSmith) {
                     if (isSmith.data ?? false) {
                       return Column(
@@ -57,27 +55,19 @@ class ManageMembership extends StatelessWidget {
                               padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
                               child: Row(
                                 children: [
-                                  Icon(
-                                    Icons.change_circle_outlined,
-                                    size: scaleSize(24),
-                                    color: Colors.grey[400],
-                                  ),
+                                  Icon(Icons.change_circle_outlined, size: scaleSize(24), color: Colors.grey[400]),
                                   ScaledSizedBox(width: 16),
                                   Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text('Migrer mon identité',
-                                          style: scaledTextStyle(
-                                            fontSize: 16,
-                                            color: Colors.grey[500],
-                                          )),
+                                      Text(
+                                        'Migrer mon identité',
+                                        style: scaledTextStyle(fontSize: 16, color: Colors.grey[500]),
+                                      ),
                                       Text(
                                         "youCannotMigrateThisIdentity".tr(),
-                                        style: scaledTextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey[500],
-                                        ),
+                                        style: scaledTextStyle(fontSize: 12, color: Colors.grey[500]),
                                       ),
                                     ],
                                   ),
@@ -90,11 +80,7 @@ class ManageMembership extends StatelessWidget {
                             padding: EdgeInsets.symmetric(horizontal: scaleSize(18)),
                             child: Row(
                               children: [
-                                Image.asset(
-                                  'assets/skull_Icon.png',
-                                  height: scaleSize(24),
-                                  color: Colors.grey[400],
-                                ),
+                                Image.asset('assets/skull_Icon.png', height: scaleSize(24), color: Colors.grey[400]),
                                 ScaledSizedBox(width: 16),
                                 Expanded(
                                   child: Column(
@@ -103,17 +89,11 @@ class ManageMembership extends StatelessWidget {
                                     children: [
                                       Text(
                                         'revokeMyIdentity'.tr(),
-                                        style: scaledTextStyle(
-                                          fontSize: 16,
-                                          color: Colors.grey[500],
-                                        ),
+                                        style: scaledTextStyle(fontSize: 16, color: Colors.grey[500]),
                                       ),
                                       Text(
                                         "youCannotRevokeThisIdentity".tr(),
-                                        style: scaledTextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey[500],
-                                        ),
+                                        style: scaledTextStyle(fontSize: 12, color: Colors.grey[500]),
                                       ),
                                     ],
                                   ),
@@ -124,12 +104,7 @@ class ManageMembership extends StatelessWidget {
                         ],
                       );
                     } else {
-                      return Column(
-                        children: [
-                          migrateIdentity(context),
-                          revokeMyIdentity(context),
-                        ],
-                      );
+                      return Column(children: [migrateIdentity(context), revokeMyIdentity(context, ref)]);
                     }
                   },
                 ),
@@ -150,28 +125,20 @@ class ManageMembership extends StatelessWidget {
         onTap: () async {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) {
-              return MigrateIdentityScreen();
-            }),
+            MaterialPageRoute(
+              builder: (context) {
+                return MigrateIdentityScreen();
+              },
+            ),
           );
         },
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
           child: Row(
             children: [
-              Icon(
-                Icons.change_circle_outlined,
-                size: scaleSize(24),
-                color: context.colorScheme.onSurface,
-              ),
+              Icon(Icons.change_circle_outlined, size: scaleSize(24), color: context.colorScheme.onSurface),
               ScaledSizedBox(width: 16),
-              Text(
-                'Migrer mon identité',
-                style: scaledTextStyle(
-                  fontSize: 16,
-                  color: context.colorScheme.onSurface,
-                ),
-              ),
+              Text('Migrer mon identité', style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface)),
             ],
           ),
         ),
@@ -179,7 +146,7 @@ class ManageMembership extends StatelessWidget {
     );
   }
 
-  Widget revokeMyIdentity(BuildContext context) {
+  Widget revokeMyIdentity(BuildContext context, WidgetRef ref) {
     return Container(
       margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
       child: InkWell(
@@ -192,39 +159,38 @@ class ManageMembership extends StatelessWidget {
           );
 
           if (!answer) return;
-          final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-          final sub = Provider.of<SubstrateSdk>(context, listen: false);
+          final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
           if (!await myWalletProvider.askPinCode()) return;
 
-          final transactionId = await sub.revokeIdentity(address, myWalletProvider.pinCode);
+          final keypair = await ref
+              .read(walletServiceProvider)
+              .getKeyPairFromAddress(address: address, pinCode: myWalletProvider.pinCode);
+          final transactionStatus = ref.read(duniterServiceProvider).revokeIdentity(keypair);
 
           Navigator.pop(context);
 
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) {
-              return TransactionInProgress(
-                  transactionId: transactionId, transType: 'revokeIdty', fromAddress: getShortPubkey(address), toAddress: getShortPubkey(address));
-            }),
+            MaterialPageRoute(
+              builder: (context) {
+                return TransactionInProgressScreen(
+                  transactionStatus: transactionStatus,
+                  transType: 'revokeIdty',
+                  fromAddress: getShortPubkey(address),
+                  toAddress: getShortPubkey(address),
+                );
+              },
+            ),
           );
         },
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
           child: Row(
             children: [
-              Image.asset(
-                'assets/skull_Icon.png',
-                height: scaleSize(24),
-              ),
+              Image.asset('assets/skull_Icon.png', height: scaleSize(24)),
               ScaledSizedBox(width: 16),
-              Text(
-                'revokeMyIdentity'.tr(),
-                style: scaledTextStyle(
-                  fontSize: 16,
-                  color: context.colorScheme.onSurface,
-                ),
-              ),
+              Text('revokeMyIdentity'.tr(), style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface)),
             ],
           ),
         ),
@@ -232,20 +198,16 @@ class ManageMembership extends StatelessWidget {
     );
   }
 
-  Widget renewMembership(BuildContext context, MembershipStatus status) {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final info = MembershipRenewal.calculateRenewalInfo(
-      status,
-      sub.currencyParameters['membershipRenewalPeriod']!,
-    );
-    if (info.expireDate == null && status.idtyStatus != IdtyStatus.notMember) return const SizedBox.shrink();
+  Widget renewMembership(BuildContext context, WidgetRef ref, MembershipStatus status) {
+    final info = MembershipRenewal.calculateRenewalInfo(status);
+    if (info.expireDate == null && status.idtyStatus != IdtyStatus.expired) return const SizedBox.shrink();
 
     return Container(
       height: scaleSize(64),
       margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
       child: InkWell(
         key: keyRenewMembership,
-        onTap: info.canRenew ? () => MembershipRenewal.executeRenewal(context, address) : null,
+        onTap: info.canRenew ? () => MembershipRenewal.executeRenewal(context, ref, address) : null,
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
           child: Row(

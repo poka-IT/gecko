@@ -3,15 +3,15 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import 'package:provider/provider.dart';
 
-class ConfirmChangePinScreen extends StatefulWidget {
+class ConfirmChangePinScreen extends ConsumerStatefulWidget {
   const ConfirmChangePinScreen({
     super.key,
     required this.walletName,
@@ -19,15 +19,15 @@ class ConfirmChangePinScreen extends StatefulWidget {
     required this.newPinCode,
   });
 
-  final String? walletName;
+  final String walletName;
   final MyWalletsProvider walletProvider;
   final String newPinCode;
 
   @override
-  State<ConfirmChangePinScreen> createState() => _ConfirmChangePinScreenState();
+  ConsumerState<ConfirmChangePinScreen> createState() => _ConfirmChangePinScreenState();
 }
 
-class _ConfirmChangePinScreenState extends State<ConfirmChangePinScreen> {
+class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen> {
   final formKey = GlobalKey<FormState>();
   late final FocusNode pinFocus;
   late final TextEditingController enterPin;
@@ -46,36 +46,30 @@ class _ConfirmChangePinScreenState extends State<ConfirmChangePinScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
-      appBar: GeckoAppBar(widget.walletName!),
+      appBar: GeckoAppBar(widget.walletName),
       body: SafeArea(
-        child: Column(children: <Widget>[
-          const SizedBox(height: 80),
-          SizedBox(
-            width: 300,
-            child: Text(
-              'geckoWillCheckPassword'.tr(),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16.0,
-                color: Colors.grey[600],
-                fontWeight: FontWeight.w400,
+        child: Column(
+          children: <Widget>[
+            const SizedBox(height: 80),
+            SizedBox(
+              width: 300,
+              child: Text(
+                'geckoWillCheckPassword'.tr(),
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16.0, color: Colors.grey[600], fontWeight: FontWeight.w400),
               ),
             ),
-          ),
-          const SizedBox(height: 30),
-          if (hasError) ...[
-            Text(
-              "thisIsNotAGoodCode".tr(),
-              style: const TextStyle(
-                color: Colors.red,
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
+            const SizedBox(height: 30),
+            if (hasError) ...[
+              Text(
+                "thisIsNotAGoodCode".tr(),
+                style: const TextStyle(color: Colors.red, fontSize: 15, fontWeight: FontWeight.w500),
               ),
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
+            ],
+            pinForm(context),
           ],
-          pinForm(context),
-        ]),
+        ),
       ),
     );
   }
@@ -118,26 +112,17 @@ class _ConfirmChangePinScreenState extends State<ConfirmChangePinScreen> {
                 return;
               }
 
-              final sub = Provider.of<SubstrateSdk>(context, listen: false);
               final defaultWallet = widget.walletProvider.getDefaultWallet();
 
-              // Récupérer la seed avec l'ancien PIN
-              final seed = await sub.getSeed(
-                defaultWallet.address,
-                widget.walletProvider.pinCode,
-              );
-
-              // Recréer le chest avec le nouveau PIN
-              await sub.importAccount(
-                mnemonic: seed,
-                password: pin,
-              );
+              await ref
+                  .read(walletServiceProvider)
+                  .changePin(address: defaultWallet.address, oldPin: widget.walletProvider.pinCode, newPin: pin);
 
               // Mettre à jour le PIN dans le provider
               widget.walletProvider.pinCode = pin;
 
               // Recharger les wallets avec le nouveau PIN
-              final currentChest = widget.walletProvider.chestProvider.getCurrentChestNumber();
+              final currentChest = widget.walletProvider.getCurrentSafe;
               await widget.walletProvider.readAllWallets(currentChest);
               widget.walletProvider.reload();
 

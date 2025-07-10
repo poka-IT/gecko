@@ -23,10 +23,11 @@ class OnboardingStepEleven extends StatelessWidget {
     return PopScope(
       canPop: false,
       child: Scaffold(
-          backgroundColor: context.colorScheme.surface,
-          appBar: GeckoAppBar('allGood'.tr()),
-          body: SafeArea(
-            child: Stack(children: [
+        backgroundColor: context.colorScheme.surface,
+        appBar: GeckoAppBar('allGood'.tr()),
+        body: SafeArea(
+          child: Stack(
+            children: [
               SingleChildScrollView(
                 child: SizedBox(
                   width: double.infinity,
@@ -35,17 +36,18 @@ class OnboardingStepEleven extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       ScaledSizedBox(height: isTall ? 25 : 5),
-                      BuildText(text: fromRestore ? "yourChestAndWalletWereRestoredSuccessfully".tr() : "yourChestAndWalletWereCreatedSuccessfully".tr()),
+                      BuildText(
+                        text: fromRestore
+                            ? "yourChestAndWalletWereRestoredSuccessfully".tr()
+                            : "yourChestAndWalletWereCreatedSuccessfully".tr(),
+                      ),
                       ScaledSizedBox(height: isTall ? 15 : 5),
                       GifView(
                         image: AssetImage('assets/onBoarding/gecko-clin.gif'),
                         height: scaleSize(isTall ? 330 : 280),
                       ),
                       // We need this invisible second gif to preload the gif, otherwise it will glitch on loop
-                      Image.asset(
-                        'assets/onBoarding/gecko-clin.gif',
-                        height: 0,
-                      ),
+                      Image.asset('assets/onBoarding/gecko-clin.gif', height: 0),
                       Container(
                         padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
                         child: finishButton(context),
@@ -119,8 +121,10 @@ class OnboardingStepEleven extends StatelessWidget {
                   maximumSize: const Size(12, 12),
                 ),
               ),
-            ]),
-          )),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -136,9 +140,7 @@ Widget finishButton(BuildContext context) {
         backgroundColor: context.colorScheme.primary,
         elevation: 2,
         padding: const EdgeInsets.symmetric(horizontal: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
       ),
       onPressed: () {
@@ -146,11 +148,7 @@ Widget finishButton(BuildContext context) {
       },
       child: Text(
         "accessMyChest".tr(),
-        style: scaledTextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
-        ),
+        style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
       ),
     ),
   );

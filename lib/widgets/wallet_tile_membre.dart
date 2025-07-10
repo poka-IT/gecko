@@ -1,9 +1,8 @@
-import 'dart:io';
+import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/v2s_datapod.dart';
@@ -17,25 +16,16 @@ import 'package:provider/provider.dart';
 class WalletTileMembre extends StatelessWidget {
   const WalletTileMembre({super.key, required this.wallet});
 
-  final WalletData wallet;
+  final WalletEntity wallet;
 
   @override
   Widget build(BuildContext context) {
-    wallet.getDatapodAvatar();
-
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: scaleSize(52), vertical: scaleSize(15)),
       child: GestureDetector(
         key: keyOpenWallet(wallet.address),
         onTap: () {
-          Navigator.push(
-            context,
-            SmoothTransition(
-              page: WalletOptions(
-                wallet: wallet,
-              ),
-            ),
-          );
+          Navigator.push(context, SmoothTransition(page: WalletOptions(wallet: wallet)));
         },
         child: ScaledSizedBox(
           // key: wallet.number == 1 ? keyDragAndDrop : const Key('nothing'),
@@ -45,11 +35,7 @@ class WalletTileMembre extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               color: Colors.white,
               boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
+                BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 2)),
               ],
             ),
             child: Column(
@@ -69,11 +55,11 @@ class WalletTileMembre extends StatelessWidget {
                               ),
                               color: context.colorScheme.secondary.withValues(alpha: context.isDarkTheme ? 1 : 0.3),
                             ),
-                            child: wallet.imageCustomPath == null || wallet.imageCustomPath == ''
+                            child: wallet.imagePath == null || wallet.imagePath == ''
                                 ? Padding(
                                     padding: EdgeInsets.all(scaleSize(16)),
                                     child: Image.asset(
-                                      'assets/avatars/${wallet.imageDefaultPath}',
+                                      'assets/avatars/${wallet.number % 4}.png',
                                       alignment: Alignment.bottomCenter,
                                     ),
                                   )
@@ -83,9 +69,7 @@ class WalletTileMembre extends StatelessWidget {
                                       shape: BoxShape.circle,
                                       image: DecorationImage(
                                         fit: BoxFit.fitHeight,
-                                        image: FileImage(
-                                          File(wallet.imageCustomPath!),
-                                        ),
+                                        image: AssetImage(wallet.imagePath!),
                                       ),
                                     ),
                                   ),
@@ -106,16 +90,15 @@ class WalletTileMembre extends StatelessWidget {
                 ),
                 Container(
                   decoration: BoxDecoration(
-                    color: isDefault ? context.colorScheme.primary.withValues(alpha: 0.9) : context.colorScheme.secondary.withValues(alpha: 0.9),
+                    color: isDefault
+                        ? context.colorScheme.primary.withValues(alpha: 0.9)
+                        : context.colorScheme.secondary.withValues(alpha: 0.9),
                     borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(12),
                       bottomRight: Radius.circular(12),
                     ),
                   ),
-                  padding: EdgeInsets.symmetric(
-                    vertical: scaleSize(12),
-                    horizontal: scaleSize(16),
-                  ),
+                  padding: EdgeInsets.symmetric(vertical: scaleSize(12), horizontal: scaleSize(16)),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -152,5 +135,6 @@ class WalletTileMembre extends StatelessWidget {
     );
   }
 
-  bool get isDefault => wallet.address == Provider.of<MyWalletsProvider>(homeContext, listen: false).getDefaultWallet().address;
+  bool get isDefault =>
+      wallet.address == Provider.of<MyWalletsProvider>(homeContext, listen: false).getDefaultWallet().address;
 }

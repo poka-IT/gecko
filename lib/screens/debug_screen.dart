@@ -1,17 +1,20 @@
+import 'package:durt2/durt2.dart' hide Provider;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
-class DebugScreen extends StatelessWidget {
+import 'package:gecko/providers/block_height_provider.dart';
+
+class DebugScreen extends ConsumerWidget {
   const DebugScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final sub = Provider.of<SubstrateSdk>(context);
+  Widget build(BuildContext context, WidgetRef ref) {
     final screenSize = MediaQuery.of(context).size;
     final isSmallScreen = screenSize.height < 700;
 
@@ -47,36 +50,27 @@ class DebugScreen extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Icon(
-                              Icons.dns_rounded,
-                              color: context.colorScheme.primary,
-                              size: scaleSize(24),
-                            ),
+                            Icon(Icons.dns_rounded, color: context.colorScheme.primary, size: scaleSize(24)),
                             ScaledSizedBox(width: 12),
                             Text(
                               'currencyNode'.tr(),
-                              style: scaledTextStyle(
-                                fontSize: 14,
-                                color: context.colorScheme.onSecondaryContainer,
-                              ),
+                              style: scaledTextStyle(fontSize: 14, color: context.colorScheme.onSecondaryContainer),
                             ),
                           ],
                         ),
                         ScaledSizedBox(height: 12),
                         Text(
-                          'node: ${sub.getConnectedEndpoint()}',
-                          style: scaledTextStyle(
-                            fontSize: 13,
-                            color: context.colorScheme.onSecondaryContainer,
-                          ),
+                          'node: ${Networks.duniterEndpoint}',
+                          style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
                         ),
                         ScaledSizedBox(height: 8),
-                        Text(
-                          'blockN'.tr(args: [sub.blocNumber.toString()]),
-                          style: scaledTextStyle(
-                            fontSize: 13,
-                            color: context.colorScheme.onSecondaryContainer,
-                          ),
+                        old_provider.Consumer<BlockHeightProvider>(
+                          builder: (context, blockHeightProvider, child) {
+                            return Text(
+                              'blockN'.tr(args: [blockHeightProvider.blockHeight.toString()]),
+                              style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -104,18 +98,11 @@ class DebugScreen extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Icon(
-                              Icons.build_rounded,
-                              color: context.colorScheme.primary,
-                              size: scaleSize(24),
-                            ),
+                            Icon(Icons.build_rounded, color: context.colorScheme.primary, size: scaleSize(24)),
                             ScaledSizedBox(width: 12),
                             Text(
                               'Actions',
-                              style: scaledTextStyle(
-                                fontSize: 14,
-                                color: context.colorScheme.onSecondaryContainer,
-                              ),
+                              style: scaledTextStyle(fontSize: 14, color: context.colorScheme.onSecondaryContainer),
                             ),
                           ],
                         ),
@@ -127,18 +114,14 @@ class DebugScreen extends StatelessWidget {
                               foregroundColor: Colors.white,
                               backgroundColor: context.colorScheme.primary,
                               padding: EdgeInsets.symmetric(vertical: scaleSize(12)),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             ),
-                            onPressed: () async => await sub.spawnBlock(),
+                            onPressed: () async {
+                              await ref.read(duniterServiceProvider).spawnBlock();
+                            },
                             child: Text(
                               'Spawn a bloc',
-                              style: scaledTextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
+                              style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
                             ),
                           ),
                         ),

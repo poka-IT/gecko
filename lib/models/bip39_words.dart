@@ -2057,7 +2057,7 @@ List<String> _english = [
   'zebra',
   'zero',
   'zone',
-  'zoo'
+  'zoo',
 ];
 
 List<String> _french = [
@@ -4108,5 +4108,5 @@ List<String> _french = [
   'zèbre',
   'zénith',
   'zeste',
-  'zoologie'
+  'zoologie',
 ];

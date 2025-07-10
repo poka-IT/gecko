@@ -31,11 +31,7 @@ class GeckoBottomAppBar extends StatelessWidget {
           decoration: BoxDecoration(
             color: context.colorScheme.tertiary,
             boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                offset: const Offset(0, -4),
-                blurRadius: 10,
-              ),
+              BoxShadow(color: Colors.black.withValues(alpha: 0.08), offset: const Offset(0, -4), blurRadius: 10),
             ],
           ),
           width: size.width,
@@ -49,10 +45,7 @@ class GeckoBottomAppBar extends StatelessWidget {
                 isSelected: false,
                 onTap: () {
                   searchProvider.reload();
-                  Navigator.popUntil(
-                    context,
-                    ModalRoute.withName('/'),
-                  );
+                  Navigator.popUntil(context, ModalRoute.withName('/'));
                 },
               ),
               _buildNavItem(
@@ -73,11 +66,7 @@ class GeckoBottomAppBar extends StatelessWidget {
                     : () async {
                         if (!await myWalletProvider.askPinCode()) return;
 
-                        Navigator.pushNamedAndRemoveUntil(
-                          context,
-                          '/mywallets',
-                          ModalRoute.withName('/'),
-                        );
+                        Navigator.pushNamedAndRemoveUntil(context, '/mywallets', ModalRoute.withName('/'));
                       },
               ),
             ],
@@ -88,14 +77,16 @@ class GeckoBottomAppBar extends StatelessWidget {
   }
 
   Widget _buildNavItem({
-    Key? key,
+    required Key key,
+    required bool isSelected,
+    required VoidCallback? onTap,
     IconData? icon,
     String? imagePath,
-    required bool isSelected,
     bool isDisabled = false,
-    required VoidCallback? onTap,
   }) {
-    final color = isSelected ? homeContext.colorScheme.onSurface.withValues(alpha: 0.8) : homeContext.colorScheme.onSecondaryContainer.withValues(alpha: 0.8);
+    final color = isSelected
+        ? homeContext.colorScheme.onSurface.withValues(alpha: 0.8)
+        : homeContext.colorScheme.onSecondaryContainer.withValues(alpha: 0.8);
     final size = scaleSize(34);
 
     return Material(
@@ -111,17 +102,8 @@ class GeckoBottomAppBar extends StatelessWidget {
             color: isSelected ? homeContext.colorScheme.secondary.withValues(alpha: 0.5) : Colors.transparent,
           ),
           child: icon != null
-              ? Icon(
-                  icon,
-                  size: size,
-                  color: color,
-                )
-              : Image.asset(
-                  imagePath!,
-                  height: size,
-                  width: size,
-                  color: color,
-                ),
+              ? Icon(icon, size: size, color: color)
+              : Image.asset(imagePath!, height: size, width: size, color: color),
         ),
       ),
     );

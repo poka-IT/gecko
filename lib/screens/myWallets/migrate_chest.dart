@@ -1,41 +1,39 @@
+import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/wallet_data.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
 import 'package:gecko/screens/myWallets/migrate_chest_progress.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:polkawallet_sdk/api/apiKeyring.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
-class MigrateChestScreen extends StatefulWidget {
+class MigrateChestScreen extends ConsumerStatefulWidget {
   const MigrateChestScreen({super.key});
 
   @override
-  State<MigrateChestScreen> createState() => _MigrateChestScreenState();
+  ConsumerState<MigrateChestScreen> createState() => _MigrateChestScreenState();
 }
 
-class _MigrateChestScreenState extends State<MigrateChestScreen> {
+class _MigrateChestScreenState extends ConsumerState<MigrateChestScreen> {
   final _newMnemonicController = TextEditingController();
   bool _canMigrate = false;
   bool _isLoading = false;
   String _validationMessage = '';
-  List<WalletData> _walletsToMigrate = [];
+  List<WalletEntity> _walletsToMigrate = [];
 
   @override
   void initState() {
     super.initState();
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     _walletsToMigrate = myWalletProvider.listWallets;
   }
 
   Future<void> _validateMnemonic(String newMnemonic) async {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-
     setState(() {
       _isLoading = true;
       _validationMessage = '';
@@ -49,7 +47,7 @@ class _MigrateChestScreenState extends State<MigrateChestScreen> {
       return;
     }
 
-    final isMnemonicValid = await sub.isMnemonicValid(newMnemonic);
+    final isMnemonicValid = ref.read(walletServiceProvider).isMnemonicValid(newMnemonic);
     if (!isMnemonicValid) {
       setState(() {
         _validationMessage = "thisMnemonicIsNotValid".tr();
@@ -58,57 +56,84 @@ class _MigrateChestScreenState extends State<MigrateChestScreen> {
       return;
     }
 
-    // Check if destination is empty
-    final nbrScan = configBox.get('scanDerivations') ?? 20;
-    List<String> destAddresses = [];
+    try {
+      // Check if destination is empty
+      final nbrScan = configBox.get('scanDerivations') ?? 20;
+      List<String> destAddresses = [];
 
-    final rootAddressData = await sub.sdk.api.keyring.addressFromMnemonic(
-      sub.currencyParameters['ss58']!,
-      cryptoType: CryptoType.sr25519,
-      mnemonic: newMnemonic,
-    );
-    destAddresses.add(rootAddressData.address!);
+      // Generate root address using WalletService
+      final rootKeypair = await ref
+          .read(walletServiceProvider)
+          .getKeyPairFromMnemonic(newMnemonic, derivation: 0, keyPairType: Durt.defaultKeyPairType);
+      destAddresses.add(rootKeypair.address);
 
-    for (int i = 0; i < nbrScan; i++) {
-      final addressData = await sub.sdk.api.keyring.addressFromMnemonic(
-        sub.currencyParameters['ss58']!,
-        cryptoType: CryptoType.sr25519,
-        mnemonic: newMnemonic,
-        derivePath: '//$i',
-      );
-      destAddresses.add(addressData.address!);
-    }
+      // Generate derived addresses
+      for (int i = 0; i < nbrScan; i++) {
+        final derivedKeypair = await ref
+            .read(walletServiceProvider)
+            .getKeyPairFromMnemonic(newMnemonic, derivation: i, keyPairType: Durt.defaultKeyPairType);
+        destAddresses.add(derivedKeypair.address);
+      }
 
-    final destBalances = await sub.getBalanceMulti(destAddresses);
-    final destIdtyStatus = await sub.idtyStatusMulti(destAddresses);
+      // Check balances using Durt storage service
+      final destBalances = await ref.read(durtProvider).storage.getBalances(destAddresses);
 
-    if (destBalances.values.any((b) => b.total > 0) || destIdtyStatus.any((s) => s != IdtyStatus.none)) {
-      setState(() {
-        _validationMessage = 'destinationChestIsNotEmpty'.tr();
-        _isLoading = false;
-      });
-      return;
-    }
+      // Check if any destination address has funds or identity
+      bool hasExistingData = false;
+      for (final address in destAddresses) {
+        final balance = destBalances[address];
+        if (balance != null && balance.transferableBalance > BigInt.zero) {
+          hasExistingData = true;
+          break;
+        }
 
-    // Check if all source wallets can be migrated
-    for (final wallet in _walletsToMigrate) {
-      if (wallet.isMembre) {
-        final checks = await sub.getBalanceAndIdtyStatus(wallet.address, ''); // toAddress is irrelevant here
-        if (!checks.canValidate) {
-          setState(() {
-            _validationMessage = 'cannotMigrateSmith'.tr(args: [wallet.name!]);
-            _isLoading = false;
-          });
-          return;
+        // Check identity status
+        try {
+          final idtyIndex = await ref.read(durtProvider).storage.getIdentityIndexOf(address);
+          if (idtyIndex != null) {
+            hasExistingData = true;
+            break;
+          }
+        } catch (e) {
+          // Identity doesn't exist, continue
         }
       }
-    }
 
-    setState(() {
-      _validationMessage = 'youCanMigrateThisChest'.tr();
-      _canMigrate = true;
-      _isLoading = false;
-    });
+      if (hasExistingData) {
+        setState(() {
+          _validationMessage = 'destinationChestIsNotEmpty'.tr();
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // Check if all source wallets can be migrated
+      for (final wallet in _walletsToMigrate) {
+        if (wallet.isMember) {
+          final checks = await ref
+              .read(storageServiceProvider)
+              .getMigrateWalletChecks(fromAddress: wallet.address, toAddress: destAddresses.first);
+          if (!checks.canMigrate) {
+            setState(() {
+              _validationMessage = 'cannotMigrateSmith'.tr(args: [wallet.name ?? wallet.address]);
+              _isLoading = false;
+            });
+            return;
+          }
+        }
+      }
+
+      setState(() {
+        _validationMessage = 'youCanMigrateThisChest'.tr();
+        _canMigrate = true;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _validationMessage = 'validationError'.tr();
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -208,11 +233,7 @@ class _MigrateChestScreenState extends State<MigrateChestScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -5),
-                  ),
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5)),
                 ],
               ),
               child: Column(
@@ -238,9 +259,7 @@ class _MigrateChestScreenState extends State<MigrateChestScreen> {
                         backgroundColor: context.colorScheme.primary,
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: _canMigrate
                           ? () async {
@@ -252,8 +271,11 @@ class _MigrateChestScreenState extends State<MigrateChestScreen> {
                               );
 
                               if (!confirmed) return;
-                              // ignore: use_build_context_synchronously
-                              final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+                              final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(
+                                // ignore: use_build_context_synchronously
+                                context,
+                                listen: false,
+                              );
                               if (!await myWalletProvider.askPinCode()) return;
 
                               Navigator.pushReplacement(
@@ -271,10 +293,7 @@ class _MigrateChestScreenState extends State<MigrateChestScreen> {
                           : null,
                       child: Text(
                         'migrateChest'.tr(),
-                        style: scaledTextStyle(
-                          fontSize: isSmall ? 15 : 16,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: scaledTextStyle(fontSize: isSmall ? 15 : 16, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),

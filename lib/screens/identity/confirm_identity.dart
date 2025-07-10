@@ -1,28 +1,29 @@
+import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
+import 'package:gecko/providers.dart';
+
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
-class ConfirmIdentityScreen extends StatefulWidget {
+class ConfirmIdentityScreen extends ConsumerStatefulWidget {
   const ConfirmIdentityScreen({super.key, required this.address});
   final String address;
 
   @override
-  State<ConfirmIdentityScreen> createState() => _ConfirmIdentityScreenState();
+  ConsumerState<ConfirmIdentityScreen> createState() => _ConfirmIdentityScreenState();
 }
 
-class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
+class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
   final TextEditingController _identityNameController = TextEditingController();
   bool _canValidate = false;
   String _errorMessage = '';
@@ -33,9 +34,9 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
     super.dispose();
   }
 
-  Future<void> _validateIdentityName(DuniterIndexer duniterIndexer) async {
+  Future<void> _validateIdentityName() async {
     final name = _identityNameController.text.trim();
-    final idtyExist = await duniterIndexer.isIdtyExist(name);
+    final idtyExist = await SquidService.client.isIdtyExist(name);
     final hasNoSpaces = !name.contains(' ');
     final isValid = !idtyExist && hasNoSpaces && name.length >= 3 && name.length <= 32;
 
@@ -58,8 +59,7 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
   Future<void> _confirmIdentity(BuildContext context) async {
     final name = _identityNameController.text.trim();
     final navigatorState = Navigator.of(context);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     // Afficher le dialogue de confirmation
     final confirmed = await showConfirmationDialog(
@@ -72,15 +72,18 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
 
     if (!await myWalletProvider.askPinCode()) return;
 
-    final transactionId = await sub.confirmIdentity(widget.address, name, myWalletProvider.pinCode);
+    final keypair = await ref
+        .read(walletServiceProvider)
+        .getKeyPairFromAddress(address: widget.address, pinCode: myWalletProvider.pinCode);
+    final transactionStatus = ref.read(duniterServiceProvider).confirmIdentity(keypair: keypair, name: name);
 
     if (!mounted) return;
     navigatorState.pop();
 
     navigatorState.push(
       MaterialPageRoute(
-        builder: (context) => TransactionInProgress(
-          transactionId: transactionId,
+        builder: (context) => TransactionInProgressScreen(
+          transactionStatus: transactionStatus,
           transType: 'comfirmIdty',
           fromAddress: widget.address,
           toAddress: widget.address,
@@ -91,15 +94,12 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
     final screenSize = MediaQuery.of(context).size;
     final isSmallScreen = screenSize.height < 700;
 
     return Scaffold(
       appBar: WalletAppBar(
         address: widget.address,
-        currentBalance: BigInt.from(walletOptions.balanceCache[widget.address] ?? 0),
         title: 'chooseIdentityName'.tr(),
       ),
       body: Column(
@@ -132,70 +132,55 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
                     // Titre principal
                     Text(
                       'identityInDuniterNetwork'.tr(args: [currencyName]),
-                      style: scaledTextStyle(
-                        fontSize: isSmallScreen ? 20 : 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: scaledTextStyle(fontSize: isSmallScreen ? 20 : 24, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),
                     ScaledSizedBox(height: isSmallScreen ? 16 : 24),
 
                     // Texte explicatif
-                    Text(
-                      'identityExplanation'.tr(),
-                      style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16),
-                    ),
+                    Text('identityExplanation'.tr(), style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16)),
                     ScaledSizedBox(height: isSmallScreen ? 16 : 24),
 
                     // Points importants
-                    ...[
-                      'identityNameUnique'.tr(),
-                      'identityNameSearchable'.tr(),
-                      'identityNamePermanent'.tr(),
-                    ].map((text) => Padding(
-                          padding: EdgeInsets.only(bottom: scaleSize(isSmallScreen ? 8 : 12)),
-                          child: Row(
-                            children: [
-                              Icon(Icons.check_circle, color: context.colorScheme.primary, size: scaleSize(isSmallScreen ? 16 : 20)),
-                              ScaledSizedBox(width: isSmallScreen ? 8 : 12),
-                              Expanded(
-                                child: Text(
-                                  text,
-                                  style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )),
+                    ...['identityNameUnique'.tr(), 'identityNameSearchable'.tr(), 'identityNamePermanent'.tr()].map(
+                      (text) => Padding(
+                        padding: EdgeInsets.only(bottom: scaleSize(isSmallScreen ? 8 : 12)),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              color: context.colorScheme.primary,
+                              size: scaleSize(isSmallScreen ? 16 : 20),
+                            ),
+                            ScaledSizedBox(width: isSmallScreen ? 8 : 12),
+                            Expanded(
+                              child: Text(text, style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                     ScaledSizedBox(height: isSmallScreen ? 24 : 32),
 
                     // Champ de saisie
                     TextField(
                       key: keyEnterIdentityUsername,
                       controller: _identityNameController,
-                      onChanged: (_) => _validateIdentityName(duniterIndexer),
+                      onChanged: (_) => _validateIdentityName(),
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) {
                         if (_canValidate) {
                           _confirmIdentity(context);
                         }
                       },
-                      inputFormatters: [
-                        FilteringTextInputFormatter.deny(RegExp(r'^ ')),
-                      ],
+                      inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r'^ '))],
                       decoration: InputDecoration(
                         hintText: 'enterIdentityName'.tr(),
                         errorText: _errorMessage.isNotEmpty ? _errorMessage : null,
                         filled: true,
                         fillColor: Colors.grey[100],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: scaleSize(16),
-                          vertical: scaleSize(12),
-                        ),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                        contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
                       ),
                       style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16),
                     ),
@@ -217,16 +202,11 @@ class _ConfirmIdentityScreenState extends State<ConfirmIdentityScreen> {
                   backgroundColor: context.colorScheme.primary,
                   disabledBackgroundColor: Colors.grey[300],
                   elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 child: Text(
                   'validate'.tr(),
-                  style: scaledTextStyle(
-                    fontSize: isSmallScreen ? 14 : 16,
-                    color: Colors.white,
-                  ),
+                  style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16, color: Colors.white),
                 ),
               ),
             ),

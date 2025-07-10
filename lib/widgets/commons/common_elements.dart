@@ -24,20 +24,14 @@ Future<void> infoPopup(BuildContext context, String title) async {
                 key: keyInfoPopup,
                 child: Padding(
                   padding: const EdgeInsets.all(8),
-                  child: Text(
-                    "gotit".tr(),
-                    style: scaledTextStyle(
-                      fontSize: 18,
-                      color: const Color(0xffD80000),
-                    ),
-                  ),
+                  child: Text("gotit".tr(), style: scaledTextStyle(fontSize: 18, color: const Color(0xffD80000))),
                 ),
                 onPressed: () {
                   Navigator.pop(context, true);
                 },
               ),
             ],
-          )
+          ),
         ],
       );
     },

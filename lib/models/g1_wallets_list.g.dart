@@ -22,7 +22,7 @@ class G1WalletsListAdapter extends TypeAdapter<G1WalletsList> {
       id: fields[2] as Id?,
       username: fields[3] as String?,
       csName: fields[4] as String?,
-      isMembre: fields[5] as bool?,
+      isMember: fields[5] as bool?,
     );
   }
 
@@ -41,7 +41,7 @@ class G1WalletsListAdapter extends TypeAdapter<G1WalletsList> {
       ..writeByte(4)
       ..write(obj.csName)
       ..writeByte(5)
-      ..write(obj.isMembre);
+      ..write(obj.isMember);
   }
 
   @override
@@ -66,7 +66,6 @@ class IdAdapter extends TypeAdapter<Id> {
 
   @override
   void write(BinaryWriter writer, Id obj) {
-    writer.writeByte(0);
   }
 
   @override

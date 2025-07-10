@@ -1,59 +1,61 @@
 // ignore_for_file: must_be_immutable
 
+import 'package:durt2/durt2.dart' show IdtyStatusExtension;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:gecko/globals.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/providers/duniter_indexer.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
+import 'package:gecko/providers.dart';
+
 import 'package:gecko/widgets/bottom_app_bar.dart';
+import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 import 'package:gecko/widgets/history_query.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/wallet_header.dart';
-import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 import 'package:gecko/models/wallet_header_data.dart';
-import 'package:gecko/models/wallet_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/models/transaction_in_progress_data.dart';
 
-class ActivityScreen extends StatefulWidget {
-  const ActivityScreen({required this.address, this.username, this.transactionId, this.comment}) : super(key: keyActivityScreen);
+class ActivityScreen extends ConsumerStatefulWidget {
+  const ActivityScreen({required this.address, this.username, this.transactionData, this.initialHeaderData})
+    : super(key: keyActivityScreen);
+
   final String address;
   final String? username;
-  final String? transactionId;
-  final String? comment;
+  final TransactionInProgressData? transactionData;
+  final WalletHeaderData? initialHeaderData; // Données du header pour une transition fluide
+
   @override
-  State<ActivityScreen> createState() => _ActivityScreenState();
+  ConsumerState<ActivityScreen> createState() => _ActivityScreenState();
 }
 
-class _ActivityScreenState extends State<ActivityScreen> {
+class _ActivityScreenState extends ConsumerState<ActivityScreen> {
   late Future<WalletHeaderData> _headerDataFuture;
 
   @override
   void initState() {
     super.initState();
-    final sub = Provider.of<SubstrateSdk>(homeContext, listen: false);
-    sub.getOldOwnerKey(widget.address);
+    ref.read(storageServiceProvider).getOldOwnerKey(widget.address);
     _headerDataFuture = _loadWalletData();
   }
 
   Future<WalletHeaderData> _loadWalletData() async {
-    final sub = Provider.of<SubstrateSdk>(context, listen: false);
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     final (idtyStatusValue, balanceResult, certData) = await (
-      sub.idtyStatus(widget.address),
-      sub.getBalance(widget.address),
-      sub.getCertsCounter(widget.address),
+      ref.read(storageServiceProvider).getIdtyStatus(widget.address),
+      ref.read(storageServiceProvider).getBalance(widget.address),
+      ref.read(storageServiceProvider).getCertsCounter(widget.address),
     ).wait;
 
     final data = WalletHeaderData(
-      hasIdentity: idtyStatusValue != IdtyStatus.none,
+      hasIdentity: idtyStatusValue.hasIdentity,
       isOwner: myWalletProvider.isOwner(widget.address),
-      walletName: duniterIndexer.walletNameIndexer[widget.address],
-      balance: BigInt.from(balanceResult.transferableBalance),
-      certCount: certData,
+      walletName: ref.read(squidServiceProvider).walletNameIndexer[widget.address],
+      balance: balanceResult.transferableBalance,
+      certsReceived: certData.receivedCount,
+      certsSent: certData.sentCount,
     );
 
     return data;
@@ -61,14 +63,20 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final duniterIndexer = Provider.of<DuniterIndexer>(context, listen: true);
+    // Si on a des données initiales, les utiliser immédiatement pour une transition fluide
+    if (widget.initialHeaderData != null) {
+      // Refresher les données en arrière-plan
+      _refreshDataInBackground();
+
+      return _buildScaffold(widget.initialHeaderData!);
+    }
 
     return FutureBuilder<WalletHeaderData>(
       future: _headerDataFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
-            appBar: AppBar(title: Text('accountActivity'.tr())),
+            appBar: WalletAppBar(address: widget.address, title: 'accountActivity'.tr()),
             body: const Center(child: CircularProgressIndicator()),
             bottomNavigationBar: const GeckoBottomAppBar(),
           );
@@ -76,45 +84,43 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
         if (snapshot.hasError || !snapshot.hasData) {
           return Scaffold(
-            appBar: AppBar(title: Text('accountActivity'.tr())),
+            appBar: WalletAppBar(address: widget.address, title: 'accountActivity'.tr()),
             body: Center(child: Text('errorLoadingWalletData'.tr())),
             bottomNavigationBar: const GeckoBottomAppBar(),
           );
         }
 
-        final walletData = snapshot.data!;
-
-        return PopScope(
-          onPopInvokedWithResult: (_, __) {
-            duniterIndexer.refetch = duniterIndexer.transBC = null;
-          },
-          child: Scaffold(
-            appBar: WalletAppBar(
-              address: widget.address,
-              currentBalance: walletData.balance,
-              title: 'accountActivity'.tr(),
-            ),
-            body: Stack(
-              children: [
-                Column(
-                  children: <Widget>[
-                    WalletHeader(address: widget.address),
-                    Expanded(
-                      child: HistoryQuery(
-                        address: widget.address,
-                        transactionId: widget.transactionId,
-                        comment: widget.comment,
-                      ),
-                    ),
-                  ],
-                ),
-                const OfflineInfo(),
-              ],
-            ),
-            bottomNavigationBar: const GeckoBottomAppBar(),
-          ),
-        );
+        return _buildScaffold(snapshot.data!);
       },
     );
+  }
+
+  Widget _buildScaffold(WalletHeaderData headerData) {
+    return Scaffold(
+      appBar: WalletAppBar(address: widget.address, title: 'accountActivity'.tr()),
+      body: Stack(
+        children: [
+          Column(
+            children: <Widget>[
+              WalletHeader(address: widget.address),
+              Expanded(
+                child: HistoryQuery(address: widget.address, transactionData: widget.transactionData),
+              ),
+            ],
+          ),
+          const OfflineInfo(),
+        ],
+      ),
+      bottomNavigationBar: const GeckoBottomAppBar(),
+    );
+  }
+
+  Future<void> _refreshDataInBackground() async {
+    // Refresh les données en arrière-plan sans bloquer l'UI
+    try {
+      await _loadWalletData();
+    } catch (e) {
+      // Ignorer les erreurs de refresh en arrière-plan
+    }
   }
 }

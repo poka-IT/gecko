@@ -1,38 +1,32 @@
+import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/globals.dart';
-import 'package:gecko/providers/substrate_sdk.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/providers.dart';
 
-class OfflineInfo extends StatelessWidget {
-  const OfflineInfo({
-    super.key,
-  });
+class OfflineInfo extends ConsumerWidget {
+  const OfflineInfo({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(homeContext).size.width;
-    return Consumer<SubstrateSdk>(builder: (context, sub, _) {
-      return Visibility(
-        visible: !sub.nodeConnected,
-        child: Positioned(
-          top: 0,
-          child: Container(
-              height: 30,
-              width: screenWidth,
-              color: Colors.grey[800],
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'youAreOffline'.tr(),
-                    style: TextStyle(color: Colors.grey[50]),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              )),
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the connection status using the StateNotifierProvider
+    final connectionStatus = ref.watch(connectionStatusProvider);
+
+    // Since this is now a direct value, we don't need .when()
+    final isConnected = connectionStatus == d.ConnectionStatus.connected;
+
+    return Visibility(
+      visible: !isConnected,
+      child: Container(
+        width: double.infinity,
+        color: Colors.orange,
+        padding: const EdgeInsets.all(4),
+        child: Text(
+          'offline'.tr(),
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-      );
-    });
+      ),
+    );
   }
 }

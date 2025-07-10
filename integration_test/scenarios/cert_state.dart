@@ -1,3 +1,4 @@
+import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -16,7 +17,7 @@ void main() async {
 
     // Open chest
     await firstOpenChest();
-    spawnBlock(until: 15);
+    await Durt.i.duniter.spawnBlock(until: 15);
     await goBack();
 
     // Go wallet 5 view
@@ -30,21 +31,14 @@ void main() async {
     await waitFor('canRenewCertInX'.tr().substring(0, 8), reverse: true);
 
     // Background pay 25
-    await bkPay(
-        fromAddress: test1.address, destAddress: test5.address, amount: 25);
+    await bkPay(fromAddress: test1.address, destAddress: test5.address, amount: 25);
     await waitFor('25.0', exactMatch: true);
-    await spawnBlock();
+    await Durt.i.duniter.spawnBlock();
     await waitFor('22.0', exactMatch: true);
-    await bkCertify(
-        fromAddress: test1.address,
-        destAddress: test5.address,
-        spawnBloc: false);
+    await bkCertify(fromAddress: test1.address, destAddress: test5.address, spawnBloc: false);
     await bkConfirmIdentity(fromAddress: test5.address, name: test5.name);
     await waitFor('1', exactMatch: true);
-    await bkCertify(
-        fromAddress: test2.address,
-        destAddress: test5.address,
-        spawnBloc: false);
+    await bkCertify(fromAddress: test2.address, destAddress: test5.address, spawnBloc: false);
     // await waitFor('2', exactMatch: true);
     await bkCertify(fromAddress: test3.address, destAddress: test5.address);
     await waitFor('3', exactMatch: true);
@@ -53,9 +47,9 @@ void main() async {
     // await bkPay(
     //     fromAddress: test2.address, destAddress: test5.address, amount: 40);
     await waitFor('21.99', exactMatch: true);
-    await spawnBlock(until: 30);
+    await Durt.i.duniter.spawnBlock(until: 30);
     await waitFor('121.99', exactMatch: true);
-    await spawnBlock(until: 40);
+    await Durt.i.duniter.spawnBlock(until: 40);
     await waitFor('221.99', exactMatch: true);
   }, timeout: testTimeout());
 }

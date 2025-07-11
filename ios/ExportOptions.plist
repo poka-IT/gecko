@@ -5,7 +5,7 @@
 	<key>destination</key>
 	<string>export</string>
 	<key>generateAppStoreInformation</key>
-	<false/>
+	<true/>
 	<key>manageAppVersionAndBuildNumber</key>
 	<true/>
 	<key>method</key>
@@ -19,7 +19,7 @@
 	<key>testFlightInternalTestingOnly</key>
 	<false/>
 	<key>uploadBitcode</key>
-	<true/>
+	<false/>
 	<key>uploadSymbols</key>
 	<true/>
 </dict>

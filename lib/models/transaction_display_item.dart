@@ -52,8 +52,8 @@ class TransactionDisplayItem {
     // Calculate date delimiter for grouping
     final String dateDelimiter = _calculateDateDelimiter(transactionTime);
 
-    // Check if this is migration time (before genesis + 7 days)
-    final bool isMigrationTime = transactionTime.isBefore(genesisTime.add(const Duration(days: 7)));
+    // Check if this is migration time
+    final bool isMigrationTime = transactionTime.isBefore(genesisTime);
 
     return TransactionDisplayItem(
       address: otherAddress,
@@ -85,8 +85,8 @@ class TransactionDisplayItem {
     // Calculate date delimiter for grouping
     final String dateDelimiter = _calculateDateDelimiter(transactionTime);
 
-    // Check if this is migration time (before genesis + 7 days)
-    final bool isMigrationTime = transactionTime.isBefore(genesisTime.add(const Duration(days: 7)));
+    // Check if this is migration time
+    final bool isMigrationTime = transactionTime.isBefore(genesisTime);
 
     return TransactionDisplayItem(
       address: walletAddress, // For UDs, the address is the wallet address

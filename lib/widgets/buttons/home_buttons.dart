@@ -13,8 +13,91 @@ import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:provider/provider.dart';
 
-class HomeButtons extends StatelessWidget {
-  const HomeButtons({super.key});
+class HomeButtons extends StatefulWidget {
+  final bool isEasterEggActive;
+
+  const HomeButtons({super.key, this.isEasterEggActive = false});
+
+  @override
+  State<HomeButtons> createState() => _HomeButtonsState();
+}
+
+class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin {
+  late AnimationController _colorController;
+  late Animation<double> _colorAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Animation for disco colors (fast cycle)
+    _colorController = AnimationController(duration: const Duration(seconds: 1), vsync: this);
+    _colorAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_colorController);
+  }
+
+  @override
+  void didUpdateWidget(HomeButtons oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.isEasterEggActive != oldWidget.isEasterEggActive) {
+      if (widget.isEasterEggActive) {
+        _colorController.repeat();
+      } else {
+        _colorController.stop();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _colorController.dispose();
+    super.dispose();
+  }
+
+  Color _getDiscoColor(double value, double offset) {
+    // Create smooth disco color transitions with offset
+    final hue = ((value + offset) * 360) % 360;
+    return HSVColor.fromAHSV(1.0, hue, 0.8, 1.0).toColor();
+  }
+
+  Widget _buildDiscoButton({
+    required Widget child,
+    required Color baseColor,
+    required double offset,
+    required VoidCallback onTap,
+  }) {
+    return AnimatedBuilder(
+      animation: _colorAnimation,
+      builder: (context, _) {
+        return Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.black.withValues(alpha: 0.1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+                spreadRadius: 0,
+              ),
+              BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 1, offset: const Offset(0, 1)),
+            ],
+          ),
+          child: ClipOval(
+            child: Material(
+              color: widget.isEasterEggActive ? _getDiscoColor(_colorAnimation.value, offset) : baseColor,
+              child: InkWell(
+                splashColor: Colors.white.withValues(alpha: 0.2),
+                highlightColor: Colors.white.withValues(alpha: 0.1),
+                onTap: onTap,
+                child: child,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,42 +112,22 @@ class HomeButtons extends StatelessWidget {
           children: <Widget>[
             Column(
               children: <Widget>[
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withValues(alpha: 0.1),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                        spreadRadius: 0,
-                      ),
-                      BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 1, offset: const Offset(0, 1)),
-                    ],
-                  ),
-                  child: ClipOval(
-                    child: Material(
-                      color: context.colorScheme.primary,
-                      child: InkWell(
-                        splashColor: Colors.white.withValues(alpha: 0.2),
-                        highlightColor: Colors.white.withValues(alpha: 0.1),
-                        child: Padding(
-                          padding: EdgeInsets.all(scaleSize(15)),
-                          child: Image(image: const AssetImage('assets/home/loupe.png'), height: scaleSize(58)),
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return const SearchScreen();
-                              },
-                            ),
-                          );
+                _buildDiscoButton(
+                  baseColor: context.colorScheme.primary,
+                  offset: 0.0, // Premier bouton - pas de décalage
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return const SearchScreen();
                         },
                       ),
-                    ),
+                    );
+                  },
+                  child: Padding(
+                    padding: EdgeInsets.all(scaleSize(15)),
+                    child: Image(image: const AssetImage('assets/home/loupe.png'), height: scaleSize(58)),
                   ),
                 ),
                 ScaledSizedBox(height: 10),
@@ -85,46 +148,28 @@ class HomeButtons extends StatelessWidget {
             ScaledSizedBox(width: 95),
             Column(
               children: <Widget>[
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withValues(alpha: 0.1),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                        spreadRadius: 0,
-                      ),
-                      BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 1, offset: const Offset(0, 1)),
-                    ],
-                  ),
-                  child: ClipOval(
-                    key: keyOpenWalletsHomme,
-                    child: Material(
-                      color: context.colorScheme.primary, // button color
-                      child: InkWell(
-                        onTap: () async {
-                          WalletEntity? defaultWallet = myWalletProvider.getDefaultWallet();
-                          if (myWalletProvider.pinCode == '') {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (homeContext) {
-                                  return UnlockingWallet(wallet: defaultWallet);
-                                },
-                              ),
-                            );
-                          }
-                          if (myWalletProvider.pinCode == '') return;
-                          Navigator.pushNamed(context, '/mywallets');
-                        },
-                        child: Padding(
-                          padding: EdgeInsets.all(scaleSize(14.5)),
-                          child: Image(image: const AssetImage('assets/home/wallet.png'), height: scaleSize(61)),
+                _buildDiscoButton(
+                  baseColor: context.colorScheme.primary,
+                  offset: 0.33, // Deuxième bouton - décalage 1/3
+                  onTap: () async {
+                    WalletEntity? defaultWallet = myWalletProvider.getDefaultWallet();
+                    if (myWalletProvider.pinCode == '') {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (homeContext) {
+                            return UnlockingWallet(wallet: defaultWallet);
+                          },
                         ),
-                      ),
-                    ),
+                      );
+                    }
+                    if (myWalletProvider.pinCode == '') return;
+                    Navigator.pushNamed(context, '/mywallets');
+                  },
+                  child: Padding(
+                    key: keyOpenWalletsHomme,
+                    padding: EdgeInsets.all(scaleSize(14.5)),
+                    child: Image(image: const AssetImage('assets/home/wallet.png'), height: scaleSize(61)),
                   ),
                 ),
                 ScaledSizedBox(height: 10),
@@ -144,37 +189,15 @@ class HomeButtons extends StatelessWidget {
             children: <Widget>[
               Column(
                 children: <Widget>[
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.black.withValues(alpha: 0.1),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                          spreadRadius: 0,
-                        ),
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 1,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                    child: ClipOval(
-                      child: Material(
-                        color: context.colorScheme.primary, // button color
-                        child: InkWell(
-                          child: Padding(
-                            padding: EdgeInsets.all(scaleSize(14)),
-                            child: Image(image: const AssetImage('assets/home/qrcode.png'), height: scaleSize(62)),
-                          ),
-                          onTap: () async {
-                            await historyProvider.scan(context);
-                          },
-                        ),
-                      ),
+                  _buildDiscoButton(
+                    baseColor: context.colorScheme.primary,
+                    offset: 0.66, // Troisième bouton - décalage 2/3
+                    onTap: () async {
+                      await historyProvider.scan(context);
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.all(scaleSize(14)),
+                      child: Image(image: const AssetImage('assets/home/qrcode.png'), height: scaleSize(62)),
                     ),
                   ),
                   ScaledSizedBox(height: 10),

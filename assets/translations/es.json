@@ -370,5 +370,6 @@
     "hideUniversalDividends": "Ocultar dividendos universales",
     "universalDividends": "Dividendos Universales",
     "universalDividend": "Dividendo Universal",
-    "udShort": "DU"
+    "udShort": "DU",
+    "offline": "Desconectado"
 }

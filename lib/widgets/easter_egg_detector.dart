@@ -181,7 +181,7 @@ class _EasterEggDetectorState extends State<EasterEggDetector> {
     // Restaurer le message original
     if (mounted && _originalMessage != null) {
       final homeProvider = old_provider.Provider.of<HomeProvider>(context, listen: false);
-      homeProvider.changeMessage(_originalMessage!);
+      homeProvider.changeMessage(_originalMessage!, true);
       _originalMessage = null;
     }
   }

@@ -305,5 +305,6 @@
     "hideUniversalDividends": "Nascondi dividendi universali",
     "universalDividends": "Dividendi Universali",
     "universalDividend": "Dividendo Universale",
-    "udShort": "DU"
+    "udShort": "DU",
+    "offline": "Disconnesso"
 }

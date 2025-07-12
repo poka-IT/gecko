@@ -36,7 +36,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await old_provider.Provider.of<HomeProvider>(context, listen: false).initHome(context: context, ref: ref);
+      _showCesiumImportInfoDialogIfNeeded();
     });
+  }
+
+  void _showCesiumImportInfoDialogIfNeeded() {
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final bool isWalletsExists = myWalletProvider.isWalletsExists;
+    final bool alreadyShown = configBox.get('cesiumImportInfoShown') ?? false;
+
+    if (!isWalletsExists && !alreadyShown) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("cesium_import_info_title".tr()),
+            content: Text("cesium_import_info_body".tr()),
+            actions: <Widget>[
+              TextButton(
+                child: Text("gotit".tr()),
+                onPressed: () {
+                  configBox.put('cesiumImportInfoShown', true);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+      configBox.put('cesiumImportInfoShown', true);
+    }
   }
 
   void _handleEasterEggStateChange(bool isActive) {

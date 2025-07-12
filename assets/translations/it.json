@@ -192,14 +192,15 @@
     "removeContact": "Elimina\nquesto contatto",
     "derivationsScanProgress": "Scannerizzando l'indirizzo {}/{}",
     "youAreOffline": "Disconnesso...",
-    "importIdPasswordAccount": "Importare un account Id/Password",
+    "importIdPasswordAccount": "Migrare un account Cesium",
     "migrateToThisWallet": "Seleziona un portafoglio di destinazione:",
     "youMustWaitBeforeCashoutThisAccount": "Devi aspettare qualche minuto prima di migrare questo conto",
     "thisAccountIsEmpty": "Questo conto é vuoto",
     "youCannotMigrateIdentityToExistingIdentity": "Non si puó migrare un'identitá\na un conto che ne ha giá una",
-    "importOldAccount": "Importa conto precedente",
+    "importOldAccount": "Migra il mio vecchio conto",
     "enterCesiumId": "Inserisci la tua frase segreta di Cesium",
     "enterCesiumPassword": "Inserisci la tua password di Cesium",
+    "migrate_cesium_account_info": "Questa schermata ti permette di migrare un vecchio account Cesium (username/password) in un portafoglio nel tuo vault. Se il tuo account Cesium è collegato a un'identità della Rete di Fiducia, verrà migrata anche quella insieme al tuo saldo.",
     "migrateAccount": "Migra conto",
     "migrateIdentity": "Migra identitá",
     "identityMigration": "Migrazione dell'identitá",
@@ -306,5 +307,7 @@
     "universalDividends": "Dividendi Universali",
     "universalDividend": "Dividendo Universale",
     "udShort": "DU",
-    "offline": "Disconnesso"
+    "offline": "Disconnesso",
+    "cesium_import_info_title": "Importare un portafoglio Cesium?",
+    "cesium_import_info_body": "Per importare un portafoglio Cesium (con nome utente e password), devi prima creare un vault in Ğecko. Una volta creato il tuo vault, potrai migrare il tuo vecchio portafoglio in questo nuovo formato, più semplice e sicuro."
 }

@@ -29,9 +29,17 @@ import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 // Helper pour accéder aux services Riverpod depuis ce fichier
 final _container = ProviderContainer();
 
-class ImportG1v1 extends StatelessWidget {
+class ImportG1v1 extends StatefulWidget {
   const ImportG1v1({super.key});
   static const int debouneTime = 600;
+
+  @override
+  State<ImportG1v1> createState() => _ImportG1v1State();
+}
+
+class _ImportG1v1State extends State<ImportG1v1> {
+  Timer? debounce;
+  bool _keyboardDismissed = false;
 
   /// Effectue la migration G1v1 vers v2 avec affichage immédiat de l'écran de transaction
   Stream<TransactionStatus> _performG1v1Migration({
@@ -66,7 +74,6 @@ class ImportG1v1 extends StatelessWidget {
   Widget build(BuildContext context) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
-    Timer? debounce;
     WalletEntity selectedWallet = myWalletProvider.getDefaultWallet();
 
     return PopScope(
@@ -105,11 +112,44 @@ class ImportG1v1 extends StatelessWidget {
                     );
                   }
 
+                  final balance = migrationChecks.data?.fromBalance?.transferableBalance;
+                  if (!_keyboardDismissed && balance != null && balance > BigInt.zero) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      FocusScope.of(context).unfocus();
+                    });
+                    _keyboardDismissed = true;
+                  }
+
                   return SingleChildScrollView(
                     padding: EdgeInsets.all(scaleSize(12)),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
+                        Card(
+                          color: context.colorScheme.primary.withValues(alpha: 0.1),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(color: context.colorScheme.primary, width: 1),
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.all(scaleSize(12)),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(Icons.info_outline, color: context.colorScheme.primary, size: scaleSize(24)),
+                                ScaledSizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'migrate_cesium_account_info'.tr(),
+                                    style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSurface),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        ScaledSizedBox(height: 8),
                         // Section des identifiants Cesium
                         Card(
                           color: context.colorScheme.surfaceContainer,
@@ -137,8 +177,11 @@ class ImportG1v1 extends StatelessWidget {
                                     if (debounce?.isActive ?? false) {
                                       debounce!.cancel();
                                     }
-                                    debounce = Timer(const Duration(milliseconds: debouneTime), () {
+                                    debounce = Timer(const Duration(milliseconds: ImportG1v1.debouneTime), () {
                                       if (g1v1Migration.csSalt.text != '' && g1v1Migration.csPassword.text != '') {
+                                        setState(() {
+                                          _keyboardDismissed = false;
+                                        });
                                         g1v1Migration.reload();
                                         g1v1Migration.csToV2Address();
                                       }
@@ -149,6 +192,9 @@ class ImportG1v1 extends StatelessWidget {
                                       if (debounce?.isActive ?? false) {
                                         debounce!.cancel();
                                       }
+                                      setState(() {
+                                        _keyboardDismissed = false;
+                                      });
                                       g1v1Migration.reload();
                                       g1v1Migration.csToV2Address();
                                     }
@@ -188,9 +234,12 @@ class ImportG1v1 extends StatelessWidget {
                                     if (debounce?.isActive ?? false) {
                                       debounce!.cancel();
                                     }
-                                    debounce = Timer(const Duration(milliseconds: debouneTime), () {
+                                    debounce = Timer(const Duration(milliseconds: ImportG1v1.debouneTime), () {
                                       g1v1Migration.g1V1NewAddress = '';
                                       if (g1v1Migration.csSalt.text != '' && g1v1Migration.csPassword.text != '') {
+                                        setState(() {
+                                          _keyboardDismissed = false;
+                                        });
                                         g1v1Migration.reload();
                                         g1v1Migration.csToV2Address();
                                       }
@@ -202,6 +251,9 @@ class ImportG1v1 extends StatelessWidget {
                                         debounce!.cancel();
                                       }
                                       g1v1Migration.g1V1NewAddress = '';
+                                      setState(() {
+                                        _keyboardDismissed = false;
+                                      });
                                       g1v1Migration.reload();
                                       g1v1Migration.csToV2Address();
                                     }

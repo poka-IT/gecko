@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -173,54 +174,40 @@ class HomeProvider with ChangeNotifier {
         configBox.put('isCacheChecked', false);
       }
 
-      // Connect to Duniter network
-      try {
-        await _container.read(durtProvider).connect();
-        // ignore: avoid_print
-        print('💡 Successfully connected to Duniter');
-      } catch (e) {
-        // ignore: avoid_print
-        print('🔴 Failed to connect to Duniter: $e');
-
-        // Check if this is a genesis validation error
-        if (e.toString().contains('genesis hash') || e.toString().contains('genesis validation')) {
-          homeProvider.changeMessage("networkGenesisError".tr());
+      Future<void> updateConnectionStatus(List<ConnectivityResult> result) async {
+        log.i('Network changed: $result');
+        if (result.contains(ConnectivityResult.none)) {
+          homeProvider.changeMessage("notConnectedToInternet".tr());
         } else {
-          homeProvider.changeMessage("networkConnectionError".tr());
+          // Check if the phone is actually connected to the internet
+          var connectivityResult = await (Connectivity().checkConnectivity());
+          if (!connectivityResult.contains(ConnectivityResult.none)) {
+            // Connect to Duniter network
+            try {
+              await _container.read(durtProvider).connect();
+              // ignore: avoid_print
+              print('💡 Successfully connected to Duniter');
+            } catch (e) {
+              // ignore: avoid_print
+              print('🔴 Failed to connect to Duniter: $e');
+
+              // Check if this is a genesis validation error
+              if (e.toString().contains('genesis hash') || e.toString().contains('genesis validation')) {
+                homeProvider.changeMessage("networkGenesisError".tr());
+              } else {
+                homeProvider.changeMessage("networkConnectionError".tr());
+              }
+            }
+
+            ref.watch(connectionStatusProvider);
+
+            // Load wallets list
+            await myWalletProvider.readAllWallets();
+          }
         }
       }
 
-      ref.watch(connectionStatusProvider);
-
-      // Load wallets list
-      await myWalletProvider.readAllWallets();
-
-      // Uncomment this to clear all caches on startup
-      // ignore: use_build_context_synchronously
-      // final settingsProvider = old_provider.Provider.of<SettingsProvider>(context, listen: false);
-      // await settingsProvider.clearAllCaches();
-
-      // Future<void> updateConnectionStatus(List<ConnectivityResult> result) async {
-      //   log.i('Network changed: $result');
-      //   if (result.contains(ConnectivityResult.none)) {
-      //     // Handle disconnection - TODO: Re-implement if needed
-      //     homeProvider.changeMessage("notConnectedToInternet".tr());
-      //       //   } else {
-      //     // Check if the phone is actually connected to the internet
-      //     var connectivityResult = await (Connectivity().checkConnectivity());
-      //     if (!connectivityResult.contains(ConnectivityResult.none)) {
-      //       await sub.connectNode();
-
-      //       // Load wallets list
-      //       // myWalletProvider.readAllWallets(myWalletProvider.getCurrentSafe);
-
-      //       //Connect to Indexer
-      //       await duniterIndexer.getValidIndexerEndpoint();
-      //     }
-      //   }
-      // }
-
-      // Connectivity().onConnectivityChanged.listen(updateConnectionStatus);
+      Connectivity().onConnectivityChanged.listen(updateConnectionStatus);
     }
   }
 }

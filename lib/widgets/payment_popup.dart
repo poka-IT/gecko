@@ -170,14 +170,13 @@ void paymentPopup({required WidgetRef ref, required String toAddress, required S
         ? BigInt.from((double.parse(payAmount) * SystemService.balanceRatio.toDouble() * 100).round())
         : BigInt.from((double.parse(payAmount) * SystemService.balanceRatio.toDouble()).round());
 
-    // TODO: récupérer la valeur réelle de l'existential deposit depuis le storage de Duniter
-    final existentialDeposit = BigInt.from(200);
+    final existentialDeposit = ref.read(storageServiceProvider).currencyConstants.existentialDeposit;
 
     // Vérifications de validité avec les vraies balances
     final bool isAmountValid = payAmountValue > BigInt.zero;
     final bool isNotSendingToSelf = toAddress != defaultWallet.address;
-    final bool hasEnoughBalance =
-        (payAmountValue <= defaultWalletBalance! - existentialDeposit) || defaultWalletBalance == payAmountValue;
+    final BigInt transferableBalance = defaultWalletBalance! - existentialDeposit;
+    final bool hasEnoughBalance = (payAmountValue <= transferableBalance) || defaultWalletBalance == payAmountValue;
     final bool respectsExistentialDeposit = toAddressBalance! > BigInt.zero || payAmountValue >= existentialDeposit;
 
     return isAmountValid && isNotSendingToSelf && hasEnoughBalance && respectsExistentialDeposit;

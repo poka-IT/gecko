@@ -279,9 +279,9 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<ScanDerivationsResult> scanDerivations(BuildContext context, String pinCode) async {
+  Future<ScanDerivationsResult> scanDerivations(BuildContext context) async {
     try {
-      return await _scanDerivations(context, pinCode).timeout(
+      return await _scanDerivations(context).timeout(
         const Duration(seconds: 120),
         onTimeout: () async {
           // Remove the current chest
@@ -320,7 +320,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     }
   }
 
-  Future<ScanDerivationsResult> _scanDerivations(BuildContext context, String pinCode) async {
+  Future<ScanDerivationsResult> _scanDerivations(BuildContext context) async {
     bool isAlive = false;
     scanedWalletNumber = 0;
     Map<String, int> addressToScan = {};
@@ -333,7 +333,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     // 1. SCAN ROOT BALANCE
     scanStatus = ScanDerivationsStatus.rootScanning;
     notifyListeners();
-    final hasRoot = await scanRootBalance(pinCode);
+    final hasRoot = await scanRootBalance();
     if (hasRoot) {
       isAlive = true;
     }
@@ -431,7 +431,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     return isAlive ? ScanDerivationsResult.walletExists : ScanDerivationsResult.walletNotFound;
   }
 
-  Future<bool> scanRootBalance(String pinCode) async {
+  Future<bool> scanRootBalance() async {
     if (generatedMnemonic == null) return false;
 
     final keypair = await _container.read(walletServiceProvider).getKeyPairFromMnemonic(generatedMnemonic!);

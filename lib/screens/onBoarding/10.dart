@@ -223,7 +223,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
               myWalletProvider.isPinLoading = false;
               myWalletProvider.isPinValid = true;
 
-              //TODO: Use int pincode directly instead of cast
               final pinCodeint = int.parse(widget.pinCode);
               await ref
                   .read(walletServiceProvider)
@@ -235,7 +234,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
 
               ScanDerivationsResult scanStatus = ScanDerivationsResult.none;
               if (widget.scanDerivation) {
-                scanStatus = await generateWalletProvider.scanDerivations(context, widget.pinCode);
+                scanStatus = await generateWalletProvider.scanDerivations(context);
               }
               switch (scanStatus) {
                 case ScanDerivationsResult.none:

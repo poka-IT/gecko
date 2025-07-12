@@ -141,7 +141,9 @@ class _WalletsHomeContent extends ConsumerWidget {
     final bool showDraggableTutorial = configBox.get('showDraggableTutorial') ?? true;
 
     if (myWalletProvider.listWallets.length > 1 && showDraggableTutorial) {
-      tutorialCoachMark.show(context: context);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        tutorialCoachMark.show(context: context);
+      });
       configBox.put('showDraggableTutorial', false);
     }
 
@@ -154,7 +156,7 @@ class _WalletsHomeContent extends ConsumerWidget {
             SliverToBoxAdapter(
               child: DragTuleAction(
                 wallet: myWalletProvider.idtyWallet!,
-                child: WalletTileMembre(wallet: myWalletProvider.idtyWallet!),
+                child: WalletTileMembre(wallet: myWalletProvider.idtyWallet!, attachTutorialKey: true),
               ),
             ),
           SliverGrid.count(
@@ -164,10 +166,13 @@ class _WalletsHomeContent extends ConsumerWidget {
             crossAxisSpacing: 0,
             mainAxisSpacing: 0,
             children: <Widget>[
-              for (final repository in myWalletProvider.listWalletsWithoutIdty)
+              for (var i = 0; i < myWalletProvider.listWalletsWithoutIdty.length; i++)
                 DragTuleAction(
-                  wallet: repository,
-                  child: WalletTile(repository: repository),
+                  wallet: myWalletProvider.listWalletsWithoutIdty[i],
+                  child: WalletTile(
+                    repository: myWalletProvider.listWalletsWithoutIdty[i],
+                    attachTutorialKey: i == 1 && myWalletProvider.idtyWallet == null,
+                  ),
                 ),
               ref.read(durtProvider).isConnected && myWalletProvider.listWallets.length < maxWalletsInSafe
                   ? const AddNewDerivationButton()

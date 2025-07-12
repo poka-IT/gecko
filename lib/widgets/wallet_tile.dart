@@ -13,9 +13,10 @@ import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 
 class WalletTile extends StatelessWidget {
-  const WalletTile({super.key, required this.repository});
+  const WalletTile({super.key, required this.repository, this.attachTutorialKey = false});
 
   final WalletEntity repository;
+  final bool attachTutorialKey;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +28,7 @@ class WalletTile extends StatelessWidget {
           Navigator.push(context, SmoothTransition(page: WalletOptions(wallet: repository)));
         },
         child: ScaledSizedBox(
-          // key: repository.number == 1 ? keyDragAndDrop : const Key('nothing'),
+          key: attachTutorialKey ? keyDragAndDrop : null,
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),

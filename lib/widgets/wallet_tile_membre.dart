@@ -14,9 +14,10 @@ import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 
 class WalletTileMembre extends StatelessWidget {
-  const WalletTileMembre({super.key, required this.wallet});
+  const WalletTileMembre({super.key, required this.wallet, this.attachTutorialKey = false});
 
   final WalletEntity wallet;
+  final bool attachTutorialKey;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +29,7 @@ class WalletTileMembre extends StatelessWidget {
           Navigator.push(context, SmoothTransition(page: WalletOptions(wallet: wallet)));
         },
         child: ScaledSizedBox(
-          // key: wallet.number == 1 ? keyDragAndDrop : const Key('nothing'),
+          key: attachTutorialKey ? keyDragAndDrop : null,
           height: 180,
           child: Container(
             decoration: BoxDecoration(

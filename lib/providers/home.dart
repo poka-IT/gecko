@@ -175,6 +175,7 @@ class HomeProvider with ChangeNotifier {
       }
 
       Future<void> updateConnectionStatus(List<ConnectivityResult> result) async {
+        // ignore: avoid_print
         print('Network changed: $result');
         if (result.contains(ConnectivityResult.none)) {
           homeProvider.changeMessage("notConnectedToInternet".tr());

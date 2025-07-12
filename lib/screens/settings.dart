@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show Networks, EndpointType;
-import 'package:durt2/objectbox.g.dart';
+import 'package:durt2/durt2.dart' show Networks;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,7 +19,6 @@ import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:provider/provider.dart' as old_provider;
-import 'package:durt2/durt2.dart' as d;
 
 // Helper pour accéder aux services Riverpod depuis ce fichier
 final _container = ProviderContainer();
@@ -230,25 +228,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     try {
       final durt = _container.read(durtProvider);
 
-      // Get cached working endpoints from endpointBox
-      final rpcQuery = durt.endpointBox
-          .query(
-            CachedEndpoint_.networkIndex
-                .equals(d.Networks.values.indexOf(durt.network))
-                .and(CachedEndpoint_.type.equals(EndpointType.rpc.name))
-                .and(CachedEndpoint_.isWorking.equals(true)),
-          )
-          .order(CachedEndpoint_.priority, flags: Order.descending)
-          .build();
-
-      final cachedEndpoints = rpcQuery.find();
-      rpcQuery.close();
-
-      if (cachedEndpoints.isNotEmpty) {
-        return cachedEndpoints.map((e) => e.url).toList();
+      if (Networks.listDuniterEndpoints.isNotEmpty) {
+        return Networks.listDuniterEndpoints;
       }
 
-      // Fallback to Networks.listDuniterEndpoints if available
+      // If no endpoints available, trigger refresh
+      await durt.refreshEndpoints();
+
       if (Networks.listDuniterEndpoints.isNotEmpty) {
         return Networks.listDuniterEndpoints;
       }
@@ -265,26 +251,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     try {
       final durt = _container.read(durtProvider);
 
-      // Get cached working endpoints from endpointBox
-      final squidQuery = durt.endpointBox
-          .query(
-            CachedEndpoint_.networkIndex
-                .equals(d.Networks.values.indexOf(durt.network))
-                .and(CachedEndpoint_.type.equals(EndpointType.squid.name))
-                .and(CachedEndpoint_.isWorking.equals(true)),
-          )
-          .order(CachedEndpoint_.priority, flags: Order.descending)
-          .build();
-
-      final cachedEndpoints = squidQuery.find();
-      squidQuery.close();
-
-      if (cachedEndpoints.isNotEmpty) {
-        // Return complete endpoints with paths
-        return cachedEndpoints.map((e) => e.url).toList();
+      // Use Networks.listSquidEndpoints directly (populated by discovery service)
+      if (Networks.listSquidEndpoints.isNotEmpty) {
+        return Networks.listSquidEndpoints;
       }
 
-      // Fallback to Networks.listSquidEndpoints if available
+      // If no endpoints available, trigger refresh
+      await durt.refreshEndpoints();
+
       if (Networks.listSquidEndpoints.isNotEmpty) {
         return Networks.listSquidEndpoints;
       }
@@ -1620,38 +1594,41 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            old_provider.Consumer<theme_provider.ThemeProvider>(
-              builder: (context, theme, _) {
-                return SegmentedButton<theme_provider.ThemeModeSetting>(
-                  segments: <ButtonSegment<theme_provider.ThemeModeSetting>>[
-                    ButtonSegment(
-                      value: theme_provider.ThemeModeSetting.light,
-                      label: Text('light'.tr()),
-                      icon: const Icon(Icons.light_mode),
+            Flexible(
+              child: old_provider.Consumer<theme_provider.ThemeProvider>(
+                builder: (context, theme, _) {
+                  return SegmentedButton<theme_provider.ThemeModeSetting>(
+                    segments: <ButtonSegment<theme_provider.ThemeModeSetting>>[
+                      ButtonSegment(
+                        value: theme_provider.ThemeModeSetting.light,
+                        label: Text('light'.tr()),
+                        icon: const Icon(Icons.light_mode),
+                      ),
+                      ButtonSegment(
+                        value: theme_provider.ThemeModeSetting.system,
+                        label: Text('system'.tr()),
+                        icon: const Icon(Icons.brightness_auto),
+                      ),
+                      ButtonSegment(
+                        value: theme_provider.ThemeModeSetting.dark,
+                        label: Text('dark'.tr()),
+                        icon: const Icon(Icons.dark_mode),
+                      ),
+                    ],
+                    selected: {theme.themeModeSetting},
+                    onSelectionChanged: (Set<theme_provider.ThemeModeSetting> newSelection) {
+                      themeProvider.setThemeMode(newSelection.first);
+                    },
+                    style: SegmentedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      foregroundColor: Theme.of(context).colorScheme.onSurface,
+                      selectedForegroundColor: Theme.of(context).colorScheme.onPrimary,
+                      selectedBackgroundColor: Theme.of(context).colorScheme.primary,
+                      padding: EdgeInsets.symmetric(horizontal: scaleSize(8), vertical: scaleSize(8)),
                     ),
-                    ButtonSegment(
-                      value: theme_provider.ThemeModeSetting.system,
-                      label: Text('system'.tr()),
-                      icon: const Icon(Icons.brightness_auto),
-                    ),
-                    ButtonSegment(
-                      value: theme_provider.ThemeModeSetting.dark,
-                      label: Text('dark'.tr()),
-                      icon: const Icon(Icons.dark_mode),
-                    ),
-                  ],
-                  selected: {theme.themeModeSetting},
-                  onSelectionChanged: (Set<theme_provider.ThemeModeSetting> newSelection) {
-                    themeProvider.setThemeMode(newSelection.first);
-                  },
-                  style: SegmentedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    foregroundColor: Theme.of(context).colorScheme.onSurface,
-                    selectedForegroundColor: Theme.of(context).colorScheme.onPrimary,
-                    selectedBackgroundColor: Theme.of(context).colorScheme.primary,
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -1737,44 +1714,46 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            old_provider.Consumer<SettingsProvider>(
-              builder: (context, set, _) {
-                return SegmentedButton<Networks>(
-                  segments: <ButtonSegment<Networks>>[
-                    ButtonSegment(
-                      value: Networks.gdev,
-                      label: Text('gdev'),
-                      icon: const Icon(Icons.bug_report_rounded),
+            Flexible(
+              child: old_provider.Consumer<SettingsProvider>(
+                builder: (context, set, _) {
+                  return SegmentedButton<Networks>(
+                    segments: <ButtonSegment<Networks>>[
+                      ButtonSegment(
+                        value: Networks.gdev,
+                        label: Text('gdev'),
+                        icon: const Icon(Icons.bug_report_rounded),
+                      ),
+                      ButtonSegment(
+                        value: Networks.gtest,
+                        label: Text('gtest'),
+                        icon: const Icon(Icons.bug_report_rounded),
+                      ),
+                      ButtonSegment(
+                        value: Networks.g1,
+                        label: Text('g1'),
+                        icon: const Icon(Icons.account_balance_rounded),
+                      ),
+                    ],
+                    selected: {currentNetwork},
+                    onSelectionChanged: _isSwitchingNetwork
+                        ? null
+                        : (Set<Networks> newSelection) {
+                            final selectedNetwork = newSelection.first;
+                            if (selectedNetwork != currentNetwork) {
+                              _switchToNetwork(selectedNetwork);
+                              set.reload();
+                            }
+                          },
+                    style: SegmentedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      foregroundColor: Theme.of(context).colorScheme.onSurface,
+                      selectedForegroundColor: Theme.of(context).colorScheme.onPrimary,
+                      selectedBackgroundColor: Theme.of(context).colorScheme.primary,
                     ),
-                    ButtonSegment(
-                      value: Networks.gtest,
-                      label: Text('gtest'),
-                      icon: const Icon(Icons.bug_report_rounded),
-                    ),
-                    ButtonSegment(
-                      value: Networks.g1,
-                      label: Text('g1'),
-                      icon: const Icon(Icons.account_balance_rounded),
-                    ),
-                  ],
-                  selected: {currentNetwork},
-                  onSelectionChanged: _isSwitchingNetwork
-                      ? null
-                      : (Set<Networks> newSelection) {
-                          final selectedNetwork = newSelection.first;
-                          if (selectedNetwork != currentNetwork) {
-                            _switchToNetwork(selectedNetwork);
-                            set.reload();
-                          }
-                        },
-                  style: SegmentedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    foregroundColor: Theme.of(context).colorScheme.onSurface,
-                    selectedForegroundColor: Theme.of(context).colorScheme.onPrimary,
-                    selectedBackgroundColor: Theme.of(context).colorScheme.primary,
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ],
         ),

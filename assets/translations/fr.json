@@ -8,6 +8,7 @@
     "connectionPending": "Connexion en cours...",
     "noLizard": "y'a pas de lézard ;-)",
     "loading": "Chargement en cours...",
+    "connectionInProgress": "Connexion en cours...",
     "forgot_password.png": "forgot_password_fr.png",
     "warningForgotPassword": "Dans une blockchain, pas de procédure de récupération par mail. Seule votre phrase de restauration peut vous permettre de récupérer vos Ğ1 à tout moment.",
     "fastAppDescription": "L'application de paiement {}\nplus rapide qu'un reptile du Vietnam",

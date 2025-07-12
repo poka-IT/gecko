@@ -1,109 +1,111 @@
-[0.0]Tchik
-[0.3]Tchik - tchik
-[0.6]Tchik - tchik - tchik !
+[0.0]Tchik - tchik - tchik !
 [1.0]
-[6.0]
-[16]Dans la jungle des applis
-[19]un lézard est né
-[21]Il se nomme Gecko,
-[23]pour la monnaie libérée
-[25]La G1 dans sa poche,
-[27.5]un réseau citoyen
-[29]Il grimpe sur les murs,
-[30.5]il ne te lâchera rien
+[4.0]Tchik - tchik - tchik !
+[5.0]
+[8.0]Tchik - tchik - tchik !
+[9.0]
+[11.0]Tchik - tchik - tchik !
+[12.0]
+[15.0]Tchik - tchik - tchik !
+[15.5]
+[15.0]Tchik - tchik - tchik !
+[16.9]Dans la jungle des applis
+[19.5]un lézard est né
+[21.5]Il se nomme Gecko,
+[23.3]pour la monnaie libérée
+[25.5]La G1 dans sa poche,
+[27.3]un réseau citoyen
+[29.3]Il grimpe sur les murs,
+[31.55]il ne lâchera rien
 
-[32]Tchik
-[32.3]Tchik - tchik
-[32.6]Tchik - tchik - tchik !
+[33]Tchik - tchik - tchik !
 
-[33.5]Gecko ! Gecko !
+[33.7]Gecko ! Gecko !
 [35]Tchik
-[35.6]Tchik - tchik
-[36.2]Tchik - tchik - tchik !
-[37.0]Léger,
-[38.0]Léger, rapide,
-[39.0]Léger, rapide, et super pratique !
-[42.1]Gecko ! Gecko !
-[43]Tchik
-[43.6]Tchik - tchik
-[44.2]Tchik - tchik - tchik !
-[45.3]La June dans ta poche,
-[47.0]c'est fantastique !
+[35.72]Tchik - tchik
+[36.5]Tchik - tchik - tchik !
+[37.55]Léger,
+[38.70]Léger, rapide,
+[39.55]Léger, rapide, et super pratique !
+[41.56]Gecko ! Gecko !
+[43.71]Tchik
+[44.05]Tchik - tchik
+[44.54]Tchik - tchik - tchik !
+[45.55]La June dans ta poche,
+[47.68]c’est fantastique !
 
-[48.0]Tchik
-[48.3]Tchik - tchik
-[48.6]Tchik - tchik - tchik !
-[49]
-[56.5]Tchik
-[56.8]Tchik - tchik
-[57.1]Tchik - tchik - tchik !
+[49.03]Tchik - tchik - tchik !
+[50.5]
+[52.01]Tchik - tchik - tchik !
+[53.5]
+[56.0]Tchik - tchik - tchik !
 
-[58.4]Il est fait en Flutter,
-[60.0]agile et coloré
-[62.0]Un code open source...
-[64.0]...pour la communauté
-[66.0]Il se faufile partout, 
-[68.0]sans jamais vaciller
-[70.0]Pour des échanges fluides,
-[72.0]en toute simplicité
+[57.52]Il est fait en Flutter,
+[60.28]agile et coloré
+[62.27]Un code open source…
+[64.28]…pour la communauté
+[66.28]Il se faufile partout,
+[68.29]sans jamais vaciller
+[70.27]Pour des échanges fluides,
+[72.29]en toute simplicité
 
-[73.3]Tchik
-[73.6]Tchik - tchik
-[73.9]Tchik - tchik - tchik !
+[74.03]Tchik - tchik - tchik !
 
-[74.0]Gecko ! Gecko !
-[75.5]Tchik
-[76.1]Tchik - tchik
-[76.7]Tchik - tchik - tchik !
-[78.0]Léger,
-[79.0]Léger, rapide,
-[80.0]Léger, rapide, et super pratique !
-[82.1]Gecko ! Gecko !
-[83]Tchik
-[83.6]Tchik - tchik
-[84.2]Tchik - tchik - tchik !
-[85.3]La June dans ta poche,
-[87.0]c'est fantastique !
+[74.76]Gecko ! Gecko !
+[76.74]Tchik
+[77.06]Tchik - tchik
+[77.05]Tchik - tchik - tchik !
+[78.55]Léger,
+[79.83]Léger, rapide,
+[80.56]Léger, rapide, et super pratique !
+[82.67]Gecko ! Gecko !
+[84.72]Tchik
+[85.12]Tchik - tchik
+[85.48]Tchik - tchik - tchik !
+[86.72]La June dans ta poche,
+[88.56]c’est fantastique !
 
-[91]De Madagascar au Costa Rica
-[95]On le voit à La Réunion, 
-[97]Et mêêêêêêêêêêêêême...
-[98.5]...jusqu'en France !
-[100.5]Un petit animal
-[102]qui n'a pas froid aux yeux
-[104.5]Comme notre appli...
-[107]...qui rend les gens heureux
+[91.22]De Madagascar au Costa Rica
+[95.28]On le voit à La Réunion,
+[98.33]Et mêêêêêêêêêêêêême…
+[99.95]…jusqu’en France !
+[101.53]Un petit animal
+[103.29]qui n’a pas froid aux yeux
+[105.77]Comme notre appli…
+[108.51]…qui rend les gens heureux
 
-[112.3]Tchik
-[112.6]Tchik - tchik
-[112.9]Tchik - tchik - tchik !
+[114.04]Tchik - tchik - tchik !
 
-[113]Gecko ! Gecko !
-[114.5]Tchik
-[115.1]Tchik - tchik
-[115.7]Tchik - tchik - tchik !
-[117.0]Léger,
-[118.0]Léger, rapide,
-[119.0]Léger, rapide, et super pratique !
-[121]Gecko ! Gecko !
-[122.5]Tchik
-[123.1]Tchik - tchik
-[123.7]Tchik - tchik - tchik !
-[124]La June dans ta poche,
-[126]c'est fantastique !
+[115]Gecko ! Gecko !
+[116.70]Tchik
+[117.05]Tchik - tchik
+[117.47]Tchik - tchik - tchik !
+[118.51]Léger,
+[119.74]Léger, rapide,
+[120.56]Léger, rapide, et super pratique !
 
-[128]Tchik-tchik-tchik... 
-[129]
-[131]Tchik-tchik-tchik... 
-[132]
-[134]Tchik-tchik-tchik... 
+[122.69]Gecko ! Gecko !
+[124.70]Tchik
+[125.07]Tchik - tchik
+[125.52]Tchik - tchik - tchik !
+[126.50]La June dans ta poche,
+[128.44]c’est fantastique !
+
+[130.07]Tchik-tchik-tchik…
+[131]
+[133.06]Tchik-tchik-tchik…
+[133.5]
+[134.11]Tchik-tchik-tchik…
 [135]
-[137]Tchik-tchik-tchik...
-[137.5]
-[140]Tchik-tchik-tchik...
-[140.5]
-[144]Tchik-tchik-tchik...
-[144.5]
-[146]Tchik-tchik-tchik...
-[146.5]
+[137.05]Tchik-tchik-tchik…
+[137.55]
+[138.11]Tchik-tchik-tchik…
+[139.00]
+[141.03]Tchik-tchik-tchik…
+[141.50]
+[142.06]Tchik-tchik-tchik…
+[143.00]
+[145.08]Tchik-tchik-tchik…
+[145.5]
+[146]
 [149.0]

@@ -175,10 +175,11 @@ class HomeProvider with ChangeNotifier {
       }
 
       Future<void> updateConnectionStatus(List<ConnectivityResult> result) async {
-        log.i('Network changed: $result');
+        print('Network changed: $result');
         if (result.contains(ConnectivityResult.none)) {
           homeProvider.changeMessage("notConnectedToInternet".tr());
         } else {
+          homeProvider.changeMessage("connectionInProgress".tr());
           // Check if the phone is actually connected to the internet
           var connectivityResult = await (Connectivity().checkConnectivity());
           if (!connectivityResult.contains(ConnectivityResult.none)) {

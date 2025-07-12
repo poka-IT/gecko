@@ -174,9 +174,14 @@ class HomeProvider with ChangeNotifier {
         configBox.put('isCacheChecked', false);
       }
 
+      bool firstConnection = true;
       Future<void> updateConnectionStatus(List<ConnectivityResult> result) async {
-        // ignore: avoid_print
-        print('Network changed: $result');
+        if (!firstConnection) {
+          // ignore: avoid_print
+          print('Network changed: $result');
+        }
+        firstConnection = false;
+
         if (result.contains(ConnectivityResult.none)) {
           homeProvider.changeMessage("notConnectedToInternet".tr());
         } else {
@@ -186,7 +191,7 @@ class HomeProvider with ChangeNotifier {
           if (!connectivityResult.contains(ConnectivityResult.none)) {
             // Connect to Duniter network
             try {
-              await _container.read(durtProvider).connect();
+              await _container.read(durtProvider).connect(verbose: false);
               // ignore: avoid_print
               print('💡 Successfully connected to Duniter');
             } catch (e) {

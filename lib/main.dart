@@ -42,8 +42,10 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/providers/theme_provider.dart';
 import 'package:gecko/providers/block_height_provider.dart';
+import 'package:gecko/widgets/version_overlay.dart';
 
 const bool enableSentry = true;
+const bool showVersionOverlay = true; // Set to false to hide version overlay in production
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -145,14 +147,19 @@ class Gecko extends StatelessWidget {
               darkTheme: darkTheme,
               themeMode: themeProvider.currentThemeMode,
               navigatorKey: _navigatorKey,
-              builder: (context, child) => ResponsiveBreakpoints.builder(
-                child: child!,
-                breakpoints: [
-                  const Breakpoint(start: 0, end: 450, name: MOBILE),
-                  const Breakpoint(start: 451, end: 800, name: TABLET),
-                  const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
-                ],
-              ),
+              builder: (context, child) {
+                final responsiveChild = ResponsiveBreakpoints.builder(
+                  child: child!,
+                  breakpoints: [
+                    const Breakpoint(start: 0, end: 450, name: MOBILE),
+                    const Breakpoint(start: 451, end: 800, name: TABLET),
+                    const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
+                  ],
+                );
+
+                // Conditionally wrap with version overlay
+                return showVersionOverlay ? VersionOverlay(child: responsiveChild) : responsiveChild;
+              },
               title: 'Ğecko',
               initialRoute: "/",
               routes: {

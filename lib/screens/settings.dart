@@ -144,7 +144,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       // 3. Clear G1WalletsList cache (search results)
       await g1WalletsBox.clear();
 
-      log.i('Cleaned up Duniter subscriptions and caches');
+      //TODO: Ensure duniter storage provider is cleared, check with balance, certs and status wallet
+
+      // ignore: avoid_print
+      print('🔔 Cleaned up Duniter subscriptions and caches');
     } catch (e) {
       log.w('Error during subscription cleanup: $e');
     }
@@ -179,11 +182,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       configBox.put('selectedNetwork', newNetwork.name);
 
       // 5. Reconnect to the new network
-      await _container.read(durtProvider).connect();
+      await _container.read(durtProvider).connect(verbose: true);
 
-      // 6. Note: No need to reinitialize streams anymore - proxy streams in durt2 handle this automatically
-
-      // 7. Refresh controllers and UI
+      // 6. Refresh controllers and UI
       _syncDuniterEndpointController();
       _syncIndexerEndpointController();
       _refreshBlockHeightProvider();
@@ -216,7 +217,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     try {
       final blockHeightProvider = old_provider.Provider.of<BlockHeightProvider>(context, listen: false);
       blockHeightProvider.refresh();
-      log.d('BlockHeightProvider refreshed after node change');
+      // ignore: avoid_print
+      print('🔔 BlockHeightProvider refreshed after node change');
     } catch (e) {
       log.w('Error refreshing BlockHeightProvider: $e');
     }
@@ -929,7 +931,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             configBox.delete('customEndpoint');
                             configBox.put('autoEndpoint', true);
 
-                            await _container.read(durtProvider).connect();
+                            await _container.read(durtProvider).connect(verbose: true);
                             _syncDuniterEndpointController(); // Synchronize controller
                             _refreshBlockHeightProvider(); // Refresh block height provider
                             set.reload();
@@ -1200,7 +1202,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           // Force reconnection to ensure strict validation
           try {
-            await _container.read(durtProvider).connect(initDuniter: false, initSquid: true);
+            await _container.read(durtProvider).connect(initDuniter: false, verbose: true);
           } catch (e) {
             log.w('Error reconnecting to Squid after endpoint change: $e');
           }
@@ -1411,7 +1413,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                               // Force reconnection to use strict validation instead of just testing
                               try {
-                                await _container.read(durtProvider).connect(initDuniter: false, initSquid: true);
+                                await _container.read(durtProvider).connect(initDuniter: false, verbose: true);
                               } catch (e) {
                                 log.w('Error reconnecting to Squid in Auto mode: $e');
                                 if (mounted) {
@@ -1525,7 +1527,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                         // Force reconnection to ensure strict validation
                         try {
-                          await _container.read(durtProvider).connect(initDuniter: false, initSquid: true);
+                          await _container.read(durtProvider).connect(initDuniter: false, verbose: true);
                         } catch (e) {
                           log.w('Error reconnecting to Squid after endpoint change: $e');
                         }

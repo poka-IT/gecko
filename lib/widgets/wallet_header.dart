@@ -110,7 +110,7 @@ class WalletHeaderContent extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(color: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary),
-      padding: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), bottom: scaleSize(16), top: scaleSize(16)),
+      padding: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), bottom: scaleSize(16)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -360,7 +360,7 @@ class WalletHeaderLoading extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(color: context.colorScheme.tertiary),
       height: scaleSize(122),
-      padding: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), bottom: scaleSize(16), top: scaleSize(16)),
+      padding: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), bottom: scaleSize(16)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [

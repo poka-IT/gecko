@@ -45,73 +45,50 @@ class WalletHeader extends ConsumerWidget {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     final isOwner = myWalletProvider.isOwner(address);
 
-    // Use live subscriptions instead of cached data
-    final idtyStatusStream = ref.watch(smartIdtyStatusStreamProvider(address));
-    final balanceStream = ref.watch(smartBalanceStreamProvider(address));
+    final idtyStatusAsync = ref.watch(smartIdtyStatusStreamProvider(address));
+    final balanceAsync = ref.watch(smartBalanceStreamProvider(address));
     final identityNameAsync = ref.watch(identityNameStreamProvider(address));
 
-    return Container(
-      decoration: BoxDecoration(color: context.colorScheme.tertiary),
-      child: Column(
-        children: [
-          // Status and subscription management
-          WalletHeaderSubscriptionStatus(idtyStatusStream: idtyStatusStream, balanceStream: balanceStream),
+    final hasError = idtyStatusAsync.hasError || balanceAsync.hasError || identityNameAsync.hasError;
+    final isLoading = !idtyStatusAsync.hasValue || !balanceAsync.hasValue || !identityNameAsync.hasValue;
 
-          // Main content with live data
-          WalletHeaderMainContent(
-            address: address,
-            isOwner: isOwner,
-            idtyStatusStream: idtyStatusStream,
-            balanceStream: balanceStream,
-            identityNameAsync: identityNameAsync,
-            customImagePath: customImagePath,
-            defaultImagePath: defaultImagePath,
-            showUDToggle: showUDToggle,
-          ),
-        ],
-      ),
-    );
-  }
-}
+    // Use cached data if available, otherwise show loader
+    final hasCachedData = idtyStatusAsync.hasValue || balanceAsync.hasValue || identityNameAsync.hasValue;
 
-/// Subscription status indicator widget for debugging (can be removed in production)
-class WalletHeaderSubscriptionStatus extends StatelessWidget {
-  const WalletHeaderSubscriptionStatus({super.key, required this.idtyStatusStream, required this.balanceStream});
-
-  final AsyncValue<IdtyStatus> idtyStatusStream;
-  final AsyncValue<WalletBalance> balanceStream;
-
-  @override
-  Widget build(BuildContext context) {
-    // Show subscription status for debugging (remove in production)
-    final hasErrors = idtyStatusStream.hasError || balanceStream.hasError;
-    final isLoading = idtyStatusStream.isLoading || balanceStream.isLoading;
-
-    if (hasErrors || isLoading) {
-      return Container(
-        padding: EdgeInsets.all(scaleSize(4)),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (isLoading) Icon(Icons.sync, size: scaleSize(12), color: Colors.orange),
-            if (hasErrors) Icon(Icons.error_outline, size: scaleSize(12), color: Colors.red),
-          ],
-        ),
+    Widget child;
+    if (isLoading && !hasCachedData) {
+      child = const WalletHeaderLoading();
+    } else if (hasError && !hasCachedData) {
+      if (balanceAsync.hasError) log.e('❌ WalletHeader balance stream error for $address: ${balanceAsync.error}');
+      if (idtyStatusAsync.hasError) log.e('❌ Identity status error for $address: ${idtyStatusAsync.error}');
+      if (identityNameAsync.hasError) log.e('❌ Identity name error for $address: ${identityNameAsync.error}');
+      child = const WalletHeaderError();
+    } else {
+      child = WalletHeaderContent(
+        address: address,
+        isOwner: isOwner,
+        // Provide data if available, otherwise it will be handled gracefully
+        idtyStatus: idtyStatusAsync.hasValue ? idtyStatusAsync.value! : IdtyStatus.none,
+        walletBalance: balanceAsync.value,
+        identityName: identityNameAsync.value,
+        customImagePath: customImagePath,
+        defaultImagePath: defaultImagePath,
+        showUDToggle: showUDToggle,
       );
     }
-    return const SizedBox.shrink();
+
+    return AnimatedSwitcher(duration: const Duration(milliseconds: 300), child: child);
   }
 }
 
-/// Main content of the wallet header with live data
-class WalletHeaderMainContent extends StatelessWidget {
-  const WalletHeaderMainContent({
+class WalletHeaderContent extends StatelessWidget {
+  const WalletHeaderContent({
     super.key,
     required this.address,
     required this.isOwner,
-    required this.idtyStatusStream,
-    required this.balanceStream,
-    required this.identityNameAsync,
+    required this.idtyStatus,
+    required this.walletBalance,
+    this.identityName,
     this.customImagePath,
     this.defaultImagePath,
     this.showUDToggle = false,
@@ -119,66 +96,56 @@ class WalletHeaderMainContent extends StatelessWidget {
 
   final String address;
   final bool isOwner;
-  final AsyncValue<IdtyStatus> idtyStatusStream;
-  final AsyncValue<WalletBalance> balanceStream;
-  final AsyncValue<String?> identityNameAsync;
+  final IdtyStatus idtyStatus;
+  final WalletBalance? walletBalance;
+  final String? identityName;
   final String? customImagePath;
   final String? defaultImagePath;
   final bool showUDToggle;
 
   @override
   Widget build(BuildContext context) {
-    return balanceStream.when(
-      data: (walletBalance) {
-        final balance = walletBalance.transferableBalance;
-        final isEmptyWallet = balance == BigInt.zero;
+    final balance = walletBalance?.transferableBalance;
+    final isEmptyWallet = balance == null || balance == BigInt.zero;
 
-        return Container(
-          decoration: BoxDecoration(color: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary),
-          padding: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), bottom: scaleSize(16)),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Avatar section - back to original position
-              WalletHeaderAvatar(
-                address: address,
-                isOwner: isOwner,
-                customImagePath: customImagePath,
-                defaultImagePath: defaultImagePath,
-              ),
-              ScaledSizedBox(width: 16),
-
-              // Info section with live data
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Address
-                    WalletHeaderAddress(address: address),
-                    ScaledSizedBox(height: 6),
-
-                    // Balance
-                    Balance(address: address, size: 18),
-                    ScaledSizedBox(height: 6),
-
-                    // Identity status and certifications with live data
-                    WalletHeaderIdentitySection(
-                      address: address,
-                      idtyStatusStream: idtyStatusStream,
-                      identityNameAsync: identityNameAsync,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+    return Container(
+      decoration: BoxDecoration(color: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary),
+      padding: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), bottom: scaleSize(16), top: scaleSize(16)),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          WalletHeaderAvatar(
+            address: address,
+            isOwner: isOwner,
+            customImagePath: customImagePath,
+            defaultImagePath: defaultImagePath,
           ),
-        );
-      },
-      loading: () => const WalletHeaderLoading(),
-      error: (error, stack) {
-        log.e('❌ WalletHeader balance stream error for $address: $error');
-        return const WalletHeaderError();
-      },
+          ScaledSizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                WalletHeaderAddress(address: address),
+                ScaledSizedBox(height: 6),
+                // Use a placeholder if balance is not yet available
+                if (walletBalance != null)
+                  Balance(address: address, size: 18)
+                else
+                  Container(
+                    height: scaleSize(22),
+                    width: scaleSize(120),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ScaledSizedBox(height: 6),
+                WalletHeaderIdentitySection(address: address, idtyStatus: idtyStatus, identityName: identityName ?? ''),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -188,63 +155,54 @@ class WalletHeaderIdentitySection extends StatelessWidget {
   const WalletHeaderIdentitySection({
     super.key,
     required this.address,
-    required this.idtyStatusStream,
-    required this.identityNameAsync,
+    required this.idtyStatus,
+    required this.identityName,
   });
 
   final String address;
-  final AsyncValue<IdtyStatus> idtyStatusStream;
-  final AsyncValue<String?> identityNameAsync;
+  final IdtyStatus idtyStatus;
+  final String identityName;
 
   @override
   Widget build(BuildContext context) {
-    return idtyStatusStream.when(
-      data: (idtyStatus) {
-        final hasIdentity = idtyStatus != IdtyStatus.none;
+    final hasIdentity = idtyStatus != IdtyStatus.none;
 
-        if (!hasIdentity) {
-          return const SizedBox.shrink();
-        }
+    if (!hasIdentity) {
+      return const SizedBox.shrink();
+    }
 
-        return InkWell(
-          onTap: () => Navigator.push(
-            context,
-            PageNoTransit(
-              builder: (context) => CertificationsScreen(address: address, username: identityNameAsync.value ?? ''),
+    return InkWell(
+      onTap: () => Navigator.push(
+        context,
+        PageNoTransit(
+          builder: (context) => CertificationsScreen(address: address, username: identityName),
+        ),
+      ),
+      child: Container(
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.transparent),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Identity status with live updates
+            Flexible(
+              child: IdentityStatus(address: address, color: context.colorScheme.primary),
             ),
-          ),
-          child: Container(
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.transparent),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Identity status with live updates
-                Flexible(
-                  child: IdentityStatus(address: address, color: context.colorScheme.primary),
-                ),
 
-                // Certifications with live updates
-                Row(
-                  children: [
-                    Certifications(address: address, size: 13),
-                    Icon(
-                      Icons.chevron_right,
-                      size: scaleSize(15),
-                      color: context.colorScheme.primary.withValues(alpha: 0.5),
-                    ),
-                    ScaledSizedBox(width: 8),
-                  ],
+            // Certifications with live updates
+            Row(
+              children: [
+                Certifications(address: address, size: 13),
+                Icon(
+                  Icons.chevron_right,
+                  size: scaleSize(15),
+                  color: context.colorScheme.primary.withValues(alpha: 0.5),
                 ),
+                ScaledSizedBox(width: 8),
               ],
             ),
-          ),
-        );
-      },
-      loading: () => const WalletHeaderLoadingIdentity(),
-      error: (error, stack) {
-        log.e('❌ Identity status error for $address: $error');
-        return const SizedBox.shrink();
-      },
+          ],
+        ),
+      ),
     );
   }
 }
@@ -400,25 +358,39 @@ class WalletHeaderLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(scaleSize(16)),
+      decoration: BoxDecoration(color: context.colorScheme.tertiary),
+      height: scaleSize(122),
+      padding: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), bottom: scaleSize(16), top: scaleSize(16)),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          CircleAvatar(radius: scaleSize(45), backgroundColor: Colors.grey[300]),
+          Container(
+            width: scaleSize(90),
+            height: scaleSize(90),
+            decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 25)),
+          ),
           ScaledSizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  height: scaleSize(20),
-                  width: double.infinity,
-                  decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(4)),
+                  height: scaleSize(24),
+                  width: scaleSize(180),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
                 ),
                 ScaledSizedBox(height: 8),
                 Container(
-                  height: scaleSize(16),
-                  width: scaleSize(100),
-                  decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(4)),
+                  height: scaleSize(22),
+                  width: scaleSize(120),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
                 ),
               ],
             ),
@@ -437,27 +409,15 @@ class WalletHeaderError extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(scaleSize(16)),
+      height: scaleSize(122),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.error_outline, size: scaleSize(40), color: Colors.red),
           ScaledSizedBox(width: 16),
           Text('errorLoadingWalletData'.tr(), style: scaledTextStyle(fontSize: 16, color: Colors.red)),
         ],
       ),
-    );
-  }
-}
-
-/// Loading state for the identity section
-class WalletHeaderLoadingIdentity extends StatelessWidget {
-  const WalletHeaderLoadingIdentity({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: scaleSize(20),
-      width: scaleSize(80),
-      decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(4)),
     );
   }
 }

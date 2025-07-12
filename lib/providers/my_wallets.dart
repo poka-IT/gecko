@@ -194,6 +194,9 @@ class MyWalletsProvider with ChangeNotifier {
     isNewDerivationLoading = true;
     notifyListeners();
 
+    // Give the UI a moment to rebuild and show the loading indicator.
+    await Future.delayed(const Duration(milliseconds: 50));
+
     final List idList = await getNextWalletNumberAndDerivation();
     int newWalletNbr = idList[0];
     int newDerivationNbr = number ?? idList[1];

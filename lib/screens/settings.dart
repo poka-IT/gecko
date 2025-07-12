@@ -1,6 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show Networks;
+import 'package:durt2/durt2.dart' show Networks, ConnectionStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,7 +36,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final FocusNode _indexerFocusNode = FocusNode();
   late TextEditingController _endpointController;
   late TextEditingController _indexerEndpointController;
-  bool _isManuallyConnectingDuniter = false;
   bool _duniterConnectionFailed = false;
   bool _indexerConnectionFailed = false;
   bool _expertMode = false;
@@ -697,7 +696,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (result != null) {
       if (!mounted) return;
       setState(() {
-        _isManuallyConnectingDuniter = true;
         _duniterConnectionFailed = false;
       });
 
@@ -751,11 +749,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           }
         }
       } finally {
-        if (mounted) {
-          setState(() {
-            _isManuallyConnectingDuniter = false;
-          });
-        }
+        // Connection attempt finished
       }
     }
   }
@@ -925,7 +919,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         } else if (value == 'Auto') {
                           if (!mounted) return;
                           setState(() {
-                            _isManuallyConnectingDuniter = true;
                             _duniterConnectionFailed = false;
                           });
 
@@ -952,11 +945,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               );
                             }
                           } finally {
-                            if (mounted) {
-                              setState(() {
-                                _isManuallyConnectingDuniter = false;
-                              });
-                            }
+                            // Connection attempt finished
                           }
                         } else {
                           configBox.put('autoEndpoint', false);
@@ -978,9 +967,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             Consumer(
               builder: (context, ref, _) {
-                final isDuniterLoading = ref.watch(durtProvider).isDuniterLoading;
+                final duniterConnectionStatus = ref.watch(duniterConnectionStatusProvider);
 
-                if (isDuniterLoading || _isManuallyConnectingDuniter) {
+                if (duniterConnectionStatus == ConnectionStatus.connecting) {
                   return Padding(
                     padding: EdgeInsets.only(top: scaleSize(16)),
                     child: Center(child: Loading(size: scaleSize(24), stroke: 2)),
@@ -1033,7 +1022,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onSubmitted: (value) async {
                       if (!mounted) return;
                       setState(() {
-                        _isManuallyConnectingDuniter = true;
                         _duniterConnectionFailed = false;
                       });
 
@@ -1084,11 +1072,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           }
                         }
                       } finally {
-                        if (mounted) {
-                          setState(() {
-                            _isManuallyConnectingDuniter = false;
-                          });
-                        }
+                        // Connection attempt finished
                       }
                     },
                   ),
@@ -1314,7 +1298,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
                     ),
                     ScaledSizedBox(width: 12),
-                    Icon(_getIndexerStatusIcon(), color: _getIndexerStatusColor(), size: scaleSize(16)),
+                    Icon(_getIndexerStatusIcon(ref), color: _getIndexerStatusColor(ref), size: scaleSize(16)),
                     const Spacer(),
                     old_provider.Consumer<SettingsProvider>(
                       builder: (context, set, _) {
@@ -1773,13 +1757,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   IconData _getConnectionStatusIcon(WidgetRef ref) {
-    final durt = ref.watch(durtProvider);
+    final duniterConnectionStatus = ref.watch(duniterConnectionStatusProvider);
 
-    if (_isManuallyConnectingDuniter || durt.isDuniterLoading) {
+    if (duniterConnectionStatus == ConnectionStatus.connecting) {
       return Icons.hourglass_bottom;
     } else if (_duniterConnectionFailed) {
       return Icons.error;
-    } else if (durt.isConnected) {
+    } else if (duniterConnectionStatus == ConnectionStatus.connected) {
       return Icons.check_circle;
     } else {
       return Icons.error;
@@ -1787,33 +1771,43 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Color _getConnectionStatusColor(WidgetRef ref) {
-    final durt = ref.watch(durtProvider);
+    final duniterConnectionStatus = ref.watch(duniterConnectionStatusProvider);
 
-    if (_isManuallyConnectingDuniter || durt.isDuniterLoading) {
+    if (duniterConnectionStatus == ConnectionStatus.connecting) {
       return Colors.orange;
     } else if (_duniterConnectionFailed) {
       return Colors.red;
-    } else if (durt.isConnected) {
+    } else if (duniterConnectionStatus == ConnectionStatus.connected) {
       return Colors.green;
     } else {
       return Colors.red;
     }
   }
 
-  IconData _getIndexerStatusIcon() {
-    if (_indexerConnectionFailed) {
+  IconData _getIndexerStatusIcon(WidgetRef ref) {
+    final squidConnectionStatus = ref.watch(squidConnectionStatusProvider);
+    final isLoadingSquid = ref.watch(squidLoadingProvider);
+
+    if (isLoadingSquid) {
+      return Icons.hourglass_bottom;
+    } else if (_indexerConnectionFailed) {
       return Icons.error;
-    } else if (_indexerEndpointController.text.isNotEmpty && _indexerEndpointController.text != 'https://') {
+    } else if (squidConnectionStatus == ConnectionStatus.connected) {
       return Icons.check_circle;
     } else {
       return Icons.error;
     }
   }
 
-  Color _getIndexerStatusColor() {
-    if (_indexerConnectionFailed) {
+  Color _getIndexerStatusColor(WidgetRef ref) {
+    final squidConnectionStatus = ref.watch(squidConnectionStatusProvider);
+    final isLoadingSquid = ref.watch(squidLoadingProvider);
+
+    if (isLoadingSquid) {
+      return Colors.orange;
+    } else if (_indexerConnectionFailed) {
       return Colors.red;
-    } else if (_indexerEndpointController.text.isNotEmpty && _indexerEndpointController.text != 'https://') {
+    } else if (squidConnectionStatus == ConnectionStatus.connected) {
       return Colors.green;
     } else {
       return Colors.red;

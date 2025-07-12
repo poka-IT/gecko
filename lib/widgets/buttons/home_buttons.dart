@@ -12,6 +12,7 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:provider/provider.dart';
+import 'package:gecko/utils/flower_power_colors.dart';
 
 class HomeButtons extends StatefulWidget {
   final bool isEasterEggActive;
@@ -30,7 +31,7 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
   void initState() {
     super.initState();
 
-    // Animation for disco colors (fast cycle)
+    // Animation for flower power colors (fast cycle)
     _colorController = AnimationController(duration: const Duration(seconds: 1), vsync: this);
     _colorAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_colorController);
   }
@@ -54,13 +55,7 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
     super.dispose();
   }
 
-  Color _getDiscoColor(double value, double offset) {
-    // Create smooth disco color transitions with offset
-    final hue = ((value + offset) * 360) % 360;
-    return HSVColor.fromAHSV(1.0, hue, 0.8, 1.0).toColor();
-  }
-
-  Widget _buildDiscoButton({
+  Widget _buildFlowerPowerButton({
     required Widget child,
     required Color baseColor,
     required double offset,
@@ -85,7 +80,9 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
           ),
           child: ClipOval(
             child: Material(
-              color: widget.isEasterEggActive ? _getDiscoColor(_colorAnimation.value, offset) : baseColor,
+              color: widget.isEasterEggActive
+                  ? FlowerPowerColors.getFlowerPowerColor(_colorAnimation.value, offset: offset)
+                  : baseColor,
               child: InkWell(
                 splashColor: Colors.white.withValues(alpha: 0.2),
                 highlightColor: Colors.white.withValues(alpha: 0.1),
@@ -112,7 +109,7 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
           children: <Widget>[
             Column(
               children: <Widget>[
-                _buildDiscoButton(
+                _buildFlowerPowerButton(
                   baseColor: context.colorScheme.primary,
                   offset: 0.0, // Premier bouton - pas de décalage
                   onTap: () {
@@ -148,7 +145,7 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
             ScaledSizedBox(width: 95),
             Column(
               children: <Widget>[
-                _buildDiscoButton(
+                _buildFlowerPowerButton(
                   baseColor: context.colorScheme.primary,
                   offset: 0.33, // Deuxième bouton - décalage 1/3
                   onTap: () async {
@@ -189,7 +186,7 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
             children: <Widget>[
               Column(
                 children: <Widget>[
-                  _buildDiscoButton(
+                  _buildFlowerPowerButton(
                     baseColor: context.colorScheme.primary,
                     offset: 0.66, // Troisième bouton - décalage 2/3
                     onTap: () async {

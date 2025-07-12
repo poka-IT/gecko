@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gecko/utils/flower_power_colors.dart';
 
 class AnimatedHeaderImage extends StatefulWidget {
   final bool isEasterEggActive;
@@ -20,7 +21,7 @@ class _AnimatedHeaderImageState extends State<AnimatedHeaderImage> with TickerPr
   void initState() {
     super.initState();
 
-    // Animation for disco colors (fast cycle)
+    // Animation for flower power colors (fast cycle)
     _colorController = AnimationController(duration: const Duration(seconds: 1), vsync: this);
 
     // Animation for mirror flip (slower, smooth)
@@ -58,12 +59,6 @@ class _AnimatedHeaderImageState extends State<AnimatedHeaderImage> with TickerPr
     super.dispose();
   }
 
-  Color _getDiscoColor(double value) {
-    // Create smooth disco color transitions
-    final hue = (value * 360) % 360;
-    return HSVColor.fromAHSV(1.0, hue, 0.8, 1.0).toColor();
-  }
-
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -77,9 +72,12 @@ class _AnimatedHeaderImageState extends State<AnimatedHeaderImage> with TickerPr
                   children: [
                     // Image originale
                     Image(image: const AssetImage('assets/home/header.png'), height: widget.height),
-                    // Couleur disco avec masque
+                    // Couleur flower power avec masque
                     ColorFiltered(
-                      colorFilter: ColorFilter.mode(_getDiscoColor(_colorAnimation.value), BlendMode.srcATop),
+                      colorFilter: ColorFilter.mode(
+                        FlowerPowerColors.getFlowerPowerColor(_colorAnimation.value),
+                        BlendMode.srcATop,
+                      ),
                       child: Image(image: const AssetImage('assets/home/header.png'), height: widget.height),
                     ),
                   ],

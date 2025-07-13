@@ -111,7 +111,7 @@ class _WalletsHomeContent extends ConsumerWidget {
       targets: [
         TargetFocus(
           identify: "drag_and_drop",
-          keyTarget: keyDragAndDrop,
+          keyTarget: myWalletProvider.idtyWallet != null ? keyDragAndDropMembre : keyDragAndDrop,
           contents: [
             TargetContent(
               child: Column(

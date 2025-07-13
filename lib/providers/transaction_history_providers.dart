@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -66,7 +68,7 @@ class TransfersOnlyHistoryNotifier extends StateNotifier<TransactionHistoryState
           .listen(
             (transactionId) {
               if (transactionId != null && transactionId != _lastSeenTransactionId) {
-                log.i('New activity detected for $address: $transactionId (previous: $_lastSeenTransactionId)');
+                print('New activity detected for $address: $transactionId (previous: $_lastSeenTransactionId)');
                 _lastSeenTransactionId = transactionId;
                 _onAccountActivity();
               } else if (transactionId != null) {
@@ -103,7 +105,7 @@ class TransfersOnlyHistoryNotifier extends StateNotifier<TransactionHistoryState
     try {
       final genesisTime = await ref.read(genesisTimeProvider.future);
 
-      log.d('Fetching fresh transfers-only data for $address');
+      print('🔄 Fetching fresh transfers-only data for $address');
 
       // Fetch only transfers (simple pagination)
       final result = await d.SquidService.client.getAccountHistory(address, number: 20, cursor: null);
@@ -267,7 +269,7 @@ class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
           .listen(
             (transactionId) {
               if (transactionId != null && transactionId != _lastSeenTransactionId) {
-                log.i('New activity detected for $address: $transactionId (previous: $_lastSeenTransactionId)');
+                print('New activity detected for $address: $transactionId (previous: $_lastSeenTransactionId)');
                 _lastSeenTransactionId = transactionId;
                 _onAccountActivity();
               } else if (transactionId != null) {
@@ -304,7 +306,8 @@ class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
     try {
       final genesisTime = await ref.read(genesisTimeProvider.future);
 
-      log.d('Fetching fresh combined data for $address');
+      // ignore: avoid_print
+      print('Fetching fresh combined data for $address');
 
       // Fetch both transfers and UDs combined
       final result = await d.SquidService.client.getCombinedAccountHistory(

@@ -362,5 +362,14 @@
     "cesium_import_info_body": "To import a Cesium wallet (with username and password), you first need to create a vault in Ğecko. Once your vault is created, you can migrate your old wallet to this new, simpler, and more secure format.",
     "migrate_cesium_account_info": "This screen allows you to migrate an old Cesium account (username/password) to a wallet in your vault. If your Cesium account is linked to a Web of Trust identity, it will also be migrated along with your balance.",
     "udShort": "UD",
-    "offline": "Offline"
+    "offline": "Offline",
+    "showUdAmounts": "Show amounts in UD",
+    "currencyDisplayMode": "Currency display mode",
+    "displayG1": "G1",
+    "displayDU": "UD",
+    "displayMN": "M/N",
+    "displayG1Description": "Display amounts in G1 units",
+    "displayDUDescription": "Display amounts in Universal Dividend",
+    "displayMNDescription": "Display amounts in mM/N ratio",
+    "displayMNDescriptionError": "Error loading TRM data"
 }

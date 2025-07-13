@@ -18,7 +18,7 @@ import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/transaction_status.dart';
 import 'package:gecko/widgets/transaction_state_icon.dart';
-import 'package:gecko/widgets/ud_unit_display.dart';
+import 'package:gecko/providers/trm_data_provider.dart';
 import 'package:fade_and_translate/fade_and_translate.dart';
 import 'package:gecko/models/transaction_in_progress_data.dart';
 
@@ -508,7 +508,10 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                       style: scaledTextStyle(fontSize: 15, color: const Color(0xFF2196F3), fontWeight: FontWeight.w500),
                     ),
                     ScaledSizedBox(width: 5),
-                    UdUnitDisplay(size: scaleSize(15), color: const Color(0xFF2196F3), fontWeight: FontWeight.w500),
+                    Text(
+                      ref.watch(currencySymbolProvider),
+                      style: scaledTextStyle(fontSize: 15, color: const Color(0xFF2196F3), fontWeight: FontWeight.w500),
+                    ),
                   ],
                 ),
                 dense: !isTall,

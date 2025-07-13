@@ -19,6 +19,8 @@ import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_header_data.dart';
 
+import 'package:gecko/providers/trm_data_provider.dart';
+
 class HomeProvider with ChangeNotifier {
   late ProviderContainer _container;
 
@@ -82,9 +84,18 @@ class HomeProvider with ChangeNotifier {
     }
   }
 
+  // Legacy method for backward compatibility
   Future changeCurrencyUnit(BuildContext context) async {
-    final bool isUdUnit = configBox.get('isUdUnit') ?? false;
-    await configBox.put('isUdUnit', !isUdUnit);
+    // This method is now handled by the new currency display mode system
+    // It cycles between G1 and DU modes for backward compatibility
+    final container = ProviderContainer();
+    try {
+      final currentMode = container.read(currencyDisplayModeProvider);
+      final newMode = currentMode == CurrencyDisplayMode.g1 ? CurrencyDisplayMode.du : CurrencyDisplayMode.g1;
+      container.read(currencyDisplayModeProvider.notifier).setDisplayMode(newMode);
+    } finally {
+      container.dispose();
+    }
 
     notifyListeners();
   }

@@ -12,6 +12,8 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
 
+import 'package:gecko/providers/trm_data_provider.dart';
+
 import 'package:gecko/providers/my_wallets.dart';
 // import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/utils.dart';
@@ -92,7 +94,10 @@ class WalletOptionsProvider with ChangeNotifier {
           .read(walletServiceProvider)
           .getKeyPairFromAddress(address: wallet.address, pinCode: myWalletProvider.pinCode);
 
-      final isUdUnit = configBox.get('isUdUnit') ?? false;
+      final container = ProviderContainer();
+      final displayMode = container.read(currencyDisplayModeProvider);
+      final isUdUnit = displayMode == CurrencyDisplayMode.du;
+      container.dispose();
       final transactionStatus = _container
           .read(duniterServiceProvider)
           .pay(

@@ -25,6 +25,7 @@ const keyChangeChest = Key('keyChangeChest');
 const keyListWallets = Key('keyListWallets');
 const keyAddDerivation = Key('keyAddDerivation');
 final keyDragAndDrop = GlobalKey(debugLabel: 'keyDragAndDrop');
+final keyDragAndDropMembre = GlobalKey(debugLabel: 'keyDragAndDropMembre');
 
 // Wallet options
 const keyCopyAddress = Key('keyCopyAddress');

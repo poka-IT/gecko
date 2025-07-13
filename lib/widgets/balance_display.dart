@@ -1,10 +1,10 @@
+import 'package:durt2/durt2.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/globals.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/services/system.service.dart';
-import 'package:gecko/widgets/ud_unit_display.dart';
+import 'package:gecko/providers/trm_data_provider.dart';
 
-class BalanceDisplay extends StatelessWidget {
+class BalanceDisplay extends ConsumerWidget {
   final BigInt value;
   final double size;
   final Color color;
@@ -58,77 +58,151 @@ class BalanceDisplay extends StatelessWidget {
   }
 
   // Helper to format a value into Billions, Millions, direct, or very large scientific.
-  // Returns a map containing the final string value and the prefix (M or B).
-  Map<String, String> _getStandardFormattedParts(double valueToFormat) {
+  String _formatNumber(double displayValue, CurrencyDisplayMode mode) {
+    if (displayValue == 0) return '0';
+
+    final double absValue = displayValue.abs();
+    final bool isNegative = displayValue < 0;
+    final String sign = isNegative ? '-' : '';
+
     String finalNumericValue;
-    String prefix = "";
-
-    final double absValue = valueToFormat.abs();
-
-    if (absValue >= 1.0e12) {
-      // 1000 Billions or more -> scientific
-      finalNumericValue = _formatScientificNotation(valueToFormat);
-      // prefix remains ""
+    if (absValue >= 1e15) {
+      // For very large numbers, use scientific notation
+      finalNumericValue = _formatScientificNotation(displayValue);
+    } else if (absValue >= 1e9) {
+      // For billions, use G suffix
+      finalNumericValue = (displayValue / 1000000000).toStringAsFixed(2);
+      return '$sign${finalNumericValue}G';
+    } else if (absValue >= 1e6) {
+      // For millions, use M suffix
+      finalNumericValue = (displayValue / 1000000).toStringAsFixed(2);
+      return '$sign${finalNumericValue}M';
     } else {
-      // For B, M, direct, we operate on the value after _removeDecimalZero
-      final double displayValue = _removeDecimalZero(valueToFormat);
-      final double absDisplayValue = displayValue.abs();
-
-      if (absDisplayValue >= 1000000000) {
-        // Billions
-        finalNumericValue = (displayValue / 1000000000).toStringAsFixed(2);
-        prefix = "B";
-      } else if (absDisplayValue >= 1000000) {
-        // Millions
-        finalNumericValue = (displayValue / 1000000).toStringAsFixed(2);
-        prefix = "M";
+      // For normal numbers, use different precision based on mode
+      if (mode == CurrencyDisplayMode.du || mode == CurrencyDisplayMode.moneyOverMembers) {
+        // For DU and M/N, round to 3 decimal places (0.001 precision)
+        finalNumericValue = displayValue.toStringAsFixed(3);
+        // Remove trailing zeros
+        if (finalNumericValue.contains('.')) {
+          finalNumericValue = finalNumericValue.replaceAll(RegExp(r'0*$'), '').replaceAll(RegExp(r'\.$'), '');
+        }
       } else {
-        // Direct
+        // For G1, use standard formatting
         finalNumericValue = displayValue.toString();
-        // prefix remains ""
       }
+      return finalNumericValue;
     }
-    return {'value': finalNumericValue, 'prefix': prefix};
+
+    return finalNumericValue;
+  }
+
+  Widget _buildCurrencyDisplay(
+    CurrencyDisplayMode displayMode,
+    String formattedNumber,
+    String currencySymbol,
+    String valuePrefix,
+  ) {
+    Widget prefixWidget = const SizedBox.shrink();
+    if (valuePrefix.isNotEmpty) {
+      prefixWidget = Text(
+        valuePrefix,
+        style: TextStyle(fontSize: size, color: color == Colors.white ? color : Colors.red, fontWeight: fontWeight),
+      );
+    }
+
+    if (displayMode == CurrencyDisplayMode.du || displayMode == CurrencyDisplayMode.moneyOverMembers) {
+      // DU and mM/N modes: display like "prefix + [unit] + symbol as superscript"
+      String unitText = displayMode == CurrencyDisplayMode.du ? 'DU' : 'mM/N';
+
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          if (valuePrefix.isNotEmpty) ...[prefixWidget, const SizedBox(width: 0.5)],
+          Flexible(
+            child: Text(
+              formattedNumber,
+              style: scaledTextStyle(fontSize: size, color: color, fontWeight: fontWeight),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 1),
+          Text(
+            unitText,
+            style: scaledTextStyle(fontSize: size, color: color, fontWeight: fontWeight),
+          ),
+          const SizedBox(width: 1.0),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                Durt.i.network.symbol,
+                style: scaledTextStyle(fontSize: size * 0.6, fontWeight: fontWeight, color: color),
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        ],
+      );
+    } else {
+      // G1 mode: display like "formatted_number prefix + symbol"
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            formattedNumber,
+            style: scaledTextStyle(fontSize: size, color: color, fontWeight: fontWeight),
+          ),
+          const SizedBox(width: 2),
+          if (valuePrefix.isNotEmpty) ...[prefixWidget, const SizedBox(width: 0.5)],
+          Text(
+            currencySymbol,
+            style: scaledTextStyle(fontSize: size, color: color, fontWeight: fontWeight),
+          ),
+        ],
+      );
+    }
   }
 
   @override
-  Widget build(BuildContext context) {
-    final isUdUnit = configBox.get('isUdUnit') ?? false;
-    final double rawValueInMainUnit = value / SystemService.balanceRatio;
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Get current display mode
+    final displayMode = ref.watch(currencyDisplayModeProvider);
 
-    late String finalValue;
-    String displayPrefix = "";
+    // Get balance ratio using the provider
+    final ratio = ref.watch(balanceRatioProvider);
 
-    if (isUdUnit) {
-      final double absRawValueInDU = rawValueInMainUnit.abs();
-      if (absRawValueInDU > 0 && absRawValueInDU < 0.01) {
-        // Special case for small DU values
-        finalValue = _formatScientificNotation(rawValueInMainUnit);
-        // displayPrefix remains "", as scientific notation doesn't use M/B prefixes here
-      } else {
-        // Standard DU formatting (includes large scientific, B, M, or direct)
-        Map<String, String> parts = _getStandardFormattedParts(rawValueInMainUnit);
-        finalValue = parts['value']!;
-        displayPrefix = parts['prefix']!;
-      }
+    // Calculate display value using the ratio
+    final double displayValue = value.toDouble() / ratio.toDouble();
+
+    // Get currency symbol
+    final String currencySymbol = ref.watch(currencySymbolProvider);
+
+    // Format the number and determine prefix
+    final double absValue = displayValue.abs();
+    String valuePrefix = "";
+    String formattedNumber;
+
+    // Special case for small DU and mM/N values (use scientific notation)
+    if ((displayMode == CurrencyDisplayMode.du || displayMode == CurrencyDisplayMode.moneyOverMembers) &&
+        absValue > 0 &&
+        absValue < 0.01) {
+      formattedNumber = _formatScientificNotation(displayValue);
+    } else if (absValue >= 1e15) {
+      // For very large numbers, use scientific notation
+      formattedNumber = _formatScientificNotation(displayValue);
+    } else if (absValue >= 1e9) {
+      // For billions, use G suffix
+      formattedNumber = (displayValue / 1000000000).toStringAsFixed(2);
+      valuePrefix = "G";
+    } else if (absValue >= 1e6) {
+      // For millions, use M suffix
+      formattedNumber = (displayValue / 1000000).toStringAsFixed(2);
+      valuePrefix = "M";
     } else {
-      // Not isUdUnit: displaying in a subunit
-      final double valueInSubUnit = rawValueInMainUnit / 100.0;
-      Map<String, String> parts = _getStandardFormattedParts(valueInSubUnit);
-      finalValue = parts['value']!;
-      displayPrefix = parts['prefix']!;
+      formattedNumber = _formatNumber(displayValue, displayMode);
     }
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          finalValue,
-          style: scaledTextStyle(fontSize: size, color: color, fontWeight: fontWeight),
-        ),
-        ScaledSizedBox(width: 5),
-        UdUnitDisplay(size: scaleSize(size), color: color, fontWeight: fontWeight, valuePrefix: displayPrefix),
-      ],
-    );
+    return _buildCurrencyDisplay(displayMode, formattedNumber, currencySymbol, valuePrefix);
   }
 }

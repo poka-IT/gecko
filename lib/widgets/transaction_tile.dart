@@ -91,16 +91,19 @@ class TransactionTile extends StatelessWidget {
             Text(dateString, style: scaledTextStyle(fontSize: 11, color: Colors.grey[500])),
           ],
         ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            BalanceDisplay(
-              value: finalAmount,
-              size: 16,
-              color: transaction.isReceived ? const Color(0xFF4CAF50) : const Color(0xFF2196F3),
-            ),
-          ],
+        trailing: SizedBox(
+          width: scaleSize(120), // Constrain the width to prevent overflow
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              BalanceDisplay(
+                value: finalAmount,
+                size: 16,
+                color: transaction.isReceived ? const Color(0xFF4CAF50) : const Color(0xFF2196F3),
+              ),
+            ],
+          ),
         ),
         onTap: () {
           Navigator.push(

@@ -13,11 +13,13 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/text_input_formaters.dart';
 import 'package:gecko/models/transaction_in_progress_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
+
 import 'package:gecko/providers.dart';
+import 'package:gecko/providers/trm_data_provider.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/activity.dart';
-import 'package:gecko/services/system.service.dart';
+
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/name_by_address.dart';
@@ -96,7 +98,30 @@ void paymentPopup({required WidgetRef ref, required String toAddress, required S
       // Give UI another chance to update
       await Future.microtask(() {});
 
-      final isUdUnit = configBox.get('isUdUnit') ?? false;
+      final displayMode = ref.read(currencyDisplayModeProvider);
+      final isUdUnit = displayMode == CurrencyDisplayMode.du;
+      final inputAmount = double.parse(walletViewProvider.payAmount.text);
+
+      // Convert amount based on display mode
+      double amountInG1;
+      switch (displayMode) {
+        case CurrencyDisplayMode.g1:
+          amountInG1 = inputAmount; // No conversion needed
+          break;
+        case CurrencyDisplayMode.du:
+          amountInG1 = inputAmount; // DU conversion is handled by isUd flag
+          break;
+        case CurrencyDisplayMode.moneyOverMembers:
+          // Convert mM/N to G1: mM/N * moneyOverMembersRatio / 1000
+          final trmDataAsync = ref.read(trmDataProvider);
+          final trmData = trmDataAsync.maybeWhen(data: (data) => data, orElse: () => null);
+          if (trmData != null) {
+            amountInG1 = inputAmount * trmData.moneyOverMembersRatio / 1000.0;
+          } else {
+            throw Exception('TRM data not available for M/N conversion');
+          }
+          break;
+      }
 
       // Execute transaction (crypto + network)
       final transactionStatus = ref
@@ -104,7 +129,7 @@ void paymentPopup({required WidgetRef ref, required String toAddress, required S
           .pay(
             keypair: keypair,
             destAddress: toAddress,
-            amount: double.parse(walletViewProvider.payAmount.text),
+            amount: amountInG1,
             comment: walletViewProvider.comment,
             isUd: isUdUnit,
           );
@@ -165,10 +190,11 @@ void paymentPopup({required WidgetRef ref, required String toAddress, required S
       return false; // Cannot validate without balance data
     }
 
-    // Conversion du montant en unités de base
-    final BigInt payAmountValue = SystemService.balanceRatio == BigInt.from(1)
-        ? BigInt.from((double.parse(payAmount) * SystemService.balanceRatio.toDouble() * 100).round())
-        : BigInt.from((double.parse(payAmount) * SystemService.balanceRatio.toDouble()).round());
+    // Get balance ratio using the provider
+    final ratio = ref.watch(balanceRatioProvider);
+
+    // Calculate amount value in base units
+    final BigInt payAmountValue = BigInt.from((double.parse(payAmount) * ratio.toDouble()).round());
 
     final existentialDeposit = ref.read(storageServiceProvider).currencyConstants.existentialDeposit;
 
@@ -213,7 +239,10 @@ void paymentPopup({required WidgetRef ref, required String toAddress, required S
           }
 
           canValidate = canValidatePayment();
-          final bool isUdUnit = configBox.get('isUdUnit') ?? false;
+          final container = ProviderContainer();
+          final displayMode = container.read(currencyDisplayModeProvider);
+          final bool isUdUnit = displayMode == CurrencyDisplayMode.du;
+          container.dispose();
           return Padding(
             padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
             child: Container(
@@ -439,7 +468,11 @@ void paymentPopup({required WidgetRef ref, required String toAddress, required S
                               decoration: InputDecoration(
                                 hintText: '0.00',
                                 suffix: Text(
-                                  isUdUnit ? 'ud'.tr(args: ['']) : Durt.i.network.symbol,
+                                  isUdUnit
+                                      ? 'ud'.tr(args: [''])
+                                      : displayMode == CurrencyDisplayMode.moneyOverMembers
+                                      ? 'M/N'
+                                      : Durt.i.network.symbol,
                                   style: const TextStyle(fontSize: 14),
                                 ),
                                 filled: true,

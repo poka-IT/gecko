@@ -63,5 +63,3 @@ else
     echo "Failed to upload to App Store"
     exit 1
 fi
-
-exit 0

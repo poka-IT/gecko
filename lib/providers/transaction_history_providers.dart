@@ -306,7 +306,6 @@ class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
     try {
       final genesisTime = await ref.read(genesisTimeProvider.future);
 
-      // ignore: avoid_print
       print('Fetching fresh combined data for $address');
 
       // Fetch both transfers and UDs combined

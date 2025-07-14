@@ -22,10 +22,10 @@ class _AnimatedHeaderImageState extends State<AnimatedHeaderImage> with TickerPr
     super.initState();
 
     // Animation for flower power colors (fast cycle)
-    _colorController = AnimationController(duration: const Duration(seconds: 1), vsync: this);
+    _colorController = AnimationController(duration: const Duration(milliseconds: 8159), vsync: this);
 
     // Animation for mirror flip (slower, smooth)
-    _flipController = AnimationController(duration: const Duration(seconds: 2), vsync: this);
+    _flipController = AnimationController(duration: const Duration(milliseconds: 2039), vsync: this);
 
     _colorAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_colorController);
 

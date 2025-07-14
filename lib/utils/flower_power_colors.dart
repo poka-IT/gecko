@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 
 class FlowerPowerColors {
   static Color getFlowerPowerColor(double value, {double offset = 0.0}) {
-    // Create smooth flower power color transitions with soft, pastel tones
-    // Avoid pink/magenta range (300-340 degrees) by mapping to other colors
-    double hue = ((value + offset) * 360) % 360;
+    double minHue = 35; // yellow
+    double maxHue = 205; // blue
+    double range = maxHue - minHue;
 
-    // Skip pink/magenta range (300-340 degrees)
-    if (hue >= 300 && hue <= 340) {
-      // Map pink range to green/yellow range (60-120 degrees)
-      hue = 60 + ((hue - 300) / 40) * 60;
-    }
+    double progress = (value + offset) % 1.0;
+    progress = progress <= 0.5 ? progress : ((0.5 - progress) % 0.5);
+
+    double hue = minHue + 2 * progress * range;
 
     return HSVColor.fromAHSV(1.0, hue, 0.45, 0.9).toColor();
   }

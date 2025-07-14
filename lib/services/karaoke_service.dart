@@ -58,9 +58,6 @@ class KaraokeService {
     _onTextUpdate = onTextUpdate;
     _startTime = DateTime.now();
 
-    // Commencer avec une ligne vide ou le premier texte
-    _onTextUpdate?.call('');
-
     // Timer qui vérifie toutes les 100ms quelle ligne afficher
     _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
       _updateCurrentLine();

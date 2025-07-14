@@ -32,7 +32,7 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
     super.initState();
 
     // Animation for flower power colors (fast cycle)
-    _colorController = AnimationController(duration: const Duration(seconds: 1), vsync: this);
+    _colorController = AnimationController(duration: const Duration(milliseconds: 4079), vsync: this);
     _colorAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_colorController);
   }
 
@@ -111,7 +111,7 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
               children: <Widget>[
                 _buildFlowerPowerButton(
                   baseColor: context.colorScheme.primary,
-                  offset: 0.0, // Premier bouton - pas de décalage
+                  offset: 0.33, // Premier bouton - décalage 1/3
                   onTap: () {
                     Navigator.push(
                       context,
@@ -147,7 +147,7 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
               children: <Widget>[
                 _buildFlowerPowerButton(
                   baseColor: context.colorScheme.primary,
-                  offset: 0.33, // Deuxième bouton - décalage 1/3
+                  offset: 0.66, // Deuxième bouton - décalage 2/3
                   onTap: () async {
                     WalletEntity? defaultWallet = myWalletProvider.getDefaultWallet();
                     if (myWalletProvider.pinCode == '') {
@@ -188,7 +188,7 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
                 children: <Widget>[
                   _buildFlowerPowerButton(
                     baseColor: context.colorScheme.primary,
-                    offset: 0.66, // Troisième bouton - décalage 2/3
+                    offset: 0.0, // Troisième bouton - pas de décalage
                     onTap: () async {
                       await historyProvider.scan(context);
                     },

@@ -18,6 +18,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_header_data.dart';
+import 'package:flutter/services.dart';
 
 import 'package:gecko/providers/trm_data_provider.dart';
 
@@ -138,6 +139,89 @@ class HomeProvider with ChangeNotifier {
 
   void reload() {
     notifyListeners();
+  }
+
+  /// Calculate the day of the year (1-365/366)
+  int _getDayOfYear(DateTime date) {
+    final startOfYear = DateTime(date.year, 1, 1);
+    final difference = date.difference(startOfYear).inDays;
+    return difference + 1; // Add 1 because we want 1-based indexing
+  }
+
+  /// Get wisdom of the day from assets
+  Future<String?> _getWisdomOfTheDay(String languageCode) async {
+    try {
+      // Try to load the wisdom file for the current language
+      String filePath = 'assets/gecko-wisdom/$languageCode.txt';
+      String content;
+
+      try {
+        content = await rootBundle.loadString(filePath);
+      } catch (e) {
+        // If the language file doesn't exist, fallback to French
+        log.w('Wisdom file not found for language $languageCode, falling back to French');
+        content = await rootBundle.loadString('assets/gecko-wisdom/fr.txt');
+      }
+
+      final lines = content.split('\n').where((line) => line.trim().isNotEmpty).toList();
+
+      if (lines.isEmpty) {
+        return null;
+      }
+
+      // Calculate day of year for today
+      final today = DateTime.now();
+      final dayOfYear = _getDayOfYear(today);
+
+      // Select the appropriate line
+      int lineIndex = (dayOfYear - 1);
+      // In case the number of days in the year is less than the number of lines…
+      lineIndex %= lines.length;
+
+      return lines[lineIndex].trim();
+    } catch (e) {
+      log.e('Error loading wisdom of the day: $e');
+      return null;
+    }
+  }
+
+  /// Display Gecko wisdom of the day (easter egg)
+  Future<void> showWisdomOfTheDay(BuildContext context) async {
+    try {
+      // Get current locale language code
+      final currentLocale = context.locale;
+      final languageCode = currentLocale.languageCode;
+
+      // Get wisdom of the day
+      final wisdom = await _getWisdomOfTheDay(languageCode);
+
+      if (wisdom != null) {
+        homeMessage = wisdom;
+        notifyListeners();
+
+        // Reset to normal message after 8 seconds
+        await Future.delayed(const Duration(seconds: 8), () {
+          // Check connection status before changing back to "noLizard"
+          try {
+            final duniterStatus = _container.read(duniterConnectionStatusProvider);
+            final squidStatus = _container.read(squidConnectionStatusProvider);
+
+            // Only show "noLizard" if we have a good connection
+            if (duniterStatus == ConnectionStatus.connected && squidStatus == ConnectionStatus.connected) {
+              homeMessage = "noLizard".tr();
+              notifyListeners();
+            }
+          } catch (e) {
+            log.w('Error checking connection status in wisdom easter egg: $e');
+            // If we can't check status, go back to "noLizard" anyway for the easter egg
+            homeMessage = "noLizard".tr();
+            notifyListeners();
+          }
+        });
+      }
+    } catch (e) {
+      log.e('Error in showWisdomOfTheDay: $e');
+    }
   }
 
   Future<void> initHome({required BuildContext context, required WidgetRef ref}) async {

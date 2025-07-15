@@ -1,9 +1,7 @@
-version: "3.5"
-
 services:
   duniter-v2s-gecko-tests:
     container_name: duniter-v2s-gecko-tests
-    image: duniter/duniter-v2s-gdev:latest
+    image: duniter/duniter-v2s-gtest-1000:1000-0.11.1
     command: --alice --force-authoring --reserved-only --no-mdns
     #--sealing=manual
     ports:
@@ -13,7 +11,7 @@ services:
       - "30333:30333"
     environment:
       DUNITER_INSTANCE_NAME: "gecko_tests"
-      DUNITER_CHAIN_NAME: "gdev_dev"
+      DUNITER_CHAIN_NAME: "dev"
       DUNITER_GENESIS_CONFIG: "/var/lib/duniter/gecko_config.json"
       DUNITER_GENESIS_DATA: "/var/lib/duniter/gecko_data.json"
     volumes:

@@ -25,11 +25,19 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   Timer? debounce;
   final int debouneTime = 50;
+  late FocusNode _searchFocusNode;
 
   @override
   void initState() {
     ClipboardMonitor().startMonitoring();
+    _searchFocusNode = FocusNode();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _searchFocusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -70,6 +78,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       textInputAction: TextInputAction.search,
                       key: keySearchField,
                       controller: searchProvider.searchController,
+                      focusNode: _searchFocusNode,
                       autofocus: true,
                       maxLines: 1,
                       textAlign: TextAlign.left,
@@ -91,6 +100,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                   onPressed: (() async => {
                                     searchProvider.searchController.text = '',
                                     searchProvider.reload(),
+                                    _searchFocusNode.requestFocus(),
                                   }),
                                   icon: Icon(Icons.close, color: Colors.grey[600], size: scaleSize(28)),
                                 ),

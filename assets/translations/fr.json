@@ -364,6 +364,7 @@
     "errorReportCopied": "Rapport d'erreur copié dans le presse-papiers",
     "transactionDetails": "Détails de la transaction :",
     "newTransactionReceived": "Nouvelle transaction reçue",
+    "transactionFilter": "Filtre",
     "newCertificationReceived": "Nouvelle certification reçue",
     "newCertificationSent": "Nouvelle certification envoyée",
     "theme": "Thème",

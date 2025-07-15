@@ -3,7 +3,6 @@
 import 'package:durt2/durt2.dart' show IdtyStatusExtension;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers.dart';
@@ -101,21 +100,11 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
       appBar: WalletAppBar(address: widget.address, title: 'accountActivity'.tr()),
       body: Stack(
         children: [
-          Stack(
-            children: [
-              Column(
-                children: <Widget>[
-                  WalletHeader(address: widget.address, showUDToggle: false), // Remove toggle from header
-                  Expanded(
-                    child: HistoryQuery(address: widget.address, transactionData: widget.transactionData),
-                  ),
-                ],
-              ),
-              // UD toggle positioned absolutely below header
-              Positioned(
-                top: scaleSize(115),
-                left: scaleSize(37),
-                child: WalletHeaderUDToggle(address: widget.address),
+          Column(
+            children: <Widget>[
+              WalletHeader(address: widget.address),
+              Expanded(
+                child: HistoryQuery(address: widget.address, transactionData: widget.transactionData),
               ),
             ],
           ),

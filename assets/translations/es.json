@@ -368,6 +368,7 @@
     "errorReportCopied": "Informe de error copiado al portapapeles",
     "transactionDetails": "Detalles de la transacción:",
     "newTransactionReceived": "Nueva transacción recibida",
+    "transactionFilter": "Filtro",
     "newCertificationReceived": "Nueva certificación recibida",
     "newCertificationSent": "Nueva certificación enviada",
     "theme": "Tema",

@@ -8,11 +8,13 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
+import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/providers/transaction_history_providers.dart';
 import 'package:gecko/widgets/history_view.dart';
 import 'package:gecko/widgets/transaction_in_progress_tile.dart';
 import 'package:gecko/models/transaction_in_progress_data.dart';
 import 'package:visibility_detector/visibility_detector.dart';
+import 'package:gecko/models/transaction_display_item.dart';
 
 class HistoryQuery extends ConsumerStatefulWidget {
   const HistoryQuery({super.key, required this.address, this.transactionData});
@@ -33,6 +35,10 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
   bool _isTransactionInProgressVisible = false;
   bool _isDisposed = false;
   Timer? _hideIndicatorTimer;
+
+  // Filter visibility management with smooth translation
+  double _filterTranslationY = 0.0; // 0.0 = visible, -1.0 = hidden
+  double _lastScrollOffset = 0.0;
 
   bool get _isAtTop => _scrollController.hasClients && _scrollController.position.pixels <= 50;
 
@@ -70,6 +76,41 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.7) {
       loadMoreTransactions(ref, widget.address);
     }
+
+    // Filter visibility logic based on scroll direction
+    _handleFilterVisibility();
+  }
+
+  void _handleFilterVisibility() {
+    if (!_scrollController.hasClients) return;
+
+    final currentOffset = _scrollController.position.pixels;
+    final scrollDelta = currentOffset - _lastScrollOffset;
+
+    // Always show filter when at the top
+    if (currentOffset <= 50) {
+      if (_filterTranslationY != 0.0) {
+        setState(() {
+          _filterTranslationY = 0.0;
+        });
+      }
+    } else if (scrollDelta.abs() > 2.0) {
+      // Threshold to avoid jitter
+      // Sensitivity: how much scroll needed to fully hide/show the filter
+      const sensitivity = 0.02;
+
+      // Update translation based on scroll direction
+      double newTranslation = _filterTranslationY - (scrollDelta * sensitivity);
+      newTranslation = newTranslation.clamp(-1.0, 0.0);
+
+      if ((newTranslation - _filterTranslationY).abs() > 0.01) {
+        setState(() {
+          _filterTranslationY = newTranslation;
+        });
+      }
+    }
+
+    _lastScrollOffset = currentOffset;
   }
 
   void _onNewTransactionReceived() {
@@ -253,35 +294,67 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
             // Handle success state with transactions
             if (historyState.transactions.isNotEmpty)
               Expanded(
-                child: RefreshIndicator(
-                  color: context.colorScheme.primary,
-                  onRefresh: () async {
-                    await refreshTransactionHistory(ref, widget.address);
-                  },
-                  child: ListView(
-                    key: keyListTransactions,
-                    controller: _scrollController,
-                    children: <Widget>[
-                      if (widget.transactionData != null)
-                        VisibilityDetector(
-                          key: const Key('transaction-in-progress-tile'),
-                          onVisibilityChanged: _onTransactionInProgressVisibilityChanged,
-                          child: TransactionInProgressTule(transactionData: widget.transactionData!),
-                        ),
+                child: Stack(
+                  children: [
+                    // Main transaction list - always takes full space
+                    RefreshIndicator(
+                      color: context.colorScheme.primary,
+                      onRefresh: () async {
+                        await refreshTransactionHistory(ref, widget.address);
+                      },
+                      child: ListView(
+                        key: keyListTransactions,
+                        controller: _scrollController,
+                        padding: EdgeInsets.only(top: scaleSize(60)), // Space for filter overlay
+                        children: <Widget>[
+                          if (widget.transactionData != null)
+                            VisibilityDetector(
+                              key: const Key('transaction-in-progress-tile'),
+                              onVisibilityChanged: _onTransactionInProgressVisibilityChanged,
+                              child: TransactionInProgressTule(transactionData: widget.transactionData!),
+                            ),
 
-                      HistoryView(
-                        transactions: historyState.transactions,
-                        address: widget.address,
-                        previousAddress: previousAddressAsync.when(
-                          data: (address) => address,
-                          loading: () => null,
-                          error: (error, stackTrace) => null,
-                        ),
-                        hasNextPage: historyState.hasNextPage,
-                        isLoadingMore: historyState.isLoading,
+                          HistoryView(
+                            transactions: historyState.transactions,
+                            address: widget.address,
+                            previousAddress: previousAddressAsync.when(
+                              data: (address) => address,
+                              loading: () => null,
+                              error: (error, stackTrace) => null,
+                            ),
+                            hasNextPage: historyState.hasNextPage,
+                            isLoadingMore: historyState.isLoading,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+
+                    // Filter overlay - floats above the list
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: Transform.translate(
+                        offset: Offset(0, _filterTranslationY * 80.0),
+                        child: Opacity(
+                          opacity: (1.0 + _filterTranslationY).clamp(0.0, 1.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: context.colorScheme.surface,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.1),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: TransactionFilter(address: widget.address),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
           ],
@@ -324,6 +397,173 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
             ),
           ),
       ],
+    );
+  }
+}
+
+/// Elegant transaction filter widget that allows switching between transfers and all transactions
+class TransactionFilter extends ConsumerStatefulWidget {
+  const TransactionFilter({super.key, required this.address});
+
+  final String address;
+
+  @override
+  ConsumerState<TransactionFilter> createState() => _TransactionFilterState();
+}
+
+class _TransactionFilterState extends ConsumerState<TransactionFilter> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+  bool _hasCheckedForUDs = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(duration: const Duration(milliseconds: 400), vsync: this);
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic));
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, -0.5),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic));
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isUDEnabled = ref.watch(universalDividendsToggleProvider);
+
+    // Check if UDs are available
+    final combinedState = ref.watch(combinedHistoryProvider(widget.address));
+    final hasUDs = combinedState.transactions.any(
+      (transaction) => transaction.type == TransactionType.universalDividend,
+    );
+
+    // Animate in when UDs are detected for the first time
+    if (hasUDs && !_hasCheckedForUDs) {
+      _hasCheckedForUDs = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _animationController.forward();
+        }
+      });
+    }
+
+    // Hide if no UDs available
+    if (!hasUDs) {
+      return const SizedBox.shrink();
+    }
+
+    return SlideTransition(
+      position: _slideAnimation,
+      child: FadeTransition(
+        opacity: _fadeAnimation,
+        child: Container(
+          margin: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), top: scaleSize(8), bottom: scaleSize(12)),
+          child: Row(
+            children: [
+              Icon(Icons.filter_list_outlined, size: scaleSize(16), color: context.colorScheme.onSurfaceVariant),
+              SizedBox(width: scaleSize(8)),
+              Text(
+                'transactionFilter'.tr(),
+                style: scaledTextStyle(
+                  fontSize: 12,
+                  color: context.colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(width: scaleSize(12)),
+              Expanded(child: _buildFilterToggle(context, isUDEnabled)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterToggle(BuildContext context, bool isUDEnabled) {
+    return _FilterToggle(
+      label: 'showUniversalDividends'.tr(),
+      icon: Icons.water_drop,
+      isEnabled: isUDEnabled,
+      onTap: () {
+        toggleUniversalDividends(ref, widget.address);
+      },
+    );
+  }
+}
+
+/// Single toggle button for Universal Dividends
+class _FilterToggle extends StatelessWidget {
+  const _FilterToggle({required this.label, required this.icon, required this.isEnabled, required this.onTap});
+
+  final String label;
+  final IconData icon;
+  final bool isEnabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          padding: EdgeInsets.symmetric(horizontal: scaleSize(14), vertical: scaleSize(10)),
+          decoration: BoxDecoration(
+            color: isEnabled
+                ? context.colorScheme.primary.withValues(alpha: 0.15)
+                : context.colorScheme.surfaceContainer,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isEnabled
+                  ? context.colorScheme.primary.withValues(alpha: 0.4)
+                  : context.colorScheme.outline.withValues(alpha: 0.3),
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedRotation(
+                duration: const Duration(milliseconds: 200),
+                turns: isEnabled ? 0.1 : 0.0,
+                child: Icon(
+                  icon,
+                  size: scaleSize(16),
+                  color: isEnabled ? context.colorScheme.primary : context.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              SizedBox(width: scaleSize(8)),
+              Flexible(
+                child: AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 200),
+                  style: scaledTextStyle(
+                    fontSize: 12,
+                    color: isEnabled ? context.colorScheme.primary : context.colorScheme.onSurfaceVariant,
+                    fontWeight: isEnabled ? FontWeight.w600 : FontWeight.w500,
+                  ),
+                  child: Text(label, textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

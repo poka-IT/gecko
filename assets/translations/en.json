@@ -336,6 +336,7 @@
     "errorReportCopied": "Error report copied to clipboard",
     "transactionDetails": "Transaction Details:",
     "newTransactionReceived": "New transaction received",
+    "transactionFilter": "Filter",
     "newCertificationReceived": "New certification received",
     "newCertificationSent": "New certification sent",
     "theme": "Theme",

@@ -2,6 +2,7 @@ import 'package:durt2/durt2.dart' show Durt, Networks, Utils;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -15,6 +16,7 @@ import 'package:gecko/widgets/buttons/home_settings_button.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
+import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/drawer.dart';
 import 'package:gecko/widgets/buttons/home_buttons.dart';
 import 'package:gecko/widgets/easter_egg_detector.dart';
@@ -50,24 +52,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final bool alreadyShown = configBox.get('cesiumImportInfoShown') ?? false;
 
     if (!isWalletsExists && !alreadyShown) {
-      showDialog(
+      showConfirmationDialog(
         context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("cesium_import_info_title".tr()),
-            content: Text("cesium_import_info_body".tr()),
-            actions: <Widget>[
-              TextButton(
-                child: Text("gotit".tr()),
-                onPressed: () {
-                  configBox.put('cesiumImportInfoShown', true);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
+        title: "cesium_import_info_title".tr(),
+        message: "cesium_import_info_body".tr(),
+        confirmText: "gotit".tr(),
+        customIcon: SvgPicture.asset('assets/cesium_bw2.svg', semanticsLabel: 'CS', height: scaleSize(40)),
+        hideCancelButton: true,
       );
+
       configBox.put('cesiumImportInfoShown', true);
     }
   }

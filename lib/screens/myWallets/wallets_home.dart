@@ -34,23 +34,34 @@ class _WalletsHomeState extends ConsumerState<WalletsHome> with SingleTickerProv
   Widget build(BuildContext context) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
 
-    return Scaffold(
-      body: myWalletProvider.listWallets.length == 1
-          ? WalletOptions(wallet: myWalletProvider.listWallets[0])
-          : _WalletsHomeContent(),
-    );
+    // If only one wallet, navigate to WalletOptions instead of showing inline
+    if (myWalletProvider.listWallets.length == 1) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => WalletOptions(wallet: myWalletProvider.listWallets[0])),
+          );
+        }
+      });
+      // Show loading screen while navigation happens
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    return Scaffold(body: _WalletsHomeContent());
   }
 }
 
 class _WalletsHomeContent extends ConsumerWidget {
+  // Static flag to prevent tutorial from showing multiple times in same session
+  static bool _tutorialShownInSession = false; // Reset for testing
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
-    final currentChestNumber = myWalletProvider.getCurrentSafe;
 
     final SafeEntity? currentChest = () {
       try {
-        return ref.read(walletServiceProvider).getSafeBox(currentChestNumber);
+        return ref.read(walletServiceProvider).getSafeBox(myWalletProvider.getCurrentSafe);
       } catch (e) {
         return null;
       }
@@ -78,6 +89,7 @@ class _WalletsHomeContent extends ConsumerWidget {
     } else {
       nTule = 2;
     }
+
     // Get identity wallet info asynchronously but don't block UI
     final idtyWalletAsync = ref.watch(idtyWalletAsyncProvider);
 
@@ -88,12 +100,16 @@ class _WalletsHomeContent extends ConsumerWidget {
         ? allWallets.where((w) => w.address != idtyWallet.address).toList()
         : allWallets;
 
-    // Build tutorial target based on whether there's an identity wallet
+    // SIMPLE tutorial logic: attach key to second wallet in grid if exists, otherwise first
+    final int targetWalletIndex = walletsWithoutIdty.length > 1 ? 1 : 0;
+    final bool shouldShowTutorial = walletsWithoutIdty.isNotEmpty;
+
+    // Build tutorial with simple target
     final tutorialCoachMark = TutorialCoachMark(
       targets: [
         TargetFocus(
           identify: "drag_and_drop",
-          keyTarget: keyDragAndDrop, // Always use keyDragAndDrop for tutorial target
+          keyTarget: keyTutorialTarget,
           contents: [
             TargetContent(
               child: Column(
@@ -119,11 +135,19 @@ class _WalletsHomeContent extends ConsumerWidget {
       opacityShadow: 0.8,
     );
 
-    // Show tutorial if needed
+    // Show tutorial only once and only if we have wallets
     final bool showDraggableTutorial = configBox.get('showDraggableTutorial') ?? true;
-    if (myWalletProvider.listWallets.length > 1 && showDraggableTutorial) {
+    // Re-enable tutorial now that GlobalKey duplication is fixed
+    const bool tutorialDisabled = false; // Fixed: was true
+
+    if (shouldShowTutorial && showDraggableTutorial && !_tutorialShownInSession && !tutorialDisabled) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        tutorialCoachMark.show(context: context);
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (context.mounted) {
+            tutorialCoachMark.show(context: context);
+            _tutorialShownInSession = true; // Mark as shown for this session
+          }
+        });
       });
       configBox.put('showDraggableTutorial', false);
     }
@@ -168,26 +192,35 @@ class _WalletsHomeContent extends ConsumerWidget {
                           child: WalletTileMembre(wallet: idtyWallet, attachTutorialKey: false),
                         ),
                       ),
-                    // Regular wallets grid
-                    SliverGrid.count(
-                      key: keyListWallets,
-                      crossAxisCount: nTule,
-                      childAspectRatio: 1,
-                      crossAxisSpacing: 0,
-                      mainAxisSpacing: 0,
-                      children: <Widget>[
-                        for (var i = 0; i < walletsWithoutIdty.length; i++)
-                          DragTuleAction(
-                            wallet: walletsWithoutIdty[i],
-                            child: WalletTile(
-                              repository: walletsWithoutIdty[i],
-                              attachTutorialKey: i == 1, // Always attach to second wallet for tutorial
-                            ),
-                          ),
-                        ref.read(durtProvider).isConnected && myWalletProvider.listWallets.length < maxWalletsInSafe
-                            ? const AddNewDerivationButton()
-                            : const Text(''),
-                      ],
+                    // Regular wallets grid - isolated from provider rebuilds
+                    old_provider.Consumer<MyWalletsProvider>(
+                      builder: (context, myWalletProvider, child) {
+                        // Create stable lists that won't change during layout
+                        final stableWalletsWithoutIdty = List.from(walletsWithoutIdty);
+                        final stableTargetIndex = targetWalletIndex;
+
+                        return SliverGrid.count(
+                          key: keyListWallets,
+                          crossAxisCount: nTule,
+                          childAspectRatio: 1,
+                          crossAxisSpacing: 0,
+                          mainAxisSpacing: 0,
+                          children: <Widget>[
+                            for (var i = 0; i < stableWalletsWithoutIdty.length; i++)
+                              DragTuleAction(
+                                key: ValueKey('drag_${stableWalletsWithoutIdty[i].address}'),
+                                wallet: stableWalletsWithoutIdty[i],
+                                child: WalletTile(
+                                  repository: stableWalletsWithoutIdty[i],
+                                  attachTutorialKey: i == stableTargetIndex,
+                                ),
+                              ),
+                            ref.read(durtProvider).isConnected && myWalletProvider.listWallets.length < maxWalletsInSafe
+                                ? const AddNewDerivationButton()
+                                : const Text(''),
+                          ],
+                        );
+                      },
                     ),
                     const SliverToBoxAdapter(child: ChestOptionsButtons()),
                   ],

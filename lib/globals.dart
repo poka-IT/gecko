@@ -8,7 +8,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:logger/logger.dart';
 
 // Version of box data
-const int dataVersion = 11;
+const int dataVersion = 12;
 const int walletHeaderDataVersion = 2;
 
 late String appVersion;

@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 import 'dart:io';
 import 'package:durt2/durt2.dart' show SafeEntity, WalletEntity, SafeEntityExt;
@@ -46,15 +48,23 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
   Future<void> _waitForSystemReady() async {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
-    // Wait for Durt to be connected
+    // Wait for Durt to be connected with timeout
+    final durtConnectionTimeout = DateTime.now().add(const Duration(seconds: 30));
     while (!ref.read(durtProvider).isConnected) {
+      if (DateTime.now().isAfter(durtConnectionTimeout)) {
+        throw TimeoutException('Durt connection timeout after 30 seconds');
+      }
       // ignore: avoid_print
       print('🔴 Durt not connected');
       await Future.delayed(const Duration(milliseconds: 100));
     }
 
-    // Wait for DuniterStorageService to be properly initialized
+    // Wait for DuniterStorageService to be properly initialized with timeout
+    final storageTimeout = DateTime.now().add(const Duration(seconds: 15));
     while (true) {
+      if (DateTime.now().isAfter(storageTimeout)) {
+        throw TimeoutException('Storage service initialization timeout after 15 seconds');
+      }
       try {
         final _ = ref.read(durtProvider).storage;
         break;
@@ -251,28 +261,72 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           onCompleted: (pin) async {
-            myWalletProvider.isPinLoading = true;
-            myWalletProvider.pinCode = pin.toUpperCase();
-            final isValid = await ref.read(walletServiceProvider).checkCode(pin: pin.toUpperCase());
-            if (!isValid) {
-              await Future.delayed(const Duration(milliseconds: 20));
-              pinColor = Colors.red[600]!;
+            try {
+              myWalletProvider.isPinLoading = true;
+              myWalletProvider.pinCode = pin.toUpperCase();
+
+              // Add timeout to the entire unlock operation
+              final unlockFuture = Future(() async {
+                final isValid = await ref.read(walletServiceProvider).checkCode(pin: pin.toUpperCase());
+                if (!isValid) {
+                  await Future.delayed(const Duration(milliseconds: 20));
+                  pinColor = Colors.red[600]!;
+                  myWalletProvider.isPinLoading = false;
+                  myWalletProvider.isPinValid = false;
+                  myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
+                  enterPin.text = '';
+                  pinFocus.requestFocus();
+                } else {
+                  myWalletProvider.isPinValid = true;
+                  pinColor = Colors.green[400]!;
+
+                  // Wait for Durt to be connected and wallets to be loaded before allowing access
+                  await _waitForSystemReady();
+
+                  myWalletProvider.isPinLoading = false;
+                  myWalletProvider.debounceResetPinCode();
+                  Navigator.pop(context, pin.toUpperCase());
+                }
+              });
+
+              // Apply global timeout to prevent hanging
+              await unlockFuture.timeout(
+                const Duration(seconds: 60),
+                onTimeout: () {
+                  throw TimeoutException('Unlock operation timeout after 60 seconds');
+                },
+              );
+            } catch (e) {
+              // Comprehensive error handling
               myWalletProvider.isPinLoading = false;
               myWalletProvider.isPinValid = false;
               myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
               enterPin.text = '';
+              pinColor = Colors.red[600]!;
+
+              String errorMessage;
+              if (e is TimeoutException) {
+                errorMessage = 'Timeout: ${e.message ?? 'Operation took too long'}';
+              } else {
+                errorMessage = 'Unlock failed: ${e.toString()}';
+              }
+
+              // Log error for debugging
+              // ignore: avoid_print
+              print('🔴 Unlock error: $errorMessage');
+
+              // Show error to user
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(errorMessage),
+                    backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 5),
+                  ),
+                );
+              }
+
               pinFocus.requestFocus();
-            } else {
-              myWalletProvider.isPinValid = true;
-              pinColor = Colors.green[400]!;
-
-              // Wait for Durt to be connected and wallets to be loaded before allowing access
-              await _waitForSystemReady();
-
-              myWalletProvider.isPinLoading = false;
-              myWalletProvider.debounceResetPinCode();
-              // ignore: use_build_context_synchronously
-              Navigator.pop(context, pin.toUpperCase());
             }
           },
           onChanged: (value) {

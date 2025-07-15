@@ -50,11 +50,12 @@ Future<bool> showConfirmationDialog({
   String? confirmText,
   bool barrierDismissible = true,
   ConfirmationDialogType type = ConfirmationDialogType.info,
-  IconData? customIcon,
+  Widget? customIcon,
   Color? customIconColor,
+  bool hideCancelButton = false,
 }) async {
-  final IconData iconToShow = customIcon ?? type.icon;
   final Color iconColorToShow = customIconColor ?? type.iconColor;
+  final Widget iconToShow = customIcon ?? Icon(type.icon, color: iconColorToShow, size: 32);
   final String dialogTitle = title ?? type.title;
   final String confirmTextToShow = confirmText ?? type.confirmText;
 
@@ -80,7 +81,7 @@ Future<bool> showConfirmationDialog({
               Container(
                 padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(color: iconColorToShow.withValues(alpha: 0.1), shape: BoxShape.circle),
-                child: Icon(iconToShow, color: iconColorToShow, size: 32),
+                child: iconToShow,
               ),
               SizedBox(height: 20),
               Text(
@@ -109,7 +110,7 @@ Future<bool> showConfirmationDialog({
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  if (type != ConfirmationDialogType.error) ...[
+                  if (type != ConfirmationDialogType.error && !hideCancelButton) ...[
                     Expanded(
                       child: TextButton(
                         onPressed: () => Navigator.of(context).pop(false),

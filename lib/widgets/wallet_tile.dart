@@ -28,7 +28,7 @@ class WalletTile extends StatelessWidget {
           Navigator.push(context, SmoothTransition(page: WalletOptions(wallet: repository)));
         },
         child: ScaledSizedBox(
-          key: attachTutorialKey ? keyDragAndDrop : null,
+          key: attachTutorialKey ? keyTutorialTarget : null,
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),

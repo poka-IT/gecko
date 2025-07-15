@@ -26,9 +26,12 @@ class DragTuleAction extends ConsumerWidget {
       dragAnchorStrategy: (Draggable<Object> _, BuildContext _, Offset _) => const Offset(55, 55),
       onDragStarted: () => myWalletProvider.dragAddress = wallet,
       onDragEnd: (_) {
-        myWalletProvider.lastFlyBy = null;
-        myWalletProvider.dragAddress = null;
-        myWalletProvider.reload();
+        // Defer these operations to prevent layout mutations
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          myWalletProvider.lastFlyBy = null;
+          myWalletProvider.dragAddress = null;
+          myWalletProvider.reload();
+        });
       },
       feedback: ElevatedButton(
         onPressed: () {},
@@ -57,7 +60,10 @@ class DragTuleAction extends ConsumerWidget {
         onMove: (details) {
           if (wallet.address != myWalletProvider.lastFlyBy?.address) {
             myWalletProvider.lastFlyBy = wallet;
-            myWalletProvider.reload();
+            // Defer reload to prevent layout mutations during drag
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              myWalletProvider.reload();
+            });
           }
         },
         onWillAcceptWithDetails: (senderAddress) => senderAddress.data != wallet.address,

@@ -1,10 +1,12 @@
-import 'package:durt2/durt2.dart';
+import 'package:durt2/durt2.dart' show Durt, Networks, Utils;
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers.dart' show duniterConnectionStatusProvider;
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +21,7 @@ import 'package:gecko/widgets/buttons/home_buttons.dart';
 import 'package:gecko/widgets/easter_egg_detector.dart';
 import 'package:gecko/widgets/animated_header_image.dart';
 import 'package:gecko/widgets/animated_background.dart';
+import 'package:gecko/utils/debug_test_wallet.dart';
 import 'package:provider/provider.dart' as old_provider;
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -91,6 +94,63 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
+/// Check if test wallet button should be shown (reactive to network changes)
+/// Only show if in debug mode AND connected to a local Duniter network
+Widget _buildTestWalletButton(BuildContext context) {
+  return Consumer(
+    builder: (context, ref, _) {
+      // Watch connection status to make this reactive
+      ref.watch(duniterConnectionStatusProvider);
+
+      if (!kDebugMode) return const SizedBox.shrink();
+
+      // Check if current Duniter endpoint is local
+      final currentEndpoint = Networks.duniterEndpoint;
+      if (currentEndpoint.isEmpty) return const SizedBox.shrink();
+
+      if (!Utils.isLocalEndpoint(currentEndpoint)) return const SizedBox.shrink();
+
+      return Column(
+        children: [
+          ScaledSizedBox(height: scaleSize(25)),
+          ScaledSizedBox(
+            width: 330,
+            height: 60,
+            child: OutlinedButton(
+              style:
+                  OutlinedButton.styleFrom(
+                    side: BorderSide(width: scaleSize(2), color: Colors.orange),
+                    padding: EdgeInsets.symmetric(vertical: scaleSize(8)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    backgroundColor: Colors.orange.withValues(alpha: 0.1),
+                  ).copyWith(
+                    elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
+                      if (states.contains(WidgetState.pressed)) return 0;
+                      return 4;
+                    }),
+                    shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.15)),
+                  ),
+              onPressed: () => DebugTestWalletService.importTestWallet(context),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.bug_report, color: Colors.orange, size: scaleSize(20)),
+                  ScaledSizedBox(width: 8),
+                  Text(
+                    "Import Test Wallet (Dev Mode)",
+                    style: scaledTextStyle(fontSize: 16, color: Colors.orange, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+/// Show welcome screen if no wallets exist
 Widget geckHome(BuildContext context, bool isEasterEggActive, ValueChanged<bool> onEasterEggStateChange) {
   old_provider.Provider.of<ChestProvider>(context);
 
@@ -314,6 +374,7 @@ Widget welcomeHome(BuildContext context) {
                         ),
                       ),
                     ),
+                    _buildTestWalletButton(context),
                     const Spacer(flex: 3),
                   ],
                 ),

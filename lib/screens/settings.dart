@@ -1,7 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:io' show Platform;
 import 'package:durt2/durt2.dart' show Networks, ConnectionStatus, Durt;
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers.dart';
@@ -1733,8 +1735,72 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  /// Get local endpoint based on platform
+  String _getLocalEndpoint() {
+    // Android emulator uses 10.0.2.2, other platforms use 127.0.0.1
+    return Platform.isAndroid ? 'ws://10.0.2.2:9944' : 'ws://127.0.0.1:9944';
+  }
+
+  /// Switch to local development endpoint
+  Future<void> _switchToLocalNetwork() async {
+    if (!mounted) return;
+    setState(() {
+      _isSwitchingNetwork = true;
+      _duniterConnectionFailed = false;
+      _indexerConnectionFailed = false;
+    });
+
+    try {
+      // 1. Clean up current subscriptions and caches
+      await _cleanupDuniterSubscriptions();
+
+      // 2. Set local endpoint manually
+      final localEndpoint = _getLocalEndpoint();
+      configBox.put('customEndpoint', localEndpoint);
+      configBox.put('autoEndpoint', false);
+      configBox.delete('customIndexer'); // Use auto-discovery for indexer
+
+      // 3. Connect to local endpoint
+      await _container.read(durtProvider).setFixedEndpoint(localEndpoint);
+
+      // 4. Refresh controllers and UI
+      _syncDuniterEndpointController();
+      _syncIndexerEndpointController();
+      _refreshBlockHeightProvider();
+
+      log.i('Successfully switched to local network: $localEndpoint');
+    } catch (e) {
+      log.e('Error switching to local network: $e');
+      _refreshBlockHeightProvider();
+      if (mounted) {
+        setState(() {
+          _duniterConnectionFailed = true;
+        });
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error connecting to local network: $e'), backgroundColor: Colors.red));
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSwitchingNetwork = false;
+        });
+      }
+    }
+  }
+
+  /// Check if currently on local network
+  bool _isOnLocalNetwork() {
+    final currentEndpoint = Networks.duniterEndpoint;
+    if (currentEndpoint.isEmpty) return false;
+    return currentEndpoint == _getLocalEndpoint();
+  }
+
   Widget networkSelection(BuildContext context) {
     final Networks currentNetwork = _container.read(durtProvider).network;
+    final bool isLocalNetwork = _isOnLocalNetwork();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1762,33 +1828,53 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             Flexible(
               child: old_provider.Consumer<SettingsProvider>(
                 builder: (context, set, _) {
-                  return SegmentedButton<Networks>(
-                    segments: <ButtonSegment<Networks>>[
+                  // Create dynamic segments list
+                  final List<ButtonSegment<String>> segments = [
+                    ButtonSegment(value: 'gdev', label: Text('gdev'), icon: const Icon(Icons.bug_report_rounded)),
+                    ButtonSegment(value: 'gtest', label: Text('gtest'), icon: const Icon(Icons.bug_report_rounded)),
+                    ButtonSegment(value: 'g1', label: Text('g1'), icon: const Icon(Icons.account_balance_rounded)),
+                  ];
+
+                  // Add local network in debug mode
+                  if (kDebugMode) {
+                    segments.add(
                       ButtonSegment(
-                        value: Networks.gdev,
-                        label: Text('gdev'),
-                        icon: const Icon(Icons.bug_report_rounded),
+                        value: 'local',
+                        label: Text('local'),
+                        icon: const Icon(Icons.developer_mode_rounded),
                       ),
-                      ButtonSegment(
-                        value: Networks.gtest,
-                        label: Text('gtest'),
-                        icon: const Icon(Icons.bug_report_rounded),
-                      ),
-                      ButtonSegment(
-                        value: Networks.g1,
-                        label: Text('g1'),
-                        icon: const Icon(Icons.account_balance_rounded),
-                      ),
-                    ],
-                    selected: {currentNetwork},
+                    );
+                  }
+
+                  // Determine current selection
+                  String currentSelection;
+                  if (isLocalNetwork) {
+                    currentSelection = 'local';
+                  } else {
+                    currentSelection = currentNetwork.name;
+                  }
+
+                  return SegmentedButton<String>(
+                    segments: segments,
+                    selected: {currentSelection},
                     onSelectionChanged: _isSwitchingNetwork
                         ? null
-                        : (Set<Networks> newSelection) {
-                            final selectedNetwork = newSelection.first;
-                            if (selectedNetwork != currentNetwork) {
-                              _switchToNetwork(selectedNetwork);
-                              set.reload();
+                        : (Set<String> newSelection) async {
+                            final selectedNetworkName = newSelection.first;
+
+                            if (selectedNetworkName == 'local') {
+                              // Switch to local network
+                              await _switchToLocalNetwork();
+                            } else {
+                              // Switch to normal network
+                              final selectedNetwork = Networks.values.firstWhere(
+                                (network) => network.name == selectedNetworkName,
+                              );
+                              if (selectedNetwork != currentNetwork || isLocalNetwork) {
+                                await _switchToNetwork(selectedNetwork);
+                              }
                             }
+                            set.reload();
                           },
                     style: SegmentedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
@@ -1805,7 +1891,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ScaledSizedBox(height: 8),
         Center(
           child: Text(
-            'currentNetwork'.tr(args: [currentNetwork.name.toUpperCase(), currentNetwork.ss58.toString()]),
+            isLocalNetwork
+                ? 'Local Development Network (${_getLocalEndpoint()})'
+                : 'currentNetwork'.tr(args: [currentNetwork.name.toUpperCase(), currentNetwork.ss58.toString()]),
             style: scaledTextStyle(
               fontSize: 12,
               color: Theme.of(context).textTheme.bodySmall?.color,

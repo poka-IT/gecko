@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:io' show Platform;
-import 'package:durt2/durt2.dart' show Networks, ConnectionStatus, Durt;
+import 'package:durt2/durt2.dart' show Networks, ConnectionStatus, Durt, Utils;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -1735,67 +1734,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  /// Get local endpoint based on platform
-  String _getLocalEndpoint() {
-    // Android emulator uses 10.0.2.2, other platforms use 127.0.0.1
-    return Platform.isAndroid ? 'ws://10.0.2.2:9944' : 'ws://127.0.0.1:9944';
-  }
-
-  /// Switch to local development endpoint
-  Future<void> _switchToLocalNetwork() async {
-    if (!mounted) return;
-    setState(() {
-      _isSwitchingNetwork = true;
-      _duniterConnectionFailed = false;
-      _indexerConnectionFailed = false;
-    });
-
-    try {
-      // 1. Clean up current subscriptions and caches
-      await _cleanupDuniterSubscriptions();
-
-      // 2. Set local endpoint manually
-      final localEndpoint = _getLocalEndpoint();
-      configBox.put('customEndpoint', localEndpoint);
-      configBox.put('autoEndpoint', false);
-      configBox.delete('customIndexer'); // Use auto-discovery for indexer
-
-      // 3. Connect to local endpoint
-      await _container.read(durtProvider).setFixedEndpoint(localEndpoint);
-
-      // 4. Refresh controllers and UI
-      _syncDuniterEndpointController();
-      _syncIndexerEndpointController();
-      _refreshBlockHeightProvider();
-
-      log.i('Successfully switched to local network: $localEndpoint');
-    } catch (e) {
-      log.e('Error switching to local network: $e');
-      _refreshBlockHeightProvider();
-      if (mounted) {
-        setState(() {
-          _duniterConnectionFailed = true;
-        });
-      }
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error connecting to local network: $e'), backgroundColor: Colors.red));
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSwitchingNetwork = false;
-        });
-      }
-    }
-  }
-
   /// Check if currently on local network
   bool _isOnLocalNetwork() {
-    final currentEndpoint = Networks.duniterEndpoint;
-    if (currentEndpoint.isEmpty) return false;
-    return currentEndpoint == _getLocalEndpoint();
+    // Check if local network is selected
+    final selectedNetwork = configBox.get('selectedNetwork');
+    return selectedNetwork == 'local';
   }
 
   Widget networkSelection(BuildContext context) {
@@ -1835,8 +1778,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ButtonSegment(value: 'g1', label: Text('g1'), icon: const Icon(Icons.account_balance_rounded)),
                   ];
 
-                  // Add local network in debug mode
-                  if (kDebugMode) {
+                  // Add local network in debug mode or if already selected
+                  if (kDebugMode || isLocalNetwork) {
                     segments.add(
                       ButtonSegment(
                         value: 'local',
@@ -1863,8 +1806,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             final selectedNetworkName = newSelection.first;
 
                             if (selectedNetworkName == 'local') {
-                              // Switch to local network
-                              await _switchToLocalNetwork();
+                              // Switch to local network - treat it like any other network
+                              final localNetwork = Networks.values.firstWhere((n) => n.name == 'local');
+                              await _switchToNetwork(localNetwork);
                             } else {
                               // Switch to normal network
                               final selectedNetwork = Networks.values.firstWhere(
@@ -1892,7 +1836,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         Center(
           child: Text(
             isLocalNetwork
-                ? 'Local Development Network (${_getLocalEndpoint()})'
+                ? 'Local Development Network (${Utils.localEndpoint})'
                 : 'currentNetwork'.tr(args: [currentNetwork.name.toUpperCase(), currentNetwork.ss58.toString()]),
             style: scaledTextStyle(
               fontSize: 12,

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
@@ -35,9 +36,32 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
 
   Future<void> _validateIdentityName() async {
     final name = _identityNameController.text.trim();
-    final idtyExist = await SquidService.client.isIdtyExist(name);
+
+    // Check basic validation criteria first
     final hasNoSpaces = !name.contains(' ');
-    final isValid = !idtyExist && hasNoSpaces && name.length >= 3 && name.length <= 32;
+    final isLengthValid = name.length >= 3 && name.length <= 32;
+
+    // Try to check if identity exists via Squid, but handle errors gracefully
+    bool idtyExist = false;
+    bool squidAvailable = false;
+
+    try {
+      // Check if Squid is connected first
+      final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
+      squidAvailable = squidConnectionStatus == ConnectionStatus.connected;
+
+      if (squidAvailable) {
+        idtyExist = await SquidService.client.isIdtyExist(name);
+      }
+    } catch (e) {
+      // If Squid check fails, log the error but continue in degraded mode
+      log.w('Identity name validation failed due to Squid unavailability: $e');
+      squidAvailable = false;
+      idtyExist = false;
+    }
+
+    // In degraded mode (no Squid), only validate format
+    final isValid = !idtyExist && hasNoSpaces && isLengthValid;
 
     setState(() {
       _canValidate = isValid;
@@ -50,7 +74,12 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
       } else if (name.length > 32) {
         _errorMessage = 'identityNameTooLong'.tr();
       } else {
-        _errorMessage = '';
+        // Show warning if in degraded mode but validation is otherwise valid
+        if (!squidAvailable && isLengthValid && hasNoSpaces) {
+          _errorMessage = 'squidUnavailableIdentityValidationLimited'.tr();
+        } else {
+          _errorMessage = '';
+        }
       }
     });
   }

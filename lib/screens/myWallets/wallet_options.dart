@@ -26,6 +26,7 @@ import 'package:gecko/widgets/buttons/manage_membership_button.dart';
 import 'package:gecko/models/membership_renewal.dart';
 import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/screens/identity/confirm_identity.dart';
+import 'package:gecko/utils/identity_utils.dart';
 
 class WalletOptions extends ConsumerStatefulWidget {
   const WalletOptions({Key? keyMyWallets, required this.wallet}) : super(key: keyMyWallets);
@@ -97,7 +98,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                                 spacing: 8,
                                 children: [
                                   buildConfirmIdentitySection(context, ref, walletProvider),
-                                  if (widget.wallet.hasIdentity)
+                                  if (IdentityUtils.hasIdentity(ref, widget.wallet.address))
                                     buildRenewMembershipSection(context, ref, walletProvider),
                                   buildOptionsSection(context, walletProvider, historyProvider),
                                   if (!isAlone)
@@ -109,7 +110,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                                       walletOptions,
                                       currentChest,
                                     ),
-                                  if (!widget.wallet.hasIdentity)
+                                  if (!IdentityUtils.hasIdentity(ref, widget.wallet.address))
                                     InkWell(
                                       key: keyRenameWallet,
                                       onTap: () async {
@@ -158,9 +159,11 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                                         ),
                                       ),
                                     ),
-                                  if (!walletProvider.isDefaultWallet && !widget.wallet.hasIdentity)
+                                  if (!walletProvider.isDefaultWallet &&
+                                      !IdentityUtils.hasIdentity(ref, widget.wallet.address))
                                     deleteWallet(context, ref, walletOptions, currentChest),
-                                  if (widget.wallet.hasIdentity) const ManageMembershipButton(),
+                                  if (IdentityUtils.hasIdentity(ref, widget.wallet.address))
+                                    const ManageMembershipButton(),
                                   if (isAlone) aloneWalletOptions(context, ref),
                                 ],
                               );
@@ -347,7 +350,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
             !isDefaultWallet &&
             !hasConsumers &&
             (balance > BigInt.from(2) || balance == BigInt.zero) &&
-            !widget.wallet.hasIdentity;
+            !IdentityUtils.hasIdentity(ref, widget.wallet.address);
         return InkWell(
           key: keyDeleteWallet,
           onTap: canDelete
@@ -489,10 +492,10 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
   }
 
   Widget buildConfirmIdentitySection(BuildContext context, WidgetRef ref, WalletOptionsProvider walletProvider) {
-    // Use live subscription instead of FutureBuilder for real-time updates
-    final idtyStatusStream = ref.watch(smartIdtyStatusStreamProvider(walletProvider.address.text));
+    // Use smart provider for identity status
+    final idtyStatusAsync = ref.watch(smartIdtyStatusStreamProvider(walletProvider.address.text));
 
-    return idtyStatusStream.when(
+    return idtyStatusAsync.when(
       data: (idtyStatus) => Visibility(
         visible: idtyStatus == IdtyStatus.created,
         child: Column(

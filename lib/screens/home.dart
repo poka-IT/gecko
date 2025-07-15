@@ -6,7 +6,6 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers.dart' show duniterConnectionStatusProvider;
 import 'package:gecko/providers/chest_provider.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +22,7 @@ import 'package:gecko/widgets/animated_header_image.dart';
 import 'package:gecko/widgets/animated_background.dart';
 import 'package:gecko/utils/debug_test_wallet.dart';
 import 'package:provider/provider.dart' as old_provider;
+import 'package:gecko/providers.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});

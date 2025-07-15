@@ -1,4 +1,4 @@
-import 'package:durt2/durt2.dart' show WalletEntity, Durt, IdtyStatus;
+import 'package:durt2/durt2.dart' show WalletEntity, Durt;
 import 'package:flutter/material.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -87,7 +87,6 @@ class SearchResult extends StatelessWidget {
             wallet: WalletEntity.create(
               address: g1Wallet.address,
               keyPairType: Durt.defaultKeyPairType,
-              identityStatus: IdtyStatus.unknown,
             ),
             size: 14,
           ),

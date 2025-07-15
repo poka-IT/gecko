@@ -175,8 +175,3 @@ class Gecko extends StatelessWidget {
     );
   }
 }
-
-// Future<void> registerDependencies() async {
-//   // Wait for all non-lazy repos to be ready
-//   await GetIt.I.allReady();
-// }

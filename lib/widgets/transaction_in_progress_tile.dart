@@ -27,7 +27,12 @@ class TransactionStatusCache {
   static final Map<String, TransactionStatus> _cache = {};
 
   static String _generateKey(TransactionInProgressData data) {
-    return '${data.toAddress}_${data.amount}_${data.comment}';
+    // Use the real transaction ID if available, otherwise fall back to a temporary key
+    if (data.transactionId != null && data.transactionId!.isNotEmpty) {
+      return data.transactionId!;
+    }
+    // Fallback for when transaction ID is not yet available
+    return '${data.status.hashCode}_${data.toAddress}_${data.amount}_${data.comment}';
   }
 
   static TransactionStatus? getLastKnownStatus(TransactionInProgressData data) {
@@ -103,14 +108,24 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
   TransactionStatus _status = TransactionStatus(state: TransactionState.pending);
   bool _isVisible = true;
   bool _errorSnackbarShown = false;
+  TransactionInProgressData _currentTransactionData;
+
+  _TransactionInProgressTuleState()
+    : _currentTransactionData = const TransactionInProgressData(
+        status: Stream.empty(),
+        toAddress: '',
+        amount: 0,
+        comment: '',
+      );
 
   @override
   void initState() {
     super.initState();
+    _currentTransactionData = widget.transactionData;
 
     // Check if this transaction is already complete
-    if (TransactionStatusCache.isTransactionComplete(widget.transactionData)) {
-      final cachedStatus = TransactionStatusCache.getLastKnownStatus(widget.transactionData);
+    if (TransactionStatusCache.isTransactionComplete(_currentTransactionData)) {
+      final cachedStatus = TransactionStatusCache.getLastKnownStatus(_currentTransactionData);
       if (cachedStatus != null) {
         _status = cachedStatus;
         _isVisible = false;
@@ -119,7 +134,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
     }
 
     // Initialize with last known status if available
-    final lastKnownStatus = TransactionStatusCache.getLastKnownStatus(widget.transactionData);
+    final lastKnownStatus = TransactionStatusCache.getLastKnownStatus(_currentTransactionData);
     if (lastKnownStatus != null) {
       _status = lastKnownStatus;
     }
@@ -130,8 +145,19 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
           _status = status;
         });
 
-        // Always cache the current status
-        TransactionStatusCache.setLastKnownStatus(widget.transactionData, status);
+        // Update the transaction data with the real transaction ID from the status
+        if (status.hash != null && status.hash!.isNotEmpty && _currentTransactionData.transactionId == null) {
+          _currentTransactionData = TransactionInProgressData(
+            status: _currentTransactionData.status,
+            toAddress: _currentTransactionData.toAddress,
+            amount: _currentTransactionData.amount,
+            comment: _currentTransactionData.comment,
+            transactionId: status.hash,
+          );
+        }
+
+        // Always cache the current status with the updated transaction data
+        TransactionStatusCache.setLastKnownStatus(_currentTransactionData, status);
 
         // Hide tile only for truly final states
         if (status.state == TransactionState.finalized ||
@@ -332,7 +358,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
     }
 
     String humanStatus = '';
-    final finalAmount = widget.transactionData.amount * -1;
+    final finalAmount = _currentTransactionData.amount * -1;
 
     if (_status.state == TransactionState.finalized) {
       // This part is for the text, but the tile will start disappearing.
@@ -348,7 +374,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
             final errorMessage = _status.errorMessage;
             // Sauvegarder les valeurs nécessaires pour éviter d'utiliser ref dans les callbacks
             final fromWallet = ref.read(walletServiceProvider).defaultWallet;
-            final transactionData = widget.transactionData;
+            final transactionData = _currentTransactionData;
 
             ScaffoldMessenger.of(homeContext).hideCurrentSnackBar();
             ScaffoldMessenger.of(homeContext).showSnackBar(
@@ -437,10 +463,10 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
       delay: const Duration(seconds: 2),
       duration: const Duration(milliseconds: 700),
       onCompleted: () {
-        ref.invalidate(transactionHistoryProvider(widget.transactionData.toAddress));
+        ref.invalidate(transactionHistoryProvider(_currentTransactionData.toAddress));
         _status = TransactionStatus(state: TransactionState.none);
         // Cache the final 'none' status to prevent reappearance
-        TransactionStatusCache.setLastKnownStatus(widget.transactionData, _status);
+        TransactionStatusCache.setLastKnownStatus(_currentTransactionData, _status);
       },
       child: Padding(
         padding: const EdgeInsets.all(8),
@@ -489,10 +515,10 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                         ),
                       ],
                     ),
-                    if (widget.transactionData.comment.isNotEmpty) ...[
+                    if (_currentTransactionData.comment.isNotEmpty) ...[
                       ScaledSizedBox(height: 4),
                       Text(
-                        widget.transactionData.comment,
+                        _currentTransactionData.comment,
                         style: scaledTextStyle(fontSize: 12, color: Colors.grey[600], fontStyle: FontStyle.italic),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,

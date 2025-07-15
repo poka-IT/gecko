@@ -1,6 +1,6 @@
 // ignore_for_file: file_names, use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show WalletEntity, Durt, IdtyStatus;
+import 'package:durt2/durt2.dart' show WalletEntity, Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -246,7 +246,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
                     number: 0,
                     name: 'currentWallet'.tr(),
                     keyPairType: Durt.defaultKeyPairType,
-                    identityStatus: IdtyStatus.unknown,
                   );
 
                   final safe = ref.read(walletServiceProvider).getSafeBox(currentChest);
@@ -267,15 +266,26 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
               generateWalletProvider.generatedMnemonic = '';
               myWalletProvider.debounceResetPinCode();
 
-              // Set default wallet to number 0 of current chest
-              WalletEntity? defaultWallet =
-                  myWalletProvider.listWallets.firstWhereOrNull((w) => w.isMember) ??
-                  myWalletProvider.listWallets.firstWhereOrNull((w) => w.hasIdentity) ??
-                  myWalletProvider.listWallets.firstWhereOrNull((w) => w.number == 0);
+              // Set default wallet intelligently based on identity status
+              // Priority: member > confirmed identity > any identity > wallet number 0 > first wallet
+              WalletEntity? defaultWallet;
 
+              try {
+                // First try to get wallet with best identity status
+                defaultWallet = await ref.read(idtyWalletAsyncProvider.future);
+              } catch (e) {
+                log.w('Error getting identity wallet during onboarding: $e');
+                defaultWallet = null;
+              }
+
+              // Fallback to numeric priority if no identity wallet found
+              defaultWallet ??= myWalletProvider.listWallets.firstWhereOrNull((w) => w.number == 0);
+
+              // Final fallback to first available wallet
               if (defaultWallet == null && myWalletProvider.listWallets.isNotEmpty) {
                 defaultWallet = myWalletProvider.listWallets.first;
               }
+
               if (defaultWallet != null) {
                 await ref.read(walletServiceProvider).setDefaultAddress(defaultWallet.address);
               }

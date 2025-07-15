@@ -49,6 +49,9 @@ class NameByAddress extends ConsumerWidget {
 
         // If no identity name found, show wallet name
         if (name == null) {
+          if (wallet.name == null) {
+            return SizedBox.shrink();
+          }
           return WalletName(wallet: wallet, size: size, color: finalColor);
         }
 

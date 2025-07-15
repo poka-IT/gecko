@@ -5,7 +5,6 @@ import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gecko/extensions.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers.dart';
@@ -43,16 +42,50 @@ class MyWalletsProvider with ChangeNotifier {
 
   bool get isWalletsExists => !_container.read(walletServiceProvider).safeBox.isEmpty();
 
-  WalletEntity? get idtyWallet =>
-      listWallets.firstWhereOrNull((w) => w.isMember) ?? listWallets.firstWhereOrNull((w) => w.hasIdentity);
+  // Removed sync version - use getIdtyWalletAsync() instead
 
-  List<WalletEntity> get listWalletsWithoutIdty => listWallets.where((w) => w.address != idtyWallet?.address).toList();
+  // New async method to get identity wallet based on real-time status
+  Future<WalletEntity?> getIdtyWalletAsync() async {
+    try {
+      final storageService = _container.read(storageServiceProvider);
+
+      // Check each wallet for member status first, then identity status
+      for (final wallet in listWallets) {
+        final status = await storageService.getIdtyStatus(wallet.address);
+        if (status == IdtyStatus.validated) {
+          return wallet; // Return first member wallet
+        }
+      }
+
+      // If no member found, look for any identity
+      for (final wallet in listWallets) {
+        final status = await storageService.getIdtyStatus(wallet.address);
+        if (status != IdtyStatus.none && status != IdtyStatus.unknown) {
+          return wallet; // Return first wallet with identity
+        }
+      }
+
+      return null; // No identity found
+    } catch (e) {
+      log.e('Error getting identity wallet: $e');
+      return listWallets.isNotEmpty ? listWallets.first : null;
+    }
+  }
+
+  // Removed sync version - use getWalletsWithoutIdtyAsync() instead
+
+  // New async method to get wallets without identity
+  Future<List<WalletEntity>> getWalletsWithoutIdtyAsync() async {
+    final idtyWallet = await getIdtyWalletAsync();
+    return listWallets.where((w) => w.address != idtyWallet?.address).toList();
+  }
 
   Future<List<WalletEntity>> readAllWallets([int? safeBoxNumber]) async {
     final sbn = safeBoxNumber ?? _container.read(walletServiceProvider).defaultSafeBoxNumber;
 
     final walletsExist = _container.read(walletServiceProvider).isWalletExist;
     if (!walletsExist) {
+      listWallets = [];
       return [];
     }
 
@@ -61,33 +94,9 @@ class MyWalletsProvider with ChangeNotifier {
     final wallets = safe.wallets.toList();
     wallets.sort((a, b) => a.number.compareTo(b.number));
 
-    // Check if Duniter is connected before trying to access storage service
-    // If not connected (e.g., genesis hash validation failed), keep wallets with default status
-    if (_container.read(durtProvider).isConnected) {
-      try {
-        final futures = wallets.map((wallet) => _container.read(storageServiceProvider).getIdtyStatus(wallet.address));
-        final newStatuses = await Future.wait(futures);
-
-        for (var i = 0; i < wallets.length; i++) {
-          wallets[i].identityStatus = newStatuses[i];
-        }
-      } catch (e) {
-        log.e('Error getting identity statuses: $e');
-        // If there's an error getting identity statuses, keep wallets with their existing status
-        // This prevents the app from crashing when storage service is not available
-        for (var wallet in wallets) {
-          wallet.identityStatus = IdtyStatus.unknown;
-        }
-      }
-    } else {
-      // If Duniter is not connected, set all wallets to unknown status
-      log.w('Duniter not connected, setting all wallets to unknown identity status');
-      for (var wallet in wallets) {
-        wallet.identityStatus = IdtyStatus.unknown;
-      }
-    }
-
-    _container.read(walletServiceProvider).walletBox.putManyAsync(wallets);
+    // No longer manually fetch identity statuses here - they are now handled by real-time streams
+    // and automatically synchronized by the IdentityStatusSyncService
+    // The widgets will use smart providers that provide live data from streams
 
     listWallets = wallets;
 
@@ -129,31 +138,16 @@ class MyWalletsProvider with ChangeNotifier {
 
   WalletEntity getDefaultWallet([int? safe]) {
     if (_container.read(walletServiceProvider).safeBox.isEmpty()) {
-      return WalletEntity.create(
-        address: '',
-        number: 0,
-        keyPairType: Durt.defaultKeyPairType,
-        identityStatus: IdtyStatus.unknown,
-      );
+      return WalletEntity.create(address: '', number: 0, keyPairType: Durt.defaultKeyPairType);
     } else {
       safe ??= getCurrentSafe;
 
       final defaultWallet = _container.read(walletServiceProvider).safeBox.getNumber(safe).defaultAddress;
       if (defaultWallet == null) {
-        return WalletEntity.create(
-          address: '',
-          number: 0,
-          keyPairType: Durt.defaultKeyPairType,
-          identityStatus: IdtyStatus.unknown,
-        );
+        return WalletEntity.create(address: '', number: 0, keyPairType: Durt.defaultKeyPairType);
       }
       return getWalletDataByAddress(defaultWallet) ??
-          WalletEntity.create(
-            address: '',
-            number: 0,
-            keyPairType: Durt.defaultKeyPairType,
-            identityStatus: IdtyStatus.unknown,
-          );
+          WalletEntity.create(address: '', number: 0, keyPairType: Durt.defaultKeyPairType);
     }
   }
 
@@ -180,6 +174,10 @@ class MyWalletsProvider with ChangeNotifier {
         }
 
         myWalletProvider.pinCode = '';
+
+        // Clear the in-memory wallet list and notify listeners
+        listWallets = [];
+        notifyListeners();
 
         // ignore: use_build_context_synchronously
         await Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
@@ -217,7 +215,6 @@ class MyWalletsProvider with ChangeNotifier {
       derivation: newDerivationNbr,
       imagePath: 'assets/avatars/${newWalletNbr % 4}.png',
       keyPairType: Durt.defaultKeyPairType,
-      identityStatus: IdtyStatus.unknown,
     );
 
     final safe = _container.read(walletServiceProvider).getSafeBox(safeNumber);
@@ -262,7 +259,6 @@ class MyWalletsProvider with ChangeNotifier {
       name: name,
       imagePath: 'assets/avatars/${newWalletNbr % 4}.png',
       keyPairType: Durt.defaultKeyPairType,
-      identityStatus: IdtyStatus.unknown,
     );
 
     final safe = _container.read(walletServiceProvider).getSafeBox(safeNumber);

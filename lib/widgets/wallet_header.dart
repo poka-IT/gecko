@@ -1,6 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show IdtyStatus, WalletBalance;
+import 'package:durt2/durt2.dart' show IdtyStatus, WalletBalance, WalletEntity, Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -18,13 +18,14 @@ import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
-import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/transaction_history_providers.dart';
 import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/models/transaction_display_item.dart';
+import 'package:gecko/widgets/name_by_address.dart';
+import 'package:gecko/widgets/commons/animated_text.dart';
 
 class WalletHeader extends ConsumerWidget {
   const WalletHeader({
@@ -45,7 +46,8 @@ class WalletHeader extends ConsumerWidget {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     final isOwner = myWalletProvider.isOwner(address);
 
-    final idtyStatusAsync = ref.watch(smartIdtyStatusStreamProvider(address));
+    // Use hybrid provider to handle identity creation (solves closed stream issue)
+    final idtyStatusAsync = ref.watch(hybridIdtyStatusProvider(address));
     final balanceAsync = ref.watch(smartBalanceStreamProvider(address));
     final identityNameAsync = ref.watch(identityNameStreamProvider(address));
 
@@ -183,9 +185,13 @@ class WalletHeaderIdentitySection extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Identity status with live updates
+            // Identity status with live updates - pass the current status to display
             Flexible(
-              child: IdentityStatus(address: address, color: context.colorScheme.primary),
+              child: _IdentityStatusDisplay(
+                address: address,
+                currentStatus: idtyStatus,
+                color: context.colorScheme.primary,
+              ),
             ),
 
             // Certifications with live updates
@@ -203,6 +209,68 @@ class WalletHeaderIdentitySection extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Internal identity status display widget that shows current status without database access
+class _IdentityStatusDisplay extends StatelessWidget {
+  const _IdentityStatusDisplay({required this.address, required this.currentStatus, required this.color});
+
+  final String address;
+  final IdtyStatus currentStatus;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    // Create a minimal wallet entity for display purposes only
+    final displayWallet = WalletEntity.create(address: address, keyPairType: Durt.defaultKeyPairType);
+
+    final nameByAddress = currentStatus == IdtyStatus.validated
+        ? NameByAddress(
+            wallet: displayWallet,
+            size: 18,
+            color: context.colorScheme.onSurface,
+            fontWeight: FontWeight.w500,
+            fontStyle: FontStyle.normal,
+          )
+        : NameByAddress(
+            wallet: displayWallet,
+            size: 16,
+            color: context.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w500,
+            fontStyle: FontStyle.italic,
+          );
+
+    final Map<IdtyStatus, String> statusText = {
+      IdtyStatus.none: '',
+      IdtyStatus.created: 'identityCreated'.tr(),
+      IdtyStatus.confirmed: 'identityConfirmed'.tr(),
+      IdtyStatus.validated: 'memberValidated'.tr(),
+      IdtyStatus.expired: 'identityExpired'.tr(),
+      IdtyStatus.revoked: 'identityRevoked'.tr(),
+      IdtyStatus.unknown: '',
+    };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // FittedBox only for the name to scale down when too long
+        FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: nameByAddress),
+        AnimatedFadeOutIn<String>(
+          data: statusText[currentStatus]!,
+          duration: const Duration(milliseconds: 150),
+          builder: (value) => Text(
+            value,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: scaleSize(15),
+              color: color,
+              fontWeight: currentStatus == IdtyStatus.validated ? FontWeight.w500 : FontWeight.w400,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -247,6 +247,7 @@
     "thisIsNotAGoodCode": "Este codígo no es valido",
     "youHaveToBeConnectedToValidateChest": "Tienes que tener conneción\npara validar tu cofre",
     "thisIdentityAlreadyExist": "Esta identidad ya existe",
+    "squidUnavailableIdentityValidationLimited": "⚠️ Validación limitada: red no disponible",
     "removedFromcontacts": "Removed from contacts",
     "addedToContacts": "Added to contacts",
     "certificationsOf": "Certifications of {}",

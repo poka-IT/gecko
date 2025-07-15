@@ -234,6 +234,7 @@
     "thisIsNotAGoodCode": "This is not a good code",
     "youHaveToBeConnectedToValidateChest": "You have to be connected\nto validate your safe",
     "thisIdentityAlreadyExist": "This identity already exists",
+    "squidUnavailableIdentityValidationLimited": "⚠️ Limited validation: network unavailable",
     "removedFromcontacts": "Removed from contacts",
     "addedToContacts": "Added to contacts",
     "certificationsOf": "Certifications of {}",

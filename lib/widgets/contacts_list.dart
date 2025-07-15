@@ -1,4 +1,4 @@
-import 'package:durt2/durt2.dart' show WalletEntity, Durt, IdtyStatus;
+import 'package:durt2/durt2.dart' show WalletEntity, Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -124,7 +124,6 @@ class ContactsList extends ConsumerWidget {
                               wallet: WalletEntity.create(
                                 address: g1Wallet.address,
                                 keyPairType: Durt.defaultKeyPairType,
-                                identityStatus: IdtyStatus.unknown,
                               ),
                             ),
                           ],

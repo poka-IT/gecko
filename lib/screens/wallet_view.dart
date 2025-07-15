@@ -1,7 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show IdtyStatus, CertState, CertStatus;
+import 'package:durt2/durt2.dart' show IdtyStatus, CertStatus;
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
@@ -22,6 +23,8 @@ import 'package:gecko/widgets/payment_popup.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 import 'package:gecko/models/wallet_header_data.dart';
+import 'package:gecko/utils/debug_test_wallet.dart';
+import 'package:gecko/utils.dart';
 
 const double buttonSize = 75;
 const double buttonFontSize = 13;
@@ -145,22 +148,7 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
                                 ),
                                 old_provider.Consumer<BlockHeightProvider>(
                                   builder: (context, _, _) {
-                                    final identityWallet = ref.read(walletServiceProvider).identityWallet;
-                                    return identityWallet != null
-                                        ? FutureBuilder(
-                                            future: ref
-                                                .read(storageServiceProvider)
-                                                .getCertState(fromAddress: identityWallet.address, toAddress: address),
-                                            builder: (context, AsyncSnapshot<CertState> snapshot) {
-                                              if (!snapshot.hasData) return const SizedBox.shrink();
-                                              final certState = snapshot.data!;
-                                              return Visibility(
-                                                visible: certState.status != CertStatus.none,
-                                                child: CertStateWidget(certState: certState, address: address),
-                                              );
-                                            },
-                                          )
-                                        : const SizedBox.shrink();
+                                    return _buildCertificationSection(ref);
                                   },
                                 ),
                                 _buildActionButton(
@@ -283,6 +271,100 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
           ],
         );
       },
+    );
+  }
+
+  /// Build the certification section with optional developer dropdown
+  Widget _buildCertificationSection(WidgetRef ref) {
+    final isUsingTestChest = kDebugMode ? DebugTestWalletService.isUsingTestChest(ProviderContainer()) : false;
+    final certStateAsync = ref.watch(certStateProvider(address));
+
+    return certStateAsync.when(
+      data: (certState) {
+        if (certState == null || certState.status == CertStatus.none) {
+          return const SizedBox.shrink();
+        }
+
+        // If using test chest and debug mode, show dropdown above certification button
+        if (kDebugMode && isUsingTestChest) {
+          return Column(
+            children: [
+              _buildDeveloperCertificationDropdown(ref),
+              ScaledSizedBox(height: 8),
+              CertStateWidget(certState: certState, address: address),
+            ],
+          );
+        } else {
+          // Normal certification display
+          return CertStateWidget(certState: certState, address: address);
+        }
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (error, stack) => const SizedBox.shrink(),
+    );
+  }
+
+  /// Build the developer certification wallet dropdown (only visible in debug mode with test mnemonic)
+  Widget _buildDeveloperCertificationDropdown(WidgetRef ref) {
+    final identityWalletsAsync = ref.watch(identityWalletsAsyncProvider);
+    final selectedAddress = ref.watch(selectedCertificationWalletProvider);
+
+    return identityWalletsAsync.when(
+      data: (identityWallets) {
+        if (identityWallets.length <= 1) {
+          return const SizedBox.shrink(); // No need for dropdown with only one wallet
+        }
+
+        // If no wallet is selected, default to the first one
+        if (selectedAddress == null && identityWallets.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ref.read(selectedCertificationWalletProvider.notifier).state = identityWallets.first.address;
+          });
+        }
+
+        return Container(
+          padding: EdgeInsets.symmetric(horizontal: scaleSize(8), vertical: scaleSize(4)),
+          decoration: BoxDecoration(
+            color: Colors.orange.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.orange.withValues(alpha: 0.3), width: 1),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.bug_report, size: scaleSize(12), color: Colors.orange),
+              ScaledSizedBox(width: 4),
+              Text(
+                'Dev:',
+                style: scaledTextStyle(fontSize: 10, color: Colors.orange, fontWeight: FontWeight.w500),
+              ),
+              ScaledSizedBox(width: 4),
+              DropdownButton<String>(
+                value: selectedAddress ?? identityWallets.first.address,
+                isDense: true,
+                underline: Container(),
+                style: scaledTextStyle(fontSize: 10, color: Colors.orange),
+                items: identityWallets.map((wallet) {
+                  return DropdownMenuItem<String>(
+                    value: wallet.address,
+                    child: Text(
+                      wallet.name ?? getShortPubkey(wallet.address),
+                      style: scaledTextStyle(fontSize: 10, color: Colors.orange),
+                    ),
+                  );
+                }).toList(),
+                onChanged: (newAddress) {
+                  if (newAddress != null) {
+                    ref.read(selectedCertificationWalletProvider.notifier).state = newAddress;
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (error, stack) => const SizedBox.shrink(),
     );
   }
 

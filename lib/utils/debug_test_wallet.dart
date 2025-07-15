@@ -1,6 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show WalletEntity, IdtyStatus, KeyPairType, WalletService, SafeEntity;
+import 'package:durt2/durt2.dart' show WalletEntity, KeyPairType, WalletService, SafeEntity;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
@@ -23,6 +23,35 @@ class TestWalletConfig {
 class DebugTestWalletService {
   static const String testMnemonic = "bottom drive obey lake curtain smoke basket hold race lonely fit walk";
   static const int defaultPinCode = 1234;
+
+  /// Check if the current app is using the test/development chest
+  /// Returns true if the first wallet address is the known development address
+  static bool isUsingTestChest(ProviderContainer container) {
+    try {
+      final walletService = container.read(walletServiceProvider);
+
+      // Check if any wallets exist
+      if (walletService.walletBox.isEmpty()) {
+        return false;
+      }
+
+      // Get all wallets and find the first one (lowest derivation number)
+      final allWallets = walletService.walletBox.getAll();
+      if (allWallets.isEmpty) {
+        return false;
+      }
+
+      // Sort by derivation number to get the first wallet
+      allWallets.sort((a, b) => a.number.compareTo(b.number));
+      final firstWallet = allWallets.first;
+
+      // Check if the first wallet address matches the known test address
+      return firstWallet.address == '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+    } catch (e) {
+      log.e('Error checking test chest: $e');
+      return false;
+    }
+  }
 
   // Configuration for all test wallets
   static const List<TestWalletConfig> walletConfigs = [
@@ -119,7 +148,6 @@ class DebugTestWalletService {
       name: config.name,
       imagePath: config.imagePath,
       keyPairType: KeyPairType.sr25519,
-      identityStatus: IdtyStatus.unknown,
     );
 
     wallet.safe.target = safe;

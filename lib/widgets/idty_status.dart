@@ -1,5 +1,4 @@
 import 'package:durt2/durt2.dart' show IdtyStatus, WalletEntity, Durt;
-import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
@@ -17,46 +16,49 @@ class IdentityStatus extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final walletService = ref.watch(walletServiceProvider);
-
-    final walletData =
-        walletService.walletBox.query(WalletEntity_.address.equals(address)).build().findFirst() ??
-        WalletEntity.create(address: address, keyPairType: Durt.defaultKeyPairType, identityStatus: IdtyStatus.unknown);
-
-    // Use the smart identity status provider instead of FutureBuilder
+    // Use the smart identity status provider to get real-time status
     final idtyStatusStream = ref.watch(smartIdtyStatusStreamProvider(address));
 
     return idtyStatusStream.when(
       data: (idtyStatus) {
-        // Update wallet data with new status
-        walletData.identityStatus = idtyStatus;
-        return _buildStatusWidget(context, walletData, idtyStatus);
+        return _buildStatusWidget(context, idtyStatus);
       },
       loading: () {
-        // Show current status while loading
-        return _buildStatusWidget(context, walletData, walletData.identityStatus);
+        // Show a loading indicator while status is being fetched
+        return _buildLoadingWidget();
       },
       error: (error, stack) {
         log.e('❌ Identity status widget error for $address: $error');
-        // Show current status on error
-        return _buildStatusWidget(context, walletData, walletData.identityStatus);
+        // Show unknown status on error
+        return _buildStatusWidget(context, IdtyStatus.unknown);
       },
     );
   }
 
-  Widget _buildStatusWidget(BuildContext context, WalletEntity walletData, IdtyStatus resStatus) {
-    final nameByAddress = resStatus == IdtyStatus.validated
+  Widget _buildLoadingWidget() {
+    return Container(
+      height: 16,
+      width: 60,
+      decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(4)),
+    );
+  }
+
+  Widget _buildStatusWidget(BuildContext context, IdtyStatus idtyStatus) {
+    // Create a minimal wallet entity for display purposes only
+    final displayWallet = WalletEntity.create(address: address, keyPairType: Durt.defaultKeyPairType);
+
+    final nameByAddress = idtyStatus == IdtyStatus.validated
         ? NameByAddress(
-            wallet: walletData,
+            wallet: displayWallet,
             size: 18,
-            color: homeContext.colorScheme.onSurface,
+            color: context.colorScheme.onSurface,
             fontWeight: FontWeight.w500,
             fontStyle: FontStyle.normal,
           )
         : NameByAddress(
-            wallet: walletData,
+            wallet: displayWallet,
             size: 16,
-            color: homeContext.colorScheme.onSurfaceVariant,
+            color: context.colorScheme.onSurfaceVariant,
             fontWeight: FontWeight.w500,
             fontStyle: FontStyle.italic,
           );
@@ -76,20 +78,20 @@ class IdentityStatus extends ConsumerWidget {
       children: [
         // FittedBox only for the name to scale down when too long
         FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: nameByAddress),
-        showText(context, statusText[resStatus]!, bold: resStatus == IdtyStatus.validated, size: scaleSize(15)),
+        AnimatedFadeOutIn<String>(
+          data: statusText[idtyStatus]!,
+          duration: const Duration(milliseconds: 150),
+          builder: (value) => Text(
+            value,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: scaleSize(15),
+              color: color,
+              fontWeight: idtyStatus == IdtyStatus.validated ? FontWeight.w500 : FontWeight.w400,
+            ),
+          ),
+        ),
       ],
-    );
-  }
-
-  AnimatedFadeOutIn showText(BuildContext context, String text, {double size = 18, bool bold = false}) {
-    return AnimatedFadeOutIn<String>(
-      data: text,
-      duration: const Duration(milliseconds: 150),
-      builder: (value) => Text(
-        value,
-        textAlign: TextAlign.center,
-        style: TextStyle(fontSize: size, color: color, fontWeight: bold ? FontWeight.w500 : FontWeight.w400),
-      ),
     );
   }
 }

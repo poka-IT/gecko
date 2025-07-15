@@ -6,6 +6,7 @@ import 'package:gecko/exceptions.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers.dart';
 
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
@@ -16,7 +17,6 @@ import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gecko/providers.dart';
 
 class CertifyButton extends ConsumerWidget {
   const CertifyButton(this.address, {super.key});
@@ -53,11 +53,17 @@ class CertifyButton extends ConsumerWidget {
                   await ref.read(walletServiceProvider).setDefaultAddress(address);
 
                   if (myWalletProvider.pinCode == '') {
+                    // Get effective certification wallet (respects developer selection)
+                    final idtyWallet = await ref.read(effectiveCertificationWalletProvider.future);
+                    if (idtyWallet == null) {
+                      throw Exception('No identity wallet found for certification');
+                    }
+
                     await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (homeContext) {
-                          return UnlockingWallet(wallet: myWalletProvider.idtyWallet!);
+                          return UnlockingWallet(wallet: idtyWallet);
                         },
                       ),
                     );
@@ -69,7 +75,7 @@ class CertifyButton extends ConsumerWidget {
                     context,
                     listen: false,
                   );
-                  final identityWallet = ref.read(walletServiceProvider).identityWallet;
+                  final identityWallet = await ref.read(effectiveCertificationWalletProvider.future);
 
                   if (identityWallet == null) {
                     throw Exception('Identity wallet not found');

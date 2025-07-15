@@ -32,7 +32,7 @@ class WalletsHome extends ConsumerStatefulWidget {
 class _WalletsHomeState extends ConsumerState<WalletsHome> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
 
     return Scaffold(
       body: myWalletProvider.listWallets.length == 1
@@ -45,46 +45,19 @@ class _WalletsHomeState extends ConsumerState<WalletsHome> with SingleTickerProv
 class _WalletsHomeContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
     final currentChestNumber = myWalletProvider.getCurrentSafe;
 
-    final SafeEntity currentChest = ref.read(walletServiceProvider).getSafeBox(currentChestNumber);
+    final SafeEntity? currentChest = () {
+      try {
+        return ref.read(walletServiceProvider).getSafeBox(currentChestNumber);
+      } catch (e) {
+        return null;
+      }
+    }();
 
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: context.colorScheme.surface,
-        appBar: AppBar(
-          toolbarHeight: scaleSize(57),
-          backgroundColor: context.colorScheme.tertiary,
-          title: Row(
-            children: [
-              Image.asset('assets/chests/${currentChest.number}.png', height: 32),
-              ScaledSizedBox(width: 17),
-              Text(
-                currentChest.name,
-                style: scaledTextStyle(color: context.colorScheme.onSurface, fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-            ],
-          ),
-        ),
-        bottomNavigationBar: old_provider.Consumer<MyWalletsProvider>(
-          builder: (context, _, _) {
-            return myWalletProvider.lastFlyBy == null
-                ? const GeckoBottomAppBar(actualRoute: 'safeHome')
-                : DragWalletsInfo(lastFlyBy: myWalletProvider.lastFlyBy!, dragAddress: myWalletProvider.dragAddress!);
-          },
-        ),
-        body: SafeArea(child: Stack(children: [myWalletsTiles(context, ref, currentChestNumber), const OfflineInfo()])),
-      ),
-    );
-  }
-
-  Widget myWalletsTiles(BuildContext context, WidgetRef ref, int currentChestNumber) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
-    final isWalletsExists = myWalletProvider.isWalletsExists;
-
-    if (!isWalletsExists) {
-      return const Text('');
+    if (currentChest == null) {
+      return const Center(child: Text('Error: Safe not found'));
     }
 
     if (myWalletProvider.listWallets.isEmpty) {
@@ -98,7 +71,6 @@ class _WalletsHomeContent extends ConsumerWidget {
 
     final screenWidth = MediaQuery.of(context).size.width;
     int nTule;
-
     if (screenWidth >= 700) {
       nTule = 4;
     } else if (screenWidth >= 450) {
@@ -106,12 +78,22 @@ class _WalletsHomeContent extends ConsumerWidget {
     } else {
       nTule = 2;
     }
+    // Get identity wallet info asynchronously but don't block UI
+    final idtyWalletAsync = ref.watch(idtyWalletAsyncProvider);
 
+    // Use optimistic rendering: show all wallets immediately, identify identity wallet in background
+    final allWallets = myWalletProvider.listWallets;
+    final idtyWallet = idtyWalletAsync.valueOrNull;
+    final walletsWithoutIdty = idtyWallet != null
+        ? allWallets.where((w) => w.address != idtyWallet.address).toList()
+        : allWallets;
+
+    // Build tutorial target based on whether there's an identity wallet
     final tutorialCoachMark = TutorialCoachMark(
       targets: [
         TargetFocus(
           identify: "drag_and_drop",
-          keyTarget: myWalletProvider.idtyWallet != null ? keyDragAndDropMembre : keyDragAndDrop,
+          keyTarget: keyDragAndDrop, // Always use keyDragAndDrop for tutorial target
           contents: [
             TargetContent(
               child: Column(
@@ -137,9 +119,8 @@ class _WalletsHomeContent extends ConsumerWidget {
       opacityShadow: 0.8,
     );
 
-    // configBox.delete('showDraggableTutorial');
+    // Show tutorial if needed
     final bool showDraggableTutorial = configBox.get('showDraggableTutorial') ?? true;
-
     if (myWalletProvider.listWallets.length > 1 && showDraggableTutorial) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         tutorialCoachMark.show(context: context);
@@ -147,40 +128,75 @@ class _WalletsHomeContent extends ConsumerWidget {
       configBox.put('showDraggableTutorial', false);
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 5),
-      child: CustomScrollView(
-        slivers: <Widget>[
-          SliverToBoxAdapter(child: ScaledSizedBox(height: 12)),
-          if (myWalletProvider.idtyWallet != null)
-            SliverToBoxAdapter(
-              child: DragTuleAction(
-                wallet: myWalletProvider.idtyWallet!,
-                child: WalletTileMembre(wallet: myWalletProvider.idtyWallet!, attachTutorialKey: true),
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: context.colorScheme.surface,
+        appBar: AppBar(
+          toolbarHeight: scaleSize(57),
+          backgroundColor: context.colorScheme.tertiary,
+          title: Row(
+            children: [
+              Image.asset('assets/chests/${currentChest.number}.png', height: 32),
+              ScaledSizedBox(width: 17),
+              Text(
+                currentChest.name,
+                style: scaledTextStyle(color: context.colorScheme.onSurface, fontSize: 16, fontWeight: FontWeight.w500),
               ),
-            ),
-          SliverGrid.count(
-            key: keyListWallets,
-            crossAxisCount: nTule,
-            childAspectRatio: 1,
-            crossAxisSpacing: 0,
-            mainAxisSpacing: 0,
-            children: <Widget>[
-              for (var i = 0; i < myWalletProvider.listWalletsWithoutIdty.length; i++)
-                DragTuleAction(
-                  wallet: myWalletProvider.listWalletsWithoutIdty[i],
-                  child: WalletTile(
-                    repository: myWalletProvider.listWalletsWithoutIdty[i],
-                    attachTutorialKey: i == 1 && myWalletProvider.idtyWallet == null,
-                  ),
-                ),
-              ref.read(durtProvider).isConnected && myWalletProvider.listWallets.length < maxWalletsInSafe
-                  ? const AddNewDerivationButton()
-                  : const Text(''),
             ],
           ),
-          const SliverToBoxAdapter(child: ChestOptionsButtons()),
-        ],
+        ),
+        bottomNavigationBar: old_provider.Consumer<MyWalletsProvider>(
+          builder: (context, _, _) {
+            return myWalletProvider.lastFlyBy == null
+                ? const GeckoBottomAppBar(actualRoute: 'safeHome')
+                : DragWalletsInfo(lastFlyBy: myWalletProvider.lastFlyBy!, dragAddress: myWalletProvider.dragAddress!);
+          },
+        ),
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 5),
+                child: CustomScrollView(
+                  slivers: <Widget>[
+                    SliverToBoxAdapter(child: ScaledSizedBox(height: 12)),
+                    // Identity wallet section
+                    if (idtyWallet != null)
+                      SliverToBoxAdapter(
+                        child: DragTuleAction(
+                          wallet: idtyWallet,
+                          child: WalletTileMembre(wallet: idtyWallet, attachTutorialKey: false),
+                        ),
+                      ),
+                    // Regular wallets grid
+                    SliverGrid.count(
+                      key: keyListWallets,
+                      crossAxisCount: nTule,
+                      childAspectRatio: 1,
+                      crossAxisSpacing: 0,
+                      mainAxisSpacing: 0,
+                      children: <Widget>[
+                        for (var i = 0; i < walletsWithoutIdty.length; i++)
+                          DragTuleAction(
+                            wallet: walletsWithoutIdty[i],
+                            child: WalletTile(
+                              repository: walletsWithoutIdty[i],
+                              attachTutorialKey: i == 1, // Always attach to second wallet for tutorial
+                            ),
+                          ),
+                        ref.read(durtProvider).isConnected && myWalletProvider.listWallets.length < maxWalletsInSafe
+                            ? const AddNewDerivationButton()
+                            : const Text(''),
+                      ],
+                    ),
+                    const SliverToBoxAdapter(child: ChestOptionsButtons()),
+                  ],
+                ),
+              ),
+              const OfflineInfo(),
+            ],
+          ),
+        ),
       ),
     );
   }

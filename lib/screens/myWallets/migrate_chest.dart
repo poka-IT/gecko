@@ -109,7 +109,9 @@ class _MigrateChestScreenState extends ConsumerState<MigrateChestScreen> {
 
       // Check if all source wallets can be migrated
       for (final wallet in _walletsToMigrate) {
-        if (wallet.isMember) {
+        // Check if wallet is a member using storage service directly
+        final idtyStatus = await ref.read(storageServiceProvider).getIdtyStatus(wallet.address);
+        if (idtyStatus == IdtyStatus.validated) {
           final checks = await ref
               .read(storageServiceProvider)
               .getMigrateWalletChecks(fromAddress: wallet.address, toAddress: destAddresses.first);

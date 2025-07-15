@@ -115,7 +115,8 @@ class _MigrateChestProgressScreenState extends ConsumerState<MigrateChestProgres
           );
 
       // Migrate identity if wallet has one
-      if (task.wallet.hasIdentity) {
+      final idtyStatus = await ref.read(storageServiceProvider).getIdtyStatus(task.wallet.address);
+      if (idtyStatus != IdtyStatus.none && idtyStatus != IdtyStatus.unknown) {
         final transactionStatus = ref
             .read(duniterServiceProvider)
             .migrateIdentity(fromKeypair: sourceKeypair, toKeypair: destKeypair, withBalance: true);

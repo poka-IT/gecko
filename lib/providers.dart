@@ -733,8 +733,10 @@ final smartIdtyStatusStreamProvider = Provider.family.autoDispose<AsyncValue<d.I
 
   // Use appropriate provider based on ownership
   if (isOwnedWallet) {
+    // For owned wallets: use persistent stream to keep status up-to-date
     return ref.watch(persistentIdtyStatusStreamProvider(address));
   } else {
+    // For other wallets: use auto-dispose stream
     return ref.watch(idtyStatusStreamProvider(address));
   }
 });
@@ -755,4 +757,264 @@ final smartBalanceStreamProvider = Provider.family.autoDispose<AsyncValue<d.Wall
   } else {
     return ref.watch(balanceStreamProvider(address));
   }
+});
+
+/// Hybrid identity status provider using StateNotifier approach
+/// This bypasses the closed stream issue by using direct storage calls and forced refreshes
+/// For existing identities: uses normal streams, for non-existing: uses polling
+class HybridIdtyStatusNotifier extends FamilyAsyncNotifier<d.IdtyStatus, String> {
+  Timer? _refreshTimer;
+  StreamSubscription<d.StorageChangeSet>? _idtySubscription;
+
+  @override
+  Future<d.IdtyStatus> build(String address) async {
+    // Cleanup when provider is disposed
+    ref.onDispose(() {
+      _refreshTimer?.cancel();
+      _idtySubscription?.cancel();
+    });
+
+    // Initial status fetch
+    final storageService = ref.watch(storageServiceProvider);
+    final status = await storageService.getIdtyStatus(address);
+
+    // Setup appropriate listening mechanism based on current status
+    if (status == d.IdtyStatus.none) {
+      // If no identity, set up polling to detect identity creation
+      _startPeriodicRefresh(address);
+    } else {
+      // If identity exists, use normal stream subscription for real-time updates
+      _startIdentitySubscription(address);
+    }
+
+    return status;
+  }
+
+  void _startPeriodicRefresh(String address) {
+    _refreshTimer?.cancel();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+      try {
+        final storageService = ref.read(storageServiceProvider);
+        final newStatus = await storageService.getIdtyStatus(address);
+
+        if (newStatus != state.value) {
+          state = AsyncValue.data(newStatus);
+
+          // If identity was created, stop polling and start stream subscription
+          if (newStatus != d.IdtyStatus.none) {
+            timer.cancel();
+            _refreshTimer = null;
+            _startIdentitySubscription(address);
+          }
+        }
+      } catch (e) {
+        // Continue trying on error
+      }
+    });
+  }
+
+  void _startIdentitySubscription(String address) async {
+    _idtySubscription?.cancel();
+    try {
+      final storageService = ref.read(storageServiceProvider);
+      _idtySubscription = await storageService.subscribeToIdtyStatus(address, (newStatus) {
+        if (newStatus != state.value) {
+          state = AsyncValue.data(newStatus);
+
+          // If identity disappears, switch back to polling
+          if (newStatus == d.IdtyStatus.none) {
+            _idtySubscription?.cancel();
+            _idtySubscription = null;
+            _startPeriodicRefresh(address);
+          }
+        }
+      });
+    } catch (e) {
+      log.e('Error starting identity subscription for $address: $e');
+      // Fallback to manual refresh only
+    }
+  }
+
+  void forceRefresh() async {
+    final address = arg;
+    try {
+      final storageService = ref.read(storageServiceProvider);
+      final newStatus = await storageService.getIdtyStatus(address);
+      final previousStatus = state.value;
+
+      state = AsyncValue.data(newStatus);
+
+      // Handle transition between different listening modes
+      if (previousStatus == d.IdtyStatus.none && newStatus != d.IdtyStatus.none) {
+        // Transition from no identity to having identity: switch to stream
+        _refreshTimer?.cancel();
+        _refreshTimer = null;
+        _startIdentitySubscription(address);
+      } else if (previousStatus != d.IdtyStatus.none && newStatus == d.IdtyStatus.none) {
+        // Transition from having identity to no identity: switch to polling
+        _idtySubscription?.cancel();
+        _idtySubscription = null;
+        _startPeriodicRefresh(address);
+      }
+    } catch (e) {
+      state = AsyncValue.error(e, StackTrace.current);
+    }
+  }
+
+  // Cleanup is handled in build() with ref.onDispose()
+}
+
+final hybridIdtyStatusProvider = AsyncNotifierProvider.family<HybridIdtyStatusNotifier, d.IdtyStatus, String>(
+  () => HybridIdtyStatusNotifier(),
+);
+
+/// Async provider to get the identity wallet (member or identity holder)
+final idtyWalletAsyncProvider = FutureProvider<d.WalletEntity?>((ref) async {
+  final walletService = ref.watch(walletServiceProvider);
+  final storageService = ref.watch(storageServiceProvider);
+
+  final wallets = walletService.walletBox.getAll();
+  if (wallets.isEmpty) return null;
+
+  // Check each wallet for member status first
+  for (final wallet in wallets) {
+    final status = await storageService.getIdtyStatus(wallet.address);
+    if (status == d.IdtyStatus.validated) {
+      return wallet; // Return first member wallet
+    }
+  }
+
+  // If no member found, look for confirmed identity
+  for (final wallet in wallets) {
+    final status = await storageService.getIdtyStatus(wallet.address);
+    if (status == d.IdtyStatus.confirmed) {
+      return wallet; // Return first confirmed identity
+    }
+  }
+
+  // If no confirmed found, look for any identity
+  for (final wallet in wallets) {
+    final status = await storageService.getIdtyStatus(wallet.address);
+    if (status != d.IdtyStatus.none && status != d.IdtyStatus.unknown) {
+      return wallet; // Return first wallet with any identity
+    }
+  }
+
+  return null; // No identity found
+});
+
+/// Async provider to get wallets without identity
+final walletsWithoutIdtyAsyncProvider = FutureProvider<List<d.WalletEntity>>((ref) async {
+  final idtyWallet = await ref.watch(idtyWalletAsyncProvider.future);
+  final walletService = ref.watch(walletServiceProvider);
+  final allWallets = walletService.walletBox.getAll();
+
+  return allWallets.where((w) => w.address != idtyWallet?.address).toList();
+});
+
+/// State provider for selected certification wallet (development mode only)
+/// This allows developers to choose which identity wallet to use for certifications
+/// when using the test mnemonic with multiple identity wallets
+final selectedCertificationWalletProvider = StateProvider<String?>((ref) => null);
+
+/// Provider for certification state between effective wallet and target address
+/// Automatically updates when balance or certifications change, with caching to avoid UI jumps
+final certStateProvider = AsyncNotifierProvider.family<CertStateNotifier, d.CertState?, String>(
+  () => CertStateNotifier(),
+);
+
+/// Notifier that caches cert state and updates smoothly without UI jumps
+class CertStateNotifier extends FamilyAsyncNotifier<d.CertState?, String> {
+  @override
+  Future<d.CertState?> build(String toAddress) async {
+    // Watch streams for auto-updates but keep previous state during loading
+    ref.listen(smartBalanceStreamProvider(toAddress), (previous, next) {
+      if (!next.isLoading && next.hasValue) {
+        _refreshCertState();
+      }
+    });
+
+    final effectiveWallet = await ref.watch(effectiveCertificationWalletProvider.future);
+    if (effectiveWallet == null) return null;
+
+    ref.listen(smartCertificationStreamProvider(effectiveWallet.address), (previous, next) {
+      if (!next.isLoading && next.hasValue) {
+        _refreshCertState();
+      }
+    });
+
+    return await _getCertState(effectiveWallet.address, toAddress);
+  }
+
+  /// Refresh cert state without clearing the previous value
+  void _refreshCertState() async {
+    final effectiveWallet = await ref.read(effectiveCertificationWalletProvider.future);
+    if (effectiveWallet == null) return;
+
+    // Update state smoothly - keep previous value visible during loading
+    final newCertState = await _getCertState(effectiveWallet.address, arg);
+    state = AsyncValue.data(newCertState);
+  }
+
+  /// Get cert state from storage
+  Future<d.CertState?> _getCertState(String fromAddress, String toAddress) async {
+    return await ref.read(storageServiceProvider).getCertState(fromAddress: fromAddress, toAddress: toAddress);
+  }
+}
+
+/// Provider to get all wallets with identity status for certification dropdown
+final identityWalletsAsyncProvider = FutureProvider<List<d.WalletEntity>>((ref) async {
+  final walletService = ref.watch(walletServiceProvider);
+  final storageService = ref.watch(storageServiceProvider);
+
+  final wallets = walletService.walletBox.getAll();
+  if (wallets.isEmpty) return [];
+
+  final identityWalletsWithStatus = <({d.WalletEntity wallet, d.IdtyStatus status})>[];
+
+  // Check each wallet for identity status and collect those with identities
+  for (final wallet in wallets) {
+    final status = await storageService.getIdtyStatus(wallet.address);
+    if (status != d.IdtyStatus.none && status != d.IdtyStatus.unknown) {
+      identityWalletsWithStatus.add((wallet: wallet, status: status));
+    }
+  }
+
+  // Sort by priority: validated > confirmed > others
+  identityWalletsWithStatus.sort((a, b) {
+    // Priority order: validated (3) > confirmed (2) > others (1)
+    final priorityA = a.status == d.IdtyStatus.validated
+        ? 3
+        : a.status == d.IdtyStatus.confirmed
+        ? 2
+        : 1;
+    final priorityB = b.status == d.IdtyStatus.validated
+        ? 3
+        : b.status == d.IdtyStatus.confirmed
+        ? 2
+        : 1;
+
+    return priorityB.compareTo(priorityA); // Highest priority first
+  });
+
+  return identityWalletsWithStatus.map((e) => e.wallet).toList();
+});
+
+/// Provider that returns the effective certification wallet:
+/// - If a specific wallet is selected in dev mode, use that
+/// - Otherwise, use the automatic identity wallet selection
+final effectiveCertificationWalletProvider = FutureProvider<d.WalletEntity?>((ref) async {
+  final selectedAddress = ref.watch(selectedCertificationWalletProvider);
+
+  // If a specific wallet is selected (dev mode), use that
+  if (selectedAddress != null) {
+    final walletService = ref.watch(walletServiceProvider);
+    final selectedWallet = walletService.walletBox.getAll().where((w) => w.address == selectedAddress).firstOrNull;
+    if (selectedWallet != null) {
+      return selectedWallet;
+    }
+  }
+
+  // Otherwise, use the automatic selection
+  return ref.watch(idtyWalletAsyncProvider.future);
 });

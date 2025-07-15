@@ -97,7 +97,9 @@
       "certs_received": {
         "test1": 2700000000,
         "test2": 2700000000,
-        "test3": 2700000000
+        "test3": 2700000000,
+        "test4": 2700000000,
+        "test5": 2700000000
       },
       "owner_pubkey": "DCovzCEnQm9GUWe6mr8u42JR1JAuoj3HbQUGdCkfTzSr"
     },

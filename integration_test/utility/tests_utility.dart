@@ -1,4 +1,4 @@
-import 'package:durt2/durt2.dart' show Durt, WalletEntity, IdtyStatus;
+import 'package:durt2/durt2.dart' show Durt, WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -247,14 +247,7 @@ Future<WalletEntity> _addImportAccount({
   // await Durt.i.wallets.walletDataBox.put(myWallet.address, myWallet);
 
   // return myWallet;
-  return WalletEntity.create(
-    address: '',
-    name: '',
-    derivation: 0,
-    imagePath: '',
-    keyPairType: Durt.defaultKeyPairType,
-    identityStatus: IdtyStatus.unknown,
-  );
+  return WalletEntity.create(address: '', name: '', derivation: 0, imagePath: '', keyPairType: Durt.defaultKeyPairType);
 }
 
 // Delete all wallets in background

@@ -2,15 +2,17 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/providers/search.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
 class ClipboardMonitor extends ChangeNotifier {
   String? _lastClipboardContent;
   Timer? _debounceTimer;
-  final searchProvider = Provider.of<SearchProvider>(homeContext, listen: false);
+  final searchProvider = old_provider.Provider.of<SearchProvider>(homeContext, listen: false);
 
   void startMonitoring() {
     _checkClipboard();
@@ -26,6 +28,11 @@ class ClipboardMonitor extends ChangeNotifier {
       _debounceTimer = Timer(const Duration(milliseconds: 300), () async {
         if (isAddress(newContent)) {
           searchProvider.pastedAddress = newContent;
+          searchProvider.canPasteAddress = true;
+          searchProvider.reload();
+        } else if (isPubkey(newContent)) {
+          final address = ProviderContainer().read(utilsProvider).pubkeyV1ToAddress(newContent);
+          searchProvider.pastedAddress = address;
           searchProvider.canPasteAddress = true;
           searchProvider.reload();
         } else {

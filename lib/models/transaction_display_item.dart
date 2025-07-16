@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:durt2/durt2.dart'
     show
         Query$GetAccountHistory$transferConnection$edges$node,
@@ -55,11 +56,19 @@ class TransactionDisplayItem {
     // Check if this is migration time
     final bool isMigrationTime = transactionTime.isBefore(genesisTime);
 
+    // final String comment = switch (node.comment?.type) {
+    //   Enum$CommentTypeEnum.ASCII => node.comment?.remark ?? '',
+    //   Enum$CommentTypeEnum.RAW => _decodeHexString(node.comment?.remarkBytes),
+    //   _ => node.comment?.remark ?? '',
+    // };
+
+    final comment = _decodeHexString(node.comment?.remarkBytes);
+
     return TransactionDisplayItem(
       address: otherAddress,
       username: otherUsername,
       amount: amount,
-      comment: node.comment?.remark,
+      comment: comment,
       isReceived: isReceived,
       timestamp: transactionTime,
       transactionTime: transactionTime,
@@ -100,6 +109,47 @@ class TransactionDisplayItem {
       isMigrationTime: isMigrationTime,
       type: TransactionType.universalDividend,
     );
+  }
+
+  static String _decodeHexString(String? hexString) {
+    if (hexString == null) return '';
+
+    try {
+      // Remove any leading backslash-x prefix if present
+      String cleanHex = hexString.replaceAll(r'\x', '');
+
+      // Convert hex string to bytes
+      List<int> bytes = [];
+      for (int i = 0; i < cleanHex.length; i += 2) {
+        if (i + 1 < cleanHex.length) {
+          String hexByte = cleanHex.substring(i, i + 2);
+          bytes.add(int.parse(hexByte, radix: 16));
+        }
+      }
+
+      // Try UTF-8 first
+      try {
+        String result = utf8.decode(bytes);
+        // Check if the result contains replacement characters
+        if (!result.contains('�')) {
+          return result;
+        }
+      } catch (_) {}
+
+      // If UTF-8 fails or contains replacement characters, try Latin-1
+      try {
+        String result = latin1.decode(bytes);
+        return result;
+      } catch (_) {}
+
+      // If both fail, fallback to UTF-8 with malformed allowed
+      final result = utf8.decode(bytes, allowMalformed: true);
+      return result;
+    } catch (e) {
+      // If decoding fails, return the original string
+      log.e('Error decoding hex string: $e');
+      return hexString;
+    }
   }
 
   static String _calculateDateDelimiter(DateTime timestamp) {

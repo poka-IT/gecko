@@ -25,6 +25,8 @@ import 'package:gecko/models/transaction_in_progress_data.dart';
 // Static cache to preserve transaction status across widget reconstructions
 class TransactionStatusCache {
   static final Map<String, TransactionStatus> _cache = {};
+  // Map temporary keys to real transaction hashes
+  static final Map<String, String> _temporaryToRealKeyMap = {};
 
   static String _generateKey(TransactionInProgressData data) {
     // Use the real transaction ID if available, otherwise fall back to a temporary key
@@ -35,8 +37,22 @@ class TransactionStatusCache {
     return '${data.status.hashCode}_${data.toAddress}_${data.amount}_${data.comment}';
   }
 
+  static String _generateTemporaryKey(TransactionInProgressData data) {
+    // Always generate the temporary key format
+    return '${data.status.hashCode}_${data.toAddress}_${data.amount}_${data.comment}';
+  }
+
   static TransactionStatus? getLastKnownStatus(TransactionInProgressData data) {
     final key = _generateKey(data);
+
+    // If it's a temporary key, check if we have a mapping to a real hash
+    if (data.transactionId == null || data.transactionId!.isEmpty) {
+      final realKey = _temporaryToRealKeyMap[key];
+      if (realKey != null) {
+        return _cache[realKey];
+      }
+    }
+
     return _cache[key];
   }
 
@@ -45,9 +61,36 @@ class TransactionStatusCache {
     _cache[key] = status;
   }
 
+  static void migrateToRealHash(TransactionInProgressData oldData, TransactionInProgressData newData) {
+    // If we're moving from temporary key to real hash, migrate the cache entry
+    if (oldData.transactionId == null && newData.transactionId != null) {
+      final tempKey = _generateTemporaryKey(oldData);
+      final realKey = newData.transactionId!;
+
+      // Create mapping from temporary key to real key for future lookups
+      _temporaryToRealKeyMap[tempKey] = realKey;
+
+      // Copy status from temporary key to real hash key
+      final status = _cache[tempKey];
+      if (status != null) {
+        _cache[realKey] = status;
+        // Remove the temporary key entry
+        _cache.remove(tempKey);
+      }
+    }
+  }
+
   static bool isTransactionComplete(TransactionInProgressData data) {
     final key = _generateKey(data);
-    final cachedStatus = _cache[key];
+    TransactionStatus? cachedStatus = _cache[key];
+
+    // If it's a temporary key, check if we have a mapping to a real hash
+    if ((data.transactionId == null || data.transactionId!.isEmpty) && cachedStatus == null) {
+      final realKey = _temporaryToRealKeyMap[key];
+      if (realKey != null) {
+        cachedStatus = _cache[realKey];
+      }
+    }
 
     // Transaction is complete only if it's in a truly final state
     return cachedStatus != null && _isTrulyFinalStatus(cachedStatus);
@@ -62,6 +105,7 @@ class TransactionStatusCache {
 
   static void clearCache() {
     _cache.clear();
+    _temporaryToRealKeyMap.clear();
   }
 }
 
@@ -147,6 +191,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
 
         // Update the transaction data with the real transaction ID from the status
         if (status.hash != null && status.hash!.isNotEmpty && _currentTransactionData.transactionId == null) {
+          final oldTransactionData = _currentTransactionData;
           _currentTransactionData = TransactionInProgressData(
             status: _currentTransactionData.status,
             toAddress: _currentTransactionData.toAddress,
@@ -154,6 +199,9 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
             comment: _currentTransactionData.comment,
             transactionId: status.hash,
           );
+
+          // Migrate cache entry from temporary key to real hash
+          TransactionStatusCache.migrateToRealHash(oldTransactionData, _currentTransactionData);
         }
 
         // Always cache the current status with the updated transaction data

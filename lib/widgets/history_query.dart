@@ -39,6 +39,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
   // Filter visibility management with smooth translation
   double _filterTranslationY = 0.0; // 0.0 = visible, -1.0 = hidden
   double _lastScrollOffset = 0.0;
+  bool _hasSeenUDsBefore = false;
 
   bool get _isAtTop => _scrollController.hasClients && _scrollController.position.pixels <= 50;
 
@@ -302,30 +303,56 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                       onRefresh: () async {
                         await refreshTransactionHistory(ref, widget.address);
                       },
-                      child: ListView(
-                        key: keyListTransactions,
-                        controller: _scrollController,
-                        padding: EdgeInsets.only(top: scaleSize(60)), // Space for filter overlay
-                        children: <Widget>[
-                          if (widget.transactionData != null)
-                            VisibilityDetector(
-                              key: const Key('transaction-in-progress-tile'),
-                              onVisibilityChanged: _onTransactionInProgressVisibilityChanged,
-                              child: TransactionInProgressTule(transactionData: widget.transactionData!),
-                            ),
+                      child: Consumer(
+                        builder: (context, ref, child) {
+                          // Check if UDs are available to determine if filter is shown
+                          final combinedState = ref.watch(combinedHistoryProvider(widget.address));
+                          final hasUDs = combinedState.transactions.any(
+                            (transaction) => transaction.type == TransactionType.universalDividend,
+                          );
 
-                          HistoryView(
-                            transactions: historyState.transactions,
-                            address: widget.address,
-                            previousAddress: previousAddressAsync.when(
-                              data: (address) => address,
-                              loading: () => null,
-                              error: (error, stackTrace) => null,
+                          // Track if this is the first time we see UDs
+                          final bool isFirstTimeSeingUDs = hasUDs && !_hasSeenUDsBefore;
+                          if (hasUDs && !_hasSeenUDsBefore) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              _hasSeenUDsBefore = true;
+                            });
+                          }
+
+                          return AnimatedPadding(
+                            duration: isFirstTimeSeingUDs
+                                ? const Duration(milliseconds: 300)
+                                : Duration.zero, // No animation for scroll changes
+                            curve: Curves.easeInOut,
+                            padding: EdgeInsets.only(
+                              top: hasUDs ? scaleSize(60) * (1.0 + _filterTranslationY).clamp(0.0, 1.0) : 0,
                             ),
-                            hasNextPage: historyState.hasNextPage,
-                            isLoadingMore: historyState.isLoading,
-                          ),
-                        ],
+                            child: ListView(
+                              key: keyListTransactions,
+                              controller: _scrollController,
+                              children: <Widget>[
+                                if (widget.transactionData != null)
+                                  VisibilityDetector(
+                                    key: const Key('transaction-in-progress-tile'),
+                                    onVisibilityChanged: _onTransactionInProgressVisibilityChanged,
+                                    child: TransactionInProgressTule(transactionData: widget.transactionData!),
+                                  ),
+
+                                HistoryView(
+                                  transactions: historyState.transactions,
+                                  address: widget.address,
+                                  previousAddress: previousAddressAsync.when(
+                                    data: (address) => address,
+                                    loading: () => null,
+                                    error: (error, stackTrace) => null,
+                                  ),
+                                  hasNextPage: historyState.hasNextPage,
+                                  isLoadingMore: historyState.isLoading,
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
                     ),
 

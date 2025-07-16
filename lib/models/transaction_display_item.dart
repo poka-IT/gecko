@@ -116,10 +116,10 @@ class TransactionDisplayItem {
 
     try {
       // Remove any leading backslash-x prefix if present
-      String cleanHex = hexString.replaceAll(r'\x', '');
+      final cleanHex = hexString.replaceAll(r'\x', '');
 
       // Convert hex string to bytes
-      List<int> bytes = [];
+      final List<int> bytes = [];
       for (int i = 0; i < cleanHex.length; i += 2) {
         if (i + 1 < cleanHex.length) {
           String hexByte = cleanHex.substring(i, i + 2);
@@ -129,7 +129,7 @@ class TransactionDisplayItem {
 
       // Try UTF-8 first
       try {
-        String result = utf8.decode(bytes);
+        final result = utf8.decode(bytes);
         // Check if the result contains replacement characters
         if (!result.contains('�')) {
           return result;
@@ -138,13 +138,11 @@ class TransactionDisplayItem {
 
       // If UTF-8 fails or contains replacement characters, try Latin-1
       try {
-        String result = latin1.decode(bytes);
-        return result;
+        return latin1.decode(bytes);
       } catch (_) {}
 
       // If both fail, fallback to UTF-8 with malformed allowed
-      final result = utf8.decode(bytes, allowMalformed: true);
-      return result;
+      return utf8.decode(bytes, allowMalformed: true);
     } catch (e) {
       // If decoding fails, return the original string
       log.e('Error decoding hex string: $e');

@@ -12,32 +12,70 @@ import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 import 'package:gecko/widgets/history_query.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:provider/provider.dart' as old_provider;
-import 'package:gecko/widgets/wallet_header.dart';
+import 'package:gecko/widgets/compact_wallet_header.dart';
+import 'package:gecko/widgets/intelligent_app_bar_title.dart';
 import 'package:gecko/models/wallet_header_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/transaction_in_progress_data.dart';
 
 class ActivityScreen extends ConsumerStatefulWidget {
-  const ActivityScreen({required this.address, this.username, this.transactionData, this.initialHeaderData})
-    : super(key: keyActivityScreen);
+  const ActivityScreen({required this.address, this.username, this.transactionData}) : super(key: keyActivityScreen);
 
   final String address;
   final String? username;
   final TransactionInProgressData? transactionData;
-  final WalletHeaderData? initialHeaderData; // Données du header pour une transition fluide
 
   @override
   ConsumerState<ActivityScreen> createState() => _ActivityScreenState();
 }
 
-class _ActivityScreenState extends ConsumerState<ActivityScreen> {
+class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProviderStateMixin {
   late Future<WalletHeaderData> _headerDataFuture;
+  late AnimationController _headerAnimationController;
+  late Animation<double> _headerAnimation;
+
+  static const double _expandedHeaderHeight = 100.0;
+  static const double _collapsedHeaderHeight = 60.0;
+  static const double _scrollThreshold = 50.0;
 
   @override
   void initState() {
     super.initState();
     ref.read(storageServiceProvider).getOldOwnerKey(widget.address);
     _headerDataFuture = _loadWalletData();
+
+    // Initialize animation controller
+    _headerAnimationController = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
+
+    _headerAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _headerAnimationController, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _headerAnimationController.dispose();
+    super.dispose();
+  }
+
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (notification is ScrollUpdateNotification) {
+      final offset = notification.metrics.pixels;
+
+      if (offset > _scrollThreshold) {
+        // Scroll down - collapse header
+        if (_headerAnimationController.value < 1.0) {
+          _headerAnimationController.forward();
+        }
+      } else {
+        // Scroll up - expand header
+        if (_headerAnimationController.value > 0.0) {
+          _headerAnimationController.reverse();
+        }
+      }
+    }
+    return false;
   }
 
   Future<WalletHeaderData> _loadWalletData() async {
@@ -63,14 +101,6 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Si on a des données initiales, les utiliser immédiatement pour une transition fluide
-    if (widget.initialHeaderData != null) {
-      // Refresher les données en arrière-plan
-      _refreshDataInBackground();
-
-      return _buildScaffold(widget.initialHeaderData!);
-    }
-
     return FutureBuilder<WalletHeaderData>(
       future: _headerDataFuture,
       builder: (context, snapshot) {
@@ -97,30 +127,72 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
 
   Widget _buildScaffold(WalletHeaderData headerData) {
     return Scaffold(
-      appBar: WalletAppBar(address: widget.address, title: 'accountActivity'.tr()),
-      body: Stack(
-        children: [
-          Column(
-            children: <Widget>[
-              WalletHeader(address: widget.address),
-              Expanded(
-                child: HistoryQuery(address: widget.address, transactionData: widget.transactionData),
-              ),
+      body: NotificationListener<ScrollNotification>(
+        onNotification: _onScrollNotification,
+        child: NestedScrollView(
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return [_buildCollapsibleHeader()];
+          },
+          body: Stack(
+            children: [
+              HistoryQuery(address: widget.address, transactionData: widget.transactionData),
+              const OfflineInfo(),
             ],
           ),
-          const OfflineInfo(),
-        ],
+        ),
       ),
       bottomNavigationBar: const GeckoBottomAppBar(),
     );
   }
 
-  Future<void> _refreshDataInBackground() async {
-    // Refresh les données en arrière-plan sans bloquer l'UI
-    try {
-      await _loadWalletData();
-    } catch (e) {
-      // Ignorer les erreurs de refresh en arrière-plan
-    }
+  Widget _buildCollapsibleHeader() {
+    return AnimatedBuilder(
+      animation: _headerAnimation,
+      builder: (context, child) {
+        // Watch balance to determine if wallet is empty
+        final balanceAsync = ref.watch(smartBalanceStreamProvider(widget.address));
+        final balance = balanceAsync.hasValue ? balanceAsync.value?.transferableBalance : null;
+        final isEmptyWallet = balance == null || balance == BigInt.zero;
+
+        // Calculate dynamic heights based on animation
+        final currentExpandedHeight = _expandedHeaderHeight - (_headerAnimation.value * 40);
+        final currentCollapsedHeight = _collapsedHeaderHeight;
+
+        // Determine background color based on wallet state
+        final backgroundColor = isEmptyWallet
+            ? Theme.of(context).colorScheme.error
+            : Theme.of(context).colorScheme.tertiary;
+
+        return SliverAppBar(
+          expandedHeight: currentExpandedHeight,
+          collapsedHeight: currentCollapsedHeight,
+          pinned: true,
+          stretch: true,
+          backgroundColor: backgroundColor,
+          elevation: _headerAnimation.value * 4,
+          surfaceTintColor: backgroundColor,
+          shadowColor: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.3),
+          title: AnimatedOpacity(
+            duration: const Duration(milliseconds: 150),
+            opacity: _headerAnimation.value > 0.3 ? 1.0 : 0.0,
+            child: IntelligentAppBarTitle(address: widget.address),
+          ),
+          flexibleSpace: FlexibleSpaceBar(
+            background: Container(
+              padding: const EdgeInsets.only(top: kToolbarHeight + 4),
+              child: Transform.translate(
+                offset: Offset(0, 15 * _headerAnimation.value),
+                child: Opacity(
+                  opacity: 1.0 - _headerAnimation.value,
+                  child: CompactWalletHeader(address: widget.address),
+                ),
+              ),
+            ),
+            stretchModes: const [StretchMode.zoomBackground, StretchMode.blurBackground],
+          ),
+          leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.of(context).pop()),
+        );
+      },
+    );
   }
 }

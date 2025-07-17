@@ -496,7 +496,7 @@ class _TransactionFilterState extends ConsumerState<TransactionFilter> with Sing
       child: FadeTransition(
         opacity: _fadeAnimation,
         child: Container(
-          margin: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), top: scaleSize(8), bottom: scaleSize(12)),
+          margin: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), top: scaleSize(8), bottom: scaleSize(8)),
           child: Row(
             children: [
               Icon(Icons.filter_list_outlined, size: scaleSize(16), color: context.colorScheme.onSurfaceVariant),
@@ -549,7 +549,7 @@ class _FilterToggle extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeInOut,
-          padding: EdgeInsets.symmetric(horizontal: scaleSize(14), vertical: scaleSize(10)),
+          padding: EdgeInsets.symmetric(horizontal: 0, vertical: scaleSize(7)),
           decoration: BoxDecoration(
             color: isEnabled
                 ? context.colorScheme.primary.withValues(alpha: 0.15)

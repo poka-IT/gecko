@@ -373,5 +373,11 @@
     "displayG1Description": "Display amounts in G1 units",
     "displayDUDescription": "Display amounts in Universal Dividend",
     "displayMNDescription": "Display amounts in mM/N ratio",
-    "displayMNDescriptionError": "Error loading TRM data"
+    "displayMNDescriptionError": "Error loading TRM data",
+    "identityStatusValidated": "Member",
+    "identityStatusConfirmed": "Confirmed",
+    "identityStatusCreated": "Created",
+    "identityStatusExpired": "Expired",
+    "identityStatusRevoked": "Revoked",
+    "identityStatusUnknown": "Unknown"
 }

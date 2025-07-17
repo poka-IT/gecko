@@ -123,7 +123,7 @@ class _MigrateChestProgressScreenState extends ConsumerState<MigrateChestProgres
 
         // Wait for transaction confirmation
         await for (final status in transactionStatus) {
-          if (status.state == TransactionState.finalized) {
+          if (status.state == TransactionState.finalized || status.state == TransactionState.inBlock) {
             if (!mounted) return;
             setState(() {
               task.status = MigrationStatus.success;
@@ -146,7 +146,7 @@ class _MigrateChestProgressScreenState extends ConsumerState<MigrateChestProgres
 
         // Wait for transaction confirmation
         await for (final status in transactionStatus) {
-          if (status.state == TransactionState.finalized) {
+          if (status.state == TransactionState.finalized || status.state == TransactionState.inBlock) {
             if (!mounted) return;
             setState(() {
               task.status = MigrationStatus.success;

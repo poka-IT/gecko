@@ -385,5 +385,11 @@
     "universalDividends": "Dividendos Universales",
     "universalDividend": "Dividendo Universal",
     "udShort": "DU",
-    "offline": "Desconectado"
+    "offline": "Desconectado",
+    "identityStatusValidated": "Miembro",
+    "identityStatusConfirmed": "Confirmado",
+    "identityStatusCreated": "Creado",
+    "identityStatusExpired": "Expirado",
+    "identityStatusRevoked": "Revocado",
+    "identityStatusUnknown": "Desconocido"
 }

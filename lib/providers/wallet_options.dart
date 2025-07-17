@@ -134,7 +134,7 @@ class WalletOptionsProvider with ChangeNotifier {
       String? errorMessage;
 
       await for (final status in transactionStatus) {
-        if (status.state == TransactionState.finalized) {
+        if (status.state == TransactionState.finalized || status.state == TransactionState.inBlock) {
           transactionSuccessful = true;
           break;
         } else if (status.state == TransactionState.error) {

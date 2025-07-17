@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -39,72 +40,12 @@ class TransactionTile extends StatelessWidget {
       return _buildUniversalDividendTile(context, newKey, finalAmount, dateString);
     }
 
-    // Standard transaction tile
+    // Standard transaction tile with improved layout
     return Container(
       margin: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(4)),
-      decoration: BoxDecoration(
-        color: context.colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(12),
-        // border: Border.all(
-        //   color: Colors.grey.withValues(alpha: 0.2),
-        //   width: 1,
-        // ),
-      ),
-      child: ListTile(
+      decoration: BoxDecoration(color: context.colorScheme.surfaceContainer, borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
         key: keyTransaction(newKey),
-        contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(8)),
-        leading: Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: context.colorScheme.onSecondaryContainer, width: 1),
-          ),
-          child: DatapodAvatar(address: transaction.address, size: avatarSize),
-        ),
-        title: Padding(
-          padding: EdgeInsets.only(bottom: scaleSize(5)),
-          child: Text(
-            getShortPubkey(transaction.address),
-            style: scaledTextStyle(fontSize: 16, fontFamily: 'Monospace'),
-          ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (username != null) ...[
-              Text(
-                username,
-                style: scaledTextStyle(fontSize: 12, color: Colors.grey[600]),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              ScaledSizedBox(height: 4),
-            ],
-            if (transaction.comment != null && transaction.comment!.isNotEmpty) ...[
-              Text(
-                transaction.comment!,
-                style: scaledTextStyle(fontSize: 12, color: Colors.grey[600], fontStyle: FontStyle.italic),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              ScaledSizedBox(height: 4),
-            ],
-            Text(dateString, style: scaledTextStyle(fontSize: 11, color: Colors.grey[500])),
-          ],
-        ),
-        trailing: SizedBox(
-          width: scaleSize(120), // Constrain the width to prevent overflow
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              BalanceDisplay(
-                value: finalAmount,
-                size: 16,
-                color: transaction.isReceived ? const Color(0xFF4CAF50) : const Color(0xFF2196F3),
-              ),
-            ],
-          ),
-        ),
         onTap: () {
           Navigator.push(
             context,
@@ -113,6 +54,132 @@ class TransactionTile extends StatelessWidget {
             ),
           );
         },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Avatar
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: context.colorScheme.onSecondaryContainer, width: 1),
+                ),
+                child: DatapodAvatar(address: transaction.address, size: avatarSize),
+              ),
+
+              ScaledSizedBox(width: 12),
+
+              // Main content - flexible to adapt to balance width
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Top row: Address and Balance
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Address - truncated at START when needed
+                        Expanded(
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final address = getShortPubkey(transaction.address);
+                              final style = scaledTextStyle(fontSize: 16, fontFamily: 'Monospace');
+
+                              // Measure if full address fits
+                              final fullTextPainter = TextPainter(
+                                text: TextSpan(text: address, style: style),
+                                textDirection: ui.TextDirection.ltr,
+                              );
+                              fullTextPainter.layout();
+
+                              // Add safety margin to account for padding/spacing differences
+                              final safeMaxWidth = constraints.maxWidth - 16.0;
+
+                              if (fullTextPainter.width <= safeMaxWidth) {
+                                // Full address fits with safety margin
+                                return Text(address, style: style, maxLines: 1, overflow: TextOverflow.clip);
+                              }
+
+                              // Need to truncate - measure ellipsis width
+                              final ellipsisPainter = TextPainter(
+                                text: TextSpan(text: '...', style: style),
+                                textDirection: ui.TextDirection.ltr,
+                              );
+                              ellipsisPainter.layout();
+                              final ellipsisWidth = ellipsisPainter.width;
+
+                              final availableForText = constraints.maxWidth - ellipsisWidth;
+
+                              // Find how many chars from the END we can keep
+                              String bestText = '...';
+                              for (int i = 1; i <= address.length; i++) {
+                                final testSuffix = address.substring(address.length - i);
+                                final testPainter = TextPainter(
+                                  text: TextSpan(text: testSuffix, style: style),
+                                  textDirection: ui.TextDirection.ltr,
+                                );
+                                testPainter.layout();
+
+                                if (testPainter.width <= availableForText) {
+                                  bestText = '${String.fromCharCode(0x2026)}$testSuffix';
+                                } else {
+                                  break;
+                                }
+                              }
+
+                              return Text(bestText, style: style, maxLines: 1, overflow: TextOverflow.clip);
+                            },
+                          ),
+                        ),
+
+                        ScaledSizedBox(width: 8),
+
+                        // Balance - flexible width based on content
+                        BalanceDisplay(
+                          value: finalAmount,
+                          size: 16,
+                          color: transaction.isReceived ? const Color(0xFF4CAF50) : const Color(0xFF2196F3),
+                        ),
+                      ],
+                    ),
+
+                    ScaledSizedBox(height: 6),
+
+                    // Bottom section: Username, comment, and date
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (username != null) ...[
+                          Text(
+                            username,
+                            style: scaledTextStyle(fontSize: 13, color: Colors.grey[600]),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          ScaledSizedBox(height: 3),
+                        ],
+                        if (transaction.comment != null && transaction.comment!.isNotEmpty) ...[
+                          Text(
+                            transaction.comment!,
+                            style: scaledTextStyle(fontSize: 12, color: Colors.grey[600], fontStyle: FontStyle.italic),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          ScaledSizedBox(height: 3),
+                        ],
+                        Text(dateString, style: scaledTextStyle(fontSize: 11, color: Colors.grey[500])),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

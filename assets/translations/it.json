@@ -320,5 +320,11 @@
     "udShort": "DU",
     "offline": "Disconnesso",
     "cesium_import_info_title": "Importare un portafoglio Cesium?",
-    "cesium_import_info_body": "Per importare un portafoglio Cesium (con nome utente e password), devi prima creare un vault in Ğecko. Una volta creato il tuo vault, potrai migrare il tuo vecchio portafoglio in questo nuovo formato, più semplice e sicuro."
+    "cesium_import_info_body": "Per importare un portafoglio Cesium (con nome utente e password), devi prima creare un vault in Ğecko. Una volta creato il tuo vault, potrai migrare il tuo vecchio portafoglio in questo nuovo formato, più semplice e sicuro.",
+    "identityStatusValidated": "Membro",
+    "identityStatusConfirmed": "Confermato",
+    "identityStatusCreated": "Creato",
+    "identityStatusExpired": "Scaduto",
+    "identityStatusRevoked": "Revocato",
+    "identityStatusUnknown": "Sconosciuto"
 }

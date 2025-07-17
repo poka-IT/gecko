@@ -231,11 +231,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     try {
       final durt = _container.read(durtProvider);
 
+      log.d('🔍 Checking Networks.listDuniterEndpoints: ${Networks.listDuniterEndpoints.length} endpoints available');
       if (Networks.listDuniterEndpoints.isNotEmpty) {
+        log.d('✅ Using existing ${Networks.listDuniterEndpoints.length} Duniter endpoints');
         return Networks.listDuniterEndpoints;
       }
 
       // If no endpoints available, trigger refresh
+      log.w('⚠️ Networks.listDuniterEndpoints is empty, triggering refresh...');
       await durt.refreshEndpoints();
 
       if (Networks.listDuniterEndpoints.isNotEmpty) {

@@ -110,13 +110,36 @@ class SettingsProvider with ChangeNotifier {
     final durt = _container.read(durtProvider);
     final networks = ['gdev', 'gtest', 'g1'];
 
+    // 1. Clear ConnectionManager fast endpoint caches (ObjectBox)
     for (final network in networks) {
-      // Clear new fast endpoint caches
       await _clearConfigEntry(durt, 'fast_endpoints_rpc_$network');
       await _clearConfigEntry(durt, 'fast_endpoints_squid_$network');
     }
+    log.d('✅ Cleared ConnectionManager fast endpoint caches');
 
-    log.d('Cleared all legacy and new endpoint caches');
+    // 2. Clear BootstrapNodeService cache (ObjectBox)
+    try {
+      final bootstrapBox = durt.store.box<BootstrapEndpoint>();
+      bootstrapBox.removeAll();
+      log.d('✅ Cleared BootstrapNodeService ObjectBox cache');
+    } catch (e) {
+      log.w('⚠️ Error clearing BootstrapNodeService cache: $e');
+    }
+
+    // 3. Clear NetworkConfigService memory cache
+    try {
+      NetworkConfigService.clearCache();
+      log.d('✅ Cleared NetworkConfigService memory cache');
+    } catch (e) {
+      log.w('⚠️ Error clearing NetworkConfigService cache: $e');
+    }
+
+    // 4. Clear static Networks lists
+    Networks.listDuniterEndpoints.clear();
+    Networks.listSquidEndpoints.clear();
+    log.d('✅ Cleared static Networks endpoint lists');
+
+    log.i('🧹 All endpoint caches cleared successfully');
   }
 
   /// Private method to clear a specific config entry

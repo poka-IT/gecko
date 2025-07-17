@@ -61,11 +61,16 @@ class IdAdapter extends TypeAdapter<Id> {
 
   @override
   Id read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
     return Id();
   }
 
   @override
   void write(BinaryWriter writer, Id obj) {
+    writer..writeByte(0);
   }
 
   @override

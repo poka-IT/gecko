@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -268,47 +269,47 @@ class HomeProvider with ChangeNotifier {
         configBox.put('isCacheChecked', false);
       }
 
-      // bool firstConnection = true;
-      // Future<void> updateConnectionStatus(List<ConnectivityResult> result) async {
-      //   if (!firstConnection) {
-      //     // ignore: avoid_print
-      //     print('Network changed: $result');
-      //   }
-      //   firstConnection = false;
+      bool firstConnection = true;
+      Future<void> updateConnectionStatus(List<ConnectivityResult> result) async {
+        if (!firstConnection) {
+          // ignore: avoid_print
+          print('Network changed: $result');
+        }
+        firstConnection = false;
 
-      // if (result.contains(ConnectivityResult.none)) {
-      //   homeProvider.changeMessage("notConnectedToInternet".tr());
-      // } else {
-      //   homeProvider.changeMessage("connectionInProgress".tr());
-      // Check if the phone is actually connected to the internet
-      // var connectivityResult = await (Connectivity().checkConnectivity());
-      // if (!connectivityResult.contains(ConnectivityResult.none)) {
-      // Connect to Duniter network
-      try {
-        await _container.read(durtProvider).connect(verbose: false);
-        // ignore: avoid_print
-        print('💡 Successfully connected to Duniter');
-      } catch (e) {
-        // ignore: avoid_print
-        print('🔴 Failed to connect to Duniter: $e');
-
-        // Check if this is a genesis validation error
-        if (e.toString().contains('genesis hash') || e.toString().contains('genesis validation')) {
-          homeProvider.changeMessage("networkGenesisError".tr());
+        if (result.contains(ConnectivityResult.none)) {
+          homeProvider.changeMessage("notConnectedToInternet".tr());
         } else {
-          homeProvider.changeMessage("networkConnectionError".tr());
+          homeProvider.changeMessage("connectionInProgress".tr());
+          // Check if the phone is actually connected to the internet
+          var connectivityResult = await (Connectivity().checkConnectivity());
+          if (!connectivityResult.contains(ConnectivityResult.none)) {
+            // Connect to Duniter network
+            try {
+              await _container.read(durtProvider).connect(verbose: false);
+              // ignore: avoid_print
+              print('💡 Successfully connected to Duniter');
+            } catch (e) {
+              // ignore: avoid_print
+              print('🔴 Failed to connect to Duniter: $e');
+
+              // Check if this is a genesis validation error
+              if (e.toString().contains('genesis hash') || e.toString().contains('genesis validation')) {
+                homeProvider.changeMessage("networkGenesisError".tr());
+              } else {
+                homeProvider.changeMessage("networkConnectionError".tr());
+              }
+            }
+
+            ref.watch(connectionStatusProvider);
+
+            // Load wallets list
+            await myWalletProvider.readAllWallets();
+          }
         }
       }
 
-      ref.watch(connectionStatusProvider);
-
-      // Load wallets list
-      await myWalletProvider.readAllWallets();
-      // }
-      // }
-      // }
-
-      // Connectivity().onConnectivityChanged.listen(updateConnectionStatus);
+      Connectivity().onConnectivityChanged.listen(updateConnectionStatus);
     }
   }
 }

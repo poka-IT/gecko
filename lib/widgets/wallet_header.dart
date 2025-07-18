@@ -1,6 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show IdtyStatus, WalletBalance, WalletEntity, Durt;
+import 'package:durt2/durt2.dart' show IdtyStatus, WalletBalance;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,7 +21,6 @@ import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/providers/wallet_options.dart';
-import 'package:gecko/widgets/name_by_address.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
 
 class WalletHeader extends ConsumerWidget {
@@ -113,6 +112,7 @@ class WalletHeaderContent extends StatelessWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center, // Center vertically within fixed height
               children: [
                 WalletHeaderAddress(address: address),
                 ScaledSizedBox(height: 6),
@@ -178,6 +178,7 @@ class WalletHeaderIdentitySection extends StatelessWidget {
                 address: address,
                 currentStatus: idtyStatus,
                 color: context.colorScheme.primary,
+                identityName: identityName,
               ),
             ),
 
@@ -202,32 +203,41 @@ class WalletHeaderIdentitySection extends StatelessWidget {
 
 /// Internal identity status display widget that shows current status without database access
 class _IdentityStatusDisplay extends StatelessWidget {
-  const _IdentityStatusDisplay({required this.address, required this.currentStatus, required this.color});
+  const _IdentityStatusDisplay({
+    required this.address,
+    required this.currentStatus,
+    required this.color,
+    required this.identityName,
+  });
 
   final String address;
   final IdtyStatus currentStatus;
   final Color color;
+  final String? identityName;
 
   @override
   Widget build(BuildContext context) {
-    // Create a minimal wallet entity for display purposes only
-    final displayWallet = WalletEntity.create(address: address, keyPairType: Durt.defaultKeyPairType);
+    // Use the identity name directly from the stream provider instead of NameByAddress
+    final hasIdentityName = identityName != null && identityName!.isNotEmpty;
 
-    final nameByAddress = currentStatus == IdtyStatus.validated
-        ? NameByAddress(
-            wallet: displayWallet,
-            size: 18,
-            color: context.colorScheme.onSurface,
-            fontWeight: FontWeight.w500,
-            fontStyle: FontStyle.normal,
+    final nameWidget = hasIdentityName
+        ? Text(
+            identityName!.length > 22 ? '${identityName!.substring(0, 22)}...' : identityName!,
+            style: currentStatus == IdtyStatus.validated
+                ? scaledTextStyle(
+                    fontSize: 18,
+                    color: context.colorScheme.onSurface,
+                    fontWeight: FontWeight.w500,
+                    fontStyle: FontStyle.normal,
+                  )
+                : scaledTextStyle(
+                    fontSize: 16,
+                    color: context.colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                    fontStyle: FontStyle.italic,
+                  ),
           )
-        : NameByAddress(
-            wallet: displayWallet,
-            size: 16,
-            color: context.colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w500,
-            fontStyle: FontStyle.italic,
-          );
+        : const SizedBox.shrink();
 
     final Map<IdtyStatus, String> statusText = {
       IdtyStatus.none: '',
@@ -243,7 +253,7 @@ class _IdentityStatusDisplay extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // FittedBox only for the name to scale down when too long
-        FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: nameByAddress),
+        FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: nameWidget),
         AnimatedFadeOutIn<String>(
           data: statusText[currentStatus]!,
           duration: const Duration(milliseconds: 150),

@@ -260,7 +260,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
                   break;
               }
 
-              await myWalletProvider.readAllWallets(currentChest);
+              await myWalletProvider.readAllWallets(safeBoxNumber: currentChest);
               myWalletProvider.reload();
 
               generateWalletProvider.generatedMnemonic = '';

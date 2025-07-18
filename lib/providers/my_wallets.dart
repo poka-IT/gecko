@@ -80,7 +80,7 @@ class MyWalletsProvider with ChangeNotifier {
     return listWallets.where((w) => w.address != idtyWallet?.address).toList();
   }
 
-  Future<List<WalletEntity>> readAllWallets([int? safeBoxNumber]) async {
+  Future<List<WalletEntity>> readAllWallets({WidgetRef? ref, int? safeBoxNumber}) async {
     final sbn = safeBoxNumber ?? _container.read(walletServiceProvider).defaultSafeBoxNumber;
 
     final walletsExist = _container.read(walletServiceProvider).isWalletExist;
@@ -91,12 +91,12 @@ class MyWalletsProvider with ChangeNotifier {
 
     final safe = _container.read(walletServiceProvider).getSafeBox(sbn);
 
+    if (ref != null) {
+      ref.watch(idtyWalletAsyncProvider);
+    }
+
     final wallets = safe.wallets.toList();
     wallets.sort((a, b) => a.number.compareTo(b.number));
-
-    // No longer manually fetch identity statuses here - they are now handled by real-time streams
-    // and automatically synchronized by the IdentityStatusSyncService
-    // The widgets will use smart providers that provide live data from streams
 
     listWallets = wallets;
 
@@ -236,7 +236,7 @@ class MyWalletsProvider with ChangeNotifier {
     int newWalletNbr;
     int? safeNumber = getCurrentSafe;
 
-    List<WalletEntity> walletConfig = await readAllWallets(safeNumber);
+    List<WalletEntity> walletConfig = await readAllWallets(safeBoxNumber: safeNumber);
     walletConfig.sort((p1, p2) {
       return Comparable.compare(p1.number, p2.number);
     });

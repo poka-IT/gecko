@@ -32,29 +32,33 @@ class CompactWalletHeader extends ConsumerWidget {
           const SizedBox(width: 12),
           // Essential information (left side)
           Expanded(
-            flex: 2,
+            flex: 3,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 // Truncated address
-                Text(
-                  getShortPubkey(address),
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onSurface,
+                Flexible(
+                  child: Text(
+                    getShortPubkey(address),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
-                const SizedBox(height: 2),
                 // Compact balance
-                Balance(address: address, size: 15),
+                Flexible(child: Balance(address: address, size: 15)),
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          // Identity and status (right side)
+          // Identity and status (centered in remaining space)
           Expanded(
+            flex: 2,
             child: Consumer(
               builder: (context, ref, child) {
                 final idtyStatusAsync = ref.watch(hybridIdtyStatusProvider(address));
@@ -68,36 +72,36 @@ class CompactWalletHeader extends ConsumerWidget {
                       idtyStatus != IdtyStatus.unknown &&
                       identityName != null &&
                       identityName.isNotEmpty) {
-                    return Container(
-                      padding: const EdgeInsets.only(right: 16),
+                    return Center(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Truncated identity name
+                          // Identity name - larger and more prominent
                           Text(
-                            identityName.length > 12 ? '${identityName.substring(0, 12)}...' : identityName,
+                            identityName.length > 10 ? '${identityName.substring(0, 10)}...' : identityName,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Theme.of(context).colorScheme.onSurface,
                             ),
-                            textAlign: TextAlign.end,
+                            textAlign: TextAlign.center,
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
-                          const SizedBox(height: 3),
-                          // Compact status badge
+                          const SizedBox(height: 4),
+                          // Status badge - more prominent
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
                               color: IdentityStatusHelper.getStatusColor(idtyStatus).withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
                               IdentityStatusHelper.getStatusText(idtyStatus),
                               style: TextStyle(
-                                fontSize: 11,
+                                fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 color: IdentityStatusHelper.getStatusColor(idtyStatus),
                               ),

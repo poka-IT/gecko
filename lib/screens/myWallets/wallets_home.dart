@@ -1,6 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show SafeEntity;
+import 'package:durt2/durt2.dart' show SafeEntity, WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -90,15 +90,51 @@ class _WalletsHomeContent extends ConsumerWidget {
       nTule = 2;
     }
 
-    // Get identity wallet info asynchronously but don't block UI
+    // Get identity wallet info and wait for it to resolve to avoid flash
     final idtyWalletAsync = ref.watch(idtyWalletAsyncProvider);
 
-    // Use optimistic rendering: show all wallets immediately, identify identity wallet in background
-    final allWallets = myWalletProvider.listWallets;
-    final idtyWallet = idtyWalletAsync.valueOrNull;
-    final walletsWithoutIdty = idtyWallet != null
-        ? allWallets.where((w) => w.address != idtyWallet.address).toList()
-        : allWallets;
+    // Show loading state while identity wallet is being determined
+    return idtyWalletAsync.when(
+      data: (idtyWallet) {
+        // Data is ready, render the UI with correct wallet separation
+        final allWallets = myWalletProvider.listWallets;
+        final walletsWithoutIdty = idtyWallet != null
+            ? allWallets.where((w) => w.address != idtyWallet.address).toList()
+            : allWallets;
+
+        return _buildWalletsContent(context, ref, currentChest, allWallets, idtyWallet, walletsWithoutIdty, nTule);
+      },
+      loading: () {
+        // Show loading while determining identity wallet to prevent flash
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      },
+      error: (error, stack) {
+        // On error, treat as no identity wallet
+        final allWallets = myWalletProvider.listWallets;
+
+        return _buildWalletsContent(
+          context,
+          ref,
+          currentChest,
+          allWallets,
+          null, // No identity wallet
+          allWallets, // All wallets without identity
+          nTule,
+        );
+      },
+    );
+  }
+
+  Widget _buildWalletsContent(
+    BuildContext context,
+    WidgetRef ref,
+    SafeEntity currentChest,
+    List<WalletEntity> allWallets,
+    WalletEntity? idtyWallet,
+    List<WalletEntity> walletsWithoutIdty,
+    int nTule,
+  ) {
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
 
     // SIMPLE tutorial logic: attach key to second wallet in grid if exists, otherwise first
     final int targetWalletIndex = walletsWithoutIdty.length > 1 ? 1 : 0;

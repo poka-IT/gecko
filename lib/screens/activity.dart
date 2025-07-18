@@ -135,7 +135,12 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
           },
           body: Stack(
             children: [
-              HistoryQuery(address: widget.address, transactionData: widget.transactionData),
+              // Remove the top padding of the HistoryQuery widget
+              MediaQuery.removePadding(
+                context: context,
+                removeTop: true,
+                child: HistoryQuery(address: widget.address, transactionData: widget.transactionData),
+              ),
               const OfflineInfo(),
             ],
           ),

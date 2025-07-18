@@ -364,13 +364,6 @@ final identityNameStreamProvider = StreamProvider.family.autoDispose<String?, St
   });
 });
 
-/// Provides a synchronous access to the cached identity name.
-/// Returns null if not cached yet.
-final cachedIdentityNameProvider = Provider.family<String?, String>((ref, address) {
-  final squidService = ref.watch(squidServiceProvider);
-  return squidService.walletNameIndexer[address];
-});
-
 /// Provides identity search results for a given search term.
 /// Returns empty list if network is unavailable.
 final searchIdentityProvider = FutureProvider.family<List<d.IdentitySuggestion>, String>((ref, searchTerm) async {
@@ -759,6 +752,86 @@ final smartBalanceStreamProvider = Provider.family.autoDispose<AsyncValue<d.Wall
   }
 });
 
+/// Cached provider for checking if an account has consumers
+/// Uses smart caching to avoid repeated expensive storage calls
+final hasAccountConsumersProvider = FutureProvider.family<bool, String>((ref, address) async {
+  final storageService = ref.watch(storageServiceProvider);
+
+  // Check connection status first - if not connected, return false (safe default)
+  final connectionStatus = ref.watch(connectionStatusProvider);
+  if (connectionStatus != d.ConnectionStatus.connected) {
+    return false;
+  }
+
+  try {
+    final hasConsumers = await storageService.hasAccountConsumers(address);
+    return hasConsumers;
+  } catch (e) {
+    log.e('Error checking account consumers for $address: $e');
+    // Return false on error (safe default for deletion checks)
+    return false;
+  }
+});
+
+/// Smart cached provider for account consumers that handles connection changes
+/// This provider caches results and invalidates appropriately
+class AccountConsumersNotifier extends FamilyAsyncNotifier<bool, String> {
+  bool? _cachedResult;
+  Timer? _cacheTimer;
+
+  @override
+  Future<bool> build(String address) async {
+    // Clear cache timer when rebuilding
+    _cacheTimer?.cancel();
+    _cacheTimer = null;
+
+    // Clean up timer when provider is disposed
+    ref.onDispose(() {
+      _cacheTimer?.cancel();
+    });
+
+    final storageService = ref.watch(storageServiceProvider);
+
+    // Check connection status first
+    final connectionStatus = ref.watch(connectionStatusProvider);
+    if (connectionStatus != d.ConnectionStatus.connected) {
+      _cachedResult = false;
+      return false;
+    }
+
+    // If we have a recent cached result, use it
+    if (_cachedResult != null) {
+      // Set timer to invalidate cache after 30 seconds
+      _cacheTimer = Timer(const Duration(seconds: 30), () {
+        _cachedResult = null;
+        ref.invalidateSelf();
+      });
+      return _cachedResult!;
+    }
+
+    try {
+      final hasConsumers = await storageService.hasAccountConsumers(address);
+      _cachedResult = hasConsumers;
+
+      // Cache result for 30 seconds
+      _cacheTimer = Timer(const Duration(seconds: 30), () {
+        _cachedResult = null;
+      });
+
+      return hasConsumers;
+    } catch (e) {
+      log.e('Error checking account consumers for $address: $e');
+      _cachedResult = false;
+      return false;
+    }
+  }
+}
+
+/// Smart account consumers provider with intelligent caching
+final smartAccountConsumersProvider = AsyncNotifierProvider.family<AccountConsumersNotifier, bool, String>(
+  () => AccountConsumersNotifier(),
+);
+
 /// Hybrid identity status provider using StateNotifier approach
 /// This bypasses the closed stream issue by using direct storage calls and forced refreshes
 /// For existing identities: uses normal streams, for non-existing: uses polling
@@ -868,40 +941,113 @@ final hybridIdtyStatusProvider = AsyncNotifierProvider.family<HybridIdtyStatusNo
   () => HybridIdtyStatusNotifier(),
 );
 
-/// Async provider to get the identity wallet (member or identity holder)
-final idtyWalletAsyncProvider = FutureProvider<d.WalletEntity?>((ref) async {
-  final walletService = ref.watch(walletServiceProvider);
-  final storageService = ref.watch(storageServiceProvider);
+/// Stable identity wallet notifier that caches results and only rebuilds when necessary
+/// This prevents the UI reload spam during connection changes
+class IdtyWalletNotifier extends AsyncNotifier<d.WalletEntity?> {
+  d.WalletEntity? _cachedResult;
+  List<String> _cachedWalletAddresses = [];
 
-  final wallets = walletService.walletBox.getAll();
-  if (wallets.isEmpty) return null;
+  @override
+  Future<d.WalletEntity?> build() async {
+    // Watch wallet service but don't rebuild on connection changes
+    final walletService = ref.watch(walletServiceProvider);
+    final storageService = ref.watch(storageServiceProvider);
 
-  // Check each wallet for member status first
-  for (final wallet in wallets) {
-    final status = await storageService.getIdtyStatus(wallet.address);
-    if (status == d.IdtyStatus.validated) {
-      return wallet; // Return first member wallet
+    final wallets = walletService.walletBox.getAll();
+    if (wallets.isEmpty) {
+      _cachedResult = null;
+      _cachedWalletAddresses = [];
+      return null;
     }
+
+    // Check if wallet list changed - only rebuild if wallets were added/removed
+    final currentAddresses = wallets.map((w) => w.address).toList()..sort();
+    if (_cachedResult != null &&
+        _cachedWalletAddresses.length == currentAddresses.length &&
+        _cachedWalletAddresses.every((addr) => currentAddresses.contains(addr))) {
+      // Wallet list unchanged, preload streams without rebuilding UI
+      _preloadStreamsQuietly(wallets);
+      return _cachedResult;
+    }
+
+    _cachedWalletAddresses = currentAddresses;
+
+    // Get identity status for all wallets in parallel
+    final statusFutures = wallets.map((wallet) async {
+      try {
+        final status = await storageService.getIdtyStatus(wallet.address);
+        return MapEntry(wallet, status);
+      } catch (e) {
+        return MapEntry(wallet, d.IdtyStatus.unknown);
+      }
+    });
+
+    final walletStatusList = await Future.wait(statusFutures);
+
+    // Find wallet with highest priority identity
+    d.WalletEntity? bestWallet;
+    int bestPriority = 0; // 0 = no identity, 1 = any identity, 2 = confirmed, 3 = validated
+
+    for (final entry in walletStatusList) {
+      final wallet = entry.key;
+      final status = entry.value;
+
+      int priority = switch (status) {
+        d.IdtyStatus.validated => 3, // Member - highest priority
+        d.IdtyStatus.confirmed => 2, // Confirmed identity
+        d.IdtyStatus.none || d.IdtyStatus.unknown => 0, // No identity
+        _ => 1, // Any other identity status
+      };
+
+      if (priority > bestPriority) {
+        bestWallet = wallet;
+        bestPriority = priority;
+
+        // Early exit if we found a member (highest priority)
+        if (priority == 3) break;
+      }
+    }
+
+    _cachedResult = bestWallet;
+
+    // Preload streams for the selected wallet
+    if (bestWallet != null) {
+      _preloadStreamsQuietly(wallets);
+    }
+
+    return bestWallet;
   }
 
-  // If no member found, look for confirmed identity
-  for (final wallet in wallets) {
-    final status = await storageService.getIdtyStatus(wallet.address);
-    if (status == d.IdtyStatus.confirmed) {
-      return wallet; // Return first confirmed identity
-    }
+  /// Preload streams without triggering UI rebuilds
+  void _preloadStreamsQuietly(List<d.WalletEntity> wallets) {
+    // Use a timer to avoid immediate rebuilds
+    Timer.run(() {
+      for (final wallet in wallets) {
+        try {
+          // These calls preload the providers without causing immediate rebuilds
+          ref.read(smartBalanceStreamProvider(wallet.address));
+          ref.read(identityNameProvider(wallet.address));
+          ref.read(hybridIdtyStatusProvider(wallet.address));
+          ref.read(smartCertificationStreamProvider(wallet.address));
+          ref.read(smartAccountConsumersProvider(wallet.address));
+        } catch (e) {
+          // Ignore preload errors
+        }
+      }
+    });
   }
 
-  // If no confirmed found, look for any identity
-  for (final wallet in wallets) {
-    final status = await storageService.getIdtyStatus(wallet.address);
-    if (status != d.IdtyStatus.none && status != d.IdtyStatus.unknown) {
-      return wallet; // Return first wallet with any identity
-    }
+  /// Force refresh when needed (called externally when wallet status changes)
+  void forceRefresh() {
+    _cachedResult = null;
+    _cachedWalletAddresses = [];
+    ref.invalidateSelf();
   }
+}
 
-  return null; // No identity found
-});
+/// Stable async provider to get the identity wallet (member or identity holder)
+/// Uses caching to prevent UI reload spam during connection changes
+final idtyWalletAsyncProvider = AsyncNotifierProvider<IdtyWalletNotifier, d.WalletEntity?>(() => IdtyWalletNotifier());
 
 /// Async provider to get wallets without identity
 final walletsWithoutIdtyAsyncProvider = FutureProvider<List<d.WalletEntity>>((ref) async {

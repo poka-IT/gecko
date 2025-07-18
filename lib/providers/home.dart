@@ -304,7 +304,7 @@ class HomeProvider with ChangeNotifier {
             ref.watch(connectionStatusProvider);
 
             // Load wallets list
-            await myWalletProvider.readAllWallets();
+            await myWalletProvider.readAllWallets(ref: ref);
           }
         }
       }

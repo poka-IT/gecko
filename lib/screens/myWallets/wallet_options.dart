@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
-import 'package:durt2/durt2.dart' show IdtyStatus, WalletEntity, MembershipStatus, WalletBalance, Durt;
+import 'package:durt2/durt2.dart' show IdtyStatus, WalletEntity, MembershipStatus, Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -115,7 +115,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                                       onTap: () async {
                                         await walletProvider.editWalletName(context, widget.wallet);
                                         // Reload wallets data to update the UI
-                                        await myWalletProvider.readAllWallets(currentChest);
+                                        await myWalletProvider.readAllWallets(safeBoxNumber: currentChest);
                                         // Reload the wallet object to get the updated name
                                         final updatedWallet = myWalletProvider.getWalletDataByAddress(
                                           widget.wallet.address,
@@ -284,7 +284,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
 
     await ref.read(walletServiceProvider).setDefaultAddress(walletOptions.address.text);
-    await myWalletProvider.readAllWallets(currentChest);
+    await myWalletProvider.readAllWallets(safeBoxNumber: currentChest);
     myWalletProvider.reload();
     walletOptions.reload();
   }
@@ -294,58 +294,66 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
 
     final defaultWallet = myWalletProvider.getDefaultWallet();
     final bool isDefaultWallet = walletOptions.address.text == defaultWallet.address;
-    return FutureBuilder(
-      future: Future.wait([
-        ref.read(storageServiceProvider).hasAccountConsumers(widget.wallet.address),
-        ref.read(storageServiceProvider).getBalance(widget.wallet.address),
-      ]),
-      builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-        if (snapshot.connectionState != ConnectionState.done || snapshot.hasError || !snapshot.hasData) {
-          return const SizedBox.shrink();
-        }
 
-        final bool hasConsumers = snapshot.data![0] as bool;
-        final BigInt balance = (snapshot.data![1] as WalletBalance).transferableBalance;
+    // Watch providers for account consumers and balance
+    final accountConsumersAsync = ref.watch(smartAccountConsumersProvider(widget.wallet.address));
+    final balanceAsync = ref.watch(smartBalanceStreamProvider(widget.wallet.address));
 
-        final bool canDelete =
-            !isDefaultWallet &&
-            !hasConsumers &&
-            (balance > BigInt.from(2) || balance == BigInt.zero) &&
-            !IdentityUtils.hasIdentity(ref, widget.wallet.address);
-        return InkWell(
-          key: keyDeleteWallet,
-          onTap: canDelete
-              ? () async {
-                  await walletOptions.deleteWallet(context, widget.wallet);
-                  WidgetsBinding.instance.addPostFrameCallback((_) async {
-                    myWalletProvider.listWallets = await myWalletProvider.readAllWallets(currentChest);
-                    myWalletProvider.reload();
-                  });
-                }
-              : null,
-          child: canDelete
-              ? Container(
-                  padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        'assets/walletOptions/trash.png',
-                        height: scaleSize(24),
-                        color: const Color(0xffD80000),
+    // Use Riverpod .when() to handle loading/error/data states
+    return accountConsumersAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (error, stack) => const SizedBox.shrink(),
+      data: (hasConsumers) {
+        return balanceAsync.when(
+          loading: () => const SizedBox.shrink(),
+          error: (error, stack) => const SizedBox.shrink(),
+          data: (walletBalance) {
+            final BigInt balance = walletBalance.transferableBalance;
+
+            final bool canDelete =
+                !isDefaultWallet &&
+                !hasConsumers &&
+                (balance > BigInt.from(2) || balance == BigInt.zero) &&
+                !IdentityUtils.hasIdentity(ref, widget.wallet.address);
+
+            return InkWell(
+              key: keyDeleteWallet,
+              onTap: canDelete
+                  ? () async {
+                      await walletOptions.deleteWallet(context, widget.wallet);
+                      WidgetsBinding.instance.addPostFrameCallback((_) async {
+                        myWalletProvider.listWallets = await myWalletProvider.readAllWallets(
+                          safeBoxNumber: currentChest,
+                        );
+                        myWalletProvider.reload();
+                      });
+                    }
+                  : null,
+              child: canDelete
+                  ? Container(
+                      padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/walletOptions/trash.png',
+                            height: scaleSize(24),
+                            color: const Color(0xffD80000),
+                          ),
+                          ScaledSizedBox(width: 16),
+                          Expanded(
+                            child: Text(
+                              'deleteThisWallet'.tr(),
+                              style: scaledTextStyle(fontSize: 16, color: const Color(0xffD80000)),
+                              softWrap: true,
+                            ),
+                          ),
+                        ],
                       ),
-                      ScaledSizedBox(width: 16),
-                      Expanded(
-                        child: Text(
-                          'deleteThisWallet'.tr(),
-                          style: scaledTextStyle(fontSize: 16, color: const Color(0xffD80000)),
-                          softWrap: true,
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : const SizedBox.shrink(),
+                    )
+                  : const SizedBox.shrink(),
+            );
+          },
         );
       },
     );
@@ -453,8 +461,8 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
   }
 
   Widget buildConfirmIdentitySection(BuildContext context, WidgetRef ref, WalletOptionsProvider walletProvider) {
-    // Use smart provider for identity status
-    final idtyStatusAsync = ref.watch(smartIdtyStatusStreamProvider(walletProvider.address.text));
+    // Use hybrid provider to handle identity creation (same as wallet header)
+    final idtyStatusAsync = ref.watch(hybridIdtyStatusProvider(walletProvider.address.text));
 
     return idtyStatusAsync.when(
       data: (idtyStatus) => Visibility(

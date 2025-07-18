@@ -8,12 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:gecko/providers.dart';
 
 import 'package:gecko/widgets/bottom_app_bar.dart';
-import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 import 'package:gecko/widgets/history_query.dart';
 import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/compact_wallet_header.dart';
-import 'package:gecko/widgets/intelligent_app_bar_title.dart';
 import 'package:gecko/models/wallet_header_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/transaction_in_progress_data.dart';
@@ -31,51 +29,12 @@ class ActivityScreen extends ConsumerStatefulWidget {
 
 class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProviderStateMixin {
   late Future<WalletHeaderData> _headerDataFuture;
-  late AnimationController _headerAnimationController;
-  late Animation<double> _headerAnimation;
-
-  static const double _expandedHeaderHeight = 100.0;
-  static const double _collapsedHeaderHeight = 60.0;
-  static const double _scrollThreshold = 50.0;
 
   @override
   void initState() {
     super.initState();
     ref.read(storageServiceProvider).getOldOwnerKey(widget.address);
     _headerDataFuture = _loadWalletData();
-
-    // Initialize animation controller
-    _headerAnimationController = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
-
-    _headerAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _headerAnimationController, curve: Curves.easeInOut));
-  }
-
-  @override
-  void dispose() {
-    _headerAnimationController.dispose();
-    super.dispose();
-  }
-
-  bool _onScrollNotification(ScrollNotification notification) {
-    if (notification is ScrollUpdateNotification) {
-      final offset = notification.metrics.pixels;
-
-      if (offset > _scrollThreshold) {
-        // Scroll down - collapse header
-        if (_headerAnimationController.value < 1.0) {
-          _headerAnimationController.forward();
-        }
-      } else {
-        // Scroll up - expand header
-        if (_headerAnimationController.value > 0.0) {
-          _headerAnimationController.reverse();
-        }
-      }
-    }
-    return false;
   }
 
   Future<WalletHeaderData> _loadWalletData() async {
@@ -106,16 +65,24 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
-            appBar: WalletAppBar(address: widget.address, title: 'accountActivity'.tr()),
-            body: const Center(child: CircularProgressIndicator()),
+            body: NestedScrollView(
+              headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+                return [_buildCollapsibleHeader()]; // Show CompactWalletHeader immediately
+              },
+              body: const Center(child: CircularProgressIndicator()),
+            ),
             bottomNavigationBar: const GeckoBottomAppBar(),
           );
         }
 
         if (snapshot.hasError || !snapshot.hasData) {
           return Scaffold(
-            appBar: WalletAppBar(address: widget.address, title: 'accountActivity'.tr()),
-            body: Center(child: Text('errorLoadingWalletData'.tr())),
+            body: NestedScrollView(
+              headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+                return [_buildCollapsibleHeader()]; // Show CompactWalletHeader even on error
+              },
+              body: Center(child: Text('errorLoadingWalletData'.tr())),
+            ),
             bottomNavigationBar: const GeckoBottomAppBar(),
           );
         }
@@ -127,23 +94,20 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
 
   Widget _buildScaffold(WalletHeaderData headerData) {
     return Scaffold(
-      body: NotificationListener<ScrollNotification>(
-        onNotification: _onScrollNotification,
-        child: NestedScrollView(
-          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-            return [_buildCollapsibleHeader()];
-          },
-          body: Stack(
-            children: [
-              // Remove the top padding of the HistoryQuery widget
-              MediaQuery.removePadding(
-                context: context,
-                removeTop: true,
-                child: HistoryQuery(address: widget.address, transactionData: widget.transactionData),
-              ),
-              const OfflineInfo(),
-            ],
-          ),
+      body: NestedScrollView(
+        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+          return [_buildCollapsibleHeader()];
+        },
+        body: Stack(
+          children: [
+            // Remove the top padding of the HistoryQuery widget
+            MediaQuery.removePadding(
+              context: context,
+              removeTop: true,
+              child: HistoryQuery(address: widget.address, transactionData: widget.transactionData),
+            ),
+            const OfflineInfo(),
+          ],
         ),
       ),
       bottomNavigationBar: const GeckoBottomAppBar(),
@@ -151,17 +115,12 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
   }
 
   Widget _buildCollapsibleHeader() {
-    return AnimatedBuilder(
-      animation: _headerAnimation,
-      builder: (context, child) {
-        // Watch balance to determine if wallet is empty
-        final balanceAsync = ref.watch(smartBalanceStreamProvider(widget.address));
+    final balanceAsync = ref.watch(smartBalanceStreamProvider(widget.address));
+
+    return SliverLayoutBuilder(
+      builder: (context, constraints) {
         final balance = balanceAsync.hasValue ? balanceAsync.value?.transferableBalance : null;
         final isEmptyWallet = balance == null || balance == BigInt.zero;
-
-        // Calculate dynamic heights based on animation
-        final currentExpandedHeight = _expandedHeaderHeight - (_headerAnimation.value * 40);
-        final currentCollapsedHeight = _collapsedHeaderHeight;
 
         // Determine background color based on wallet state
         final backgroundColor = isEmptyWallet
@@ -169,33 +128,20 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
             : Theme.of(context).colorScheme.tertiary;
 
         return SliverAppBar(
-          expandedHeight: currentExpandedHeight,
-          collapsedHeight: currentCollapsedHeight,
+          expandedHeight: 70, // Increased height for better visibility
+          collapsedHeight: 70, // Same height so no expansion/collapse
           pinned: true,
-          stretch: true,
           backgroundColor: backgroundColor,
-          elevation: _headerAnimation.value * 4,
           surfaceTintColor: backgroundColor,
-          shadowColor: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.3),
-          title: AnimatedOpacity(
-            duration: const Duration(milliseconds: 150),
-            opacity: _headerAnimation.value > 0.3 ? 1.0 : 0.0,
-            child: IntelligentAppBarTitle(address: widget.address),
-          ),
+          // Remove app bar completely - no title, no leading
+          automaticallyImplyLeading: false,
+          toolbarHeight: 0, // Remove the toolbar space completely
           flexibleSpace: FlexibleSpaceBar(
             background: Container(
-              padding: const EdgeInsets.only(top: kToolbarHeight + 4),
-              child: Transform.translate(
-                offset: Offset(0, 15 * _headerAnimation.value),
-                child: Opacity(
-                  opacity: 1.0 - _headerAnimation.value,
-                  child: CompactWalletHeader(address: widget.address),
-                ),
-              ),
+              padding: const EdgeInsets.only(top: 4),
+              child: CompactWalletHeader(address: widget.address, showBackButton: true),
             ),
-            stretchModes: const [StretchMode.zoomBackground, StretchMode.blurBackground],
           ),
-          leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.of(context).pop()),
         );
       },
     );

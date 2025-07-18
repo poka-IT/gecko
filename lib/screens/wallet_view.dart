@@ -134,10 +134,17 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
                                       PageRouteBuilder(
                                         pageBuilder: (context, animation, secondaryAnimation) =>
                                             ActivityScreen(address: address),
-                                        transitionDuration: Duration.zero, // Pas d'animation à l'aller
-                                        reverseTransitionDuration: Duration.zero, // Pas d'animation au retour
+                                        transitionDuration: const Duration(milliseconds: 300),
+                                        reverseTransitionDuration: const Duration(milliseconds: 300),
                                         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                          return child; // Pas de transition
+                                          // Smooth slide transition from right to left
+                                          const begin = Offset(1.0, 0.0);
+                                          const end = Offset.zero;
+                                          const curve = Curves.easeInOut;
+
+                                          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+                                          return SlideTransition(position: animation.drive(tween), child: child);
                                         },
                                       ),
                                     );

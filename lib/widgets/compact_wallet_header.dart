@@ -9,9 +9,10 @@ import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/extensions.dart';
 
 class CompactWalletHeader extends ConsumerWidget {
-  const CompactWalletHeader({super.key, required this.address});
+  const CompactWalletHeader({super.key, required this.address, this.showBackButton = false});
 
   final String address;
+  final bool showBackButton;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,102 +22,117 @@ class CompactWalletHeader extends ConsumerWidget {
     final balance = balanceAsync.hasValue ? balanceAsync.value?.transferableBalance : null;
     final isEmptyWallet = balance == null || balance == BigInt.zero;
 
-    return Container(
-      height: 40,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(color: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary),
-      child: Row(
-        children: [
-          // Compact avatar
-          DatapodAvatar(address: address, size: 32),
-          const SizedBox(width: 12),
-          // Essential information (left side)
-          Expanded(
-            flex: 3,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Truncated address
-                Flexible(
-                  child: Text(
-                    getShortPubkey(address),
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
-                ),
-                // Compact balance
-                Flexible(child: Balance(address: address, size: 15)),
-              ],
-            ),
-          ),
-          // Identity and status (centered in remaining space)
-          Expanded(
-            flex: 2,
-            child: Consumer(
-              builder: (context, ref, child) {
-                final idtyStatusAsync = ref.watch(hybridIdtyStatusProvider(address));
-                final identityNameAsync = ref.watch(identityNameStreamProvider(address));
+    return Hero(
+      tag: 'wallet_header_$address', // Unique tag for this wallet
+      child: Material(
+        type: MaterialType.transparency,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 30, 16, 0),
+          decoration: BoxDecoration(color: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary),
+          child: Row(
+            children: [
+              // Back button or avatar
+              if (showBackButton)
+                IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => Navigator.of(context).pop(),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  iconSize: 24,
+                )
+              else
+                DatapodAvatar(address: address, size: 32),
 
-                if (idtyStatusAsync.hasValue && identityNameAsync.hasValue) {
-                  final idtyStatus = idtyStatusAsync.value!;
-                  final identityName = identityNameAsync.value;
-
-                  if (idtyStatus != IdtyStatus.none &&
-                      idtyStatus != IdtyStatus.unknown &&
-                      identityName != null &&
-                      identityName.isNotEmpty) {
-                    return Center(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Identity name - larger and more prominent
-                          Text(
-                            identityName.length > 10 ? '${identityName.substring(0, 10)}...' : identityName,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                            textAlign: TextAlign.center,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                          const SizedBox(height: 4),
-                          // Status badge - more prominent
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: IdentityStatusHelper.getStatusColor(idtyStatus).withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              IdentityStatusHelper.getStatusText(idtyStatus),
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: IdentityStatusHelper.getStatusColor(idtyStatus),
-                              ),
-                            ),
-                          ),
-                        ],
+              const SizedBox(width: 12),
+              // Essential information (left side)
+              Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Truncated address
+                    Flexible(
+                      child: Text(
+                        getShortPubkey(address),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
-                    );
-                  }
-                }
-                return const SizedBox.shrink();
-              },
-            ),
+                    ),
+                    // Compact balance
+                    Flexible(child: Balance(address: address, size: 15)),
+                  ],
+                ),
+              ),
+              // Identity and status (centered in remaining space)
+              Expanded(
+                flex: 2,
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    final idtyStatusAsync = ref.watch(hybridIdtyStatusProvider(address));
+                    final identityNameAsync = ref.watch(identityNameStreamProvider(address));
+
+                    if (idtyStatusAsync.hasValue && identityNameAsync.hasValue) {
+                      final idtyStatus = idtyStatusAsync.value!;
+                      final identityName = identityNameAsync.value;
+
+                      if (idtyStatus != IdtyStatus.none &&
+                          idtyStatus != IdtyStatus.unknown &&
+                          identityName != null &&
+                          identityName.isNotEmpty) {
+                        return Center(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Identity name - larger and more prominent
+                              Text(
+                                identityName.length > 10 ? '${identityName.substring(0, 10)}...' : identityName,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                ),
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                              const SizedBox(height: 4),
+                              // Status badge - more prominent
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: IdentityStatusHelper.getStatusColor(idtyStatus).withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  IdentityStatusHelper.getStatusText(idtyStatus),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: IdentityStatusHelper.getStatusColor(idtyStatus),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

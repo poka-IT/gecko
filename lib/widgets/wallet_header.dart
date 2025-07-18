@@ -96,44 +96,54 @@ class WalletHeaderContent extends StatelessWidget {
     final balance = walletBalance?.transferableBalance;
     final isEmptyWallet = balance == null || balance == BigInt.zero;
 
-    return Container(
-      decoration: BoxDecoration(color: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary),
-      padding: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), bottom: scaleSize(16)),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          WalletHeaderAvatar(
-            address: address,
-            isOwner: isOwner,
-            customImagePath: customImagePath,
-            defaultImagePath: defaultImagePath,
-          ),
-          ScaledSizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center, // Center vertically within fixed height
-              children: [
-                WalletHeaderAddress(address: address),
-                ScaledSizedBox(height: 6),
-                // Use a placeholder if balance is not yet available
-                if (walletBalance != null)
-                  Balance(address: address, size: 18)
-                else
-                  Container(
-                    height: scaleSize(22),
-                    width: scaleSize(120),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(4),
+    return Hero(
+      tag: 'wallet_header_$address', // Same tag as CompactWalletHeader for transition
+      child: Material(
+        type: MaterialType.transparency,
+        child: Container(
+          decoration: BoxDecoration(color: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary),
+          padding: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), bottom: scaleSize(16)),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              WalletHeaderAvatar(
+                address: address,
+                isOwner: isOwner,
+                customImagePath: customImagePath,
+                defaultImagePath: defaultImagePath,
+              ),
+              ScaledSizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center, // Center vertically within fixed height
+                  children: [
+                    WalletHeaderAddress(address: address),
+                    ScaledSizedBox(height: 6),
+                    // Use a placeholder if balance is not yet available
+                    if (walletBalance != null)
+                      Balance(address: address, size: 18)
+                    else
+                      Container(
+                        height: scaleSize(22),
+                        width: scaleSize(120),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ScaledSizedBox(height: 6),
+                    WalletHeaderIdentitySection(
+                      address: address,
+                      idtyStatus: idtyStatus,
+                      identityName: identityName ?? '',
                     ),
-                  ),
-                ScaledSizedBox(height: 6),
-                WalletHeaderIdentitySection(address: address, idtyStatus: idtyStatus, identityName: identityName ?? ''),
-              ],
-            ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

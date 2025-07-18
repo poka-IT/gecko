@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -141,7 +142,7 @@ class TransactionTile extends StatelessWidget {
                         BalanceDisplay(
                           value: finalAmount,
                           size: 16,
-                          color: transaction.isReceived ? const Color(0xFF4CAF50) : const Color(0xFF2196F3),
+                          color: transaction.isReceived ? greenColor : blueColor,
                         ),
                       ],
                     ),

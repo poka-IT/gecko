@@ -285,26 +285,45 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
 
     return certStateAsync.when(
       data: (certState) {
-        if (certState == null || certState.status == CertStatus.none) {
-          return const SizedBox.shrink();
-        }
+        final shouldShowCertification = certState != null && certState.status != CertStatus.none;
 
-        // If using test chest and debug mode, show dropdown above certification button
-        if (kDebugMode && isUsingTestChest) {
-          return Column(
-            children: [
-              _buildDeveloperCertificationDropdown(ref),
-              ScaledSizedBox(height: 8),
-              CertStateWidget(certState: certState, address: address),
-            ],
-          );
-        } else {
-          // Normal certification display
-          return CertStateWidget(certState: certState, address: address);
-        }
+        return TweenAnimationBuilder<double>(
+          duration: const Duration(milliseconds: 80),
+          curve: Curves.easeInOutCubic,
+          tween: Tween<double>(begin: 0.0, end: shouldShowCertification ? 1.0 : 0.0),
+          builder: (context, value, child) {
+            // Clamp values to prevent errors
+            final clampedValue = value.clamp(0.0, 1.0);
+
+            return SizedBox(
+              width: scaleSize(buttonSize + 20), // Extra width for certification text
+              child: Opacity(
+                opacity: clampedValue,
+                child: Transform.scale(
+                  scale: clampedValue,
+                  child: IgnorePointer(
+                    ignoring: clampedValue < 0.1,
+                    child: shouldShowCertification
+                        ? (kDebugMode && isUsingTestChest
+                              ? Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _buildDeveloperCertificationDropdown(ref),
+                                    ScaledSizedBox(height: 8),
+                                    CertStateWidget(certState: certState, address: address),
+                                  ],
+                                )
+                              : CertStateWidget(certState: certState, address: address))
+                        : SizedBox(width: scaleSize(buttonSize), height: scaleSize(buttonSize + 20)),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
       },
-      loading: () => const SizedBox.shrink(),
-      error: (error, stack) => const SizedBox.shrink(),
+      loading: () => SizedBox(width: scaleSize(buttonSize), height: scaleSize(buttonSize + 20)),
+      error: (error, stack) => SizedBox(width: scaleSize(buttonSize), height: scaleSize(buttonSize + 20)),
     );
   }
 
@@ -377,9 +396,13 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
     final defaultWallet = myWalletProvider.getDefaultWallet();
 
     if (myWalletProvider.pinCode == '') {
-      await Navigator.push(homeContext, MaterialPageRoute(builder: (_) => UnlockingWallet(wallet: defaultWallet)));
+      final result = await Navigator.push(
+        homeContext,
+        MaterialPageRoute(builder: (_) => UnlockingWallet(wallet: defaultWallet)),
+      );
+      // Only continue if we actually got a valid PIN back
+      if (result == null) return;
     }
-    if (myWalletProvider.pinCode == '') return;
     paymentPopup(ref: ref, toAddress: address, username: username);
   }
 }

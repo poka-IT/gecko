@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/screens/onBoarding/9.dart';
 import 'package:gecko/widgets/commons/intro_info.dart';
-import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class OnboardingStepEight extends StatelessWidget {
@@ -19,21 +18,16 @@ class OnboardingStepEight extends StatelessWidget {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('myPassword'.tr()),
       body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              child: InfoIntro(
-                text: 'thisPasswordProtectsYourWalletsInASecureChest'.tr(),
-                assetName: 'coffre-fort-protege-les-portefeuilles.png',
-                buttonText: '>',
-                nextScreen: OnboardingStepNine(scanDerivation: scanDerivation, fromRestore: fromRestore),
-                pagePosition: 7,
-                isMd: true,
-                boxHeight: 320,
-              ),
-            ),
-            const OfflineInfo(),
-          ],
+        child: SingleChildScrollView(
+          child: InfoIntro(
+            text: 'thisPasswordProtectsYourWalletsInASecureChest'.tr(),
+            assetName: 'coffre-fort-protege-les-portefeuilles.png',
+            buttonText: '>',
+            nextScreen: OnboardingStepNine(scanDerivation: scanDerivation, fromRestore: fromRestore),
+            pagePosition: 7,
+            isMd: true,
+            boxHeight: 320,
+          ),
         ),
       ),
     );

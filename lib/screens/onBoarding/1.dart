@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/screens/onBoarding/2.dart';
 import 'package:gecko/widgets/commons/intro_info.dart';
-import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class OnboardingStepOne extends StatelessWidget {
@@ -16,20 +15,15 @@ class OnboardingStepOne extends StatelessWidget {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('newWallet'.tr()),
       body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              child: InfoIntro(
-                text: 'geckoGenerateYourWalletFromMnemonic'.tr(),
-                assetName: 'fabrication-de-portefeuille.png',
-                buttonText: '>',
-                nextScreen: const OnboardingStepTwo(),
-                pagePosition: 0,
-                isMd: true,
-              ),
-            ),
-            const OfflineInfo(),
-          ],
+        child: SingleChildScrollView(
+          child: InfoIntro(
+            text: 'geckoGenerateYourWalletFromMnemonic'.tr(),
+            assetName: 'fabrication-de-portefeuille.png',
+            buttonText: '>',
+            nextScreen: const OnboardingStepTwo(),
+            pagePosition: 0,
+            isMd: true,
+          ),
         ),
       ),
     );

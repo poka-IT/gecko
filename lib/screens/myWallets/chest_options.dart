@@ -15,7 +15,6 @@ import 'package:gecko/screens/myWallets/custom_derivations.dart';
 import 'package:gecko/screens/myWallets/migrate_chest.dart';
 import 'package:gecko/screens/myWallets/show_seed.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
-import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart' as old_provider;
 
@@ -31,23 +30,18 @@ class ChestOptions extends ConsumerWidget {
       resizeToAvoidBottomInset: false,
       appBar: GeckoAppBar(currentSafe.name),
       bottomNavigationBar: const GeckoBottomAppBar(),
-      body: Stack(
-        children: [
-          Builder(
-            builder: (ctx) => SafeArea(
-              child: Column(
-                children: [
-                  ScaledSizedBox(height: 20),
-                  Padding(
-                    padding: EdgeInsets.only(left: scaleSize(16)),
-                    child: ChestOptionsContent(),
-                  ),
-                ],
+      body: Builder(
+        builder: (ctx) => SafeArea(
+          child: Column(
+            children: [
+              ScaledSizedBox(height: 20),
+              Padding(
+                padding: EdgeInsets.only(left: scaleSize(16)),
+                child: ChestOptionsContent(),
               ),
-            ),
+            ],
           ),
-          const OfflineInfo(),
-        ],
+        ),
       ),
     );
   }

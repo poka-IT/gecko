@@ -15,7 +15,6 @@ import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/screens/onBoarding/6.dart';
 import 'package:gecko/widgets/commons/fader_transition.dart';
-import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
@@ -236,7 +235,6 @@ class _ChooseChestState extends State<OnboardingStepFive> {
                 ],
               ),
             ),
-            const OfflineInfo(),
           ],
         ),
       ),

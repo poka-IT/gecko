@@ -48,32 +48,41 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
   Future<void> _waitForSystemReady() async {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
-    // Wait for Durt to be connected with timeout
-    final durtConnectionTimeout = DateTime.now().add(const Duration(seconds: 30));
-    while (!ref.read(durtProvider).isConnected) {
-      if (DateTime.now().isAfter(durtConnectionTimeout)) {
-        throw TimeoutException('Durt connection timeout after 30 seconds');
+    // Wait for both Durt connection and storage initialization with total timeout of 2 seconds
+    final systemTimeout = DateTime.now().add(const Duration(seconds: 2));
+    bool isDurtConnected = false;
+    bool isStorageReady = false;
+
+    while ((!isDurtConnected || !isStorageReady) && DateTime.now().isBefore(systemTimeout)) {
+      // Check Durt connection
+      if (!isDurtConnected) {
+        isDurtConnected = ref.read(durtProvider).isConnected;
       }
-      // ignore: avoid_print
-      print('🔴 Durt not connected');
+
+      // Check storage initialization
+      if (!isStorageReady) {
+        try {
+          final _ = ref.read(durtProvider).storage;
+          isStorageReady = true;
+        } catch (e) {
+          // ignore: avoid_print
+          print('🔴 Storage service not ready yet: $e');
+        }
+      }
+
+      // Both ready? Exit early
+      if (isDurtConnected && isStorageReady) {
+        break;
+      }
+
       await Future.delayed(const Duration(milliseconds: 100));
     }
 
-    // Wait for DuniterStorageService to be properly initialized with timeout
-    final storageTimeout = DateTime.now().add(const Duration(seconds: 15));
-    while (true) {
-      if (DateTime.now().isAfter(storageTimeout)) {
-        throw TimeoutException('Storage service initialization timeout after 15 seconds');
-      }
-      try {
-        final _ = ref.read(durtProvider).storage;
-        break;
-      } catch (e) {
-        // Storage service not ready yet, wait a bit more
-        // ignore: avoid_print
-        print('🔴 Storage service not ready yet: $e');
-        await Future.delayed(const Duration(milliseconds: 100));
-      }
+    if (!isDurtConnected || !isStorageReady) {
+      // ignore: avoid_print
+      print(
+        '🔴 System not fully ready after 2 seconds, continuing anyway (Durt: $isDurtConnected, Storage: $isStorageReady)',
+      );
     }
 
     await myWalletProvider.readAllWallets();
@@ -166,7 +175,43 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                             style: scaledTextStyle(color: Colors.red[700], fontWeight: FontWeight.w500, fontSize: 15),
                           ),
                         ),
-                      pinForm(context, pinLenght),
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          pinForm(context, pinLenght),
+                          if (myWalletProvider.isPinLoading && enterPin.text.length == pinLenght)
+                            Container(
+                              width: double.infinity,
+                              height: scaleSize(80),
+                              decoration: BoxDecoration(
+                                color: context.colorScheme.surfaceContainer.withValues(alpha: 0.95),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: scaleSize(20),
+                                    height: scaleSize(20),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(context.colorScheme.primary),
+                                    ),
+                                  ),
+                                  ScaledSizedBox(height: 6),
+                                  Text(
+                                    'loading'.tr(),
+                                    style: scaledTextStyle(
+                                      color: context.colorScheme.onSurfaceVariant,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
                       ScaledSizedBox(height: isTall ? 16 : 8),
                       if (canUnlock)
                         old_provider.Consumer<WalletOptionsProvider>(
@@ -305,7 +350,13 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
               pinColor = Colors.red[600]!;
 
               String errorMessage;
-              if (e is TimeoutException) {
+              bool isInvalidPin = false;
+
+              // Check for Invalid secret code (incorrect PIN)
+              if (e.toString().contains('Invalid secret code')) {
+                isInvalidPin = true;
+                errorMessage = 'incorrectPinCode'.tr();
+              } else if (e is TimeoutException) {
                 errorMessage = 'Timeout: ${e.message ?? 'Operation took too long'}';
               } else {
                 errorMessage = 'Unlock failed: ${e.toString()}';
@@ -315,18 +366,24 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
               // ignore: avoid_print
               print('🔴 Unlock error: $errorMessage');
 
-              // Show error to user
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(errorMessage),
-                    backgroundColor: Colors.red,
-                    duration: const Duration(seconds: 5),
-                  ),
-                );
+              // For invalid PIN, just trigger the existing UI feedback
+              if (isInvalidPin) {
+                // The existing "thisIsNotAGoodCode" message will be shown
+                // by the UI when isPinValid is false
+                pinFocus.requestFocus();
+              } else {
+                // Show error snackbar for other errors (timeouts, network issues, etc.)
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(errorMessage),
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 5),
+                    ),
+                  );
+                }
+                pinFocus.requestFocus();
               }
-
-              pinFocus.requestFocus();
             }
           },
           onChanged: (value) {

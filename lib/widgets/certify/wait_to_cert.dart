@@ -1,14 +1,13 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/screens/wallet_view.dart' show buttonSize, buttonFontSize;
 
 class WaitToCertWidget extends StatelessWidget {
-  final String messageKey;
+  final String label;
   final String duration;
 
-  const WaitToCertWidget({super.key, required this.messageKey, required this.duration});
+  const WaitToCertWidget({super.key, required this.label, required this.duration});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +27,7 @@ class WaitToCertWidget extends StatelessWidget {
         Container(
           constraints: BoxConstraints(maxWidth: scaleSize(100)),
           child: Text(
-            messageKey.tr(args: [duration]),
+            label,
             textAlign: TextAlign.center,
             style: scaledTextStyle(fontSize: buttonFontSize - 4, fontWeight: FontWeight.w400, color: Colors.grey[600]),
           ),

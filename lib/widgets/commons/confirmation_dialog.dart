@@ -20,7 +20,7 @@ extension ConfirmationDialogTypeExtension on ConfirmationDialogType {
   Color get iconColor => switch (this) {
     ConfirmationDialogType.info => homeContext.colorScheme.primary,
     ConfirmationDialogType.warning => const Color(0xFFFF9800),
-    ConfirmationDialogType.success => const Color(0xFF4CAF50),
+    ConfirmationDialogType.success => greenColor,
     ConfirmationDialogType.error => const Color(0xFFF44336),
     ConfirmationDialogType.question => const Color(0xFF673AB7),
   };

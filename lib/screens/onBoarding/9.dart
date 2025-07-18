@@ -12,7 +12,6 @@ import 'package:gecko/screens/onBoarding/10.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/fader_transition.dart';
-import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
@@ -44,23 +43,18 @@ class _OnboardingStepNineState extends State<OnboardingStepNine> {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('myPassword'.tr()),
       body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-              child: Column(
-                children: <Widget>[
-                  ScaledSizedBox(height: isTall ? 25 : 5),
-                  const BuildProgressBar(pagePosition: 8),
-                  ScaledSizedBox(height: isTall ? 25 : 5),
-                  BuildText(text: "hereIsThePasswordKeepIt".tr()),
-                  ScaledSizedBox(height: isTall ? 60 : 10),
-                  pinForm(context, 1, 2),
-                ],
-              ),
-            ),
-            const OfflineInfo(),
-          ],
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          child: Column(
+            children: <Widget>[
+              ScaledSizedBox(height: isTall ? 25 : 5),
+              const BuildProgressBar(pagePosition: 8),
+              ScaledSizedBox(height: isTall ? 25 : 5),
+              BuildText(text: "hereIsThePasswordKeepIt".tr()),
+              ScaledSizedBox(height: isTall ? 60 : 10),
+              pinForm(context, 1, 2),
+            ],
+          ),
         ),
       ),
     );

@@ -579,12 +579,12 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                   children: [
                     Text(
                       finalAmount.toString(),
-                      style: scaledTextStyle(fontSize: 15, color: const Color(0xFF2196F3), fontWeight: FontWeight.w500),
+                      style: scaledTextStyle(fontSize: 15, color: greenColor, fontWeight: FontWeight.w500),
                     ),
                     ScaledSizedBox(width: 5),
                     Text(
                       ref.watch(currencySymbolProvider),
-                      style: scaledTextStyle(fontSize: 15, color: const Color(0xFF2196F3), fontWeight: FontWeight.w500),
+                      style: scaledTextStyle(fontSize: 15, color: greenColor, fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),

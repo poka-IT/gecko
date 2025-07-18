@@ -14,7 +14,6 @@ import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/buttons/add_new_derivation_button.dart';
 import 'package:gecko/widgets/buttons/chest_options_buttons.dart';
-import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/drag_tule_action.dart';
 import 'package:gecko/widgets/drag_wallets_info.dart';
 import 'package:gecko/widgets/wallet_tile.dart';
@@ -213,57 +212,52 @@ class _WalletsHomeContent extends ConsumerWidget {
           },
         ),
         body: SafeArea(
-          child: Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 5),
-                child: CustomScrollView(
-                  slivers: <Widget>[
-                    SliverToBoxAdapter(child: ScaledSizedBox(height: 12)),
-                    // Identity wallet section
-                    if (idtyWallet != null)
-                      SliverToBoxAdapter(
-                        child: DragTuleAction(
-                          wallet: idtyWallet,
-                          child: WalletTileMembre(wallet: idtyWallet, attachTutorialKey: false),
-                        ),
-                      ),
-                    // Regular wallets grid - isolated from provider rebuilds
-                    old_provider.Consumer<MyWalletsProvider>(
-                      builder: (context, myWalletProvider, child) {
-                        // Create stable lists that won't change during layout
-                        final stableWalletsWithoutIdty = List.from(walletsWithoutIdty);
-                        final stableTargetIndex = targetWalletIndex;
-
-                        return SliverGrid.count(
-                          key: keyListWallets,
-                          crossAxisCount: nTule,
-                          childAspectRatio: 1,
-                          crossAxisSpacing: 0,
-                          mainAxisSpacing: 0,
-                          children: <Widget>[
-                            for (var i = 0; i < stableWalletsWithoutIdty.length; i++)
-                              DragTuleAction(
-                                key: ValueKey('drag_${stableWalletsWithoutIdty[i].address}'),
-                                wallet: stableWalletsWithoutIdty[i],
-                                child: WalletTile(
-                                  repository: stableWalletsWithoutIdty[i],
-                                  attachTutorialKey: i == stableTargetIndex,
-                                ),
-                              ),
-                            ref.read(durtProvider).isConnected && myWalletProvider.listWallets.length < maxWalletsInSafe
-                                ? const AddNewDerivationButton()
-                                : const Text(''),
-                          ],
-                        );
-                      },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            child: CustomScrollView(
+              slivers: <Widget>[
+                SliverToBoxAdapter(child: ScaledSizedBox(height: 12)),
+                // Identity wallet section
+                if (idtyWallet != null)
+                  SliverToBoxAdapter(
+                    child: DragTuleAction(
+                      wallet: idtyWallet,
+                      child: WalletTileMembre(wallet: idtyWallet, attachTutorialKey: false),
                     ),
-                    const SliverToBoxAdapter(child: ChestOptionsButtons()),
-                  ],
+                  ),
+                // Regular wallets grid - isolated from provider rebuilds
+                old_provider.Consumer<MyWalletsProvider>(
+                  builder: (context, myWalletProvider, child) {
+                    // Create stable lists that won't change during layout
+                    final stableWalletsWithoutIdty = List.from(walletsWithoutIdty);
+                    final stableTargetIndex = targetWalletIndex;
+
+                    return SliverGrid.count(
+                      key: keyListWallets,
+                      crossAxisCount: nTule,
+                      childAspectRatio: 1,
+                      crossAxisSpacing: 0,
+                      mainAxisSpacing: 0,
+                      children: <Widget>[
+                        for (var i = 0; i < stableWalletsWithoutIdty.length; i++)
+                          DragTuleAction(
+                            key: ValueKey('drag_${stableWalletsWithoutIdty[i].address}'),
+                            wallet: stableWalletsWithoutIdty[i],
+                            child: WalletTile(
+                              repository: stableWalletsWithoutIdty[i],
+                              attachTutorialKey: i == stableTargetIndex,
+                            ),
+                          ),
+                        ref.read(durtProvider).isConnected && myWalletProvider.listWallets.length < maxWalletsInSafe
+                            ? const AddNewDerivationButton()
+                            : const Text(''),
+                      ],
+                    );
+                  },
                 ),
-              ),
-              const OfflineInfo(),
-            ],
+                const SliverToBoxAdapter(child: ChestOptionsButtons()),
+              ],
+            ),
           ),
         ),
       ),

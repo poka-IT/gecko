@@ -4,7 +4,6 @@ import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
-import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/contacts_list.dart';
 import 'package:provider/provider.dart';
@@ -58,28 +57,23 @@ class _ContactsScreenState extends State<ContactsScreen> {
         appBar: GeckoAppBar('contactsManagementWithNbr'.tr(args: ['${allContacts.length}'])),
         bottomNavigationBar: const GeckoBottomAppBar(),
         body: SafeArea(
-          child: Stack(
+          child: Column(
             children: [
-              Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: TextField(
-                      focusNode: _searchFocus,
-                      onChanged: (value) => setState(() => searchQuery = value),
-                      decoration: InputDecoration(
-                        hintText: 'searchContacts'.tr(),
-                        prefixIcon: const Icon(Icons.search),
-                        border: const OutlineInputBorder(),
-                        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: context.colorScheme.primary)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      ),
-                    ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  focusNode: _searchFocus,
+                  onChanged: (value) => setState(() => searchQuery = value),
+                  decoration: InputDecoration(
+                    hintText: 'searchContacts'.tr(),
+                    prefixIcon: const Icon(Icons.search),
+                    border: const OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: context.colorScheme.primary)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   ),
-                  Expanded(child: ContactsList(myContacts: filteredContacts)),
-                ],
+                ),
               ),
-              const OfflineInfo(),
+              Expanded(child: ContactsList(myContacts: filteredContacts)),
             ],
           ),
         ),

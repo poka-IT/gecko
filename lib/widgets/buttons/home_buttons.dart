@@ -151,7 +151,7 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
                   onTap: () async {
                     WalletEntity? defaultWallet = myWalletProvider.getDefaultWallet();
                     if (myWalletProvider.pinCode == '') {
-                      await Navigator.push(
+                      final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (homeContext) {
@@ -159,8 +159,9 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
                           },
                         ),
                       );
+                      // Only continue if we actually got a valid PIN back
+                      if (result == null) return;
                     }
-                    if (myWalletProvider.pinCode == '') return;
                     Navigator.pushNamed(context, '/mywallets');
                   },
                   child: Padding(

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/screens/onBoarding/3.dart';
 import 'package:gecko/widgets/commons/intro_info.dart';
-import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class OnboardingStepTwo extends StatelessWidget {
@@ -17,19 +16,14 @@ class OnboardingStepTwo extends StatelessWidget {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('yourMnemonic'.tr()),
       body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              child: InfoIntro(
-                text: 'keepThisMnemonicSecure'.tr(),
-                assetName: 'fabrication-de-portefeuille-impossible-sans-phrase.png',
-                buttonText: '>',
-                nextScreen: const OnboardingStepThree(),
-                pagePosition: 1,
-              ),
-            ),
-            const OfflineInfo(),
-          ],
+        child: SingleChildScrollView(
+          child: InfoIntro(
+            text: 'keepThisMnemonicSecure'.tr(),
+            assetName: 'fabrication-de-portefeuille-impossible-sans-phrase.png',
+            buttonText: '>',
+            nextScreen: const OnboardingStepThree(),
+            pagePosition: 1,
+          ),
         ),
       ),
     );

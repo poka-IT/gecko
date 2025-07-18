@@ -59,7 +59,7 @@ class CertifyButton extends ConsumerWidget {
                       throw Exception('No identity wallet found for certification');
                     }
 
-                    await Navigator.push(
+                    final result = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (homeContext) {
@@ -67,9 +67,8 @@ class CertifyButton extends ConsumerWidget {
                         },
                       ),
                     );
-                  }
-                  if (myWalletProvider.pinCode == '') {
-                    return;
+                    // Only continue if we actually got a valid PIN back
+                    if (result == null) return;
                   }
                   WalletsProfilesProvider walletViewProvider = old_provider.Provider.of<WalletsProfilesProvider>(
                     context,

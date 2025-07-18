@@ -18,7 +18,6 @@ import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/myWallets/chest_options.dart';
 import 'package:gecko/screens/myWallets/import_g1_v1.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
-import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/buttons/manage_membership_button.dart';
@@ -72,110 +71,98 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
               ? ref.read(squidServiceProvider).walletNameIndexer[walletOptions.address.text]!
               : currentWalletName,
         ),
-        body: Stack(
+        body: Column(
           children: [
-            Column(
-              children: [
-                WalletHeader(
-                  address: widget.wallet.address,
-                  customImagePath: widget.wallet.imagePath,
-                  defaultImagePath: widget.wallet.imagePath,
-                ),
-                // Corps avec les options
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // ScaledSizedBox(height: 16),
-                          old_provider.Consumer<WalletOptionsProvider>(
-                            builder: (context, walletProvider, _) {
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                spacing: 8,
-                                children: [
-                                  buildConfirmIdentitySection(context, ref, walletProvider),
-                                  if (IdentityUtils.hasIdentity(ref, widget.wallet.address))
-                                    buildRenewMembershipSection(context, ref, walletProvider),
-                                  buildOptionsSection(context, walletProvider, historyProvider),
-                                  if (!isAlone)
-                                    buildDefaultWalletSection(
-                                      context,
-                                      ref,
-                                      walletProvider,
-                                      myWalletProvider,
-                                      walletOptions,
-                                      currentChest,
-                                    ),
-                                  if (!IdentityUtils.hasIdentity(ref, widget.wallet.address))
-                                    InkWell(
-                                      key: keyRenameWallet,
-                                      onTap: () async {
-                                        await walletProvider.editWalletName(context, widget.wallet);
-                                        // Reload wallets data to update the UI
-                                        await myWalletProvider.readAllWallets(safeBoxNumber: currentChest);
-                                        // Reload the wallet object to get the updated name
-                                        final updatedWallet = myWalletProvider.getWalletDataByAddress(
-                                          widget.wallet.address,
-                                        );
-                                        if (updatedWallet != null) {
-                                          widget.wallet.name = updatedWallet.name;
-                                          // Update the local state to rebuild the UI
-                                          setState(() {
-                                            currentWalletName = updatedWallet.name!;
-                                          });
-                                        }
-                                        myWalletProvider.reload();
-                                        walletProvider.reload();
-                                      },
-                                      child: Container(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: scaleSize(17),
-                                          vertical: scaleSize(12),
+            WalletHeader(
+              address: widget.wallet.address,
+              customImagePath: widget.wallet.imagePath,
+              defaultImagePath: widget.wallet.imagePath,
+            ),
+            // Corps avec les options
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // ScaledSizedBox(height: 16),
+                      old_provider.Consumer<WalletOptionsProvider>(
+                        builder: (context, walletProvider, _) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            spacing: 8,
+                            children: [
+                              buildConfirmIdentitySection(context, ref, walletProvider),
+                              if (IdentityUtils.hasIdentity(ref, widget.wallet.address))
+                                buildRenewMembershipSection(context, ref, walletProvider),
+                              buildOptionsSection(context, walletProvider, historyProvider),
+                              if (!isAlone)
+                                buildDefaultWalletSection(
+                                  context,
+                                  ref,
+                                  walletProvider,
+                                  myWalletProvider,
+                                  walletOptions,
+                                  currentChest,
+                                ),
+                              if (!IdentityUtils.hasIdentity(ref, widget.wallet.address))
+                                InkWell(
+                                  key: keyRenameWallet,
+                                  onTap: () async {
+                                    await walletProvider.editWalletName(context, widget.wallet);
+                                    // Reload wallets data to update the UI
+                                    await myWalletProvider.readAllWallets(safeBoxNumber: currentChest);
+                                    // Reload the wallet object to get the updated name
+                                    final updatedWallet = myWalletProvider.getWalletDataByAddress(
+                                      widget.wallet.address,
+                                    );
+                                    if (updatedWallet != null) {
+                                      widget.wallet.name = updatedWallet.name;
+                                      // Update the local state to rebuild the UI
+                                      setState(() {
+                                        currentWalletName = updatedWallet.name!;
+                                      });
+                                    }
+                                    myWalletProvider.reload();
+                                    walletProvider.reload();
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Image.asset(
+                                          'assets/walletOptions/edit.png',
+                                          height: scaleSize(22),
+                                          color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
                                         ),
-                                        child: Row(
-                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                          children: [
-                                            Image.asset(
-                                              'assets/walletOptions/edit.png',
-                                              height: scaleSize(22),
-                                              color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
-                                            ),
-                                            ScaledSizedBox(width: 18),
-                                            Expanded(
-                                              child: Text(
-                                                "editWalletName".tr(),
-                                                style: scaledTextStyle(
-                                                  fontSize: 16,
-                                                  color: context.colorScheme.onSurface,
-                                                ),
-                                                softWrap: true,
-                                              ),
-                                            ),
-                                          ],
+                                        ScaledSizedBox(width: 18),
+                                        Expanded(
+                                          child: Text(
+                                            "editWalletName".tr(),
+                                            style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
+                                            softWrap: true,
+                                          ),
                                         ),
-                                      ),
+                                      ],
                                     ),
-                                  if (!walletProvider.isDefaultWallet &&
-                                      !IdentityUtils.hasIdentity(ref, widget.wallet.address))
-                                    deleteWallet(context, ref, walletOptions, currentChest),
-                                  if (IdentityUtils.hasIdentity(ref, widget.wallet.address))
-                                    const ManageMembershipButton(),
-                                  if (isAlone) aloneWalletOptions(context, ref),
-                                ],
-                              );
-                            },
-                          ),
-                        ],
+                                  ),
+                                ),
+                              if (!walletProvider.isDefaultWallet &&
+                                  !IdentityUtils.hasIdentity(ref, widget.wallet.address))
+                                deleteWallet(context, ref, walletOptions, currentChest),
+                              if (IdentityUtils.hasIdentity(ref, widget.wallet.address)) const ManageMembershipButton(),
+                              if (isAlone) aloneWalletOptions(context, ref),
+                            ],
+                          );
+                        },
                       ),
-                    ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-            const OfflineInfo(),
           ],
         ),
         bottomNavigationBar: const GeckoBottomAppBar(),
@@ -444,9 +431,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                 Icon(
                   Icons.check_circle_outline,
                   size: scaleSize(24),
-                  color: walletProvider.isDefaultWallet
-                      ? Colors.grey[400]
-                      : const Color(0xFF4CAF50).withValues(alpha: 0.8),
+                  color: walletProvider.isDefaultWallet ? Colors.grey[400] : greenColor.withValues(alpha: 0.8),
                 ),
                 ScaledSizedBox(width: 16),
                 Expanded(
@@ -535,7 +520,7 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref) {
               Icon(
                 Icons.add_circle_outline,
                 size: scaleSize(24),
-                color: ref.read(durtProvider).isConnected ? Color(0xFF4CAF50).withValues(alpha: 0.8) : Colors.grey[400],
+                color: ref.read(durtProvider).isConnected ? greenColor.withValues(alpha: 0.8) : Colors.grey[400],
               ),
               ScaledSizedBox(width: 16),
               Expanded(

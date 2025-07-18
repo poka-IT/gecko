@@ -9,7 +9,7 @@ import 'package:gecko/providers.dart';
 
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/history_query.dart';
-import 'package:gecko/widgets/commons/offline_info.dart';
+
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/compact_wallet_header.dart';
 import 'package:gecko/models/wallet_header_data.dart';
@@ -98,16 +98,10 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
           return [_buildCollapsibleHeader()];
         },
-        body: Stack(
-          children: [
-            // Remove the top padding of the HistoryQuery widget
-            MediaQuery.removePadding(
-              context: context,
-              removeTop: true,
-              child: HistoryQuery(address: widget.address, transactionData: widget.transactionData),
-            ),
-            const OfflineInfo(),
-          ],
+        body: MediaQuery.removePadding(
+          context: context,
+          removeTop: true,
+          child: HistoryQuery(address: widget.address, transactionData: widget.transactionData),
         ),
       ),
       bottomNavigationBar: const GeckoBottomAppBar(),
@@ -127,20 +121,10 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
             ? Theme.of(context).colorScheme.error
             : Theme.of(context).colorScheme.tertiary;
 
-        return SliverAppBar(
-          expandedHeight: 70, // Increased height for better visibility
-          collapsedHeight: 70, // Same height so no expansion/collapse
-          pinned: true,
-          backgroundColor: backgroundColor,
-          surfaceTintColor: backgroundColor,
-          // Remove app bar completely - no title, no leading
-          automaticallyImplyLeading: false,
-          toolbarHeight: 0, // Remove the toolbar space completely
-          flexibleSpace: FlexibleSpaceBar(
-            background: Container(
-              padding: const EdgeInsets.only(top: 4),
-              child: CompactWalletHeader(address: widget.address, showBackButton: true),
-            ),
+        return SliverToBoxAdapter(
+          child: Container(
+            color: backgroundColor,
+            child: CompactWalletHeader(address: widget.address, showBackButton: true),
           ),
         );
       },

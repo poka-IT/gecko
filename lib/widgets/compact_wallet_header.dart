@@ -27,9 +27,10 @@ class CompactWalletHeader extends ConsumerWidget {
       child: Material(
         type: MaterialType.transparency,
         child: Container(
-          padding: const EdgeInsets.fromLTRB(16, 30, 16, 0),
+          padding: const EdgeInsets.fromLTRB(8, kToolbarHeight, 12, 8),
           decoration: BoxDecoration(color: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Back button or avatar
               if (showBackButton)
@@ -86,43 +87,41 @@ class CompactWalletHeader extends ConsumerWidget {
                           idtyStatus != IdtyStatus.unknown &&
                           identityName != null &&
                           identityName.isNotEmpty) {
-                        return Center(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Identity name - larger and more prominent
-                              Text(
-                                identityName.length > 10 ? '${identityName.substring(0, 10)}...' : identityName,
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Identity name - larger and more prominent
+                            Text(
+                              identityName.length > 20 ? '${identityName.substring(0, 20)}...' : identityName,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            const SizedBox(height: 4),
+                            // Status badge - more prominent
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: IdentityStatusHelper.getStatusColor(idtyStatus).withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                IdentityStatusHelper.getStatusText(idtyStatus),
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).colorScheme.onSurface,
-                                ),
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                              const SizedBox(height: 4),
-                              // Status badge - more prominent
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: IdentityStatusHelper.getStatusColor(idtyStatus).withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  IdentityStatusHelper.getStatusText(idtyStatus),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: IdentityStatusHelper.getStatusColor(idtyStatus),
-                                  ),
+                                  color: IdentityStatusHelper.getStatusColor(idtyStatus),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         );
                       }
                     }

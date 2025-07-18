@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/screens/onBoarding/8.dart';
 import 'package:gecko/widgets/commons/intro_info.dart';
-import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class OnboardingStepSeven extends StatelessWidget {
@@ -19,20 +18,15 @@ class OnboardingStepSeven extends StatelessWidget {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('myPassword'.tr()),
       body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              child: InfoIntro(
-                text: 'geckoWillGenerateAPassword'.tr(),
-                assetName: 'coffre-fort-code-secret-dans-telephone.png',
-                buttonText: '>',
-                nextScreen: OnboardingStepEight(scanDerivation: scanDerivation, fromRestore: fromRestore),
-                pagePosition: 6,
-                boxHeight: 320,
-              ),
-            ),
-            const OfflineInfo(),
-          ],
+        child: SingleChildScrollView(
+          child: InfoIntro(
+            text: 'geckoWillGenerateAPassword'.tr(),
+            assetName: 'coffre-fort-code-secret-dans-telephone.png',
+            buttonText: '>',
+            nextScreen: OnboardingStepEight(scanDerivation: scanDerivation, fromRestore: fromRestore),
+            pagePosition: 6,
+            boxHeight: 320,
+          ),
         ),
       ),
     );

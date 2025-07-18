@@ -125,10 +125,12 @@ class MyWalletsProvider with ChangeNotifier {
 
     if (pinCode.isEmpty || force) {
       pinCode = '';
-      await Navigator.push(
+      final result = await Navigator.push(
         homeContext,
         MaterialPageRoute(builder: (homeContext) => UnlockingWallet(wallet: defaultWallet)),
       );
+      // Only continue if we actually got a valid PIN back
+      if (result == null) return false;
     }
     return pinCode.isNotEmpty;
   }

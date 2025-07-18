@@ -504,7 +504,7 @@ class _ImportG1v1State extends State<ImportG1v1> {
                                         WalletEntity? defaultWallet = myWalletProvider.getDefaultWallet();
 
                                         if (myWalletProvider.pinCode == '') {
-                                          await Navigator.push(
+                                          final result = await Navigator.push(
                                             context,
                                             MaterialPageRoute(
                                               builder: (homeContext) {
@@ -512,9 +512,9 @@ class _ImportG1v1State extends State<ImportG1v1> {
                                               },
                                             ),
                                           );
+                                          // Only continue if we actually got a valid PIN back
+                                          if (result == null) return;
                                         }
-
-                                        if (myWalletProvider.pinCode.isEmpty) return;
 
                                         // ✅ Créer le stream UNE SEULE FOIS
                                         final transactionStream = _performG1v1Migration(

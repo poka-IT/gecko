@@ -36,7 +36,7 @@ class ConnectionStatusNotifier extends StateNotifier<d.ConnectionStatus> {
             homeProvider.changeMessage("connecting".tr());
             break;
           case d.ConnectionStatus.connected:
-            homeProvider.changeMessage("connected".tr(), true);
+            homeProvider.changeMessage("connected".tr(args: [durt.network.displayName]), true);
             break;
           case d.ConnectionStatus.error:
             homeProvider.changeMessage("networkGenesisError".tr());
@@ -55,7 +55,7 @@ class ConnectionStatusNotifier extends StateNotifier<d.ConnectionStatus> {
 
         switch (status) {
           case d.ConnectionStatus.connected:
-            homeProvider.changeMessage("nodeAndIndexerSynced".tr(), true);
+            // homeProvider.changeMessage("nodeAndIndexerSynced".tr(), true);
             break;
           case d.ConnectionStatus.disconnected:
             homeProvider.changeMessage("noValidIndexerFound".tr());

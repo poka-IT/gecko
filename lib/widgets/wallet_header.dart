@@ -22,6 +22,7 @@ import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
+import 'package:gecko/widgets/commons/storage_builder.dart';
 
 class WalletHeader extends ConsumerWidget {
   const WalletHeader({super.key, required this.address, this.customImagePath, this.defaultImagePath});
@@ -32,42 +33,47 @@ class WalletHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-    final isOwner = myWalletProvider.isOwner(address);
+    return StorageBuilder(
+      builder: (context, ref) {
+        final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+        final isOwner = myWalletProvider.isOwner(address);
 
-    // Use hybrid provider to handle identity creation (solves closed stream issue)
-    final idtyStatusAsync = ref.watch(hybridIdtyStatusProvider(address));
-    final balanceAsync = ref.watch(smartBalanceStreamProvider(address));
-    final identityNameAsync = ref.watch(identityNameStreamProvider(address));
+        // Use hybrid provider to handle identity creation (solves closed stream issue)
+        final idtyStatusAsync = ref.watch(hybridIdtyStatusProvider(address));
+        final balanceAsync = ref.watch(smartBalanceStreamProvider(address));
+        final identityNameAsync = ref.watch(identityNameStreamProvider(address));
 
-    final hasError = idtyStatusAsync.hasError || balanceAsync.hasError || identityNameAsync.hasError;
-    final isLoading = !idtyStatusAsync.hasValue || !balanceAsync.hasValue || !identityNameAsync.hasValue;
+        final hasError = idtyStatusAsync.hasError || balanceAsync.hasError || identityNameAsync.hasError;
+        final isLoading = !idtyStatusAsync.hasValue || !balanceAsync.hasValue || !identityNameAsync.hasValue;
 
-    // Use cached data if available, otherwise show loader
-    final hasCachedData = idtyStatusAsync.hasValue || balanceAsync.hasValue || identityNameAsync.hasValue;
+        // Use cached data if available, otherwise show loader
+        final hasCachedData = idtyStatusAsync.hasValue || balanceAsync.hasValue || identityNameAsync.hasValue;
 
-    Widget child;
-    if (isLoading && !hasCachedData) {
-      child = const WalletHeaderLoading();
-    } else if (hasError && !hasCachedData) {
-      if (balanceAsync.hasError) log.e('❌ WalletHeader balance stream error for $address: ${balanceAsync.error}');
-      if (idtyStatusAsync.hasError) log.e('❌ Identity status error for $address: ${idtyStatusAsync.error}');
-      if (identityNameAsync.hasError) log.e('❌ Identity name error for $address: ${identityNameAsync.error}');
-      child = const WalletHeaderError();
-    } else {
-      child = WalletHeaderContent(
-        address: address,
-        isOwner: isOwner,
-        // Provide data if available, otherwise it will be handled gracefully
-        idtyStatus: idtyStatusAsync.hasValue ? idtyStatusAsync.value! : IdtyStatus.none,
-        walletBalance: balanceAsync.value,
-        identityName: identityNameAsync.value,
-        customImagePath: customImagePath,
-        defaultImagePath: defaultImagePath,
-      );
-    }
+        Widget child;
+        if (isLoading && !hasCachedData) {
+          child = const WalletHeaderLoading();
+        } else if (hasError && !hasCachedData) {
+          if (balanceAsync.hasError) log.e('❌ WalletHeader balance stream error for $address: ${balanceAsync.error}');
+          if (idtyStatusAsync.hasError) log.e('❌ Identity status error for $address: ${idtyStatusAsync.error}');
+          if (identityNameAsync.hasError) log.e('❌ Identity name error for $address: ${identityNameAsync.error}');
+          child = const WalletHeaderError();
+        } else {
+          child = WalletHeaderContent(
+            address: address,
+            isOwner: isOwner,
+            // Provide data if available, otherwise it will be handled gracefully
+            idtyStatus: idtyStatusAsync.hasValue ? idtyStatusAsync.value! : IdtyStatus.none,
+            walletBalance: balanceAsync.value,
+            identityName: identityNameAsync.value,
+            customImagePath: customImagePath,
+            defaultImagePath: defaultImagePath,
+          );
+        }
 
-    return AnimatedSwitcher(duration: const Duration(milliseconds: 300), child: child);
+        return AnimatedSwitcher(duration: const Duration(milliseconds: 300), child: child);
+      },
+      placeholder: const WalletHeaderLoading(),
+    );
   }
 }
 
@@ -136,7 +142,7 @@ class WalletHeaderContent extends StatelessWidget {
                     WalletHeaderIdentitySection(
                       address: address,
                       idtyStatus: idtyStatus,
-                      identityName: identityName ?? '',
+                      identityName: identityName ?? ' ',
                     ),
                   ],
                 ),
@@ -184,12 +190,7 @@ class WalletHeaderIdentitySection extends StatelessWidget {
           children: [
             // Identity status with live updates - pass the current status to display
             Flexible(
-              child: _IdentityStatusDisplay(
-                address: address,
-                currentStatus: idtyStatus,
-                color: context.colorScheme.primary,
-                identityName: identityName,
-              ),
+              child: _IdentityStatusDisplay(address: address, currentStatus: idtyStatus, identityName: identityName),
             ),
 
             // Certifications with live updates
@@ -213,16 +214,10 @@ class WalletHeaderIdentitySection extends StatelessWidget {
 
 /// Internal identity status display widget that shows current status without database access
 class _IdentityStatusDisplay extends StatelessWidget {
-  const _IdentityStatusDisplay({
-    required this.address,
-    required this.currentStatus,
-    required this.color,
-    required this.identityName,
-  });
+  const _IdentityStatusDisplay({required this.address, required this.currentStatus, required this.identityName});
 
   final String address;
   final IdtyStatus currentStatus;
-  final Color color;
   final String? identityName;
 
   @override
@@ -259,6 +254,24 @@ class _IdentityStatusDisplay extends StatelessWidget {
       IdtyStatus.unknown: '',
     };
 
+    Color getStatusColor(IdtyStatus idtyStatus) {
+      switch (idtyStatus) {
+        case IdtyStatus.validated:
+          return Colors.green;
+        case IdtyStatus.confirmed:
+          return Colors.orange;
+        case IdtyStatus.created:
+          return Colors.blue;
+        case IdtyStatus.expired:
+          return Colors.red;
+        case IdtyStatus.revoked:
+          return Colors.grey;
+        case IdtyStatus.none:
+        case IdtyStatus.unknown:
+          return Colors.grey;
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -272,7 +285,7 @@ class _IdentityStatusDisplay extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: scaleSize(15),
-              color: color,
+              color: getStatusColor(currentStatus),
               fontWeight: currentStatus == IdtyStatus.validated ? FontWeight.w500 : FontWeight.w400,
             ),
           ),

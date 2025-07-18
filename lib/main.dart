@@ -34,6 +34,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/search_result.dart';
+import 'package:gecko/widgets/version_overlay.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:responsive_framework/responsive_framework.dart';
@@ -42,7 +43,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/providers/theme_provider.dart';
 import 'package:gecko/providers/block_height_provider.dart';
-import 'package:gecko/widgets/version_overlay.dart';
+import 'package:gecko/widgets/global_offline_overlay.dart';
 
 const bool enableSentry = true;
 const bool showVersionOverlay = true; // Set to false to hide version overlay in production
@@ -157,8 +158,9 @@ class Gecko extends StatelessWidget {
                   ],
                 );
 
-                // Conditionally wrap with version overlay
-                return showVersionOverlay ? VersionOverlay(child: responsiveChild) : responsiveChild;
+                // Wrap with offline overlay and version overlay
+                final finalChild = showVersionOverlay ? VersionOverlay(child: responsiveChild) : responsiveChild;
+                return GlobalOfflineOverlay(child: finalChild);
               },
               title: 'Ğecko',
               initialRoute: "/",

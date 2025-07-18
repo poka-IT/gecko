@@ -7,7 +7,6 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/providers/search.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
-import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/search_result_list.dart';
 import 'package:provider/provider.dart' as old_provider;
@@ -27,38 +26,33 @@ class SearchResultScreen extends StatelessWidget {
       appBar: GeckoAppBar('researchResults'.tr()),
       bottomNavigationBar: const GeckoBottomAppBar(),
       body: SafeArea(
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 15, right: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  ScaledSizedBox(height: 20),
-                  Center(
-                    child: Column(
-                      children: <Widget>[
-                        Text("resultsFor".tr(), style: scaledTextStyle(color: Colors.grey[600], fontSize: 15)),
-                        Text(
-                          '"${searchProvider.searchController.text}"',
-                          style: scaledTextStyle(fontStyle: FontStyle.italic, fontSize: 16),
-                        ),
-                      ],
+        child: Padding(
+          padding: const EdgeInsets.only(left: 15, right: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              ScaledSizedBox(height: 20),
+              Center(
+                child: Column(
+                  children: <Widget>[
+                    Text("resultsFor".tr(), style: scaledTextStyle(color: Colors.grey[600], fontSize: 15)),
+                    Text(
+                      '"${searchProvider.searchController.text}"',
+                      style: scaledTextStyle(fontStyle: FontStyle.italic, fontSize: 16),
                     ),
-                  ),
-                  ScaledSizedBox(height: 22),
-                  Text('inBlockchainResult'.tr(args: [Durt.i.network.symbol]), style: scaledTextStyle(fontSize: 15)),
-                  ScaledSizedBox(height: 13),
-                  SearchResult(
-                    searchProvider: searchProvider,
-                    avatarSize: avatarSize,
-                    walletsProfilesClass: walletsProfilesClass,
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const OfflineInfo(),
-          ],
+              ScaledSizedBox(height: 22),
+              Text('inBlockchainResult'.tr(args: [Durt.i.network.symbol]), style: scaledTextStyle(fontSize: 15)),
+              ScaledSizedBox(height: 13),
+              SearchResult(
+                searchProvider: searchProvider,
+                avatarSize: avatarSize,
+                walletsProfilesClass: walletsProfilesClass,
+              ),
+            ],
+          ),
         ),
       ),
     );

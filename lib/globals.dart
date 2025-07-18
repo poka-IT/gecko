@@ -32,11 +32,8 @@ BuildContext get homeContext => Gecko.navigatorContext!;
 final log = Logger();
 
 // Colors
-// const Color context.colorScheme.primary = Color(0xffd07316); // Moved to theme_provider.dart
-// const Color yellowC = Color(0xffFFD68E); // Moved to theme_provider.dart
-// const Color floattingYellow = Color(0xffEFEFBF); // Moved to theme_provider.dart
-// const Color backgroundColor = Color(0xFFF5F5F5); // Moved to theme_provider.dart
-// const Color headerColor = Color(0xFFFFF3E0); // Moved to theme_provider.dart
+const blueColor = Color(0xFF5C6BC0);
+const greenColor = Color(0xFF66BB6A);
 
 // Debug
 const debugPin = false;

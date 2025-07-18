@@ -35,7 +35,7 @@ class HomeProvider with ChangeNotifier {
     super.dispose();
   }
 
-  String homeMessage = "loading".tr();
+  String homeMessage = '';
 
   Future<void> initHive() async {
     late Directory hivePath;
@@ -279,6 +279,15 @@ class HomeProvider with ChangeNotifier {
 
         if (result.contains(ConnectivityResult.none)) {
           homeProvider.changeMessage("notConnectedToInternet".tr());
+          // Reset Durt connection status to trigger connectionStatusProvider update and show offline banner
+          try {
+            _container.read(durtProvider).resetConnectionStatus();
+            // ignore: avoid_print
+            print('🔴 Durt connection status reset due to network loss');
+          } catch (e) {
+            // ignore: avoid_print
+            print('🔴 Error resetting Durt connection status: $e');
+          }
         } else {
           homeProvider.changeMessage("connectionInProgress".tr());
           // Check if the phone is actually connected to the internet

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/screens/onBoarding/5.dart';
 import 'package:gecko/widgets/commons/intro_info.dart';
-import 'package:gecko/widgets/commons/offline_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class OnboardingStepFor extends StatelessWidget {
@@ -17,20 +16,15 @@ class OnboardingStepFor extends StatelessWidget {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('yourMnemonic'.tr()),
       body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              child: InfoIntro(
-                text: 'itsTimeToUseAPenAndPaper'.tr(),
-                assetName: 'gecko_also_can_forget.png'.tr(),
-                buttonText: '>',
-                nextScreen: const OnboardingStepFive(),
-                pagePosition: 3,
-                isMd: true,
-              ),
-            ),
-            const OfflineInfo(),
-          ],
+        child: SingleChildScrollView(
+          child: InfoIntro(
+            text: 'itsTimeToUseAPenAndPaper'.tr(),
+            assetName: 'gecko_also_can_forget.png'.tr(),
+            buttonText: '>',
+            nextScreen: const OnboardingStepFive(),
+            pagePosition: 3,
+            isMd: true,
+          ),
         ),
       ),
     );

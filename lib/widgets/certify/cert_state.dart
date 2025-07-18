@@ -61,6 +61,6 @@ class CertStateWidget extends StatelessWidget {
   }
 
   Widget _buildDisabledButton(String label) {
-    return WaitToCertWidget(messageKey: label, duration: formatDuration(certState.duration ?? Duration.zero));
+    return WaitToCertWidget(label: label, duration: formatDuration(certState.duration ?? Duration.zero));
   }
 }

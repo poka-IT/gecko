@@ -37,6 +37,7 @@ app.*.map.json
 
 # Android related
 android/key.properties
+android/gecko-*.json
 
 # Exceptions to above rules.
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages

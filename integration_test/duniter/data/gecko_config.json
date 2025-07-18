@@ -34,7 +34,8 @@
     "smith_wot_min_cert_for_membership": 3,
     "wot_first_cert_issuable_on": 0,
     "wot_min_cert_for_create_idty_right": 3,
-    "wot_min_cert_for_membership": 3
+    "wot_min_cert_for_membership": 3,
+    "distance_evaluation_period": 120
   },
   "clique_smiths": [
     { "name": "test1" },

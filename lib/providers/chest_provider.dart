@@ -39,6 +39,8 @@ class ChestProvider with ChangeNotifier {
 
       if (_container.read(walletServiceProvider).safeBox.isEmpty()) {
         _container.read(walletServiceProvider).setDefaultSafeBoxNumber(0);
+        // Clear the wallet list when no safes remain
+        myWalletProvider.listWallets = [];
       } else {
         final int lastSafe = _container
             .read(walletServiceProvider)
@@ -48,7 +50,12 @@ class ChestProvider with ChangeNotifier {
             .property(SafeEntity_.number)
             .max();
         _container.read(walletServiceProvider).setDefaultSafeBoxNumber(lastSafe);
+
+        // Reload wallets for the new default safe
+        await myWalletProvider.readAllWallets(safeBoxNumber: lastSafe);
       }
+
+      myWalletProvider.notifyListeners();
 
       Navigator.popUntil(
         // ignore: use_build_context_synchronously

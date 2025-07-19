@@ -44,12 +44,37 @@ class ShowSeed extends ConsumerWidget {
                       .read(walletServiceProvider)
                       .getSeed(address: defaultWallet.address, pin: walletProvider.pinCode),
                   builder: (BuildContext context, AsyncSnapshot<String?> seed) {
-                    if (seed.connectionState != ConnectionState.done || seed.hasError) {
+                    if (seed.connectionState != ConnectionState.done) {
                       return Center(
                         child: Column(
                           children: [
                             const SizedBox(height: 173),
                             Loading(stroke: 4, size: 40),
+                            const SizedBox(height: 173),
+                          ],
+                        ),
+                      );
+                    } else if (seed.hasError) {
+                      return Center(
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 173),
+                            Icon(Icons.error_outline, size: 48, color: context.colorScheme.error),
+                            const SizedBox(height: 16),
+                            Text(
+                              'errorRetrievingSeed'.tr(),
+                              style: scaledTextStyle(fontSize: 16, color: context.colorScheme.error),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Possible wrong PIN code',
+                              style: scaledTextStyle(
+                                fontSize: 14,
+                                color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
                             const SizedBox(height: 173),
                           ],
                         ),
@@ -60,6 +85,25 @@ class ShowSeed extends ConsumerWidget {
 
                     // Convert English mnemonic to original language for display using durt2's stored language
                     final englishMnemonic = seed.data!;
+
+                    // Validate that we have a proper mnemonic
+                    if (englishMnemonic.isEmpty) {
+                      return Center(
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 173),
+                            Icon(Icons.error_outline, size: 48, color: context.colorScheme.error),
+                            const SizedBox(height: 16),
+                            Text(
+                              'errorRetrievingSeed'.tr(),
+                              style: scaledTextStyle(fontSize: 16, color: context.colorScheme.error),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 173),
+                          ],
+                        ),
+                      );
+                    }
 
                     return FutureBuilder<String>(
                       future: () async {
@@ -80,6 +124,26 @@ class ShowSeed extends ConsumerWidget {
 
                         final displayMnemonic = displayMnemonicSnapshot.data ?? englishMnemonic;
 
+                        // Validate that the mnemonic has exactly 12 words
+                        final mnemonicWords = displayMnemonic.trim().split(RegExp(r'\s+'));
+                        if (mnemonicWords.length != 12 || mnemonicWords.any((word) => word.isEmpty)) {
+                          return Center(
+                            child: Column(
+                              children: [
+                                const SizedBox(height: 173),
+                                Icon(Icons.error_outline, size: 48, color: context.colorScheme.error),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'invalidMnemonicFormat'.tr(),
+                                  style: scaledTextStyle(fontSize: 16, color: context.colorScheme.error),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 173),
+                              ],
+                            ),
+                          );
+                        }
+
                         // Check if the safe language is not English to show export button
                         final safeLanguage = Durt.i.wallets.getSafeMnemonicLanguage(defaultWallet.safe.target?.number);
                         final isEnglish = safeLanguage == BidouilleLang.english;
@@ -88,7 +152,7 @@ class ShowSeed extends ConsumerWidget {
                           children: [
                             BuildText(text: 'keepYourMnemonicSecret'.tr(), size: 16),
                             ScaledSizedBox(height: 35),
-                            sentanceArray(context, displayMnemonic.split(' ')),
+                            sentanceArray(context, mnemonicWords),
                             ScaledSizedBox(height: 20),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,

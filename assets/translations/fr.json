@@ -400,5 +400,7 @@
     "identityStatusRevoked": "Révoqué",
     "identityStatusUnknown": "Inconnu",
     "incorrectPhrase": "Phrase incorrecte",
-    "incorrectPhraseDescription": "Votre phrase de restauration semble incorrecte, les mots ne sont pas dans le bon ordre.\nVeuillez la corriger."
+    "incorrectPhraseDescription": "Votre phrase de restauration semble incorrecte, les mots ne sont pas dans le bon ordre.\nVeuillez la corriger.",
+    "errorRetrievingSeed": "Erreur lors de la récupération de la phrase secrète",
+    "invalidMnemonicFormat": "Format mnémonique invalide : 12 mots attendus"
 }

@@ -388,5 +388,7 @@
     "identityStatusRevoked": "Revoked",
     "identityStatusUnknown": "Unknown",
     "incorrectPhrase": "Incorrect phrase",
-    "incorrectPhraseDescription": "Your recovery phrase seems incorrect, the words are not in the right order.\nPlease correct it."
+    "incorrectPhraseDescription": "Your recovery phrase seems incorrect, the words are not in the right order.\nPlease correct it.",
+    "errorRetrievingSeed": "Error retrieving seed phrase",
+    "invalidMnemonicFormat": "Invalid mnemonic format: expected 12 words"
 }

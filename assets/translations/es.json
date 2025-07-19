@@ -90,6 +90,8 @@
     "keepYourMnemonicSecret": "Intenta mantener esta frase de restauración en secreto, ya que permite a cualquiera que la conozca acceder a todas tus monederos.",
     "iGeneratedYourMnemonicKeepItSecret": "¡He generado tu frase de restauración!\nIntenta mantenerla en secreto, ya que permite a cualquiera que la conozca acceder a todos tus monederos.",
     "myMnemonic": "Mi frase de restauración",
+    "exportInEnglish": "Exportar en inglés",
+    "englishMnemonicCopied": "Frase de restauración en inglés copiada al portapapeles",
     "close": "Cerrar",
     "toRestoreEnterMnemonic": "Para restaurar tus monederos Ğecko, introduce las 12 palabras que componen tu frase de restauración en los cuadros de abajo:",
     "pasteFromClipboard": "Pegar del\nportapapeles",

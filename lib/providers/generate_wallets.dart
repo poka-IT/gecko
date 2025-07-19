@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:durt/durt.dart' as durt;
-import 'package:durt2/durt2.dart' show WalletBalance, WalletEntity, Durt, MultilangLanguage;
+import 'package:durt2/durt2.dart' show WalletBalance, WalletEntity, Durt, BidouilleLang;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +37,7 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   String? generatedMnemonic; // Mnemonic in user's language (for display/copy/validation)
   String? _englishMnemonic; // English mnemonic for crypto operations
-  MultilangLanguage? _originalMnemonicLanguage; // Language in which the mnemonic was originally entered/generated
+  BidouilleLang? _originalMnemonicLanguage; // Language in which the mnemonic was originally entered/generated
   bool walletIsGenerated = true;
 
   final mnemonicController = TextEditingController();
@@ -166,12 +166,12 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     // Get system language from easy_localization context
     final languageCode = context.locale.languageCode;
-    final targetLanguage = MultilangLanguage.fromLanguageCode(languageCode);
+    final targetLanguage = BidouilleLang.fromLanguageCode(languageCode);
 
     // Always generate English mnemonic first (master seed)
     final englishMnemonicTyped = _container
         .read(walletServiceProvider)
-        .generateMnemonic(language: MultilangLanguage.english.toBip39Language());
+        .generateMnemonic(language: BidouilleLang.english.toBip39Language());
     final englishMnemonic = englishMnemonicTyped.sentence;
 
     // Store English for crypto operations
@@ -180,13 +180,13 @@ class GenerateWalletsProvider with ChangeNotifier {
     // If expert mode option is enabled, always display in English
     if (generateInEnglish) {
       generatedMnemonic = englishMnemonic;
-      _originalMnemonicLanguage = MultilangLanguage.english; // User chose English
+      _originalMnemonicLanguage = BidouilleLang.english; // User chose English
       log.i('Generated English mnemonic (expert option enabled)');
       return englishMnemonic.split(' ');
     }
 
     // For non-English languages, convert to target language index by index
-    if (targetLanguage != MultilangLanguage.english) {
+    if (targetLanguage != BidouilleLang.english) {
       final multilangService = _container.read(walletServiceProvider).multilangService;
       final convertedMnemonic = await multilangService.convertFromEnglish(englishMnemonic, targetLanguage);
 
@@ -199,7 +199,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     } else {
       // For English, same mnemonic for everything
       generatedMnemonic = englishMnemonic;
-      _originalMnemonicLanguage = MultilangLanguage.english; // User generated in English
+      _originalMnemonicLanguage = BidouilleLang.english; // User generated in English
       log.i('Generated English mnemonic for all operations');
       return englishMnemonic.split(' ');
     }
@@ -216,7 +216,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   /// Get the original language in which the mnemonic was entered/generated
-  MultilangLanguage? getOriginalMnemonicLanguage() {
+  BidouilleLang? getOriginalMnemonicLanguage() {
     return _originalMnemonicLanguage;
   }
 
@@ -231,7 +231,7 @@ class GenerateWalletsProvider with ChangeNotifier {
         return false; // No valid language detected
       }
 
-      if (detectedLanguage == MultilangLanguage.english) {
+      if (detectedLanguage == BidouilleLang.english) {
         // Direct validation for English
         return _container.read(walletServiceProvider).isMnemonicValid(mnemonic);
       } else {
@@ -247,7 +247,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   /// Convert user language mnemonic to English for validation purposes
-  Future<String> _convertToEnglishForValidation(String userMnemonic, MultilangLanguage sourceLanguage) async {
+  Future<String> _convertToEnglishForValidation(String userMnemonic, BidouilleLang sourceLanguage) async {
     final multilangService = _container.read(walletServiceProvider).multilangService;
     return await multilangService.convertToEnglish(userMnemonic, sourceLanguage: sourceLanguage);
   }
@@ -287,10 +287,10 @@ class GenerateWalletsProvider with ChangeNotifier {
         final multilangService = _container.read(walletServiceProvider).multilangService;
         final detectedLanguage = await multilangService.detectMnemonicLanguageFromWords(userMnemonic.split(' '));
 
-        if (detectedLanguage == MultilangLanguage.english) {
+        if (detectedLanguage == BidouilleLang.english) {
           // Input is already English, store directly
           _englishMnemonic = userMnemonic;
-          _originalMnemonicLanguage = MultilangLanguage.english;
+          _originalMnemonicLanguage = BidouilleLang.english;
         } else if (detectedLanguage != null) {
           // Input is in another language, convert to English
           _englishMnemonic = await _convertToEnglishForValidation(userMnemonic, detectedLanguage);
@@ -373,7 +373,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       // Use multilang validation - check if word is valid in current language
       // ignore: use_build_context_synchronously
       final languageCode = homeContext.locale.languageCode;
-      final preferredLanguage = MultilangLanguage.fromLanguageCode(languageCode);
+      final preferredLanguage = BidouilleLang.fromLanguageCode(languageCode);
       final multilangService = _container.read(walletServiceProvider).multilangService;
       bool isValid = await multilangService.isValidWordInAnyLanguage(
         word,

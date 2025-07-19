@@ -1,4 +1,4 @@
-import 'package:durt2/durt2.dart' show WalletEntity, Durt;
+import 'package:durt2/durt2.dart' show WalletEntity, Durt, BidouilleLang;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
@@ -80,6 +80,10 @@ class ShowSeed extends ConsumerWidget {
 
                         final displayMnemonic = displayMnemonicSnapshot.data ?? englishMnemonic;
 
+                        // Check if the safe language is not English to show export button
+                        final safeLanguage = Durt.i.wallets.getSafeMnemonicLanguage(defaultWallet.safe.target?.number);
+                        final isEnglish = safeLanguage == BidouilleLang.english;
+
                         return Column(
                           children: [
                             BuildText(text: 'keepYourMnemonicSecret'.tr(), size: 16),
@@ -127,6 +131,41 @@ class ShowSeed extends ConsumerWidget {
                                 ),
                               ],
                             ),
+                            // Show English export button if safe language is not English
+                            if (!isEnglish) ...[
+                              ScaledSizedBox(height: 20),
+                              ScaledSizedBox(
+                                height: 39,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    backgroundColor: context.colorScheme.secondary,
+                                    elevation: 1,
+                                  ),
+                                  onPressed: () {
+                                    Clipboard.setData(ClipboardData(text: englishMnemonic));
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('englishMnemonicCopied'.tr()),
+                                        duration: const Duration(seconds: 2),
+                                      ),
+                                    );
+                                  },
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      Icon(Icons.translate, size: scaleSize(20), color: context.colorScheme.onSurface),
+                                      ScaledSizedBox(width: 7),
+                                      Text(
+                                        'exportInEnglish'.tr(),
+                                        style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSurface),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
                         );
                       },

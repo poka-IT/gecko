@@ -89,6 +89,8 @@
     "keepYourMnemonicSecret": "Cerca di mantenere questa frase di recupero segreta, essa permette a chiunque la conosca di accedere a tutti i tuoi portafogli.",
     "iGeneratedYourMnemonicKeepItSecret": "La tua frase di recupero é stata creata!\nCerca di mantenere questa frase di recupero segreta, essa permette a chiunque la conosca di accedere a tutti i tuoi portafogli.",
     "myMnemonic": "la mia frase di recupero",
+    "exportInEnglish": "Esporta in inglese",
+    "englishMnemonicCopied": "Frase di recupero inglese copiata negli appunti",
     "close": "Chiudi",
     "toRestoreEnterMnemonic": "Per recuperare i tuoi portafogli Ğecko, introduci le 12 parole che compongono la tua frase di recupero:",
     "pasteFromClipboard": "Incolla dagli\nappunti",

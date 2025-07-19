@@ -89,6 +89,8 @@
     "keepYourMnemonicSecret": "Try to keep this phrase a secret, as it allows anyone who knows it to access all your wallets.",
     "iGeneratedYourMnemonicKeepItSecret": "I've generated your restoration phrase!\n Try to keep it a secret, as it allows anyone who knows it to access all your portfolios.",
     "myMnemonic": "My mnemonic",
+    "exportInEnglish": "Export in English",
+    "englishMnemonicCopied": "English mnemonic copied to clipboard",
     "close": "Close",
     "toRestoreEnterMnemonic": "To restore your Gecko wallets, enter in the fields below the 12 words that constitute your restoration phrase:",
     "pasteFromClipboard": "Paste from\nclipboard",

@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:bubble/bubble.dart';
-import 'package:durt2/durt2.dart' show Durt, MultilangLanguage;
+import 'package:durt2/durt2.dart' show Durt, BidouilleLang;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
@@ -249,7 +249,7 @@ class RestoreChest extends ConsumerWidget {
             try {
               // Get user's preferred language from locale
               final languageCode = context.locale.languageCode;
-              final preferredLanguage = MultilangLanguage.fromLanguageCode(languageCode);
+              final preferredLanguage = BidouilleLang.fromLanguageCode(languageCode);
 
               final isValidWord = await Durt.i.wallets.multilangService.isValidWordInAnyLanguage(
                 v,

@@ -89,6 +89,8 @@
     "keepYourMnemonicSecret": "Tâchez de garder cette phrase bien secrète, car elle permet à quiconque la connaît d'accéder à tous vos portefeuilles.",
     "iGeneratedYourMnemonicKeepItSecret": "J'ai généré votre phrase de restauration !\nTâchez de la garder bien secrète, car elle permet à quiconque la connaît d'accéder à tous vos portefeuilles.",
     "myMnemonic": "Ma phrase de restauration",
+    "exportInEnglish": "Exporter en anglais",
+    "englishMnemonicCopied": "Phrase de restauration anglaise copiée dans le presse-papiers",
     "close": "Fermer",
     "toRestoreEnterMnemonic": "Pour restaurer vos portefeuilles Gecko, rentrez dans les champs ci-dessous les 12 mots qui constituent votre phrase de restauration :",
     "pasteFromClipboard": "Coller depuis le\npresse-papier",

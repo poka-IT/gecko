@@ -56,12 +56,12 @@ class CompactWalletHeader extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Truncated address
-                    GestureDetector(
-                      onTap: () {
-                        Clipboard.setData(ClipboardData(text: address));
-                        snackCopyKey(context);
-                      },
-                      child: Flexible(
+                    Flexible(
+                      child: GestureDetector(
+                        onTap: () {
+                          Clipboard.setData(ClipboardData(text: address));
+                          snackCopyKey(context);
+                        },
                         child: Text(
                           getShortPubkey(address),
                           style: TextStyle(

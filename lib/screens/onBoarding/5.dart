@@ -32,13 +32,24 @@ class OnboardingStepFive extends StatefulWidget {
 class _ChooseChestState extends State<OnboardingStepFive> {
   List<String>? mnemonicList;
   bool isLoading = false;
+  bool _hasInitialized = false;
   final generateWalletProvider = Provider.of<GenerateWalletsProvider>(homeContext, listen: false);
   bool get isMnemonicGenerated => generateWalletProvider.generatedMnemonic != null;
 
   @override
   void initState() {
     super.initState();
-    _generateMnemonicList();
+    // Don't call _generateMnemonicList() here as context.locale is not available yet
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Call _generateMnemonicList() here when context is fully available
+    if (!_hasInitialized) {
+      _hasInitialized = true;
+      _generateMnemonicList();
+    }
   }
 
   Future<void> _generateMnemonicList() async {

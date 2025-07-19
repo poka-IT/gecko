@@ -123,7 +123,7 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
 
               // Recharger les wallets avec le nouveau PIN
               final currentChest = widget.walletProvider.getCurrentSafe;
-              await widget.walletProvider.readAllWallets(safeBoxNumber: currentChest);
+              await widget.walletProvider.readAllWallets(ref: ref, safeBoxNumber: currentChest);
               widget.walletProvider.reload();
 
               Navigator.of(context)

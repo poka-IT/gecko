@@ -1,4 +1,4 @@
-import 'package:durt2/durt2.dart' show WalletEntity;
+import 'package:durt2/durt2.dart' show WalletEntity, Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
@@ -58,54 +58,78 @@ class ShowSeed extends ConsumerWidget {
                       return const Text('');
                     }
 
-                    return Column(
-                      children: [
-                        BuildText(text: 'keepYourMnemonicSecret'.tr(), size: 16),
-                        ScaledSizedBox(height: 35),
-                        sentanceArray(context, seed.data!.split(' ')),
-                        ScaledSizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                    // Convert English mnemonic to original language for display using durt2's stored language
+                    final englishMnemonic = seed.data!;
+
+                    return FutureBuilder<String>(
+                      future: () async {
+                        try {
+                          // Use durt2's automatic conversion based on safe's stored language
+                          final walletService = Durt.i.wallets;
+                          final safeBoxNumber = defaultWallet.safe.target?.number;
+                          return await walletService.convertEnglishToSafeLanguage(englishMnemonic, safeBoxNumber);
+                        } catch (e) {
+                          // Fallback to English if conversion fails
+                          return englishMnemonic;
+                        }
+                      }(),
+                      builder: (context, displayMnemonicSnapshot) {
+                        if (displayMnemonicSnapshot.connectionState == ConnectionState.waiting) {
+                          return const CircularProgressIndicator();
+                        }
+
+                        final displayMnemonic = displayMnemonicSnapshot.data ?? englishMnemonic;
+
+                        return Column(
                           children: [
-                            ScaledSizedBox(
-                              height: 39,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  foregroundColor: Colors.black,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                  backgroundColor: context.colorScheme.primary,
-                                  elevation: 1,
-                                ),
-                                onPressed: () {
-                                  Clipboard.setData(ClipboardData(text: seed.data!));
-                                  snackCopySeed(context);
-                                },
-                                child: Row(
-                                  children: <Widget>[
-                                    Image.asset('assets/walletOptions/copy-white.png', height: scaleSize(24)),
-                                    ScaledSizedBox(width: 7),
-                                    Text('copy'.tr(), style: scaledTextStyle(fontSize: 13, color: Colors.grey[50])),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            ScaledSizedBox(width: 50),
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) {
-                                      return PrintWallet(seed.data);
+                            BuildText(text: 'keepYourMnemonicSecret'.tr(), size: 16),
+                            ScaledSizedBox(height: 35),
+                            sentanceArray(context, displayMnemonic.split(' ')),
+                            ScaledSizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                ScaledSizedBox(
+                                  height: 39,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      foregroundColor: Colors.black,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      backgroundColor: context.colorScheme.primary,
+                                      elevation: 1,
+                                    ),
+                                    onPressed: () {
+                                      Clipboard.setData(ClipboardData(text: displayMnemonic));
+                                      snackCopySeed(context);
                                     },
+                                    child: Row(
+                                      children: <Widget>[
+                                        Image.asset('assets/walletOptions/copy-white.png', height: scaleSize(24)),
+                                        ScaledSizedBox(width: 7),
+                                        Text('copy'.tr(), style: scaledTextStyle(fontSize: 13, color: Colors.grey[50])),
+                                      ],
+                                    ),
                                   ),
-                                );
-                              },
-                              child: Image.asset('assets/printer.png', height: scaleSize(38)),
+                                ),
+                                ScaledSizedBox(width: 50),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) {
+                                          return PrintWallet(displayMnemonic);
+                                        },
+                                      ),
+                                    );
+                                  },
+                                  child: Image.asset('assets/printer.png', height: scaleSize(38)),
+                                ),
+                              ],
                             ),
                           ],
-                        ),
-                      ],
+                        );
+                      },
                     );
                   },
                 ),

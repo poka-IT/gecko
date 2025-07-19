@@ -8,6 +8,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/search.dart';
 import 'package:gecko/screens/my_contacts.dart';
+import 'package:gecko/screens/network_activity_screen.dart';
 import 'package:gecko/screens/search_result.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/widgets/clipboard_monitor.dart';
@@ -55,7 +56,7 @@ class _SearchScreenState extends State<SearchScreen> {
           child: Column(
             children: <Widget>[
               const Spacer(),
-              _myContactsButton(),
+              _buttonsRow(),
               const Spacer(),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 17),
@@ -195,6 +196,16 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
+  Widget _buttonsRow() {
+    return IntrinsicHeight(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [_myContactsButton(), _networkActivityButton()],
+      ),
+    );
+  }
+
   Widget _myContactsButton() {
     return InkWell(
       onTap: () => Navigator.push(
@@ -237,7 +248,60 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ),
           ScaledSizedBox(height: 7),
-          Text('contactsManagement'.tr(), textAlign: TextAlign.center, style: scaledTextStyle(fontSize: 14)),
+          SizedBox(
+            height: scaleSize(35), // Hauteur fixe pour aligner avec le texte sur 2 lignes
+            child: Text('contactsManagement'.tr(), textAlign: TextAlign.center, style: scaledTextStyle(fontSize: 14)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _networkActivityButton() {
+    return InkWell(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) {
+            return const NetworkActivityScreen();
+          },
+        ),
+      ),
+      child: Column(
+        children: <Widget>[
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                  spreadRadius: 0,
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 2,
+                  offset: const Offset(0, 1),
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+            child: ClipOval(
+              child: Material(
+                color: context.colorScheme.secondary,
+                child: Padding(
+                  padding: EdgeInsets.all(scaleSize(14.5)),
+                  child: Icon(Icons.public, size: scaleSize(25)),
+                ),
+              ),
+            ),
+          ),
+          ScaledSizedBox(height: 7),
+          SizedBox(
+            height: scaleSize(35), // Hauteur fixe pour aligner avec le texte sur 2 lignes
+            child: Text('networkActivity'.tr(), textAlign: TextAlign.center, style: scaledTextStyle(fontSize: 14)),
+          ),
         ],
       ),
     );

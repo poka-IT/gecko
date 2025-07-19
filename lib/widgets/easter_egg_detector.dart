@@ -27,7 +27,7 @@ class EasterEggDetector extends StatefulWidget {
 
 class _EasterEggDetectorState extends State<EasterEggDetector> {
   static const int tapTimeout = 3000; // 3 seconds timeout
-  static const double cornerSize = 80.0; // Size of each corner area
+  static const double cornerSize = 120; // Size of each corner area
 
   // Pattern: 2 left taps then 3 right taps
   static const List<TapSide> requiredPattern = [

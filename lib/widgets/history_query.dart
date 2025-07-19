@@ -195,6 +195,37 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
     }
   }
 
+  Widget _buildEmptyStateView(BuildContext context) {
+    return Center(
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: scaleSize(32)),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(height: scaleSize(80)),
+            // Large image representing empty wallet
+            Container(
+              padding: EdgeInsets.all(scaleSize(16)),
+              child: Image.asset(
+                context.isDarkTheme ? 'assets/empty_wallet_dark.png' : 'assets/empty_wallet_light.png',
+                width: 260,
+                fit: BoxFit.contain,
+              ),
+            ),
+            ScaledSizedBox(height: 4),
+            // Main message
+            Text(
+              "noDataToDisplay".tr(),
+              style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: context.colorScheme.onSurface),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: scaleSize(120)),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Listen for scroll to top events
@@ -277,7 +308,13 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                   if (widget.transactionData != null)
                     TransactionInProgressTule(transactionData: widget.transactionData!),
                   ScaledSizedBox(height: 50),
-                  Text("noNetworkNoHistory".tr(), textAlign: TextAlign.center, style: scaledTextStyle(fontSize: 17)),
+                  Center(
+                    child: Text(
+                      "noNetworkNoHistory".tr(),
+                      textAlign: TextAlign.center,
+                      style: scaledTextStyle(fontSize: 17),
+                    ),
+                  ),
                 ],
               ),
 
@@ -287,8 +324,8 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                 children: <Widget>[
                   if (widget.transactionData != null)
                     TransactionInProgressTule(transactionData: widget.transactionData!),
-                  ScaledSizedBox(height: 50),
-                  Text("noDataToDisplay".tr(), style: scaledTextStyle(fontSize: 17)),
+                  ScaledSizedBox(height: 40),
+                  _buildEmptyStateView(context),
                 ],
               ),
 

@@ -78,6 +78,53 @@ class TransactionDisplayItem {
     );
   }
 
+  factory TransactionDisplayItem.fromNetworkActivityNode(
+    dynamic node, // Network activity node
+    DateTime genesisTime,
+  ) {
+    final String fromAddress = node.fromId ?? '';
+    final String toAddress = node.toId ?? '';
+    final String? fromUsername = node.from?.identity?.name;
+    final String? toUsername = node.to?.identity?.name;
+    final BigInt amount = BigInt.parse(node.amount);
+
+    // Parse the timestamp as UTC and convert to local time
+    final DateTime transactionTime =
+        node.timestamp.endsWith('Z') || node.timestamp.contains('+') || node.timestamp.contains('-')
+        ? DateTime.parse(node.timestamp).toLocal()
+        : DateTime.parse('${node.timestamp}Z').toLocal();
+
+    // Calculate date delimiter for grouping
+    final String dateDelimiter = _calculateDateDelimiter(transactionTime);
+
+    // Check if this is migration time
+    final bool isMigrationTime = transactionTime.isBefore(genesisTime);
+
+    final comment = _decodeHexString(node.comment?.remarkBytes);
+
+    // For network view, show "from → to" format
+    final displayUsername = fromUsername != null && toUsername != null
+        ? '$fromUsername → $toUsername'
+        : fromUsername != null
+        ? '$fromUsername → ${toAddress.substring(0, 8)}...'
+        : toUsername != null
+        ? '${fromAddress.substring(0, 8)}... → $toUsername'
+        : '${fromAddress.substring(0, 8)}... → ${toAddress.substring(0, 8)}...';
+
+    return TransactionDisplayItem(
+      address: fromAddress,
+      username: displayUsername,
+      amount: amount,
+      comment: comment,
+      isReceived: false, // In network view, we show as "sent" for consistency
+      timestamp: transactionTime,
+      transactionTime: transactionTime,
+      dateDelimiter: dateDelimiter,
+      isMigrationTime: isMigrationTime,
+      type: TransactionType.transfer,
+    );
+  }
+
   factory TransactionDisplayItem.fromUdHistoryNode(
     Query$GetUdHistoryViaIdentity$identityConnection$edges$node$udHistory node,
     String walletAddress,

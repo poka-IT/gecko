@@ -461,8 +461,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 ScaledSizedBox(height: isSmallScreen ? 20 : 24),
 
-                // Section Réseau (visible seulement en mode expert)
+                // Section Expert (visible seulement en mode expert)
                 if (_expertMode) ...[
+                  // Carte Génération de mnémoniques en anglais
+                  Container(
+                    decoration: BoxDecoration(
+                      color: context.colorScheme.surfaceContainer,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                      child: generateMnemonicsInEnglishToggle(context),
+                    ),
+                  ),
+                  ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+
                   Text(
                     'networkSettings'.tr(),
                     style: scaledTextStyle(
@@ -1728,6 +1748,56 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   setState(() {
                     _expertMode = value;
                   });
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget generateMnemonicsInEnglishToggle(BuildContext context) {
+    final generateInEnglish = configBox.get('generateMnemonicsInEnglish') ?? false;
+
+    return InkWell(
+      onTap: () {
+        final newValue = !generateInEnglish;
+        configBox.put('generateMnemonicsInEnglish', newValue);
+        if (mounted) {
+          setState(() {});
+        }
+      },
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: scaleSize(4)),
+        child: Row(
+          children: [
+            Icon(Icons.translate_rounded, color: context.colorScheme.primary, size: scaleSize(24)),
+            ScaledSizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'generateMnemonicsInEnglish'.tr(),
+                    style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
+                  ),
+                  Text(
+                    'generateMnemonicsInEnglishDescription'.tr(),
+                    style: scaledTextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: generateInEnglish,
+              activeColor: context.colorScheme.primary,
+              inactiveThumbColor: Colors.grey[400],
+              inactiveTrackColor: Colors.grey[300],
+              onChanged: (bool value) {
+                configBox.put('generateMnemonicsInEnglish', value);
+                if (mounted) {
+                  setState(() {});
                 }
               },
             ),

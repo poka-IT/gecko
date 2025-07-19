@@ -200,13 +200,14 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
               myWalletProvider.isPinValid = true;
 
               final pinCodeint = int.parse(widget.pinCode);
+              // Pass the original user mnemonic to createSafe for proper language detection
+              // The service will handle the conversion internally for crypto operations
+              final originalMnemonic =
+                  generateWalletProvider.generatedMnemonic ?? generateWalletProvider.getEnglishMnemonic();
+
               await ref
                   .read(walletServiceProvider)
-                  .createSafe(
-                    mnemonic: generateWalletProvider.generatedMnemonic!,
-                    pinCode: pinCodeint,
-                    safeName: 'safeBoxName'.tr(),
-                  );
+                  .createSafe(mnemonic: originalMnemonic, pinCode: pinCodeint, safeName: 'safeBoxName'.tr());
 
               ScanDerivationsResult scanStatus = ScanDerivationsResult.none;
               if (widget.scanDerivation) {
@@ -236,7 +237,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
                   break;
               }
 
-              await myWalletProvider.readAllWallets(safeBoxNumber: currentChest);
+              await myWalletProvider.readAllWallets(ref: ref, safeBoxNumber: currentChest);
               myWalletProvider.reload();
 
               generateWalletProvider.generatedMnemonic = '';

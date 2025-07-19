@@ -1,8 +1,10 @@
 import 'package:durt2/durt2.dart' show IdtyStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers.dart';
+import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
@@ -54,16 +56,22 @@ class CompactWalletHeader extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Truncated address
-                    Flexible(
-                      child: Text(
-                        getShortPubkey(address),
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface,
+                    GestureDetector(
+                      onTap: () {
+                        Clipboard.setData(ClipboardData(text: address));
+                        snackCopyKey(context);
+                      },
+                      child: Flexible(
+                        child: Text(
+                          getShortPubkey(address),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
                       ),
                     ),
                     // Compact balance

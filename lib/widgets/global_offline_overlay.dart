@@ -21,7 +21,7 @@ class _GlobalOfflineOverlayState extends State<GlobalOfflineOverlay> {
   void initState() {
     super.initState();
     // Wait 2 seconds before showing the offline banner to avoid initial flicker
-    _delayTimer = Timer(const Duration(seconds: 2), () {
+    _delayTimer = Timer(const Duration(seconds: 3), () {
       if (mounted) {
         setState(() {
           _showOfflineInfo = true;

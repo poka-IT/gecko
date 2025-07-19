@@ -43,6 +43,8 @@
     "defineWalletAsDefault": "Définir comme portefeuille par défaut",
     "displayActivity": "Voir l'activité",
     "displayNActivity": "Voir\nl'activité",
+    "networkActivity": "Activité\nréseau",
+    "noNetworkActivity": "Aucune activité réseau disponible",
     "memberValidated": "Membre validé",
     "copyAddress": "Copier\nl'adresse",
     "copy": "Copier",
@@ -313,6 +315,8 @@
     "generalSettings": "Général",
     "expertMode": "Mode expert",
     "expertModeDescription": "Active les fonctionnalités avancées pour les utilisateurs expérimentés",
+    "generateMnemonicsInEnglish": "Générer les phrases en anglais",
+    "generateMnemonicsInEnglishDescription": "Génère les phrases de restauration directement en anglais au lieu de les traduire",
     "clearCacheConfirmTitle": "Confirmation de suppression du cache",
     "clearCacheConfirmMessage": "Voulez-vous vraiment effacer le cache ?\n\nCela inclut :\n- Les soldes des portefeuilles\n- Les certifications\n- Les données d'identité",
     "qrCodeNotAddress": "Ce QR code n'est pas une adresse valide",
@@ -364,6 +368,7 @@
     "errorReportCopied": "Rapport d'erreur copié dans le presse-papiers",
     "transactionDetails": "Détails de la transaction :",
     "newTransactionReceived": "Nouvelle transaction reçue",
+  "newNetworkActivity": "Nouvelle activité réseau",
     "transactionFilter": "Filtre",
     "newCertificationReceived": "Nouvelle certification reçue",
     "newCertificationSent": "Nouvelle certification envoyée",
@@ -391,5 +396,7 @@
     "identityStatusCreated": "Créé",
     "identityStatusExpired": "Expiré",
     "identityStatusRevoked": "Révoqué",
-    "identityStatusUnknown": "Inconnu"
+    "identityStatusUnknown": "Inconnu",
+    "incorrectPhrase": "Phrase incorrecte",
+    "incorrectPhraseDescription": "Votre phrase de restauration semble incorrecte, les mots ne sont pas dans le bon ordre.\nVeuillez la corriger."
 }

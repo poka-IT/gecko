@@ -43,6 +43,8 @@
     "defineWalletAsDefault": "Definir este monedero como por defecto",
     "displayActivity": "Visualizar actividad",
     "displayNActivity": "Visualizar\nactividad",
+    "networkActivity": "Actividad\nde red",
+    "noNetworkActivity": "No hay actividad de red disponible",
     "memberValidated": "Miembro validado",
     "copyAddress": "Copiar\nla dirección",
     "copy": "Copiar",
@@ -313,6 +315,8 @@
     "generalSettings": "General",
     "expertMode": "Modo experto",
     "expertModeDescription": "Activa funciones avanzadas para usuarios experimentados",
+    "generateMnemonicsInEnglish": "Generar frases en inglés",
+    "generateMnemonicsInEnglishDescription": "Genera frases de recuperación directamente en inglés en lugar de traducirlas",
     "clearCacheConfirmTitle": "Confirmación de borrado de caché",
     "clearCacheConfirmMessage": "¿Realmente desea borrar el caché?\n\nEsto incluye:\n- Saldos de carteras\n- Certificaciones\n- Datos de identidad",
     "qrCodeNotAddress": "Este código QR no es una dirección válida",
@@ -368,6 +372,7 @@
     "errorReportCopied": "Informe de error copiado al portapapeles",
     "transactionDetails": "Detalles de la transacción:",
     "newTransactionReceived": "Nueva transacción recibida",
+  "newNetworkActivity": "Nueva actividad de red",
     "transactionFilter": "Filtro",
     "newCertificationReceived": "Nueva certificación recibida",
     "newCertificationSent": "Nueva certificación enviada",
@@ -391,5 +396,7 @@
     "identityStatusCreated": "Creado",
     "identityStatusExpired": "Expirado",
     "identityStatusRevoked": "Revocado",
-    "identityStatusUnknown": "Desconocido"
+    "identityStatusUnknown": "Desconocido",
+    "incorrectPhrase": "Frase incorrecta",
+    "incorrectPhraseDescription": "Su frase de recuperación parece incorrecta, las palabras no están en el orden correcto.\nPor favor, corríjala."
 }

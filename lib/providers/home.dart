@@ -11,7 +11,7 @@ import 'package:gecko/providers/my_wallets.dart' show MyWalletsProvider;
 import 'package:gecko/providers/v2s_datapod.dart' show V2sDatapodProvider;
 import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -102,13 +102,10 @@ class HomeProvider with ChangeNotifier {
   }
 
   Future<String> getAppVersion() async {
-    String version;
-    String buildNumber;
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    version = packageInfo.version;
-    buildNumber = kDebugMode ? packageInfo.buildNumber : (int.parse(packageInfo.buildNumber) - 1000).toString();
+    final version = packageInfo.version;
+    final buildNumber = packageInfo.buildNumber;
 
-    notifyListeners();
     return '$version+$buildNumber';
   }
 

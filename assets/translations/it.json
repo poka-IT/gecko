@@ -42,6 +42,8 @@
     "defineWalletAsDefault": "Imposta come predefinito",
     "displayActivity": "Visualizza attivitá",
     "displayNActivity": "Visualizza\nattivitá",
+    "networkActivity": "Attivitá\ndi rete",
+    "noNetworkActivity": "Nessuna attivitá di rete disponibile",
     "memberValidated": "Membro confermato",
     "copyAddress": "Copia\nl'indirizzo",
     "copy": "Copia",
@@ -296,6 +298,7 @@
     "errorReportCopied": "Rapporto errore copiato negli appunti",
     "transactionDetails": "Dettagli della transazione:",
     "newTransactionReceived": "Nuova transazione ricevuta",
+  "newNetworkActivity": "Nuova attività di rete",
     "transactionFilter": "Filtro",
     "newCertificationReceived": "Nuova certificazione ricevuta",
     "newCertificationSent": "Nuova certificazione inviata",
@@ -308,6 +311,8 @@
     "generalSettings": "Generale",
     "expertMode": "Modalità esperto",
     "expertModeDescription": "Abilita funzionalità avanzate per utenti esperti",
+    "generateMnemonicsInEnglish": "Genera frasi in inglese",
+    "generateMnemonicsInEnglishDescription": "Genera frasi di recupero direttamente in inglese invece di tradurle",
     "clearCache": "Cancella cache",
     "clearCacheDescription": "Rimuove i dati temporanei per liberare spazio",
     "canNotRevokeUnvalidated": "Non puoi revocare un'identità non convalidata",
@@ -326,5 +331,7 @@
     "identityStatusCreated": "Creato",
     "identityStatusExpired": "Scaduto",
     "identityStatusRevoked": "Revocato",
-    "identityStatusUnknown": "Sconosciuto"
+    "identityStatusUnknown": "Sconosciuto",
+    "incorrectPhrase": "Frase incorretta",
+    "incorrectPhraseDescription": "La tua frase di recupero sembra incorretta, le parole non sono nell'ordine giusto.\nSi prega di correggerla."
 }

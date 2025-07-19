@@ -1,22 +1,19 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:durt/durt.dart' as durt;
-import 'package:durt2/durt2.dart' show Language, WalletBalance, WalletEntity, Durt;
+import 'package:durt2/durt2.dart' show WalletBalance, WalletEntity, Durt, MultilangLanguage;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/bip39_words.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/widgets/scan_derivations_info.dart';
 import 'package:gecko/widgets/commons/common_elements.dart';
-import "package:unorm_dart/unorm_dart.dart" as unorm;
 
 class GenerateWalletsProvider with ChangeNotifier {
   late ProviderContainer _container;
-
   GenerateWalletsProvider() {
     _container = ProviderContainer();
   }
@@ -38,7 +35,9 @@ class GenerateWalletsProvider with ChangeNotifier {
   late int nbrWord;
   String? nbrWordAlpha;
 
-  String? generatedMnemonic;
+  String? generatedMnemonic; // Mnemonic in user's language (for display/copy/validation)
+  String? _englishMnemonic; // English mnemonic for crypto operations
+  MultilangLanguage? _originalMnemonicLanguage; // Language in which the mnemonic was originally entered/generated
   bool walletIsGenerated = true;
 
   final mnemonicController = TextEditingController();
@@ -93,7 +92,7 @@ class GenerateWalletsProvider with ChangeNotifier {
 
   void checkAskedWord(String inputWord, String mnemo) {
     final expectedWord = mnemo.split(' ')[nbrWord];
-    final normInputWord = unorm.nfkd(inputWord);
+    final normInputWord = inputWord;
 
     if (expectedWord == normInputWord || (kDebugMode && inputWord == 'triche')) {
       isAskedWordValid = true;
@@ -162,52 +161,95 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   Future<List<String>?> generateWordList(BuildContext context) async {
-    final language = switch (appLang) {
-      'english' => Language.english,
-      'french' => Language.french,
-      'spanish' => Language.spanish,
-      'italian' => Language.italian,
-      _ => Language.english,
-    };
+    // Check if user wants to generate mnemonics in English (expert mode option)
+    final generateInEnglish = configBox.get('generateMnemonicsInEnglish') ?? false;
 
-    final generatedMnemonicTyped = _container.read(walletServiceProvider).generateMnemonic(language: language);
+    // Get system language from easy_localization context
+    final languageCode = context.locale.languageCode;
+    final targetLanguage = MultilangLanguage.fromLanguageCode(languageCode);
 
-    generatedMnemonic = generatedMnemonicTyped.sentence;
-    return generatedMnemonicTyped.words;
-  }
+    // Always generate English mnemonic first (master seed)
+    final englishMnemonicTyped = _container
+        .read(walletServiceProvider)
+        .generateMnemonic(language: MultilangLanguage.english.toBip39Language());
+    final englishMnemonic = englishMnemonicTyped.sentence;
 
-  bool isBipWord(String word, [bool checkRedondance = true]) {
-    bool isValid = false;
-    notifyListeners();
+    // Store English for crypto operations
+    _englishMnemonic = englishMnemonic;
 
-    // Needed for bad encoding of UTF-8
-    word = word.replaceAll('é', 'é');
-    word = word.replaceAll('è', 'è');
-
-    int nbrMatch = 0;
-    if (bip39Words(appLang).contains(word.toLowerCase())) {
-      for (var bipWord in bip39Words(appLang)) {
-        if (bipWord.startsWith(word)) {
-          isValid = nbrMatch == 0;
-          if (checkRedondance) nbrMatch = nbrMatch + 1;
-        }
-      }
+    // If expert mode option is enabled, always display in English
+    if (generateInEnglish) {
+      generatedMnemonic = englishMnemonic;
+      _originalMnemonicLanguage = MultilangLanguage.english; // User chose English
+      log.i('Generated English mnemonic (expert option enabled)');
+      return englishMnemonic.split(' ');
     }
 
-    return isValid;
+    // For non-English languages, convert to target language index by index
+    if (targetLanguage != MultilangLanguage.english) {
+      final multilangService = _container.read(walletServiceProvider).multilangService;
+      final convertedMnemonic = await multilangService.convertFromEnglish(englishMnemonic, targetLanguage);
+
+      // Store converted mnemonic for user display (English is stored in safe for crypto)
+      generatedMnemonic = convertedMnemonic;
+      _originalMnemonicLanguage = targetLanguage; // User generated in their language
+
+      log.i('Generated English master seed, converted to ${targetLanguage.code} for display');
+      return convertedMnemonic.split(' ');
+    } else {
+      // For English, same mnemonic for everything
+      generatedMnemonic = englishMnemonic;
+      _originalMnemonicLanguage = MultilangLanguage.english; // User generated in English
+      log.i('Generated English mnemonic for all operations');
+      return englishMnemonic.split(' ');
+    }
   }
 
-  bool isBipWordsList(List<String> words) {
-    bool isValid = true;
-    for (String word in words) {
-      // Needed for bad encoding of UTF-8
-      word = word.replaceAll('é', 'é');
-      word = word.replaceAll('è', 'è');
-      if (!bip39Words(appLang).contains(word.toLowerCase())) {
-        isValid = false;
-      }
+  /// Get the English mnemonic for crypto operations
+  /// This is always in English regardless of display language
+  String getEnglishMnemonic() {
+    if (_englishMnemonic == null) {
+      throw StateError('No mnemonic has been generated yet');
     }
-    return isValid;
+    // Return the cached English mnemonic for BIP39 crypto operations
+    return _englishMnemonic!;
+  }
+
+  /// Get the original language in which the mnemonic was entered/generated
+  MultilangLanguage? getOriginalMnemonicLanguage() {
+    return _originalMnemonicLanguage;
+  }
+
+  /// Validate complete mnemonic integrity (checksum) by converting to English and using BIP39 validation
+  Future<bool> isValidCompleteMnemonic(String mnemonic) async {
+    try {
+      final words = mnemonic.split(' ');
+      final multilangService = _container.read(walletServiceProvider).multilangService;
+      final detectedLanguage = await multilangService.detectMnemonicLanguageFromWords(words);
+
+      if (detectedLanguage == null) {
+        return false; // No valid language detected
+      }
+
+      if (detectedLanguage == MultilangLanguage.english) {
+        // Direct validation for English
+        return _container.read(walletServiceProvider).isMnemonicValid(mnemonic);
+      } else {
+        // Convert to English and validate
+        final multilangService = _container.read(walletServiceProvider).multilangService;
+        final englishMnemonic = await multilangService.convertToEnglish(mnemonic, sourceLanguage: detectedLanguage);
+        return _container.read(walletServiceProvider).isMnemonicValid(englishMnemonic);
+      }
+    } catch (e) {
+      // Conversion failed, invalid mnemonic
+      return false;
+    }
+  }
+
+  /// Convert user language mnemonic to English for validation purposes
+  Future<String> _convertToEnglishForValidation(String userMnemonic, MultilangLanguage sourceLanguage) async {
+    final multilangService = _container.read(walletServiceProvider).multilangService;
+    return await multilangService.convertToEnglish(userMnemonic, sourceLanguage: sourceLanguage);
   }
 
   void resetImportView() {
@@ -218,8 +260,60 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  bool isSentenceComplete(BuildContext context) {
-    if (isBipWordsList([
+  /// Called when a mnemonic word changes to trigger validation and UI update
+  Future<void> onMnemonicWordChanged() async {
+    // Update the generated mnemonic from current field values
+    if (await isSentenceComplete()) {
+      final userMnemonic = [
+        cellController0.text,
+        cellController1.text,
+        cellController2.text,
+        cellController3.text,
+        cellController4.text,
+        cellController5.text,
+        cellController6.text,
+        cellController7.text,
+        cellController8.text,
+        cellController9.text,
+        cellController10.text,
+        cellController11.text,
+      ].join(' ');
+
+      // Store the user's mnemonic (for display)
+      generatedMnemonic = userMnemonic;
+
+      // Detect the language of the input mnemonic and convert accordingly
+      try {
+        final multilangService = _container.read(walletServiceProvider).multilangService;
+        final detectedLanguage = await multilangService.detectMnemonicLanguageFromWords(userMnemonic.split(' '));
+
+        if (detectedLanguage == MultilangLanguage.english) {
+          // Input is already English, store directly
+          _englishMnemonic = userMnemonic;
+          _originalMnemonicLanguage = MultilangLanguage.english;
+        } else if (detectedLanguage != null) {
+          // Input is in another language, convert to English
+          _englishMnemonic = await _convertToEnglishForValidation(userMnemonic, detectedLanguage);
+          _originalMnemonicLanguage = detectedLanguage;
+        } else {
+          // Invalid mnemonic, keep _englishMnemonic null
+          _englishMnemonic = null;
+          _originalMnemonicLanguage = null;
+        }
+      } catch (e) {
+        // If conversion fails, keep _englishMnemonic null
+        _englishMnemonic = null;
+        _originalMnemonicLanguage = null;
+      }
+    }
+
+    // Notify UI to rebuild with new validation state
+    notifyListeners();
+  }
+
+  Future<bool> isSentenceComplete() async {
+    // First check if all individual words are valid BIP39 words
+    final allWords = [
       cellController0.text,
       cellController1.text,
       cellController2.text,
@@ -232,18 +326,27 @@ class GenerateWalletsProvider with ChangeNotifier {
       cellController9.text,
       cellController10.text,
       cellController11.text,
-    ])) {
-      if (isFirstTimeSentenceComplete) {
-        FocusScope.of(context).unfocus();
+    ];
+
+    final multilangService = _container.read(walletServiceProvider).multilangService;
+    if (await multilangService.areAllWordsValidInAnyLanguage(allWords)) {
+      // If all words are valid, check the complete mnemonic integrity (checksum)
+      final completeMnemonic = allWords.join(' ');
+
+      if (await isValidCompleteMnemonic(completeMnemonic)) {
+        if (isFirstTimeSentenceComplete) {
+          // ignore: use_build_context_synchronously
+          FocusScope.of(homeContext).unfocus();
+        }
+        isFirstTimeSentenceComplete = false;
+        return true;
       }
-      isFirstTimeSentenceComplete = false;
-      return true;
-    } else {
-      return false;
     }
+
+    return false;
   }
 
-  Future pasteMnemonic(BuildContext context) async {
+  Future<void> pasteMnemonic(BuildContext context) async {
     final sentence = await Clipboard.getData('text/plain');
     if (sentence?.text == null || sentence!.text!.split(' ').length != 12) {
       return;
@@ -265,14 +368,27 @@ class GenerateWalletsProvider with ChangeNotifier {
       cellController10,
       cellController11,
     ];
+
     for (var word in sentence.text!.split(' ')) {
-      bool isValid = isBipWord(word, false);
+      // Use multilang validation - check if word is valid in current language
+      // ignore: use_build_context_synchronously
+      final languageCode = homeContext.locale.languageCode;
+      final preferredLanguage = MultilangLanguage.fromLanguageCode(languageCode);
+      final multilangService = _container.read(walletServiceProvider).multilangService;
+      bool isValid = await multilangService.isValidWordInAnyLanguage(
+        word,
+        checkRedundance: false,
+        preferredLanguage: preferredLanguage,
+      );
 
       if (isValid) {
         cells[nbr].text = word;
       }
       nbr++;
     }
+
+    // Trigger validation and UI update after pasting all words
+    await onMnemonicWordChanged();
   }
 
   void reloadBuild() {
@@ -343,16 +459,14 @@ class GenerateWalletsProvider with ChangeNotifier {
     notifyListeners();
 
     // Generate all keypairs in parallel instead of sequentially
+    // Convert stored mnemonic (in user's language) to English for crypto operations
+    final englishMnemonic = getEnglishMnemonic();
     final derivationNumbers = [for (var i = 0; i < numberScan; i += 1) i];
     final keypairFutures = derivationNumbers
         .map(
           (derivationNbr) => _container
               .read(walletServiceProvider)
-              .getKeyPairFromMnemonic(
-                generatedMnemonic!,
-                derivation: derivationNbr,
-                keyPairType: Durt.defaultKeyPairType,
-              )
+              .getKeyPairFromMnemonic(englishMnemonic, derivation: derivationNbr, keyPairType: Durt.defaultKeyPairType)
               .then((keypair) => MapEntry(derivationNbr, keypair)),
         )
         .toList();
@@ -433,7 +547,9 @@ class GenerateWalletsProvider with ChangeNotifier {
   Future<bool> scanRootBalance() async {
     if (generatedMnemonic == null) return false;
 
-    final keypair = await _container.read(walletServiceProvider).getKeyPairFromMnemonic(generatedMnemonic!);
+    // Convert stored mnemonic (in user's language) to English for crypto operations
+    final englishMnemonic = getEnglishMnemonic();
+    final keypair = await _container.read(walletServiceProvider).getKeyPairFromMnemonic(englishMnemonic);
 
     final address = keypair.address;
 

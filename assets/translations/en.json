@@ -43,6 +43,8 @@
     "defineWalletAsDefault": "Define this as the default one",
     "displayActivity": "Display activity",
     "displayNActivity": "Display\nactivity",
+    "networkActivity": "Network\nactivity",
+    "noNetworkActivity": "No network activity available",
     "memberValidated": "Validated member",
     "copyAddress": "Copy\naddress",
     "copy": "Copy",
@@ -300,6 +302,8 @@
     "generalSettings": "General",
     "expertMode": "Expert mode",
     "expertModeDescription": "Enable advanced features for experienced users",
+    "generateMnemonicsInEnglish": "Generate mnemonics in English",
+    "generateMnemonicsInEnglishDescription": "Generate recovery phrases directly in English instead of translating them",
     "clearCacheConfirmTitle": "Clear Cache Confirmation",
     "clearCacheConfirmMessage": "Do you really want to clear the cache?\n\nThis includes:\n- Wallet balances\n- Certifications\n- Identity data",
     "qrCodeNotAddress": "This QR code is not a valid address",
@@ -336,6 +340,7 @@
     "errorReportCopied": "Error report copied to clipboard",
     "transactionDetails": "Transaction Details:",
     "newTransactionReceived": "New transaction received",
+  "newNetworkActivity": "New network activity",
     "transactionFilter": "Filter",
     "newCertificationReceived": "New certification received",
     "newCertificationSent": "New certification sent",
@@ -379,5 +384,7 @@
     "identityStatusCreated": "Created",
     "identityStatusExpired": "Expired",
     "identityStatusRevoked": "Revoked",
-    "identityStatusUnknown": "Unknown"
+    "identityStatusUnknown": "Unknown",
+    "incorrectPhrase": "Incorrect phrase",
+    "incorrectPhraseDescription": "Your recovery phrase seems incorrect, the words are not in the right order.\nPlease correct it."
 }

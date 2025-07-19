@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:bubble/bubble.dart';
+import 'package:durt2/durt2.dart' show Durt, MultilangLanguage;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
@@ -8,15 +9,12 @@ import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/screens/onBoarding/7.dart';
 import 'package:gecko/screens/onBoarding/9.dart';
 import 'package:gecko/widgets/commons/fader_transition.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart' as old_provider;
-// import 'package:gecko/models/home.dart';
-// import 'package:provider/provider.dart';
 
 class RestoreChest extends ConsumerWidget {
   const RestoreChest({super.key, this.skipIntro = false});
@@ -24,12 +22,7 @@ class RestoreChest extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final genW = old_provider.Provider.of<GenerateWalletsProvider>(context, listen: false);
-
-    if (genW.isSentenceComplete(context)) {
-      genW.generatedMnemonic =
-          '${genW.cellController0.text} ${genW.cellController1.text} ${genW.cellController2.text} ${genW.cellController3.text} ${genW.cellController4.text} ${genW.cellController5.text} ${genW.cellController6.text} ${genW.cellController7.text} ${genW.cellController8.text} ${genW.cellController9.text} ${genW.cellController10.text} ${genW.cellController11.text}';
-    }
+    final genW = old_provider.Provider.of<GenerateWalletsProvider>(context, listen: true);
 
     return PopScope(
       onPopInvokedWithResult: (_, _) {
@@ -78,99 +71,120 @@ class RestoreChest extends ConsumerWidget {
                     ),
                   ],
                 ),
-                if (genW.isSentenceComplete(context))
-                  Container(
-                    padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: ScaledSizedBox(
-                        width: 340,
-                        height: 55,
-                        child: ElevatedButton(
-                          key: keyGoNext,
-                          style:
-                              ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: context.colorScheme.primary,
-                                elevation: 0,
-                                padding: EdgeInsets.symmetric(vertical: scaleSize(12)),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ).copyWith(
-                                elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
-                                  if (states.contains(WidgetState.pressed)) return 0;
-                                  return 8;
-                                }),
-                                shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.2)),
-                              ),
-                          onPressed: () async {
-                            if (ref.read(walletServiceProvider).isMnemonicValid(genW.generatedMnemonic!)) {
-                              genW.resetImportView();
-                              await Navigator.push(
-                                context,
-                                FaderTransition(
-                                  page: skipIntro
-                                      ? const OnboardingStepNine(scanDerivation: true, fromRestore: true)
-                                      : const OnboardingStepSeven(scanDerivation: true, fromRestore: true),
-                                  isFast: true,
+                FutureBuilder(
+                  future: genW.isSentenceComplete(),
+                  builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+                    if (snapshot.hasData) {
+                      if (snapshot.data!) {
+                        return Container(
+                          padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: ScaledSizedBox(
+                              width: 340,
+                              height: 55,
+                              child: ElevatedButton(
+                                key: keyGoNext,
+                                style:
+                                    ElevatedButton.styleFrom(
+                                      foregroundColor: Colors.white,
+                                      backgroundColor: context.colorScheme.primary,
+                                      elevation: 0,
+                                      padding: EdgeInsets.symmetric(vertical: scaleSize(12)),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ).copyWith(
+                                      elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
+                                        if (states.contains(WidgetState.pressed)) return 0;
+                                        return 8;
+                                      }),
+                                      shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.2)),
+                                    ),
+                                onPressed: () async {
+                                  // The provider already handles validation and conversion automatically
+                                  if (await genW.isSentenceComplete()) {
+                                    try {
+                                      // DON'T overwrite generatedMnemonic - it already contains the user's original input
+                                      // The English conversion will be handled automatically by createSafe in Durt2
+                                      genW.resetImportView();
+                                      await Navigator.push(
+                                        context,
+                                        FaderTransition(
+                                          page: skipIntro
+                                              ? const OnboardingStepNine(scanDerivation: true, fromRestore: true)
+                                              : const OnboardingStepSeven(scanDerivation: true, fromRestore: true),
+                                          isFast: true,
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      // Handle any errors from getting the English mnemonic
+                                      await badMnemonicPopup(context);
+                                    }
+                                  } else {
+                                    await badMnemonicPopup(context);
+                                  }
+                                },
+                                child: Text(
+                                  'restoreThisChest'.tr(),
+                                  style: scaledTextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              );
-                            } else {
-                              await badMnemonicPopup(context);
-                            }
-                          },
-                          child: Text(
-                            'restoreThisChest'.tr(),
-                            style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
-                  )
-                else
-                  Column(
-                    children: [
-                      ScaledSizedBox(height: 20),
-                      ScaledSizedBox(
-                        width: 180,
-                        // height: 50,
-                        child: ElevatedButton(
-                          key: keyPastMnemonic,
-                          style:
-                              ElevatedButton.styleFrom(
-                                foregroundColor: Colors.black,
-                                backgroundColor: context.colorScheme.secondary,
-                                elevation: 0,
-                                padding: EdgeInsets.symmetric(vertical: scaleSize(8), horizontal: scaleSize(16)),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ).copyWith(
-                                elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
-                                  if (states.contains(WidgetState.pressed)) return 0;
-                                  return 4;
-                                }),
-                                shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.15)),
+                        );
+                      } else {
+                        return Column(
+                          children: [
+                            ScaledSizedBox(height: 20),
+                            ScaledSizedBox(
+                              width: 180,
+                              child: ElevatedButton(
+                                key: keyPastMnemonic,
+                                style:
+                                    ElevatedButton.styleFrom(
+                                      foregroundColor: Colors.black,
+                                      backgroundColor: context.colorScheme.secondary,
+                                      elevation: 0,
+                                      padding: EdgeInsets.symmetric(vertical: scaleSize(8), horizontal: scaleSize(16)),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ).copyWith(
+                                      elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
+                                        if (states.contains(WidgetState.pressed)) return 0;
+                                        return 4;
+                                      }),
+                                      shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.15)),
+                                    ),
+                                onPressed: () {
+                                  genW.pasteMnemonic(context);
+                                },
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Icon(
+                                      Icons.content_paste_go,
+                                      size: scaleSize(24),
+                                      color: Colors.black.withValues(alpha: 0.7),
+                                    ),
+                                    Text(
+                                      'pasteFromClipboard'.tr(),
+                                      textAlign: TextAlign.center,
+                                      style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w400, height: 1.2),
+                                    ),
+                                  ],
+                                ),
                               ),
-                          onPressed: () {
-                            genW.pasteMnemonic(context);
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Icon(
-                                Icons.content_paste_go,
-                                size: scaleSize(24),
-                                color: Colors.black.withValues(alpha: 0.7),
-                              ),
-                              Text(
-                                'pasteFromClipboard'.tr(),
-                                textAlign: TextAlign.center,
-                                style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w400, height: 1.2),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                            ),
+                          ],
+                        );
+                      }
+                    } else {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                  },
+                ),
               ],
             ),
           ),
@@ -220,16 +234,37 @@ class RestoreChest extends ConsumerWidget {
           focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: context.colorScheme.primary)),
           contentPadding: EdgeInsets.zero,
         ),
-        onChanged: (v) {
+        onChanged: (v) async {
           if (v.contains(' ')) {
             cellCtl.text = cellCtl.text.replaceAll(' ', '');
             FocusScope.of(context).nextFocus();
           }
-          bool isValid = generateWalletProvider.isBipWord(v);
-          if (isValid) cellCtl.text = cellCtl.text.toLowerCase();
-          if (isValid && generateWalletProvider.cellController11.text.isEmpty) {
-            FocusScope.of(context).nextFocus();
+
+          // Convert to lowercase for consistency
+          if (v.isNotEmpty) cellCtl.text = cellCtl.text.toLowerCase();
+
+          // Only move to next field if we have a valid BIP39 word AND we're not at the last field
+          if (v.isNotEmpty && generateWalletProvider.cellController11.text.isEmpty) {
+            // Check if the current word is a valid BIP39 word
+            try {
+              // Get user's preferred language from locale
+              final languageCode = context.locale.languageCode;
+              final preferredLanguage = MultilangLanguage.fromLanguageCode(languageCode);
+
+              final isValidWord = await Durt.i.wallets.multilangService.isValidWordInAnyLanguage(
+                v,
+                preferredLanguage: preferredLanguage,
+              );
+              if (isValidWord) {
+                FocusScope.of(context).nextFocus();
+              }
+            } catch (e) {
+              // If validation fails, don't move to next field
+            }
           }
+
+          // Trigger validation and UI update for real-time button visibility
+          await generateWalletProvider.onMnemonicWordChanged();
         },
         textAlign: TextAlign.center,
         style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSecondaryContainer),
@@ -243,13 +278,11 @@ class RestoreChest extends ConsumerWidget {
       barrierDismissible: true,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Phrase incorrecte'),
-          content: const Text(
-            'Votre phrase de restauration semble incorrecte, les mots ne sont pas dans le bon ordre.\nVeuillez la corriger.',
-          ),
+          title: Text('incorrectPhrase'.tr()),
+          content: Text('incorrectPhraseDescription'.tr()),
           actions: <Widget>[
             TextButton(
-              child: const Text("OK"),
+              child: Text("OK"),
               onPressed: () {
                 Navigator.pop(context);
               },

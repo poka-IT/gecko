@@ -239,10 +239,6 @@ void paymentPopup({required WidgetRef ref, required String toAddress, required S
           }
 
           canValidate = canValidatePayment();
-          final container = ProviderContainer();
-          final displayMode = container.read(currencyDisplayModeProvider);
-          final bool isUdUnit = displayMode == CurrencyDisplayMode.du;
-          container.dispose();
           return Padding(
             padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
             child: Container(
@@ -467,13 +463,37 @@ void paymentPopup({required WidgetRef ref, required String toAddress, required S
                               ],
                               decoration: InputDecoration(
                                 hintText: '0.00',
-                                suffix: Text(
-                                  isUdUnit
-                                      ? 'ud'.tr(args: [''])
-                                      : displayMode == CurrencyDisplayMode.moneyOverMembers
-                                      ? 'M/N'
-                                      : Durt.i.network.symbol,
-                                  style: const TextStyle(fontSize: 14),
+                                suffix: Consumer(
+                                  builder: (context, ref, _) {
+                                    final displayMode = ref.watch(currencyDisplayModeProvider);
+
+                                    String suffixText;
+                                    switch (displayMode) {
+                                      case CurrencyDisplayMode.g1:
+                                        suffixText = Durt.i.network.symbol;
+                                        break;
+                                      case CurrencyDisplayMode.du:
+                                        suffixText = 'ud'.tr(args: ['']);
+                                        break;
+                                      case CurrencyDisplayMode.moneyOverMembers:
+                                        suffixText = 'M/N';
+                                        break;
+                                    }
+
+                                    return GestureDetector(
+                                      onTap: () {
+                                        _showCurrencyModeMenu(context, ref, setState);
+                                      },
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(suffixText, style: const TextStyle(fontSize: 14)),
+                                          ScaledSizedBox(width: 4),
+                                          Icon(Icons.arrow_drop_down, size: scaleSize(16), color: Colors.grey[600]),
+                                        ],
+                                      ),
+                                    );
+                                  },
                                 ),
                                 filled: true,
                                 fillColor: Colors.transparent,
@@ -609,6 +629,68 @@ void paymentPopup({required WidgetRef ref, required String toAddress, required S
       );
     },
   );
+}
+
+void _showCurrencyModeMenu(BuildContext context, WidgetRef ref, StateSetter setState) {
+  final RenderBox button = context.findRenderObject() as RenderBox;
+  final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+  final RelativeRect position = RelativeRect.fromRect(
+    Rect.fromPoints(
+      button.localToGlobal(Offset.zero, ancestor: overlay),
+      button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay),
+    ),
+    Offset.zero & overlay.size,
+  );
+
+  showMenu<CurrencyDisplayMode>(
+    context: context,
+    position: position,
+    items: [
+      PopupMenuItem<CurrencyDisplayMode>(
+        value: CurrencyDisplayMode.g1,
+        child: Row(
+          children: [
+            Icon(Icons.straighten, size: scaleSize(20), color: Theme.of(context).colorScheme.primary),
+            ScaledSizedBox(width: 12),
+            Text(
+              Durt.i.network.symbol,
+              style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
+            ),
+          ],
+        ),
+      ),
+      PopupMenuItem<CurrencyDisplayMode>(
+        value: CurrencyDisplayMode.du,
+        child: Row(
+          children: [
+            Icon(Icons.water_drop_rounded, size: scaleSize(20), color: Theme.of(context).colorScheme.primary),
+            ScaledSizedBox(width: 12),
+            Text('DU', style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color)),
+          ],
+        ),
+      ),
+      PopupMenuItem<CurrencyDisplayMode>(
+        value: CurrencyDisplayMode.moneyOverMembers,
+        child: Row(
+          children: [
+            Icon(Icons.trending_up_rounded, size: scaleSize(20), color: Theme.of(context).colorScheme.primary),
+            ScaledSizedBox(width: 12),
+            Text('M/N', style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color)),
+          ],
+        ),
+      ),
+    ],
+  ).then((CurrencyDisplayMode? selectedMode) {
+    if (selectedMode != null) {
+      // Change the currency display mode
+      ref.read(currencyDisplayModeProvider.notifier).setDisplayMode(selectedMode);
+
+      // Trigger a rebuild of the popup
+      setState(() {
+        // The Consumer widget will automatically update with the new mode
+      });
+    }
+  });
 }
 
 Future<void> infoFeesPopup(BuildContext context) async {

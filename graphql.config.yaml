@@ -1,8 +1,8 @@
 schema:
-  - ../durt2/lib/src/models/graphql/squid-schema.graphql
+  - ../durt2/lib/src/models/graphql/squid/squid-schema.graphql
 documents:
-  - ../durt2/lib/src/models/**/*.graphql
-  - ../durt2/lib/src/models/**/*.gql
+  - ../durt2/lib/src/models/graphql/**/*.graphql
+  - ../durt2/lib/src/models/graphql/**/*.gql
 extensions:
   endpoints:
     default:

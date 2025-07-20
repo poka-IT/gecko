@@ -14,10 +14,16 @@ class AnimatedBackground extends StatefulWidget {
 class _AnimatedBackgroundState extends State<AnimatedBackground> {
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
     return Stack(
       children: [
-        // Background normal (toujours présent)
-        Positioned.fill(
+        // Normal background (always present) - fixed to screen size
+        Positioned(
+          top: 0,
+          left: 0,
+          width: screenSize.width,
+          height: screenSize.height,
           child: Container(
             decoration: BoxDecoration(
               image: DecorationImage(
@@ -33,8 +39,12 @@ class _AnimatedBackgroundState extends State<AnimatedBackground> {
           ),
         ),
 
-        // Background easter egg avec transition fade in/out
-        Positioned.fill(
+        // Background easter egg with fade in/out transition - fixed to screen size
+        Positioned(
+          top: 0,
+          left: 0,
+          width: screenSize.width,
+          height: screenSize.height,
           child: AnimatedOpacity(
             opacity: widget.isEasterEggActive ? 1.0 : 0.0,
             duration: const Duration(milliseconds: 800),
@@ -54,7 +64,7 @@ class _AnimatedBackgroundState extends State<AnimatedBackground> {
           ),
         ),
 
-        // Le contenu par-dessus
+        // Content on top
         widget.child,
       ],
     );

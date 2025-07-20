@@ -9,7 +9,6 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/transaction_history_providers.dart';
-import 'package:gecko/providers/filtered_transaction_history_providers.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
 import 'package:gecko/widgets/history_filters.dart';
 import 'package:gecko/widgets/history_view.dart';
@@ -75,7 +74,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
 
   void _onScroll() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.7) {
-      loadMoreFilteredTransactions(ref, widget.address);
+      loadMoreTransactions(ref, widget.address);
     }
 
     // Only handle filter visibility when:
@@ -255,8 +254,8 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
       );
     }
 
-    // Use enhanced filtered state for display (includes both UD toggle and advanced filters with query-level filtering)
-    final historyState = ref.watch(enhancedFilteredTransactionHistoryProvider(widget.address));
+    // Use the existing filtered state that applies filters client-side (preserves pagination)
+    final historyState = ref.watch(filteredTransactionHistoryProvider(widget.address));
     final previousAddressAsync = ref.watch(previousAddressProvider(widget.address));
 
     // Use COMBINED state for new transaction detection (always includes all data, not affected by toggle)
@@ -389,7 +388,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                         RefreshIndicator(
                           color: context.colorScheme.primary,
                           onRefresh: () async {
-                            await refreshFilteredTransactionHistory(ref, widget.address);
+                            await refreshTransactionHistory(ref, widget.address);
                           },
                           child: AnimatedPadding(
                             duration: const Duration(milliseconds: 300),

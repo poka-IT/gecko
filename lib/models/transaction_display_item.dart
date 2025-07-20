@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:durt2/durt2.dart'
     show
         Query$GetAccountHistory$transferConnection$edges$node,
-        Query$GetFilteredAccountHistory$transferConnection$edges$node,
         Query$GetUdHistoryViaIdentity$identityConnection$edges$node$udHistory;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -62,44 +61,6 @@ class TransactionDisplayItem {
     //   Enum$CommentTypeEnum.RAW => _decodeHexString(node.comment?.remarkBytes),
     //   _ => node.comment?.remark ?? '',
     // };
-
-    final comment = _decodeHexString(node.comment?.remarkBytes);
-
-    return TransactionDisplayItem(
-      address: otherAddress,
-      username: otherUsername,
-      amount: amount,
-      comment: comment,
-      isReceived: isReceived,
-      timestamp: transactionTime,
-      transactionTime: transactionTime,
-      dateDelimiter: dateDelimiter,
-      isMigrationTime: isMigrationTime,
-      type: TransactionType.transfer,
-    );
-  }
-
-  factory TransactionDisplayItem.fromFilteredGraphQLNode(
-    Query$GetFilteredAccountHistory$transferConnection$edges$node node,
-    String walletAddress,
-    DateTime genesisTime,
-  ) {
-    final bool isReceived = node.toId == walletAddress;
-    final String otherAddress = isReceived ? (node.fromId ?? '') : (node.toId ?? '');
-    final String? otherUsername = isReceived ? node.from?.identity?.name : node.to?.identity?.name;
-    final BigInt amount = BigInt.parse(node.amount);
-    // Parse the timestamp as UTC and convert to local time
-    final DateTime transactionTime =
-        node.timestamp.endsWith('Z') || node.timestamp.contains('+') || node.timestamp.contains('-')
-        ? DateTime.parse(node.timestamp)
-              .toLocal() // Already has timezone info
-        : DateTime.parse('${node.timestamp}Z').toLocal(); // Assume UTC if no timezone info
-
-    // Calculate date delimiter for grouping
-    final String dateDelimiter = _calculateDateDelimiter(transactionTime);
-
-    // Check if this is migration time
-    final bool isMigrationTime = transactionTime.isBefore(genesisTime);
 
     final comment = _decodeHexString(node.comment?.remarkBytes);
 

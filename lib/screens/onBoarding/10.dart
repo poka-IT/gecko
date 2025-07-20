@@ -273,6 +273,8 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
                 context,
                 FaderTransition(page: OnboardingStepEleven(fromRestore: widget.fromRestore), isFast: false),
               );
+
+              myWalletProvider.reload();
             } else {
               hasError = true;
               myWalletProvider.isPinLoading = false;

@@ -42,6 +42,7 @@ const keyEnterIdentityUsername = Key('keyEnterIdentityUsername');
 
 // Safe options
 const keyShowSeed = Key('keyShowSeed');
+const keyRenameSafe = Key('keyRenameSafe');
 const keyMigrateSafe = Key('keyMigrateSafe');
 const keyChangePin = Key('keyChangePin');
 const keycreateRootDerivation = Key('keycreateRootDerivation');

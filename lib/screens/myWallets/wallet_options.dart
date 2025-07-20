@@ -503,7 +503,32 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref) {
   final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
   return Column(
     children: [
-      const SafeOptionsContent(),
+      InkWell(
+        onTap: () async {
+          if (!await myWalletProvider.askPinCode()) return;
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const SafeOptions()));
+        },
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Image.asset('assets/safes/config.png', height: scaleSize(24)),
+              ScaledSizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  'manageSafe'.tr(),
+                  style: scaledTextStyle(
+                    fontSize: 16,
+                    color: ref.read(durtProvider).isConnected ? context.colorScheme.onSurface : Colors.grey[500],
+                  ),
+                  softWrap: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
       InkWell(
         onTap: () async {
           if (!myWalletProvider.isNewDerivationLoading) {

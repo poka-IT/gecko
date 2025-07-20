@@ -14,6 +14,7 @@ import 'package:gecko/screens/myWallets/change_pin.dart';
 import 'package:gecko/screens/myWallets/custom_derivations.dart';
 import 'package:gecko/screens/myWallets/migrate_safe.dart';
 import 'package:gecko/screens/myWallets/show_seed.dart';
+import 'package:gecko/screens/myWallets/rename_safe.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart' as old_provider;
@@ -23,7 +24,7 @@ class SafeOptions extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentSafe = ref.read(walletServiceProvider).defaultSafeBox;
+    final currentSafe = ref.watch(walletServiceProvider).defaultSafeBox;
 
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
@@ -54,7 +55,7 @@ class SafeOptionsContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final safeProvider = old_provider.Provider.of<SafeProvider>(context, listen: false);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-    final currentSafe = ref.read(walletServiceProvider).defaultSafeBox;
+    final currentSafe = ref.watch(walletServiceProvider).defaultSafeBox;
     final isAlone = myWalletProvider.listWallets.length == 1;
 
     return Column(
@@ -180,6 +181,35 @@ class SafeOptionsContent extends ConsumerWidget {
                 ),
               ),
             ),
+        InkWell(
+          key: keyRenameSafe,
+          onTap: () async {
+            if (!await myWalletProvider.askPinCode(force: true)) return;
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    RenameSafeScreen(currentName: currentSafe.name, safeBoxNumber: currentSafe.number),
+              ),
+            );
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
+            child: Row(
+              children: [
+                Icon(Icons.edit_outlined, size: scaleSize(24), color: context.colorScheme.onSurface),
+                ScaledSizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    'renameSafe'.tr(),
+                    style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
+                    softWrap: true,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
         InkWell(
           key: keyDeleteSafe,
           onTap: () async {

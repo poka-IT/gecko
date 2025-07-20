@@ -7,6 +7,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/settings_provider.dart';
+import 'package:gecko/providers/transaction_filters_provider.dart';
 
 /// State class for transaction history
 class TransactionHistoryState {
@@ -571,4 +572,24 @@ class ScrollToTopNotifier extends StateNotifier<int> {
 /// Provider for scroll to top events
 final scrollToTopProvider = StateNotifierProvider<ScrollToTopNotifier, int>((ref) {
   return ScrollToTopNotifier();
+});
+
+/// Enhanced transaction history provider that applies both UD toggle and advanced filters
+final filteredTransactionHistoryProvider = Provider.family<TransactionHistoryState, String>((ref, address) {
+  // Get the base transaction state (with UD toggle applied)
+  final baseState = ref.watch(transactionHistoryProvider(address));
+  
+  // Get advanced filter criteria
+  final filters = ref.watch(transactionFiltersProvider);
+  
+  // If no advanced filters are active, return the base state
+  if (!filters.hasActiveFilters) {
+    return baseState;
+  }
+  
+  // Apply advanced filters to the transactions
+  final filteredTransactions = applyTransactionFilters(baseState.transactions, filters);
+  
+  // Return a new state with filtered transactions but preserve other properties
+  return baseState.copyWith(transactions: filteredTransactions);
 });

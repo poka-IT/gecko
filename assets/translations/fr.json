@@ -439,5 +439,18 @@
     "xPercentRule": "Pourcentage minimum de membres référents à atteindre pour respecter la règle de distance",
     "currencyDescription": "{} est une monnaie libre, démarrée il y a {}. Elle compte actuellement {} membres, qui produisent et perçoivent un Dividende Universel (DU), chaque {}.",
     "errorLoadingCurrencyData": "Erreur lors du chargement des données de la monnaie",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "advancedFilters": "Filtres avancés",
+    "searchAddressOrName": "Rechercher par adresse ou identité",
+    "enterAddressOrName": "Saisir adresse ou nom d'identité",
+    "searchComment": "Rechercher dans les commentaires",
+    "enterCommentKeywords": "Saisir mots-clés à rechercher",
+    "dateRange": "Plage de dates",
+    "selectDateRange": "Sélectionner plage de dates",
+    "amountRange": "Plage de montants",
+    "min": "Min",
+    "max": "Max",
+    "clearAll": "Effacer tout",
+    "done": "Terminé",
+    "filters": "Filtres"
 }

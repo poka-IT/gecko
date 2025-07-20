@@ -9,12 +9,13 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/transaction_history_providers.dart';
+import 'package:gecko/providers/filtered_transaction_history_providers.dart';
+import 'package:gecko/providers/transaction_filters_provider.dart';
 import 'package:gecko/widgets/history_filters.dart';
 import 'package:gecko/widgets/history_view.dart';
 import 'package:gecko/widgets/transaction_in_progress_tile.dart';
 import 'package:gecko/models/transaction_in_progress_data.dart';
 import 'package:visibility_detector/visibility_detector.dart';
-import 'package:gecko/models/transaction_display_item.dart';
 
 class HistoryQuery extends ConsumerStatefulWidget {
   const HistoryQuery({super.key, required this.address, this.transactionData});
@@ -36,10 +37,9 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
   bool _isDisposed = false;
   Timer? _hideIndicatorTimer;
 
-  // Filter visibility management with smooth translation
+  // Filter visibility management (only when no filters are active)
   double _filterTranslationY = 0.0; // 0.0 = visible, -1.0 = hidden
   double _lastScrollOffset = 0.0;
-  bool _hasSeenUDsBefore = false;
 
   bool get _isAtTop => _scrollController.hasClients && _scrollController.position.pixels <= 50;
 
@@ -75,11 +75,18 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
 
   void _onScroll() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.7) {
-      loadMoreTransactions(ref, widget.address);
+      loadMoreFilteredTransactions(ref, widget.address);
     }
 
-    // Filter visibility logic based on scroll direction
-    _handleFilterVisibility();
+    // Only handle filter visibility when:
+    // 1. No advanced filters are active
+    // 2. Filter panel is not expanded/open
+    final hasAdvancedFilters = ref.read(transactionFiltersProvider).hasActiveFilters;
+    final isFilterPanelExpanded = ref.read(filterPanelExpandedProvider);
+
+    if (!hasAdvancedFilters && !isFilterPanelExpanded) {
+      _handleFilterVisibility();
+    }
   }
 
   void _handleFilterVisibility() {
@@ -248,8 +255,8 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
       );
     }
 
-    // Use filtered state for display
-    final historyState = ref.watch(transactionHistoryProvider(widget.address));
+    // Use enhanced filtered state for display (includes both UD toggle and advanced filters with query-level filtering)
+    final historyState = ref.watch(enhancedFilteredTransactionHistoryProvider(widget.address));
     final previousAddressAsync = ref.watch(previousAddressProvider(widget.address));
 
     // Use COMBINED state for new transaction detection (always includes all data, not affected by toggle)
@@ -320,49 +327,78 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
 
             // Handle empty state
             if (!historyState.isLoading && historyState.transactions.isEmpty && historyState.error == null)
-              Column(
-                children: <Widget>[
-                  if (widget.transactionData != null)
-                    TransactionInProgressTule(transactionData: widget.transactionData!),
-                  ScaledSizedBox(height: 40),
-                  _buildEmptyStateView(context),
-                ],
+              Consumer(
+                builder: (context, ref, child) {
+                  final hasAdvancedFilters = ref.watch(transactionFiltersProvider).hasActiveFilters;
+                  final isFilterPanelExpanded = ref.watch(filterPanelExpandedProvider);
+                  final keepFiltersVisible = hasAdvancedFilters || isFilterPanelExpanded;
+
+                  if (keepFiltersVisible) {
+                    // Show filters + empty message when filtering
+                    return Expanded(
+                      child: Stack(
+                        children: [
+                          // Empty state content with padding for filters
+                          Padding(
+                            padding: EdgeInsets.only(top: scaleSize(16)),
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  if (widget.transactionData != null)
+                                    TransactionInProgressTule(transactionData: widget.transactionData!),
+                                  ScaledSizedBox(height: 40),
+                                  _buildEmptyStateView(context),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // Filter overlay - always visible when filtering
+                          Positioned(top: 0, left: 0, right: 0, child: TransactionFilter(address: widget.address)),
+                        ],
+                      ),
+                    );
+                  } else {
+                    // Show only empty message when no filters (hide filters)
+                    return Column(
+                      children: <Widget>[
+                        if (widget.transactionData != null)
+                          TransactionInProgressTule(transactionData: widget.transactionData!),
+                        ScaledSizedBox(height: 40),
+                        _buildEmptyStateView(context),
+                      ],
+                    );
+                  }
+                },
               ),
 
             // Handle success state with transactions
             if (historyState.transactions.isNotEmpty)
               Expanded(
-                child: Stack(
-                  children: [
-                    // Main transaction list - always takes full space
-                    RefreshIndicator(
-                      color: context.colorScheme.primary,
-                      onRefresh: () async {
-                        await refreshTransactionHistory(ref, widget.address);
-                      },
-                      child: Consumer(
-                        builder: (context, ref, child) {
-                          // Check if UDs are available to determine if filter is shown
-                          final combinedState = ref.watch(combinedHistoryProvider(widget.address));
-                          final hasUDs = combinedState.transactions.any(
-                            (transaction) => transaction.type == TransactionType.universalDividend,
-                          );
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    final hasAdvancedFilters = ref.watch(transactionFiltersProvider).hasActiveFilters;
+                    final isFilterPanelExpanded = ref.watch(filterPanelExpandedProvider);
 
-                          // Track if this is the first time we see UDs
-                          final bool isFirstTimeSeingUDs = hasUDs && !_hasSeenUDsBefore;
-                          if (hasUDs && !_hasSeenUDsBefore) {
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              _hasSeenUDsBefore = true;
-                            });
-                          }
+                    // Keep filters visible if advanced filters are active OR panel is expanded
+                    final keepFiltersVisible = hasAdvancedFilters || isFilterPanelExpanded;
 
-                          return AnimatedPadding(
-                            duration: isFirstTimeSeingUDs
-                                ? const Duration(milliseconds: 300)
-                                : Duration.zero, // No animation for scroll changes
+                    return Stack(
+                      children: [
+                        // Main transaction list with conditional padding
+                        RefreshIndicator(
+                          color: context.colorScheme.primary,
+                          onRefresh: () async {
+                            await refreshFilteredTransactionHistory(ref, widget.address);
+                          },
+                          child: AnimatedPadding(
+                            duration: const Duration(milliseconds: 300),
                             curve: Curves.easeInOut,
                             padding: EdgeInsets.only(
-                              top: hasUDs ? scaleSize(60) * (1.0 + _filterTranslationY).clamp(0.0, 1.0) : 0,
+                              top: keepFiltersVisible
+                                  ? scaleSize(16) // Reduced to match new compact filter height
+                                  : scaleSize(16) *
+                                        (1.0 + _filterTranslationY).clamp(0.0, 1.0), // Animated when not filtering
                             ),
                             child: ListView(
                               key: keyListTransactions,
@@ -388,37 +424,30 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                                 ),
                               ],
                             ),
-                          );
-                        },
-                      ),
-                    ),
-
-                    // Filter overlay - floats above the list
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      child: Transform.translate(
-                        offset: Offset(0, _filterTranslationY * 80.0),
-                        child: Opacity(
-                          opacity: (1.0 + _filterTranslationY).clamp(0.0, 1.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: context.colorScheme.surface,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.1),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: TransactionFilter(address: widget.address),
                           ),
                         ),
-                      ),
-                    ),
-                  ],
+
+                        // Filter overlay with conditional visibility
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: Transform.translate(
+                            offset: Offset(
+                              0,
+                              keepFiltersVisible ? 0.0 : _filterTranslationY * 16.0, // Match the reduced padding
+                            ),
+                            child: Opacity(
+                              opacity: keepFiltersVisible
+                                  ? 1.0 // Always visible when filtering
+                                  : (1.0 + _filterTranslationY).clamp(0.0, 1.0), // Animated when not filtering
+                              child: TransactionFilter(address: widget.address), // Remove the wrapper container
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
           ],

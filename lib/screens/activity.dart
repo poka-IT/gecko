@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:gecko/providers.dart';
 
 import 'package:gecko/widgets/bottom_app_bar.dart';
@@ -15,6 +16,7 @@ import 'package:gecko/widgets/compact_wallet_header.dart';
 import 'package:gecko/models/wallet_header_data.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/models/transaction_in_progress_data.dart';
+import 'package:gecko/providers/transaction_filters_provider.dart';
 
 class ActivityScreen extends ConsumerStatefulWidget {
   const ActivityScreen({required this.address, this.username, this.transactionData}) : super(key: keyActivityScreen);
@@ -35,6 +37,24 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
     super.initState();
     ref.read(storageServiceProvider).getOldOwnerKey(widget.address);
     _headerDataFuture = _loadWalletData();
+
+    // Clear filters when opening a new activity screen
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      // Multiple safety checks to prevent lifecycle errors
+      if (!mounted) return;
+
+      try {
+        // Use a future to ensure we're in a stable state
+        Future.delayed(Duration.zero, () {
+          if (mounted) {
+            ref.read(transactionFiltersProvider.notifier).reset();
+          }
+        });
+      } catch (e) {
+        // Silently handle any errors during filter reset
+        debugPrint('Filter reset error: $e');
+      }
+    });
   }
 
   Future<WalletHeaderData> _loadWalletData() async {
@@ -65,11 +85,11 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
-            body: NestedScrollView(
-              headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-                return [_buildCollapsibleHeader()]; // Show CompactWalletHeader immediately
-              },
-              body: const Center(child: CircularProgressIndicator()),
+            body: Column(
+              children: [
+                _buildFixedHeader(),
+                const Expanded(child: Center(child: CircularProgressIndicator())),
+              ],
             ),
             bottomNavigationBar: const GeckoBottomAppBar(),
           );
@@ -77,11 +97,11 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
 
         if (snapshot.hasError || !snapshot.hasData) {
           return Scaffold(
-            body: NestedScrollView(
-              headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-                return [_buildCollapsibleHeader()]; // Show CompactWalletHeader even on error
-              },
-              body: Center(child: Text('errorLoadingWalletData'.tr())),
+            body: Column(
+              children: [
+                _buildFixedHeader(),
+                Expanded(child: Center(child: Text('errorLoadingWalletData'.tr()))),
+              ],
             ),
             bottomNavigationBar: const GeckoBottomAppBar(),
           );
@@ -94,40 +114,34 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
 
   Widget _buildScaffold(WalletHeaderData headerData) {
     return Scaffold(
-      body: NestedScrollView(
-        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-          return [_buildCollapsibleHeader()];
-        },
-        body: MediaQuery.removePadding(
-          context: context,
-          removeTop: true,
-          child: HistoryQuery(address: widget.address, transactionData: widget.transactionData),
-        ),
+      body: Column(
+        children: [
+          // Fixed compact header - never moves
+          _buildFixedHeader(),
+
+          // Transaction history takes remaining space
+          Expanded(
+            child: HistoryQuery(address: widget.address, transactionData: widget.transactionData),
+          ),
+        ],
       ),
       bottomNavigationBar: const GeckoBottomAppBar(),
     );
   }
 
-  Widget _buildCollapsibleHeader() {
+  Widget _buildFixedHeader() {
     final balanceAsync = ref.watch(smartBalanceStreamProvider(widget.address));
+    final balance = balanceAsync.hasValue ? balanceAsync.value?.transferableBalance : null;
+    final isEmptyWallet = balance == null || balance == BigInt.zero;
 
-    return SliverLayoutBuilder(
-      builder: (context, constraints) {
-        final balance = balanceAsync.hasValue ? balanceAsync.value?.transferableBalance : null;
-        final isEmptyWallet = balance == null || balance == BigInt.zero;
+    // Determine background color based on wallet state
+    final backgroundColor = isEmptyWallet
+        ? Theme.of(context).colorScheme.error
+        : Theme.of(context).colorScheme.tertiary;
 
-        // Determine background color based on wallet state
-        final backgroundColor = isEmptyWallet
-            ? Theme.of(context).colorScheme.error
-            : Theme.of(context).colorScheme.tertiary;
-
-        return SliverToBoxAdapter(
-          child: Container(
-            color: backgroundColor,
-            child: CompactWalletHeader(address: widget.address, showBackButton: true),
-          ),
-        );
-      },
+    return Container(
+      color: backgroundColor,
+      child: CompactWalletHeader(address: widget.address, showBackButton: true),
     );
   }
 }

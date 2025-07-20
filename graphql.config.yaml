@@ -1,5 +1,6 @@
 schema:
   - ../durt2/lib/src/models/graphql/squid/squid-schema.graphql
+  - ../durt2/lib/src/models/graphql/datapod/datapod-schema.graphql
 documents:
   - ../durt2/lib/src/models/graphql/**/*.graphql
   - ../durt2/lib/src/models/graphql/**/*.gql

@@ -70,6 +70,7 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
     );
 
     await walletHeaderDataBox.put(address, data);
+
     return data;
   }
 

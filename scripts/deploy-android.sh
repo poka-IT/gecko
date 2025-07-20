@@ -120,7 +120,7 @@ create_changelog_file() {
     else
         # No changelog provided, skip metadata upload
         FASTLANE_METADATA_PATH=""
-        return 1
+        return 0
     fi
 }
 

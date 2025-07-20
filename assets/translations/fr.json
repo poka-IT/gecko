@@ -254,6 +254,7 @@
     "blockN": "Bloc N°{}",
     "thisIsNotAGoodCode": "Ce n'est pas le bon code",
     "thisIdentityAlreadyExist": "Cette identité existe déjà",
+    "safeAlreadyExist": "Ce coffre existe déjà dans votre Ğecko, vous ne pouvez pas importer deux fois le même coffre.",
     "squidUnavailableIdentityValidationLimited": "⚠️ Validation limitée : réseau indisponible",
     "removedFromcontacts": "Retiré des contact",
     "addedToContacts": "Ajouté au contacts",

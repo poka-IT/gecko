@@ -247,6 +247,7 @@
     "blockN": "Blocco N°{}",
     "thisIsNotAGoodCode": "Questo codice non é valido",
     "thisIdentityAlreadyExist": "Identitá giá esistente",
+    "safeAlreadyExist": "Questa cassaforte esiste già nel tuo Ğecko, non puoi importare la stessa cassaforte due volte.",
     "squidUnavailableIdentityValidationLimited": "⚠️ Validazione limitata: rete non disponibile",
     "qrCodeNotAddress": "Questo QR code non é un indirizzo valido",
     "emptyWalletCannotBeCertified": "Un portafoglio vuoto non puó essere certificato",

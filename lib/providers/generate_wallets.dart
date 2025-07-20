@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:durt/durt.dart' as durt;
 import 'package:durt2/durt2.dart' show WalletBalance, WalletEntity, Durt, BidouilleLang;
+import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/widgets/scan_derivations_info.dart';
 import 'package:gecko/widgets/commons/common_elements.dart';
+import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 
 class GenerateWalletsProvider with ChangeNotifier {
   late ProviderContainer _container;
@@ -453,6 +455,72 @@ class GenerateWalletsProvider with ChangeNotifier {
     // Build the address to derivation map
     for (final entry in keypairResults) {
       addressToScan.putIfAbsent(entry.value.address, () => entry.key);
+    }
+
+    // 2.5. CHECK FOR EXISTING ADDRESSES IN STORED WALLETS
+    // Collect all addresses to check (including root if it exists)
+    final allAddressesToCheck = <String>[];
+
+    // Add root address if it was scanned and found
+    if (scanedWalletNumber > 0) {
+      // Root wallet was added, get its address
+      final englishMnemonic = getEnglishMnemonic();
+      final rootKeypair = await _container.read(walletServiceProvider).getKeyPairFromMnemonic(englishMnemonic);
+      allAddressesToCheck.add(rootKeypair.address);
+    }
+
+    // Add all derived addresses
+    allAddressesToCheck.addAll(addressToScan.keys);
+
+    // Check if any address already exists in stored wallets (excluding current safe)
+    final duplicateAddresses = <String>[];
+    final currentSafeNumber = _container.read(walletServiceProvider).defaultSafeBoxNumber;
+
+    for (final address in allAddressesToCheck) {
+      // Check if address exists in any wallet
+      final existingWallet = _container
+          .read(walletServiceProvider)
+          .walletBox
+          .query(WalletEntity_.address.equals(address))
+          .build()
+          .findFirst();
+
+      if (existingWallet != null) {
+        // Check if this wallet belongs to a different safe than the current one
+        final walletSafeNumber = existingWallet.safe.target?.number;
+        if (walletSafeNumber != null && walletSafeNumber != currentSafeNumber) {
+          duplicateAddresses.add(address);
+        }
+      }
+    }
+
+    if (duplicateAddresses.isNotEmpty) {
+      // Remove the current safe (which removes all its wallets too)
+      final actualSafeNumber = _container.read(walletServiceProvider).defaultSafeBoxNumber;
+      await _container.read(walletServiceProvider).deleteSafe(actualSafeNumber);
+
+      // Restore the previous defaultSafeBoxNumber (highest remaining safe number)
+      final safeBox = _container.read(walletServiceProvider).safeBox;
+      if (!safeBox.isEmpty()) {
+        final maxSafeNumber = safeBox.query().build().property(SafeEntity_.number).max();
+        _container.read(walletServiceProvider).setDefaultSafeBoxNumber(maxSafeNumber);
+      }
+
+      // Show error dialog
+      await showConfirmationDialog(
+        // ignore: use_build_context_synchronously
+        context: context,
+        type: ConfirmationDialogType.error,
+        title: 'error'.tr(),
+        message: 'safeAlreadyExist'.tr(),
+        hideCancelButton: true,
+      );
+
+      // Navigate back to home
+      // ignore: use_build_context_synchronously
+      Navigator.of(context).popUntil((route) => route.isFirst);
+
+      return ScanDerivationsResult.error;
     }
 
     // 3. BALANCE CHECK (already optimized - single batch call)

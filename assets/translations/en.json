@@ -245,6 +245,7 @@
     "blockN": "Block N°{}",
     "thisIsNotAGoodCode": "This is not a good code",
     "thisIdentityAlreadyExist": "This identity already exists",
+    "safeAlreadyExist": "This safe already exists in your Ğecko, you cannot import the same safe twice.",
     "squidUnavailableIdentityValidationLimited": "⚠️ Limited validation: network unavailable",
     "removedFromcontacts": "Removed from contacts",
     "addedToContacts": "Added to contacts",

@@ -143,7 +143,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
     final generateWalletProvider = old_provider.Provider.of<GenerateWalletsProvider>(context);
 
-    final currentChest = myWalletProvider.getCurrentSafe;
+    // Will get the current chest after safe creation - don't capture it too early
 
     return Form(
       key: formKey,
@@ -209,6 +209,9 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
                   .read(walletServiceProvider)
                   .createSafe(mnemonic: originalMnemonic, pinCode: pinCodeint, safeName: 'safeBoxName'.tr());
 
+              // Get the current chest AFTER creation - this ensures we use the newly created safe
+              final currentChest = ref.read(walletServiceProvider).defaultSafeBoxNumber;
+
               ScanDerivationsResult scanStatus = ScanDerivationsResult.none;
               if (widget.scanDerivation) {
                 scanStatus = await generateWalletProvider.scanDerivations(context);
@@ -238,7 +241,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
               }
 
               await myWalletProvider.readAllWallets(ref: ref, safeBoxNumber: currentChest);
-              myWalletProvider.reload();
 
               generateWalletProvider.generatedMnemonic = '';
               myWalletProvider.debounceResetPinCode();

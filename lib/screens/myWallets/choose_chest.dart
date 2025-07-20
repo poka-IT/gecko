@@ -1,19 +1,15 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:io';
-
-import 'package:durt2/objectbox.g.dart';
+import 'package:durt2/durt2.dart' show SafeEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/screens/myWallets/restore_chest.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:gecko/screens/onBoarding/5.dart';
+import 'package:gecko/widgets/safe_carousel.dart';
 import 'package:provider/provider.dart' as old_provider;
 
 class ChooseChest extends ConsumerStatefulWidget {
@@ -27,11 +23,47 @@ class _ChooseChestState extends ConsumerState<ChooseChest> {
   final tplController = TextEditingController();
   final buttonCarouselController = CarouselSliderController();
   late int currentChest;
+  late List<SafeEntity> allSafes;
+  late int currentSafeIndex;
 
   @override
   void initState() {
     super.initState();
+    // Get all safes and sort them by number for consistent ordering
+    allSafes = ref.read(walletServiceProvider).safeBox.getAll();
+    allSafes.sort((a, b) => a.number.compareTo(b.number));
+
+    // Find the current safe and its index in the sorted list
     currentChest = ref.read(walletServiceProvider).defaultSafeBoxNumber;
+    currentSafeIndex = allSafes.indexWhere((safe) => safe.number == currentChest);
+    if (currentSafeIndex == -1 && allSafes.isNotEmpty) {
+      currentSafeIndex = 0; // Fallback to first safe if default not found
+      currentChest = allSafes[0].number;
+    }
+  }
+
+  /// Reload safes after creation/import
+  void _reloadSafes() {
+    if (!mounted) return;
+
+    setState(() {
+      // Reload all safes
+      allSafes = ref.read(walletServiceProvider).safeBox.getAll();
+      allSafes.sort((a, b) => a.number.compareTo(b.number));
+
+      // Update to the newest default safe (likely the newly created one)
+      currentChest = ref.read(walletServiceProvider).defaultSafeBoxNumber;
+      currentSafeIndex = allSafes.indexWhere((safe) => safe.number == currentChest);
+
+      if (currentSafeIndex >= 0) {
+        // Move carousel to the new safe
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            buttonCarouselController.animateToPage(currentSafeIndex);
+          }
+        });
+      }
+    });
   }
 
   @override
@@ -45,47 +77,35 @@ class _ChooseChestState extends ConsumerState<ChooseChest> {
         child: Column(
           children: <Widget>[
             const SizedBox(height: 160),
-            CarouselSlider(
+            SafeCarousel(
+              allSafes: allSafes,
+              currentSafeIndex: currentSafeIndex,
               carouselController: buttonCarouselController,
-              options: CarouselOptions(
-                height: 210,
-                onPageChanged: (index, reason) {
-                  currentChest = ref
-                      .read(walletServiceProvider)
-                      .safeBox
-                      .query()
-                      .build()
-                      .property(SafeEntity_.number)
-                      .max();
-                  setState(() {});
-                },
-                enableInfiniteScroll: false,
-                initialPage: currentChest,
-                enlargeCenterPage: true,
-                viewportFraction: 0.5,
-              ),
-              items: ref.read(walletServiceProvider).safeBox.getAll().map((safe) {
-                return Builder(
-                  builder: (BuildContext context) {
-                    return Column(
-                      children: <Widget>[
-                        safe.imagePath == null
-                            ? Image.asset('assets/chests/${safe.number}.png', height: 150)
-                            : Image.file(File(safe.imagePath!), height: 150),
-                        const SizedBox(height: 30),
-                        Text(safe.name, style: const TextStyle(fontSize: 20)),
-                      ],
-                    );
-                  },
-                );
-              }).toList(),
+              onPageChanged: (index, reason) {
+                setState(() {
+                  if (index < allSafes.length) {
+                    // Regular safe selected
+                    currentSafeIndex = index;
+                    currentChest = allSafes[index].number;
+                  } else {
+                    // Placeholder selected - keep current safe but update index
+                    currentSafeIndex = index;
+                  }
+                });
+              },
+              onSafeCreated: () => _reloadSafes(),
+              onSafeImported: () => _reloadSafes(),
+              showCreatePlaceholder: true,
+              height: 210,
+              isCompact: false,
             ),
-            if (ref.read(walletServiceProvider).safeBox.query().build().count() > 1)
+            // Always show pagination dots if there are multiple items (safes + placeholder)
+            if (allSafes.length + 1 > 1)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: ref.read(walletServiceProvider).safeBox.getAll().map((entry) {
+                children: List.generate(allSafes.length + 1, (index) {
                   return GestureDetector(
-                    onTap: () => buttonCarouselController.animateToPage(entry.id),
+                    onTap: () => buttonCarouselController.animateToPage(index),
                     child: Container(
                       width: 12.0,
                       height: 12.0,
@@ -93,88 +113,39 @@ class _ChooseChestState extends ConsumerState<ChooseChest> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black)
-                            .withValues(alpha: currentChest == entry.id ? 0.9 : 0.4),
+                            .withValues(alpha: currentSafeIndex == index ? 0.9 : 0.4),
                       ),
                     ),
                   );
                 }).toList(),
               ),
-            const SizedBox(height: 80),
-            SizedBox(
-              width: 400,
-              height: 70,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.black,
-                  backgroundColor: context.colorScheme.primary,
-                ),
-                onPressed: () async {
-                  ref.read(walletServiceProvider).setDefaultSafeBoxNumber(currentChest);
-                  myWalletProvider.pinCode = '';
-                  if (!await myWalletProvider.askPinCode()) return;
-
-                  Navigator.popUntil(context, ModalRoute.withName('/'));
-                  Navigator.pushNamed(context, '/mywallets');
-                },
-                child: Text(
-                  'openThisChest'.tr(),
-                  style: TextStyle(fontSize: 21, color: context.colorScheme.surface, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
-            // const SizedBox(height: 20),
-            Expanded(
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: InkWell(
-                  key: keyCreateNewChest,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return const OnboardingStepFive(skipIntro: true);
-                        },
-                      ),
-                    );
-                  },
-                  child: SizedBox(
-                    width: 400,
-                    height: 50,
-                    child: Center(
-                      child: Text(
-                        'createChest'.tr(),
-                        style: TextStyle(fontSize: 21, color: context.colorScheme.primary, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            InkWell(
-              key: keyImportChest,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) {
-                      return const RestoreChest(skipIntro: true);
-                    },
-                  ),
-                );
-              },
-              child: SizedBox(
-                width: 400,
+            const SizedBox(height: 60),
+            // Only show button if a real safe is selected (not placeholder)
+            if (currentSafeIndex < allSafes.length)
+              Container(
+                width: 300,
                 height: 50,
-                child: Center(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.black,
+                    backgroundColor: context.colorScheme.primary,
+                  ),
+                  onPressed: () async {
+                    ref.read(walletServiceProvider).setDefaultSafeBoxNumber(currentChest);
+                    myWalletProvider.pinCode = '';
+                    if (!await myWalletProvider.askPinCode(canSwitch: true)) return;
+
+                    Navigator.popUntil(context, ModalRoute.withName('/'));
+                    Navigator.pushNamed(context, '/mywallets');
+                  },
                   child: Text(
-                    'importChest'.tr(),
-                    style: TextStyle(fontSize: 21, color: context.colorScheme.primary, fontWeight: FontWeight.w600),
+                    'openThisChest'.tr(),
+                    style: TextStyle(fontSize: 18, color: context.colorScheme.surface, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 40),
           ],
         ),
       ),

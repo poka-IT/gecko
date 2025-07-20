@@ -36,6 +36,12 @@
     "importChest": "Importa uno scrigno",
     "selectMyChest": "Seleziona scrigno",
     "accessMyChest": "Accedi a scrigno",
+    "swipeToChangeSafe": "Scorri per cambiare scrigno",
+    "swipeToCreateSafe": "Scorri per creare uno scrigno",
+    "createOrImportSafe": "Crea o Importa Scrigno",
+    "tapToCreateOrImport": "Tocca per creare o importare",
+    "addNewSafe": "Aggiungi nuovo scrigno",
+    "chooseAction": "Scegli un'azione:",
     "manageMembership": "Amministra affiliazione",
     "chooseThisWallet": "Scegli questo portafoglio",
     "thisWalletIsDefault": "portafoglio predefinito",
@@ -335,5 +341,6 @@
     "identityStatusRevoked": "Revocato",
     "identityStatusUnknown": "Sconosciuto",
     "incorrectPhrase": "Frase incorretta",
-    "incorrectPhraseDescription": "La tua frase di recupero sembra incorretta, le parole non sono nell'ordine giusto.\nSi prega di correggerla."
+    "incorrectPhraseDescription": "La tua frase di recupero sembra incorretta, le parole non sono nell'ordine giusto.\nSi prega di correggerla.",
+    "changeSafe": "Cambia cassaforte"
 }

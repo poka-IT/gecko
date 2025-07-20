@@ -2,7 +2,7 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'package:durt2/durt2.dart' show SafeEntity, WalletEntity, SafeEntityExt;
+import 'package:durt2/durt2.dart' show SafeEntity, WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -17,10 +17,13 @@ import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/globals.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:gecko/widgets/safe_carousel.dart';
 
 class UnlockingWallet extends ConsumerStatefulWidget {
-  const UnlockingWallet({required this.wallet}) : super(key: keyUnlockWallet);
+  const UnlockingWallet({required this.wallet, this.canSwitch = false}) : super(key: keyUnlockWallet);
   final WalletEntity wallet;
+  final bool canSwitch; // Whether user can switch between safes during unlock
 
   @override
   ConsumerState<UnlockingWallet> createState() => _UnlockingWalletState();
@@ -29,9 +32,12 @@ class UnlockingWallet extends ConsumerStatefulWidget {
 class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
   late int currentSafeNumber;
   late SafeEntity currentSafe;
+  late List<SafeEntity> allSafes;
+  int currentSafeIndex = 0;
   bool canUnlock = true;
   late final TextEditingController enterPin;
   late final FocusNode pinFocus;
+  final CarouselSliderController carouselController = CarouselSliderController();
 
   Color pinColor = const Color(0xffF9F9F1);
 
@@ -40,8 +46,43 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
     super.initState();
     pinFocus = FocusNode(debugLabel: 'pinFocusNode');
     enterPin = TextEditingController();
+    _initializeSafes();
+  }
+
+  // Removed didChangeDependencies to avoid conflicts with PIN focus and auto-reloads
+
+  /// Initialize the safes list and current selection
+  void _initializeSafes() {
     currentSafeNumber = ref.read(walletServiceProvider).defaultSafeBoxNumber;
-    currentSafe = ref.read(walletServiceProvider).safeBox.getNumber(currentSafeNumber);
+
+    if (widget.canSwitch) {
+      // Multi-safe support enabled - load all safes
+      allSafes = ref.read(walletServiceProvider).safeBox.getAll();
+      if (allSafes.isEmpty) {
+        // This shouldn't happen, but handle gracefully
+        throw Exception('No safes found');
+      }
+
+      // Sort safes by number for consistent ordering
+      allSafes.sort((a, b) => a.number.compareTo(b.number));
+
+      // Find current safe index
+      currentSafeIndex = allSafes.indexWhere((safe) => safe.number == currentSafeNumber);
+      if (currentSafeIndex == -1) {
+        currentSafeIndex = 0; // Fallback to first safe
+        currentSafeNumber = allSafes[0].number;
+      }
+      currentSafe = allSafes[currentSafeIndex];
+    } else {
+      // Single-safe mode - only load current safe
+      try {
+        currentSafe = ref.read(walletServiceProvider).getSafeBox(currentSafeNumber);
+        allSafes = [currentSafe]; // Single safe in list
+        currentSafeIndex = 0;
+      } catch (e) {
+        throw Exception('Current safe $currentSafeNumber not found');
+      }
+    }
   }
 
   /// Wait for Durt to be connected and storage service ready before allowing access
@@ -85,7 +126,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
       );
     }
 
-    await myWalletProvider.readAllWallets();
+    await myWalletProvider.readAllWallets(safeBoxNumber: currentSafeNumber, ref: ref);
   }
 
   @override
@@ -120,26 +161,8 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                   ),
                 ),
                 ScaledSizedBox(height: isTall ? 12 : 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    currentSafe.imagePath == null
-                        ? Image.asset('assets/chests/${currentSafe.number}.png', width: scaleSize(isTall ? 95 : 75))
-                        : Image.file(File(currentSafe.imagePath!), width: scaleSize(isTall ? 127 : 95)),
-                    ScaledSizedBox(width: 18),
-                    Flexible(
-                      child: Text(
-                        currentSafe.name,
-                        textAlign: TextAlign.center,
-                        style: scaledTextStyle(
-                          fontSize: isTall ? 24 : 20,
-                          color: context.colorScheme.onSurface,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                // Safe display - either slider (if canSwitch) or static (if locked)
+                widget.canSwitch ? _buildSafeSlider(context) : _buildStaticSafeDisplay(context),
                 ScaledSizedBox(height: isTall ? 30 : 15),
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -257,6 +280,168 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
     );
   }
 
+  /// Build the safe carousel slider with multi-safe support
+  Widget _buildSafeSlider(BuildContext context) {
+    // Show carousel with optional placeholder for creating new safes
+    final totalItems =
+        allSafes.length + (widget.canSwitch ? 1 : 0); // +1 for create/import placeholder only if canSwitch
+    final isPlaceholderSelected = widget.canSwitch && currentSafeIndex >= allSafes.length;
+
+    return Column(
+      children: [
+        // Always show carousel slider for safe selection + creation
+        SizedBox(
+          height: scaleSize(isTall ? 140 : 120),
+          child: SafeCarousel(
+            allSafes: allSafes,
+            currentSafeIndex: currentSafeIndex,
+            carouselController: carouselController,
+            onPageChanged: (index, reason) {
+              setState(() {
+                currentSafeIndex = index;
+                if (index < allSafes.length) {
+                  // Regular safe selected
+                  currentSafe = allSafes[index];
+                  currentSafeNumber = currentSafe.number;
+                  // Reset PIN state when changing safes
+                  enterPin.clear();
+                  pinColor = const Color(0xffF9F9F1);
+                }
+                // If placeholder is selected, we don't update currentSafe
+              });
+            },
+            onSafeCreated: _simpleReloadSafes,
+            onSafeImported: _simpleReloadSafes,
+            showCreatePlaceholder: widget.canSwitch,
+            height: scaleSize(isTall ? 140 : 120),
+            isCompact: true,
+          ),
+        ),
+
+        ScaledSizedBox(height: 8),
+
+        // Safe name or action hint
+        Text(
+          isPlaceholderSelected ? 'createOrImportSafe'.tr() : currentSafe.name,
+          textAlign: TextAlign.center,
+          style: scaledTextStyle(
+            fontSize: isTall ? 24 : 20,
+            color: context.colorScheme.onSurface,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+
+        ScaledSizedBox(height: 4),
+
+        // Pagination dots for all items (including placeholder)
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(totalItems, (index) {
+            return GestureDetector(
+              onTap: () {
+                carouselController.animateToPage(index);
+              },
+              child: Container(
+                width: 8.0,
+                height: 8.0,
+                margin: const EdgeInsets.symmetric(horizontal: 3.0),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: (context.colorScheme.onSurface).withValues(alpha: currentSafeIndex == index ? 0.9 : 0.4),
+                ),
+              ),
+            );
+          }),
+        ),
+
+        ScaledSizedBox(height: 4),
+
+        // Hint text (only show if canSwitch is enabled)
+        if (widget.canSwitch)
+          Text(
+            isPlaceholderSelected
+                ? 'tapToCreateOrImport'.tr()
+                : (allSafes.length > 1 ? 'swipeToChangeSafe'.tr() : 'swipeToCreateSafe'.tr()),
+            style: scaledTextStyle(
+              fontSize: 11,
+              color: context.colorScheme.onSurfaceVariant,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// Build static safe display when switching is not allowed
+  Widget _buildStaticSafeDisplay(BuildContext context) {
+    return Column(
+      children: [
+        // Safe image without carousel
+        SizedBox(
+          height: scaleSize(isTall ? 140 : 120),
+          child: Center(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 8),
+              child: currentSafe.imagePath == null
+                  ? Image.asset(
+                      'assets/chests/${currentSafe.number % 4}.png',
+                      width: scaleSize(isTall ? 95 : 75),
+                      fit: BoxFit.contain,
+                    )
+                  : Image.file(File(currentSafe.imagePath!), width: scaleSize(isTall ? 127 : 95), fit: BoxFit.contain),
+            ),
+          ),
+        ),
+        ScaledSizedBox(height: 8),
+        // Safe name (no pagination dots, no hint)
+        Text(
+          currentSafe.name,
+          textAlign: TextAlign.center,
+          style: scaledTextStyle(
+            fontSize: isTall ? 24 : 20,
+            color: context.colorScheme.onSurface,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        ScaledSizedBox(height: 16), // Extra space to compensate for missing dots/hint
+      ],
+    );
+  }
+
+  /// Simple reload of safes without complex logic
+  void _simpleReloadSafes() {
+    if (!mounted) return;
+
+    // Only reload if canSwitch is enabled, otherwise safes shouldn't change
+    if (!widget.canSwitch) return;
+
+    setState(() {
+      // Reload all safes
+      allSafes = ref.read(walletServiceProvider).safeBox.getAll();
+      allSafes.sort((a, b) => a.number.compareTo(b.number));
+
+      // Update to the current default safe
+      currentSafeNumber = ref.read(walletServiceProvider).defaultSafeBoxNumber;
+      currentSafeIndex = allSafes.indexWhere((safe) => safe.number == currentSafeNumber);
+
+      if (currentSafeIndex >= 0 && currentSafeIndex < allSafes.length) {
+        currentSafe = allSafes[currentSafeIndex];
+      } else if (allSafes.isNotEmpty) {
+        // Fallback to first safe if default not found
+        currentSafeIndex = 0;
+        currentSafe = allSafes[0];
+        currentSafeNumber = currentSafe.number;
+      }
+    });
+
+    // Update carousel position if needed
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && allSafes.isNotEmpty && currentSafeIndex >= 0) {
+        carouselController.animateToPage(currentSafeIndex);
+      }
+    });
+  }
+
   Widget pinForm(BuildContext context, int pinLenght) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
 
@@ -312,7 +497,9 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
 
               // Add timeout to the entire unlock operation
               final unlockFuture = Future(() async {
-                final isValid = await ref.read(walletServiceProvider).checkCode(pin: pin.toUpperCase());
+                final isValid = await ref
+                    .read(walletServiceProvider)
+                    .checkCode(pin: pin.toUpperCase(), safeBoxNumber: currentSafeNumber);
                 if (!isValid) {
                   await Future.delayed(const Duration(milliseconds: 20));
                   pinColor = Colors.red[600]!;
@@ -324,6 +511,12 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                 } else {
                   myWalletProvider.isPinValid = true;
                   pinColor = Colors.green[400]!;
+
+                  // Update the default safe to the currently selected one
+                  ref.read(walletServiceProvider).setDefaultSafeBoxNumber(currentSafeNumber);
+
+                  // Invalidate providers after changing default safe to fix state synchronization
+                  myWalletProvider.invalidateProviders();
 
                   // Wait for Durt to be connected and wallets to be loaded before allowing access
                   await _waitForSystemReady();
@@ -391,6 +584,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
             if (pinColor != const Color(0xFFA4B600)) {
               pinColor = const Color(0xFFA4B600);
             }
+            // Simplified - only reload provider, no safe reloading
             myWalletProvider.reload();
           },
         ),

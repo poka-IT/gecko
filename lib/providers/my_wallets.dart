@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:durt2/durt2.dart' show WalletEntity, SafeEntityExt, Durt, IdtyStatus;
+import 'package:durt2/durt2.dart' show WalletEntity, SafeEntity, SafeEntityExt, Durt, IdtyStatus;
 import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers.dart';
+import 'package:gecko/providers/transaction_history_providers.dart';
+import 'package:gecko/providers/certification_list_providers.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:path_provider/path_provider.dart';
@@ -89,10 +91,28 @@ class MyWalletsProvider with ChangeNotifier {
       return [];
     }
 
-    final safe = _container.read(walletServiceProvider).getSafeBox(sbn);
+    // Check if the requested safe actually exists before trying to get it
+    SafeEntity? safe;
+    try {
+      safe = _container.read(walletServiceProvider).getSafeBox(sbn);
+    } catch (e) {
+      // Safe doesn't exist yet, this can happen during onboarding
+      log.w('Safe $sbn not found, take the first safe: $e');
+      // Get the first safe, not the number 0, the first of ObjectBox
+      final firstSafe = _container.read(walletServiceProvider).safeBox.query().build().findFirst();
+      if (firstSafe == null) {
+        log.w('Safe $sbn not found, returning empty wallet list');
+        return [];
+      }
+      safe = firstSafe;
+      _container.read(walletServiceProvider).setDefaultSafeBoxNumber(safe.number);
+    }
 
     if (ref != null) {
-      ref.watch(idtyWalletAsyncProvider);
+      // Need to invalidate the idtyWalletAsyncProvider before call to be sure idty wallet is well loaded
+      ref.invalidate(idtyWalletAsyncProvider);
+      // Wait for the identity wallet provider to complete before continuing
+      await ref.read(idtyWalletAsyncProvider.future);
     }
 
     final wallets = safe.wallets.toList();
@@ -120,14 +140,16 @@ class MyWalletsProvider with ChangeNotifier {
     return wallet;
   }
 
-  Future<bool> askPinCode({bool force = false}) async {
+  Future<bool> askPinCode({bool force = false, bool canSwitch = false}) async {
     final defaultWallet = getDefaultWallet();
 
     if (pinCode.isEmpty || force) {
       pinCode = '';
       final result = await Navigator.push(
         homeContext,
-        MaterialPageRoute(builder: (homeContext) => UnlockingWallet(wallet: defaultWallet)),
+        MaterialPageRoute(
+          builder: (homeContext) => UnlockingWallet(wallet: defaultWallet, canSwitch: canSwitch),
+        ),
       );
       // Only continue if we actually got a valid PIN back
       if (result == null) return false;
@@ -197,13 +219,13 @@ class MyWalletsProvider with ChangeNotifier {
     // Give the UI a moment to rebuild and show the loading indicator.
     await Future.delayed(const Duration(milliseconds: 50));
 
-    final List idList = await getNextWalletNumberAndDerivation();
+    int? safeNumber = getCurrentSafe;
+
+    final List idList = await getNextWalletNumberAndDerivation(safeNumber: safeNumber);
     int newWalletNbr = idList[0];
     int newDerivationNbr = number ?? idList[1];
 
-    int? safeNumber = getCurrentSafe;
-
-    WalletEntity defaultWallet = getDefaultWallet();
+    WalletEntity defaultWallet = getDefaultWallet(safeNumber);
 
     // ignore: use_build_context_synchronously
     final walletData = await _container
@@ -224,15 +246,19 @@ class MyWalletsProvider with ChangeNotifier {
 
     await _container.read(walletServiceProvider).walletBox.putAsync(newWallet);
 
-    await readAllWallets();
+    await readAllWallets(safeBoxNumber: safeNumber);
 
     isNewDerivationLoading = false;
-    notifyListeners();
+
+    // Defer the final notifyListeners to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+      // Invalidate providers after wallet creation to fix state synchronization
+      invalidateProviders();
+    });
   }
 
   Future<void> generateRootWallet(BuildContext context, String name) async {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-
     isNewDerivationLoading = true;
     notifyListeners();
     int newWalletNbr;
@@ -249,7 +275,7 @@ class MyWalletsProvider with ChangeNotifier {
       newWalletNbr = walletConfig.last.number + 1;
     }
 
-    WalletEntity defaultWallet = myWalletProvider.getDefaultWallet();
+    WalletEntity defaultWallet = getDefaultWallet(safeNumber);
 
     final walletData = await _container
         .read(walletServiceProvider)
@@ -267,14 +293,22 @@ class MyWalletsProvider with ChangeNotifier {
     newWallet.safe.target = safe;
 
     await _container.read(walletServiceProvider).walletBox.putAsync(newWallet);
-    await readAllWallets();
+    await readAllWallets(safeBoxNumber: safeNumber);
 
     isNewDerivationLoading = false;
-    notifyListeners();
+
+    // Defer the final notifyListeners to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+      // Invalidate providers after wallet creation to fix state synchronization
+      invalidateProviders();
+    });
   }
 
   Future<List<int>> getNextWalletNumberAndDerivation({int? safeNumber}) async {
     safeNumber ??= getCurrentSafe;
+
+    await readAllWallets(safeBoxNumber: safeNumber);
 
     listWallets.sort((p1, p2) => p1.number.compareTo(p2.number));
 
@@ -302,5 +336,28 @@ class MyWalletsProvider with ChangeNotifier {
 
   void reload() {
     notifyListeners();
+  }
+
+  /// Invalidate all Riverpod family providers to fix state synchronization issues
+  /// This should be called after safe operations (create, switch, etc.)
+  void invalidateProviders() {
+    try {
+      // Use the existing container from MyWalletsProvider to invalidate providers
+      _container.invalidate(smartBalanceStreamProvider);
+      _container.invalidate(balanceStreamProvider);
+      _container.invalidate(persistentBalanceStreamProvider);
+      _container.invalidate(idtyStatusStreamProvider);
+      _container.invalidate(smartCertificationStreamProvider);
+      _container.invalidate(certificationStreamProvider);
+      _container.invalidate(persistentCertificationStreamProvider);
+      _container.invalidate(transfersOnlyHistoryProvider);
+      _container.invalidate(combinedHistoryProvider);
+      _container.invalidate(transactionHistoryProvider);
+      _container.invalidate(certificationListProvider);
+
+      log.i('🔄 Invalidated all family providers after safe operation');
+    } catch (e) {
+      log.e('❌ Error invalidating providers: $e');
+    }
   }
 }

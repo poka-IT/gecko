@@ -953,7 +953,20 @@ class IdtyWalletNotifier extends AsyncNotifier<d.WalletEntity?> {
     final walletService = ref.watch(walletServiceProvider);
     final storageService = ref.watch(storageServiceProvider);
 
-    final wallets = walletService.walletBox.getAll();
+    final allSafes = walletService.safeBox.getAll();
+    if (allSafes.isEmpty) {
+      _cachedResult = null;
+      _cachedWalletAddresses = [];
+      return null;
+    }
+
+    final defaultSafeNumber = walletService.defaultSafeBoxNumber;
+    final defaultSafe = allSafes.firstWhere(
+      (safe) => safe.number == defaultSafeNumber,
+      orElse: () => allSafes.first, // Fallback to first safe if default not found
+    );
+
+    final wallets = defaultSafe.wallets.toList();
     if (wallets.isEmpty) {
       _cachedResult = null;
       _cachedWalletAddresses = [];
@@ -1053,7 +1066,17 @@ final idtyWalletAsyncProvider = AsyncNotifierProvider<IdtyWalletNotifier, d.Wall
 final walletsWithoutIdtyAsyncProvider = FutureProvider<List<d.WalletEntity>>((ref) async {
   final idtyWallet = await ref.watch(idtyWalletAsyncProvider.future);
   final walletService = ref.watch(walletServiceProvider);
-  final allWallets = walletService.walletBox.getAll();
+
+  final allSafes = walletService.safeBox.getAll();
+  if (allSafes.isEmpty) return [];
+
+  final defaultSafeNumber = walletService.defaultSafeBoxNumber;
+  final defaultSafe = allSafes.firstWhere(
+    (safe) => safe.number == defaultSafeNumber,
+    orElse: () => allSafes.first, // Fallback to first safe if default not found
+  );
+
+  final allWallets = defaultSafe.wallets.toList();
 
   return allWallets.where((w) => w.address != idtyWallet?.address).toList();
 });
@@ -1113,7 +1136,16 @@ final identityWalletsAsyncProvider = FutureProvider<List<d.WalletEntity>>((ref) 
   final walletService = ref.watch(walletServiceProvider);
   final storageService = ref.watch(storageServiceProvider);
 
-  final wallets = walletService.walletBox.getAll();
+  final allSafes = walletService.safeBox.getAll();
+  if (allSafes.isEmpty) return [];
+
+  final defaultSafeNumber = walletService.defaultSafeBoxNumber;
+  final defaultSafe = allSafes.firstWhere(
+    (safe) => safe.number == defaultSafeNumber,
+    orElse: () => allSafes.first, // Fallback to first safe if default not found
+  );
+
+  final wallets = defaultSafe.wallets.toList();
   if (wallets.isEmpty) return [];
 
   final identityWalletsWithStatus = <({d.WalletEntity wallet, d.IdtyStatus status})>[];

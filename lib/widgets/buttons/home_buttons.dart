@@ -155,7 +155,7 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
                         context,
                         MaterialPageRoute(
                           builder: (homeContext) {
-                            return UnlockingWallet(wallet: defaultWallet);
+                            return UnlockingWallet(wallet: defaultWallet, canSwitch: true);
                           },
                         ),
                       );

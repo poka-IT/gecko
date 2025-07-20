@@ -11,6 +11,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
+import 'package:gecko/screens/myWallets/choose_chest.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/buttons/add_new_derivation_button.dart';
 import 'package:gecko/widgets/buttons/chest_options_buttons.dart';
@@ -195,7 +196,7 @@ class _WalletsHomeContent extends ConsumerWidget {
           backgroundColor: context.colorScheme.tertiary,
           title: Row(
             children: [
-              Image.asset('assets/chests/${currentChest.number}.png', height: 32),
+              Image.asset('assets/chests/${currentChest.number % 4}.png', height: 32),
               ScaledSizedBox(width: 17),
               Text(
                 currentChest.name,
@@ -203,6 +204,16 @@ class _WalletsHomeContent extends ConsumerWidget {
               ),
             ],
           ),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.swap_horiz, color: context.colorScheme.onSurface, size: scaleSize(24)),
+              tooltip: 'changeSafe'.tr(),
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const ChooseChest()));
+              },
+            ),
+            ScaledSizedBox(width: 8),
+          ],
         ),
         bottomNavigationBar: old_provider.Consumer<MyWalletsProvider>(
           builder: (context, _, _) {
@@ -246,6 +257,7 @@ class _WalletsHomeContent extends ConsumerWidget {
                             child: WalletTile(
                               repository: stableWalletsWithoutIdty[i],
                               attachTutorialKey: i == stableTargetIndex,
+                              uniqueId: 'grid_$i',
                             ),
                           ),
                         ref.read(durtProvider).isConnected && myWalletProvider.listWallets.length < maxWalletsInSafe

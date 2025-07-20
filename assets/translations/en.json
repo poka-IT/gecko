@@ -37,6 +37,12 @@
     "importChest": "Import a safe",
     "selectMyChest": "Select my safe",
     "accessMyChest": "Access my safe",
+    "swipeToChangeSafe": "Swipe to change safe",
+    "swipeToCreateSafe": "Swipe to create a safe",
+    "createOrImportSafe": "Create or Import Safe",
+    "tapToCreateOrImport": "Tap to create or import",
+    "addNewSafe": "Add new safe",
+    "chooseAction": "Choose an action:",
     "manageMembership": "Manage my membership",
     "chooseThisWallet": "Choose this wallet",
     "thisWalletIsDefault": "This wallet is the default one",
@@ -390,5 +396,6 @@
     "incorrectPhrase": "Incorrect phrase",
     "incorrectPhraseDescription": "Your recovery phrase seems incorrect, the words are not in the right order.\nPlease correct it.",
     "errorRetrievingSeed": "Error retrieving seed phrase",
-    "invalidMnemonicFormat": "Invalid mnemonic format: expected 12 words"
+    "invalidMnemonicFormat": "Invalid mnemonic format: expected 12 words",
+    "changeSafe": "Change safe"
 }

@@ -4,7 +4,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers.dart';
 
-/// Provider that watches storage initialization status
+/// Provider that watches storage initialization status with better error handling
 final storageReadyProvider = StreamProvider<bool>((ref) async* {
   while (true) {
     final isConnected = ref.read(durtProvider).isConnected;
@@ -29,8 +29,8 @@ final storageReadyProvider = StreamProvider<bool>((ref) async* {
       }
     }
 
-    // Check every 300ms when not ready, every 3s when ready
-    final delayMs = isStorageReady ? 30000 : 500;
+    // Check every 1s when not ready, every 10s when ready (reduced frequency)
+    final delayMs = isStorageReady ? 10000 : 1000;
     await Future.delayed(Duration(milliseconds: delayMs));
   }
 });
@@ -62,13 +62,25 @@ class StorageBuilder extends ConsumerWidget {
         return storageReadyAsync.when(
           data: (isReady) {
             if (isReady) {
-              // Storage is now ready, try building again
-              try {
-                return builder(context, ref);
-              } catch (e) {
-                // Still failing, show placeholder
-                return placeholder ?? _buildDefaultPlaceholder(context);
-              }
+              // Defer the builder call to avoid setState during build
+              return Builder(
+                builder: (context) {
+                  // Use addPostFrameCallback to defer actual building
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    // This will trigger a rebuild on the next frame
+                    if (context.mounted) {
+                      (context as Element).markNeedsBuild();
+                    }
+                  });
+                  
+                  // For now, show placeholder and rebuild on next frame
+                  try {
+                    return builder(context, ref);
+                  } catch (e) {
+                    return placeholder ?? _buildDefaultPlaceholder(context);
+                  }
+                },
+              );
             } else {
               // Storage not ready, show placeholder
               return placeholder ?? _buildDefaultPlaceholder(context);

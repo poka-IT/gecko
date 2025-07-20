@@ -37,6 +37,12 @@
     "importChest": "Importer un coffre",
     "selectMyChest": "Sélectionner mon coffre",
     "accessMyChest": "Accéder à mon coffre",
+    "swipeToChangeSafe": "Glissez pour changer de coffre",
+    "swipeToCreateSafe": "Glissez pour créer un coffre",
+    "createOrImportSafe": "Créer ou Importer un Coffre",
+    "tapToCreateOrImport": "Appuyez pour créer ou importer",
+    "addNewSafe": "Ajouter un nouveau coffre",
+    "chooseAction": "Choisissez une action :",
     "manageMembership": "Gérer mon adhésion",
     "chooseThisWallet": "Choisir ce portefeuille",
     "thisWalletIsDefault": "Ce portefeuille est celui par defaut",
@@ -402,5 +408,6 @@
     "incorrectPhrase": "Phrase incorrecte",
     "incorrectPhraseDescription": "Votre phrase de restauration semble incorrecte, les mots ne sont pas dans le bon ordre.\nVeuillez la corriger.",
     "errorRetrievingSeed": "Erreur lors de la récupération de la phrase secrète",
-    "invalidMnemonicFormat": "Format mnémonique invalide : 12 mots attendus"
+    "invalidMnemonicFormat": "Format mnémonique invalide : 12 mots attendus",
+    "changeSafe": "Changer de coffre"
 }

@@ -16,6 +16,7 @@ import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/myWallets/chest_options.dart';
+import 'package:gecko/screens/myWallets/choose_chest.dart';
 import 'package:gecko/screens/myWallets/import_g1_v1.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
@@ -530,6 +531,28 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref) {
                     fontSize: 16,
                     color: ref.read(durtProvider).isConnected ? context.colorScheme.onSurface : Colors.grey[500],
                   ),
+                  softWrap: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      InkWell(
+        onTap: () async {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const ChooseChest()));
+        },
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(Icons.swap_horiz, size: scaleSize(24), color: context.colorScheme.onSurface.withValues(alpha: 0.8)),
+              ScaledSizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  'changeSafe'.tr(),
+                  style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
                   softWrap: true,
                 ),
               ),

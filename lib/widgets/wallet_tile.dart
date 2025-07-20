@@ -13,17 +13,18 @@ import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 
 class WalletTile extends StatelessWidget {
-  const WalletTile({super.key, required this.repository, this.attachTutorialKey = false});
+  const WalletTile({super.key, required this.repository, this.attachTutorialKey = false, this.uniqueId});
 
   final WalletEntity repository;
   final bool attachTutorialKey;
+  final String? uniqueId; // Add unique identifier to avoid key conflicts
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.all(scaleSize(11)),
       child: GestureDetector(
-        key: keyOpenWallet(repository.address),
+        key: ValueKey('${keyOpenWallet(repository.address).toString()}_${uniqueId ?? repository.number}'),
         onTap: () {
           Navigator.push(context, SmoothTransition(page: WalletOptions(wallet: repository)));
         },

@@ -104,12 +104,12 @@ const keyCesiumIdVisible = Key('keyCesiumIdVisible');
 
 const keyDropdownWallets = Key('keyDropdownKey');
 
-// Items keys
-Key keyTransaction(int keyId) => Key('keyTransaction$keyId');
-Key keyMnemonicWord(String word) => Key('keyMnemonicWord$word');
-Key keySearchResult(String address) => Key('keySearchResult$address');
-Key keySelectDuniterNode(String endpoint) => Key('keySelectDuniterNode$endpoint');
-Key keyOpenWallet(String address) => Key('keyOpenWallet$address');
-Key keySelectThisWallet(String address) => Key('keySelectThisWallet$address');
+// Items keys - using ValueKey to ensure uniqueness across rebuilds
+Key keyTransaction(int keyId) => ValueKey('keyTransaction$keyId');
+Key keyMnemonicWord(String word) => ValueKey('keyMnemonicWord$word');
+Key keySearchResult(String address) => ValueKey('keySearchResult$address');
+Key keySelectDuniterNode(String endpoint) => ValueKey('keySelectDuniterNode$endpoint');
+Key keyOpenWallet(String address) => ValueKey('keyOpenWallet$address');
+Key keySelectThisWallet(String address) => ValueKey('keySelectThisWallet$address');
 
 const keyRenewMembership = Key('renewMembership');

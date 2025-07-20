@@ -319,7 +319,8 @@ final configBoxProvider = Provider<Box<d.Config>>((ref) {
 
 /// Provides the genesis blockchain time for transaction date calculations.
 final genesisTimeProvider = FutureProvider<DateTime>((ref) async {
-  return await d.SquidService.client.getGenesisBlockchainTime();
+  final storageService = ref.watch(storageServiceProvider);
+  return await storageService.getGenesisBlockchainTime();
 });
 
 /// Provides the previous address for identity migration detection.

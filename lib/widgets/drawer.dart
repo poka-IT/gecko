@@ -8,8 +8,8 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/debug_screen.dart';
-import 'package:gecko/screens/my_contacts.dart';
 import 'package:gecko/screens/settings.dart';
+import 'package:gecko/screens/currency_page.dart';
 
 class MainDrawer extends StatelessWidget {
   const MainDrawer({super.key, required this.isWalletsExists});
@@ -66,24 +66,23 @@ class MainDrawer extends StatelessWidget {
                       },
                     ),
                     ScaledSizedBox(height: scaleSize(4)),
-                    if (isWalletsExists)
-                      ListTile(
-                        key: keyContacts,
-                        leading: Icon(Icons.contacts_rounded, size: scaleSize(25)),
-                        dense: !isTall,
-                        title: Text('contactsManagement'.tr(), style: listStyle),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return const ContactsScreen();
-                              },
-                            ),
-                          );
-                        },
-                      ),
+                    ListTile(
+                      leading: Icon(Icons.account_balance, size: scaleSize(25)),
+                      dense: !isTall,
+                      title: Text('currency'.tr(), style: listStyle),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return const CurrencyPage();
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                    ScaledSizedBox(height: scaleSize(4)),
                     if (isWalletsExists) ScaledSizedBox(height: scaleSize(4)),
                     if (kDebugMode)
                       ListTile(

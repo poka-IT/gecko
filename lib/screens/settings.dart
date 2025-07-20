@@ -11,6 +11,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/block_height_provider.dart';
+import 'package:gecko/providers/currency_provider.dart';
 
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/settings_provider.dart';
@@ -190,6 +191,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       _syncDuniterEndpointController();
       _syncIndexerEndpointController();
       _refreshBlockHeightProvider();
+      ref.invalidate(currencyDataProvider);
 
       log.i('Successfully switched to network: ${newNetwork.name}');
     } catch (e) {

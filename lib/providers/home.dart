@@ -232,7 +232,7 @@ class HomeProvider with ChangeNotifier {
     }
     if (configBox.get('dataVersion') < dataVersion) {
       // ignore: use_build_context_synchronously
-      await infoPopup(context, "chestNotCompatibleMustReinstallGecko".tr());
+      await infoPopup(context, "safeNotCompatibleMustReinstallGecko".tr());
       await datapod.deleteAvatarsDirectory();
       await avatarsDirectory.create();
       await configBox.delete('defaultWallet');

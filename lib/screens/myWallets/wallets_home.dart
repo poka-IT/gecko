@@ -11,10 +11,10 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
-import 'package:gecko/screens/myWallets/choose_chest.dart';
+import 'package:gecko/screens/myWallets/switch_safe.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/buttons/add_new_derivation_button.dart';
-import 'package:gecko/widgets/buttons/chest_options_buttons.dart';
+import 'package:gecko/widgets/buttons/safe_options_buttons.dart';
 import 'package:gecko/widgets/drag_tule_action.dart';
 import 'package:gecko/widgets/drag_wallets_info.dart';
 import 'package:gecko/widgets/wallet_tile.dart';
@@ -59,7 +59,7 @@ class _WalletsHomeContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
 
-    final SafeEntity? currentChest = () {
+    final SafeEntity? currentSafe = () {
       try {
         return ref.read(walletServiceProvider).getSafeBox(myWalletProvider.getCurrentSafe);
       } catch (e) {
@@ -67,7 +67,7 @@ class _WalletsHomeContent extends ConsumerWidget {
       }
     }();
 
-    if (currentChest == null) {
+    if (currentSafe == null) {
       return const Center(child: Text('Error: Safe not found'));
     }
 
@@ -102,7 +102,7 @@ class _WalletsHomeContent extends ConsumerWidget {
             ? allWallets.where((w) => w.address != idtyWallet.address).toList()
             : allWallets;
 
-        return _buildWalletsContent(context, ref, currentChest, allWallets, idtyWallet, walletsWithoutIdty, nTule);
+        return _buildWalletsContent(context, ref, currentSafe, allWallets, idtyWallet, walletsWithoutIdty, nTule);
       },
       loading: () {
         // Show loading while determining identity wallet to prevent flash
@@ -115,7 +115,7 @@ class _WalletsHomeContent extends ConsumerWidget {
         return _buildWalletsContent(
           context,
           ref,
-          currentChest,
+          currentSafe,
           allWallets,
           null, // No identity wallet
           allWallets, // All wallets without identity
@@ -128,7 +128,7 @@ class _WalletsHomeContent extends ConsumerWidget {
   Widget _buildWalletsContent(
     BuildContext context,
     WidgetRef ref,
-    SafeEntity currentChest,
+    SafeEntity currentSafe,
     List<WalletEntity> allWallets,
     WalletEntity? idtyWallet,
     List<WalletEntity> walletsWithoutIdty,
@@ -196,10 +196,10 @@ class _WalletsHomeContent extends ConsumerWidget {
           backgroundColor: context.colorScheme.tertiary,
           title: Row(
             children: [
-              Image.asset('assets/chests/${currentChest.number % 4}.png', height: 32),
+              Image.asset('assets/safes/${currentSafe.number % 4}.png', height: 32),
               ScaledSizedBox(width: 17),
               Text(
-                currentChest.name,
+                currentSafe.name,
                 style: scaledTextStyle(color: context.colorScheme.onSurface, fontSize: 16, fontWeight: FontWeight.w500),
               ),
             ],
@@ -209,7 +209,7 @@ class _WalletsHomeContent extends ConsumerWidget {
               icon: Icon(Icons.swap_horiz, color: context.colorScheme.onSurface, size: scaleSize(24)),
               tooltip: 'changeSafe'.tr(),
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const ChooseChest()));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const SwitchSafe()));
               },
             ),
             ScaledSizedBox(width: 8),
@@ -267,7 +267,7 @@ class _WalletsHomeContent extends ConsumerWidget {
                     );
                   },
                 ),
-                const SliverToBoxAdapter(child: ChestOptionsButtons()),
+                const SliverToBoxAdapter(child: SafeOptionsButtons()),
               ],
             ),
           ),

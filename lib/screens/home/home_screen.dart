@@ -5,7 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers/chest_provider.dart';
+import 'package:gecko/providers/safe_provider.dart';
 import 'package:gecko/providers/home.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/home/gecko_home_widget.dart';
@@ -62,7 +62,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
-    old_provider.Provider.of<ChestProvider>(context);
+    old_provider.Provider.of<SafeProvider>(context);
     final isWalletsExists = myWalletProvider.isWalletsExists;
 
     isTall = (MediaQuery.of(context).size.height / MediaQuery.of(context).size.width) > 1.75;

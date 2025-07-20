@@ -8,18 +8,18 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
-import 'package:gecko/providers/chest_provider.dart';
+import 'package:gecko/providers/safe_provider.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/change_pin.dart';
 import 'package:gecko/screens/myWallets/custom_derivations.dart';
-import 'package:gecko/screens/myWallets/migrate_chest.dart';
+import 'package:gecko/screens/myWallets/migrate_safe.dart';
 import 'package:gecko/screens/myWallets/show_seed.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart' as old_provider;
 
-class ChestOptions extends ConsumerWidget {
-  const ChestOptions({Key? keyMyWallets}) : super(key: keyMyWallets);
+class SafeOptions extends ConsumerWidget {
+  const SafeOptions({Key? keyMyWallets}) : super(key: keyMyWallets);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -37,7 +37,7 @@ class ChestOptions extends ConsumerWidget {
               ScaledSizedBox(height: 20),
               Padding(
                 padding: EdgeInsets.only(left: scaleSize(16)),
-                child: ChestOptionsContent(),
+                child: SafeOptionsContent(),
               ),
             ],
           ),
@@ -47,14 +47,14 @@ class ChestOptions extends ConsumerWidget {
   }
 }
 
-class ChestOptionsContent extends ConsumerWidget {
-  const ChestOptionsContent({super.key});
+class SafeOptionsContent extends ConsumerWidget {
+  const SafeOptionsContent({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final chestProvider = old_provider.Provider.of<ChestProvider>(context, listen: false);
+    final safeProvider = old_provider.Provider.of<SafeProvider>(context, listen: false);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-    final currentChest = ref.read(walletServiceProvider).defaultSafeBox;
+    final currentSafe = ref.read(walletServiceProvider).defaultSafeBox;
     final isAlone = myWalletProvider.listWallets.length == 1;
 
     return Column(
@@ -67,7 +67,7 @@ class ChestOptionsContent extends ConsumerWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ShowSeed(walletName: currentChest.name, walletProvider: myWalletProvider),
+                builder: (context) => ShowSeed(walletName: currentSafe.name, walletProvider: myWalletProvider),
               ),
             );
           },
@@ -89,10 +89,10 @@ class ChestOptionsContent extends ConsumerWidget {
           ),
         ),
         InkWell(
-          key: keyMigrateChest,
+          key: keyMigrateSafe,
           onTap: ref.read(durtProvider).isConnected
               ? () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const MigrateChestScreen()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const MigrateSafeScreen()));
                 }
               : null,
           child: Container(
@@ -107,7 +107,7 @@ class ChestOptionsContent extends ConsumerWidget {
                 ScaledSizedBox(width: 16),
                 Expanded(
                   child: Text(
-                    'migrateChest'.tr(),
+                    'migrateSafe'.tr(),
                     style: scaledTextStyle(
                       fontSize: 16,
                       color: ref.read(durtProvider).isConnected ? context.colorScheme.onSurface : Colors.grey[500],
@@ -126,7 +126,7 @@ class ChestOptionsContent extends ConsumerWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ChangePinScreen(walletName: currentChest.name, walletProvider: myWalletProvider),
+                builder: (context) => ChangePinScreen(walletName: currentSafe.name, walletProvider: myWalletProvider),
               ),
             );
           },
@@ -181,11 +181,11 @@ class ChestOptionsContent extends ConsumerWidget {
               ),
             ),
         InkWell(
-          key: keyDeleteChest,
+          key: keyDeleteSafe,
           onTap: () async {
             if (!await myWalletProvider.askPinCode(force: true)) return;
 
-            await chestProvider.forgetSafe(context, currentChest);
+            await safeProvider.forgetSafe(context, currentSafe);
           },
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),

@@ -57,7 +57,7 @@ class GeckoBottomAppBar extends StatelessWidget {
                 },
               ),
               _buildNavItem(
-                key: keyAppBarChest,
+                key: keyAppBarSafe,
                 imagePath: 'assets/wallet.png',
                 isSelected: actualRoute == 'wallet' || lockAction,
                 isDisabled: lockAction,

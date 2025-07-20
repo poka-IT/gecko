@@ -15,8 +15,8 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/screens/activity.dart';
-import 'package:gecko/screens/myWallets/chest_options.dart';
-import 'package:gecko/screens/myWallets/choose_chest.dart';
+import 'package:gecko/screens/myWallets/safe_options.dart';
+import 'package:gecko/screens/myWallets/switch_safe.dart';
 import 'package:gecko/screens/myWallets/import_g1_v1.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
@@ -52,7 +52,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
 
     walletOptions.address.text = widget.wallet.address;
 
-    final currentChest = myWalletProvider.getCurrentSafe;
+    final currentSafe = myWalletProvider.getCurrentSafe;
     final isWalletNameIndexed = ref.read(squidServiceProvider).walletNameIndexer[walletOptions.address.text] != null;
 
     final isAlone = myWalletProvider.listWallets.length == 1;
@@ -105,7 +105,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                                   walletProvider,
                                   myWalletProvider,
                                   walletOptions,
-                                  currentChest,
+                                  currentSafe,
                                 ),
                               if (!IdentityUtils.hasIdentity(ref, widget.wallet.address))
                                 InkWell(
@@ -113,7 +113,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                                   onTap: () async {
                                     await walletProvider.editWalletName(context, widget.wallet);
                                     // Reload wallets data to update the UI
-                                    await myWalletProvider.readAllWallets(safeBoxNumber: currentChest);
+                                    await myWalletProvider.readAllWallets(safeBoxNumber: currentSafe);
                                     // Reload the wallet object to get the updated name
                                     final updatedWallet = myWalletProvider.getWalletDataByAddress(
                                       widget.wallet.address,
@@ -152,7 +152,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                                 ),
                               if (!walletProvider.isDefaultWallet &&
                                   !IdentityUtils.hasIdentity(ref, widget.wallet.address))
-                                deleteWallet(context, ref, walletOptions, currentChest),
+                                deleteWallet(context, ref, walletOptions, currentSafe),
                               if (IdentityUtils.hasIdentity(ref, widget.wallet.address)) const ManageMembershipButton(),
                               if (isAlone) aloneWalletOptions(context, ref),
                             ],
@@ -274,17 +274,17 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     );
   }
 
-  Future setDefaultWallet(BuildContext context, WidgetRef ref, int currentChest) async {
+  Future setDefaultWallet(BuildContext context, WidgetRef ref, int currentSafe) async {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
 
     await ref.read(walletServiceProvider).setDefaultAddress(walletOptions.address.text);
-    await myWalletProvider.readAllWallets(safeBoxNumber: currentChest);
+    await myWalletProvider.readAllWallets(safeBoxNumber: currentSafe);
     myWalletProvider.reload();
     walletOptions.reload();
   }
 
-  Widget deleteWallet(BuildContext context, WidgetRef ref, WalletOptionsProvider walletOptions, int currentChest) {
+  Widget deleteWallet(BuildContext context, WidgetRef ref, WalletOptionsProvider walletOptions, int currentSafe) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     final defaultWallet = myWalletProvider.getDefaultWallet();
@@ -318,7 +318,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                       await walletOptions.deleteWallet(context, widget.wallet);
                       WidgetsBinding.instance.addPostFrameCallback((_) async {
                         myWalletProvider.listWallets = await myWalletProvider.readAllWallets(
-                          safeBoxNumber: currentChest,
+                          safeBoxNumber: currentSafe,
                         );
                         myWalletProvider.reload();
                       });
@@ -412,7 +412,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     WalletOptionsProvider walletProvider,
     MyWalletsProvider myWalletProvider,
     WalletOptionsProvider walletOptions,
-    int currentChest,
+    int currentSafe,
   ) {
     return old_provider.Consumer<MyWalletsProvider>(
       builder: (context, myWalletProvider, _) {
@@ -420,7 +420,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
           key: keySetDefaultWallet,
           onTap: !walletProvider.isDefaultWallet
               ? () async {
-                  await setDefaultWallet(context, ref, currentChest);
+                  await setDefaultWallet(context, ref, currentSafe);
                   walletProvider.isDefaultWallet = true;
                 }
               : null,
@@ -503,7 +503,7 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref) {
   final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
   return Column(
     children: [
-      const ChestOptionsContent(),
+      const SafeOptionsContent(),
       InkWell(
         onTap: () async {
           if (!myWalletProvider.isNewDerivationLoading) {
@@ -540,7 +540,7 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref) {
       ),
       InkWell(
         onTap: () async {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const ChooseChest()));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const SwitchSafe()));
         },
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),

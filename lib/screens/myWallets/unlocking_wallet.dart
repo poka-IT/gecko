@@ -384,7 +384,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
               margin: const EdgeInsets.symmetric(horizontal: 8),
               child: currentSafe.imagePath == null
                   ? Image.asset(
-                      'assets/chests/${currentSafe.number % 4}.png',
+                      'assets/safes/${currentSafe.number % 4}.png',
                       width: scaleSize(isTall ? 95 : 75),
                       fit: BoxFit.contain,
                     )

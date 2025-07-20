@@ -143,7 +143,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
     final generateWalletProvider = old_provider.Provider.of<GenerateWalletsProvider>(context);
 
-    // Will get the current chest after safe creation - don't capture it too early
+    // Will get the current safe after safe creation - don't capture it too early
 
     return Form(
       key: formKey,
@@ -209,8 +209,8 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
                   .read(walletServiceProvider)
                   .createSafe(mnemonic: originalMnemonic, pinCode: pinCodeint, safeName: 'safeBoxName'.tr());
 
-              // Get the current chest AFTER creation - this ensures we use the newly created safe
-              final currentChest = ref.read(walletServiceProvider).defaultSafeBoxNumber;
+              // Get the current safe AFTER creation - this ensures we use the newly created safe
+              final currentSafe = ref.read(walletServiceProvider).defaultSafeBoxNumber;
 
               ScanDerivationsResult scanStatus = ScanDerivationsResult.none;
               if (widget.scanDerivation) {
@@ -228,7 +228,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
                     keyPairType: Durt.defaultKeyPairType,
                   );
 
-                  final safe = ref.read(walletServiceProvider).getSafeBox(currentChest);
+                  final safe = ref.read(walletServiceProvider).getSafeBox(currentSafe);
                   myWallet.safe.target = safe;
 
                   await ref.read(walletServiceProvider).walletBox.putAsync(myWallet);
@@ -240,7 +240,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
                   break;
               }
 
-              await myWalletProvider.readAllWallets(ref: ref, safeBoxNumber: currentChest);
+              await myWalletProvider.readAllWallets(ref: ref, safeBoxNumber: currentSafe);
 
               generateWalletProvider.generatedMnemonic = '';
               myWalletProvider.debounceResetPinCode();

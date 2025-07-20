@@ -7,19 +7,19 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/screens/myWallets/migrate_chest_progress.dart';
+import 'package:gecko/screens/myWallets/migrate_safe_progress.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart' as old_provider;
 
-class MigrateChestScreen extends ConsumerStatefulWidget {
-  const MigrateChestScreen({super.key});
+class MigrateSafeScreen extends ConsumerStatefulWidget {
+  const MigrateSafeScreen({super.key});
 
   @override
-  ConsumerState<MigrateChestScreen> createState() => _MigrateChestScreenState();
+  ConsumerState<MigrateSafeScreen> createState() => _MigrateSafeScreenState();
 }
 
-class _MigrateChestScreenState extends ConsumerState<MigrateChestScreen> {
+class _MigrateSafeScreenState extends ConsumerState<MigrateSafeScreen> {
   final _newMnemonicController = TextEditingController();
   bool _canMigrate = false;
   bool _isLoading = false;
@@ -101,7 +101,7 @@ class _MigrateChestScreenState extends ConsumerState<MigrateChestScreen> {
 
       if (hasExistingData) {
         setState(() {
-          _validationMessage = 'destinationChestIsNotEmpty'.tr();
+          _validationMessage = 'destinationSafeIsNotEmpty'.tr();
           _isLoading = false;
         });
         return;
@@ -126,7 +126,7 @@ class _MigrateChestScreenState extends ConsumerState<MigrateChestScreen> {
       }
 
       setState(() {
-        _validationMessage = 'youCanMigrateThisChest'.tr();
+        _validationMessage = 'youCanMigrateThisSafe'.tr();
         _canMigrate = true;
         _isLoading = false;
       });
@@ -143,7 +143,7 @@ class _MigrateChestScreenState extends ConsumerState<MigrateChestScreen> {
     bool isSmall = !isTall;
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
-      appBar: GeckoAppBar('migrateChest'.tr()),
+      appBar: GeckoAppBar('migrateSafe'.tr()),
       body: SafeArea(
         child: Column(
           children: [
@@ -173,7 +173,7 @@ class _MigrateChestScreenState extends ConsumerState<MigrateChestScreen> {
                             ),
                             ScaledSizedBox(height: isSmall ? 16 : 24),
                             Text(
-                              'migrateChestExplanation'.tr(),
+                              'migrateSafeExplanation'.tr(),
                               textAlign: TextAlign.center,
                               style: scaledTextStyle(
                                 fontSize: isSmall ? 14 : 15,
@@ -284,17 +284,17 @@ class _MigrateChestScreenState extends ConsumerState<MigrateChestScreen> {
                                 // ignore: use_build_context_synchronously
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => MigrateChestProgressScreen(
+                                  builder: (context) => MigrateSafeProgressScreen(
                                     newMnemonic: _newMnemonicController.text,
                                     walletsToMigrate: _walletsToMigrate,
-                                    oldChestPin: myWalletProvider.pinCode,
+                                    oldSafePin: myWalletProvider.pinCode,
                                   ),
                                 ),
                               );
                             }
                           : null,
                       child: Text(
-                        'migrateChest'.tr(),
+                        'migrateSafe'.tr(),
                         style: scaledTextStyle(fontSize: isSmall ? 15 : 16, fontWeight: FontWeight.w600),
                       ),
                     ),

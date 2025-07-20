@@ -18,7 +18,7 @@ import 'package:durt2/durt2.dart' show Durt, Networks, KeyPairType;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
 import 'package:gecko/globals.dart';
-import 'package:gecko/providers/chest_provider.dart';
+import 'package:gecko/providers/safe_provider.dart';
 import 'package:gecko/providers/connection_provider.dart';
 import 'package:gecko/providers/g1v1_migration.provider.dart';
 import 'package:gecko/providers/generate_wallets.dart';
@@ -127,7 +127,7 @@ class Gecko extends StatelessWidget {
           ChangeNotifierProvider(create: (_) => HomeProvider()),
           ChangeNotifierProvider(create: (_) => WalletsProfilesProvider('')),
           ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
-          ChangeNotifierProvider(create: (_) => ChestProvider()),
+          ChangeNotifierProvider(create: (_) => SafeProvider()),
           ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
           ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
           ChangeNotifierProvider(create: (_) => SearchProvider()),

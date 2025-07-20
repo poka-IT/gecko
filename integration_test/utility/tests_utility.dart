@@ -209,12 +209,9 @@ Future bkSetNode([String? endpoint]) async {
   // sub.connectNode();
 }
 
-// Restore chest in background
-Future bkRestoreChest([String mnemonic = testMnemonic]) async {
+// Restore safe in background
+Future bkRestoreSafe([String mnemonic = testMnemonic]) async {
   final myWalletProvider = Provider.of<MyWalletsProvider>(homeContext, listen: false);
-  // final generateWalletProvider = Provider.of<GenerateWalletsProvider>(homeContext, listen: false);
-
-  // await generateWalletProvider.storeHDWChest(homeContext);
 
   for (int number = 0; number <= 4; number++) {
     await _addImportAccount(
@@ -264,7 +261,7 @@ Future bkDeleteAllWallets() async {
   }
 }
 
-Future bkFastStart([bool restoreChest = true]) async {
+Future bkFastStart([bool restoreSafe = true]) async {
   // Start app and wait finish starting
   await startWait();
 
@@ -272,12 +269,12 @@ Future bkFastStart([bool restoreChest = true]) async {
   await bkSetNode();
   await sleep();
 
-  // Delete all existing chests is exists
+  // Delete all existing safes is exists
   await bkDeleteAllWallets();
 
-  if (restoreChest) {
-    // Restore the test chest
-    await bkRestoreChest();
+  if (restoreSafe) {
+    // Restore the test safe
+    await bkRestoreSafe();
     await waitFor("noLizard".tr());
   }
 }

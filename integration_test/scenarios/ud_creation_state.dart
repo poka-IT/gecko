@@ -11,11 +11,11 @@ void main() async {
 
   testWidgets('UDs creation state', (testerLoc) async {
     tester = testerLoc;
-    // Connect local node and import test chest in background
+    // Connect local node and import test safe in background
     await bkFastStart();
 
-    // Open chest
-    await firstOpenChest();
+    // Open safe
+    await firstOpenSafe();
 
     // Go to test1 options and check if balance growup with UDs creations
     await tapKey(keyOpenWallet(test1.address));

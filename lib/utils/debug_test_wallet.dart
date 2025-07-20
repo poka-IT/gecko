@@ -24,9 +24,9 @@ class DebugTestWalletService {
   static const String testMnemonic = "bottom drive obey lake curtain smoke basket hold race lonely fit walk";
   static const int defaultPinCode = 1234;
 
-  /// Check if the current app is using the test/development chest
+  /// Check if the current app is using the test/development safe
   /// Returns true if the first wallet address is the known development address
-  static bool isUsingTestChest(ProviderContainer container) {
+  static bool isUsingTestSafe(ProviderContainer container) {
     try {
       final walletService = container.read(walletServiceProvider);
 
@@ -48,7 +48,7 @@ class DebugTestWalletService {
       // Check if the first wallet address matches the known test address
       return firstWallet.address == '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
     } catch (e) {
-      log.e('Error checking test chest: $e');
+      log.e('Error checking test safe: $e');
       return false;
     }
   }

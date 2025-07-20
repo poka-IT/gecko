@@ -7,7 +7,7 @@ const keyCancel = Key('keyCancel');
 const keyConfirm = Key('keyConfirm');
 const keyAppBarHome = Key('keyAppBarSearch');
 const keyAppBarQrcode = Key('keyAppBarQrcode');
-const keyAppBarChest = Key('keyAppBarChest');
+const keyAppBarSafe = Key('keyAppBarSafe');
 
 // Home
 const keyParameters = Key('keyParameters');
@@ -16,12 +16,12 @@ const keyContacts = Key('keyContacts');
 const keyDrawerMenu = Key('keyDrawerMenu');
 const keyOpenWalletsHomme = Key('keyOpenWalletsHomme');
 const keyOpenSearch = Key('keyOpenSearch');
-const keyRestoreChest = Key('keyRestoreChest');
-const keyOnboardingNewChest = Key('keyOnboardingNewChest');
+const keyRestoreSafe = Key('keyRestoreSafe');
+const keyOnboardingNewSafe = Key('keyOnboardingNewSafe');
 
 // Wallets home
 const keyImportG1v1 = Key('keyImportG1v1');
-const keyChangeChest = Key('keyChangeChest');
+const keyChangeSafe = Key('keyChangeSafe');
 const keyListWallets = Key('keyListWallets');
 const keyAddDerivation = Key('keyAddDerivation');
 final keyDragAndDrop = GlobalKey(debugLabel: 'keyDragAndDrop');
@@ -40,20 +40,20 @@ const keyRenameWallet = Key('keyRenameWallet');
 const keyConfirmIdentity = Key('keyConfirmIdentity');
 const keyEnterIdentityUsername = Key('keyEnterIdentityUsername');
 
-// Chest options
+// Safe options
 const keyShowSeed = Key('keyShowSeed');
-const keyMigrateChest = Key('keyMigrateChest');
+const keyMigrateSafe = Key('keyMigrateSafe');
 const keyChangePin = Key('keyChangePin');
 const keycreateRootDerivation = Key('keycreateRootDerivation');
-const keyDeleteChest = Key('keyDeleteChest');
+const keyDeleteSafe = Key('keyDeleteSafe');
 
 // Manage membership
 const keyMigrateIdentity = Key('keyMigrateIdentity');
 const keyRevokeIdty = Key('keyRevokeIdty');
 
-// Choose chest
-const keyCreateNewChest = Key('keyCreateNewChest');
-const keyImportChest = Key('keyImportChest');
+// Choose safe
+const keyCreateNewSafe = Key('keyCreateNewSafe');
+const keyImportSafe = Key('keyImportSafe');
 
 // Profile view
 const keyViewActivity = Key('keyViewActivity');

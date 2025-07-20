@@ -12,11 +12,11 @@ void main() async {
 
   testWidgets('Identity revocation', (testerLoc) async {
     tester = testerLoc;
-    // Connect local node and import test chest in background
+    // Connect local node and import test safe in background
     await bkFastStart();
 
-    // Open chest
-    await firstOpenChest();
+    // Open safe
+    await firstOpenSafe();
     await Durt.i.duniter.spawnBlock(until: 13);
     await sleep();
 

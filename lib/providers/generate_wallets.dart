@@ -51,7 +51,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   bool canImport = false;
   late durt.CesiumWallet cesiumWallet;
 
-  // Import Chest
+  // Import safe
   final cellController0 = TextEditingController();
   final cellController1 = TextEditingController();
   final cellController2 = TextEditingController();
@@ -65,30 +65,6 @@ class GenerateWalletsProvider with ChangeNotifier {
   final cellController10 = TextEditingController();
   final cellController11 = TextEditingController();
   bool isFirstTimeSentenceComplete = true;
-
-  // @Deprecated('Use Durt 2 instead')
-  // Future storeHDWChest(BuildContext context) async {
-  //   int chestNumber = chestBox.isEmpty ? 0 : chestBox.keys.last + 1;
-
-  //   String chestName;
-  //   if (chestNumber == 0) {
-  //     chestName = 'geckoChest'.tr();
-  //   } else {
-  //     chestName = '${'geckoChest'.tr()}${chestNumber + 1}';
-  //   }
-  //   await configBox.put('currentChest', chestNumber);
-
-  //   ChestData thisChest = ChestData(
-  //     name: chestName,
-  //     defaultWallet: 0,
-  //     imageName: '${chestNumber % 8}.png',
-  //   );
-  //   await chestBox.add(thisChest);
-  //   int? chestKey = chestBox.keys.last;
-
-  //   await configBox.put('currentChest', chestKey);
-  //   notifyListeners();
-  // }
 
   void checkAskedWord(String inputWord, String mnemo) {
     final expectedWord = mnemo.split(' ')[nbrWord];
@@ -400,7 +376,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       return await _scanDerivations(context).timeout(
         const Duration(seconds: 120),
         onTimeout: () async {
-          // Remove the current chest
+          // Remove the current safe
           final actualSafeNumber = _container.read(walletServiceProvider).defaultSafeBoxNumber;
           await _container.read(walletServiceProvider).deleteSafe(actualSafeNumber);
 

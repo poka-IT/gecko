@@ -61,7 +61,7 @@ class SafeCarousel extends StatelessWidget {
                         margin: const EdgeInsets.symmetric(horizontal: 8),
                         child: safe.imagePath == null
                             ? Image.asset(
-                                'assets/chests/${safe.number % 4}.png',
+                                'assets/safes/${safe.number % 4}.png',
                                 width: scaleSize(95),
                                 fit: BoxFit.contain,
                               )
@@ -70,7 +70,7 @@ class SafeCarousel extends StatelessWidget {
                     : Column(
                         children: <Widget>[
                           safe.imagePath == null
-                              ? Image.asset('assets/chests/${safe.number % 4}.png', height: 150)
+                              ? Image.asset('assets/safes/${safe.number % 4}.png', height: 150)
                               : Image.file(File(safe.imagePath!), height: 150),
                           const SizedBox(height: 30),
                           Text(safe.name, style: const TextStyle(fontSize: 20)),

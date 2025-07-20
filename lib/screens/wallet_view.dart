@@ -280,7 +280,7 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
 
   /// Build the certification section with optional developer dropdown
   Widget _buildCertificationSection(WidgetRef ref) {
-    final isUsingTestChest = kDebugMode ? DebugTestWalletService.isUsingTestChest(ProviderContainer()) : false;
+    final isUsingTestSafe = kDebugMode ? DebugTestWalletService.isUsingTestSafe(ProviderContainer()) : false;
     final certStateAsync = ref.watch(certStateProvider(address));
 
     return certStateAsync.when(
@@ -304,7 +304,7 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
                   child: IgnorePointer(
                     ignoring: clampedValue < 0.1,
                     child: shouldShowCertification
-                        ? (kDebugMode && isUsingTestChest
+                        ? (kDebugMode && isUsingTestSafe
                               ? Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [

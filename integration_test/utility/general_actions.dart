@@ -38,12 +38,12 @@ Future deleteAllWallets() async {
   }
 }
 
-Future restoreChest() async {
+Future restoreSafe() async {
   // Copy test mnemonic in clipboard
   await clipCopy(testMnemonic);
 
-  // Open screen import chest
-  await tapKey(keyRestoreChest, duration: 0);
+  // Open screen import safe
+  await tapKey(keyRestoreSafe, duration: 0);
 
   // Tap on button to paste mnemonic
   await tapKey(keyPastMnemonic);
@@ -67,7 +67,7 @@ Future restoreChest() async {
   await pump(duration: const Duration(milliseconds: 500), number: 10);
 
   // Check if string "Accéder à mon coffre" is present in screen
-  await waitFor('accessMyChest'.tr(), settle: false);
+  await waitFor('accessMySafe'.tr(), settle: false);
 
   // Go to wallets home
   await tapKey(keyGoWalletsHome, duration: 0);
@@ -95,10 +95,10 @@ Future restoreChest() async {
   await goBack();
 }
 
-Future onboardingNewChest() async {
+Future onboardingNewSafe() async {
   final generateWalletProvider = Provider.of<GenerateWalletsProvider>(homeContext, listen: false);
   // Open screen create new wallet
-  await tapKey(keyOnboardingNewChest);
+  await tapKey(keyOnboardingNewSafe);
 
   // Tap on next button 4 times to skip 3 screen
   await tapKey(keyGoNext);
@@ -146,7 +146,7 @@ Future onboardingNewChest() async {
   await enterText(keyPinForm, 'AAAAA', 0);
 
   // Check if string "Accéder à mon coffre" is present in screen
-  await waitFor('accessMyChest'.tr());
+  await waitFor('accessMySafe'.tr());
 
   // Go to wallets home
   await tapKey(keyGoWalletsHome, duration: 0);
@@ -161,7 +161,7 @@ Future addDerivation() async {
   await waitFor(' 5');
 }
 
-Future firstOpenChest() async {
+Future firstOpenSafe() async {
   await tapKey(keyOpenWalletsHomme);
   sleep(300);
   final isCached = await isIconPresent(Icons.check_box);
@@ -174,7 +174,11 @@ Future firstOpenChest() async {
 Future skipWalletDragTutorial() async {
   await pump(duration: const Duration(milliseconds: 500), number: 6);
   await pump(duration: const Duration(seconds: 2));
-  if (await isPresent('explainDraggableWallet'.tr().substring(0, 13), timeout: const Duration(seconds: 5), settle: false)) {
+  if (await isPresent(
+    'explainDraggableWallet'.tr().substring(0, 13),
+    timeout: const Duration(seconds: 5),
+    settle: false,
+  )) {
     await tapKey(keyDragAndDrop, duration: 0);
   }
 }

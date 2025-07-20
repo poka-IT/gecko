@@ -4,7 +4,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/screens/onBoarding/5.dart';
-import 'package:gecko/screens/myWallets/restore_chest.dart';
+import 'package:gecko/screens/myWallets/restore_safe.dart';
 
 /// Reusable widget for creating or importing a new safe
 class CreateSafePlaceholder extends StatelessWidget {
@@ -97,7 +97,7 @@ class CreateSafePlaceholder extends StatelessWidget {
                         },
                         icon: Icon(Icons.add, size: scaleSize(20)),
                         label: Text(
-                          'createChest'.tr(),
+                          'createSafe'.tr(),
                           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                         ),
                         style: ElevatedButton.styleFrom(
@@ -118,7 +118,7 @@ class CreateSafePlaceholder extends StatelessWidget {
                         },
                         icon: Icon(Icons.download, size: scaleSize(20)),
                         label: Text(
-                          'importChest'.tr(),
+                          'importSafe'.tr(),
                           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                         ),
                         style: ElevatedButton.styleFrom(
@@ -149,7 +149,7 @@ class CreateSafePlaceholder extends StatelessWidget {
 
   /// Navigate to import safe screen
   void _navigateToImportSafe(BuildContext context) async {
-    await Navigator.push(context, MaterialPageRoute(builder: (context) => const RestoreChest(skipIntro: true)));
+    await Navigator.push(context, MaterialPageRoute(builder: (context) => const RestoreSafe(skipIntro: true)));
 
     // Callback after import
     onSafeImported?.call();

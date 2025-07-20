@@ -105,7 +105,7 @@ flutter:
     - assets/translations/
     - assets/home/
     - assets/avatars/
-    - assets/chests/
+    - assets/safes/
     - assets/icon/
     - assets/onBoarding/
     - assets/onBoarding/progress_bar/

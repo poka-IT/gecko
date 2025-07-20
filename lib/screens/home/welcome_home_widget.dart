@@ -6,7 +6,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/screens/home/test_wallet_button.dart';
-import 'package:gecko/screens/myWallets/restore_chest.dart';
+import 'package:gecko/screens/myWallets/restore_safe.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
 import 'package:gecko/widgets/bubble_speak.dart';
 import 'package:gecko/widgets/buttons/home_settings_button.dart';
@@ -103,7 +103,7 @@ class WelcomeHomeWidget extends StatelessWidget {
                               width: 330,
                               height: 60,
                               child: ElevatedButton(
-                                key: keyOnboardingNewChest,
+                                key: keyOnboardingNewSafe,
                                 style:
                                     ElevatedButton.styleFrom(
                                       foregroundColor: Colors.white,
@@ -139,7 +139,7 @@ class WelcomeHomeWidget extends StatelessWidget {
                               width: 330,
                               height: 60,
                               child: OutlinedButton(
-                                key: keyRestoreChest,
+                                key: keyRestoreSafe,
                                 style:
                                     OutlinedButton.styleFrom(
                                       side: BorderSide(width: scaleSize(4), color: homeContext.colorScheme.primary),
@@ -154,10 +154,7 @@ class WelcomeHomeWidget extends StatelessWidget {
                                       shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.15)),
                                     ),
                                 onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => const RestoreChest()),
-                                  );
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => const RestoreSafe()));
                                 },
                                 child: Text(
                                   "restoreWallet".tr(),

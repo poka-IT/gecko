@@ -24,12 +24,12 @@ class OnboardingStepFive extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _ChooseChestState();
+    return _ChooseSafeState();
   }
 }
 
 // ignore: unused_element
-class _ChooseChestState extends State<OnboardingStepFive> {
+class _ChooseSafeState extends State<OnboardingStepFive> {
   List<String>? mnemonicList;
   bool isLoading = false;
   bool _hasInitialized = false;

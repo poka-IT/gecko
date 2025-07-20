@@ -603,7 +603,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               ),
                               ScaledSizedBox(width: 12),
                               Text(
-                                'forgetAllMyChests'.tr(),
+                                'forgetAllMySafes'.tr(),
                                 style: scaledTextStyle(
                                   fontSize: isSmallScreen ? 14 : 15,
                                   color: const Color(0xffD80000),

@@ -20,7 +20,7 @@ class OnboardingStepEight extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           child: InfoIntro(
-            text: 'thisPasswordProtectsYourWalletsInASecureChest'.tr(),
+            text: 'thisPasswordProtectsYourWalletsInASecureSafe'.tr(),
             assetName: 'coffre-fort-protege-les-portefeuilles.png',
             buttonText: '>',
             nextScreen: OnboardingStepNine(scanDerivation: scanDerivation, fromRestore: fromRestore),

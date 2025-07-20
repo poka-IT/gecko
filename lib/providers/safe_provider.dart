@@ -9,10 +9,10 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:provider/provider.dart' as old_provider;
 
-class ChestProvider with ChangeNotifier {
+class SafeProvider with ChangeNotifier {
   late ProviderContainer _container;
 
-  ChestProvider() {
+  SafeProvider() {
     _container = ProviderContainer();
   }
 
@@ -27,7 +27,7 @@ class ChestProvider with ChangeNotifier {
   }
 
   Future forgetSafe(BuildContext context, SafeEntity safe) async {
-    final bool? answer = await (_confirmDeletingChest(context, safe.name));
+    final bool? answer = await (_confirmDeletingSafe(context, safe.name));
     // ignore: use_build_context_synchronously
     if (answer ?? false) {
       await _container.read(walletServiceProvider).deleteSafe(safe.number);
@@ -66,11 +66,11 @@ class ChestProvider with ChangeNotifier {
     }
   }
 
-  List<String> getChestWallets(SafeEntity safe) {
+  List<String> getSafeWallets(SafeEntity safe) {
     return safe.wallets.map((wallet) => wallet.address).toList();
   }
 
-  Future<bool?> _confirmDeletingChest(BuildContext context, String walletName) async {
+  Future<bool?> _confirmDeletingSafe(BuildContext context, String walletName) async {
     return showConfirmationDialog(
       context: context,
       type: ConfirmationDialogType.warning,

@@ -16,8 +16,8 @@ import 'package:gecko/widgets/commons/fader_transition.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart' as old_provider;
 
-class RestoreChest extends ConsumerWidget {
-  const RestoreChest({super.key, this.skipIntro = false});
+class RestoreSafe extends ConsumerWidget {
+  const RestoreSafe({super.key, this.skipIntro = false});
   final bool skipIntro;
 
   @override
@@ -30,7 +30,7 @@ class RestoreChest extends ConsumerWidget {
       },
       child: Scaffold(
         backgroundColor: context.colorScheme.surface,
-        appBar: GeckoAppBar('restoreAChest'.tr()),
+        appBar: GeckoAppBar('restoreASafe'.tr()),
         body: SafeArea(
           child: SingleChildScrollView(
             child: Column(
@@ -124,7 +124,7 @@ class RestoreChest extends ConsumerWidget {
                                   }
                                 },
                                 child: Text(
-                                  'restoreThisChest'.tr(),
+                                  'restoreThisSafe'.tr(),
                                   style: scaledTextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,

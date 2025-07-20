@@ -22,11 +22,11 @@ void main() async {
     // Change Duniter endpoint to local
     await changeNode();
 
-    // Delete all existing chests is exists
+    // Delete all existing safes is exists
     await deleteAllWallets();
 
-    // Restore the test chest
-    await restoreChest();
+    // Restore the test safe
+    await restoreSafe();
 
     // Execute a transaction to test5
     await payTest2();
@@ -76,7 +76,7 @@ Future certifyTest5() async {
   await waitFor('identityCreated'.tr());
 
   // Confirm Identity Test5
-  await tapKey(keyAppBarChest, duration: 300);
+  await tapKey(keyAppBarSafe, duration: 300);
   await tapKey(keyOpenWallet(test5.address));
   await tapKey(keyCopyAddress);
   humanRead(3);
@@ -133,7 +133,7 @@ Future certifyTest5() async {
   await waitFor('mustWaitXBeforeCertify'.tr().substring(0, 8));
 
   // Check if test5 is member
-  await tapKey(keyAppBarChest, duration: 300);
+  await tapKey(keyAppBarSafe, duration: 300);
   await tapKey(keyOpenWallet(test5.address));
   await waitFor('memberValidated'.tr());
 

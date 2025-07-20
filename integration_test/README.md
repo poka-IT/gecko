@@ -55,8 +55,8 @@ Il  vous suffit de comprendre par exemple cet extrait de code:
 // Copy test mnemonic in clipboard
 await clipCopy(testMnemonic);
 
-// Open screen import chest
-await goKey(keyRestoreChest, duration: 0);
+// Open screen import safe
+await goKey(keyRestoreSafe, duration: 0);
 
 // Tap on button to paste mnemonic
 await goKey(keyPastMnemonic);

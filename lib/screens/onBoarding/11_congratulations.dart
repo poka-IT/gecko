@@ -38,8 +38,8 @@ class OnboardingStepEleven extends StatelessWidget {
                       ScaledSizedBox(height: isTall ? 25 : 5),
                       BuildText(
                         text: fromRestore
-                            ? "yourChestAndWalletWereRestoredSuccessfully".tr()
-                            : "yourChestAndWalletWereCreatedSuccessfully".tr(),
+                            ? "yourSafeAndWalletWereRestoredSuccessfully".tr()
+                            : "yourSafeAndWalletWereCreatedSuccessfully".tr(),
                       ),
                       ScaledSizedBox(height: isTall ? 15 : 5),
                       GifView(
@@ -147,7 +147,7 @@ Widget finishButton(BuildContext context) {
         Navigator.pushNamedAndRemoveUntil(context, '/mywallets', ModalRoute.withName('/'));
       },
       child: Text(
-        "accessMyChest".tr(),
+        "accessMySafe".tr(),
         style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
       ),
     ),

@@ -12,17 +12,17 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:gecko/widgets/safe_carousel.dart';
 import 'package:provider/provider.dart' as old_provider;
 
-class ChooseChest extends ConsumerStatefulWidget {
-  const ChooseChest({super.key});
+class SwitchSafe extends ConsumerStatefulWidget {
+  const SwitchSafe({super.key});
 
   @override
-  ConsumerState<ChooseChest> createState() => _ChooseChestState();
+  ConsumerState<SwitchSafe> createState() => _ChooseSafeState();
 }
 
-class _ChooseChestState extends ConsumerState<ChooseChest> {
+class _ChooseSafeState extends ConsumerState<SwitchSafe> {
   final tplController = TextEditingController();
   final buttonCarouselController = CarouselSliderController();
-  late int currentChest;
+  late int currentSafe;
   late List<SafeEntity> allSafes;
   late int currentSafeIndex;
 
@@ -34,11 +34,11 @@ class _ChooseChestState extends ConsumerState<ChooseChest> {
     allSafes.sort((a, b) => a.number.compareTo(b.number));
 
     // Find the current safe and its index in the sorted list
-    currentChest = ref.read(walletServiceProvider).defaultSafeBoxNumber;
-    currentSafeIndex = allSafes.indexWhere((safe) => safe.number == currentChest);
+    currentSafe = ref.read(walletServiceProvider).defaultSafeBoxNumber;
+    currentSafeIndex = allSafes.indexWhere((safe) => safe.number == currentSafe);
     if (currentSafeIndex == -1 && allSafes.isNotEmpty) {
       currentSafeIndex = 0; // Fallback to first safe if default not found
-      currentChest = allSafes[0].number;
+      currentSafe = allSafes[0].number;
     }
   }
 
@@ -52,8 +52,8 @@ class _ChooseChestState extends ConsumerState<ChooseChest> {
       allSafes.sort((a, b) => a.number.compareTo(b.number));
 
       // Update to the newest default safe (likely the newly created one)
-      currentChest = ref.read(walletServiceProvider).defaultSafeBoxNumber;
-      currentSafeIndex = allSafes.indexWhere((safe) => safe.number == currentChest);
+      currentSafe = ref.read(walletServiceProvider).defaultSafeBoxNumber;
+      currentSafeIndex = allSafes.indexWhere((safe) => safe.number == currentSafe);
 
       if (currentSafeIndex >= 0) {
         // Move carousel to the new safe
@@ -72,7 +72,7 @@ class _ChooseChestState extends ConsumerState<ChooseChest> {
 
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
-      appBar: AppBar(toolbarHeight: scaleSize(57), title: Text('selectMyChest'.tr())),
+      appBar: AppBar(toolbarHeight: scaleSize(57), title: Text('selectMySafe'.tr())),
       body: SafeArea(
         child: Column(
           children: <Widget>[
@@ -86,7 +86,7 @@ class _ChooseChestState extends ConsumerState<ChooseChest> {
                   if (index < allSafes.length) {
                     // Regular safe selected
                     currentSafeIndex = index;
-                    currentChest = allSafes[index].number;
+                    currentSafe = allSafes[index].number;
                   } else {
                     // Placeholder selected - keep current safe but update index
                     currentSafeIndex = index;
@@ -132,7 +132,7 @@ class _ChooseChestState extends ConsumerState<ChooseChest> {
                     backgroundColor: context.colorScheme.primary,
                   ),
                   onPressed: () async {
-                    ref.read(walletServiceProvider).setDefaultSafeBoxNumber(currentChest);
+                    ref.read(walletServiceProvider).setDefaultSafeBoxNumber(currentSafe);
                     myWalletProvider.pinCode = '';
                     if (!await myWalletProvider.askPinCode(canSwitch: true)) return;
 
@@ -140,7 +140,7 @@ class _ChooseChestState extends ConsumerState<ChooseChest> {
                     Navigator.pushNamed(context, '/mywallets');
                   },
                   child: Text(
-                    'openThisChest'.tr(),
+                    'openThisSafe'.tr(),
                     style: TextStyle(fontSize: 18, color: context.colorScheme.surface, fontWeight: FontWeight.w600),
                   ),
                 ),

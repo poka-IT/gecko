@@ -6,7 +6,6 @@ import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
@@ -29,23 +28,23 @@ class MigrationTask {
       status == MigrationStatus.success || status == MigrationStatus.failed || status == MigrationStatus.empty;
 }
 
-class MigrateChestProgressScreen extends ConsumerStatefulWidget {
+class MigrateSafeProgressScreen extends ConsumerStatefulWidget {
   final String newMnemonic;
   final List<WalletEntity> walletsToMigrate;
-  final String oldChestPin;
+  final String oldSafePin;
 
-  const MigrateChestProgressScreen({
+  const MigrateSafeProgressScreen({
     super.key,
     required this.newMnemonic,
     required this.walletsToMigrate,
-    required this.oldChestPin,
+    required this.oldSafePin,
   });
 
   @override
-  ConsumerState<MigrateChestProgressScreen> createState() => _MigrateChestProgressScreenState();
+  ConsumerState<MigrateSafeProgressScreen> createState() => _MigrateSafeProgressScreenState();
 }
 
-class _MigrateChestProgressScreenState extends ConsumerState<MigrateChestProgressScreen> {
+class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressScreen> {
   late List<MigrationTask> _tasks;
   bool _migrationCompleted = false;
   bool _migrationSuccess = false;
@@ -224,10 +223,10 @@ class _MigrateChestProgressScreenState extends ConsumerState<MigrateChestProgres
                       genW.generatedMnemonic = widget.newMnemonic;
                       genW.resetImportView();
 
-                      final currentChestNumber = configBox.get('currentChest');
+                      final currentSafeNumber = ref.read(walletServiceProvider).defaultSafeBoxNumber;
 
-                      // Clear all wallets from current chest
-                      await ref.read(walletServiceProvider).deleteSafe(currentChestNumber);
+                      // Clear all wallets from current safe
+                      await ref.read(walletServiceProvider).deleteSafe(currentSafeNumber);
 
                       await Navigator.pushAndRemoveUntil(
                         context,
@@ -241,7 +240,7 @@ class _MigrateChestProgressScreenState extends ConsumerState<MigrateChestProgres
                       Navigator.of(context).pop();
                     }
                   },
-                  label: _migrationSuccess ? 'setupNewChest'.tr() : 'close'.tr(),
+                  label: _migrationSuccess ? 'setupNewSafe'.tr() : 'close'.tr(),
                 ),
               ),
           ],

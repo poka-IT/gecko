@@ -4,11 +4,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/screens/myWallets/chest_options.dart';
+import 'package:gecko/screens/myWallets/safe_options.dart';
 import 'package:gecko/screens/myWallets/import_g1_v1.dart';
 
-class ChestOptionsButtons extends StatelessWidget {
-  const ChestOptionsButtons({super.key});
+class SafeOptionsButtons extends StatelessWidget {
+  const SafeOptionsButtons({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class ChestOptionsButtons extends StatelessWidget {
           height: 60,
           width: 300,
           child: ElevatedButton.icon(
-            icon: Image.asset('assets/chests/config.png', height: scaleSize(40)),
+            icon: Image.asset('assets/safes/config.png', height: scaleSize(40)),
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.black,
               backgroundColor: context.colorScheme.surfaceTint,
@@ -32,12 +32,12 @@ class ChestOptionsButtons extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (context) {
-                  return ChestOptions();
+                  return SafeOptions();
                 },
               ),
             ),
             label: Text(
-              "   ${"manageChest".tr()}",
+              "   ${"manageSafe".tr()}",
               style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: const Color(0xff8a3c0f)),
             ),
           ),
@@ -72,28 +72,6 @@ class ChestOptionsButtons extends StatelessWidget {
             ],
           ),
         ),
-        // ScaledSizedBox(height: 20),
-        // InkWell(
-        //   key: keyChangeChest,
-        //   onTap: () {
-        //     // Navigator.push(
-        //     //   context,
-        //     //   MaterialPageRoute(builder: (context) {
-        //     //     return const ChooseChest();
-        //     //   }),
-        //     // );
-        //   },
-        //   child: ScaledSizedBox(
-        //     width: 270,
-        //     height: 60,
-        //     child: Center(
-        //         child: Text('changeChest'.tr(),
-        //             style: const scaledTextStyle(
-        //                 fontSize: 19,
-        //                 color: Colors.grey, //context.colorScheme.primary
-        //                 fontWeight: FontWeight.w500))),
-        //   ),
-        // ),
         ScaledSizedBox(height: 30),
       ],
     );

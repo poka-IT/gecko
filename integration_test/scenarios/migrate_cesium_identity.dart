@@ -13,11 +13,11 @@ void main() async {
 
   testWidgets('Migrate Cesium identity and balance', (testerLoc) async {
     tester = testerLoc;
-    // Connect local node and import test chest in background
+    // Connect local node and import test safe in background
     await bkFastStart();
 
-    // Open chest
-    await firstOpenChest();
+    // Open safe
+    await firstOpenSafe();
 
     // Go to test1 options and check if balance growup with UDs creations
     await scrollUntil(keyAddDerivation);
@@ -60,10 +60,7 @@ void main() async {
 }
 
 void isObscureText([bool isObscure = true]) {
-  final passwordTextFormField = find.descendant(
-    of: find.byKey(keyCesiumId),
-    matching: find.byType(EditableText),
-  );
+  final passwordTextFormField = find.descendant(of: find.byKey(keyCesiumId), matching: find.byType(EditableText));
   final input = tester.widget<EditableText>(passwordTextFormField);
   expect(input.obscureText, isObscure ? isTrue : isFalse);
 }

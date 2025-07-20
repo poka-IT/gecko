@@ -20,6 +20,8 @@ class MainDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final listStyle = scaledTextStyle(fontSize: 14, color: context.colorScheme.onSurface);
 
+    final appVersionShort = appVersion.split('+').first;
+
     return SafeArea(
       top: false,
       child: SizedBox(
@@ -113,7 +115,7 @@ class MainDrawer extends StatelessWidget {
                     padding: const EdgeInsets.all(15),
                     child: Opacity(
                       opacity: 0.8,
-                      child: Text('Ğecko v$appVersion', style: scaledTextStyle(fontSize: 12)),
+                      child: Text('Ğecko v$appVersionShort', style: scaledTextStyle(fontSize: 12)),
                     ),
                   ),
                   onTap: () {

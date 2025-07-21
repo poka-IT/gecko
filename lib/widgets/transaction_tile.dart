@@ -41,6 +41,16 @@ class TransactionTile extends StatelessWidget {
       return _buildUniversalDividendTile(context, newKey, finalAmount, dateString);
     }
 
+    // Different UI for Identity Migration "From" events
+    if (transaction.type == TransactionType.identityMigrationFrom) {
+      return _buildIdentityMigrationFromTile(context, newKey, dateString);
+    }
+
+    // Different UI for Identity Migration "To" events
+    if (transaction.type == TransactionType.identityMigrationTo) {
+      return _buildIdentityMigrationToTile(context, newKey, dateString);
+    }
+
     // Standard transaction tile with improved layout
     return Container(
       margin: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(4)),
@@ -249,6 +259,100 @@ class TransactionTile extends StatelessWidget {
 
             // Balance - right aligned
             BalanceDisplay(value: finalAmount, size: 13, color: balanceColor),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Build a specialized event display for Identity Migration "From" events
+  Widget _buildIdentityMigrationFromTile(BuildContext context, int newKey, String dateString) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: scaleSize(25), horizontal: scaleSize(16)),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            PageNoTransit(
+              builder: (context) => WalletViewScreen(address: transaction.address, username: transaction.username),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Icon(Icons.account_circle, size: scaleSize(40), color: greenColor),
+                Column(
+                  children: [
+                    Text(
+                      'identityMigratedFrom'.tr(),
+                      style: scaledTextStyle(fontSize: 19, color: greenColor, fontWeight: FontWeight.w500),
+                    ),
+                    if (transaction.username != null && transaction.username!.isNotEmpty) ...[
+                      Text(transaction.username!, style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                      ScaledSizedBox(height: 2),
+                    ],
+                    Text(
+                      'from'.tr(args: [' ${getShortPubkey(transaction.address)}']),
+                      style: scaledTextStyle(fontSize: 16),
+                    ),
+                    ScaledSizedBox(height: 4),
+                    Text(dateString, style: scaledTextStyle(fontSize: 14, color: Colors.grey[600])),
+                  ],
+                ),
+                Icon(Icons.account_circle, size: scaleSize(32), color: greenColor),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Build a specialized event display for Identity Migration "To" events
+  Widget _buildIdentityMigrationToTile(BuildContext context, int newKey, String dateString) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: scaleSize(25), horizontal: scaleSize(16)),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            PageNoTransit(
+              builder: (context) => WalletViewScreen(address: transaction.address, username: transaction.username),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Icon(Icons.account_circle, size: scaleSize(32), color: blueColor),
+                Column(
+                  children: [
+                    Text(
+                      'identityMigratedTo'.tr(),
+                      style: scaledTextStyle(fontSize: 19, color: blueColor, fontWeight: FontWeight.w500),
+                    ),
+                    if (transaction.username != null && transaction.username!.isNotEmpty) ...[
+                      Text(transaction.username!, style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                      ScaledSizedBox(height: 2),
+                    ],
+                    Text(
+                      'to'.tr(args: [' ${getShortPubkey(transaction.address)}']),
+                      style: scaledTextStyle(fontSize: 16),
+                    ),
+                    ScaledSizedBox(height: 4),
+                    Text(dateString, style: scaledTextStyle(fontSize: 14, color: Colors.grey[600])),
+                  ],
+                ),
+                Icon(Icons.account_circle, size: scaleSize(40), color: blueColor),
+              ],
+            ),
           ],
         ),
       ),

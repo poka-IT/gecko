@@ -352,6 +352,7 @@ class _UnifiedTransactionFiltersState extends ConsumerState<UnifiedTransactionFi
                                       if (hasUDs && isUDEnabled) {
                                         toggleUniversalDividends(ref, widget.address);
                                       }
+                                      _toggleExpanded(); // Close the popup after clearing
                                     }
                                   : null,
                               style: TextButton.styleFrom(foregroundColor: context.colorScheme.onSurfaceVariant),

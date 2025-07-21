@@ -277,6 +277,8 @@
     "enterYourNewAddress": "Entrez votre nouvelle adresse {}",
     "youCanMigrateThisIdentity": "Vous pouvez migrer vers cette identité !",
     "identityMigrated": "Identité migrée",
+    "identityMigratedFrom": "Identité migrée",
+    "identityMigratedTo": "Identité migrée",
     "passwordTooSimple": "Votre code secret est trop simple",
     "renewMembership": "Renouveler mon adhésion",
     "areYouSureYouWantToRenewMembership": "Êtes-vous sûr de vouloir renouveler votre adhésion ?",

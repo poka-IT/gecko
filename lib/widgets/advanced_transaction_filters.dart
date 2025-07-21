@@ -318,7 +318,12 @@ class _AdvancedTransactionFiltersState extends ConsumerState<AdvancedTransaction
                         children: [
                           Expanded(
                             child: TextButton(
-                              onPressed: hasActiveFilters ? _clearAllFilters : null,
+                              onPressed: hasActiveFilters
+                                  ? () {
+                                      _clearAllFilters();
+                                      _toggleExpanded(); // Close the popup after clearing
+                                    }
+                                  : null,
                               style: TextButton.styleFrom(foregroundColor: context.colorScheme.onSurfaceVariant),
                               child: Text('clearAll'.tr()),
                             ),

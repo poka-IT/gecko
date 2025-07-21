@@ -256,7 +256,8 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
 
     // Use the existing filtered state that applies filters client-side (preserves pagination)
     final historyState = ref.watch(filteredTransactionHistoryProvider(widget.address));
-    final previousAddressAsync = ref.watch(previousAddressProvider(widget.address));
+    final migrationFromDataAsync = ref.watch(migrationFromDataProvider(widget.address));
+    final migrationToDataAsync = ref.watch(migrationToDataProvider(widget.address));
 
     // Use COMBINED state for new transaction detection (always includes all data, not affected by toggle)
     final rawHistoryState = ref.watch(combinedHistoryProvider(widget.address));
@@ -413,8 +414,13 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                                 HistoryView(
                                   transactions: historyState.transactions,
                                   address: widget.address,
-                                  previousAddress: previousAddressAsync.when(
-                                    data: (address) => address,
+                                  migrationFromData: migrationFromDataAsync.when(
+                                    data: (migrationData) => migrationData,
+                                    loading: () => null,
+                                    error: (error, stackTrace) => null,
+                                  ),
+                                  migrationToData: migrationToDataAsync.when(
+                                    data: (migrationData) => migrationData,
                                     loading: () => null,
                                     error: (error, stackTrace) => null,
                                   ),

@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/home.dart';
+import 'package:gecko/models/migration_data.dart';
 import 'dart:async';
 import 'package:provider/provider.dart' as old_provider;
 import 'dart:typed_data';
@@ -323,11 +324,51 @@ final genesisTimeProvider = FutureProvider<DateTime>((ref) async {
   return await storageService.getGenesisBlockchainTime();
 });
 
-/// Provides the previous address for identity migration detection.
-final previousAddressProvider = FutureProvider.family<String?, String>((ref, address) async {
+/// Provides the migration data for identity migration detection.
+final migrationDataProvider = FutureProvider.family<d.OldOwnerKey?, String>((ref, address) async {
   final storageService = ref.watch(storageServiceProvider);
-  final oldOwnerKey = await storageService.getOldOwnerKey(address);
-  return oldOwnerKey?.oldAddress;
+  return await storageService.getOldOwnerKey(address);
+});
+
+/// Provides migration data for identities that migrated FROM this address using Squid
+final migrationFromDataProvider = FutureProvider.family<MigrationData?, String>((ref, address) async {
+  try {
+    final squidService = d.SquidService.client;
+    final migrations = await squidService.getIdentityMigrations(address);
+
+    if (migrations?.migrationFrom == null) {
+      return null;
+    }
+
+    final genesisTime = await ref.watch(genesisTimeProvider.future);
+    return await MigrationData.fromSquidMigrationFromNode(migrations!.migrationFrom!, genesisTime);
+  } catch (e) {
+    return null;
+  }
+});
+
+/// Provides migration data for identities that migrated TO this address using Squid
+final migrationToDataProvider = FutureProvider.family<MigrationData?, String>((ref, address) async {
+  try {
+    final squidService = d.SquidService.client;
+    final migrations = await squidService.getIdentityMigrations(address);
+
+    if (migrations?.migrationTo == null) {
+      return null;
+    }
+
+    final genesisTime = await ref.watch(genesisTimeProvider.future);
+    return await MigrationData.fromSquidMigrationToNode(migrations!.migrationTo!, genesisTime);
+  } catch (e) {
+    return null;
+  }
+});
+
+/// Provides the previous address for identity migration detection.
+/// This is kept for backward compatibility but migrationFromDataProvider should be preferred.
+final previousAddressProvider = FutureProvider.family<String?, String>((ref, address) async {
+  final migrationData = await ref.watch(migrationDataProvider(address).future);
+  return migrationData?.oldAddress;
 });
 
 /// Provides the name of an identity by address.

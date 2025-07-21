@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/transaction_display_item.dart';
-import 'package:gecko/screens/wallet_view.dart';
-import 'package:gecko/utils.dart';
+import 'package:gecko/models/migration_data.dart';
 import 'package:gecko/widgets/commons/loading.dart';
-import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:gecko/widgets/transaction_tile.dart';
 
 class HistoryView extends StatelessWidget {
@@ -14,20 +12,56 @@ class HistoryView extends StatelessWidget {
     super.key,
     required this.transactions,
     required this.address,
-    required this.previousAddress,
+    required this.migrationFromData,
+    required this.migrationToData,
     required this.hasNextPage,
     required this.isLoadingMore,
   });
 
   final List<TransactionDisplayItem> transactions;
   final String address;
-  final String? previousAddress;
+  final MigrationData? migrationFromData;
+  final MigrationData? migrationToData;
   final bool hasNextPage;
   final bool isLoadingMore;
 
+  /// Merges transactions with migration events at correct chronological positions
+  List<TransactionDisplayItem> _getMergedTransactionList() {
+    final mergedList = <TransactionDisplayItem>[...transactions];
+
+    // Add migration FROM event (this identity migrated FROM another address to this one)
+    if (migrationToData != null) {
+      final migrationEvent = TransactionDisplayItem.fromMigrationFromEvent(migrationToData!);
+      _insertEventChronologically(mergedList, migrationEvent);
+    }
+
+    // Add migration TO event (this identity migrated FROM this address to another one)
+    if (migrationFromData != null) {
+      final migrationToEvent = TransactionDisplayItem.fromMigrationToEvent(migrationFromData!);
+      _insertEventChronologically(mergedList, migrationToEvent);
+    }
+
+    return mergedList;
+  }
+
+  /// Insert an event at the correct chronological position in the list
+  void _insertEventChronologically(List<TransactionDisplayItem> list, TransactionDisplayItem event) {
+    int insertIndex = 0;
+    for (int i = 0; i < list.length; i++) {
+      if (list[i].timestamp.isBefore(event.timestamp)) {
+        insertIndex = i;
+        break;
+      }
+      insertIndex = i + 1;
+    }
+    list.insert(insertIndex, event);
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (transactions.isEmpty) {
+    final mergedTransactions = _getMergedTransactionList();
+
+    if (mergedTransactions.isEmpty) {
       return Column(
         children: <Widget>[
           ScaledSizedBox(height: 50),
@@ -44,7 +78,7 @@ class HistoryView extends StatelessWidget {
     return Column(
       children: <Widget>[
         Column(
-          children: transactions.map((transaction) {
+          children: mergedTransactions.map((transaction) {
             keyID++;
             pastDelimiters.add(transaction.dateDelimiter);
 
@@ -92,39 +126,6 @@ class HistoryView extends StatelessWidget {
         ),
         if (isLoadingMore && hasNextPage)
           const Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[Loading(size: 30, stroke: 3)]),
-        if (!hasNextPage && previousAddress != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 30),
-            child: InkWell(
-              onTap: () => Navigator.push(
-                context,
-                PageNoTransit(
-                  builder: (context) {
-                    return WalletViewScreen(address: previousAddress!, username: null);
-                  },
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Icon(Icons.account_circle, size: 40, color: Colors.green[700]),
-                  Column(
-                    children: [
-                      Text(
-                        'identityMigrated'.tr(),
-                        style: scaledTextStyle(fontSize: 19, color: Colors.green[700], fontWeight: FontWeight.w500),
-                      ),
-                      Text(
-                        'from'.tr(args: [' ${getShortPubkey(previousAddress!)}']),
-                        style: scaledTextStyle(fontSize: 16),
-                      ),
-                    ],
-                  ),
-                  Icon(Icons.account_circle, size: scaleSize(32), color: Colors.green[700]),
-                ],
-              ),
-            ),
-          ),
         if (!hasNextPage)
           Column(
             children: <Widget>[

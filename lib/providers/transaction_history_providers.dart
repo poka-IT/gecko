@@ -578,18 +578,18 @@ final scrollToTopProvider = StateNotifierProvider<ScrollToTopNotifier, int>((ref
 final filteredTransactionHistoryProvider = Provider.family<TransactionHistoryState, String>((ref, address) {
   // Get the base transaction state (with UD toggle applied)
   final baseState = ref.watch(transactionHistoryProvider(address));
-  
+
   // Get advanced filter criteria
   final filters = ref.watch(transactionFiltersProvider);
-  
+
   // If no advanced filters are active, return the base state
   if (!filters.hasActiveFilters) {
     return baseState;
   }
-  
+
   // Apply advanced filters to the transactions
   final filteredTransactions = applyTransactionFilters(baseState.transactions, filters);
-  
+
   // Return a new state with filtered transactions but preserve other properties
   return baseState.copyWith(transactions: filteredTransactions);
 });

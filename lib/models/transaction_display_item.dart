@@ -6,8 +6,9 @@ import 'package:durt2/durt2.dart'
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/migration_data.dart';
 
-enum TransactionType { transfer, universalDividend }
+enum TransactionType { transfer, universalDividend, identityMigrationFrom, identityMigrationTo }
 
 class TransactionDisplayItem {
   final String address;
@@ -158,6 +159,42 @@ class TransactionDisplayItem {
     );
   }
 
+  factory TransactionDisplayItem.fromMigrationFromEvent(MigrationData migrationData) {
+    // For "migration from" events, we show the OLD address this identity migrated FROM
+    final String dateDelimiter = _calculateDateDelimiter(migrationData.migrationDate);
+
+    return TransactionDisplayItem(
+      address: migrationData.fromAddress, // The old address this identity migrated FROM
+      username: migrationData.identityName, // Identity name if available
+      amount: BigInt.zero, // Migration events don't have amounts
+      comment: null, // Migration events don't have comments
+      isReceived: false, // Not applicable for migration events
+      timestamp: migrationData.migrationDate,
+      transactionTime: migrationData.migrationDate,
+      dateDelimiter: dateDelimiter,
+      isMigrationTime: false, // This is the migration event itself, not a transaction from migration time
+      type: TransactionType.identityMigrationFrom,
+    );
+  }
+
+  factory TransactionDisplayItem.fromMigrationToEvent(MigrationData migrationData) {
+    // For "migration to" events, we show the NEW address this identity migrated TO
+    final String dateDelimiter = _calculateDateDelimiter(migrationData.migrationDate);
+
+    return TransactionDisplayItem(
+      address: migrationData.toAddress, // The new address this identity migrated TO
+      username: migrationData.identityName, // Identity name if available
+      amount: BigInt.zero, // Migration events don't have amounts
+      comment: null, // Migration events don't have comments
+      isReceived: false, // Not applicable for migration events
+      timestamp: migrationData.migrationDate,
+      transactionTime: migrationData.migrationDate,
+      dateDelimiter: dateDelimiter,
+      isMigrationTime: false, // This is the migration event itself, not a transaction from migration time
+      type: TransactionType.identityMigrationTo,
+    );
+  }
+
   static String _decodeHexString(String? hexString) {
     if (hexString == null) return '';
 
@@ -229,6 +266,19 @@ class TransactionDisplayItem {
   /// Check if this is a universal dividend
   bool get isUniversalDividend => type == TransactionType.universalDividend;
 
+  /// Check if this is an identity migration "from" event
+  bool get isIdentityMigrationFrom => type == TransactionType.identityMigrationFrom;
+
+  /// Check if this is an identity migration "to" event
+  bool get isIdentityMigrationTo => type == TransactionType.identityMigrationTo;
+
   /// Get a display-friendly type name
-  String get displayType => isUniversalDividend ? "Universal Dividend" : "Transfer";
+  String get displayType {
+    return switch (type) {
+      TransactionType.universalDividend => "Universal Dividend",
+      TransactionType.identityMigrationFrom => "Identity Migration From",
+      TransactionType.identityMigrationTo => "Identity Migration To",
+      TransactionType.transfer => "Transfer",
+    };
+  }
 }
